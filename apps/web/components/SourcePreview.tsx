@@ -10,13 +10,13 @@ import type {
 import {
   Check,
   Crosshair,
-  Download,
+  DownloadSimple as Download,
   FileImage,
-  LoaderCircle,
-  Pencil,
-  Undo2,
+  SpinnerGap as LoaderCircle,
+  PencilSimple as Pencil,
+  ArrowUUpLeft as Undo2,
   X,
-} from "lucide-react";
+} from "@/lib/ui/icons";
 import { sourceUrl } from "@/lib/client";
 import { transformPoint } from "@/lib/ui/geometry";
 

@@ -8,7 +8,7 @@ PostGIS records and queued Python geometry processing.
 This is a **single-operator hackathon demonstration with synthetic inputs**.
 Its draft models do not establish ownership, surveyed location or an official
 ULPIN. The release is **HACKATHON_DEMO_VERIFIED**: 46 Python tests, 19 API
-scenarios and 6 production browser workflows passed. Exact evidence and the
+scenarios, 7 scene tests and 8 production browser workflows passed. Exact evidence and the
 original scope distinction are in [HACKATHON_STATUS.md](docs/HACKATHON_STATUS.md).
 
 ## Start the demo
@@ -32,6 +32,13 @@ For an immediate look, open the [prepared C-001 showcase](http://127.0.0.1:3000/
 It contains seven spaces and the initial **6.4 m³** overlap, ready to inspect
 and correct. Create a new workspace for another full rehearsal from raw inputs.
 
+The default **Building** view adds a conceptual façade, windows, roof and entrance
+to the measured envelope. Choose **Property volumes** for the exact spaces, or
+**Reveal basement** to inspect below grade. Selecting a finding opens its actual
+overlap geometry. **Focus model** expands the viewport while preserving panel state.
+See [the UI redesign notes](docs/UI_REDESIGN.md) for the selected Appllama and Taste
+skills, architectural presentation rules and verification.
+
 On a new Apple Silicon Mac, install Node.js, pnpm and the container runtime first:
 
 ```sh
@@ -52,7 +59,7 @@ password independently of the running database. See [PLATFORM.md](docs/PLATFORM.
 for runtime recovery and the pinned legacy MinIO image limitation.
 
 The local production build disables client minification to avoid a Cesium
-compatibility failure. Its client JavaScript is about **17.6 MB uncompressed**;
+compatibility failure. Its client JavaScript is about **17.8 MB uncompressed**;
 server optimization remains enabled. This is a performance task before wider
 distribution.
 
@@ -120,6 +127,7 @@ pnpm platform:health
 python3 scripts/platform-smoke.py
 pnpm test:demo
 pnpm test:api
+pnpm test:scene
 pnpm test:e2e
 ```
 
@@ -128,10 +136,11 @@ Before the first browser test on a new machine, run
 
 The commands have different roles: platform checks exercise actual services;
 `test:demo` executes both source-to-model correction journeys; `test:api` checks
-adversarial requests; `test:e2e` exercises browser controls. API test cases are
-labelled **Regression** and remain available for inspection. All six production
-browser workflows passed, including three consecutive C-001 rehearsals and
-actual PNG/PDF tracing. See [browser evidence](docs/BROWSER_TEST_EVIDENCE.md)
+adversarial requests; `test:scene` verifies architectural presentation geometry;
+`test:e2e` exercises browser controls. API test cases are
+labelled **Regression** and remain available for inspection. All eight production
+browser workflows passed, including architectural presentation, three consecutive
+C-001 rehearsals and actual PNG/PDF tracing. See [browser evidence](docs/BROWSER_TEST_EVIDENCE.md)
 for exact cases, snapshots, screenshots and recordings, and
 [HACKATHON_STATUS.md](docs/HACKATHON_STATUS.md) for the completed release gates.
 

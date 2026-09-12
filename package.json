@@ -15,6 +15,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "typecheck": "pnpm --filter @ulpin/web typecheck",
     "test:e2e": "playwright test",
+    "test:scene": "tsx --test tests/building-scene.test.ts",
     "test:demo": "tsx scripts/verify-demo.ts",
     "test:api": "tsx scripts/api-regression.ts"
   },

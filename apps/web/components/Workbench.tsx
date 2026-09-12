@@ -11,40 +11,43 @@ import type {
   UnitSpec,
 } from "@ulpin/contracts";
 import {
-  ArrowDownToLine,
+  ArrowLineDown as ArrowDownToLine,
   ArrowRight,
-  Box,
+  Cube as Box,
   Check,
-  CheckCheck,
-  ChevronDown,
-  ChevronRight,
+  Checks as CheckCheck,
+  CaretDown as ChevronDown,
+  CaretRight as ChevronRight,
   Circle,
-  CircleAlert,
-  Clock3,
-  Download,
-  File,
+  WarningCircle as CircleAlert,
+  Clock as Clock3,
+  DownloadSimple as Download,
   FileImage,
-  FileJson,
-  FileSpreadsheet,
+  FileJs as FileJson,
+  FileCsv as FileSpreadsheet,
   FolderOpen,
-  Focus,
-  History,
-  Layers3,
-  LoaderCircle,
-  Map,
-  Maximize2,
-  PanelRightClose,
-  PanelRightOpen,
+  CrosshairSimple as Focus,
+  ClockCounterClockwise as History,
+  Stack as Layers3,
+  SpinnerGap as LoaderCircle,
+  MapTrifold as Map,
+  ArrowsOutSimple as Maximize2,
+  SidebarSimple as PanelRightClose,
+  SidebarSimple as PanelRightOpen,
+  SidebarSimple,
+  ArrowsInSimple,
+  IconContext,
+  Columns,
+  PencilSimple,
   Plus,
-  RefreshCw,
-  RotateCcw,
-  ScanLine,
-  Settings2,
-  ShieldCheck,
-  Sparkles,
-  Upload,
+  ArrowsClockwise as RefreshCw,
+  ArrowCounterClockwise as RotateCcw,
+  Scan as ScanLine,
+  SlidersHorizontal as Settings2,
+  SealCheck as ShieldCheck,
+  UploadSimple as Upload,
   X,
-} from "lucide-react";
+} from "@/lib/ui/icons";
 import { api, sourceUrl } from "@/lib/client";
 import { number, unitColor } from "@/lib/ui/geometry";
 import PlanView from "./PlanView";
@@ -194,7 +197,12 @@ export default function Workbench() {
   const [floor, setFloor] = useState("all");
   const [isolate, setIsolate] = useState(false);
   const [explode, setExplode] = useState(0);
-  const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [modelFocus, setModelFocus] = useState(false);
+  const [collapsedFloors, setCollapsedFloors] = useState<Set<string>>(
+    new Set(),
+  );
   const [mobileSidebar, setMobileSidebar] = useState(false);
   const modalElement = useRef<HTMLElement>(null);
   const [dataset, setDataset] = useState<"c001" | "c002">("c001");
@@ -227,7 +235,6 @@ export default function Workbench() {
   }, []);
 
   useEffect(() => {
-    setInspectorOpen(window.innerWidth > 1050);
     let alive = true;
     refreshCases()
       .then((result) => {
@@ -331,7 +338,9 @@ export default function Workbench() {
       modalElement.current?.querySelector<HTMLElement>(
         "input:not([type=file]):not([type=hidden]):not(:disabled)",
       ) ??
-      modalElement.current?.querySelector<HTMLElement>("select:not(:disabled)") ??
+      modalElement.current?.querySelector<HTMLElement>(
+        "select:not(:disabled)",
+      ) ??
       modalElement.current?.querySelector<HTMLElement>("button:not(:disabled)");
     initial?.focus();
     const listener = (e: KeyboardEvent) => {
@@ -421,6 +430,7 @@ export default function Workbench() {
     }
   }
   function selectUnit(id: string) {
+    setModelFocus(false);
     setMobileSidebar(false);
     setSelectedId(id);
     setInspection({ type: "unit", id });
@@ -428,6 +438,7 @@ export default function Workbench() {
     setInspectorOpen(true);
   }
   function selectFinding(f: Finding) {
+    setModelFocus(false);
     setMobileSidebar(false);
     setInspection({ type: "finding", id: f.id });
     setSelectedId(f.unitIds[0] || null);
@@ -439,6 +450,7 @@ export default function Workbench() {
     setInspectorOpen(true);
   }
   function selectSource(s: SourceRevision) {
+    setModelFocus(false);
     setMobileSidebar(false);
     setInspection({ type: "source", id: s.id });
     setInspectorOpen(true);
@@ -516,6 +528,8 @@ export default function Workbench() {
         await refresh();
         setPane("sources");
         setInspection({ type: "source", id: revision.id });
+        setInspectorOpen(true);
+        setModelFocus(false);
       },
       "Revised level file received. Inspect its contents, then explicitly apply it.",
     );
@@ -579,1682 +593,1800 @@ export default function Workbench() {
   ];
 
   return (
-    <div className="workbench">
-      <header className="topbar">
-        <a href="/" className="brand" aria-label="3D ULPIN home">
-          <Mark />
-          <span>
-            3D ULPIN<span className="brand-dot">.</span>
-          </span>
+    <IconContext.Provider value={{ weight: "bold" }}>
+      <div className={`workbench ${modelFocus ? "model-focused" : ""}`}>
+        <a href="#model-workspace" className="skip-link">
+          Skip to model workspace
         </a>
-        <span className="brand-caption">SPATIAL WORKBENCH</span>
-        <div className="top-divider" />
-        <div className="case-picker">
-          <FolderOpen size={15} />
-          {cases.length ? (
-            <select
-              aria-label="Open case"
-              disabled={!!busy}
-              value={caseId || ""}
-              onChange={(e) => setCaseId(e.target.value)}
-            >
-              {cases.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <span>Untitled workspace</span>
-          )}
-          <ChevronDown size={12} />
-        </div>
-        <button
-          className="icon-button new-case-button"
-          aria-label="Create new case"
-          disabled={!!busy}
-          onClick={() => setModal("new")}
-        >
-          <Plus size={16} />
-        </button>
-        <div className="topbar-end">
-          <span className="local-badge">
-            <span />
-            LOCAL DEMO
-          </span>
+        <header className="topbar">
+          <a href="/" className="brand" aria-label="3D ULPIN home">
+            <Mark />
+            <span>3D ULPIN</span>
+          </a>
+          <span className="brand-caption">Spatial studio</span>
+          <div className="top-divider" />
+          <div className="case-picker">
+            <FolderOpen size={15} />
+            {cases.length ? (
+              <select
+                aria-label="Open case"
+                disabled={!!busy}
+                value={caseId || ""}
+                onChange={(e) => setCaseId(e.target.value)}
+              >
+                {cases.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span>Untitled workspace</span>
+            )}
+            <ChevronDown size={12} />
+          </div>
           <button
-            className="button small ghost"
-            onClick={() => setModal("upload")}
+            className="icon-button new-case-button"
+            aria-label="Create new case"
             disabled={!!busy}
+            onClick={() => setModal("new")}
           >
-            <Upload size={14} />
-            Import files
+            <Plus size={16} />
           </button>
-          <span className="avatar" title="Local demo operator">
-            V
-          </span>
-        </div>
-      </header>
-      <div className="workspace-body">
-        <nav className="tool-rail" aria-label="Workspace sections">
-          {paneOptions.map((item) => (
-            <button
-              key={item.key}
-              aria-label={item.title}
-              title={item.title}
-              aria-pressed={pane === item.key}
-              className={pane === item.key ? "selected" : ""}
-              onClick={() => {
-                setPane(item.key);
-                if (window.innerWidth <= 540) {
-                  setMobileSidebar(true);
-                  setInspectorOpen(false);
-                }
-              }}
-            >
-              <item.icon size={20} />
-            </button>
-          ))}
-          <div className="rail-bottom">
-            <span title="Local, single-operator workspace">
-              <ShieldCheck size={19} />
+          <div className="topbar-end">
+            <span className="local-badge">
+              <span />
+              Local workspace
             </span>
-            <span className="rail-version">v0.1</span>
-          </div>
-        </nav>
-        <aside className={`sidebar ${mobileSidebar ? "mobile-open" : ""}`}>
-          <div className="panel-heading">
-            <h2>{paneOptions.find((p) => p.key === pane)?.title}</h2>
             <button
-              className="icon-button mobile-sidebar-close"
-              aria-label="Close sections"
-              onClick={() => setMobileSidebar(false)}
+              className="button small ghost"
+              onClick={() => setModal("upload")}
+              disabled={!!busy}
             >
-              <X size={14} />
+              <Upload size={14} />
+              Import files
             </button>
-            <span className="count">
-              {paneOptions.find((p) => p.key === pane)?.count}
-            </span>
-            {pane === "sources" && (
+          </div>
+        </header>
+        <div className="workspace-body">
+          <nav className="tool-rail" aria-label="Workspace sections">
+            {paneOptions.map((item) => (
               <button
-                className="icon-button"
-                aria-label="Import a source"
-                onClick={() => setModal("upload")}
+                key={item.key}
+                aria-label={item.title}
+                title={item.title}
+                aria-pressed={pane === item.key}
+                className={pane === item.key ? "selected" : ""}
+                onClick={() => {
+                  setPane(item.key);
+                  setSidebarOpen(true);
+                  setModelFocus(false);
+                  if (window.innerWidth <= 540) {
+                    setMobileSidebar(true);
+                    setInspectorOpen(false);
+                  }
+                }}
               >
-                <Plus size={16} />
+                <item.icon
+                  size={21}
+                  weight={pane === item.key ? "fill" : "regular"}
+                />
               </button>
-            )}
-          </div>
-          <div className="sidebar-content">
-            {pane === "spaces" && (
-              <>
-                {detail?.units.length ? (
-                  <>
-                    <div className="tree-context">
-                      <ChevronDown size={12} />
-                      <Box size={14} />
-                      <strong>Property model</strong>
-                    </div>
-                    {floors.map((level) => (
-                      <div className="floor-group" key={level}>
-                        <div className="floor-group-heading">
-                          <span>{level}</span>
-                          <span>
-                            {
-                              detail.units.filter(
-                                (u) => (u.levelLabel || "Unassigned") === level,
-                              ).length
-                            }
-                          </span>
-                        </div>
-                        {detail.units
-                          .filter(
-                            (u) => (u.levelLabel || "Unassigned") === level,
-                          )
-                          .map((u) => (
-                            <button
-                              key={u.id}
-                              className={`unit-row ${selectedId === u.id ? "selected" : ""}`}
-                              onClick={() => selectUnit(u.id)}
-                            >
-                              <span
-                                className="unit-swatch"
-                                style={{ background: unitColor(u) }}
-                              />
-                              <span>
-                                <strong>{u.alias}</strong>
-                                <small>{u.name}</small>
-                              </span>
-                              {(!u.lowerVerified || !u.upperVerified) && (
-                                <CircleAlert
-                                  size={13}
-                                  className="warning-icon"
-                                  aria-label="Unverified elevation"
-                                />
-                              )}
-                            </button>
-                          ))}
-                      </div>
-                    ))}
-                    {detail.context.length > 0 && (
-                      <div className="context-list">
-                        <div className="floor-group-heading">
-                          Context <span>{detail.context.length}</span>
-                        </div>
-                        {detail.context.map((c) => (
-                          <div key={c.alias}>
-                            <Map size={13} />
-                            <span>{c.alias}</span>
-                            <small>{c.kind}</small>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="sidebar-empty">
-                    <Layers3 size={23} />
-                    <strong>Your spaces will live here</strong>
-                    <p>
-                      Import footprints and level evidence, then prepare the
-                      draft geometry.
-                    </p>
-                    <button
-                      className="text-button"
-                      onClick={() => setPane("sources")}
-                    >
-                      Open sources <ArrowRight size={13} />
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-            {pane === "sources" && (
-              <>
-                {detail?.sources.length ? (
-                  <>
-                    <div className="section-note">
-                      Originals are preserved. Uploading does not change the
-                      model.
-                    </div>
-                    {detail.sources.map((s) => (
-                      <button
-                        key={s.id}
-                        className={`source-row ${inspection?.type === "source" && inspection.id === s.id ? "selected" : ""}`}
-                        onClick={() => selectSource(s)}
-                      >
-                        <span className="file-icon">
-                          <SourceIcon profile={s.profile} />
-                        </span>
-                        <span className="source-row-content">
-                          <strong title={s.name}>{s.name}</strong>
-                          <span>
-                            <small>
-                              r{s.revision} · {number(s.bytes / 1024, 1)} KB
-                            </small>
-                            <Status value={s.status} />
-                          </span>
-                        </span>
-                      </button>
-                    ))}
-                    <button
-                      className="source-add"
-                      onClick={() => setModal("upload")}
-                    >
-                      <Plus size={14} />
-                      Add another source
-                    </button>
-                    {!!detail.units.length && (
-                      <button
-                        className="source-add revised"
-                        disabled={!!busy}
-                        onClick={reviseDemo}
-                      >
-                        <RefreshCw size={14} />
-                        Load revised demo levels
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <div className="sidebar-empty">
-                    <FolderOpen size={24} />
-                    <strong>Start with the evidence</strong>
-                    <p>
-                      Spatial JSON, level and control CSVs, PNG or PDF plan
-                      references.
-                    </p>
-                    <button
-                      className="button small"
-                      onClick={() => setModal("upload")}
-                    >
-                      <Upload size={13} />
-                      Import files
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-            {pane === "findings" && (
-              <>
-                {detail?.model ? (
-                  <>
-                    <div
-                      className={`check-summary ${overlapFindings.length ? "has-conflict" : ""}`}
-                    >
-                      <ScanLine size={19} />
-                      <div>
-                        <strong>
-                          {overlapFindings.length
-                            ? `${overlapFindings.length} volumetric overlap${overlapFindings.length === 1 ? "" : "s"}`
-                            : "No positive-volume overlaps"}
-                        </strong>
-                        <span>
-                          {modelFresh
-                            ? "Computed for the current revision"
-                            : "Previous revision · rebuild required"}
-                        </span>
-                      </div>
-                    </div>
-                    {detail.model.findings.map((f) => (
-                      <button
-                        key={f.id}
-                        className={`finding-row ${activeFinding === f.id ? "selected" : ""}`}
-                        onClick={() => selectFinding(f)}
-                      >
-                        <span className={`finding-dot ${f.severity}`} />
-                        <div>
-                          <strong>{f.title}</strong>
-                          <p>
-                            {f.overlap
-                              ? `${number(f.overlap.volume, 3)} m³ shared volume`
-                              : f.code.replaceAll("_", " ").toLowerCase()}
-                          </p>
-                        </div>
-                        <ChevronRight size={13} />
-                      </button>
-                    ))}
-                    {!detail.model.findings.length && (
-                      <div className="sidebar-empty">
-                        <CheckCheck size={23} />
-                        <strong>Checks completed</strong>
-                        <p>No findings were returned for this snapshot.</p>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="sidebar-empty">
-                    <ScanLine size={24} />
-                    <strong>Compute before concluding</strong>
-                    <p>
-                      Build a model to check geometry, evidence, and
-                      intersections.
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
-            {pane === "history" && (
-              <>
-                {detail?.history.length ? (
-                  <div className="history-list">
-                    {detail.history.map((h) => (
-                      <div key={h.id}>
-                        <span className="history-dot" />
-                        <div>
-                          <small>
-                            {shortTime(h.createdAt)} ·{" "}
-                            {h.kind.replaceAll("_", " ")}
-                          </small>
-                          <p>{h.message}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="sidebar-empty">
-                    <History size={23} />
-                    <strong>A traceable working history</strong>
-                    <p>
-                      Source receipts, edits, and model builds appear here as
-                      you work.
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-          <div className="sidebar-bottom">
-            <div>
-              <span className="eyebrow">WORKING FRAME</span>
-              <strong>
-                {detail?.case.frame.id || "Awaiting source frame"}
-              </strong>
-            </div>
-            <div className="frame-foot">
-              <span>
-                {detail?.case.frame.benchmark || "Local metric coordinates"}
+            ))}
+            <div className="rail-bottom">
+              <span title="Local, single-operator workspace">
+                <ShieldCheck size={19} />
               </span>
-              <span>m</span>
+              <span className="rail-version">v0.1</span>
             </div>
-          </div>
-        </aside>
-        <main className="main-workspace">
-          <div className="workspace-heading">
-            <div>
-              <span className="breadcrumb">
-                WORKSPACE <ChevronRight size={10} />{" "}
-                {detail ? `REVISION ${detail.case.revision}` : "NEW CASE"}
-              </span>
-              <h1>{detail?.case.name || "A new dimension of evidence."}</h1>
-            </div>
-            <div className="workflow-actions">
-              {detail && !!inspectedSpatial.length && (
-                <button
-                  className="button"
-                  disabled={!!busy || !!pending.length}
-                  onClick={showPrepare}
-                >
-                  <Layers3 size={14} />
-                  {detail.units.length ? "Prepare again" : "Prepare geometry"}
-                </button>
-              )}
+          </nav>
+          <aside
+            className={`sidebar ${mobileSidebar ? "mobile-open" : ""} ${!sidebarOpen || modelFocus ? "collapsed" : ""}`}
+          >
+            <div className="panel-heading">
+              <h2>{paneOptions.find((p) => p.key === pane)?.title}</h2>
               <button
-                className="button primary"
-                disabled={!detail?.units.length || !!busy || buildPending}
-                onClick={build}
+                className="icon-button mobile-sidebar-close"
+                aria-label="Close sections"
+                onClick={() => setMobileSidebar(false)}
               >
-                {buildPending ? (
-                  <LoaderCircle size={15} className="spin" />
-                ) : (
-                  <Box size={15} />
-                )}
-                {buildPending
-                  ? "Building…"
-                  : detail?.model && !modelFresh
-                    ? "Rebuild model"
-                    : "Build model"}
+                <X size={14} />
               </button>
-            </div>
-          </div>
-          <div className="viewport-toolbar">
-            <div className="view-tabs" role="tablist" aria-label="Model view">
-              {(["3d", "plan", "split"] as const).map((v) => (
+              <span className="count">
+                {paneOptions.find((p) => p.key === pane)?.count}
+              </span>
+              {pane === "sources" && (
                 <button
-                  key={v}
-                  role="tab"
-                  aria-selected={view === v}
-                  onClick={() => setView(v)}
+                  className="icon-button"
+                  aria-label="Import a source"
+                  onClick={() => setModal("upload")}
                 >
-                  {v === "3d" ? (
-                    <Box size={13} />
-                  ) : v === "plan" ? (
-                    <Map size={13} />
-                  ) : (
-                    <ColumnsIcon />
-                  )}
-                  {v === "3d" ? "3D model" : v === "plan" ? "Plan" : "Split"}
-                </button>
-              ))}
-              {view === "reference" && (
-                <button
-                  role="tab"
-                  aria-selected="true"
-                  className="reference-tab"
-                >
-                  <FileImage size={13} />
-                  Reference
+                  <Plus size={16} />
                 </button>
               )}
             </div>
-            <div className="viewport-options">
-              {!!floors.length && (
+            <div className="sidebar-content">
+              {pane === "spaces" && (
                 <>
-                  <select
-                    aria-label="Visible floor"
-                    value={floor}
-                    onChange={(e) => setFloor(e.target.value)}
-                  >
-                    <option value="all">All floors</option>
-                    {floors.map((f) => (
-                      <option value={f} key={f}>
-                        {f}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    className={`icon-button ${isolate ? "active" : ""}`}
-                    onClick={() => setIsolate(!isolate)}
-                    disabled={!selectedId}
-                    aria-label="Isolate selected space"
-                    aria-pressed={isolate}
-                    title="Isolate selected space"
-                  >
-                    <Focus size={15} />
-                  </button>
-                  <label
-                    className="explode-control"
-                    title="Separate floors visually; does not change measurements"
-                  >
-                    <Layers3 size={14} />
-                    <input
-                      type="range"
-                      min="0"
-                      max="3"
-                      step="0.25"
-                      value={explode}
-                      onChange={(e) => {
-                        setExplode(Number(e.target.value));
-                        setActiveFinding(null);
-                      }}
-                      aria-label="Separate floors visually"
-                    />
-                  </label>
+                  {detail?.units.length ? (
+                    <>
+                      <div className="tree-context">
+                        <ChevronDown size={12} />
+                        <Box size={14} />
+                        <strong>Building spaces</strong>
+                        <span>{detail.units.length}</span>
+                      </div>
+                      {floors.map((level) => (
+                        <div className="floor-group" key={level}>
+                          <button
+                            className={`floor-group-heading ${floor === level ? "active-floor" : ""}`}
+                            aria-expanded={!collapsedFloors.has(level)}
+                            onClick={() =>
+                              setCollapsedFloors((previous) => {
+                                const next = new Set(previous);
+                                if (next.has(level)) next.delete(level);
+                                else next.add(level);
+                                return next;
+                              })
+                            }
+                          >
+                            <ChevronDown
+                              size={11}
+                              className={
+                                collapsedFloors.has(level) ? "is-closed" : ""
+                              }
+                            />
+                            <span>{level}</span>
+                            <span>
+                              {
+                                detail.units.filter(
+                                  (u) =>
+                                    (u.levelLabel || "Unassigned") === level,
+                                ).length
+                              }
+                            </span>
+                          </button>
+                          {!collapsedFloors.has(level) &&
+                            detail.units
+                              .filter(
+                                (u) => (u.levelLabel || "Unassigned") === level,
+                              )
+                              .map((u) => (
+                                <button
+                                  key={u.id}
+                                  className={`unit-row ${selectedId === u.id ? "selected" : ""}`}
+                                  aria-label={`${u.alias} ${u.name}${!u.lowerVerified || !u.upperVerified ? " Unverified elevation" : ""}`}
+                                  onClick={() => selectUnit(u.id)}
+                                >
+                                  <span
+                                    className="unit-swatch"
+                                    style={{ background: unitColor(u) }}
+                                  />
+                                  <span>
+                                    <strong>{u.alias}</strong>
+                                    <small>{u.name}</small>
+                                  </span>
+                                  <span className="unit-meta">
+                                    <span>
+                                      {number(u.lower)}–{number(u.upper)}
+                                      <small>m</small>
+                                    </span>
+                                    {(!u.lowerVerified || !u.upperVerified) && (
+                                      <CircleAlert
+                                        size={12}
+                                        className="warning-icon"
+                                        aria-label="Unverified elevation"
+                                      />
+                                    )}
+                                  </span>
+                                </button>
+                              ))}
+                        </div>
+                      ))}
+                      {detail.context.length > 0 && (
+                        <div className="context-list">
+                          <div className="floor-group-heading">
+                            Context <span>{detail.context.length}</span>
+                          </div>
+                          {detail.context.map((c) => (
+                            <div key={c.alias}>
+                              <Map size={13} />
+                              <span>{c.alias}</span>
+                              <small>{c.kind}</small>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="sidebar-empty">
+                      <Layers3 size={23} />
+                      <strong>Your spaces will live here</strong>
+                      <p>
+                        Import footprints and level evidence, then prepare the
+                        draft geometry.
+                      </p>
+                      <button
+                        className="text-button"
+                        onClick={() => setPane("sources")}
+                      >
+                        Open sources <ArrowRight size={13} />
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
-              <button
-                className="icon-button inspector-toggle"
-                aria-label={inspectorOpen ? "Hide inspector" : "Show inspector"}
-                onClick={() => setInspectorOpen(!inspectorOpen)}
-              >
-                {inspectorOpen ? (
-                  <PanelRightClose size={16} />
-                ) : (
-                  <PanelRightOpen size={16} />
-                )}
-              </button>
+              {pane === "sources" && (
+                <>
+                  {detail?.sources.length ? (
+                    <>
+                      <div className="section-note">
+                        Originals are preserved. Uploading does not change the
+                        model.
+                      </div>
+                      {detail.sources.map((s) => (
+                        <button
+                          key={s.id}
+                          className={`source-row ${inspection?.type === "source" && inspection.id === s.id ? "selected" : ""}`}
+                          onClick={() => selectSource(s)}
+                        >
+                          <span className="file-icon">
+                            <SourceIcon profile={s.profile} />
+                          </span>
+                          <span className="source-row-content">
+                            <strong title={s.name}>{s.name}</strong>
+                            <span>
+                              <small>
+                                r{s.revision} · {number(s.bytes / 1024, 1)} KB
+                              </small>
+                              <Status value={s.status} />
+                            </span>
+                          </span>
+                        </button>
+                      ))}
+                      <button
+                        className="source-add"
+                        onClick={() => setModal("upload")}
+                      >
+                        <Plus size={14} />
+                        Add another source
+                      </button>
+                      {!!detail.units.length && (
+                        <button
+                          className="source-add revised"
+                          disabled={!!busy}
+                          onClick={reviseDemo}
+                        >
+                          <RefreshCw size={14} />
+                          Load revised demo levels
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <div className="sidebar-empty">
+                      <FolderOpen size={24} />
+                      <strong>Start with the evidence</strong>
+                      <p>
+                        Spatial JSON, level and control CSVs, PNG or PDF plan
+                        references.
+                      </p>
+                      <button
+                        className="button small"
+                        onClick={() => setModal("upload")}
+                      >
+                        <Upload size={13} />
+                        Import files
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+              {pane === "findings" && (
+                <>
+                  {detail?.model ? (
+                    <>
+                      <div
+                        className={`check-summary ${overlapFindings.length ? "has-conflict" : ""}`}
+                      >
+                        <ScanLine size={19} />
+                        <div>
+                          <strong>
+                            {overlapFindings.length
+                              ? `${overlapFindings.length} volumetric overlap${overlapFindings.length === 1 ? "" : "s"}`
+                              : "No positive-volume overlaps"}
+                          </strong>
+                          <span>
+                            {modelFresh
+                              ? "Computed for the current revision"
+                              : "Previous revision · rebuild required"}
+                          </span>
+                        </div>
+                      </div>
+                      {detail.model.findings.map((f) => (
+                        <button
+                          key={f.id}
+                          className={`finding-row ${activeFinding === f.id ? "selected" : ""}`}
+                          onClick={() => selectFinding(f)}
+                        >
+                          <span className={`finding-dot ${f.severity}`} />
+                          <div>
+                            <strong>{f.title}</strong>
+                            <p>
+                              {f.overlap
+                                ? `${number(f.overlap.volume, 3)} m³ shared volume`
+                                : f.code.replaceAll("_", " ").toLowerCase()}
+                            </p>
+                          </div>
+                          <ChevronRight size={13} />
+                        </button>
+                      ))}
+                      {!detail.model.findings.length && (
+                        <div className="sidebar-empty">
+                          <CheckCheck size={23} />
+                          <strong>Checks completed</strong>
+                          <p>No findings were returned for this snapshot.</p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="sidebar-empty">
+                      <ScanLine size={24} />
+                      <strong>Compute before concluding</strong>
+                      <p>
+                        Build a model to check geometry, evidence, and
+                        intersections.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+              {pane === "history" && (
+                <>
+                  {detail?.history.length ? (
+                    <div className="history-list">
+                      {detail.history.map((h) => (
+                        <div key={h.id}>
+                          <span className="history-dot" />
+                          <div>
+                            <small>
+                              {shortTime(h.createdAt)} ·{" "}
+                              {h.kind.replaceAll("_", " ")}
+                            </small>
+                            <p>{h.message}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="sidebar-empty">
+                      <History size={23} />
+                      <strong>A traceable working history</strong>
+                      <p>
+                        Source receipts, edits, and model builds appear here as
+                        you work.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-          </div>
-          <div className={`viewport ${view === "split" ? "split-view" : ""}`}>
-            {loading ? (
-              <div className="viewer-loading">
-                <LoaderCircle size={22} className="spin" />
-                <span>Opening workspace…</span>
+            <div className="sidebar-bottom">
+              <div>
+                <span className="eyebrow">WORKING FRAME</span>
+                <strong>
+                  {detail?.case.frame.id || "Awaiting source frame"}
+                </strong>
               </div>
-            ) : view === "reference" && reference ? (
-              <SourcePreview
-                key={reference.id}
-                source={reference}
-                controls={inspectedControls.flatMap(
-                  (s) => s.inspection?.controls || [],
+              <div className="frame-foot">
+                <span>
+                  {detail?.case.frame.benchmark || "Local metric coordinates"}
+                </span>
+                <span>m</span>
+              </div>
+            </div>
+          </aside>
+          <main id="model-workspace" className="main-workspace" tabIndex={-1}>
+            <div className="workspace-heading">
+              <div>
+                <h1>{detail?.case.name || "Untitled property"}</h1>
+                <span className="drawing-meta">
+                  {detail ? `Draft r${detail.case.revision}` : "New workspace"}
+                  <span>·</span>
+                  {detail?.units.length || 0} spaces
+                </span>
+              </div>
+              <div className="workflow-actions">
+                {detail && !!inspectedSpatial.length && (
+                  <button
+                    className="button"
+                    disabled={!!busy || !!pending.length}
+                    onClick={showPrepare}
+                  >
+                    <Layers3 size={14} />
+                    {detail.units.length ? "Prepare again" : "Prepare geometry"}
+                  </button>
                 )}
-                busy={!!busy}
-                onTrace={async (value) => {
-                  if (!detail) return false;
-                  return run(
-                    "Saving traced space",
-                    async () => {
-                      const added = await api.addUnit(detail.case.id, {
-                        ...value,
-                        kind: "unit",
-                        levelLabel: "Traced level",
-                      });
-                      await refresh();
-                      selectUnit(added.id);
-                      setPane("spaces");
-                      setView("plan");
-                    },
-                    "Traced space saved as a draft. Build to compute geometry.",
-                  );
+                <button
+                  className="button primary"
+                  disabled={!detail?.units.length || !!busy || buildPending}
+                  onClick={build}
+                >
+                  {buildPending ? (
+                    <LoaderCircle size={15} className="spin" />
+                  ) : (
+                    <Box size={15} />
+                  )}
+                  {buildPending
+                    ? "Building…"
+                    : detail?.model && !modelFresh
+                      ? "Rebuild model"
+                      : "Build model"}
+                </button>
+              </div>
+            </div>
+            <div className="viewport-toolbar">
+              <button
+                className="icon-button tree-toggle"
+                title={
+                  sidebarOpen && !modelFocus
+                    ? "Hide model tree"
+                    : "Show model tree"
+                }
+                aria-label={
+                  sidebarOpen && !modelFocus
+                    ? "Hide model tree"
+                    : "Show model tree"
+                }
+                onClick={() => {
+                  setSidebarOpen(!(sidebarOpen && !modelFocus));
+                  setModelFocus(false);
                 }}
-              />
-            ) : (
-              <>
-                {(view === "plan" || view === "split") &&
-                  !!detail?.units.length && (
-                    <div className="plan-viewport">
-                      <PlanView
-                        units={detail.units}
-                        context={detail.context}
+              >
+                <SidebarSimple size={18} />
+              </button>
+              <div className="view-tabs" role="tablist" aria-label="Model view">
+                {(["3d", "plan", "split"] as const).map((v) => (
+                  <button
+                    key={v}
+                    role="tab"
+                    aria-selected={view === v}
+                    onClick={() => setView(v)}
+                  >
+                    {v === "3d" ? (
+                      <Box size={13} />
+                    ) : v === "plan" ? (
+                      <Map size={13} />
+                    ) : (
+                      <Columns size={14} />
+                    )}
+                    {v === "3d" ? "3D model" : v === "plan" ? "Plan" : "Split"}
+                  </button>
+                ))}
+                {view === "reference" && (
+                  <button
+                    role="tab"
+                    aria-selected="true"
+                    className="reference-tab"
+                  >
+                    <FileImage size={13} />
+                    Reference
+                  </button>
+                )}
+              </div>
+              <div className="viewport-options">
+                {!!floors.length && (
+                  <>
+                    <select
+                      aria-label="Visible floor"
+                      value={floor}
+                      onChange={(e) => setFloor(e.target.value)}
+                    >
+                      <option value="all">All floors</option>
+                      {floors.map((f) => (
+                        <option value={f} key={f}>
+                          {f}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      className={`icon-button ${isolate ? "active" : ""}`}
+                      onClick={() => setIsolate(!isolate)}
+                      disabled={!selectedId}
+                      aria-label="Isolate selected space"
+                      aria-pressed={isolate}
+                      title="Isolate selected space"
+                    >
+                      <Focus size={15} />
+                    </button>
+                    <label
+                      className="explode-control"
+                      title="Separate floors visually; does not change measurements"
+                    >
+                      <Layers3 size={14} />
+                      <input
+                        type="range"
+                        min="0"
+                        max="3"
+                        step="0.25"
+                        value={explode}
+                        onChange={(e) => {
+                          setExplode(Number(e.target.value));
+                          setActiveFinding(null);
+                        }}
+                        aria-label="Separate floors visually"
+                      />
+                    </label>
+                  </>
+                )}
+                <button
+                  className={`icon-button focus-model ${modelFocus ? "active" : ""}`}
+                  title={modelFocus ? "Exit model focus" : "Focus model"}
+                  aria-label={modelFocus ? "Exit model focus" : "Focus model"}
+                  aria-pressed={modelFocus}
+                  onClick={() => {
+                    setModelFocus(!modelFocus);
+                    setMobileSidebar(false);
+                  }}
+                >
+                  {modelFocus ? (
+                    <ArrowsInSimple size={18} />
+                  ) : (
+                    <Maximize2 size={18} />
+                  )}
+                </button>
+                <button
+                  className="icon-button inspector-toggle"
+                  aria-label={
+                    inspectorOpen && !modelFocus
+                      ? "Hide inspector"
+                      : "Show inspector"
+                  }
+                  onClick={() => {
+                    setInspectorOpen(!(inspectorOpen && !modelFocus));
+                    setModelFocus(false);
+                  }}
+                >
+                  {inspectorOpen ? (
+                    <PanelRightClose size={16} />
+                  ) : (
+                    <PanelRightOpen size={16} />
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className={`viewport ${view === "split" ? "split-view" : ""}`}>
+              {loading ? (
+                <div className="viewer-loading">
+                  <LoaderCircle size={22} className="spin" />
+                  <span>Opening workspace…</span>
+                </div>
+              ) : view === "reference" && reference ? (
+                <SourcePreview
+                  key={reference.id}
+                  source={reference}
+                  controls={inspectedControls.flatMap(
+                    (s) => s.inspection?.controls || [],
+                  )}
+                  busy={!!busy}
+                  onTrace={async (value) => {
+                    if (!detail) return false;
+                    return run(
+                      "Saving traced space",
+                      async () => {
+                        const added = await api.addUnit(detail.case.id, {
+                          ...value,
+                          kind: "unit",
+                          levelLabel: "Traced level",
+                        });
+                        await refresh();
+                        selectUnit(added.id);
+                        setPane("spaces");
+                        setView("plan");
+                      },
+                      "Traced space saved as a draft. Build to compute geometry.",
+                    );
+                  }}
+                />
+              ) : (
+                <>
+                  {(view === "plan" || view === "split") &&
+                    !!detail?.units.length && (
+                      <div className="plan-viewport">
+                        <PlanView
+                          units={detail.units}
+                          context={detail.context}
+                          selectedId={selectedId}
+                          onSelect={selectUnit}
+                          floor={floor}
+                          isolate={isolate}
+                          finding={highlighted}
+                          busy={!!busy}
+                          onSave={async (u, footprint) => {
+                            return run(
+                              "Saving footprint revision",
+                              async () => {
+                                await api.editUnit(detail.case.id, u.id, {
+                                  expectedRevision: u.revision,
+                                  footprint,
+                                });
+                                await refresh();
+                              },
+                              "Footprint saved. Rebuild to refresh the model.",
+                            );
+                          }}
+                        />
+                      </div>
+                    )}
+                  {(view === "3d" || view === "split") && detail?.model && (
+                    <div className="scene-viewport">
+                      <SpatialViewer
+                        model={detail.model}
                         selectedId={selectedId}
                         onSelect={selectUnit}
                         floor={floor}
                         isolate={isolate}
+                        explode={explode}
                         finding={highlighted}
-                        busy={!!busy}
-                        onSave={async (u, footprint) => {
-                          return run(
-                            "Saving footprint revision",
-                            async () => {
-                              await api.editUnit(detail.case.id, u.id, {
-                                expectedRevision: u.revision,
-                                footprint,
-                              });
-                              await refresh();
-                            },
-                            "Footprint saved. Rebuild to refresh the model.",
-                          );
-                        }}
                       />
-                    </div>
-                  )}
-                {(view === "3d" || view === "split") && detail?.model && (
-                  <div className="scene-viewport">
-                    <SpatialViewer
-                      model={detail.model}
-                      selectedId={selectedId}
-                      onSelect={selectUnit}
-                      floor={floor}
-                      isolate={isolate}
-                      explode={explode}
-                      finding={highlighted}
-                    />
-                    <div className="scene-tag">
-                      <span className="scene-status-dot" />
-                      {modelFresh ? "Computed geometry" : "Previous geometry"}
-                      <span className="tag-divider" />r{detail.model.revision}
-                    </div>
-                    {!modelFresh && (
-                      <div className="stale-banner">
-                        <Clock3 size={13} />
-                        Draft changed. Rebuild for current geometry and checks.
+                      <div className="scene-tag">
+                        <span className="scene-status-dot" />
+                        {modelFresh ? "Computed geometry" : "Previous geometry"}
+                        <span className="tag-divider" />r{detail.model.revision}
                       </div>
-                    )}
-                    {explode > 0 && (
-                      <div className="display-warning">
-                        Floors separated for display · measurements unchanged
-                      </div>
-                    )}
-                    {highlighted?.overlap && (
-                      <div className="overlap-label">
-                        <span />
-                        <strong>
-                          {number(highlighted.overlap.volume, 3)} m³
-                        </strong>
-                        computed overlap
-                        <button
-                          aria-label="Clear overlap highlight"
-                          onClick={() => setActiveFinding(null)}
-                        >
-                          <X size={13} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {(!detail?.units.length ||
-                  ((view === "3d" || view === "split") && !detail?.model)) && (
-                  <div
-                    className={`empty-viewport ${detail?.units.length ? "prepared-empty" : ""}`}
-                  >
-                    <div className="empty-grid" />
-                    <div className="empty-corner top-left" />
-                    <div className="empty-corner bottom-right" />
-                    <div className="empty-content">
-                      <div className="empty-symbol">
-                        <Mark size={55} />
-                      </div>
-                      <span className="eyebrow">FROM SOURCE TO SPACE</span>
-                      <h2>
-                        {detail?.units.length
-                          ? "Ready for the next dimension."
-                          : detail?.sources.length
-                            ? "Evidence received.\nLet’s give it structure."
-                            : "Every space starts\nwith a source."}
-                      </h2>
-                      <p>
-                        {detail?.units.length
-                          ? `${detail.units.length} draft spaces are prepared. Build the model to compute volumes, evidence checks, and intersections.`
-                          : detail?.sources.length
-                            ? "Inspect your sources, then prepare the footprints and vertical limits. Each step stays explicit and traceable."
-                            : "Bring footprints, levels, and plan references together in one inspectable property model."}
-                      </p>
-                      {detail?.units.length ? (
-                        <button
-                          className="button primary"
-                          disabled={!!busy || buildPending}
-                          onClick={build}
-                        >
-                          <Box size={15} />
-                          {buildPending ? "Building model…" : "Build 3D model"}
-                          <ArrowRight size={15} />
-                        </button>
-                      ) : detail?.sources.length ? (
-                        <button
-                          className="button primary"
-                          disabled={
-                            !inspectedSpatial.length ||
-                            !!busy ||
-                            !!pending.length
-                          }
-                          onClick={showPrepare}
-                        >
-                          {pending.length ? (
-                            <LoaderCircle size={15} className="spin" />
-                          ) : (
-                            <Layers3 size={15} />
-                          )}
-                          {pending.length
-                            ? "Inspecting source files…"
-                            : "Prepare geometry"}
-                          <ArrowRight size={15} />
-                        </button>
-                      ) : (
-                        <>
-                          <div className="sample-choice">
-                            <select
-                              aria-label="Sample dataset"
-                              value={dataset}
-                              onChange={(e) =>
-                                setDataset(e.target.value as "c001" | "c002")
-                              }
-                            >
-                              <option value="c001">
-                                C-001 · Reference building
-                              </option>
-                              <option value="c002">
-                                C-002 · Alternate footprint
-                              </option>
-                            </select>
-                            <button
-                              className="button primary"
-                              disabled={!!busy}
-                              onClick={loadDemo}
-                            >
-                              {busy ? (
-                                <LoaderCircle size={15} className="spin" />
-                              ) : (
-                                <ArrowDownToLine size={15} />
-                              )}
-                              Load sample inputs
-                            </button>
-                          </div>
+                      {!modelFresh && (
+                        <div className="stale-banner">
+                          <Clock3 size={13} />
+                          Draft changed. Rebuild for current geometry and
+                          checks.
+                        </div>
+                      )}
+                      {explode > 0 && (
+                        <div className="display-warning">
+                          Floors separated for display · measurements unchanged
+                        </div>
+                      )}
+                      {highlighted?.overlap && (
+                        <div className="overlap-label">
+                          <span />
+                          <strong>
+                            {number(highlighted.overlap.volume, 3)} m³
+                          </strong>
+                          computed overlap
                           <button
-                            className="text-button"
-                            onClick={() => setModal("upload")}
+                            aria-label="Clear overlap highlight"
+                            onClick={() => setActiveFinding(null)}
                           >
-                            or import your own files <ArrowRight size={13} />
+                            <X size={13} />
                           </button>
-                        </>
+                        </div>
                       )}
-                      <div className="empty-disclaimer">
-                        SYNTHETIC DEMO INPUTS <span>·</span> LOCAL METRES{" "}
-                        <span>·</span> NO OFFICIAL IDENTITY
-                      </div>
                     </div>
-                    <div className="workflow-strip">
-                      <span
-                        className={detail?.sources.length ? "done" : "current"}
-                      >
-                        <span>01</span>Import evidence
-                      </span>
-                      <ChevronRight size={12} />
-                      <span
-                        className={
-                          detail?.units.length
-                            ? "done"
+                  )}
+                  {(!detail?.units.length ||
+                    ((view === "3d" || view === "split") &&
+                      !detail?.model)) && (
+                    <div
+                      className={`empty-viewport ${detail?.units.length ? "prepared-empty" : ""}`}
+                    >
+                      <div className="empty-grid" />
+                      <div className="empty-corner top-left" />
+                      <div className="empty-corner bottom-right" />
+                      <div className="empty-content">
+                        <div className="empty-symbol">
+                          <Mark size={55} />
+                        </div>
+                        <span className="eyebrow">
+                          Property modelling workspace
+                        </span>
+                        <h2>
+                          {detail?.units.length
+                            ? "Draft geometry is ready."
                             : detail?.sources.length
-                              ? "current"
-                              : ""
-                        }
-                      >
-                        <span>02</span>Prepare spaces
-                      </span>
-                      <ChevronRight size={12} />
-                      <span className={detail?.units.length ? "current" : ""}>
-                        <span>03</span>Build & inspect
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-          <div className="workspace-bottom">
-            <span>
-              <span
-                className={`connection-dot ${health === true ? "connected" : health === false ? "disconnected" : ""}`}
-              />
-              {busy ||
-                (pending.length
-                  ? `${pending.length} processing job${pending.length === 1 ? "" : "s"} active`
-                  : health === true
-                    ? "Local services connected"
-                    : health === false
-                      ? "Services unavailable"
-                      : "Checking local services")}
-            </span>
-            <div>
-              {pending.length > 0 && (
-                <LoaderCircle size={11} className="spin" />
-              )}
-              <span>{detail?.units.length || 0} spaces</span>
-              <span>·</span>
-              <span>{detail?.sources.length || 0} sources</span>
-              <span>·</span>
-              <span>metres</span>
-              <button
-                className="icon-button"
-                aria-label="Refresh workspace"
-                onClick={() => {
-                  void run("Refreshing workspace", async () => {
-                    const result = await refreshCases();
-                    if (!caseId && result[0]) setCaseId(result[0].id);
-                    else await refresh();
-                  });
-                }}
-              >
-                <RefreshCw size={11} />
-              </button>
-            </div>
-          </div>
-        </main>
-        {inspectorOpen && (
-          <aside className="inspector">
-            <div className="panel-heading">
-              <h2>
-                {unit
-                  ? "Space inspector"
-                  : source
-                    ? "Source inspector"
-                    : finding
-                      ? "Finding inspector"
-                      : "Workspace guide"}
-              </h2>
-              <button
-                className="icon-button"
-                aria-label="Close inspector"
-                onClick={() => setInspectorOpen(false)}
-              >
-                <X size={15} />
-              </button>
-            </div>
-            <div className="inspector-content">
-              {unit ? (
-                <>
-                  <div className="unit-identity">
-                    <span
-                      className="unit-large-swatch"
-                      style={{ background: unitColor(unit) }}
-                    >
-                      <Box size={23} />
-                    </span>
-                    <span className="eyebrow">
-                      {unit.kind} · REVISION {unit.revision}
-                    </span>
-                    <h2>{unit.alias}</h2>
-                    <p>{unit.name}</p>
-                    <span className="subtle-label">{unit.levelLabel}</span>
-                  </div>
-                  <section className="inspector-section">
-                    <div className="section-title">
-                      <h3>Computed quantities</h3>
-                      {computed && (
-                        <small>model r{detail?.model?.revision}</small>
-                      )}
-                    </div>
-                    <div className="quantities">
-                      <div>
-                        <span>Floor area</span>
-                        <strong>
-                          {number(computed?.area)}
-                          <small>m²</small>
-                        </strong>
-                      </div>
-                      <div>
-                        <span>Volume</span>
-                        <strong>
-                          {number(computed?.volume)}
-                          <small>m³</small>
-                        </strong>
-                      </div>
-                      <div>
-                        <span>Height</span>
-                        <strong>
-                          {number(computed?.height)}
-                          <small>m</small>
-                        </strong>
-                      </div>
-                    </div>
-                    {!modelFresh && (
-                      <p className="small-note">
-                        {computed
-                          ? "Values belong to the previous model. Rebuild after changes."
-                          : "Build a model to compute these values."}
-                      </p>
-                    )}
-                  </section>
-                  <section className="inspector-section">
-                    <div className="section-title">
-                      <h3>Vertical limits</h3>
-                      <span>metres</span>
-                    </div>
-                    <div className="elevation-fields">
-                      <label>
-                        <span>
-                          Lower{" "}
-                          <span
-                            className={
-                              unit.lowerVerified
-                                ? "verified-dot"
-                                : "unverified-dot"
-                            }
-                            title={
-                              unit.lowerVerified
-                                ? "Supported by evidence"
-                                : "Unverified operator value"
-                            }
-                          />
-                        </span>
-                        <input
-                          aria-label="Lower elevation in metres"
-                          type="number"
-                          step="0.01"
-                          value={lower}
-                          onChange={(e) => setLower(e.target.value)}
-                        />
-                        <small>
-                          {unit.lowerVerified
-                            ? "Evidence supported"
-                            : "Unverified draft"}
-                        </small>
-                      </label>
-                      <label>
-                        <span>
-                          Upper{" "}
-                          <span
-                            className={
-                              unit.upperVerified
-                                ? "verified-dot"
-                                : "unverified-dot"
-                            }
-                          />
-                        </span>
-                        <input
-                          aria-label="Upper elevation in metres"
-                          type="number"
-                          step="0.01"
-                          value={upper}
-                          onChange={(e) => setUpper(e.target.value)}
-                        />
-                        <small>
-                          {unit.upperVerified
-                            ? "Evidence supported"
-                            : "Unverified draft"}
-                        </small>
-                      </label>
-                    </div>
-                    <button
-                      className="button full small"
-                      disabled={
-                        !!busy ||
-                        (lower === String(unit.lower ?? "") &&
-                          upper === String(unit.upper ?? ""))
-                      }
-                      onClick={saveElevations}
-                    >
-                      <Check size={14} />
-                      Save limits
-                    </button>
-                    <p className="small-note">
-                      Manual changes create a draft revision and require fresh
-                      checks.
-                    </p>
-                  </section>
-                  <section className="inspector-section">
-                    <div className="section-title">
-                      <h3>Evidence bindings</h3>
-                      <span>4 components</span>
-                    </div>
-                    {(
-                      ["footprint", "lower", "upper", "alignment"] as const
-                    ).map((key) => {
-                      const binding = unit.bindings[key];
-                      const linkedSource = detail?.sources.find(
-                        (s) => s.id === binding?.sourceId,
-                      );
-                      return (
-                        <button
-                          key={key}
-                          className="binding-row"
-                          disabled={!linkedSource}
-                          onClick={() =>
-                            linkedSource && selectSource(linkedSource)
-                          }
-                        >
-                          <span
-                            className={
-                              binding ? "binding-check" : "binding-missing"
-                            }
-                          >
-                            {binding ? (
-                              <Check size={12} />
-                            ) : (
-                              <Circle size={9} />
-                            )}
-                          </span>
-                          <span>
-                            <strong>
-                              {key === "lower"
-                                ? "Lower limit"
-                                : key === "upper"
-                                  ? "Upper limit"
-                                  : key === "alignment"
-                                    ? "Horizontal alignment"
-                                    : "Footprint"}
-                            </strong>
-                            <small>
-                              {linkedSource
-                                ? `${linkedSource.name} · r${linkedSource.revision}`
-                                : "No source binding"}
-                            </small>
-                            {binding && <code>{binding.locator}</code>}
-                          </span>
-                          {binding && <ChevronRight size={12} />}
-                        </button>
-                      );
-                    })}
-                  </section>
-                  <button
-                    className="text-button inspector-plan-link"
-                    onClick={() => setView("plan")}
-                  >
-                    <PencilIcon />
-                    Edit footprint in plan <ArrowRight size={13} />
-                  </button>
-                </>
-              ) : source ? (
-                <>
-                  <div className="source-identity">
-                    <span className="document-symbol">
-                      <SourceIcon profile={source.profile} size={30} />
-                    </span>
-                    <h2>{source.name}</h2>
-                    <div>
-                      <Status value={source.status} />
-                      <span className="subtle-label">
-                        Revision {source.revision}
-                      </span>
-                    </div>
-                    <p>
-                      {source.inspection?.summary ||
-                        "File received. Technical inspection has not completed yet."}
-                    </p>
-                  </div>
-                  <section className="inspector-section">
-                    <div className="section-title">
-                      <h3>Original file</h3>
-                      <a
-                        className="icon-button"
-                        href={sourceUrl(source.id)}
-                        download={source.name}
-                        aria-label="Download source original"
-                      >
-                        <Download size={14} />
-                      </a>
-                    </div>
-                    <dl className="metadata-list">
-                      <div>
-                        <dt>Profile</dt>
-                        <dd>
-                          {
-                            profiles.find((p) => p.value === source.profile)
-                              ?.label
-                          }
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Bytes</dt>
-                        <dd>{number(source.bytes, 0)}</dd>
-                      </div>
-                      <div>
-                        <dt>Received</dt>
-                        <dd>{shortTime(source.createdAt)}</dd>
-                      </div>
-                      <div>
-                        <dt>SHA-256</dt>
-                        <dd>
-                          <code title={source.sha256}>
-                            {source.sha256.slice(0, 14)}…
-                            {source.sha256.slice(-8)}
-                          </code>
-                        </dd>
-                      </div>
-                    </dl>
-                  </section>
-                  {source.inspection?.issues.length ? (
-                    <section className="inspector-section">
-                      <div className="section-title">
-                        <h3>Inspection notes</h3>
-                      </div>
-                      {source.inspection.issues.map((issue, i) => (
-                        <div
-                          key={i}
-                          className={`inspection-issue ${issue.severity}`}
-                        >
-                          <CircleAlert size={13} />
-                          <div>
-                            <strong>
-                              {issue.code.replaceAll("_", " ").toLowerCase()}
-                            </strong>
-                            <p>{issue.message}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </section>
-                  ) : null}
-                  {source.inspection?.levels && (
-                    <section className="inspector-section">
-                      <div className="section-title">
-                        <h3>Level rows</h3>
-                        <span>metres</span>
-                      </div>
-                      <table className="level-table">
-                        <thead>
-                          <tr>
-                            <th>Space</th>
-                            <th>Lower</th>
-                            <th>Upper</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {source.inspection.levels.map((row) => (
-                            <tr
-                              key={row.alias}
-                              title={`${row.locator} · ${row.benchmark} · ${row.method}`}
-                            >
-                              <td>{row.alias}</td>
-                              <td
-                                className={
-                                  row.lower === null ? "missing-value" : ""
-                                }
-                              >
-                                {number(row.lower)}
-                              </td>
-                              <td
-                                className={
-                                  row.upper === null ? "missing-value" : ""
-                                }
-                              >
-                                {number(row.upper)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      {!!detail?.units.length && (
-                        <button
-                          className="button primary full small apply-levels"
-                          disabled={!!busy || !suitable(source)}
-                          onClick={() => applyLevels(source)}
-                        >
-                          <CheckCheck size={14} />
-                          Apply this level evidence
-                        </button>
-                      )}
-                      <p className="small-note">
-                        Applying changes the evidence bindings. A new model
-                        build is required.
-                      </p>
-                    </section>
-                  )}
-                  {source.inspection?.controls && (
-                    <section className="inspector-section">
-                      <div className="section-title">
-                        <h3>Control points</h3>
-                      </div>
-                      <table className="level-table">
-                        <thead>
-                          <tr>
-                            <th>Point</th>
-                            <th>X / m</th>
-                            <th>Y / m</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {source.inspection.controls.map((c) => (
-                            <tr key={c.id}>
-                              <td>{c.id}</td>
-                              <td>{number(c.x)}</td>
-                              <td>{number(c.y)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </section>
-                  )}
-                  {source.inspection?.features && (
-                    <section className="inspector-section">
-                      <div className="section-title">
-                        <h3>Spatial contents</h3>
-                        <span>
-                          {source.inspection.features.length} features
-                        </span>
-                      </div>
-                      {source.inspection.features.map((f) => (
-                        <div className="feature-row" key={f.alias}>
-                          <Map size={12} />
-                          <strong>{f.alias}</strong>
-                          <span>{f.kind}</span>
-                          <small>{f.footprint.length} points</small>
-                        </div>
-                      ))}
-                    </section>
-                  )}
-                  {source.profile.startsWith("plan-") && suitable(source) && (
-                    <button
-                      className="button full small"
-                      onClick={() => {
-                        setReferenceId(source.id);
-                        setView("reference");
-                      }}
-                    >
-                      <FileImage size={14} />
-                      Open reference & trace
-                    </button>
-                  )}
-                  <button
-                    className="text-button source-revision-link"
-                    onClick={() => {
-                      setUploadProfile(source.profile);
-                      setUploadFamily(source.familyId);
-                      setModal("upload");
-                    }}
-                  >
-                    <Upload size={13} />
-                    Upload next source revision
-                  </button>
-                </>
-              ) : finding ? (
-                <>
-                  <div className={`finding-identity ${finding.severity}`}>
-                    <ScanLine size={25} />
-                    <span className="eyebrow">
-                      {finding.severity} · {finding.code.replaceAll("_", " ")}
-                    </span>
-                    <h2>{finding.title}</h2>
-                    <p>{finding.description}</p>
-                  </div>
-                  {finding.overlap && (
-                    <div className="overlap-metric">
-                      <span>Computed shared volume</span>
-                      <strong>
-                        {number(finding.overlap.volume, 3)}
-                        <small>m³</small>
-                      </strong>
-                      <p>
-                        Lower {number(finding.overlap.lower)} m → upper{" "}
-                        {number(finding.overlap.upper)} m
-                      </p>
-                    </div>
-                  )}
-                  <section className="inspector-section">
-                    <div className="section-title">
-                      <h3>Contributing spaces</h3>
-                    </div>
-                    {finding.unitIds.map((id) => {
-                      const u = detail?.units.find((item) => item.id === id);
-                      return (
-                        u && (
+                              ? "Sources ready for review."
+                              : "Create a property model."}
+                        </h2>
+                        <p>
+                          {detail?.units.length
+                            ? `${detail.units.length} draft spaces are prepared. Build the model to compute volumes, evidence checks, and intersections.`
+                            : detail?.sources.length
+                              ? "Inspect your sources, then prepare the footprints and vertical limits. Each step stays explicit and traceable."
+                              : "Import local footprints and level evidence, or open a sample dataset to explore the complete workflow."}
+                        </p>
+                        {detail?.units.length ? (
                           <button
-                            key={id}
-                            className="related-row"
-                            onClick={() => selectUnit(id)}
+                            className="button primary"
+                            disabled={!!busy || buildPending}
+                            onClick={build}
                           >
                             <Box size={15} />
-                            <span>
-                              <strong>{u.alias}</strong>
-                              <small>{u.name}</small>
-                            </span>
-                            <ChevronRight size={13} />
+                            {buildPending
+                              ? "Building model…"
+                              : "Build 3D model"}
+                            <ArrowRight size={15} />
                           </button>
-                        )
-                      );
-                    })}
-                  </section>
-                  <section className="inspector-section">
-                    <div className="section-title">
-                      <h3>Contributing sources</h3>
-                    </div>
-                    {finding.sourceIds.map((id) => {
-                      const s = detail?.sources.find((item) => item.id === id);
-                      return (
-                        s && (
+                        ) : detail?.sources.length ? (
                           <button
-                            key={id}
-                            className="related-row"
-                            onClick={() => selectSource(s)}
+                            className="button primary"
+                            disabled={
+                              !inspectedSpatial.length ||
+                              !!busy ||
+                              !!pending.length
+                            }
+                            onClick={showPrepare}
                           >
-                            <SourceIcon profile={s.profile} />
-                            <span>
-                              <strong>{s.name}</strong>
-                              <small>Original revision {s.revision}</small>
-                            </span>
-                            <ChevronRight size={13} />
+                            {pending.length ? (
+                              <LoaderCircle size={15} className="spin" />
+                            ) : (
+                              <Layers3 size={15} />
+                            )}
+                            {pending.length
+                              ? "Inspecting source files…"
+                              : "Prepare geometry"}
+                            <ArrowRight size={15} />
                           </button>
-                        )
-                      );
-                    })}
-                  </section>
-                  <div className="finding-advice">
-                    <Settings2 size={16} />
-                    <p>
-                      Inspect the source and vertical limits. Save a correction
-                      or apply revised evidence, then rebuild to check the
-                      result.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="guide-intro">
-                    <span className="eyebrow">A CLEAR LINE OF EVIDENCE</span>
-                    <h2>
-                      Understand the space.
-                      <br />
-                      Trust the process.
-                    </h2>
-                    <p>
-                      Build a property model you can inspect, correct, and
-                      explain.
-                    </p>
-                  </div>
-                  <div className="guide-steps">
-                    <GuideStep
-                      n="01"
-                      title="Bring your sources"
-                      text="Keep the original footprint, level measurements, and plans together."
-                      done={!!detail?.sources.length}
-                    />
-                    <GuideStep
-                      n="02"
-                      title="Prepare a draft"
-                      text="Join the footprints to their level evidence. Missing support stays visible."
-                      done={!!detail?.units.length}
-                    />
-                    <GuideStep
-                      n="03"
-                      title="Compute & inspect"
-                      text="Select a space. Explore quantities, evidence bindings, and actual intersections."
-                      done={!!detail?.model}
-                    />
-                    <GuideStep
-                      n="04"
-                      title="Correct & rebuild"
-                      text="Apply revised evidence or edit a dimension. Check what changed."
-                      done={
-                        !!detail?.model &&
-                        modelFresh &&
-                        detail.model.revision > 1 &&
-                        !overlapFindings.length
-                      }
-                    />
-                  </div>
-                  {detail?.model && (
-                    <button
-                      className="button small full"
-                      onClick={() => setPane("findings")}
-                    >
-                      <ScanLine size={14} />
-                      Explore computed checks <ArrowRight size={14} />
-                    </button>
-                  )}
-                  <div className="guide-note">
-                    <ShieldCheck size={18} />
-                    <p>
-                      This is a local demonstration. Synthetic sources and draft
-                      geometry do not establish legal rights or official
-                      identity.
-                    </p>
-                  </div>
-                </>
-              )}
-              {detail?.jobs.some((j) => j.status === "failed") && (
-                <section className="inspector-section">
-                  <div className="section-title">
-                    <h3>Processing needs attention</h3>
-                  </div>
-                  {detail.jobs
-                    .filter((j) => j.status === "failed")
-                    .map((j) => (
-                      <div className="failed-job" key={j.id}>
-                        <strong>{j.operation} failed</strong>
-                        <p>{j.error}</p>
-                        <button
-                          className="button small"
-                          disabled={!!busy}
-                          onClick={() =>
-                            run("Retrying processing", async () => {
-                              await api.retry(j.id);
-                              await refresh();
-                            })
+                        ) : (
+                          <>
+                            <div className="sample-choice">
+                              <select
+                                aria-label="Sample dataset"
+                                value={dataset}
+                                onChange={(e) =>
+                                  setDataset(e.target.value as "c001" | "c002")
+                                }
+                              >
+                                <option value="c001">
+                                  C-001 · Reference building
+                                </option>
+                                <option value="c002">
+                                  C-002 · Alternate footprint
+                                </option>
+                              </select>
+                              <button
+                                className="button primary"
+                                disabled={!!busy}
+                                onClick={loadDemo}
+                              >
+                                {busy ? (
+                                  <LoaderCircle size={15} className="spin" />
+                                ) : (
+                                  <ArrowDownToLine size={15} />
+                                )}
+                                Load sample inputs
+                              </button>
+                            </div>
+                            <button
+                              className="text-button"
+                              onClick={() => setModal("upload")}
+                            >
+                              or import your own files <ArrowRight size={13} />
+                            </button>
+                          </>
+                        )}
+                        <div className="empty-disclaimer">
+                          Synthetic sample data <span>·</span> Local metres
+                        </div>
+                      </div>
+                      <div className="workflow-strip">
+                        <span
+                          className={
+                            detail?.sources.length ? "done" : "current"
                           }
                         >
-                          <RotateCcw size={12} />
-                          Retry
-                        </button>
+                          <span>01</span>Import evidence
+                        </span>
+                        <ChevronRight size={12} />
+                        <span
+                          className={
+                            detail?.units.length
+                              ? "done"
+                              : detail?.sources.length
+                                ? "current"
+                                : ""
+                          }
+                        >
+                          <span>02</span>Prepare spaces
+                        </span>
+                        <ChevronRight size={12} />
+                        <span className={detail?.units.length ? "current" : ""}>
+                          <span>03</span>Build & inspect
+                        </span>
                       </div>
-                    ))}
-                </section>
+                    </div>
+                  )}
+                </>
               )}
             </div>
-            <div className="inspector-footer">
-              <span className="tiny-mark">
-                <Mark size={15} />
+            <div className="workspace-bottom">
+              <span>
+                <span
+                  className={`connection-dot ${health === true ? "connected" : health === false ? "disconnected" : ""}`}
+                />
+                {busy ||
+                  (pending.length
+                    ? `${pending.length} processing job${pending.length === 1 ? "" : "s"} active`
+                    : health === true
+                      ? "Local services connected"
+                      : health === false
+                        ? "Services unavailable"
+                        : "Checking local services")}
               </span>
-              Evidence in. Understanding out.
+              <div>
+                {pending.length > 0 && (
+                  <LoaderCircle size={11} className="spin" />
+                )}
+                <span>{detail?.units.length || 0} spaces</span>
+                <span>·</span>
+                <span>{detail?.sources.length || 0} sources</span>
+                <span>·</span>
+                <span>metres</span>
+                <button
+                  className="icon-button"
+                  aria-label="Refresh workspace"
+                  onClick={() => {
+                    void run("Refreshing workspace", async () => {
+                      const result = await refreshCases();
+                      if (!caseId && result[0]) setCaseId(result[0].id);
+                      else await refresh();
+                    });
+                  }}
+                >
+                  <RefreshCw size={11} />
+                </button>
+              </div>
             </div>
-          </aside>
+          </main>
+          {inspectorOpen && !modelFocus && (
+            <aside className="inspector">
+              <div className="panel-heading">
+                <h2>
+                  {unit
+                    ? "Space inspector"
+                    : source
+                      ? "Source inspector"
+                      : finding
+                        ? "Finding inspector"
+                        : "Model overview"}
+                </h2>
+                <button
+                  className="icon-button"
+                  aria-label="Close inspector"
+                  onClick={() => setInspectorOpen(false)}
+                >
+                  <X size={15} />
+                </button>
+              </div>
+              <div className="inspector-content">
+                {unit ? (
+                  <>
+                    <div className="unit-identity">
+                      <span
+                        className="unit-large-swatch"
+                        style={{ background: unitColor(unit) }}
+                      >
+                        <Box size={23} />
+                      </span>
+                      <span className="eyebrow">
+                        {unit.kind} · REVISION {unit.revision}
+                      </span>
+                      <h2>{unit.alias}</h2>
+                      <p>{unit.name}</p>
+                      <span className="subtle-label">{unit.levelLabel}</span>
+                    </div>
+                    <section className="inspector-section">
+                      <div className="section-title">
+                        <h3>Computed quantities</h3>
+                        {computed && (
+                          <small>model r{detail?.model?.revision}</small>
+                        )}
+                      </div>
+                      <div className="quantities">
+                        <div>
+                          <span>Floor area</span>
+                          <strong>
+                            {number(computed?.area)}
+                            <small>m²</small>
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Volume</span>
+                          <strong>
+                            {number(computed?.volume)}
+                            <small>m³</small>
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Height</span>
+                          <strong>
+                            {number(computed?.height)}
+                            <small>m</small>
+                          </strong>
+                        </div>
+                      </div>
+                      {!modelFresh && (
+                        <p className="small-note">
+                          {computed
+                            ? "Values belong to the previous model. Rebuild after changes."
+                            : "Build a model to compute these values."}
+                        </p>
+                      )}
+                    </section>
+                    <section className="inspector-section">
+                      <div className="section-title">
+                        <h3>Vertical limits</h3>
+                        <span>metres</span>
+                      </div>
+                      <div className="elevation-fields">
+                        <label>
+                          <span>
+                            Lower{" "}
+                            <span
+                              className={
+                                unit.lowerVerified
+                                  ? "verified-dot"
+                                  : "unverified-dot"
+                              }
+                              title={
+                                unit.lowerVerified
+                                  ? "Supported by evidence"
+                                  : "Unverified operator value"
+                              }
+                            />
+                          </span>
+                          <input
+                            aria-label="Lower elevation in metres"
+                            type="number"
+                            step="0.01"
+                            value={lower}
+                            onChange={(e) => setLower(e.target.value)}
+                          />
+                          <small>
+                            {unit.lowerVerified
+                              ? "Evidence supported"
+                              : "Unverified draft"}
+                          </small>
+                        </label>
+                        <label>
+                          <span>
+                            Upper{" "}
+                            <span
+                              className={
+                                unit.upperVerified
+                                  ? "verified-dot"
+                                  : "unverified-dot"
+                              }
+                            />
+                          </span>
+                          <input
+                            aria-label="Upper elevation in metres"
+                            type="number"
+                            step="0.01"
+                            value={upper}
+                            onChange={(e) => setUpper(e.target.value)}
+                          />
+                          <small>
+                            {unit.upperVerified
+                              ? "Evidence supported"
+                              : "Unverified draft"}
+                          </small>
+                        </label>
+                      </div>
+                      <button
+                        className="button full small"
+                        disabled={
+                          !!busy ||
+                          (lower === String(unit.lower ?? "") &&
+                            upper === String(unit.upper ?? ""))
+                        }
+                        onClick={saveElevations}
+                      >
+                        <Check size={14} />
+                        Save limits
+                      </button>
+                      <p className="small-note">
+                        Manual changes create a draft revision and require fresh
+                        checks.
+                      </p>
+                    </section>
+                    <section className="inspector-section">
+                      <div className="section-title">
+                        <h3>Evidence bindings</h3>
+                        <span>4 components</span>
+                      </div>
+                      {(
+                        ["footprint", "lower", "upper", "alignment"] as const
+                      ).map((key) => {
+                        const binding = unit.bindings[key];
+                        const linkedSource = detail?.sources.find(
+                          (s) => s.id === binding?.sourceId,
+                        );
+                        return (
+                          <button
+                            key={key}
+                            className="binding-row"
+                            disabled={!linkedSource}
+                            onClick={() =>
+                              linkedSource && selectSource(linkedSource)
+                            }
+                          >
+                            <span
+                              className={
+                                binding ? "binding-check" : "binding-missing"
+                              }
+                            >
+                              {binding ? (
+                                <Check size={12} />
+                              ) : (
+                                <Circle size={9} />
+                              )}
+                            </span>
+                            <span>
+                              <strong>
+                                {key === "lower"
+                                  ? "Lower limit"
+                                  : key === "upper"
+                                    ? "Upper limit"
+                                    : key === "alignment"
+                                      ? "Horizontal alignment"
+                                      : "Footprint"}
+                              </strong>
+                              <small>
+                                {linkedSource
+                                  ? `${linkedSource.name} · r${linkedSource.revision}`
+                                  : "No source binding"}
+                              </small>
+                              {binding && <code>{binding.locator}</code>}
+                            </span>
+                            {binding && <ChevronRight size={12} />}
+                          </button>
+                        );
+                      })}
+                    </section>
+                    <button
+                      className="text-button inspector-plan-link"
+                      onClick={() => setView("plan")}
+                    >
+                      <PencilSimple size={14} />
+                      Edit footprint in plan <ArrowRight size={13} />
+                    </button>
+                  </>
+                ) : source ? (
+                  <>
+                    <div className="source-identity">
+                      <span className="document-symbol">
+                        <SourceIcon profile={source.profile} size={30} />
+                      </span>
+                      <h2>{source.name}</h2>
+                      <div>
+                        <Status value={source.status} />
+                        <span className="subtle-label">
+                          Revision {source.revision}
+                        </span>
+                      </div>
+                      <p>
+                        {source.inspection?.summary ||
+                          "File received. Technical inspection has not completed yet."}
+                      </p>
+                    </div>
+                    <section className="inspector-section">
+                      <div className="section-title">
+                        <h3>Original file</h3>
+                        <a
+                          className="icon-button"
+                          href={sourceUrl(source.id)}
+                          download={source.name}
+                          aria-label="Download source original"
+                        >
+                          <Download size={14} />
+                        </a>
+                      </div>
+                      <dl className="metadata-list">
+                        <div>
+                          <dt>Profile</dt>
+                          <dd>
+                            {
+                              profiles.find((p) => p.value === source.profile)
+                                ?.label
+                            }
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>Bytes</dt>
+                          <dd>{number(source.bytes, 0)}</dd>
+                        </div>
+                        <div>
+                          <dt>Received</dt>
+                          <dd>{shortTime(source.createdAt)}</dd>
+                        </div>
+                        <div>
+                          <dt>SHA-256</dt>
+                          <dd>
+                            <code title={source.sha256}>
+                              {source.sha256.slice(0, 14)}…
+                              {source.sha256.slice(-8)}
+                            </code>
+                          </dd>
+                        </div>
+                      </dl>
+                    </section>
+                    {source.inspection?.issues.length ? (
+                      <section className="inspector-section">
+                        <div className="section-title">
+                          <h3>Inspection notes</h3>
+                        </div>
+                        {source.inspection.issues.map((issue, i) => (
+                          <div
+                            key={i}
+                            className={`inspection-issue ${issue.severity}`}
+                          >
+                            <CircleAlert size={13} />
+                            <div>
+                              <strong>
+                                {issue.code.replaceAll("_", " ").toLowerCase()}
+                              </strong>
+                              <p>{issue.message}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </section>
+                    ) : null}
+                    {source.inspection?.levels && (
+                      <section className="inspector-section">
+                        <div className="section-title">
+                          <h3>Level rows</h3>
+                          <span>metres</span>
+                        </div>
+                        <table className="level-table">
+                          <thead>
+                            <tr>
+                              <th>Space</th>
+                              <th>Lower</th>
+                              <th>Upper</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {source.inspection.levels.map((row) => (
+                              <tr
+                                key={row.alias}
+                                title={`${row.locator} · ${row.benchmark} · ${row.method}`}
+                              >
+                                <td>{row.alias}</td>
+                                <td
+                                  className={
+                                    row.lower === null ? "missing-value" : ""
+                                  }
+                                >
+                                  {number(row.lower)}
+                                </td>
+                                <td
+                                  className={
+                                    row.upper === null ? "missing-value" : ""
+                                  }
+                                >
+                                  {number(row.upper)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        {!!detail?.units.length && (
+                          <button
+                            className="button primary full small apply-levels"
+                            disabled={!!busy || !suitable(source)}
+                            onClick={() => applyLevels(source)}
+                          >
+                            <CheckCheck size={14} />
+                            Apply this level evidence
+                          </button>
+                        )}
+                        <p className="small-note">
+                          Applying changes the evidence bindings. A new model
+                          build is required.
+                        </p>
+                      </section>
+                    )}
+                    {source.inspection?.controls && (
+                      <section className="inspector-section">
+                        <div className="section-title">
+                          <h3>Control points</h3>
+                        </div>
+                        <table className="level-table">
+                          <thead>
+                            <tr>
+                              <th>Point</th>
+                              <th>X / m</th>
+                              <th>Y / m</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {source.inspection.controls.map((c) => (
+                              <tr key={c.id}>
+                                <td>{c.id}</td>
+                                <td>{number(c.x)}</td>
+                                <td>{number(c.y)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </section>
+                    )}
+                    {source.inspection?.features && (
+                      <section className="inspector-section">
+                        <div className="section-title">
+                          <h3>Spatial contents</h3>
+                          <span>
+                            {source.inspection.features.length} features
+                          </span>
+                        </div>
+                        {source.inspection.features.map((f) => (
+                          <div className="feature-row" key={f.alias}>
+                            <Map size={12} />
+                            <strong>{f.alias}</strong>
+                            <span>{f.kind}</span>
+                            <small>{f.footprint.length} points</small>
+                          </div>
+                        ))}
+                      </section>
+                    )}
+                    {source.profile.startsWith("plan-") && suitable(source) && (
+                      <button
+                        className="button full small"
+                        onClick={() => {
+                          setReferenceId(source.id);
+                          setView("reference");
+                        }}
+                      >
+                        <FileImage size={14} />
+                        Open reference & trace
+                      </button>
+                    )}
+                    <button
+                      className="text-button source-revision-link"
+                      onClick={() => {
+                        setUploadProfile(source.profile);
+                        setUploadFamily(source.familyId);
+                        setModal("upload");
+                      }}
+                    >
+                      <Upload size={13} />
+                      Upload next source revision
+                    </button>
+                  </>
+                ) : finding ? (
+                  <>
+                    <div className={`finding-identity ${finding.severity}`}>
+                      <ScanLine size={25} />
+                      <span className="eyebrow">
+                        {finding.severity} · {finding.code.replaceAll("_", " ")}
+                      </span>
+                      <h2>{finding.title}</h2>
+                      <p>{finding.description}</p>
+                    </div>
+                    {finding.overlap && (
+                      <div className="overlap-metric">
+                        <span>Computed shared volume</span>
+                        <strong>
+                          {number(finding.overlap.volume, 3)}
+                          <small>m³</small>
+                        </strong>
+                        <p>
+                          Lower {number(finding.overlap.lower)} m → upper{" "}
+                          {number(finding.overlap.upper)} m
+                        </p>
+                      </div>
+                    )}
+                    <section className="inspector-section">
+                      <div className="section-title">
+                        <h3>Contributing spaces</h3>
+                      </div>
+                      {finding.unitIds.map((id) => {
+                        const u = detail?.units.find((item) => item.id === id);
+                        return (
+                          u && (
+                            <button
+                              key={id}
+                              className="related-row"
+                              onClick={() => selectUnit(id)}
+                            >
+                              <Box size={15} />
+                              <span>
+                                <strong>{u.alias}</strong>
+                                <small>{u.name}</small>
+                              </span>
+                              <ChevronRight size={13} />
+                            </button>
+                          )
+                        );
+                      })}
+                    </section>
+                    <section className="inspector-section">
+                      <div className="section-title">
+                        <h3>Contributing sources</h3>
+                      </div>
+                      {finding.sourceIds.map((id) => {
+                        const s = detail?.sources.find(
+                          (item) => item.id === id,
+                        );
+                        return (
+                          s && (
+                            <button
+                              key={id}
+                              className="related-row"
+                              onClick={() => selectSource(s)}
+                            >
+                              <SourceIcon profile={s.profile} />
+                              <span>
+                                <strong>{s.name}</strong>
+                                <small>Original revision {s.revision}</small>
+                              </span>
+                              <ChevronRight size={13} />
+                            </button>
+                          )
+                        );
+                      })}
+                    </section>
+                    <div className="finding-advice">
+                      <Settings2 size={16} />
+                      <p>
+                        Inspect the source and vertical limits. Save a
+                        correction or apply revised evidence, then rebuild to
+                        check the result.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="guide-intro">
+                      <span className="eyebrow">Model overview</span>
+                      <h2>
+                        {detail?.units.length
+                          ? `${detail.units.length} spaces. One property.`
+                          : "Start with source evidence."}
+                      </h2>
+                      <p>
+                        Select a space in the model or tree to inspect its
+                        dimensions and source bindings.
+                      </p>
+                    </div>
+                    {detail && (
+                      <dl className="overview-metadata metadata-list">
+                        <div>
+                          <dt>Working frame</dt>
+                          <dd>{detail.case.frame.id}</dd>
+                        </div>
+                        <div>
+                          <dt>Vertical benchmark</dt>
+                          <dd>{detail.case.frame.benchmark}</dd>
+                        </div>
+                        <div>
+                          <dt>Model revision</dt>
+                          <dd>
+                            {detail.model
+                              ? `r${detail.model.revision}`
+                              : "Not built"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>Source originals</dt>
+                          <dd>{detail.sources.length}</dd>
+                        </div>
+                      </dl>
+                    )}
+                    <div className="guide-steps">
+                      <GuideStep
+                        n="01"
+                        title="Bring your sources"
+                        text="Keep the original footprint, level measurements, and plans together."
+                        done={!!detail?.sources.length}
+                      />
+                      <GuideStep
+                        n="02"
+                        title="Prepare a draft"
+                        text="Join the footprints to their level evidence. Missing support stays visible."
+                        done={!!detail?.units.length}
+                      />
+                      <GuideStep
+                        n="03"
+                        title="Compute & inspect"
+                        text="Select a space. Explore quantities, evidence bindings, and actual intersections."
+                        done={!!detail?.model}
+                      />
+                      <GuideStep
+                        n="04"
+                        title="Correct & rebuild"
+                        text="Apply revised evidence or edit a dimension. Check what changed."
+                        done={
+                          !!detail?.model &&
+                          modelFresh &&
+                          detail.model.revision > 1 &&
+                          !overlapFindings.length
+                        }
+                      />
+                    </div>
+                    {detail?.model && (
+                      <button
+                        className="button small full"
+                        onClick={() => setPane("findings")}
+                      >
+                        <ScanLine size={14} />
+                        Explore computed checks <ArrowRight size={14} />
+                      </button>
+                    )}
+                    <div className="guide-note">
+                      <ShieldCheck size={18} />
+                      <p>
+                        This is a local demonstration. Synthetic sources and
+                        draft geometry do not establish legal rights or official
+                        identity.
+                      </p>
+                    </div>
+                  </>
+                )}
+                {detail?.jobs.some((j) => j.status === "failed") && (
+                  <section className="inspector-section">
+                    <div className="section-title">
+                      <h3>Processing needs attention</h3>
+                    </div>
+                    {detail.jobs
+                      .filter((j) => j.status === "failed")
+                      .map((j) => (
+                        <div className="failed-job" key={j.id}>
+                          <strong>{j.operation} failed</strong>
+                          <p>{j.error}</p>
+                          <button
+                            className="button small"
+                            disabled={!!busy}
+                            onClick={() =>
+                              run("Retrying processing", async () => {
+                                await api.retry(j.id);
+                                await refresh();
+                              })
+                            }
+                          >
+                            <RotateCcw size={12} />
+                            Retry
+                          </button>
+                        </div>
+                      ))}
+                  </section>
+                )}
+              </div>
+              <div className="inspector-footer">
+                <span className="tiny-mark">
+                  <Mark size={15} />
+                </span>
+                Local metric workspace · Synthetic demonstration
+              </div>
+            </aside>
+          )}
+        </div>
+        {(error || notice) && (
+          <div
+            className={`toast ${error ? "error-toast" : ""}`}
+            role={error ? "alert" : "status"}
+          >
+            {error ? <CircleAlert size={17} /> : <Check size={17} />}
+            <span>{error || notice}</span>
+            <button
+              className="icon-button"
+              aria-label="Dismiss notification"
+              onClick={() => {
+                setError(null);
+                setNotice(null);
+              }}
+            >
+              <X size={15} />
+            </button>
+          </div>
         )}
-      </div>
-      {(error || notice) && (
-        <div
-          className={`toast ${error ? "error-toast" : ""}`}
-          role={error ? "alert" : "status"}
-        >
-          {error ? <CircleAlert size={17} /> : <Check size={17} />}
-          <span>{error || notice}</span>
-          <button
-            className="icon-button"
-            aria-label="Dismiss notification"
-            onClick={() => {
-              setError(null);
-              setNotice(null);
+        {modal && (
+          <div
+            className="modal-backdrop"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !busy) setModal(null);
             }}
           >
-            <X size={15} />
-          </button>
-        </div>
-      )}
-      {modal && (
-        <div
-          className="modal-backdrop"
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !busy) setModal(null);
-          }}
-        >
-          <section
-            ref={modalElement}
-            className="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-title"
-          >
-            <div className="modal-heading">
-              <span className="eyebrow">
+            <section
+              ref={modalElement}
+              className="modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-title"
+            >
+              <div className="modal-heading">
+                <span className="eyebrow">
+                  {modal === "new"
+                    ? "NEW WORKSPACE"
+                    : modal === "prepare"
+                      ? "EXPLICIT SOURCE BINDING"
+                      : "SOURCE RECEIPT"}
+                </span>
+                <button
+                  className="icon-button"
+                  aria-label="Close dialog"
+                  onClick={() => setModal(null)}
+                  disabled={!!busy}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <h2 id="modal-title">
                 {modal === "new"
-                  ? "NEW WORKSPACE"
+                  ? "Give the property a workspace."
                   : modal === "prepare"
-                    ? "EXPLICIT SOURCE BINDING"
-                    : "SOURCE RECEIPT"}
-              </span>
-              <button
-                className="icon-button"
-                aria-label="Close dialog"
-                onClick={() => setModal(null)}
-                disabled={!!busy}
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <h2 id="modal-title">
-              {modal === "new"
-                ? "Give the property a workspace."
-                : modal === "prepare"
-                  ? "Prepare the geometry."
-                  : "Bring the original file."}
-            </h2>
-            <p className="modal-intro">
-              {modal === "new"
-                ? "Each case keeps its own sources, revisions, models, and history."
-                : modal === "prepare"
-                  ? "Choose the inspected sources to use. Draft hints remain unverified. This prepares units; the 3D model is computed separately."
-                  : "Files are stored privately and inspected before use. Importing a source does not apply it to your model."}
-            </p>
-            {modal === "new" ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void run("Creating workspace", async () => {
-                    if (!newName.trim())
-                      throw new Error("Enter a workspace name.");
-                    const created = await api.createCase(newName.trim());
-                    await refreshCases();
-                    setCaseId(created.id);
-                    setModal(null);
-                  });
-                }}
-              >
-                <label className="form-field">
-                  Workspace name
-                  <input
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    required
-                    maxLength={100}
-                  />
-                </label>
-                <div className="modal-actions">
-                  <button
-                    type="button"
-                    className="button ghost"
-                    onClick={() => setModal(null)}
-                  >
-                    Cancel
-                  </button>
-                  <button className="button primary" disabled={!!busy}>
-                    Create workspace <ArrowRight size={14} />
-                  </button>
-                </div>
-              </form>
-            ) : modal === "prepare" ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!detail) return;
-                  void run(
-                    "Preparing unit drafts",
-                    async () => {
-                      const result = await api.prepare(
-                        detail.case.id,
-                        prepareSpatial,
-                        prepareLevels || undefined,
-                        prepareControl || undefined,
-                      );
-                      setDetail(result);
+                    ? "Prepare the geometry."
+                    : "Bring the original file."}
+              </h2>
+              <p className="modal-intro">
+                {modal === "new"
+                  ? "Each case keeps its own sources, revisions, models, and history."
+                  : modal === "prepare"
+                    ? "Choose the inspected sources to use. Draft hints remain unverified. This prepares units; the 3D model is computed separately."
+                    : "Files are stored privately and inspected before use. Importing a source does not apply it to your model."}
+              </p>
+              {modal === "new" ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void run("Creating workspace", async () => {
+                      if (!newName.trim())
+                        throw new Error("Enter a workspace name.");
+                      const created = await api.createCase(newName.trim());
+                      await refreshCases();
+                      setCaseId(created.id);
                       setModal(null);
-                      setPane("spaces");
-                      setView("plan");
-                      setFloor(
-                        result.units.find((u) => u.kind === "unit")
-                          ?.levelLabel || "all",
-                      );
-                    },
-                    "Draft spaces prepared. Review their limits, then build the model.",
-                  );
-                }}
-              >
-                <label className="form-field">
-                  Footprint source
-                  <select
-                    value={prepareSpatial}
-                    onChange={(e) => setPrepareSpatial(e.target.value)}
-                    required
-                  >
-                    {inspectedSpatial.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} · r{s.revision}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="form-field">
-                  Level evidence
-                  <select
-                    value={prepareLevels}
-                    onChange={(e) => setPrepareLevels(e.target.value)}
-                  >
-                    <option value="">
-                      No source · retain unverified draft hints
-                    </option>
-                    {inspectedLevels.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} · r{s.revision}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="form-field">
-                  Control reference
-                  <select
-                    value={prepareControl}
-                    onChange={(e) => setPrepareControl(e.target.value)}
-                  >
-                    <option value="">No control source</option>
-                    {inspectedControls.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} · r{s.revision}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                {!!detail?.units.length && (
-                  <p className="inline-warning">
-                    Preparing again reimports the selected footprints and
-                    levels. Existing draft edits may be replaced; their history
-                    remains preserved.
-                  </p>
-                )}
-                <div className="modal-actions">
-                  <button
-                    type="button"
-                    className="button ghost"
-                    onClick={() => setModal(null)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="button primary"
-                    disabled={!prepareSpatial || !!busy}
-                  >
-                    <Layers3 size={14} />
-                    Prepare draft spaces
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void run(
-                    "Uploading original source",
-                    async () => {
-                      if (!uploadFile) throw new Error("Choose a source file.");
-                      if (uploadFile.size > 16 * 1024 * 1024)
-                        throw new Error("The maximum source size is 16 MiB.");
-                      const target =
-                        detail?.case ||
-                        (await api.createCase(newName || "Untitled property"));
-                      if (!detail) {
-                        setCaseId(target.id);
-                        currentId.current = target.id;
-                        await refreshCases();
-                      }
-                      const received = await api.upload(
-                        target.id,
-                        uploadFile,
-                        uploadProfile,
-                        uploadFamily || undefined,
-                      );
-                      await refresh(target.id);
-                      setPane("sources");
-                      setInspection({ type: "source", id: received.id });
-                      setUploadFile(null);
-                      setUploadFamily("");
-                      setModal(null);
-                    },
-                    "Original file received. Technical inspection is queued.",
-                  );
-                }}
-              >
-                <label className="form-field">
-                  Input profile
-                  <select
-                    value={uploadProfile}
-                    onChange={(e) => {
-                      setUploadProfile(e.target.value as SourceProfile);
-                      setUploadFile(null);
-                      setUploadFamily("");
-                    }}
-                  >
-                    {profiles.map((p) => (
-                      <option value={p.value} key={p.value}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="upload-drop">
-                  <Upload size={25} />
-                  <strong>
-                    {uploadFile?.name || "Choose the original file"}
-                  </strong>
-                  <span>
-                    {uploadFile
-                      ? `${number(uploadFile.size / 1024, 1)} KB · ready to receive`
-                      : `${profiles.find((p) => p.value === uploadProfile)?.extension} · maximum 16 MiB`}
-                  </span>
-                  <input
-                    key={uploadProfile}
-                    type="file"
-                    accept={
-                      profiles.find((p) => p.value === uploadProfile)?.extension
-                    }
-                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                    required
-                    aria-label="Choose original source file"
-                  />
-                </label>
-                {!!detail?.sources.filter((s) => s.profile === uploadProfile)
-                  .length && (
+                    });
+                  }}
+                >
                   <label className="form-field">
-                    Source family
-                    <select
-                      value={uploadFamily}
-                      onChange={(e) => setUploadFamily(e.target.value)}
+                    Workspace name
+                    <input
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      required
+                      maxLength={100}
+                    />
+                  </label>
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="button ghost"
+                      onClick={() => setModal(null)}
                     >
-                      <option value="">New independent source</option>
-                      {detail.sources
-                        .filter(
-                          (s, index, all) =>
-                            s.profile === uploadProfile &&
-                            all.findIndex(
-                              (other) => other.familyId === s.familyId,
-                            ) === index,
-                        )
-                        .map((s) => (
-                          <option key={s.familyId} value={s.familyId}>
-                            Next revision of {s.name}
-                          </option>
-                        ))}
+                      Cancel
+                    </button>
+                    <button className="button primary" disabled={!!busy}>
+                      Create workspace <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </form>
+              ) : modal === "prepare" ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!detail) return;
+                    void run(
+                      "Preparing unit drafts",
+                      async () => {
+                        const result = await api.prepare(
+                          detail.case.id,
+                          prepareSpatial,
+                          prepareLevels || undefined,
+                          prepareControl || undefined,
+                        );
+                        setDetail(result);
+                        setModal(null);
+                        setPane("spaces");
+                        setView("plan");
+                        setFloor(
+                          result.units.find((u) => u.kind === "unit")
+                            ?.levelLabel || "all",
+                        );
+                      },
+                      "Draft spaces prepared. Review their limits, then build the model.",
+                    );
+                  }}
+                >
+                  <label className="form-field">
+                    Footprint source
+                    <select
+                      value={prepareSpatial}
+                      onChange={(e) => setPrepareSpatial(e.target.value)}
+                      required
+                    >
+                      {inspectedSpatial.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} · r{s.revision}
+                        </option>
+                      ))}
                     </select>
                   </label>
-                )}
-                <div className="modal-actions">
-                  <button
-                    type="button"
-                    className="button ghost"
-                    onClick={() => setModal(null)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="button primary"
-                    disabled={!!busy || !uploadFile}
-                  >
-                    {busy ? (
-                      <LoaderCircle size={14} className="spin" />
-                    ) : (
-                      <Upload size={14} />
-                    )}
-                    Receive & inspect
-                  </button>
-                </div>
-              </form>
-            )}
-          </section>
-        </div>
-      )}
-    </div>
+                  <label className="form-field">
+                    Level evidence
+                    <select
+                      value={prepareLevels}
+                      onChange={(e) => setPrepareLevels(e.target.value)}
+                    >
+                      <option value="">
+                        No source · retain unverified draft hints
+                      </option>
+                      {inspectedLevels.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} · r{s.revision}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="form-field">
+                    Control reference
+                    <select
+                      value={prepareControl}
+                      onChange={(e) => setPrepareControl(e.target.value)}
+                    >
+                      <option value="">No control source</option>
+                      {inspectedControls.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} · r{s.revision}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {!!detail?.units.length && (
+                    <p className="inline-warning">
+                      Preparing again reimports the selected footprints and
+                      levels. Existing draft edits may be replaced; their
+                      history remains preserved.
+                    </p>
+                  )}
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="button ghost"
+                      onClick={() => setModal(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="button primary"
+                      disabled={!prepareSpatial || !!busy}
+                    >
+                      <Layers3 size={14} />
+                      Prepare draft spaces
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void run(
+                      "Uploading original source",
+                      async () => {
+                        if (!uploadFile)
+                          throw new Error("Choose a source file.");
+                        if (uploadFile.size > 16 * 1024 * 1024)
+                          throw new Error("The maximum source size is 16 MiB.");
+                        const target =
+                          detail?.case ||
+                          (await api.createCase(
+                            newName || "Untitled property",
+                          ));
+                        if (!detail) {
+                          setCaseId(target.id);
+                          currentId.current = target.id;
+                          await refreshCases();
+                        }
+                        const received = await api.upload(
+                          target.id,
+                          uploadFile,
+                          uploadProfile,
+                          uploadFamily || undefined,
+                        );
+                        await refresh(target.id);
+                        setPane("sources");
+                        setInspection({ type: "source", id: received.id });
+                        setInspectorOpen(true);
+                        setModelFocus(false);
+                        setUploadFile(null);
+                        setUploadFamily("");
+                        setModal(null);
+                      },
+                      "Original file received. Technical inspection is queued.",
+                    );
+                  }}
+                >
+                  <label className="form-field">
+                    Input profile
+                    <select
+                      value={uploadProfile}
+                      onChange={(e) => {
+                        setUploadProfile(e.target.value as SourceProfile);
+                        setUploadFile(null);
+                        setUploadFamily("");
+                      }}
+                    >
+                      {profiles.map((p) => (
+                        <option value={p.value} key={p.value}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="upload-drop">
+                    <Upload size={25} />
+                    <strong>
+                      {uploadFile?.name || "Choose the original file"}
+                    </strong>
+                    <span>
+                      {uploadFile
+                        ? `${number(uploadFile.size / 1024, 1)} KB · ready to receive`
+                        : `${profiles.find((p) => p.value === uploadProfile)?.extension} · maximum 16 MiB`}
+                    </span>
+                    <input
+                      key={uploadProfile}
+                      type="file"
+                      accept={
+                        profiles.find((p) => p.value === uploadProfile)
+                          ?.extension
+                      }
+                      onChange={(e) =>
+                        setUploadFile(e.target.files?.[0] || null)
+                      }
+                      required
+                      aria-label="Choose original source file"
+                    />
+                  </label>
+                  {!!detail?.sources.filter((s) => s.profile === uploadProfile)
+                    .length && (
+                    <label className="form-field">
+                      Source family
+                      <select
+                        value={uploadFamily}
+                        onChange={(e) => setUploadFamily(e.target.value)}
+                      >
+                        <option value="">New independent source</option>
+                        {detail.sources
+                          .filter(
+                            (s, index, all) =>
+                              s.profile === uploadProfile &&
+                              all.findIndex(
+                                (other) => other.familyId === s.familyId,
+                              ) === index,
+                          )
+                          .map((s) => (
+                            <option key={s.familyId} value={s.familyId}>
+                              Next revision of {s.name}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                  )}
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="button ghost"
+                      onClick={() => setModal(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="button primary"
+                      disabled={!!busy || !uploadFile}
+                    >
+                      {busy ? (
+                        <LoaderCircle size={14} className="spin" />
+                      ) : (
+                        <Upload size={14} />
+                      )}
+                      Receive & inspect
+                    </button>
+                  </div>
+                </form>
+              )}
+            </section>
+          </div>
+        )}
+      </div>
+    </IconContext.Provider>
   );
 }
 
@@ -2277,33 +2409,5 @@ function GuideStep({
         <p>{text}</p>
       </div>
     </div>
-  );
-}
-function ColumnsIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-      <rect
-        x="2"
-        y="3"
-        width="12"
-        height="10"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-      <path d="M8 3v10" stroke="currentColor" strokeWidth="1.3" />
-    </svg>
-  );
-}
-function PencilIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-      <path
-        d="m10 3 3 3-7 7-4 1 1-4Z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-      <path d="m9 4 3 3" stroke="currentColor" />
-    </svg>
   );
 }

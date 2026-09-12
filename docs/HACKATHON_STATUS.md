@@ -5,7 +5,7 @@
 All hackathon gates are complete: real input processing, editable models,
 explicit evidence correction, an independent second case, production startup,
 restart persistence and repeated browser rehearsals. **46 Python tests, 19 API
-scenarios and 6 production browser workflows passed.**
+scenarios, 7 scene tests and 8 production browser workflows passed.**
 
 Open the [prepared C-001 showcase](http://127.0.0.1:3000/?case=d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5)
 to inspect seven spaces and the initial **6.4 m³** overlap. Use a fresh workspace
@@ -19,14 +19,16 @@ and [DEMO_SCRIPT.md](DEMO_SCRIPT.md) for the full raw-input-to-correction story.
 | Source-to-model journeys | Actual C-001/C-002 inputs, queued processing, explicit revised binding and reopened snapshots passed: **6.4 → 0 m³** and **14.4 → 0 m³**. [API journey report](../test-results/demo-verification.json). |
 | Geometry and inspection | **46 Python tests passed** locally and under Python 3.12, covering validation, quantities/intersections, evidence, jobs, authentication and readiness. [ARCHITECTURE.md](ARCHITECTURE.md). |
 | API regressions | **17 adversarial checks**, **1 late-result race** and **1 closed-ring save/build check** passed. [Main API evidence](API_TEST_EVIDENCE.md), [stale-result evidence](API_STALE_RESULT_EVIDENCE.md), [closed-ring evidence](API_CLOSED_RING_EVIDENCE.md). |
-| Production browser workflows | **6/6 passed in 150.044 seconds**, with no failures, skips, retries or flaky results: three consecutive fresh C-001 rehearsals, C-002, editing/display controls/PNG-PDF tracing/rejected upload/narrow layout, and actual file-chooser uploads. [Exact titles, IDs and media](BROWSER_TEST_EVIDENCE.md). |
+| Production browser workflows | **8/8 passed in 268.539 seconds** on the redesigned production build, with no failures, skips, retries or flaky results in the final run. Includes architectural presentation preservation, three consecutive C-001 rehearsals, C-002, editing/tracing and actual uploads. [Exact results and startup timing limitation](BROWSER_TEST_EVIDENCE.md). |
+| Architectural presentation | **7/7 scene tests passed**; façades, floors, roof, entrance, basement reveal and focus mode are implemented. Stored measurements and findings are preserved. [Skill sources, rules and final capture](UI_REDESIGN.md). |
 | Production startup and recovery | `pnpm demo` completed platform setup, migrations, production build and web/dispatcher startup. Stopping the worker made app health fail; rerunning the launcher recovered it without starting another web server. |
 | Docker restart persistence | Full platform stop/start without volume removal preserved **11 case IDs/revisions, 9 current model snapshots and 46 original source hashes**, including candidate specifications and findings. All five health flags recovered. [Before/after evidence](../test-results/platform-restart-verification.json). |
 | Web reopen and showcase | Browser rehearsals refreshed their corrected models. Showcase case `d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5` retained model `681eddd1-c71f-41a5-8f64-1d6718457089`, seven spaces and **6.4 m³** overlap across production web restart. [Showcase screenshot](../test-results/showcase-overlap.png). |
 
-The final browser run started **09:50:52.876 UTC** on 12 September 2026 and
-finished about 150 seconds later. Production build
-`sUwSVhReW4W_7uN6Aa4wQ` has **24 JavaScript chunks** that passed syntax validation.
+The final UI browser run started **10:57:14 UTC** on 12 September 2026.
+Production build `tA-r6-W7-TZbLfnzngm5t` passed webpack compilation and
+TypeScript checking. The 46 Python and 19 API checks are retained from the earlier
+core release; the UI change did not alter server processing or API behavior.
 
 ## Runtime fixes and limits
 
@@ -37,7 +39,7 @@ time), retaining the same localhost listener within that run.
 
 Client minification is disabled because the pinned minifier corrupted Cesium
 embedded WASM byte strings. The verified webpack client output is about
-**17.6 MB uncompressed**; server optimization remains enabled. Resolve that
+**17.8 MB uncompressed**; server optimization remains enabled. Resolve that
 performance limitation before wider distribution. The pinned legacy MinIO
 image limitation is documented in [PLATFORM.md](PLATFORM.md).
 

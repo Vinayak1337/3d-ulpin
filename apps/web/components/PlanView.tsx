@@ -7,7 +7,12 @@ import type {
   Point2,
   UnitSpec,
 } from "@ulpin/contracts";
-import { Check, MousePointer2, Pencil, X } from "lucide-react";
+import {
+  Check,
+  Cursor as MousePointer2,
+  PencilSimple as Pencil,
+  X,
+} from "@/lib/ui/icons";
 import { boundsOf, number, unitColor } from "@/lib/ui/geometry";
 
 interface Props {

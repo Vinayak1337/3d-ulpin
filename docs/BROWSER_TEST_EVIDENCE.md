@@ -1,60 +1,120 @@
 # Browser verification evidence
 
-**6/6 production browser workflows passed**, with no failures, skips, retries or flaky results. The complete run took **150.044 seconds**.
+**8/8 production browser workflows passed**, with no failures, skips, retries or flaky results in the final run. Duration: **268.539 seconds**.
 
-Command: `pnpm test:e2e`. Playwright **1.63.0** ran against `http://127.0.0.1:3000`, using one worker, a 1440 × 900 presentation viewport and Chromium WebGL through SwiftShader.
+Run: **12 September 2026, 10:57:14–11:01:42 UTC**. Production build: `tA-r6-W7-TZbLfnzngm5t`. Playwright used one Chromium worker at 1440 × 900 with WebGL through SwiftShader; the presentation workflow also checks 390 px width and reduced motion.
 
-Run: **12 September 2026, 09:50:52–09:53:22 UTC** (15:20:52–15:23:22 India time). Production build: `sUwSVhReW4W_7uN6Aa4wQ`. The build's 24 JavaScript chunks passed syntax validation.
+Command: `ULPIN_BROWSER_REPORT=test-results/redesign/final-browser-report.json pnpm exec playwright test --output=test-results/redesign/final-browser`.
 
-Primary report: [browser-report.json](../test-results/browser-report.json). Test implementation: [workbench.spec.ts](../tests/e2e/workbench.spec.ts). The tables below extract the actual result records and their attachments.
+Primary evidence: [final JSON report](../test-results/redesign/final-browser-report.json). Test implementations: [presentation](../tests/e2e/presentation.spec.ts) and [complete workbench workflows](../tests/e2e/workbench.spec.ts).
 
 ## Completed workflows
 
-| # | Exact test title | Result | Duration |
-| --- | --- | --- | --- |
-| 1 | rehearsal 1: c001 sources, overlap, explicit evidence correction | PASSED | 28.624 s |
-| 2 | rehearsal 2: c001 sources, overlap, explicit evidence correction | PASSED | 23.204 s |
-| 3 | rehearsal 3: c001 sources, overlap, explicit evidence correction | PASSED | 20.318 s |
-| 4 | rehearsal 4: c002 sources, overlap, explicit evidence correction | PASSED | 22.585 s |
-| 5 | linked editing, display-only controls, calibrated PNG/PDF tracing, rejected upload and narrow layout | PASSED | 40.677 s |
-| 6 | user file chooser uploads real spatial, level and control files | PASSED | 13.682 s |
+| Exact test title | Result | Duration |
+| --- | --- | --- |
+| c001: architectural presentation preserves exact property geometry | Passed | 36.090 s |
+| c002: architectural presentation preserves exact property geometry | Passed | 22.368 s |
+| rehearsal 1: c001 sources, overlap, explicit evidence correction | Passed | 39.383 s |
+| rehearsal 2: c001 sources, overlap, explicit evidence correction | Passed | 32.731 s |
+| rehearsal 3: c001 sources, overlap, explicit evidence correction | Passed | 33.462 s |
+| rehearsal 4: c002 sources, overlap, explicit evidence correction | Passed | 33.614 s |
+| linked editing, display-only controls, calibrated PNG/PDF tracing, rejected upload and narrow layout | Passed | 47.088 s |
+| user file chooser uploads real spatial, level and control files | Passed | 22.950 s |
 
-The first three runs are consecutive fresh C-001 correction rehearsals: actual input files produce **6.4 m³** overlap, revised level evidence is explicitly applied, and rebuilding produces **0 m³** positive overlap. The independent C-002 workflow verifies **14.4 m³ → 0 m³**. Browser refresh checks reopen the persisted corrected model.
+The two architectural workflows exercise Building and Property volumes, selection, floor filtering, isolation, floor separation, reset, and automatic exact-overlap presentation. The C-001 workflow also exercises basement reveal, focus mode, narrow layout, reduced motion and dialog focus/Escape. Candidate spaces, sources, snapshot data and case revisions remain unchanged by presentation controls.
 
-The editing workflow exercises linked selection, saved elevation/footprint changes, display-only floor/isolation controls, calibrated PNG and PDF tracing, a rejected upload, and a narrow viewport. The file-chooser workflow uploads actual JSON/CSV originals and builds seven spaces through the normal processing pipeline.
+Three consecutive C-001 rehearsals verify **6.4 → 0 m³** through explicit revised evidence and rebuilding. C-002 independently verifies **14.4 → 0 m³**. The editing workflow exercises actual elevation/footprint edits, calibrated PNG and PDF tracing, rejected upload and persistence; the file chooser workflow uploads original JSON/CSV files.
 
-## Persisted case and snapshot IDs
+## Persisted evidence
 
-These identifiers come from the JSON `persisted-evidence` attachments embedded in the report.
+These values are decoded directly from the final report's JSON attachments.
 
-| Rehearsal | Case ID | Draft snapshot | Revised source | Corrected snapshot |
-| --- | --- | --- | --- | --- |
-| 1 | `95684273-312f-4dbb-bdc8-8dbda0812994` | `9eab93a8-ae05-4299-a004-a629ef503d73` | `4c3cd003-6482-4511-8183-c05f3e0ea1b6` | `89270872-7444-41b6-b46d-4d004da685b6` |
-| 2 | `a080eba5-c647-4c66-a3f6-208ea14b875e` | `7eef7be7-196f-4db9-8460-06366017c8c3` | `7025adea-3cee-4428-8458-658f5383ab2b` | `5ffd3a0c-b65f-46fd-822e-2eee100e2ea4` |
-| 3 | `707364a2-21f5-43b8-856b-7a1046e335ed` | `7a395a22-9af8-4471-85ac-1f1c17243eea` | `dee7ff1e-a744-44f3-b8aa-3236f9a30838` | `cc9308c3-2c48-4c75-952a-02ab997b1aa7` |
-| 4 | `68951666-8991-47fa-a7be-87558ec438a8` | `cad2c05b-57c5-48ec-8065-0052c64de016` | `880b7ac3-5797-4373-b1bb-79a1110e720f` | `242a6f03-f6ca-4709-8396-abb44c3bb02d` |
-
-The `editing-evidence` attachment records case `1f2927fe-21d9-42f5-bc01-0948c7fffb86`, final snapshot `4c55b831-fa60-408f-9119-47c0494bfe49`, and **9 spaces**. Independently computed areas from the selected calibration/trace pixels were **3.924731330 m²** for PNG and **3.924964939 m²** for PDF. Screen-pixel rounding is included in those expectations.
-
-The file-chooser test attaches its completed-model screenshot and video; its report does not include a separate case/snapshot ID payload.
+```json
+[
+  {
+    "workflow": "c001: architectural presentation preserves exact property geometry",
+    "caseId": "c6d1ed55-6dd2-420f-afc2-2eb846764e3f",
+    "snapshotId": "dc6111ce-cf13-4fe1-aa24-9f2b8adcce58",
+    "revision": 1,
+    "unitCount": 7,
+    "dataset": "c001"
+  },
+  {
+    "workflow": "c002: architectural presentation preserves exact property geometry",
+    "caseId": "4e3ce789-93d1-4a67-9eac-4e773efefa67",
+    "snapshotId": "a96c5f39-051d-4437-bcd4-e147ce8d3be5",
+    "revision": 1,
+    "unitCount": 5,
+    "dataset": "c002"
+  },
+  {
+    "workflow": "rehearsal 1: c001 sources, overlap, explicit evidence correction",
+    "caseId": "8151da43-c095-42ef-b1e4-68b4f167bc43",
+    "draftSnapshot": "a7d70311-76b9-4d3f-98de-09d43d924886",
+    "revisedSource": "adf5f173-87f4-48d2-bfd9-175e6ee461a0",
+    "correctedSnapshot": "bfab94ec-5889-4b02-a815-c1bdfe7b03a1",
+    "overlapBefore": 6.4,
+    "overlapAfter": 0
+  },
+  {
+    "workflow": "rehearsal 2: c001 sources, overlap, explicit evidence correction",
+    "caseId": "76ecb379-5903-45dd-97a4-907fe0460f7d",
+    "draftSnapshot": "2f55429f-ee8a-4d32-a87a-03f6dbb46449",
+    "revisedSource": "78c89fb1-c8dc-480e-b9df-46a6fb55135a",
+    "correctedSnapshot": "d29b3bc2-7692-413a-8827-936bb35308da",
+    "overlapBefore": 6.4,
+    "overlapAfter": 0
+  },
+  {
+    "workflow": "rehearsal 3: c001 sources, overlap, explicit evidence correction",
+    "caseId": "0fedee80-7944-4b7d-8c86-a84f1bef9c1a",
+    "draftSnapshot": "708512b2-f6fb-477c-ad5d-dcb017ba298b",
+    "revisedSource": "30cdc59b-fb62-4fb3-9c55-b196d177ab90",
+    "correctedSnapshot": "7d6d57af-0d2b-47ab-b443-b42b32df746b",
+    "overlapBefore": 6.4,
+    "overlapAfter": 0
+  },
+  {
+    "workflow": "rehearsal 4: c002 sources, overlap, explicit evidence correction",
+    "caseId": "5c8076d6-60a5-478a-ac9e-0fd59ecef5f7",
+    "draftSnapshot": "82d724f7-7224-4104-b323-7612d74cf96c",
+    "revisedSource": "4f46b37c-f4ab-462a-b8e4-5cfddd70f8bd",
+    "correctedSnapshot": "4bb31dc0-8a1b-49d3-9b28-b69807794b86",
+    "overlapBefore": 14.4,
+    "overlapAfter": 0
+  },
+  {
+    "workflow": "linked editing, display-only controls, calibrated PNG/PDF tracing, rejected upload and narrow layout",
+    "caseId": "87135fd0-5257-4587-89dd-6b723919935a",
+    "snapshotId": "b3764c50-ce6a-4502-b903-3f3f0eb77c68",
+    "units": 9,
+    "traceAreasFromPickedPixels": {
+      "TRACE-PNG": 4.017709909650327,
+      "TRACE-PDF": 4.017668145098293
+    }
+  }
+]
+```
 
 ## Screenshots and recordings
 
-Each link is the exact local artifact path from the passing report. Videos are WebM recordings.
+| Workflow | Actual report artifacts |
+| --- | --- |
+| c001 | [narrow-building](../test-results/redesign/final-browser/presentation-c001-architec-603bf-ves-exact-property-geometry/narrow-building.png) · [basement-section](../test-results/redesign/final-browser/presentation-c001-architec-603bf-ves-exact-property-geometry/basement-section.png) · [analytical-overlap](../test-results/redesign/final-browser/presentation-c001-architec-603bf-ves-exact-property-geometry/analytical-overlap.png) · [property-volumes](../test-results/redesign/final-browser/presentation-c001-architec-603bf-ves-exact-property-geometry/property-volumes.png) · [building](../test-results/redesign/final-browser/presentation-c001-architec-603bf-ves-exact-property-geometry/building.png) · [video](../test-results/redesign/final-browser/presentation-c001-architec-603bf-ves-exact-property-geometry/video.webm) |
+| c002 | [analytical-overlap](../test-results/redesign/final-browser/presentation-c002-architec-94519-ves-exact-property-geometry/analytical-overlap.png) · [property-volumes](../test-results/redesign/final-browser/presentation-c002-architec-94519-ves-exact-property-geometry/property-volumes.png) · [building](../test-results/redesign/final-browser/presentation-c002-architec-94519-ves-exact-property-geometry/building.png) · [video](../test-results/redesign/final-browser/presentation-c002-architec-94519-ves-exact-property-geometry/video.webm) |
+| rehearsal 1 | [draft-overlap](../test-results/redesign/final-browser/workbench-rehearsal-1-c001-a57c5-xplicit-evidence-correction/attachments/draft-overlap-d16fb2fd00e88d20bfa02db44816266c89c67594.png) · [corrected-model](../test-results/redesign/final-browser/workbench-rehearsal-1-c001-a57c5-xplicit-evidence-correction/attachments/corrected-model-31380ed484f54c20c3b62d648c28bd68cf251fad.png) · [video](../test-results/redesign/final-browser/workbench-rehearsal-1-c001-a57c5-xplicit-evidence-correction/video.webm) |
+| rehearsal 2 | [draft-overlap](../test-results/redesign/final-browser/workbench-rehearsal-2-c001-06606-xplicit-evidence-correction/attachments/draft-overlap-babd8c550ac3d8787485d293e82b280b18c09929.png) · [corrected-model](../test-results/redesign/final-browser/workbench-rehearsal-2-c001-06606-xplicit-evidence-correction/attachments/corrected-model-6326ce4ea2079bc8764c1130fc71f8b56f62046a.png) · [video](../test-results/redesign/final-browser/workbench-rehearsal-2-c001-06606-xplicit-evidence-correction/video.webm) |
+| rehearsal 3 | [draft-overlap](../test-results/redesign/final-browser/workbench-rehearsal-3-c001-1e08d-xplicit-evidence-correction/attachments/draft-overlap-d79c776feabf1ca728d397532ae8f9f8c8b1ed72.png) · [corrected-model](../test-results/redesign/final-browser/workbench-rehearsal-3-c001-1e08d-xplicit-evidence-correction/attachments/corrected-model-1a28c0b6286761671c3f61d25a78f3c5bb7516b9.png) · [video](../test-results/redesign/final-browser/workbench-rehearsal-3-c001-1e08d-xplicit-evidence-correction/video.webm) |
+| rehearsal 4 | [draft-overlap](../test-results/redesign/final-browser/workbench-rehearsal-4-c002-64757-xplicit-evidence-correction/attachments/draft-overlap-3a206e5742d9ad3a9e0c2597446b6f0aaa9206f6.png) · [corrected-model](../test-results/redesign/final-browser/workbench-rehearsal-4-c002-64757-xplicit-evidence-correction/attachments/corrected-model-adf5d615cc38058d2e655a9638a3f68c7c779b8f.png) · [video](../test-results/redesign/final-browser/workbench-rehearsal-4-c002-64757-xplicit-evidence-correction/video.webm) |
+| linked editing, display-only controls, calibrated PNG/PDF tracing, rejected upload and narrow layout | [isolated-upper-space](../test-results/redesign/final-browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/attachments/isolated-upper-space-95f716b1c4aaa661c323d2647ed0ac1ece71b8b8.png) · [png-calibrated-trace](../test-results/redesign/final-browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/attachments/png-calibrated-trace-b9a611c513d98959e46666c53118bd7b74a59b1b.png) · [pdf-calibrated-trace](../test-results/redesign/final-browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/attachments/pdf-calibrated-trace-a8173ec6b9b537b716e680bb7845d8daa787b286.png) · [narrow-layout](../test-results/redesign/final-browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/attachments/narrow-layout-5bef9cb45864c9dcbdf7d3052a29759b49aa21a2.png) · [video](../test-results/redesign/final-browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/video.webm) |
+| user file chooser uploads real spatial, level and control files | [uploaded-originals-built](../test-results/redesign/final-browser/workbench-user-file-choose-b7cd2-ial-level-and-control-files/attachments/uploaded-originals-built-96136b29c2d200fd93d53283780ef93e6dd8a35d.png) · [video](../test-results/redesign/final-browser/workbench-user-file-choose-b7cd2-ial-level-and-control-files/video.webm) |
 
-| Workflow | Screenshots | Recording |
-| --- | --- | --- |
-| 1 | [draft-overlap](../test-results/browser/workbench-rehearsal-1-c001-a57c5-xplicit-evidence-correction/attachments/draft-overlap-d102a5df1990ecf20bdb260e885f8da3e720f9e6.png) · [corrected-model](../test-results/browser/workbench-rehearsal-1-c001-a57c5-xplicit-evidence-correction/attachments/corrected-model-39eda42f48057749d749f96ea704df25b52f0112.png) | [video](../test-results/browser/workbench-rehearsal-1-c001-a57c5-xplicit-evidence-correction/video.webm) |
-| 2 | [draft-overlap](../test-results/browser/workbench-rehearsal-2-c001-06606-xplicit-evidence-correction/attachments/draft-overlap-c67cb1255efc01be600950d982102c0bf5e0b900.png) · [corrected-model](../test-results/browser/workbench-rehearsal-2-c001-06606-xplicit-evidence-correction/attachments/corrected-model-a8d230d888628a7921d5fad6486b31329f76a2a8.png) | [video](../test-results/browser/workbench-rehearsal-2-c001-06606-xplicit-evidence-correction/video.webm) |
-| 3 | [draft-overlap](../test-results/browser/workbench-rehearsal-3-c001-1e08d-xplicit-evidence-correction/attachments/draft-overlap-34fa65b51a1b6e76adf708115c761d8245a2504c.png) · [corrected-model](../test-results/browser/workbench-rehearsal-3-c001-1e08d-xplicit-evidence-correction/attachments/corrected-model-b4e9d887d9b7d7fe01a429ffa1855cbc5e67eaa7.png) | [video](../test-results/browser/workbench-rehearsal-3-c001-1e08d-xplicit-evidence-correction/video.webm) |
-| 4 | [draft-overlap](../test-results/browser/workbench-rehearsal-4-c002-64757-xplicit-evidence-correction/attachments/draft-overlap-889d73c5281a9b0060a416ebd5ba615675a1fe72.png) · [corrected-model](../test-results/browser/workbench-rehearsal-4-c002-64757-xplicit-evidence-correction/attachments/corrected-model-30130f02c9bc51cdd5fdd986e1ff72982dfcb1fb.png) | [video](../test-results/browser/workbench-rehearsal-4-c002-64757-xplicit-evidence-correction/video.webm) |
-| 5 | [isolated-upper-space](../test-results/browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/attachments/isolated-upper-space-69d1f2ad5e9bade41b03332218d96a8de5790bf2.png) · [png-calibrated-trace](../test-results/browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/attachments/png-calibrated-trace-7db3592d3685ef5353a62b5d738756d3c7380bbd.png) · [pdf-calibrated-trace](../test-results/browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/attachments/pdf-calibrated-trace-86f9998de6243a2a741b4142d061c5c23221b48a.png) · [narrow-layout](../test-results/browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/attachments/narrow-layout-6d450028bc1d38d86b05c0cd407601f29ef9812b.png) | [video](../test-results/browser/workbench-linked-editing-d-05808-ed-upload-and-narrow-layout/video.webm) |
-| 6 | [uploaded-originals-built](../test-results/browser/workbench-user-file-choose-b7cd2-ial-level-and-control-files/attachments/uploaded-originals-built-01ff8718e4b304363bdc144b1e8f727272f54dda.png) | [video](../test-results/browser/workbench-user-file-choose-b7cd2-ial-level-and-control-files/video.webm) |
+## Startup timing and scope
 
-## Runtime and presentation limits
+An earlier complete run passed seven workflows and hit one 15-second dialog stability timeout during cold 3D initialization. The unchanged failed workflow passed alone in 29.6 seconds. Its trace showed a 16.95-second settled frame while the viewer was loading; the Cesium chunk downloaded in 1.56 seconds. The trace does not distinguish module evaluation from synchronous WebGL initialization. Workflow setup now waits for the initial viewer to be ready before opening the next workspace; click timeouts and retries were not increased. [Initial report](../test-results/redesign/production-browser-report.json) · [isolated rerun](../test-results/redesign/rehearsal-2-recheck.json).
 
-Production client minification is disabled because the pinned minifier corrupted Cesium embedded WASM byte strings. The verified webpack build serves approximately **17.6 MB of uncompressed client JavaScript**; server optimization remains enabled. This is acceptable for the local demo and is a deployment/performance task before wider distribution.
+Client minification remains disabled for the pinned Cesium compatibility issue. The client output is approximately **17.8 MB uncompressed**. Cold startup under software WebGL can pause interaction; this remains a performance limitation before wider distribution.
 
-The prepared [C-001 showcase](http://127.0.0.1:3000/?case=d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5) retains seven spaces and the initial **6.4 m³** conflict. Its case ID is `d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5`; model ID `681eddd1-c71f-41a5-8f64-1d6718457089` was independently checked again after a production web restart. Use a fresh workspace for another complete upload-to-correction rehearsal.
+The [prepared C-001 showcase](http://127.0.0.1:3000/?case=d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5) preserves snapshot `681eddd1-c71f-41a5-8f64-1d6718457089`, revision 1, seven spaces and its initial **6.4 m³** overlap. A full comparison confirms unchanged case, candidate spaces, sources and model: [comparison](../test-results/redesign/showcase-preserved.json).
 
-The broader service-restart evidence, geometry/API results and deferred project scope are recorded in [HACKATHON_STATUS.md](HACKATHON_STATUS.md).
+See [UI_REDESIGN.md](UI_REDESIGN.md) for the installed skills and presentation rules, and [HACKATHON_STATUS.md](HACKATHON_STATUS.md) for previous geometry/API verification and deferred scope.

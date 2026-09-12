@@ -5,17 +5,17 @@
   "scripts": {
     "predev": "node ../../scripts/copy-viewer-assets.mjs",
     "prebuild": "node ../../scripts/copy-viewer-assets.mjs",
-    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "dev": "next dev --webpack --hostname 127.0.0.1 --port 3000",
     "build": "next build --webpack",
     "start": "next start --hostname 127.0.0.1 --port 3000",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ulpin/contracts": "workspace:*",
     "@aws-sdk/client-s3": "^3.900.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "@ulpin/contracts": "workspace:*",
     "cesium": "1.145.0",
     "earcut": "^3.0.2",
-    "lucide-react": "^0.577.0",
     "next": "16.3.5",
     "pdfjs-dist": "^5.4.296",
     "pg": "^8.16.0",

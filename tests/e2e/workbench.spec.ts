@@ -29,6 +29,18 @@ async function detail(
 
 async function createWorkspace(page: Page, name: string) {
   await page.goto("/");
+  // Start this workflow after the previous workspace's lazy 3D initialization.
+  // Cold Cesium startup under SwiftShader can otherwise stall animation frames
+  // while Playwright is checking the new-workspace dialog for stability.
+  await expect(page.locator(".viewer-loading")).toHaveCount(0, {
+    timeout: 30_000,
+  });
+  await expect(page.locator(".viewer-error")).toHaveCount(0);
+  if (await page.locator("[data-presentation]").count()) {
+    await expect(page.locator(".cesium-widget canvas")).toBeVisible({
+      timeout: 30_000,
+    });
+  }
   await expect(
     page.getByRole("button", { name: "Create new case", exact: true }),
   ).toBeVisible();

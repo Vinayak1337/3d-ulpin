@@ -1,7 +1,7 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 const config: NextConfig = {
-  transpilePackages: ['@ulpin/contracts'],
-  serverExternalPackages: ['pg'],
+  transpilePackages: ["@ulpin/contracts"],
+  serverExternalPackages: ["pg"],
   webpack(webpackConfig, { isServer }) {
     // The pinned production minifier corrupts Cesium's embedded WASM byte
     // strings into illegal octal template escapes. Preserve client source

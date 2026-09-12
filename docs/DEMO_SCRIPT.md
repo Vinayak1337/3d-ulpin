@@ -36,6 +36,10 @@ toolbar. The currently selected workspace is also encoded in the `?case=` URL.
 
 ## Explore after the main story
 
+- Switch between **Building** and **Property volumes**. The façade and landscaping
+  are illustrative; the stored footprints, elevations and quantities stay the same.
+  Use **Reveal basement** for a cutaway of the site and **Focus model** for a larger
+  viewport. Selecting an overlap finding automatically opens the measured volumes.
 - Select a space, change **Lower** or **Upper**, and click **Save limits**. A
   changed manual measurement becomes unverified; **Rebuild model** computes its
   effect. For the evidence-backed correction above, apply r2 instead of typing
