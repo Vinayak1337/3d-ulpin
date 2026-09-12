@@ -80,6 +80,10 @@ The complete narration, exact expected values and recovery steps are in
 this leaves earlier cases intact. The second sample, C-002, uses different
 geometry and has an initial **14.4 m³** overlap.
 
+For a visual walkthrough, open the [UI demo guide](docs/3D_ULPIN_UI_Demo_Guide.docx).
+It includes current screenshots, exact clicks, expected results and a five-minute
+presenter script, from a fresh C-001 workspace through correction and refresh.
+
 For your own inputs, choose **Import files** and the matching profile. Supported
 inputs are local metric JSON, level CSV, control CSV, PNG and PDF, up to 16 MiB
 per file. PNG/PDF references require manual two-point calibration and tracing.
