@@ -11,6 +11,11 @@ ULPIN. The release is **HACKATHON_DEMO_VERIFIED**: 46 Python tests, 19 API
 scenarios, 7 scene tests and 8 production browser workflows passed. Exact evidence and the
 original scope distinction are in [HACKATHON_STATUS.md](docs/HACKATHON_STATUS.md).
 
+**Hosting:** the complete stack cannot run unchanged on Vercel alone. Vercel can
+host the frontend, while the data services and continuous workers need external
+hosting or an architectural change. See [HOSTING.md](docs/HOSTING.md) for the
+free-plan assessment and deployment requirements.
+
 ## Start the demo
 
 On this configured Mac, double-click **Start Demo.command** in the project
