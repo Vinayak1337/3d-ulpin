@@ -1,0 +1,196 @@
+{
+  "kind": "proposed_synthetic_fixture_blueprint_not_acquired_evidence",
+  "status": "SPECIFICATION_ONLY",
+  "source_01_fixed_values": [
+    "C-001 initial registration",
+    "U01/U02 0..3 m",
+    "U03/U04 correct 3..6 m",
+    "U03 erroneous lower 2.8 m",
+    "BSM-01 -3..0 m",
+    "BM-DEMO-A local benchmark"
+  ],
+  "new_choices": "Exact XY rectangles, initial no-holes profile and numeric expected volumes are proposed by this execution handoff, not supplied original measurements.",
+  "coordinate_frame": {
+    "id": "LOCAL-C001",
+    "horizontal_units": "m",
+    "vertical_units": "m",
+    "vertical_benchmark": "BM-DEMO-A",
+    "geographic_anchor": null,
+    "crs_claim": null
+  },
+  "profile": "simple-polygon-no-holes-constant-z-prism-v1",
+  "rectangle_format": [
+    "min_x",
+    "min_y",
+    "max_x",
+    "max_y"
+  ],
+  "surface_parcels": {
+    "P-A": [
+      0,
+      0,
+      14,
+      12
+    ],
+    "P-B": [
+      14,
+      0,
+      28,
+      12
+    ]
+  },
+  "building_footprint": {
+    "B01": [
+      2,
+      2,
+      12,
+      10
+    ]
+  },
+  "unit_blueprints": [
+    {
+      "alias": "U01",
+      "xy": [
+        2,
+        2,
+        6,
+        10
+      ],
+      "z": [
+        0,
+        3
+      ],
+      "expected_area_m2": 32,
+      "expected_volume_m3": 96
+    },
+    {
+      "alias": "U02",
+      "xy": [
+        8,
+        2,
+        12,
+        10
+      ],
+      "z": [
+        0,
+        3
+      ],
+      "expected_area_m2": 32,
+      "expected_volume_m3": 96
+    },
+    {
+      "alias": "U03",
+      "xy": [
+        2,
+        2,
+        6,
+        10
+      ],
+      "initial_unverified_z": [
+        2.8,
+        6
+      ],
+      "correct_supported_z": [
+        3,
+        6
+      ],
+      "expected_area_m2": 32,
+      "initial_expected_volume_m3": 102.4,
+      "correct_expected_volume_m3": 96
+    },
+    {
+      "alias": "U04",
+      "xy": [
+        8,
+        2,
+        12,
+        10
+      ],
+      "z": [
+        3,
+        6
+      ],
+      "initial_lower_evidence": "INCOMPLETE",
+      "expected_area_m2": 32,
+      "expected_volume_m3": 96
+    },
+    {
+      "alias": "COMMON-LOWER",
+      "xy": [
+        6,
+        2,
+        8,
+        10
+      ],
+      "z": [
+        0,
+        3
+      ],
+      "expected_area_m2": 16,
+      "expected_volume_m3": 48
+    },
+    {
+      "alias": "COMMON-UPPER",
+      "xy": [
+        6,
+        2,
+        8,
+        10
+      ],
+      "z": [
+        3,
+        6
+      ],
+      "expected_area_m2": 16,
+      "expected_volume_m3": 48
+    },
+    {
+      "alias": "BSM-01",
+      "xy": [
+        2,
+        2,
+        12,
+        10
+      ],
+      "z": [
+        -3,
+        0
+      ],
+      "expected_area_m2": 80,
+      "expected_volume_m3": 240
+    }
+  ],
+  "reserved_later_corridor": {
+    "alias": "C-UG1",
+    "xy": [
+      8,
+      5,
+      22,
+      7
+    ],
+    "z": [
+      -5,
+      -4
+    ],
+    "implemented_in_mvp": false,
+    "basement_overlap_m3": 0
+  },
+  "expected_overlap": {
+    "pair": [
+      "U01",
+      "U03"
+    ],
+    "draft_shared_height_m": 0.2,
+    "xy_intersection_area_m2": 32,
+    "draft_volume_m3": 6.4,
+    "corrected_volume_m3": 0
+  },
+  "source_intent": {
+    "E-PLAN-01": "Synthetic plan reference supporting footprint under declared controls",
+    "E-LEVEL-02 r1": "Incomplete upper-storey lower-level support; do not encode wrong2.8 as verified evidence",
+    "E-LEVEL-02 r2": "Synthetic returned evidence supports3.0 in BM-DEMO-A after suitability checks",
+    "RQ-LEVEL-01": "Assigned request for appropriate lower-limit evidence/reference"
+  },
+  "accepted_records_in_clean_seed": 0,
+  "note": "Agents must create actual raw input files and manifests. This blueprint is not a precomputed API response and must not replace independent production computation."
+}

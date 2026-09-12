@@ -1,0 +1,6 @@
+alias,lower,upper,unit,benchmark,method
+ELBOW-A,0,2.5,m,BM-DEMO-B,synthetic teaching measurement
+ELBOW-B,,5,m,BM-DEMO-B,synthetic teaching measurement
+TRI-C,0,2.5,m,BM-DEMO-B,synthetic teaching measurement
+WALK-X,0,2.5,m,BM-DEMO-B,synthetic teaching measurement
+CELLAR-X,-2.5,0,m,BM-DEMO-B,synthetic teaching measurement

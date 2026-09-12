@@ -1,0 +1,100 @@
+{
+  "dataset": "c002",
+  "name": "C-002 \u00b7 Workshop studios",
+  "description": "Synthetic property-space teaching inputs; no official location, survey or ownership assertion.",
+  "synthetic": true,
+  "frame": {
+    "id": "LOCAL-C002",
+    "horizontalUnit": "m",
+    "verticalUnit": "m",
+    "benchmark": "BM-DEMO-B"
+  },
+  "files": [
+    {
+      "name": "spatial.json",
+      "profile": "parcel-local-json-v1",
+      "initial": true
+    },
+    {
+      "name": "levels-r1.csv",
+      "profile": "levels-csv-v1",
+      "initial": true
+    },
+    {
+      "name": "levels-r2.csv",
+      "profile": "levels-csv-v1",
+      "initial": false
+    },
+    {
+      "name": "controls.csv",
+      "profile": "control-csv-v1",
+      "initial": true
+    },
+    {
+      "name": "plan.png",
+      "profile": "plan-png-v1",
+      "initial": true
+    },
+    {
+      "name": "plan.pdf",
+      "profile": "plan-pdf-v1",
+      "initial": true
+    }
+  ],
+  "planCalibration": {
+    "imageWidth": 1400,
+    "imageHeight": 900,
+    "pdfPage": 1,
+    "controls": [
+      {
+        "id": "CTRL-X",
+        "imagePoint": [
+          203,
+          697
+        ],
+        "worldPoint": [
+          0,
+          0
+        ]
+      },
+      {
+        "id": "CTRL-Y",
+        "imagePoint": [
+          616,
+          353
+        ],
+        "worldPoint": [
+          12,
+          10
+        ]
+      }
+    ]
+  },
+  "expected": {
+    "unitCount": 5,
+    "areas": {
+      "ELBOW-A": 48,
+      "ELBOW-B": 48,
+      "TRI-C": 12,
+      "WALK-X": 32,
+      "CELLAR-X": 120
+    },
+    "draftVolumes": {
+      "ELBOW-A": 120,
+      "ELBOW-B": 134.4,
+      "TRI-C": 30,
+      "WALK-X": 80,
+      "CELLAR-X": 300
+    },
+    "draftOverlapVolume": 14.4,
+    "correctedOverlapVolume": 0,
+    "overlapAliases": [
+      "ELBOW-A",
+      "ELBOW-B"
+    ],
+    "r1UnverifiedLower": [
+      "ELBOW-B"
+    ],
+    "derivation": "L-shape8 \u00d7 8\u22124 \u00d7 4=48 m\u00b2; overlap48 \u00d7 (2.5\u22122.2)=14.4 m\u00b3. Triangle4 \u00d7 6\u00f72=12 m\u00b2. Circulation4 \u00d7 6+4 \u00d7 2=32 m\u00b2."
+  }
+}

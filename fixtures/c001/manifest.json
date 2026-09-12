@@ -1,0 +1,101 @@
+{
+  "dataset": "c001",
+  "name": "C-001 \u00b7 Courtyard apartments",
+  "description": "Synthetic property-space teaching inputs; no official location, survey or ownership assertion.",
+  "synthetic": true,
+  "frame": {
+    "id": "LOCAL-C001",
+    "horizontalUnit": "m",
+    "verticalUnit": "m",
+    "benchmark": "BM-DEMO-A"
+  },
+  "files": [
+    {
+      "name": "spatial.json",
+      "profile": "parcel-local-json-v1",
+      "initial": true
+    },
+    {
+      "name": "levels-r1.csv",
+      "profile": "levels-csv-v1",
+      "initial": true
+    },
+    {
+      "name": "levels-r2.csv",
+      "profile": "levels-csv-v1",
+      "initial": false
+    },
+    {
+      "name": "controls.csv",
+      "profile": "control-csv-v1",
+      "initial": true
+    },
+    {
+      "name": "plan.png",
+      "profile": "plan-png-v1",
+      "initial": true
+    },
+    {
+      "name": "plan.pdf",
+      "profile": "plan-pdf-v1",
+      "initial": true
+    }
+  ],
+  "planCalibration": {
+    "imageWidth": 1400,
+    "imageHeight": 900,
+    "pdfPage": 1,
+    "controls": [
+      {
+        "id": "CP-A",
+        "imagePoint": [
+          218,
+          682
+        ],
+        "worldPoint": [
+          2,
+          2
+        ]
+      },
+      {
+        "id": "CP-B",
+        "imagePoint": [
+          611,
+          368
+        ],
+        "worldPoint": [
+          12,
+          10
+        ]
+      }
+    ]
+  },
+  "expected": {
+    "unitCount": 7,
+    "areas": {
+      "U01": 32,
+      "U02": 32,
+      "U03": 32,
+      "U04": 32,
+      "COMMON-0": 16,
+      "COMMON-1": 16,
+      "BSM-01": 80
+    },
+    "draftVolumes": {
+      "U01": 96,
+      "U03": 102.4,
+      "BSM-01": 240
+    },
+    "draftOverlapVolume": 6.4,
+    "correctedOverlapVolume": 0,
+    "overlapAliases": [
+      "U01",
+      "U03"
+    ],
+    "r1UnverifiedLower": [
+      "U03",
+      "U04"
+    ],
+    "derivation": "Apartment 4 \u00d7 8 =32 m\u00b2; U03 overlap32 \u00d7 (3\u22122.8)=6.4 m\u00b3. Basement10 \u00d7 8 \u00d7 3=240 m\u00b3."
+  }
+}

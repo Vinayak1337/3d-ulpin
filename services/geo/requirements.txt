@@ -1,0 +1,10 @@
+fastapi==0.115.12
+uvicorn==0.34.2
+pydantic==2.11.4
+celery==5.5.2
+redis==5.2.1
+boto3==1.38.23
+Shapely==2.0.7
+numpy==2.0.2
+Pillow==11.2.1
+pypdf==5.5.0

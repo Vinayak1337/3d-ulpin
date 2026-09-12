@@ -1,0 +1,29 @@
+{
+  "name": "3d-ulpin",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev": "concurrently -k -n web,dispatcher 'pnpm --filter @ulpin/web dev' 'pnpm dispatcher'",
+    "build": "pnpm --filter @ulpin/web build",
+    "start": "concurrently -k -n web,dispatcher 'pnpm --filter @ulpin/web start' 'pnpm dispatcher'",
+    "demo": "bash scripts/demo-start.sh",
+    "dispatcher": "tsx scripts/dispatcher.ts",
+    "platform:start": "bash scripts/platform-start.sh",
+    "platform:health": "bash scripts/platform-health.sh",
+    "platform:stop": "bash scripts/platform-stop.sh",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "typecheck": "pnpm --filter @ulpin/web typecheck",
+    "test:e2e": "playwright test",
+    "test:demo": "tsx scripts/verify-demo.ts",
+    "test:api": "tsx scripts/api-regression.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.0.0",
+    "concurrently": "^9.2.0",
+    "dotenv": "^17.2.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

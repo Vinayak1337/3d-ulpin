@@ -1,0 +1,137 @@
+name: ulpin
+
+x-geo-environment: &geo-environment
+  GEO_SERVICE_TOKEN: ${GEO_SERVICE_TOKEN:?Run scripts/platform-env.sh first}
+  REDIS_URL: redis://redis:6379/0
+  S3_ENDPOINT: http://minio:9000
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY:?Run scripts/platform-env.sh first}
+  S3_SECRET_KEY: ${S3_SECRET_KEY:?Run scripts/platform-env.sh first}
+  S3_BUCKET: ${S3_BUCKET:-ulpin}
+  S3_REGION: ${S3_REGION:-us-east-1}
+
+services:
+  postgres:
+    image: postgis/postgis:17-3.5@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6
+    platform: linux/amd64
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ulpin}
+      POSTGRES_USER: ${POSTGRES_USER:-ulpin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/platform-env.sh first}
+    ports:
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres/001-extensions.sql:/docker-entrypoint-initdb.d/001-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:?Run scripts/platform-env.sh first}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:?Run scripts/platform-env.sh first}
+    ports:
+      - "127.0.0.1:19000:9000"
+      - "127.0.0.1:19001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  minio-init:
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
+    entrypoint: /bin/sh
+    command:
+      - -ec
+      - |
+        mc alias set local http://minio:9000 "$$S3_ACCESS_KEY" "$$S3_SECRET_KEY" >/dev/null
+        mc mb --ignore-existing "local/$$S3_BUCKET" >/dev/null
+        mc anonymous set none "local/$$S3_BUCKET" >/dev/null
+        echo 'Private object bucket ready.'
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET:-ulpin}
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+
+  redis:
+    image: redis:7.4.2-alpine@sha256:02419de7eddf55aa5bcf49efb74e88fa8d931b4d77c07eff8a6b2144472b6952
+    command: redis-server --appendonly yes
+    ports:
+      - "127.0.0.1:16379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  geo:
+    profiles: ["app"]
+    build:
+      context: ./services/geo
+    image: ulpin-geo:local
+    environment: *geo-environment
+    ports:
+      - "127.0.0.1:18000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  worker:
+    profiles: ["app"]
+    image: ulpin-geo:local
+    pull_policy: never
+    command: celery -A geo.tasks:celery_app worker --loglevel=INFO --concurrency=2
+    environment: *geo-environment
+    depends_on:
+      geo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  storage-check:
+    profiles: ["tools"]
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
+    entrypoint: /bin/sh
+    command:
+      - -ec
+      - |
+        mc alias set local http://minio:9000 "$$S3_ACCESS_KEY" "$$S3_SECRET_KEY" >/dev/null
+        key="_platform-health/$$(date +%s)-$$$$.txt"
+        trap 'mc rm "local/$$S3_BUCKET/$$key" >/dev/null 2>&1 || true' EXIT
+        printf 'ulpin-private-storage-check' | mc pipe "local/$$S3_BUCKET/$$key" >/dev/null
+        test "$$(mc cat "local/$$S3_BUCKET/$$key")" = 'ulpin-private-storage-check'
+        policy="$$(mc anonymous get "local/$$S3_BUCKET")"
+        case "$$policy" in *private*) ;; *) echo 'Bucket policy is not private.' >&2; exit 1 ;; esac
+        echo 'PASS: private S3 upload, exact readback, and object cleanup.'
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET:-ulpin}
+
+volumes:
+  postgres-data:
+  minio-data:
+  redis-data:

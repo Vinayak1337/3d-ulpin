@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "kind": "execution_state_template_not_an_executed_run",
+  "project": "Evidence-linked 3D Property Registry",
+  "prepared_date": "2026-09-12",
+  "run_started_at": null,
+  "repo": {
+    "path": null,
+    "branch": null,
+    "base_commit": null,
+    "last_runnable_commit": null,
+    "uncommitted_user_changes": null
+  },
+  "runtime": {
+    "surface": null,
+    "available_tools": [],
+    "actual_model_map": {},
+    "active_child_threads": [],
+    "device": null,
+    "usage_observable": null
+  },
+  "budget": {
+    "policy": "20 percentage points per applicable full window; separate five-hour/weekly guards",
+    "five_hour_target_pp": 20,
+    "weekly_target_pp": 20,
+    "reserve_fraction": 0.25,
+    "observations": [],
+    "attribution": "UNKNOWN",
+    "purchased_spend_authorized": false,
+    "window_segments": []
+  },
+  "scope": "Manual web plus thin online Android lifecycle; later source phases deferred",
+  "status": "NOT_STARTED",
+  "current_task": null,
+  "tasks": {
+    "T00": "NOT_STARTED",
+    "T01": "NOT_STARTED",
+    "T02": "NOT_STARTED",
+    "T03": "NOT_STARTED",
+    "T04": "NOT_STARTED",
+    "T05": "NOT_STARTED",
+    "T06": "NOT_STARTED",
+    "T07": "NOT_STARTED",
+    "T08": "NOT_STARTED",
+    "T09": "NOT_STARTED",
+    "T10": "NOT_STARTED",
+    "T11": "NOT_STARTED",
+    "T12": "NOT_STARTED",
+    "T13": "NOT_STARTED",
+    "T14": "NOT_STARTED"
+  },
+  "contract_version": null,
+  "path_leases": [],
+  "completed_acceptance": [],
+  "blocked_acceptance": [],
+  "remaining_mocks": [],
+  "decisions": [],
+  "blockers": [],
+  "next_exact_action": "T00 preflight and bounded calibration",
+  "human_handoff_paths": {}
+}
