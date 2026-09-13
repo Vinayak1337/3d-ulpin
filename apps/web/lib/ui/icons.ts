@@ -41,3 +41,6 @@ export { UploadSimple } from "@phosphor-icons/react/dist/csr/UploadSimple";
 export { Warning } from "@phosphor-icons/react/dist/csr/Warning";
 export { WarningCircle } from "@phosphor-icons/react/dist/csr/WarningCircle";
 export { X } from "@phosphor-icons/react/dist/csr/X";
+export { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
+export { Copy } from "@phosphor-icons/react/dist/csr/Copy";
+export { MapPin } from "@phosphor-icons/react/dist/csr/MapPin";

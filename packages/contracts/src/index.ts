@@ -206,3 +206,5 @@ export interface BuildResult {
   inputFingerprint: string;
   method: string;
 }
+
+export * from './registry';

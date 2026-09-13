@@ -16,9 +16,10 @@ interface Props {
   isolate: boolean;
   explode: number;
   finding: Finding | null;
+  initialPresentation?: "building" | "volumes";
 }
 
-export default function SpatialViewer({ model, selectedId, onSelect, floor, isolate, explode, finding }: Props) {
+export default function SpatialViewer({ model, selectedId, onSelect, floor, isolate, explode, finding, initialPresentation = "building" }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const viewer = useRef<Cesium.Viewer | null>(null);
   const choose = useRef(onSelect);
@@ -26,7 +27,7 @@ export default function SpatialViewer({ model, selectedId, onSelect, floor, isol
   const resetCamera = useRef<() => void>(() => {});
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-  const [preferredPresentation, setPreferredPresentation] = useState<"building" | "volumes">("building");
+  const [preferredPresentation, setPreferredPresentation] = useState<"building" | "volumes">(initialPresentation);
   const [basementSection, setBasementSection] = useState(false);
   const [dismissedFinding, setDismissedFinding] = useState<string | null>(null);
   useEffect(() => { setDismissedFinding(null); }, [finding?.id]);

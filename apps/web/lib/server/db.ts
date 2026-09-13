@@ -1,4 +1,5 @@
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
+import { migrateRegistry } from "./registry-db";
 import { settings } from "./config";
 const globals = globalThis as unknown as { ulpinPool?: Pool };
 export function pool(): Pool {
@@ -170,4 +171,5 @@ export async function migrate() {
         + ROW_NUMBER() OVER(PARTITION BY m.case_id ORDER BY m.created_at,m.id),m.floor_ordinal
       FROM missing m ON CONFLICT DO NOTHING;
   `);
+  await migrateRegistry();
 }

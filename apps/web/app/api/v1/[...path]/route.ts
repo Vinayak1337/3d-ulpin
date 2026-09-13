@@ -1,3 +1,4 @@
+import { registryRoutes } from "@/lib/server/registry-routes";
 import { randomUUID } from "node:crypto";
 import { ZodError } from "zod";
 import {
@@ -80,6 +81,8 @@ async function handle(request: Request, context: Context): Promise<Response> {
     localOnly(request);
     const { path: p } = await context.params;
     const method = request.method;
+    const registryResponse = await registryRoutes(request,p);
+    if(registryResponse) return registryResponse;
     if (
       p[0] === "demo-assets" &&
       p[1] === "real-nyc" &&

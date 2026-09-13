@@ -1,9 +1,14 @@
 # Files to show at the hackathon
 
+The current registry presentation is **fully synthetic**. Follow the root
+[registry demo guide](REGISTRY_DEMO_GUIDE.md); the public-data material below is
+preserved for the separate legacy workbench.
+
 ## Ready-to-use files in this repository
 
 | Folder | What it contains | Classification |
 | --- | --- | --- |
+| [fixtures/registry](fixtures/registry/) | Connected neighbourhood JSON, level CSV, labelled plan PNG/PDF and fictional rights PDF | Current synthetic registry demo: 8 m³ correction and 12/4 m³ excavation impacts. |
 | [fixtures/c001](fixtures/c001/) | `spatial.json`, level/control CSVs, `plan.png`, `plan.pdf` | Synthetic two-storey/basement teaching example; demonstrates interior spaces and the 6.4 m³ correction. |
 | [fixtures/c002](fixtures/c002/) | Another JSON/CSV/PNG/PDF set with different outlines | Synthetic alternative geometry; 14.4 m³ correction. |
 | [fixtures/real-nyc](fixtures/real-nyc/) | Original public GeoJSON, converted spatial JSON, roof-height CSV, provenance manifest | Real public building footprint and published height; a derived exterior prism with no interior-room/floor evidence. |

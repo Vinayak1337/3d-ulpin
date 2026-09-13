@@ -2,7 +2,12 @@
 
 These are application prototype identifiers, not government-issued ULPINs.
 
-## Format
+The default application now uses persistent **site-based registry IDs**, documented
+in [REGISTRY.md](REGISTRY.md). These are independent of workspace IDs, with
+parcel/building/floor/space suffixes. The format below describes the preserved
+legacy preparation workspaces.
+
+## Legacy workspace format
 
 | Entity | Example pattern | Meaning |
 | --- | --- | --- |

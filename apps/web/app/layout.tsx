@@ -3,9 +3,9 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "3D ULPIN — Spatial evidence workbench",
+  title: "3D ULPIN — Property registry",
   description:
-    "A local property modelling workbench. From source evidence to editable 3D spaces.",
+    "A local 3D property registry with evidence-linked records, reviewed revisions and spatial impact queries.",
 };
 
 export default function RootLayout({

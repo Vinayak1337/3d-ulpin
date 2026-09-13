@@ -1,20 +1,20 @@
-# 3D ULPIN — local property model workbench
+# 3D ULPIN — local property registry
 
-Upload property footprints, level measurements and plan references; prepare
-editable spaces; compute a 3D model; inspect evidence and overlaps; apply a
-correction and rebuild. The application uses real private file storage,
-PostGIS records and queued Python geometry processing.
+Explore a connected synthetic neighbourhood, resolve permanent spatial IDs,
+inspect recorded rights and original evidence, review boundary corrections, and
+calculate excavation impacts against persisted property volumes. Preparation
+cases remain available in the existing source/model workbench.
 
-This is a **single-operator hackathon demonstration with synthetic inputs**.
-Its draft models do not establish ownership, surveyed location or an official
-ULPIN. The release is **HACKATHON_DEMO_VERIFIED**: 46 Python tests, 19 API
-scenarios, 7 scene tests and 8 production browser workflows passed. Exact evidence and the
-original scope distinction are in [HACKATHON_STATUS.md](docs/HACKATHON_STATUS.md).
+This is a **local, single-operator synthetic demonstration**. It does not issue
+official ULPINs, assert real survey coordinates or confer ownership. The stack
+retains Next.js, Cesium, PostGIS, private object storage and Python processing.
 
-**Hosting:** the complete stack cannot run unchanged on Vercel alone. Vercel can
-host the frontend, while the data services and continuous workers need external
-hosting or an architectural change. See [HOSTING.md](docs/HOSTING.md) for the
-free-plan assessment and deployment requirements.
+Start with the root **[REGISTRY_DEMO_GUIDE.md](REGISTRY_DEMO_GUIDE.md)** for the
+complete correction and excavation presentation. See [registry data/API](docs/REGISTRY.md)
+and [verification evidence](docs/REGISTRY_TEST_EVIDENCE.md).
+
+**Hosting:** the complete stack cannot run unchanged on Vercel alone. See
+[HOSTING.md](docs/HOSTING.md) for the existing deployment assessment.
 
 ## Start the demo
 
@@ -25,7 +25,7 @@ folder, or run this from the repository root:
 pnpm demo
 ```
 
-Open [the workbench](http://127.0.0.1:3000) and keep its terminal open. The launcher
+Open [the registry](http://127.0.0.1:3000) and keep its terminal open. The launcher
 installs locked JavaScript dependencies, starts the platform, applies database
 migrations, builds the production web application and runs both the web server
 and application job dispatcher. It reuses an already running workbench; stop
@@ -33,16 +33,12 @@ that terminal with **Ctrl+C** before requesting a fresh production build.
 If the workbench is reachable but a processing service is unhealthy, `pnpm demo`
 recovers the platform and migrations before returning to the existing server.
 
-For an immediate look, open the [prepared C-001 showcase](http://127.0.0.1:3000/?case=d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5).
-It contains seven spaces and the initial **6.4 m³** overlap, ready to inspect
-and correct. Create a new workspace for another full rehearsal from raw inputs.
-
-The default **Building** view adds a conceptual façade, windows, roof and entrance
-to the measured envelope. Choose **Property volumes** for the exact spaces, or
-**Reveal basement** to inspect below grade. Selecting a finding opens its actual
-overlap geometry. **Focus model** expands the viewport while preserving panel state.
-See [the UI redesign notes](docs/UI_REDESIGN.md) for the selected Appllama and Taste
-skills, architectural presentation rules and verification.
+On a fresh database, choose **Load synthetic neighbourhood**. The seed runs
+actual inspection, preparation, Python building and registry review. Subsequent
+loads preserve operator revisions. The default property-volume view displays
+both adjoining buildings, one shared basement and one cross-parcel corridor.
+The old [C-001 showcase](http://127.0.0.1:3000/?case=d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5)
+and **Preparation workspaces** remain available.
 
 On a new Apple Silicon Mac, install Node.js, pnpm and the container runtime first:
 
@@ -68,7 +64,7 @@ compatibility failure. Its client JavaScript is about **17.8 MB uncompressed**;
 server optimization remains enabled. This is a performance task before wider
 distribution.
 
-## Try the five-minute story
+## Legacy workbench story
 
 **New: visible prototype 3D ULPINs and a real-data example.** The parent ID is
 above the viewer; **View identifiers** opens the floor/space register. These
@@ -96,7 +92,7 @@ The complete narration, exact expected values and recovery steps are in
 this leaves earlier cases intact. The second sample, C-002, uses different
 geometry and has an initial **14.4 m³** overlap.
 
-For a visual walkthrough, open the [UI demo guide](3D_ULPIN_UI_Demo_Guide.docx) at the repository root. A copy is also available in `docs/`.
+For the legacy workbench walkthrough, open the [UI demo guide](3D_ULPIN_UI_Demo_Guide.docx) at the repository root. A copy is also available in `docs/`.
 It includes current screenshots, exact clicks, expected results and a five-minute
 presenter script, from a fresh C-001 workspace through correction and refresh.
 

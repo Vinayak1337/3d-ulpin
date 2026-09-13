@@ -81,3 +81,15 @@ def read_job(job_id: uuid.UUID) -> dict:
     if entry is None:
         raise HTTPException(status_code=404, detail="Processing job not found.")
     return public_job(entry)
+
+
+@app.post('/internal/registry/{operation}', dependencies=[Depends(authorize)])
+def registry_operation(operation: str, data: dict[str, Any]) -> dict:
+    from .registry import check_registry, query_registry
+    from .validation import InputError
+    if operation not in ('check', 'query'):
+        raise HTTPException(status_code=404, detail='Unknown registry operation.')
+    try:
+        return (check_registry if operation == 'check' else query_registry)(data)
+    except (InputError, KeyError, TypeError, ValueError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from None
