@@ -16,11 +16,12 @@ interface Props {
   isolate: boolean;
   explode: number;
   finding: Finding | null;
+  siteView?: boolean;
   initialPresentation?: "building" | "volumes";
   focusTarget?: {footprint: Point2[]; lower?: number; upper?: number; sequence: number};
 }
 
-export default function SpatialViewer({ model, selectedId, onSelect, floor, isolate, explode, finding, initialPresentation = "building", focusTarget }: Props) {
+export default function SpatialViewer({ model, selectedId, onSelect, floor, isolate, explode, finding, initialPresentation = "building", siteView = false, focusTarget }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const viewer = useRef<Cesium.Viewer | null>(null);
   const choose = useRef(onSelect);
@@ -147,9 +148,20 @@ export default function SpatialViewer({ model, selectedId, onSelect, floor, isol
       for (let x = startX; x <= endX; x += step) line([[x, startY], [x, endY]], bottom, "#dedbd3", 1, false);
       for (let y = startY; y <= endY; y += step) line([[startX, y], [endX, y]], bottom, "#dedbd3", 1, false);
       model.context.forEach(context => line(context.footprint, context.kind === "parcel" ? bottom + 0.02 : datum + 0.015, context.kind === "parcel" ? "#bcb19d" : "#99957e", 1.2));
+      if (siteView) {
+        const labels = primitives.add(new Cesium.LabelCollection());
+        for (const context of model.context.filter(c => c.kind === "building")) {
+          const b = boundsOf([context.footprint]);
+          const members = visibleUnits.filter(u => { const p = boundsOf([u.footprint]); return p.minX >= b.minX && p.maxX <= b.maxX && p.minY >= b.minY && p.maxY <= b.maxY; });
+          if (!members.length) continue;
+          const top = Math.max(datum, ...members.map(u => u.upper));
+          outline(context.footprint, datum, top, "#505b55", 2);
+          labels.add({position: position(b.minX + b.width / 2, b.minY + b.height / 2, top + 1), text: context.name || context.alias, font: "13px Helvetica", fillColor: Cesium.Color.fromCssColorString("#303731"), showBackground: true, backgroundColor: Cesium.Color.fromCssColorString("#fafaf6").withAlpha(0.94), backgroundPadding: new Cesium.Cartesian2(9, 6), disableDepthTestDistance: Number.POSITIVE_INFINITY});
+        }
+      }
       for (const unit of visibleUnits) {
         const offset = offsets.get(unit.id) || 0;
-        const color = unit.id === selectedId ? "#56a89d" : analyticalFinding?.unitIds.includes(unit.id) ? "#bda995" : unitColor(unit);
+        const color = unit.id === selectedId ? "#56a89d" : analyticalFinding?.unitIds.includes(unit.id) ? "#bda995" : siteView ? (belowGrade(unit) ? "#a4b2b6" : unit.kind === "common" ? "#d3c29f" : "#b0c0a5") : unitColor(unit);
         meshes.push(createPrismMesh(unit.footprint, unit.lower + offset, unit.upper + offset, color, unit.id, analyticalFinding?.overlap ? 0.32 : 1));
         outline(unit.footprint, unit.lower + offset, unit.upper + offset, unit.id === selectedId ? "#134e4a" : "#66736e", unit.id === selectedId ? 2.2 : 1.2);
       }
@@ -205,7 +217,7 @@ export default function SpatialViewer({ model, selectedId, onSelect, floor, isol
     const maxElevation = Math.max(...framedUnits.map(unit => unit.upper + (offsets.get(unit.id) || 0))) + (presentation === "building" ? 0.39 : 0);
     const minElevation = presentation === "building" && !revealBasement ? datum : Math.min(datum, ...framedUnits.map(unit => unit.lower + (offsets.get(unit.id) || 0)));
     const center = position(unitBounds.minX + unitBounds.width / 2, unitBounds.minY + unitBounds.height / 2, (maxElevation + minElevation) / 2 - (presentation === "building" ? 0.45 : 0));
-    const range = Math.max(unitBounds.width, unitBounds.height, maxElevation - minElevation, 7) * (presentation === "building" ? 2.48 : 2.65);
+    const range = Math.max(unitBounds.width, unitBounds.height, maxElevation - minElevation, 7) * (siteView ? 2.1 : presentation === "building" ? 2.48 : 2.65);
     v.camera.frustum.far = Math.max(600, range * 6);
     v.scene.screenSpaceCameraController.maximumZoomDistance = Math.max(250, range * 3);
     resetCamera.current = () => {
@@ -221,16 +233,16 @@ export default function SpatialViewer({ model, selectedId, onSelect, floor, isol
       const bounds = boundsOf([focusTarget.footprint]);
       const lower = focusTarget.lower ?? minElevation, upper = focusTarget.upper ?? maxElevation;
       const target = position(bounds.minX + bounds.width / 2, bounds.minY + bounds.height / 2, (lower + upper) / 2);
-      v.camera.lookAt(target, new Cesium.HeadingPitchRange(building.cameraHeading, Cesium.Math.toRadians(-32), Math.max(bounds.width, bounds.height, upper - lower, 7) * 2.65));
+      v.camera.lookAt(target, new Cesium.HeadingPitchRange(building.cameraHeading, Cesium.Math.toRadians(-32), Math.max(bounds.width, bounds.height, upper - lower, 7) * (siteView ? 2.1 : 2.65)));
       lastFocus.current = focusTarget.sequence;
     }
     v.scene.requestRender();
-  }, [model, selectedId, floor, isolate, explode, finding, ready, presentation, revealBasement, focusTarget]);
+  }, [model, selectedId, floor, isolate, explode, finding, ready, presentation, revealBasement, focusTarget, siteView]);
 
   return <div className={`spatial-viewer ${styles.viewer}`} data-presentation={presentation} data-visible-unit-count={visibleUnits.length} data-basement-revealed={presentation === "volumes" || revealBasement ? "true" : "false"}>
     <div className="cesium-host" ref={container} aria-label="Interactive 3D property model" />
     {error ? <div className={styles.error} role="alert"><Warning size={25} weight="bold" /><strong>3D graphics unavailable</strong><span>{error}</span><span>Switch to Plan to inspect and edit the geometry.</span></div> : <>
-      <div className={styles.presentation} role="group" aria-label="3D presentation">
+      {!siteView && <div className={styles.presentation} role="group" aria-label="3D presentation">
         <button type="button" aria-pressed={presentation === "building"} onClick={() => {
           setPreferredPresentation("building");
           setDismissedFinding(finding?.id || null);
@@ -238,15 +250,15 @@ export default function SpatialViewer({ model, selectedId, onSelect, floor, isol
           if (finding && returnUnitId) choose.current(returnUnitId);
         }}><Buildings size={16} weight={presentation === "building" ? "fill" : "regular"} />Building</button>
         <button type="button" aria-pressed={presentation === "volumes"} onClick={() => setPreferredPresentation("volumes")}><CubeTransparent size={16} weight={presentation === "volumes" ? "fill" : "regular"} />Property volumes</button>
-      </div>
+      </div>}
       {presentation === "building" && hasBasement && <button type="button" className={styles.section} aria-pressed={revealBasement} onClick={() => setBasementSection(value => !value)} title={selectedUnit && belowGrade(selectedUnit) ? "Selected basement is revealed" : "Cut the illustrative site to inspect below grade"}><StackSimple size={16} weight={revealBasement ? "fill" : "regular"} />Reveal basement</button>}
-      <div className={styles.frameLabel}>LOCAL FRAME<span>METRES</span></div>
+      {!siteView && <div className={styles.frameLabel}>LOCAL FRAME<span>METRES</span></div>}
       <div className={styles.camera} role="group" aria-label="Camera controls">
         <button type="button" onClick={() => { viewer.current?.camera.zoomIn(3); viewer.current?.scene.requestRender(); }} aria-label="Zoom in"><Plus size={17} weight="bold" /></button>
         <button type="button" onClick={() => { viewer.current?.camera.zoomOut(3); viewer.current?.scene.requestRender(); }} aria-label="Zoom out"><Minus size={17} weight="bold" /></button>
         <button type="button" onClick={() => resetCamera.current()} aria-label="Reset camera"><ArrowCounterClockwise size={17} weight="bold" /></button>
       </div>
-      <div className={styles.caption}><span className={styles.captionDot} />{presentation === "building" ? "Conceptual façade · measured spaces unchanged" : finding ? "Finding at measured coordinates · exact property volumes" : "Computed property spaces · local metres"}</div>
+      {!siteView && <div className={styles.caption}><span className={styles.captionDot} />{presentation === "building" ? "Conceptual façade · measured spaces unchanged" : finding ? "Finding at measured coordinates · exact property volumes" : "Computed property spaces · local metres"}</div>}
       <div className={styles.help}>Drag to orbit<span>·</span>Scroll to zoom<span>·</span>Click a space</div>
     </>}
   </div>;

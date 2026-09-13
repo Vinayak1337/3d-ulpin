@@ -22,8 +22,6 @@ import {
   Plus,
   DownloadSimple,
   Copy,
-  MapPin,
-  ArrowCounterClockwise,
 } from "@/lib/ui/icons";
 import { registryRequest as request } from "@/lib/registry-client";
 import { boundsOf, number } from "@/lib/ui/geometry";
@@ -64,7 +62,8 @@ export default function RegistryWorkbench({
   const [siteId, setSiteId] = useState(initialSiteId || ""),
     [selectedId, setSelectedId] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("records"),
-    [view, setView] = useState<"split" | "plan" | "3d">("split");
+    [view, setView] = useState<"split" | "plan" | "3d">("3d");
+  const [explorerOpen, setExplorerOpen] = useState(false);
   const [search, setSearch] = useState(""),
     [building, setBuilding] = useState("all"),
     [band, setBand] = useState("all"),
@@ -136,11 +135,7 @@ export default function RegistryWorkbench({
         if (alive) {
           setDetail(d);
           setSelectedId((id) =>
-            d.records.some((r) => r.id === id)
-              ? id
-              : d.records.find((r) => r.alias === "A-201")?.id ||
-                d.records[0]?.id ||
-                null,
+            d.records.some((r) => r.id === id) ? id : null,
           );
         }
       })
@@ -186,10 +181,13 @@ export default function RegistryWorkbench({
     setFinding(null);
     setQuery(null);
     if (next !== "volume") setDrawing(false);
-    if (next === "point" || next === "volume") setView("split");
+    setExplorerOpen(false);
+    if (next === "records") setSelectedId(null);
+    if (next === "point" || next === "volume") setView("plan");
   }
   function select(id: string) {
     setSelectedId(id);
+    setExplorerOpen(false);
     setFinding(null);
   }
   async function startDraft(r: RegistryRecord) {
@@ -320,51 +318,39 @@ export default function RegistryWorkbench({
           <Buildings weight="bold" size={23} />
           3D ULPIN<span>Property registry</span>
         </a>
-        <nav aria-label="Application">
-          <a aria-current="page" href="/">
-            Registry
-          </a>
-          <a href="/workbench">Preparation workspaces</a>
-        </nav>
-        <span className="local-indicator">Local operator</span>
+        <div className="header-site">
+          {" "}
+          <select
+            aria-label="Registry site"
+            value={siteId}
+            onChange={(e) => {
+              setSiteId(e.target.value);
+              setMode("records");
+              setDraft(null);
+              setQuery(null);
+              setBuilding("all");
+              setFloor("all");
+              setBand("all");
+              setKind("all");
+              setSearch("");
+              setSelectedId(null);
+              setExplorerOpen(false);
+              setView("3d");
+            }}
+          >
+            {sites.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <span className="status-tag">Synthetic site</span>
+        <a className="preparation-link" href="/workbench">
+          Preparation
+        </a>
       </header>
       <div className="registry-page">
-        <section className="registry-heading">
-          <div>
-            <div className="eyebrow">
-              Spatial records / synthetic demonstration
-            </div>
-            <h1>{detail?.site.name || "Property registry"}</h1>
-            <p>Every space has a record. Every change has a history.</p>
-          </div>
-          <div className="site-controls">
-            <label>
-              Site
-              <select
-                aria-label="Registry site"
-                value={siteId}
-                onChange={(e) => {
-                  setSiteId(e.target.value);
-                  setMode("records");
-                  setDraft(null);
-                  setQuery(null);
-                  setBuilding("all");
-                  setFloor("all");
-                }}
-              >
-                {sites.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button className="button" onClick={() => switchMode("add")}>
-              <Plus size={14} />
-              Add records
-            </button>
-          </div>
-        </section>
         {error && (
           <div className="registry-error" role="alert">
             {error}
@@ -408,9 +394,7 @@ export default function RegistryWorkbench({
                       setSites(await request("/sites"));
                       setSiteId(d.site.id);
                       setDetail(d);
-                      setSelectedId(
-                        d.records.find((r) => r.alias === "A-201")?.id || null,
-                      );
+                      setSelectedId(null);
                     },
                   )
                 }
@@ -442,32 +426,16 @@ export default function RegistryWorkbench({
                   </button>
                 </div>
               )}
-            <div className="site-summary">
-              <span>
-                <strong>
-                  {detail.records.filter((r) => r.kind === "space").length}
-                </strong>{" "}
-                spatial records
-              </span>
-              <span>
-                <strong>{buildings.length}</strong> buildings
-              </span>
-              <span>
-                <strong>{detail.site.revision}</strong> registry revision
-              </span>
-              <code>{detail.site.identifier}</code>
-              <span className="status-tag">Synthetic · prototype IDs</span>
-            </div>
             <nav className="registry-tabs" aria-label="Registry tools">
               {[
-                ["records", "Property records"],
+                ["records", "Site map"],
                 [
                   "drafts",
-                  `Draft changes (${detail.drafts.filter((d) => d.status === "draft").length})`,
+                  `Drafts (${detail.drafts.filter((d) => d.status === "draft").length})`,
                 ],
                 ["point", "Above / below"],
                 ["volume", "Excavation impact"],
-                ["sources", "Source files"],
+                ["sources", "Sources"],
               ].map(([key, label]) => (
                 <button
                   key={key}
@@ -478,101 +446,143 @@ export default function RegistryWorkbench({
                 </button>
               ))}
             </nav>
-            <div className="registry-layout" id="registry-main">
-              <aside className="registry-explorer">
-                <label className="registry-search">
-                  <MagnifyingGlass size={16} />
-                  <input
-                    aria-label="Search registry"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Find an ID, space or party"
-                  />
-                </label>
-                <div className="explorer-filters">
-                  <label>
-                    Building
-                    <select
-                      value={building}
-                      onChange={(e) => setBuilding(e.target.value)}
+            <div
+              className={`registry-layout ${mode !== "records" || selected ? "has-inspector" : ""}`}
+              id="registry-main"
+            >
+              {explorerOpen && (
+                <aside className="registry-explorer" aria-label="Find records">
+                  <div className="drawer-heading">
+                    <strong>Records</strong>
+                    <button
+                      className="text-button"
+                      onClick={() => setExplorerOpen(false)}
+                      aria-label="Close records"
                     >
-                      <option value="all">All buildings</option>
-                      {buildings.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </select>
+                      ×
+                    </button>
+                  </div>
+                  <label className="registry-search">
+                    <MagnifyingGlass size={16} />
+                    <input
+                      aria-label="Search registry"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Find an ID, space or party"
+                    />
                   </label>
-                  <label>
-                    Record type
-                    <select
-                      value={kind}
-                      onChange={(e) => setKind(e.target.value)}
-                    >
-                      {[
-                        "all",
-                        "parcel",
-                        "building",
-                        "floor",
-                        "space",
-                        "apartment",
-                        "common",
-                        "basement",
-                        "utility",
-                      ].map((k) => (
-                        <option key={k} value={k}>
-                          {k === "all" ? "All records" : k}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-                <div className="explorer-list">
-                  {(["parcel", "building", "floor", "space"] as const).map(
-                    (type) => {
-                      const list = listRecords.filter((r) => r.kind === type);
-                      return list.length ? (
-                        <section key={type}>
-                          <h3>
-                            {type === "space" ? "Spatial units" : `${type}s`}
-                            <span>{list.length}</span>
-                          </h3>
-                          {list.map((r) => (
-                            <button
-                              className={`registry-row ${r.id === selectedId ? "active" : ""}`}
-                              key={r.id}
-                              onClick={() => select(r.id)}
-                            >
-                              <span
-                                className={`record-dot ${r.use || r.kind}`}
-                              />
-                              <span>
-                                <strong>{r.alias}</strong>
-                                <small>{r.name}</small>
-                              </span>
-                              <code>{r.identifier.split(":").at(-1)}</code>
-                            </button>
-                          ))}
-                        </section>
-                      ) : null;
-                    },
-                  )}
-                  {!listRecords.length && (
-                    <p className="muted">
-                      No matching records. Try an ID, apartment or recorded
-                      party.
-                    </p>
-                  )}
-                </div>
-                <footer className="explorer-footer">
-                  <strong>{detail.site.frame.id}</strong>
-                  <span>Local metres · {detail.site.frame.benchmark}</span>
-                  <span>No geographic location asserted</span>
-                </footer>
-              </aside>
+                  <div className="explorer-filters">
+                    <label>
+                      Building
+                      <select
+                        value={building}
+                        onChange={(e) => setBuilding(e.target.value)}
+                      >
+                        <option value="all">All buildings</option>
+                        {buildings.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Record type
+                      <select
+                        value={kind}
+                        onChange={(e) => setKind(e.target.value)}
+                      >
+                        {[
+                          "all",
+                          "parcel",
+                          "building",
+                          "floor",
+                          "space",
+                          "apartment",
+                          "common",
+                          "basement",
+                          "utility",
+                        ].map((k) => (
+                          <option key={k} value={k}>
+                            {k === "all" ? "All records" : k}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="explorer-list">
+                    {(["parcel", "building", "floor", "space"] as const).map(
+                      (type) => {
+                        const list = listRecords.filter((r) => r.kind === type);
+                        return list.length ? (
+                          <section key={type}>
+                            <h3>
+                              {type === "space" ? "Spatial units" : `${type}s`}
+                              <span>{list.length}</span>
+                            </h3>
+                            {list.map((r) => (
+                              <button
+                                className={`registry-row ${r.id === selectedId ? "active" : ""}`}
+                                key={r.id}
+                                onClick={() => {
+                                  switchMode("records");
+                                  select(r.id);
+                                }}
+                              >
+                                <span
+                                  className={`record-dot ${r.use || r.kind}`}
+                                />
+                                <span>
+                                  <strong>{r.alias}</strong>
+                                  <small>{r.name}</small>
+                                </span>
+                                <code>{r.identifier.split(":").at(-1)}</code>
+                              </button>
+                            ))}
+                          </section>
+                        ) : null;
+                      },
+                    )}
+                    {!listRecords.length && (
+                      <p className="muted">
+                        No matching records. Try an ID, apartment or recorded
+                        party.
+                      </p>
+                    )}
+                  </div>
+                  <footer className="explorer-footer">
+                    <strong>{detail.site.frame.id}</strong>
+                    <span>Local metres · {detail.site.frame.benchmark}</span>
+                    <span>No geographic location asserted</span>
+                  </footer>
+                </aside>
+              )}
               <section className="registry-stage">
                 <div className="map-toolbar">
+                  <button
+                    className="button browse-button"
+                    aria-expanded={explorerOpen}
+                    onClick={() => setExplorerOpen(!explorerOpen)}
+                  >
+                    <MagnifyingGlass size={16} />
+                    Find records
+                  </button>
+                  <button
+                    className="text-button"
+                    onClick={() => {
+                      setBuilding("all");
+                      setFloor("all");
+                      setBand("all");
+                      setKind("all");
+                      setSelectedId(null);
+                      setFocusTarget((previous) => ({
+                        footprint: detail.records.flatMap((r) => r.footprint),
+                        sequence: (previous?.sequence || 0) + 1,
+                      }));
+                    }}
+                  >
+                    Entire site
+                  </button>
                   <div className="view-switch">
                     {(["split", "plan", "3d"] as const).map((v) => (
                       <button
@@ -588,33 +598,58 @@ export default function RegistryWorkbench({
                       </button>
                     ))}
                   </div>
-                  <label className="compact-select">
-                    Levels
-                    <select
-                      value={floor}
-                      onChange={(e) => setFloor(e.target.value)}
-                    >
-                      <option value="all">All levels</option>
-                      {detail.records
-                        .filter((r) => r.kind === "floor")
-                        .map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
-                          </option>
-                        ))}
-                    </select>
-                  </label>
-                  <label className="compact-select">
-                    Elevation
-                    <select
-                      value={band}
-                      onChange={(e) => setBand(e.target.value)}
-                    >
-                      <option value="all">Above + below</option>
-                      <option value="above">Above ground</option>
-                      <option value="below">Below ground</option>
-                    </select>
-                  </label>
+                  <details className="map-filters">
+                    <summary>
+                      Filters
+                      {building !== "all" || floor !== "all" || band !== "all"
+                        ? " · on"
+                        : ""}
+                    </summary>
+                    <div>
+                      <label className="compact-select">
+                        Building
+                        <select
+                          aria-label="Map building"
+                          value={building}
+                          onChange={(e) => setBuilding(e.target.value)}
+                        >
+                          <option value="all">All buildings</option>
+                          {buildings.map((b) => (
+                            <option key={b.id} value={b.id}>
+                              {b.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="compact-select">
+                        Levels
+                        <select
+                          value={floor}
+                          onChange={(e) => setFloor(e.target.value)}
+                        >
+                          <option value="all">All levels</option>
+                          {detail.records
+                            .filter((r) => r.kind === "floor")
+                            .map((r) => (
+                              <option key={r.id} value={r.id}>
+                                {r.name}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                      <label className="compact-select">
+                        Elevation
+                        <select
+                          value={band}
+                          onChange={(e) => setBand(e.target.value)}
+                        >
+                          <option value="all">Above + below</option>
+                          <option value="above">Above ground</option>
+                          <option value="below">Below ground</option>
+                        </select>
+                      </label>
+                    </div>
+                  </details>
                 </div>
                 <div className={`registry-views ${view}`}>
                   {view !== "3d" && (
@@ -626,7 +661,7 @@ export default function RegistryWorkbench({
                             ? "Click a point to inspect"
                             : drawing
                               ? "Click vertices, then check impact"
-                              : "Select a space · coordinates in metres"}
+                              : "Select a space"}
                         </span>
                       </div>
                       <RegistryMap
@@ -652,6 +687,21 @@ export default function RegistryWorkbench({
                       />
                     </div>
                   )}
+                  {view !== "plan" && model && !model.units.length && (
+                    <div className="registry-map-empty">
+                      <p>No volumes match these filters.</p>
+                      <button
+                        className="button"
+                        onClick={() => {
+                          setBuilding("all");
+                          setFloor("all");
+                          setBand("all");
+                        }}
+                      >
+                        Show all spaces
+                      </button>
+                    </div>
+                  )}
                   {view !== "plan" && model && model.units.length > 0 && (
                     <div className="model-panel">
                       <div className="view-caption">
@@ -671,6 +721,7 @@ export default function RegistryWorkbench({
                         explode={0}
                         finding={finding}
                         initialPresentation="volumes"
+                        siteView
                         focusTarget={focusTarget}
                       />
                     </div>
@@ -694,589 +745,639 @@ export default function RegistryWorkbench({
                     Intersection
                   </span>
                 </div>
-                <div className="registry-context-note">
-                  <MapPin size={17} />
-                  <p>
-                    <strong>One connected site.</strong> Related buildings and
-                    spaces share a frame. Boundary contact is distinct from
-                    positive-volume intersection.
-                  </p>
-                </div>
               </section>
-              <aside className="registry-inspector">
-                {mode === "records" && selected && (
-                  <>
-                    <div className="section-heading">
-                      <span>Current record</span>
-                      <span className="status-tag">
-                        Revision {selected.revision}
-                      </span>
-                    </div>
-                    <h2>{selected.name}</h2>
-                    <p className="record-type">
-                      {selected.use || selected.kind} · synthetic
-                    </p>
-                    <code className="record-code">{selected.identifier}</code>
-                    <div className="record-tools">
-                      <button
-                        className="text-button"
-                        onClick={() => {
-                          setBuilding("all");
-                          setFloor("all");
-                          setBand("all");
-                          setView("split");
-                          setFocusTarget((previous) => ({
-                            footprint: selected.footprint,
-                            lower: selected.geometry?.lower,
-                            upper: selected.geometry?.upper,
-                            sequence: (previous?.sequence || 0) + 1,
-                          }));
-                          setNotice(
-                            `Located ${selected.alias} in plan and 3D.`,
-                          );
-                        }}
-                      >
-                        Locate
-                      </button>
-                      <button
-                        className="text-button"
-                        onClick={() =>
-                          run("Copying record link", async () => {
-                            await navigator.clipboard.writeText(
-                              `${location.origin}/registry/${encodeURIComponent(selected.identifier)}`,
-                            );
-                            setNotice("Record link copied.");
-                          })
-                        }
-                      >
-                        <Copy size={13} />
-                        Copy link
-                      </button>
-                      <a
-                        className="text-button"
-                        href={`/api/v1/registry/${encodeURIComponent(selected.identifier)}/export`}
-                      >
-                        <DownloadSimple size={13} />
-                        Download
-                      </a>
-                    </div>
-                    {selected.geometry && (
-                      <dl className="record-measures">
-                        <div>
-                          <dt>Vertical limits</dt>
-                          <dd>
-                            {number(selected.geometry.lower)}—
-                            {number(selected.geometry.upper)} <small>m</small>
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>Footprint</dt>
-                          <dd>
-                            {number(selected.geometry.area)} <small>m²</small>
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>Volume</dt>
-                          <dd>
-                            {number(selected.geometry.volume)} <small>m³</small>
-                          </dd>
-                        </div>
-                      </dl>
-                    )}
-                    <h3>Related records</h3>
-                    {selected.links.length ? (
-                      selected.links.map((l, i) => (
-                        <button
-                          key={i}
-                          className="relationship-link"
-                          onClick={() => select(l.targetId)}
-                        >
-                          <span>{l.type}</span>
-                          <strong>
-                            {detail.records.find((r) => r.id === l.targetId)
-                              ?.name || l.targetId}
-                          </strong>
-                          <ArrowRight size={13} />
-                        </button>
-                      ))
-                    ) : (
-                      <p className="muted">No relationships recorded.</p>
-                    )}
-                    <h3>Recorded rights</h3>
-                    {selected.rights.length ? (
-                      selected.rights.map((r, i) => (
-                        <article className="record-right" key={i}>
-                          <strong>{r.party}</strong>
-                          <span>{r.type.replaceAll("_", " ")} · fictional</span>
-                          {sourceButton(
-                            r.evidence.sourceId,
-                            r.evidence.locator,
-                          )}
-                        </article>
-                      ))
-                    ) : (
-                      <p className="muted">
-                        No rights asserted for this context record.
+              {(mode !== "records" || selected) && (
+                <aside
+                  className="registry-inspector"
+                  aria-label="Record and tool details"
+                >
+                  <div className="drawer-heading">
+                    <span>
+                      {mode === "records" ? "Property record" : "Site tools"}
+                    </span>
+                    <button
+                      className="text-button"
+                      aria-label="Close details"
+                      onClick={() => {
+                        switchMode("records");
+                        setSelectedId(null);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  {mode === "records" && selected && (
+                    <>
+                      <div className="section-heading">
+                        <span>Current record</span>
+                        <span className="status-tag">
+                          Revision {selected.revision}
+                        </span>
+                      </div>
+                      <h2>{selected.name}</h2>
+                      <p className="record-type">
+                        {selected.use || selected.kind} · synthetic
                       </p>
-                    )}
-                    <h3>Boundary evidence</h3>
-                    {[
-                      ...new Map(
-                        [
-                          ...selected.evidence,
-                          ...Object.values(
-                            selected.geometry?.bindings || {},
-                          ).filter(Boolean),
-                        ].map((b) => [`${b!.sourceId}:${b!.locator}`, b]),
-                      ).values(),
-                    ].map((b, i) => (
-                      <div key={i}>{sourceButton(b!.sourceId, b!.locator)}</div>
-                    ))}
-                    <div className="inspector-actions">
-                      <button
-                        className="button primary"
-                        disabled={!!busy}
-                        onClick={() => startDraft(selected)}
-                      >
-                        Propose correction
-                        <ArrowRight size={15} />
-                      </button>
-                      <button
-                        className="button"
-                        onClick={() => {
-                          const b = boundsOf([selected.footprint]);
-                          switchMode("point");
-                          void pointQuery([
-                            b.minX + b.width / 2,
-                            b.minY + b.height / 2,
-                          ]);
-                        }}
-                      >
-                        Show above / below
-                      </button>
-                    </div>
-                    <details className="record-history">
-                      <summary>Revision history ({history.length})</summary>
-                      {history.map((h) => (
-                        <article key={h.revision}>
-                          <strong>Revision {h.revision}</strong>
-                          <small>
-                            {new Date(h.created_at).toLocaleString()}
-                          </small>
-                          <p>
-                            {h.body.geometry
-                              ? `${number(h.body.geometry.lower)}–${number(h.body.geometry.upper)} m`
-                              : h.body.name}
-                          </p>
-                        </article>
-                      ))}
-                    </details>
-                    <p className="muted">
-                      Prototype spatial identity. Technical review does not
-                      establish legal ownership.
-                    </p>
-                  </>
-                )}
-                {mode === "records" && !selected && (
-                  <p className="muted">
-                    Select a record on the map or in the explorer.
-                  </p>
-                )}
-                {mode === "drafts" && (
-                  <>
-                    <div className="draft-selector">
-                      <label>
-                        Preparation draft
-                        <select
-                          value={draft?.id || ""}
-                          onChange={(e) => {
-                            const d = detail.drafts.find(
-                              (d) => d.id === e.target.value,
-                            );
-                            if (d) {
-                              setDraft(d);
-                              setReview(null);
-                            }
-                          }}
-                        >
-                          <option value="">Choose a draft</option>
-                          {detail.drafts
-                            .filter((d) => d.status === "draft")
-                            .map((d) => (
-                              <option key={d.id} value={d.id}>
-                                {d.records[0]?.alias} · draft {d.revision}
-                              </option>
-                            ))}
-                        </select>
-                      </label>
-                    </div>
-                    {draft?.status === "draft" ? (
-                      <RegistryEditor
-                        key={draft.id}
-                        draft={draft}
-                        detail={detail}
-                        onSaved={(d) => {
-                          setDraft(d);
-                          void refresh(siteId);
-                        }}
-                        onReviewed={setReview}
-                        onPreview={(id) =>
-                          setPreview(
-                            detail.sources.find((s) => s.id === id) || null,
-                          )
-                        }
-                        onRecorded={async () => {
-                          await refresh(siteId);
-                          setSelectedId(draft.records[0]?.id || null);
-                          setDraft(null);
-                          setReview(null);
-                          setFinding(null);
-                          setMode("records");
-                          setNotice(
-                            "Reviewed revision recorded. The permanent identifier is unchanged.",
-                          );
-                        }}
-                        onSelectFinding={(id) => {
-                          const f = review?.findings.find((f) => f.id === id);
-                          setFinding(f || null);
-                          if (f?.unitIds[0]) {
-                            setSelectedId(f.unitIds[0]);
-                            const affected = workingRecords.find(
-                              (r) => r.id === f.unitIds[0],
-                            );
-                            if (affected)
-                              setFocusTarget((previous) => ({
-                                footprint: affected.footprint,
-                                lower: affected.geometry?.lower,
-                                upper: affected.geometry?.upper,
-                                sequence: (previous?.sequence || 0) + 1,
-                              }));
+                      <code className="record-code">{selected.identifier}</code>
+                      <div className="record-tools">
+                        <button
+                          className="text-button"
+                          onClick={() => {
                             setBuilding("all");
                             setFloor("all");
                             setBand("all");
+                            setView("split");
+                            setFocusTarget((previous) => ({
+                              footprint: selected.footprint,
+                              lower: selected.geometry?.lower,
+                              upper: selected.geometry?.upper,
+                              sequence: (previous?.sequence || 0) + 1,
+                            }));
+                            setNotice(
+                              `Located ${selected.alias} in plan and 3D.`,
+                            );
+                          }}
+                        >
+                          Locate
+                        </button>
+                        <button
+                          className="text-button"
+                          onClick={() =>
+                            run("Copying record link", async () => {
+                              await navigator.clipboard.writeText(
+                                `${location.origin}/registry/${encodeURIComponent(selected.identifier)}`,
+                              );
+                              setNotice("Record link copied.");
+                            })
                           }
-                        }}
-                      />
-                    ) : (
-                      <div className="inspector-empty">
-                        <h2>Changes start with a record.</h2>
-                        <p>
-                          Select a property and choose Propose correction. Your
-                          current registry remains available while you prepare
-                          the change.
-                        </p>
-                        {selected && (
-                          <button
-                            className="button primary"
-                            onClick={() => startDraft(selected)}
-                          >
-                            Correct {selected.alias}
-                          </button>
-                        )}
+                        >
+                          <Copy size={13} />
+                          Copy link
+                        </button>
+                        <a
+                          className="text-button"
+                          href={`/api/v1/registry/${encodeURIComponent(selected.identifier)}/export`}
+                        >
+                          <DownloadSimple size={13} />
+                          Download
+                        </a>
                       </div>
-                    )}
-                  </>
-                )}
-                {(mode === "point" || mode === "volume") && (
-                  <>
-                    <div className="section-heading">
-                      <span>Spatial inspection</span>
-                      <span className="status-tag">Current records</span>
-                    </div>
-                    <h2>
-                      {mode === "point"
-                        ? "Above and below"
-                        : "Excavation impact"}
-                    </h2>
-                    <p className="muted">
-                      {mode === "point"
-                        ? "Click the plan or enter local coordinates to inspect the vertical stack."
-                        : "Draw a proposal footprint and enter its vertical limits. The proposal does not become a property record."}
-                    </p>
-                    {mode === "point" ? (
-                      <>
-                        <div className="field-pair">
-                          <label>
-                            X (m)
-                            <input
-                              type="number"
-                              value={point[0]}
-                              onChange={(e) => {
-                                setPoint([Number(e.target.value), point[1]]);
-                                setQuery(null);
-                              }}
-                            />
-                          </label>
-                          <label>
-                            Y (m)
-                            <input
-                              type="number"
-                              value={point[1]}
-                              onChange={(e) => {
-                                setPoint([point[0], Number(e.target.value)]);
-                                setQuery(null);
-                              }}
-                            />
-                          </label>
-                        </div>
+                      {selected.geometry && (
+                        <dl className="record-measures">
+                          <div>
+                            <dt>Vertical limits</dt>
+                            <dd>
+                              {number(selected.geometry.lower)}—
+                              {number(selected.geometry.upper)} <small>m</small>
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Footprint</dt>
+                            <dd>
+                              {number(selected.geometry.area)} <small>m²</small>
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Volume</dt>
+                            <dd>
+                              {number(selected.geometry.volume)}{" "}
+                              <small>m³</small>
+                            </dd>
+                          </div>
+                        </dl>
+                      )}
+                      <details className="record-disclosure">
+                        <summary>
+                          Related records ({selected.links.length})
+                        </summary>
+                        {selected.links.length ? (
+                          selected.links.map((l, i) => (
+                            <button
+                              key={i}
+                              className="relationship-link"
+                              onClick={() => select(l.targetId)}
+                            >
+                              <span>{l.type}</span>
+                              <strong>
+                                {detail.records.find((r) => r.id === l.targetId)
+                                  ?.name || l.targetId}
+                              </strong>
+                              <ArrowRight size={13} />
+                            </button>
+                          ))
+                        ) : (
+                          <p className="muted">No relationships recorded.</p>
+                        )}
+                      </details>
+                      <details className="record-disclosure" open>
+                        <summary>
+                          Recorded rights ({selected.rights.length})
+                        </summary>
+                        {selected.rights.length ? (
+                          selected.rights.map((r, i) => (
+                            <article className="record-right" key={i}>
+                              <strong>{r.party}</strong>
+                              <span>
+                                {r.type.replaceAll("_", " ")} · fictional
+                              </span>
+                              {sourceButton(
+                                r.evidence.sourceId,
+                                r.evidence.locator,
+                              )}
+                            </article>
+                          ))
+                        ) : (
+                          <p className="muted">
+                            No rights asserted for this context record.
+                          </p>
+                        )}
+                      </details>
+                      <details className="record-disclosure">
+                        <summary>Boundary evidence</summary>
+                        {[
+                          ...new Map(
+                            [
+                              ...selected.evidence,
+                              ...Object.values(
+                                selected.geometry?.bindings || {},
+                              ).filter(Boolean),
+                            ].map((b) => [`${b!.sourceId}:${b!.locator}`, b]),
+                          ).values(),
+                        ].map((b, i) => (
+                          <div key={i}>
+                            {sourceButton(b!.sourceId, b!.locator)}
+                          </div>
+                        ))}
+                      </details>
+                      <div className="inspector-actions">
                         <button
                           className="button primary"
                           disabled={!!busy}
-                          onClick={() => pointQuery(point)}
+                          onClick={() => startDraft(selected)}
                         >
-                          Inspect vertical stack
+                          Propose correction
+                          <ArrowRight size={15} />
                         </button>
-                      </>
-                    ) : (
-                      <>
-                        <div className="field-pair">
-                          <label>
-                            Lower (m)
-                            <input
-                              aria-label="Excavation lower"
-                              type="number"
-                              value={limits.lower}
-                              onChange={(e) => {
-                                setLimits({
-                                  ...limits,
-                                  lower: Number(e.target.value),
-                                });
-                                setQuery(null);
-                              }}
-                            />
-                          </label>
-                          <label>
-                            Upper (m)
-                            <input
-                              aria-label="Excavation upper"
-                              type="number"
-                              value={limits.upper}
-                              onChange={(e) => {
-                                setLimits({
-                                  ...limits,
-                                  upper: Number(e.target.value),
-                                });
-                                setQuery(null);
-                              }}
-                            />
-                          </label>
-                        </div>
-                        <div className="editor-actions">
-                          <button
-                            className="button"
-                            onClick={() => {
-                              setDrawing(true);
-                              setPolygon([]);
-                              setQuery(null);
-                              setView("split");
-                            }}
-                          >
-                            Draw footprint
-                          </button>
-                          <button
-                            className="text-button"
-                            onClick={() => {
-                              setPolygon(EXCAVATION);
-                              setLimits({ lower: -5, upper: 0 });
-                              setQuery(null);
-                              setDrawing(false);
-                            }}
-                          >
-                            Load demo proposal
-                          </button>
-                        </div>
-                        <p className="muted">
-                          {polygon.length} vertices{" "}
-                          {drawing ? "· click the plan to add corners" : ""}
-                        </p>
-                        {polygon.length > 0 && (
-                          <button
-                            className="text-button"
-                            onClick={() => {
-                              setPolygon(polygon.slice(0, -1));
-                              setQuery(null);
-                            }}
-                          >
-                            Undo last vertex
-                          </button>
-                        )}
                         <button
-                          className="button primary"
-                          disabled={!!busy || polygon.length < 3}
-                          onClick={volumeQuery}
+                          className="button"
+                          onClick={() => {
+                            const b = boundsOf([selected.footprint]);
+                            switchMode("point");
+                            void pointQuery([
+                              b.minX + b.width / 2,
+                              b.minY + b.height / 2,
+                            ]);
+                          }}
                         >
-                          Check impact
+                          Show above / below
                         </button>
-                      </>
-                    )}
-                    {query && (
-                      <section className="query-results">
-                        <h3>
-                          {query.mode === "volume"
-                            ? `${query.results.filter((r) => r.volume > 0).length} volume intersections`
-                            : `${query.results.length} intersecting records`}
-                        </h3>
-                        <p className="muted">
-                          Registry revision {query.registryRevision} · synthetic
-                        </p>
-                        {query.results.map((r) => (
-                          <article key={r.record.id}>
-                            <button
-                              className="query-record"
-                              onClick={() => {
-                                select(r.record.id);
-                                setBuilding("all");
-                                setFloor("all");
-                                setBand("all");
-                                const overlap = r.overlaps[0];
-                                setFinding(
-                                  overlap
-                                    ? {
-                                        id: `query-${r.record.id}`,
-                                        code: "QUERY_INTERSECTION",
-                                        severity: "warning",
-                                        title: `${r.record.alias}: ${number(r.volume)} m³ intersection`,
-                                        description:
-                                          "Proposed excavation intersects a known synthetic record.",
-                                        unitIds: [r.record.id],
-                                        sourceIds: r.record.evidence.map(
-                                          (e) => e.sourceId,
-                                        ),
-                                        overlap,
-                                      }
-                                    : null,
-                                );
-                              }}
-                            >
-                              <span>
-                                <strong>{r.record.alias}</strong>
-                                <small>{r.record.name}</small>
-                              </span>
-                              <b>
-                                {query.mode === "volume"
-                                  ? `${number(r.volume)} m³`
-                                  : `${number(r.record.geometry?.lower)}–${number(r.record.geometry?.upper)} m`}
-                              </b>
-                            </button>
+                      </div>
+                      <details className="record-history">
+                        <summary>Revision history ({history.length})</summary>
+                        {history.map((h) => (
+                          <article key={h.revision}>
+                            <strong>Revision {h.revision}</strong>
+                            <small>
+                              {new Date(h.created_at).toLocaleString()}
+                            </small>
                             <p>
-                              {r.contact
-                                ? "Boundary contact · zero interior volume"
-                                : query.mode === "point"
-                                  ? "Point inside footprint"
-                                  : "Positive volume intersection"}
+                              {h.body.geometry
+                                ? `${number(h.body.geometry.lower)}–${number(h.body.geometry.upper)} m`
+                                : h.body.name}
                             </p>
-                            <code className="query-identifier">
-                              {r.record.identifier}
-                            </code>
-                            <p>
-                              {r.record.links
-                                .map((l) =>
-                                  detail.records.find(
-                                    (x) => x.id === l.targetId,
-                                  ),
-                                )
-                                .filter((x) => x?.kind === "building")
-                                .map((x) => x!.name)
-                                .join(" · ") ||
-                                "Cross-parcel / site infrastructure"}
-                            </p>
-                            <p>
-                              {number(r.record.geometry?.lower)}–
-                              {number(r.record.geometry?.upper)} m ·{" "}
-                              {detail.site.frame.benchmark}
-                            </p>
-                            <p>
-                              {r.record.rights
-                                .map(
-                                  (x) =>
-                                    `${x.party} · ${x.type.replaceAll("_", " ")}`,
-                                )
-                                .join("; ") || "No party recorded"}
-                            </p>
-                            {[
-                              ...new Map(
-                                [
-                                  ...r.record.evidence,
-                                  ...r.record.rights.map((x) => x.evidence),
-                                ].map((e) => [`${e.sourceId}:${e.locator}`, e]),
-                              ).values(),
-                            ].map((e) => sourceButton(e.sourceId, e.locator))}
                           </article>
                         ))}
-                        {!query.results.length && (
-                          <p>No known spaces intersect this query.</p>
-                        )}
-                        <p className="muted">
-                          Known records only. This result does not certify
-                          underground coverage or excavation clearance.
-                        </p>
-                      </section>
-                    )}
-                  </>
-                )}
-                {mode === "sources" && (
-                  <section>
-                    <div className="section-heading">
-                      <span>Preserved originals</span>
-                      <span className="status-tag">Synthetic</span>
-                    </div>
-                    <h2>Site source files</h2>
-                    <p className="muted">
-                      Open a source to inspect or download the original bytes.
-                      Parsed plans and documents are references; they do not
-                      automatically create geometry or rights.
-                    </p>
-                    {detail.sources.map((source) => (
-                      <article className="record-right" key={source.id}>
-                        {sourceButton(source.id, `Revision ${source.revision}`)}
-                        <span>
-                          {source.profile} ·{" "}
-                          {source.status.replaceAll("_", " ")}
-                        </span>
-                      </article>
-                    ))}
-                    {!detail.sources.length && (
+                      </details>
                       <p className="muted">
-                        Use Add records → Import workspace → Prepare source
-                        inputs to inspect original files in this site's frame.
+                        Prototype spatial identity. Technical review does not
+                        establish legal ownership.
                       </p>
-                    )}
-                  </section>
-                )}
-                {mode === "add" && (
-                  <RegistryCreate
-                    detail={detail}
-                    onDraft={async (d) => {
-                      setDraft(d);
-                      setReview(null);
-                      setMode("drafts");
-                      await refresh(siteId);
-                    }}
-                    onSite={async (id) => {
-                      setSites(await request("/sites"));
-                      setSiteId(id);
-                      setMode("records");
-                    }}
-                  />
-                )}
-              </aside>
+                    </>
+                  )}
+                  {mode === "records" && !selected && (
+                    <p className="muted">
+                      Select a record on the map or in the explorer.
+                    </p>
+                  )}
+                  {mode === "drafts" && (
+                    <>
+                      <div className="draft-selector">
+                        <label>
+                          Preparation draft
+                          <select
+                            value={draft?.id || ""}
+                            onChange={(e) => {
+                              const d = detail.drafts.find(
+                                (d) => d.id === e.target.value,
+                              );
+                              if (d) {
+                                setDraft(d);
+                                setReview(null);
+                              }
+                            }}
+                          >
+                            <option value="">Choose a draft</option>
+                            {detail.drafts
+                              .filter((d) => d.status === "draft")
+                              .map((d) => (
+                                <option key={d.id} value={d.id}>
+                                  {d.records[0]?.alias} · draft {d.revision}
+                                </option>
+                              ))}
+                          </select>
+                        </label>
+                      </div>
+                      {draft?.status === "draft" ? (
+                        <RegistryEditor
+                          key={draft.id}
+                          draft={draft}
+                          detail={detail}
+                          onSaved={(d) => {
+                            setDraft(d);
+                            void refresh(siteId);
+                          }}
+                          onReviewed={setReview}
+                          onPreview={(id) =>
+                            setPreview(
+                              detail.sources.find((s) => s.id === id) || null,
+                            )
+                          }
+                          onRecorded={async () => {
+                            await refresh(siteId);
+                            setSelectedId(draft.records[0]?.id || null);
+                            setDraft(null);
+                            setReview(null);
+                            setFinding(null);
+                            setMode("records");
+                            setNotice(
+                              "Reviewed revision recorded. The permanent identifier is unchanged.",
+                            );
+                          }}
+                          onSelectFinding={(id) => {
+                            const f = review?.findings.find((f) => f.id === id);
+                            setFinding(f || null);
+                            if (f?.unitIds[0]) {
+                              setSelectedId(f.unitIds[0]);
+                              const affected = workingRecords.find(
+                                (r) => r.id === f.unitIds[0],
+                              );
+                              if (affected)
+                                setFocusTarget((previous) => ({
+                                  footprint: affected.footprint,
+                                  lower: affected.geometry?.lower,
+                                  upper: affected.geometry?.upper,
+                                  sequence: (previous?.sequence || 0) + 1,
+                                }));
+                              setBuilding("all");
+                              setFloor("all");
+                              setBand("all");
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="inspector-empty">
+                          <h2>Changes start with a record.</h2>
+                          <p>
+                            Select a property and choose Propose correction.
+                            Your current registry remains available while you
+                            prepare the change.
+                          </p>
+                          {selected && (
+                            <button
+                              className="button primary"
+                              onClick={() => startDraft(selected)}
+                            >
+                              Correct {selected.alias}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {(mode === "point" || mode === "volume") && (
+                    <>
+                      <div className="section-heading">
+                        <span>Spatial inspection</span>
+                        <span className="status-tag">Current records</span>
+                      </div>
+                      <h2>
+                        {mode === "point"
+                          ? "Above and below"
+                          : "Excavation impact"}
+                      </h2>
+                      <p className="muted">
+                        {mode === "point"
+                          ? "Click the plan or enter local coordinates to inspect the vertical stack."
+                          : "Draw a proposal footprint and enter its vertical limits. The proposal does not become a property record."}
+                      </p>
+                      {mode === "point" ? (
+                        <>
+                          <div className="field-pair">
+                            <label>
+                              X (m)
+                              <input
+                                type="number"
+                                value={point[0]}
+                                onChange={(e) => {
+                                  setPoint([Number(e.target.value), point[1]]);
+                                  setQuery(null);
+                                }}
+                              />
+                            </label>
+                            <label>
+                              Y (m)
+                              <input
+                                type="number"
+                                value={point[1]}
+                                onChange={(e) => {
+                                  setPoint([point[0], Number(e.target.value)]);
+                                  setQuery(null);
+                                }}
+                              />
+                            </label>
+                          </div>
+                          <button
+                            className="button primary"
+                            disabled={!!busy}
+                            onClick={() => pointQuery(point)}
+                          >
+                            Inspect vertical stack
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <div className="field-pair">
+                            <label>
+                              Lower (m)
+                              <input
+                                aria-label="Excavation lower"
+                                type="number"
+                                value={limits.lower}
+                                onChange={(e) => {
+                                  setLimits({
+                                    ...limits,
+                                    lower: Number(e.target.value),
+                                  });
+                                  setQuery(null);
+                                }}
+                              />
+                            </label>
+                            <label>
+                              Upper (m)
+                              <input
+                                aria-label="Excavation upper"
+                                type="number"
+                                value={limits.upper}
+                                onChange={(e) => {
+                                  setLimits({
+                                    ...limits,
+                                    upper: Number(e.target.value),
+                                  });
+                                  setQuery(null);
+                                }}
+                              />
+                            </label>
+                          </div>
+                          <div className="editor-actions">
+                            <button
+                              className="button"
+                              onClick={() => {
+                                setDrawing(true);
+                                setPolygon([]);
+                                setQuery(null);
+                                setView("split");
+                              }}
+                            >
+                              Draw footprint
+                            </button>
+                            <button
+                              className="text-button"
+                              onClick={() => {
+                                setPolygon(EXCAVATION);
+                                setLimits({ lower: -5, upper: 0 });
+                                setQuery(null);
+                                setDrawing(false);
+                              }}
+                            >
+                              Load demo proposal
+                            </button>
+                          </div>
+                          <p className="muted">
+                            {polygon.length} vertices{" "}
+                            {drawing ? "· click the plan to add corners" : ""}
+                          </p>
+                          {polygon.length > 0 && (
+                            <button
+                              className="text-button"
+                              onClick={() => {
+                                setPolygon(polygon.slice(0, -1));
+                                setQuery(null);
+                              }}
+                            >
+                              Undo last vertex
+                            </button>
+                          )}
+                          <button
+                            className="button primary"
+                            disabled={!!busy || polygon.length < 3}
+                            onClick={volumeQuery}
+                          >
+                            Check impact
+                          </button>
+                        </>
+                      )}
+                      {query && (
+                        <section className="query-results">
+                          <h3>
+                            {query.mode === "volume"
+                              ? `${query.results.filter((r) => r.volume > 0).length} volume intersections`
+                              : `${query.results.length} intersecting records`}
+                          </h3>
+                          <p className="muted">
+                            Registry revision {query.registryRevision} ·
+                            synthetic
+                          </p>
+                          {query.results.map((r) => (
+                            <article key={r.record.id}>
+                              <button
+                                className="query-record"
+                                onClick={() => {
+                                  select(r.record.id);
+                                  setBuilding("all");
+                                  setFloor("all");
+                                  setBand("all");
+                                  const overlap = r.overlaps[0];
+                                  setFinding(
+                                    overlap
+                                      ? {
+                                          id: `query-${r.record.id}`,
+                                          code: "QUERY_INTERSECTION",
+                                          severity: "warning",
+                                          title: `${r.record.alias}: ${number(r.volume)} m³ intersection`,
+                                          description:
+                                            "Proposed excavation intersects a known synthetic record.",
+                                          unitIds: [r.record.id],
+                                          sourceIds: r.record.evidence.map(
+                                            (e) => e.sourceId,
+                                          ),
+                                          overlap,
+                                        }
+                                      : null,
+                                  );
+                                }}
+                              >
+                                <span>
+                                  <strong>{r.record.alias}</strong>
+                                  <small>{r.record.name}</small>
+                                </span>
+                                <b>
+                                  {query.mode === "volume"
+                                    ? `${number(r.volume)} m³`
+                                    : `${number(r.record.geometry?.lower)}–${number(r.record.geometry?.upper)} m`}
+                                </b>
+                              </button>
+                              <p>
+                                {r.contact
+                                  ? "Boundary contact · zero interior volume"
+                                  : query.mode === "point"
+                                    ? "Point inside footprint"
+                                    : "Positive volume intersection"}
+                              </p>
+                              <details className="record-disclosure">
+                                <summary>Record & evidence</summary>
+                                <code className="query-identifier">
+                                  {r.record.identifier}
+                                </code>
+                                <p>
+                                  {r.record.links
+                                    .map((l) =>
+                                      detail.records.find(
+                                        (x) => x.id === l.targetId,
+                                      ),
+                                    )
+                                    .filter((x) => x?.kind === "building")
+                                    .map((x) => x!.name)
+                                    .join(" · ") ||
+                                    "Cross-parcel / site infrastructure"}
+                                </p>
+                                <p>
+                                  {number(r.record.geometry?.lower)}–
+                                  {number(r.record.geometry?.upper)} m ·{" "}
+                                  {detail.site.frame.benchmark}
+                                </p>
+                                <p>
+                                  {r.record.rights
+                                    .map(
+                                      (x) =>
+                                        `${x.party} · ${x.type.replaceAll("_", " ")}`,
+                                    )
+                                    .join("; ") || "No party recorded"}
+                                </p>
+                                {[
+                                  ...new Map(
+                                    [
+                                      ...r.record.evidence,
+                                      ...r.record.rights.map((x) => x.evidence),
+                                    ].map((e) => [
+                                      `${e.sourceId}:${e.locator}`,
+                                      e,
+                                    ]),
+                                  ).values(),
+                                ].map((e) =>
+                                  sourceButton(e.sourceId, e.locator),
+                                )}
+                              </details>
+                            </article>
+                          ))}
+                          {!query.results.length && (
+                            <p>No known spaces intersect this query.</p>
+                          )}
+                          <p className="muted">
+                            Known records only. This result does not certify
+                            underground coverage or excavation clearance.
+                          </p>
+                        </section>
+                      )}
+                    </>
+                  )}
+                  {mode === "sources" && (
+                    <section>
+                      <div className="section-heading">
+                        <span>Preserved originals</span>
+                        <span className="status-tag">Synthetic</span>
+                      </div>
+                      <h2>Site source files</h2>
+                      <p className="muted">
+                        Open a source to inspect or download the original bytes.
+                        Parsed plans and documents are references; they do not
+                        automatically create geometry or rights.
+                      </p>
+                      {detail.sources.map((source) => (
+                        <article className="record-right" key={source.id}>
+                          {sourceButton(
+                            source.id,
+                            `Revision ${source.revision}`,
+                          )}
+                          <span>
+                            {source.profile} ·{" "}
+                            {source.status.replaceAll("_", " ")}
+                          </span>
+                        </article>
+                      ))}
+                      {!detail.sources.length && (
+                        <p className="muted">
+                          Use Add records → Import workspace → Prepare source
+                          inputs to inspect original files in this site's frame.
+                        </p>
+                      )}
+                    </section>
+                  )}
+                  {mode === "add" && (
+                    <RegistryCreate
+                      detail={detail}
+                      onDraft={async (d) => {
+                        setDraft(d);
+                        setReview(null);
+                        setMode("drafts");
+                        await refresh(siteId);
+                      }}
+                      onSite={async (id) => {
+                        setSites(await request("/sites"));
+                        setSiteId(id);
+                        setMode("records");
+                      }}
+                    />
+                  )}
+                </aside>
+              )}
             </div>
             <footer className="registry-footer">
-              <span>Synthetic neighbourhood · no official ULPIN issuance</span>
               <span>
-                Originals preserved · revisions retained · runs locally
+                {buildings.length} buildings ·{" "}
+                {detail.records.filter((r) => r.kind === "space").length} spaces
               </span>
-              <button
-                className="text-button"
-                onClick={() =>
-                  run("Refreshing records", async () => {
-                    await refresh(siteId);
-                    setNotice("Registry refreshed.");
-                  })
-                }
-              >
-                <ArrowCounterClockwise size={13} />
-                Refresh
+              <details className="site-frame-info">
+                <summary>Local metres · site info</summary>
+                <div>
+                  <strong>{detail.site.name}</strong>
+                  <p>
+                    {detail.site.frame.id}
+                    <br />
+                    {detail.site.frame.benchmark}
+                  </p>
+                  <code>{detail.site.identifier}</code>
+                  <p>
+                    Synthetic · prototype identifiers
+                    <br />
+                    No geographic location asserted
+                    <br />
+                    Registry revision {detail.site.revision}
+                  </p>
+                </div>
+              </details>
+              <button className="text-button" onClick={() => switchMode("add")}>
+                <Plus size={13} />
+                Add records
               </button>
             </footer>
           </>

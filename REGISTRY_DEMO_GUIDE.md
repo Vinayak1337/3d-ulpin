@@ -14,10 +14,10 @@ Everything in this site is synthetic: coordinates, plans, measurements, parties 
 
 ## Story 1 — find a space and review a correction
 
-1. Search **Household A-201** in the left explorer. Select **A-201**. Its footprint is **40 m²**, limits **3–6 m**, and volume **120 m³**.
+1. Click **Find records**, then search **Household A-201**. Select **A-201**. Its footprint is **40 m²**, limits **3–6 m**, and volume **120 m³**.
 2. Show the permanent identifier in its record. **Copy link** opens the same record after restarting or correcting it. The site namespace does not grow with its children; A-201 has the suffix **S004** in the seeded site.
 3. Open **rights.pdf** under Recorded rights. It names the fictional household and claim. Open **spatial.json** and **levels.csv** under Boundary evidence to show the actual stored originals and their revisions. **Download** exports the record, history, frame, relationships, rights and source hashes.
-4. Click **Propose correction**. In Draft changes, change the lower elevation from **3** to **2.8**, then **Save draft** and **Build and check**.
+4. Click **Propose correction**. In Drafts, change the lower elevation from **3** to **2.8**, then **Save draft** and **Build and check**.
 5. Select the overlap finding. The affected footprint is **4 × 10 = 40 m²**, and the vertical intersection is **0.2 m**: **40 × 0.2 = 8 m³**. Recording is blocked. The current registry record still has its previous geometry and rights.
 6. Restore the draft lower elevation to **3**, save and build/check again. Review the before/after values, neighbours and source evidence. Manually edited bounds remain explicitly unverified until supported again; the warning requires a written acknowledgement.
 7. Enter an acknowledgement such as “Synthetic demo correction checked against levels.csv; manual elevation status acknowledged.” Choose **Record in demo registry**. The ID stays the same and a new revision appears in history.
@@ -50,7 +50,7 @@ The proposal also touches ground apartments at elevation zero. Those rows correc
 
 ## Original files and repeatability
 
-Open **Source files** in the registry to preview or download the five inspected originals. They are also in [fixtures/registry](fixtures/registry/): `spatial.json`, `levels.csv`, `plan.png`, `plan.pdf`, and `rights.pdf`. These are authored demo inputs, not downloaded Indian surveys. The JSON and CSV use the application's documented local-metre profiles; PDF/PNG plans are visual references. No BIM, LiDAR, drone, DEM or AI importer is claimed.
+Open **Sources** in the registry to preview or download the five inspected originals. They are also in [fixtures/registry](fixtures/registry/): `spatial.json`, `levels.csv`, `plan.png`, `plan.pdf`, and `rights.pdf`. These are authored demo inputs, not downloaded Indian surveys. The JSON and CSV use the application's documented local-metre profiles; PDF/PNG plans are visual references. No BIM, LiDAR, drone, DEM or AI importer is claimed.
 
 The seed uploads through the existing source inspection pipeline, prepares units, runs the real queued Python build, creates explicit registry drafts, checks neighbours and commits a reviewed snapshot. Repeating the seed resumes an incomplete load or returns the existing site; it does not reset subsequent operator changes. PDF/PNG inspection can retain `needs_input` for geometric tracing while the parsed page remains usable as a human-reviewed document reference.
 
@@ -73,3 +73,7 @@ The registry integration test exercises real draft reviews and creates additiona
 If loading fails, inspect the on-screen error and local service health. Run `pnpm demo` to recover the platform. For a code rebuild, stop the current application terminal with Ctrl+C before rerunning it. Never delete database/storage volumes to reset the presentation.
 
 See [registry format and API](docs/REGISTRY.md) and [verification evidence](docs/REGISTRY_TEST_EVIDENCE.md).
+
+## Map controls
+
+The registry opens with the entire site in 3D and no selected record. Building A and Building B are labelled; they share a wall. Choose **Plan** for the local site map or **Plan + 3D** for both views. **Entire site** clears spatial filters and restores the whole-site camera. **Filters** contains building, floor and elevation controls. Select a space to open its record; close the panel to recover the full map. **Find records** opens search on demand. Source evidence, related records and history remain expandable. The map uses the declared local-metre frame, not a geographic basemap.
