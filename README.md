@@ -92,6 +92,13 @@ presenter script, from a fresh C-001 workspace through correction and refresh.
 For your own inputs, choose **Import files** and the matching profile. Supported
 inputs are local metric JSON, level CSV, control CSV, PNG and PDF, up to 16 MiB
 per file. PNG/PDF references require manual two-point calibration and tracing.
+Choose **Preview** beside a source or **Preview file** next to its download
+action to read the original inside the workbench. Evidence bindings and
+contributing sources in findings open the same viewer. CSV files appear as
+tables with an original-text toggle, JSON is formatted for reading, and PNG/PDF
+plans support zoom (and page selection for PDFs). Previews are read only;
+downloads and explicit evidence application remain available. Large text/table
+previews show their display limits; the download always contains the full file.
 [INPUT_GUIDE.md](docs/INPUT_GUIDE.md) explains formats, blank measurements,
 calibration and the supplied [synthetic fixtures](fixtures/README.md).
 

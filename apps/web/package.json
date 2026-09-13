@@ -17,6 +17,7 @@
     "cesium": "1.145.0",
     "earcut": "^3.0.2",
     "next": "16.3.5",
+    "papaparse": "^5.7.0",
     "pdfjs-dist": "^5.4.296",
     "pg": "^8.16.0",
     "react": "^19.2.0",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@types/earcut": "^3.0.0",
     "@types/node": "^24.0.0",
+    "@types/papaparse": "^5.5.2",
     "@types/pg": "^8.15.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",

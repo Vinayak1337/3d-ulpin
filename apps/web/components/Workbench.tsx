@@ -52,6 +52,9 @@ import { api, sourceUrl } from "@/lib/client";
 import { number, unitColor } from "@/lib/ui/geometry";
 import PlanView from "./PlanView";
 import SourcePreview from "./SourcePreview";
+const SourceFileDialog = dynamic(() => import("./SourceFileDialog"), {
+  ssr: false,
+});
 
 async function loadSpatialViewer(): Promise<typeof import("./SpatialViewer")> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -193,6 +196,9 @@ export default function Workbench() {
   const [inspection, setInspection] = useState<Inspection>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeFinding, setActiveFinding] = useState<string | null>(null);
+  const [previewSource, setPreviewSource] = useState<SourceRevision | null>(
+    null,
+  );
   const [referenceId, setReferenceId] = useState<string | null>(null);
   const [floor, setFloor] = useState("all");
   const [isolate, setIsolate] = useState(false);
@@ -825,24 +831,32 @@ export default function Workbench() {
                         model.
                       </div>
                       {detail.sources.map((s) => (
-                        <button
-                          key={s.id}
-                          className={`source-row ${inspection?.type === "source" && inspection.id === s.id ? "selected" : ""}`}
-                          onClick={() => selectSource(s)}
-                        >
-                          <span className="file-icon">
-                            <SourceIcon profile={s.profile} />
-                          </span>
-                          <span className="source-row-content">
-                            <strong title={s.name}>{s.name}</strong>
-                            <span>
-                              <small>
-                                r{s.revision} · {number(s.bytes / 1024, 1)} KB
-                              </small>
-                              <Status value={s.status} />
+                        <div className="source-file-row" key={s.id}>
+                          <button
+                            className={`source-row ${inspection?.type === "source" && inspection.id === s.id ? "selected" : ""}`}
+                            onClick={() => selectSource(s)}
+                          >
+                            <span className="file-icon">
+                              <SourceIcon profile={s.profile} />
                             </span>
-                          </span>
-                        </button>
+                            <span className="source-row-content">
+                              <strong title={s.name}>{s.name}</strong>
+                              <span>
+                                <small>
+                                  r{s.revision} · {number(s.bytes / 1024, 1)} KB
+                                </small>
+                                <Status value={s.status} />
+                              </span>
+                            </span>
+                          </button>
+                          <button
+                            className="source-preview-action"
+                            aria-label={`Preview ${s.name} revision ${s.revision}`}
+                            onClick={() => setPreviewSource(s)}
+                          >
+                            Preview
+                          </button>
+                        </div>
                       ))}
                       <button
                         className="source-add"
@@ -1164,6 +1178,7 @@ export default function Workbench() {
                 <SourcePreview
                   key={reference.id}
                   source={reference}
+                  onOpenPreview={() => setPreviewSource(reference)}
                   controls={inspectedControls.flatMap(
                     (s) => s.inspection?.controls || [],
                   )}
@@ -1605,7 +1620,7 @@ export default function Workbench() {
                             className="binding-row"
                             disabled={!linkedSource}
                             onClick={() =>
-                              linkedSource && selectSource(linkedSource)
+                              linkedSource && setPreviewSource(linkedSource)
                             }
                           >
                             <span
@@ -1670,14 +1685,22 @@ export default function Workbench() {
                     <section className="inspector-section">
                       <div className="section-title">
                         <h3>Original file</h3>
-                        <a
-                          className="icon-button"
-                          href={sourceUrl(source.id)}
-                          download={source.name}
-                          aria-label="Download source original"
-                        >
-                          <Download size={14} />
-                        </a>
+                        <div className="row">
+                          <button
+                            className="button small"
+                            onClick={() => setPreviewSource(source)}
+                          >
+                            Preview file
+                          </button>
+                          <a
+                            className="icon-button"
+                            href={sourceUrl(source.id)}
+                            download={source.name}
+                            aria-label="Download source original"
+                          >
+                            <Download size={14} />
+                          </a>
+                        </div>
                       </div>
                       <dl className="metadata-list">
                         <div>
@@ -1911,7 +1934,7 @@ export default function Workbench() {
                             <button
                               key={id}
                               className="related-row"
-                              onClick={() => selectSource(s)}
+                              onClick={() => setPreviewSource(s)}
                             >
                               <SourceIcon profile={s.profile} />
                               <span>
@@ -2077,6 +2100,13 @@ export default function Workbench() {
               <X size={15} />
             </button>
           </div>
+        )}
+        {previewSource && (
+          <SourceFileDialog
+            key={previewSource.id}
+            source={previewSource}
+            onClose={() => setPreviewSource(null)}
+          />
         )}
         {modal && (
           <div

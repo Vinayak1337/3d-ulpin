@@ -24,7 +24,9 @@ interface Props {
   source: SourceRevision;
   controls: ControlPoint[];
   busy: boolean;
-  onTrace: (value: {
+  readOnly?: boolean;
+  onOpenPreview?: () => void;
+  onTrace?: (value: {
     alias: string;
     name: string;
     lower: number;
@@ -39,6 +41,8 @@ export default function SourcePreview({
   controls,
   busy,
   onTrace,
+  readOnly = false,
+  onOpenPreview,
 }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState({
@@ -46,6 +50,7 @@ export default function SourcePreview({
     height: source.inspection?.image?.height || 700,
   });
   const [page, setPage] = useState(1);
+  const [zoom, setZoom] = useState(1);
   const [pages, setPages] = useState(source.inspection?.image?.pages || 1);
   const [loading, setLoading] = useState(source.profile === "plan-pdf-v1");
   const [error, setError] = useState<string | null>(null);
@@ -131,6 +136,7 @@ export default function SourcePreview({
     }
   }
   async function save() {
+    if (!onTrace || readOnly) return;
     try {
       if (!alias.trim() || !name.trim())
         throw new Error("Give the new space an alias and a name.");
@@ -183,6 +189,33 @@ export default function SourcePreview({
           <span>Original reference</span>
         </div>
         <div className="row">
+          {readOnly && (
+            <div className="row" role="group" aria-label="Preview zoom">
+              <button
+                className="icon-button"
+                aria-label="Zoom out"
+                disabled={zoom <= 0.5}
+                onClick={() => setZoom((value) => value - 0.25)}
+              >
+                −
+              </button>
+              <button
+                className="button small"
+                aria-label="Fit preview to width"
+                onClick={() => setZoom(1)}
+              >
+                {Math.round(zoom * 100)}%
+              </button>
+              <button
+                className="icon-button"
+                aria-label="Zoom in"
+                disabled={zoom >= 4}
+                onClick={() => setZoom((value) => value + 0.25)}
+              >
+                +
+              </button>
+            </div>
+          )}
           {isPdf && (
             <label className="page-picker">
               Page{" "}
@@ -208,32 +241,44 @@ export default function SourcePreview({
           >
             <Download size={16} />
           </a>
-          <button
-            className="button small"
-            disabled={loading || (!!error && mode === "preview")}
-            onClick={() => {
-              setMode(mode === "preview" ? "calibrate" : "preview");
-              setImagePoints([]);
-              setPoints([]);
-              setError(null);
-            }}
-          >
-            {mode === "preview" ? (
-              <>
-                <Pencil size={13} />
-                Calibrate & trace
-              </>
-            ) : (
-              <>
-                <X size={13} />
-                Close trace
-              </>
-            )}
-          </button>
+          {onOpenPreview && (
+            <button className="button small" onClick={onOpenPreview}>
+              Preview file
+            </button>
+          )}
+          {!readOnly && (
+            <button
+              className="button small"
+              disabled={loading || (!!error && mode === "preview")}
+              onClick={() => {
+                setMode(mode === "preview" ? "calibrate" : "preview");
+                setImagePoints([]);
+                setPoints([]);
+                setError(null);
+              }}
+            >
+              {mode === "preview" ? (
+                <>
+                  <Pencil size={13} />
+                  Calibrate & trace
+                </>
+              ) : (
+                <>
+                  <X size={13} />
+                  Close trace
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
       <div className="reference-body">
-        <div className="reference-paper">
+        <div
+          className="reference-paper"
+          style={
+            readOnly ? { width: `${zoom * 100}%`, maxWidth: "none" } : undefined
+          }
+        >
           <div
             className={`reference-sheet ${mode !== "preview" ? "crosshair" : ""}`}
           >
@@ -252,69 +297,71 @@ export default function SourcePreview({
                 onError={() => setError("Could not display this plan image.")}
               />
             )}
-            <svg
-              viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
-              onClick={click}
-              aria-label={
-                mode === "calibrate"
-                  ? "Click two known points on the plan"
-                  : "Click vertices to trace a new footprint"
-              }
-            >
-              {imagePoints.length === 2 && (
-                <line
-                  x1={imagePoints[0][0]}
-                  y1={imagePoints[0][1]}
-                  x2={imagePoints[1][0]}
-                  y2={imagePoints[1][1]}
-                  stroke="#e19b30"
-                  strokeWidth={dimensions.width / 350}
-                  strokeDasharray="8 6"
-                />
-              )}
-              {points.length > 0 && (
-                <polygon
-                  points={points.map((p) => p.join(",")).join(" ")}
-                  fill="#398b7760"
-                  stroke="#247662"
-                  strokeWidth={dimensions.width / 300}
-                />
-              )}
-              {points.map((p, i) => (
-                <circle
-                  key={i}
-                  cx={p[0]}
-                  cy={p[1]}
-                  r={dimensions.width / 160}
-                  fill="#fffefa"
-                  stroke="#247662"
-                  strokeWidth={dimensions.width / 400}
-                />
-              ))}
-              {imagePoints.map((p, i) => (
-                <g key={i}>
+            {!readOnly && (
+              <svg
+                viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+                onClick={click}
+                aria-label={
+                  mode === "calibrate"
+                    ? "Click two known points on the plan"
+                    : "Click vertices to trace a new footprint"
+                }
+              >
+                {imagePoints.length === 2 && (
+                  <line
+                    x1={imagePoints[0][0]}
+                    y1={imagePoints[0][1]}
+                    x2={imagePoints[1][0]}
+                    y2={imagePoints[1][1]}
+                    stroke="#e19b30"
+                    strokeWidth={dimensions.width / 350}
+                    strokeDasharray="8 6"
+                  />
+                )}
+                {points.length > 0 && (
+                  <polygon
+                    points={points.map((p) => p.join(",")).join(" ")}
+                    fill="#398b7760"
+                    stroke="#247662"
+                    strokeWidth={dimensions.width / 300}
+                  />
+                )}
+                {points.map((p, i) => (
                   <circle
+                    key={i}
                     cx={p[0]}
                     cy={p[1]}
-                    r={dimensions.width / 100}
-                    fill="#d8871f"
-                    stroke="white"
+                    r={dimensions.width / 160}
+                    fill="#fffefa"
+                    stroke="#247662"
                     strokeWidth={dimensions.width / 400}
                   />
-                  <text
-                    x={p[0]}
-                    y={p[1]}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize={dimensions.width / 80}
-                    fontWeight="700"
-                    fill="white"
-                  >
-                    {i === 0 ? "A" : "B"}
-                  </text>
-                </g>
-              ))}
-            </svg>
+                ))}
+                {imagePoints.map((p, i) => (
+                  <g key={i}>
+                    <circle
+                      cx={p[0]}
+                      cy={p[1]}
+                      r={dimensions.width / 100}
+                      fill="#d8871f"
+                      stroke="white"
+                      strokeWidth={dimensions.width / 400}
+                    />
+                    <text
+                      x={p[0]}
+                      y={p[1]}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={dimensions.width / 80}
+                      fontWeight="700"
+                      fill="white"
+                    >
+                      {i === 0 ? "A" : "B"}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            )}
           </div>
         </div>
         {loading && (
@@ -441,7 +488,7 @@ export default function SourcePreview({
           </button>
         </div>
       )}
-      {mode === "preview" && (
+      {mode === "preview" && !readOnly && (
         <div className="reference-note">
           Reference pixels are not geometry. Calibrate with two control points
           before tracing.
