@@ -22,6 +22,49 @@ GeoJSON, CAD, BIM or LiDAR importer.
 - [NYC Open Data terms](https://opendata.cityofnewyork.us/overview/#termsofuse): public access does not mean a warranty of survey accuracy. Attribute the City of New York Office of Technology and Innovation.
 - [buildingSMART IFC examples](https://technical.buildingsmart.org/standards/ifc/ifc-examples/): original BIM test files for a future IFC importer. This application cannot currently import those files; these are interoperability examples, not cadastral evidence.
 
+## Indian data
+
+Yes—both providers below cover India. They are public imagery-derived building
+datasets, not official Indian cadastral boundaries, ownership records or issued
+ULPINs. Links are also in **Sources → Demo files & public data**.
+
+| Provider | Download | What is missing |
+| --- | --- | --- |
+| [Google Open Buildings](https://sites.research.google/gr/open-buildings/) | Use its download map to select a tile over India; polygon CSV files include WKT footprints, confidence and centre Plus Codes. Start with a small area, not the entire dataset. | The footprint dataset has no heights or interior floors/rooms. A Plus Code is not a ULPIN. |
+| [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints) | Follow the current `dataset-links.csv` link in the README, filter `Location` to `India`, and download one tile. Files are gzip-compressed GeoJSON Lines, even when named `.csv.gz`. | Height is an estimated value in metres where available; `-1` means missing, not a valid elevation. No interior floor/room boundaries. |
+
+**These are not direct uploads yet.** The working NYC adapter is specific to its
+one documented building. To feed an Indian footprint, retain the original and
+attribution, select a simple polygon, project it from longitude/latitude to an
+appropriate local metric CRS, retain the origin, and map it into
+`parcel-local-json-v1`. Supply a `levels-csv-v1` schedule with actual height
+evidence and an explicit relative benchmark. Do not replace missing height with
+a made-up value. Interior levels and rooms need their own plans or measurements.
+The app's current PDF/PNG plan tracing and local-metre CSV/JSON inputs are usable
+with Indian surveys if you already have those files and their frame/benchmark.
+
+Google's separate [2.5D temporal dataset](https://sites.research.google/gr/open-buildings/temporal/)
+also covers India and estimates building height, but distributes raster layers;
+the app cannot ingest these rasters as building geometry. Use the bundled NYC
+sample for a ready-to-run public-data demo until an Indian adapter is added.
+
+## Keep the workspace picker small
+
+The configured demo machine keeps four distinct workspaces visible: NYC public
+building, C-001 before correction, C-001 guided walkthrough after correction,
+and the C-002 architectural example. Repeated verification/rehearsal workspaces
+are archived, not deleted. **Show archived workspaces** in the top-left picker
+reveals them; direct case links continue to work. New cases remain visible.
+
+To restore a workspace permanently to the normal list:
+
+```sh
+pnpm exec tsx scripts/archive-workspaces.ts --restore <case-uuid>
+```
+
+Omit `--restore` to archive explicit case IDs. Archiving changes only picker
+visibility; sources, geometry revisions, identifiers and history are retained.
+
 ## Show the NYC example in the UI
 
 1. Create a new workspace named **NYC public building**.

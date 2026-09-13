@@ -50,6 +50,7 @@ const iso = (value: Date | string) => new Date(value).toISOString();
 export function caseFrom(row: Row): CaseRecord {
   return {
     id: row.id,
+    archived: row.archived ?? false,
     name: row.name,
     description: row.description,
     frame: row.frame,

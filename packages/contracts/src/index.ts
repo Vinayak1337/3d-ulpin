@@ -142,6 +142,7 @@ export interface SourceRevision {
 }
 export interface CaseRecord {
   id: string;
+  archived: boolean;
   name: string;
   description: string;
   frame: CoordinateFrame;

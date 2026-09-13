@@ -55,6 +55,7 @@ export async function migrate() {
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
+    ALTER TABLE cases ADD COLUMN IF NOT EXISTS archived boolean NOT NULL DEFAULT false;
     CREATE TABLE IF NOT EXISTS sources (
       id uuid PRIMARY KEY,
       case_id uuid NOT NULL REFERENCES cases(id),

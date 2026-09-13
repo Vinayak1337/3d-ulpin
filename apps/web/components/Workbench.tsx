@@ -186,6 +186,7 @@ function Mark({ size = 27 }: { size?: number }) {
 
 export default function Workbench() {
   const [cases, setCases] = useState<CaseRecord[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
   const [caseId, setCaseId] = useState<string | null>(null);
   const [detail, setDetail] = useState<CaseDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -253,7 +254,8 @@ export default function Workbench() {
         const saved = localStorage.getItem("astra.case");
         setCaseId(
           result.find((c) => c.id === requested)?.id ||
-            result.find((c) => c.id === saved)?.id ||
+            result.find((c) => c.id === saved && !c.archived)?.id ||
+            result.find((c) => !c.archived)?.id ||
             result[0]?.id ||
             null,
         );
@@ -622,13 +624,33 @@ export default function Workbench() {
                 aria-label="Open case"
                 disabled={!!busy}
                 value={caseId || ""}
-                onChange={(e) => setCaseId(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value === "toggle-archive") {
+                    setShowArchived((value) => !value);
+                  } else {
+                    setCaseId(e.target.value);
+                  }
+                }}
               >
-                {cases.map((c) => (
+                {cases.filter((c) => !c.archived || c.id === caseId).map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {c.name}{c.archived ? " (archived)" : ""}
                   </option>
                 ))}
+                {showArchived && (
+                  <optgroup label="Archived workspaces">
+                    {cases.filter((c) => c.archived && c.id !== caseId).map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} · {c.id.slice(0, 8)}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {cases.some((c) => c.archived) && (
+                  <option value="toggle-archive">
+                    {showArchived ? "Hide archived workspaces" : `Show archived workspaces (${cases.filter((c) => c.archived).length})`}
+                  </option>
+                )}
               </select>
             ) : (
               <span>Untitled workspace</span>
@@ -901,6 +923,18 @@ export default function Workbench() {
                     >
                       NYC Open Data source ↗
                     </a>
+                    <strong>Indian building data</strong>
+                    <a href="https://sites.research.google/gr/open-buildings/" target="_blank" rel="noreferrer">
+                      Google Open Buildings · India coverage ↗
+                    </a>
+                    <a href="https://github.com/microsoft/GlobalMLBuildingFootprints" target="_blank" rel="noreferrer">
+                      Microsoft building footprints · India tiles ↗
+                    </a>
+                    <p>
+                      These downloads need conversion to our local-metre schema
+                      before upload. Footprints alone do not supply interior
+                      floors or rooms; heights need separate evidence.
+                    </p>
                   </details>
                   {detail?.sources.length ? (
                     <>
