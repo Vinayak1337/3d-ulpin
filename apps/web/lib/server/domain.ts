@@ -51,6 +51,7 @@ export function caseFrom(row: Row): CaseRecord {
   return {
     id: row.id,
     archived: row.archived ?? false,
+    siteId: row.site_id || null,
     name: row.name,
     description: row.description,
     frame: row.frame,

@@ -48,3 +48,7 @@ This is documented application JSON, not a standard cadastral exchange format or
 - `provenance.sources`: referenced original source revisions, including family/revision IDs, file names, MIME types, byte counts, SHA-256 hashes, inspection results and timestamps. The original bytes remain available through existing source download endpoints.
 
 Geometry areas and volumes come from processing in the named metre frame. Rendering coordinates and camera transforms are not measurements. Source receipt, parsed suitability, draft geometry, computed findings and technical recording remain distinct stages.
+
+### Workspace import destinations
+
+`GET /api/v1/sites/:id/import-options` lists active workspaces and this site’s unimported preparations, excluding archived rehearsal/draft cases. `POST /api/v1/registry-imports` with `{caseId, expectedRevision, destination: "separate-site"}` atomically creates a site in the workspace’s declared frame and its import draft, or reuses the workspace’s existing site/draft. It returns `{siteId, draftId}`. Import operations serialize per workspace; failed imports roll back newly created sites. `POST /api/v1/sites/:id/import` retains strict frame/benchmark matching. Neither route records a current revision or changes source coordinates.

@@ -1336,10 +1336,18 @@ export default function RegistryWorkbench({
                     <RegistryCreate
                       detail={detail}
                       onDraft={async (d) => {
+                        if (d.siteId !== siteId) {
+                          setSites(await request("/sites"));
+                          setSiteId(d.siteId);
+                          setBuilding("all");
+                          setFloor("all");
+                          setBand("all");
+                          setSelectedId(null);
+                        }
                         setDraft(d);
                         setReview(null);
                         setMode("drafts");
-                        await refresh(siteId);
+                        await refresh(d.siteId);
                       }}
                       onSite={async (id) => {
                         setSites(await request("/sites"));

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { query } from "./db";
+import { caseFrom } from "./domain";
 import { AppError } from "./errors";
 import { frameSchema, idSchema } from "./validation";
 import {
@@ -35,6 +36,23 @@ export async function registryRoutes(
   const method = request.method;
   if (p[0] === "registry-demo" && p.length === 1 && method === "POST")
     return json(await seedRegistry());
+  if (p[0] === "registry-imports" && p.length === 1 && method === "POST") {
+    const body = z
+      .object({
+        caseId: idSchema,
+        expectedRevision: z.number().int().nonnegative(),
+        destination: z.literal("separate-site"),
+      })
+      .strict()
+      .parse(await readBody(request));
+    const draftId = await importRegistryCase(
+      null,
+      body.caseId,
+      body.expectedRevision,
+    );
+    const draft = await draftDetail(draftId);
+    return json({ draftId, siteId: draft.siteId }, 201);
+  }
   if (p[0] === "sites") {
     if (p.length === 1 && method === "GET") return json(await listSites());
     if (p.length === 1 && method === "POST") {
@@ -49,6 +67,14 @@ export async function registryRoutes(
       return json(await createSite(body.name, body.frame, body.synthetic), 201);
     }
     const id = idSchema.parse(p[1]);
+    if (p[2] === "import-options" && p.length === 3 && method === "GET") {
+      await siteDetail(id);
+      const rows = await query(
+        "SELECT c.* FROM cases c WHERE NOT c.archived OR (c.site_id=$1 AND NOT EXISTS(SELECT 1 FROM registry_drafts d WHERE d.case_id=c.id) AND NOT EXISTS(SELECT 1 FROM registry_sites s WHERE s.seed_case_id=c.id)) ORDER BY c.updated_at DESC",
+        [id],
+      );
+      return json(rows.rows.map(caseFrom));
+    }
     if (p.length === 2 && method === "GET") return json(await siteDetail(id));
     if (p[2] === "workspace" && p.length === 3 && method === "POST") {
       const d = await siteDetail(id),

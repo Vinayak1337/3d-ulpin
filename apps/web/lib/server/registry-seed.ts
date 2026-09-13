@@ -30,7 +30,7 @@ import {
 } from "./registry";
 
 export async function importRegistryCase(
-  siteId: string,
+  siteId: string | null,
   caseId: string,
   expectedRevision: number,
 ) {
@@ -42,6 +42,30 @@ export async function importRegistryCase(
   )
     conflict("Build the current case before importing.");
   return transaction(async (client) => {
+    // Serialize import destinations and retries for a workspace before allocating identities.
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [
+      `registry-import:${caseId}`,
+    ]);
+    if (!siteId) {
+      const attached = (
+        await client.query("SELECT site_id FROM cases WHERE id=$1", [caseId])
+      ).rows[0]?.site_id;
+      if (attached) siteId = attached;
+      else {
+        const id = randomUUID();
+        const created = await client.query(
+          "INSERT INTO registry_sites(id,identifier,name,frame,seed_key) VALUES($1,$2,$3,$4,$5) ON CONFLICT(seed_key) DO UPDATE SET seed_key=EXCLUDED.seed_key RETURNING id",
+          [
+            id,
+            propertyIdentifier(id),
+            `${detail.case.name} · site`,
+            detail.case.frame,
+            `workspace-import:${caseId}`,
+          ],
+        );
+        siteId = created.rows[0].id;
+      }
+    }
     const site = siteFrom(
       (
         await client.query(
@@ -54,7 +78,7 @@ export async function importRegistryCase(
       throw new AppError(
         422,
         "FRAME_MISMATCH",
-        "Import requires the same declared frame and benchmark.",
+        `This workspace uses ${detail.case.frame.id} / ${detail.case.frame.benchmark}; the site uses ${site.frame.id} / ${site.frame.benchmark}. Import into a separate site to preserve its coordinates.`,
       );
     const c = (
       await client.query("SELECT * FROM cases WHERE id=$1 FOR UPDATE", [caseId])

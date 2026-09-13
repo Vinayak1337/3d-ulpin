@@ -143,6 +143,7 @@ export interface SourceRevision {
 }
 export interface CaseRecord {
   id: string;
+  siteId?: string | null;
   archived: boolean;
   name: string;
   description: string;

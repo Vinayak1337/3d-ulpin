@@ -35,10 +35,20 @@ export default function RegistryCreate({
     [cases, setCases] = useState<CaseRecord[]>([]),
     [caseId, setCaseId] = useState("");
   useEffect(() => {
-    request<CaseRecord[]>("/cases")
+    request<CaseRecord[]>(`/sites/${detail.site.id}/import-options`)
       .then(setCases)
       .catch((e) => setError(e.message));
-  }, []);
+  }, [detail.site.id]);
+  const selectedCase = cases.find((c) => c.id === caseId);
+  const sameFrame =
+    !!selectedCase &&
+    selectedCase.frame.id === detail.site.frame.id &&
+    selectedCase.frame.benchmark === detail.site.frame.benchmark &&
+    selectedCase.frame.horizontalUnit === detail.site.frame.horizontalUnit &&
+    selectedCase.frame.verticalUnit === detail.site.frame.verticalUnit;
+  const otherSite =
+    !!selectedCase?.siteId && selectedCase.siteId !== detail.site.id;
+  const separateSite = !!selectedCase && (!sameFrame || otherSite);
   async function run(action: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -238,13 +248,18 @@ export default function RegistryCreate({
       {tab === "import" && (
         <>
           <p className="muted">
-            Import a built workspace with exactly the same frame and benchmark.
-            This creates a review draft and preserves legacy identifiers as
-            aliases.
+            Choose a built workspace. Import creates a draft for review;
+            originals and existing identifiers are preserved.
           </p>
           <label>
             Workspace
-            <select value={caseId} onChange={(e) => setCaseId(e.target.value)}>
+            <select
+              value={caseId}
+              onChange={(e) => {
+                setCaseId(e.target.value);
+                setError("");
+              }}
+            >
               <option value="">Choose workspace</option>
               {cases.map((c) => (
                 <option value={c.id} key={c.id}>
@@ -253,6 +268,29 @@ export default function RegistryCreate({
               ))}
             </select>
           </label>
+          {selectedCase && (
+            <div className="review-diff">
+              <strong>
+                {separateSite
+                  ? "This workspace belongs on a separate site"
+                  : "Ready for this site"}
+              </strong>
+              <p>
+                Workspace: {selectedCase.frame.id} ·{" "}
+                {selectedCase.frame.benchmark}
+              </p>
+              {separateSite && (
+                <p>
+                  Current site: {detail.site.frame.id} ·{" "}
+                  {detail.site.frame.benchmark}. Coordinates stay unchanged;
+                  this will not place the building inside {detail.site.name}.
+                </p>
+              )}
+              {otherSite && (
+                <p>The existing linked site and import will be reopened.</p>
+              )}
+            </div>
+          )}
           <button
             className="button primary"
             disabled={busy || !caseId}
@@ -260,8 +298,14 @@ export default function RegistryCreate({
               run(async () => {
                 const c = cases.find((c) => c.id === caseId)!;
                 const result = await request<{ draftId: string }>(
-                  `/sites/${detail.site.id}/import`,
-                  { caseId, expectedRevision: c.revision },
+                  separateSite
+                    ? "/registry-imports"
+                    : `/sites/${detail.site.id}/import`,
+                  {
+                    caseId,
+                    expectedRevision: c.revision,
+                    ...(separateSite ? { destination: "separate-site" } : {}),
+                  },
                 );
                 await onDraft(
                   await request(`/registry-drafts/${result.draftId}`),
@@ -269,7 +313,7 @@ export default function RegistryCreate({
               })
             }
           >
-            Import as draft
+            {separateSite ? "Import into separate site" : "Import as draft"}
           </button>
           <h3>Need new source files?</h3>
           <p className="muted">
