@@ -75,7 +75,7 @@ export const buildSchema = z
   .object({ expectedRevision: z.number().int().nonnegative() })
   .strict();
 export const demoSchema = z
-  .object({ dataset: z.enum(["c001", "c002"]) })
+  .object({ dataset: z.enum(["c001", "c002", "real-nyc"]) })
   .strict();
 
 const bindingSchema = z.object({ sourceId: idSchema, locator: z.string() });

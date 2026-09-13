@@ -234,7 +234,7 @@ export default function SpatialViewer({ model, selectedId, onSelect, floor, isol
         <button type="button" onClick={() => { viewer.current?.camera.zoomOut(3); viewer.current?.scene.requestRender(); }} aria-label="Zoom out"><Minus size={17} weight="bold" /></button>
         <button type="button" onClick={() => resetCamera.current()} aria-label="Reset camera"><ArrowCounterClockwise size={17} weight="bold" /></button>
       </div>
-      <div className={styles.caption}><span className={styles.captionDot} />{presentation === "building" ? "Conceptual façade · measured spaces unchanged" : finding ? "Finding at measured coordinates · exact property volumes" : "Measured property spaces · local metres"}</div>
+      <div className={styles.caption}><span className={styles.captionDot} />{presentation === "building" ? "Conceptual façade · measured spaces unchanged" : finding ? "Finding at measured coordinates · exact property volumes" : "Computed property spaces · local metres"}</div>
       <div className={styles.help}>Drag to orbit<span>·</span>Scroll to zoom<span>·</span>Click a space</div>
     </>}
   </div>;

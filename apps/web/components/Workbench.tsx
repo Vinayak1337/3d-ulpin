@@ -52,6 +52,8 @@ import { api, sourceUrl } from "@/lib/client";
 import { number, unitColor } from "@/lib/ui/geometry";
 import PlanView from "./PlanView";
 import SourcePreview from "./SourcePreview";
+import PropertyIdentity, { IdentifierValue } from "./PropertyIdentity";
+import { identityLevel } from "@/lib/identifiers";
 const SourceFileDialog = dynamic(() => import("./SourceFileDialog"), {
   ssr: false,
 });
@@ -211,7 +213,7 @@ export default function Workbench() {
   );
   const [mobileSidebar, setMobileSidebar] = useState(false);
   const modalElement = useRef<HTMLElement>(null);
-  const [dataset, setDataset] = useState<"c001" | "c002">("c001");
+  const [dataset, setDataset] = useState<"c001" | "c002" | "real-nyc">("c001");
   const [modal, setModal] = useState<Modal>(null);
   const [newName, setNewName] = useState("Untitled property");
   const [uploadProfile, setUploadProfile] = useState<SourceProfile>(
@@ -473,7 +475,9 @@ export default function Workbench() {
           detail && !detail.sources.length
             ? detail.case
             : await api.createCase(
-                `Demonstration ${dataset === "c001" ? "C-001" : "C-002"}`,
+                dataset === "real-nyc"
+                  ? "NYC public building · DOITT 353927"
+                  : `Demonstration ${dataset === "c001" ? "C-001" : "C-002"}`,
               );
         setCaseId(target.id);
         currentId.current = target.id;
@@ -743,6 +747,13 @@ export default function Workbench() {
                               }
                             />
                             <span>{level}</span>
+                            <code className="tree-identity-code">
+                              {
+                                detail.identity?.floors.find(
+                                  (f) => f.label === identityLevel(level),
+                                )?.code
+                              }
+                            </code>
                             <span>
                               {
                                 detail.units.filter(
@@ -771,6 +782,17 @@ export default function Workbench() {
                                   <span>
                                     <strong>{u.alias}</strong>
                                     <small>{u.name}</small>
+                                    {detail.identity?.spaces.find(
+                                      (s) => s.unitId === u.id,
+                                    ) && (
+                                      <code className="tree-identity-code">
+                                        {
+                                          detail.identity.spaces.find(
+                                            (s) => s.unitId === u.id,
+                                          )!.code
+                                        }
+                                      </code>
+                                    )}
                                   </span>
                                   <span className="unit-meta">
                                     <span>
@@ -824,6 +846,62 @@ export default function Workbench() {
               )}
               {pane === "sources" && (
                 <>
+                  <details className="demo-file-library">
+                    <summary>Demo files & public data</summary>
+                    <p>
+                      C-001 / C-002 are synthetic. NYC is a real public
+                      footprint converted to our input schema; interior floors
+                      are not supplied.
+                    </p>
+                    <strong>C-001 synthetic files</strong>
+                    {[
+                      "spatial.json",
+                      "levels-r1.csv",
+                      "controls.csv",
+                      "plan.png",
+                      "plan.pdf",
+                    ].map((name) => (
+                      <a
+                        key={name}
+                        href={`/api/v1/demo-files/c001/${name}`}
+                        download={name}
+                      >
+                        {name}
+                      </a>
+                    ))}
+                    <strong>NYC public building</strong>
+                    <a
+                      href="/api/v1/demo-assets/real-nyc/original.geojson"
+                      download="original.geojson"
+                    >
+                      Original geospatial file · GeoJSON
+                    </a>
+                    <a
+                      href="/api/v1/demo-assets/real-nyc/provenance.json"
+                      download="provenance.json"
+                    >
+                      Provenance & conversion details
+                    </a>
+                    <a
+                      href="/api/v1/demo-files/real-nyc/spatial.json"
+                      download="spatial.json"
+                    >
+                      Converted footprints · JSON
+                    </a>
+                    <a
+                      href="/api/v1/demo-files/real-nyc/levels-r1.csv"
+                      download="levels-r1.csv"
+                    >
+                      Converted roof height · CSV
+                    </a>
+                    <a
+                      href="https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      NYC Open Data source ↗
+                    </a>
+                  </details>
                   {detail?.sources.length ? (
                     <>
                       <div className="section-note">
@@ -865,16 +943,17 @@ export default function Workbench() {
                         <Plus size={14} />
                         Add another source
                       </button>
-                      {!!detail.units.length && (
-                        <button
-                          className="source-add revised"
-                          disabled={!!busy}
-                          onClick={reviseDemo}
-                        >
-                          <RefreshCw size={14} />
-                          Load revised demo levels
-                        </button>
-                      )}
+                      {!!detail.units.length &&
+                        !detail.case.frame.id.startsWith("NYC-") && (
+                          <button
+                            className="source-add revised"
+                            disabled={!!busy}
+                            onClick={reviseDemo}
+                          >
+                            <RefreshCw size={14} />
+                            Load revised demo levels
+                          </button>
+                        )}
                     </>
                   ) : (
                     <div className="sidebar-empty">
@@ -1038,6 +1117,13 @@ export default function Workbench() {
                 </button>
               </div>
             </div>
+            {detail?.identity && (
+              <PropertyIdentity
+                key={detail.case.id}
+                detail={detail}
+                onSelect={selectUnit}
+              />
+            )}
             <div className="viewport-toolbar">
               <button
                 className="icon-button tree-toggle"
@@ -1346,9 +1432,15 @@ export default function Workbench() {
                                 aria-label="Sample dataset"
                                 value={dataset}
                                 onChange={(e) =>
-                                  setDataset(e.target.value as "c001" | "c002")
+                                  setDataset(
+                                    e.target.value as
+                                      "c001" | "c002" | "real-nyc",
+                                  )
                                 }
                               >
+                                <option value="real-nyc">
+                                  NYC · Public building footprint
+                                </option>
                                 <option value="c001">
                                   C-001 · Reference building
                                 </option>
@@ -1378,7 +1470,10 @@ export default function Workbench() {
                           </>
                         )}
                         <div className="empty-disclaimer">
-                          Synthetic sample data <span>·</span> Local metres
+                          {dataset === "real-nyc"
+                            ? "Public NYC data · converted envelope; interiors unknown"
+                            : "Synthetic sample data"}{" "}
+                          <span>·</span> Local metres
                         </div>
                       </div>
                       <div className="workflow-strip">
@@ -1483,10 +1578,49 @@ export default function Workbench() {
                       <span className="eyebrow">
                         {unit.kind} · REVISION {unit.revision}
                       </span>
-                      <h2>{unit.alias}</h2>
+                      <h2
+                        className={
+                          unit.alias.length > 10 ? "long-unit-alias" : undefined
+                        }
+                      >
+                        {unit.alias}
+                      </h2>
                       <p>{unit.name}</p>
-                      <span className="subtle-label">{unit.levelLabel}</span>
+                      <span className="subtle-label">
+                        {unit.levelLabel || "Unassigned level"}
+                      </span>
                     </div>
+                    {detail?.identity?.spaces.find(
+                      (s) => s.unitId === unit.id,
+                    ) && (
+                      <section className="inspector-section space-identifier-card">
+                        <div className="section-title">
+                          <h3>3D ULPIN · space</h3>
+                          <span>Prototype</span>
+                        </div>
+                        <IdentifierValue
+                          value={
+                            detail.identity.spaces.find(
+                              (s) => s.unitId === unit.id,
+                            )!.id
+                          }
+                          label="selected space 3D ULPIN"
+                        />
+                        <p className="small-note">
+                          Floor:{" "}
+                          {
+                            detail.identity.floors.find(
+                              (f) =>
+                                f.id ===
+                                detail.identity.spaces.find(
+                                  (s) => s.unitId === unit.id,
+                                )!.parentId,
+                            )?.label
+                          }
+                          . Parent property: {detail.identity.rootId}
+                        </p>
+                      </section>
+                    )}
                     <section className="inspector-section">
                       <div className="section-title">
                         <h3>Computed quantities</h3>
@@ -1496,7 +1630,7 @@ export default function Workbench() {
                       </div>
                       <div className="quantities">
                         <div>
-                          <span>Floor area</span>
+                          <span>Footprint area</span>
                           <strong>
                             {number(computed?.area)}
                             <small>m²</small>
@@ -2037,8 +2171,9 @@ export default function Workbench() {
                     <div className="guide-note">
                       <ShieldCheck size={18} />
                       <p>
-                        This is a local demonstration. Synthetic sources and
-                        draft geometry do not establish legal rights or official
+                        This is a local prototype. Source measurements, derived
+                        envelopes and synthetic examples remain distinct. Draft
+                        geometry does not establish legal rights or official
                         identity.
                       </p>
                     </div>
@@ -2077,7 +2212,10 @@ export default function Workbench() {
                 <span className="tiny-mark">
                   <Mark size={15} />
                 </span>
-                Local metric workspace · Synthetic demonstration
+                Local metric workspace ·{" "}
+                {detail?.case.frame.id.startsWith("NYC-")
+                  ? "NYC public data · envelope approximation"
+                  : "Prototype demonstration"}
               </div>
             </aside>
           )}

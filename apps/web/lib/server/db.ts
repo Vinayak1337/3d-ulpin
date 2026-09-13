@@ -134,5 +134,39 @@ export async function migrate() {
       created_at timestamptz NOT NULL DEFAULT now(),
       PRIMARY KEY(case_id,operation_key,kind)
     );
+    CREATE TABLE IF NOT EXISTS identity_floors (
+      case_id uuid NOT NULL REFERENCES cases(id),
+      label text NOT NULL,
+      ordinal integer NOT NULL CHECK(ordinal > 0),
+      PRIMARY KEY(case_id,ordinal),
+      UNIQUE(case_id,label)
+    );
+    CREATE TABLE IF NOT EXISTS identity_spaces (
+      case_id uuid NOT NULL REFERENCES cases(id),
+      unit_id uuid PRIMARY KEY REFERENCES units(id),
+      ordinal integer NOT NULL CHECK(ordinal > 0),
+      floor_ordinal integer NOT NULL,
+      UNIQUE(case_id,ordinal),
+      FOREIGN KEY(case_id,floor_ordinal) REFERENCES identity_floors(case_id,ordinal)
+    );
+    -- Backfill all historical units, including inactive ones. Never reuse suffixes.
+    WITH missing AS (
+      SELECT DISTINCT u.case_id,COALESCE(NULLIF(btrim(u.body->>'levelLabel'),''),'Unassigned') AS label
+      FROM units u WHERE NOT EXISTS(SELECT 1 FROM identity_floors f WHERE f.case_id=u.case_id
+        AND f.label=COALESCE(NULLIF(btrim(u.body->>'levelLabel'),''),'Unassigned'))
+    )
+    INSERT INTO identity_floors(case_id,label,ordinal)
+      SELECT m.case_id,m.label,COALESCE((SELECT MAX(f.ordinal) FROM identity_floors f WHERE f.case_id=m.case_id),0)
+        + ROW_NUMBER() OVER(PARTITION BY m.case_id ORDER BY m.label)
+      FROM missing m ON CONFLICT DO NOTHING;
+    WITH missing AS (
+      SELECT u.id,u.case_id,u.created_at,f.ordinal AS floor_ordinal FROM units u
+      JOIN identity_floors f ON f.case_id=u.case_id AND f.label=COALESCE(NULLIF(btrim(u.body->>'levelLabel'),''),'Unassigned')
+      WHERE NOT EXISTS(SELECT 1 FROM identity_spaces s WHERE s.unit_id=u.id)
+    )
+    INSERT INTO identity_spaces(case_id,unit_id,ordinal,floor_ordinal)
+      SELECT m.case_id,m.id,COALESCE((SELECT MAX(s.ordinal) FROM identity_spaces s WHERE s.case_id=m.case_id),0)
+        + ROW_NUMBER() OVER(PARTITION BY m.case_id ORDER BY m.created_at,m.id),m.floor_ordinal
+      FROM missing m ON CONFLICT DO NOTHING;
   `);
 }

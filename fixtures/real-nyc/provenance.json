@@ -1,0 +1,43 @@
+{
+  "classification": "public real-world building footprint and reported roof-height attributes; derived constant-height envelope",
+  "provider": "City of New York Office of Technology and Innovation (OTI)",
+  "dataset": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue",
+  "originalDownload": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?doitt_id=353927",
+  "metadata": "https://github.com/CityOfNewYork/nyc-geo-metadata/blob/main/Metadata/Metadata_BuildingFootprints.md",
+  "terms": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+  "retrievedOn": "2026-09-13",
+  "originalFile": "original.geojson",
+  "originalSha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+  "sourceKey": {
+    "doitt_id": "353927",
+    "bin": "2019299",
+    "sourceLastEdited": "2017-08-22T18:57:18.000Z",
+    "geometrySource": "Photogrammetric"
+  },
+  "conversion": {
+    "inputCRS": "EPSG:4326 (GeoJSON longitude/latitude)",
+    "projectedCRS": "EPSG:2263 (US survey feet)",
+    "originProjected": [
+      1020173.9940567322,
+      267261.079063471
+    ],
+    "xyMetresPerSurveyFoot": 0.3048006096012192,
+    "roofHeightFeet": 33.49,
+    "roofMetresPerFoot": 0.3048,
+    "roofHeightMetres": 10.207752,
+    "verticalReference": "Zero normalized to this building's ground; no absolute datum transform performed",
+    "engine": "POSTGIS=\"3.5.2 dea6d0a\" [EXTENSION] PGSQL=\"170\" GEOS=\"3.9.0-CAPI-1.16.2\" PROJ=\"7.2.1 NETWORK_ENABLED=OFF URL_ENDPOINT=https://cdn.proj.org USER_WRITABLE_DIRECTORY=/var/lib/postgresql/.local/share/proj DATABASE_PATH=/usr/share/proj/proj.db\" (compiled against PROJ 7.2.1) LIBXML=\"2.9.10\" LIBJSON=\"0.15\" LIBPROTOBUF=\"1.3.3\" WAGYU=\"0.5.0 (Internal)\" TOPOLOGY"
+  },
+  "checks": {
+    "projectedFootprintAreaM2": 123.9502406822695,
+    "expectedEnvelopeVolumeM3": 1265.2533172249177,
+    "interiorFloorsInSource": false
+  },
+  "limitations": [
+    "No interior room, floor, ownership or parcel boundary is supplied by this building footprint.",
+    "The prism is an approximation, not a measured watertight building solid or legal unit.",
+    "Published roof-height units are treated as feet; original values and conversion factor are retained for review.",
+    "Source SHAPE_AREA and SHAPE_LENGTH are not used; projected geometry determines quantities.",
+    "A new workspace gets its own prototype ID; NYC BIN/DOITT identifiers are preserved as source references, never replaced by an official ULPIN."
+  ]
+}

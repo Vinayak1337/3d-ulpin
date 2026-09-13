@@ -1,6 +1,8 @@
 # API regression evidence
 
-**17/17 checks passed.**
+**17/17 checks passed.** Executed: 2026-09-13T09:50:35.099Z.
+
+Target: http://127.0.0.1:3000. Mode: non-disruptive adversarial suite.
 
 Repeat: `pnpm exec tsx scripts/api-regression.ts`.
 
@@ -11,13 +13,9 @@ Focused checks are recorded separately and are not overwritten by this suite:
 - [Late-result race](API_STALE_RESULT_EVIDENCE.md): `--stale-race-only`, during a coordinated idle window.
 - [Closed-ring save/build](API_CLOSED_RING_EVIDENCE.md): `--closed-ring-only`.
 
-## Run 2026-09-12T09:41:34.258Z
-
-Target: http://127.0.0.1:3000. Mode: non-disruptive adversarial suite.
-
 Cases created (all names start with Regression):
-- Regression adversarial 2026-09-12T09:41:34.258Z: `91c92362-3dba-4e9e-a7ab-9af1e1acd7d3`
-- Regression foreign-source 2026-09-12T09:41:34.258Z: `634595cf-23af-4faf-992e-6ad433c9eddd`
+- Regression adversarial 2026-09-13T09:50:35.099Z: `698376fa-0cb9-473d-a13c-74bb81ed920d`
+- Regression foreign-source 2026-09-13T09:50:35.099Z: `778fbf2a-3d86-4ccc-974f-cf905bbc4e94`
 
 | Result | Scenario | Detail |
 | --- | --- | --- |

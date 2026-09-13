@@ -11,6 +11,7 @@ import {
   loadDemoLevels,
   prepareCase,
   readDemoFile,
+  readRealDemoAsset,
   requestBuild,
   retryJob,
   updateUnit,
@@ -79,6 +80,23 @@ async function handle(request: Request, context: Context): Promise<Response> {
     localOnly(request);
     const { path: p } = await context.params;
     const method = request.method;
+    if (
+      p[0] === "demo-assets" &&
+      p[1] === "real-nyc" &&
+      p.length === 3 &&
+      method === "GET"
+    ) {
+      const bytes = await readRealDemoAsset(p[2]);
+      return new Response(new Uint8Array(bytes), {
+        headers: {
+          "Content-Type": p[2].endsWith(".geojson")
+            ? "application/geo+json"
+            : "application/json",
+          "Content-Disposition": `attachment; filename="${p[2]}"`,
+          "Cache-Control": "private, max-age=60",
+        },
+      });
+    }
     if (p[0] === "health" && p.length === 1 && method === "GET") {
       const checks = await Promise.allSettled([
         query("SELECT PostGIS_Version()"),
@@ -198,6 +216,12 @@ async function handle(request: Request, context: Context): Promise<Response> {
         }
         if (p[2] === "demo-levels") {
           const { dataset } = demoSchema.parse(await body(request));
+          if (dataset === "real-nyc")
+            throw new AppError(
+              422,
+              "NO_REVISED_SAMPLE",
+              "The NYC sample has no revised level schedule or interior floor measurements.",
+            );
           return json(await loadDemoLevels(caseId, dataset), 201);
         }
         if (p[2] === "prepare")

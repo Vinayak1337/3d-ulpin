@@ -38,11 +38,11 @@ export const api = {
       json({
         name,
         description:
-          "Local demonstration workspace. Synthetic inputs are not survey evidence.",
+          "Local prototype workspace. Preserve original source provenance; synthetic samples are not survey evidence.",
       }),
     ),
   detail: (id: string) => request<CaseDetail>(`/cases/${id}`),
-  demo: (id: string, dataset: "c001" | "c002") =>
+  demo: (id: string, dataset: "c001" | "c002" | "real-nyc") =>
     request<{ sourceIds: string[] }>(`/cases/${id}/demo-inputs`, {
       ...json({ dataset }),
       headers: {

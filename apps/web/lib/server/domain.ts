@@ -24,6 +24,7 @@ import { query, transaction } from "./db";
 import { AppError, conflict, notFound } from "./errors";
 import { putOriginal, removeOrphan, sha256 } from "./storage";
 import { settings } from "./config";
+import { persistIdentity, readIdentity } from "./identities";
 
 type Row = Record<string, any>;
 export const defaultFrame: CoordinateFrame = {
@@ -154,6 +155,7 @@ async function detailFromClient(
   );
   return {
     case: caseFrom(row),
+    identity: await readIdentity(client, id),
     sources: sources.rows.map(sourceFrom),
     units: units.rows.map((u) => u.body),
     jobs: jobs.rows.map(jobFrom),
@@ -414,6 +416,7 @@ async function persistUnit(client: PoolClient, caseId: string, unit: UnitSpec) {
     "INSERT INTO unit_revisions(unit_id,revision,body) VALUES($1,$2,$3)",
     [unit.id, unit.revision, unit],
   );
+  await persistIdentity(client, caseId, unit);
 }
 function supportedRow(
   row: LevelRow | undefined,
@@ -907,7 +910,13 @@ const demoProfiles: Record<string, { profile: SourceProfile; mime: string }> = {
   "plan.pdf": { profile: "plan-pdf-v1", mime: "application/pdf" },
 };
 export async function readDemoFile(dataset: string, name: string) {
-  if (!["c001", "c002"].includes(dataset) || !demoProfiles[name]) notFound();
+  if (!["c001", "c002", "real-nyc"].includes(dataset) || !demoProfiles[name])
+    notFound();
+  if (
+    dataset === "real-nyc" &&
+    !["spatial.json", "levels-r1.csv"].includes(name)
+  )
+    notFound();
   return {
     bytes: await readFile(path.join(settings.fixtureRoot, dataset, name)),
     ...demoProfiles[name],
@@ -915,17 +924,19 @@ export async function readDemoFile(dataset: string, name: string) {
 }
 export async function loadDemoInputs(
   caseId: string,
-  dataset: "c001" | "c002",
+  dataset: "c001" | "c002" | "real-nyc",
   operationKey?: string,
 ) {
   const sourceIds: string[] = [];
-  for (const name of [
-    "spatial.json",
-    "levels-r1.csv",
-    "controls.csv",
-    "plan.png",
-    "plan.pdf",
-  ]) {
+  for (const name of dataset === "real-nyc"
+    ? ["spatial.json", "levels-r1.csv"]
+    : [
+        "spatial.json",
+        "levels-r1.csv",
+        "controls.csv",
+        "plan.png",
+        "plan.pdf",
+      ]) {
     const file = await readDemoFile(dataset, name);
     const source = await uploadSource(caseId, {
       name,
@@ -937,6 +948,10 @@ export async function loadDemoInputs(
     sourceIds.push(source.id);
   }
   return { sourceIds };
+}
+export async function readRealDemoAsset(name: string) {
+  if (!["original.geojson", "provenance.json"].includes(name)) notFound();
+  return readFile(path.join(settings.fixtureRoot, "real-nyc", name));
 }
 export async function loadDemoLevels(caseId: string, dataset: "c001" | "c002") {
   const existing = (

@@ -161,6 +161,7 @@ export interface ProcessingJob {
   inputFingerprint: string;
 }
 export interface CaseDetail {
+  identity: PropertyIdentity;
   case: CaseRecord;
   sources: SourceRevision[];
   units: UnitSpec[];
@@ -168,6 +169,19 @@ export interface CaseDetail {
   jobs: ProcessingJob[];
   context: ContextFeature[];
   history: { id: string; kind: string; message: string; createdAt: string }[];
+}
+export interface PropertyIdentity {
+  rootId: string;
+  status: "prototype";
+  scope: "property-workspace";
+  floors: { id: string; code: string; label: string; parentId: string }[];
+  spaces: {
+    id: string;
+    code: string;
+    unitId: string;
+    parentId: string;
+    path: string;
+  }[];
 }
 export interface ApiError {
   error: {

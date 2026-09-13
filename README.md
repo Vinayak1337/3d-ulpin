@@ -70,6 +70,17 @@ distribution.
 
 ## Try the five-minute story
 
+**New: visible prototype 3D ULPINs and a real-data example.** The parent ID is
+above the viewer; **View identifiers** opens the floor/space register. These
+are prototype workspace IDs, not government-issued ULPINs. See
+[the identifier format](docs/PROTOTYPE_IDENTIFIERS.md).
+
+For downloadable demo files and public data, open **Sources → Demo files &
+public data** or [DEMO_DATA.md](DEMO_DATA.md). A new workspace can load
+**NYC · Public building footprint**, a real public footprint/roof-height sample
+converted into an exterior envelope. Interior floors remain unknown. C-001 and
+C-002 remain synthetic examples for the interior-space correction workflow.
+
 1. Click the **+** next to the workspace selector, name a new workspace, and
    choose **Create workspace**.
 2. Select **C-001 · Reference building** and **Load sample inputs**. Wait for
