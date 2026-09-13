@@ -8,6 +8,7 @@ import type {
 } from "@ulpin/contracts";
 import { registryRequest } from "@/lib/registry-client";
 import { number } from "@/lib/ui/geometry";
+import RegistryFootprintDiff from "./RegistryFootprintDiff";
 export default function RegistryEditor({
   draft,
   detail,
@@ -39,6 +40,7 @@ export default function RegistryEditor({
     setForm(record);
     setOutline(JSON.stringify(record.footprint));
     setDirty(false);
+    setAck("");
     setReview(null);
     onReviewed(null);
   }, [record, draft.revision]); // parent callback does not control this reset
@@ -56,6 +58,7 @@ export default function RegistryEditor({
   const change = (next: RegistryRecord) => {
     setForm(next);
     setDirty(true);
+    setAck("");
     setReview(null);
     onReviewed(null);
   };
@@ -166,6 +169,7 @@ export default function RegistryEditor({
             onChange={(e) => {
               setOutline(e.target.value);
               setDirty(true);
+              setAck("");
               setReview(null);
               onReviewed(null);
             }}
@@ -385,6 +389,7 @@ export default function RegistryEditor({
                   expectedSiteRevision: detail.site.revision,
                 },
               );
+              setAck("");
               setReview(r);
               onReviewed(r);
             })
@@ -412,6 +417,19 @@ export default function RegistryEditor({
                     ? "Current record → proposed revision"
                     : "New registry record"}
                 </p>
+                {before && before.name !== r.name && (
+                  <p>
+                    Name: {before.name} → {r.name}
+                  </p>
+                )}
+                {before &&
+                  JSON.stringify(before.footprint) !==
+                    JSON.stringify(r.footprint) && (
+                    <RegistryFootprintDiff
+                      before={before.footprint}
+                      after={r.footprint}
+                    />
+                  )}
                 {r.geometry && (
                   <p>
                     {before?.geometry
@@ -465,6 +483,40 @@ export default function RegistryEditor({
               </div>
             );
           })}
+          <details className="review-neighbours">
+            <summary>Affected neighbours and related records</summary>
+            {[
+              ...new Set(
+                review.findings
+                  .filter((f) =>
+                    f.unitIds.some((id) =>
+                      review.records.some((r) => r.id === id),
+                    ),
+                  )
+                  .flatMap((f) => f.unitIds)
+                  .concat(
+                    review.records.flatMap((r) =>
+                      r.links.map((l) => l.targetId),
+                    ),
+                  ),
+              ),
+            ]
+              .filter((id) => !review.records.some((r) => r.id === id))
+              .map((id) => {
+                const neighbour = detail.records.find((r) => r.id === id);
+                return neighbour ? (
+                  <p key={id}>
+                    <strong>{neighbour.name}</strong>
+                    <br />
+                    <code>{neighbour.identifier}</code> · revision{" "}
+                    {neighbour.revision}
+                    {neighbour.geometry
+                      ? ` · ${number(neighbour.geometry.lower)}–${number(neighbour.geometry.upper)} m`
+                      : ""}
+                  </p>
+                ) : null;
+              })}
+          </details>
           <div className="findings-list">
             {review.findings
               .filter((f) => f.code !== "BOUNDARY_CONTACT")

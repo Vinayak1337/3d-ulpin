@@ -1,6 +1,6 @@
 # API regression evidence
 
-**17/17 checks passed.** Executed: 2026-09-13T10:51:14.573Z.
+**17/17 checks passed.** Executed: 2026-09-13T11:54:35.095Z.
 
 Target: http://127.0.0.1:3000. Mode: non-disruptive adversarial suite.
 
@@ -14,8 +14,8 @@ Focused checks are recorded separately and are not overwritten by this suite:
 - [Closed-ring save/build](API_CLOSED_RING_EVIDENCE.md): `--closed-ring-only`.
 
 Cases created (all names start with Regression):
-- Regression adversarial 2026-09-13T10:51:14.573Z: `126e157c-4d94-4eef-9753-58a6bb995a50`
-- Regression foreign-source 2026-09-13T10:51:14.573Z: `25643600-d713-4ae1-ab2b-256dc9dcc227`
+- Regression adversarial 2026-09-13T11:54:35.095Z: `afb63f17-cce6-41a2-8ff9-83565e9c4602`
+- Regression foreign-source 2026-09-13T11:54:35.095Z: `95d456ab-a533-4d86-9056-5e54d8f7ecc3`
 
 | Result | Scenario | Detail |
 | --- | --- | --- |

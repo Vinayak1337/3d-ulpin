@@ -56,7 +56,7 @@ def _polygon_parts(shape) -> list[Polygon]:
     return []
 
 
-def build_model(data: dict) -> dict:
+def build_model(data: dict, *, allow_duplicate_aliases: bool = False) -> dict:
     if not isinstance(data, dict):
         raise InputError("Build input must be an object.")
     reference = frame(data.get("frame"))
@@ -89,7 +89,7 @@ def build_model(data: dict) -> dict:
         identity = text(unit.get("id"), f"{prefix}.id")
         alias = text(unit.get("alias"), f"{prefix}.alias")
         text(unit.get("name"), f"{prefix}.name")
-        if identity in ids or alias in aliases:
+        if identity in ids or (alias in aliases and not allow_duplicate_aliases):
             raise InputError(f"{prefix}: duplicate unit ID or alias.")
         ids.add(identity)
         aliases.add(alias)

@@ -15,6 +15,7 @@ import type {
 import { query, transaction } from "./db";
 import { settings } from "./config";
 import { AppError, conflict, notFound } from "./errors";
+import { assertRegistrySourceFrame } from './registry-import-evidence';
 import { propertyIdentifier } from "../identifiers";
 import { fingerprint, sourceFrom } from "./domain";
 import {
@@ -29,6 +30,13 @@ import {
 const binding = z
   .object({ sourceId: idSchema, locator: z.string().trim().min(1).max(500) })
   .strict();
+export function openRegistryRing(ring: RegistryBody["footprint"]) {
+  const first = ring[0],
+    last = ring.at(-1);
+  return ring.length > 3 && first[0] === last?.[0] && first[1] === last?.[1]
+    ? ring.slice(0, -1)
+    : ring;
+}
 export const recordBodySchema = z
   .object({
     alias: z.string().trim().min(1).max(64),
@@ -36,7 +44,7 @@ export const recordBodySchema = z
     kind: z.enum(["parcel", "building", "floor", "space"]),
     use: z.enum(["apartment", "common", "basement", "utility"]).optional(),
     footprint: footprintSchema,
-    geometry: unitSchema.optional(),
+    geometry: unitSchema.strict().optional(),
     links: z
       .array(
         z
@@ -74,14 +82,14 @@ export const querySchema = z.discriminatedUnion("mode", [
   z
     .object({
       mode: z.literal("point"),
-      frame: frameSchema,
+      frame: frameSchema.strict(),
       point: pointSchema,
     })
     .strict(),
   z
     .object({
       mode: z.literal("volume"),
-      frame: frameSchema,
+      frame: frameSchema.strict(),
       footprint: footprintSchema,
       lower: finite,
       upper: finite,
@@ -244,8 +252,15 @@ async function reserveRecord(
   const identifier = `${site.identifier}:${prefix}${String(ordinal).padStart(3, "0")}`;
   const normalized = {
     ...body,
+    footprint: openRegistryRing(body.footprint),
     geometry: body.geometry
-      ? { ...body.geometry, id, alias: body.alias, name: body.name }
+      ? {
+          ...body.geometry,
+          footprint: openRegistryRing(body.geometry.footprint),
+          id,
+          alias: body.alias,
+          name: body.name,
+        }
       : undefined,
   };
   await client.query(
@@ -356,6 +371,7 @@ export async function editRegistryDraft(
       );
     const value = {
       ...input.body,
+      footprint: openRegistryRing(input.body.footprint),
       id: old.id,
       siteId: old.siteId,
       identifier: old.identifier,
@@ -416,7 +432,8 @@ async function evidenceChecks(
           : link.type === "serves"
             ? r.kind === "space" && target.kind === "building"
             : link.type === "crosses"
-              ? r.kind === "space" && target.kind === "parcel"
+              ? ["space", "building"].includes(r.kind) &&
+                target.kind === "parcel"
               : r.kind === "floor"
                 ? target.kind === "building"
                 : r.kind === "building"
@@ -445,7 +462,8 @@ async function evidenceChecks(
     if (
       r.geometry &&
       (r.geometry.id !== r.id ||
-        fingerprint(r.footprint) !== fingerprint(r.geometry.footprint))
+        fingerprint(openRegistryRing(r.footprint)) !==
+          fingerprint(openRegistryRing(r.geometry.footprint)))
     )
       throw new AppError(
         422,
@@ -500,14 +518,19 @@ async function evidenceChecks(
         !source ||
         !(
           source.status === "ready" ||
-          (source.status === "needs_input" && source.inspection?.image)
+          (source.status === "needs_input" &&
+            (source.inspection?.image ||
+              source.inspection?.levels?.length ||
+              source.inspection?.controls?.length ||
+              source.inspection?.features?.length))
         )
       )
         throw new AppError(
           422,
           "EVIDENCE_UNAVAILABLE",
-          "Evidence must be a parsed source within this site; uncalibrated plans can support human review but not verified elevations.",
+          "Evidence must be a parsed source within this site. Partial sources can support valid rows or human review; verified elevations must match their bound source row.",
         );
+      assertRegistrySourceFrame(site.frame,sourceFrom(source));
     }
   }
 }
@@ -560,6 +583,7 @@ export async function prepareRegistryReview(
     return { d, site, current, combined };
   });
   const inputFingerprint = fingerprint({
+    validatorVersion: "registry-relationships-v2",
     records: snapshot.combined,
     frame: snapshot.site.frame,
     draftRevision: expectedRevision,
@@ -567,6 +591,7 @@ export async function prepareRegistryReview(
   });
   const result = await registryGeo<BuildResult>("check", {
     frame: snapshot.site.frame,
+    validatorVersion: "registry-relationships-v2",
     records: snapshot.combined,
     inputFingerprint,
   });
@@ -583,6 +608,7 @@ export async function prepareRegistryReview(
     ),
     records: snapshot.d.records.map((r) => ({
       ...r,
+      footprint: computed.get(r.id)?.footprint ?? openRegistryRing(r.footprint),
       geometry: computed.get(r.id) ?? r.geometry,
     })),
     committed: false,
@@ -654,6 +680,7 @@ export async function commitRegistryReview(
     const combined = [...current.filter((r) => !ids.has(r.id)), ...d.records];
     if (
       fingerprint({
+        validatorVersion: "registry-relationships-v2",
         records: combined,
         frame: site.frame,
         draftRevision: d.revision,
@@ -780,6 +807,15 @@ export async function registryQuery(
     frame: snapshot.site.frame,
     synthetic: snapshot.site.synthetic,
     mode: input.mode,
+    input:
+      input.mode === "point"
+        ? { mode: input.mode, point: input.point }
+        : {
+            mode: input.mode,
+            footprint: input.footprint,
+            lower: input.lower,
+            upper: input.upper,
+          },
     ...result,
   };
 }

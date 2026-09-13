@@ -41,7 +41,7 @@ export async function registryRoutes(
       const body = z
         .object({
           name: z.string().trim().min(1).max(100),
-          frame: frameSchema,
+          frame: frameSchema.strict(),
           synthetic: z.boolean().default(true),
         })
         .strict()

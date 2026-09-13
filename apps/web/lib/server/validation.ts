@@ -163,6 +163,7 @@ const contextSchema = z.array(
     kind: z.enum(["parcel", "building"]),
     footprint: footprintSchema,
     name: z.string().optional(),
+    evidence: z.object({ sourceId: idSchema, locator: z.string() }).optional(),
   }),
 );
 export const buildResultSchema = z.object({

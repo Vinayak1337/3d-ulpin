@@ -61,6 +61,7 @@ export interface ContextFeature {
   kind: "parcel" | "building";
   footprint: Point2[];
   name?: string;
+  evidence?: SourceBinding;
 }
 export interface OverlapRegion {
   footprint: Point2[];

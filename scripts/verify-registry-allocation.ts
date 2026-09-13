@@ -50,6 +50,41 @@ try {
     createRegistryDraft(site.id, undefined, body),
     /requestKey/,
   );
+  const closed = [...body.footprint, body.footprint[0]];
+  const space = await createRegistryDraft(
+    site.id,
+    undefined,
+    {
+      ...body,
+      alias: "CLOSED",
+      kind: "space",
+      use: "apartment",
+      footprint: closed,
+      geometry: {
+        id: randomUUID(),
+        alias: "CLOSED",
+        name: "Closed ring test",
+        kind: "unit",
+        footprint: closed,
+        lower: 0,
+        upper: 3,
+        lowerVerified: false,
+        upperVerified: false,
+        bindings: {},
+        revision: 1,
+        levelLabel: "Ground",
+      },
+    },
+    randomUUID(),
+  );
+  assert.equal(space.records[0].footprint.length, 4);
+  assert.deepEqual(
+    space.records[0].footprint,
+    space.records[0].geometry!.footprint,
+  );
+  console.log(
+    "PASS Closed record and prism rings share canonical stored coordinates.",
+  );
   console.log(
     "PASS Concurrent new-record retries reuse one draft and identity; the next allocation advances without reuse.",
   );

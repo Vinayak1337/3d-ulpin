@@ -78,6 +78,9 @@ export interface RegistryQuery {
   frame: CoordinateFrame;
   synthetic: boolean;
   mode: "point" | "volume";
+  input:
+    | { mode: "point"; point: Point2 }
+    | { mode: "volume"; footprint: Point2[]; lower: number; upper: number };
   results: {
     record: RegistryRecord;
     contact: boolean;

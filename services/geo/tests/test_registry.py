@@ -42,3 +42,62 @@ def test_context_only_site_can_be_reviewed():
     result=check_registry({'frame':FRAME,'records':[{'id':'parcel','kind':'parcel','footprint':rect(0,0,12,16),'links':[]}],'inputFingerprint':'context'})
     assert result['units']==[] and result['findings']==[]
     assert result['inputFingerprint']=='context'
+
+def test_explicit_membership_requires_containment():
+    building={'id':'building','kind':'building','footprint':rect(0,0,10,10),'links':[]}
+    unit=record('unit',rect(20,0,22,2),0,3)
+    unit['links']=[{'type':'within','targetId':'building'}]
+    result=check_registry({'frame':FRAME,'records':[building,unit],'inputFingerprint':'outside'})
+    assert any(f['code']=='OUTSIDE_RELATED_CONTEXT' and f['severity']=='error' for f in result['findings'])
+    unit['footprint']=rect(0,0,2,2);unit['geometry']['footprint']=unit['footprint']
+    result=check_registry({'frame':FRAME,'records':[building,unit],'inputFingerprint':'inside'})
+    assert not any(f['severity']=='error' for f in result['findings'])
+
+def test_floor_membership_must_agree_with_building():
+    # Coincident context footprints isolate the relationship check from geometry.
+    a={'id':'a','kind':'building','footprint':rect(0,0,10,10),'links':[]}
+    b={**a,'id':'b'}
+    floor={'id':'floor','kind':'floor','footprint':a['footprint'],'links':[{'type':'within','targetId':'b'}]}
+    unit=record('unit',rect(0,0,2,2),0,3)
+    unit['links']=[{'type':'within','targetId':'a'},{'type':'floor','targetId':'floor'}]
+    result=check_registry({'frame':FRAME,'records':[a,b,floor,unit],'inputFingerprint':'wrong-floor'})
+    assert any(f['code']=='FLOOR_BUILDING_MISMATCH' for f in result['findings'])
+
+def test_shared_service_is_not_required_to_fit_inside_one_building():
+    a={'id':'a','kind':'building','footprint':rect(0,0,10,10),'links':[]}
+    b={**a,'id':'b','footprint':rect(10,0,20,10)}
+    basement=record('base',rect(0,0,20,10),-3,0)
+    basement['links']=[{'type':'serves','targetId':'a'},{'type':'serves','targetId':'b'}]
+    result=check_registry({'frame':FRAME,'records':[a,b,basement],'inputFingerprint':'shared'})
+    assert not any(f['severity']=='error' for f in result['findings'])
+
+def test_crosses_requires_area_in_parcel():
+    parcel={'id':'p','kind':'parcel','footprint':rect(0,0,10,10),'links':[]}
+    corridor=record('util',rect(10,0,12,10),-5,-4)
+    corridor['links']=[{'type':'crosses','targetId':'p'}]
+    result=check_registry({'frame':FRAME,'records':[parcel,corridor],'inputFingerprint':'touch'})
+    assert any(f['code']=='INVALID_PARCEL_CROSSING' for f in result['findings'])
+
+def test_repeated_apartment_aliases_are_not_duplicate_identities():
+    from geo.geometry import build_model
+    a=record('id-a',rect(0,0,2,2),0,3);b=record('id-b',rect(2,0,4,2),0,3)
+    for r in (a,b): r['geometry']['alias']='101'
+    result=check_registry({'frame':FRAME,'records':[a,b],'inputFingerprint':'repeated-alias'})
+    assert len(result['units'])==2
+    assert {u['id'] for u in result['units']}=={'id-a','id-b'}
+    with pytest.raises(InputError):
+        build_model({'frame':FRAME,'units':[a['geometry'],b['geometry']],'context':[],'inputFingerprint':'legacy'})
+
+def test_hundred_spaces_with_distinct_floor_records_fit_site_limit():
+    building={'id':'building','kind':'building','footprint':rect(0,0,2,2),'links':[]}
+    records=[building]
+    for i in range(100):
+        floor={'id':f'f{i}','kind':'floor','footprint':building['footprint'],'links':[{'type':'within','targetId':'building'}]}
+        unit=record(f's{i}',building['footprint'],i*3,(i+1)*3)
+        unit['links']=[{'type':'floor','targetId':floor['id']}]
+        records.extend([floor,unit])
+    result=check_registry({'frame':FRAME,'records':records,'inputFingerprint':'capacity'})
+    assert len(result['units'])==100
+    records.append(record('s101',rect(5,0,7,2),0,3))
+    with pytest.raises(InputError,match='100 current'):
+        check_registry({'frame':FRAME,'records':records,'inputFingerprint':'over-capacity'})

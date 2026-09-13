@@ -11,7 +11,9 @@ retains Next.js, Cesium, PostGIS, private object storage and Python processing.
 
 Start with the root **[REGISTRY_DEMO_GUIDE.md](REGISTRY_DEMO_GUIDE.md)** for the
 complete correction and excavation presentation. See [registry data/API](docs/REGISTRY.md)
-and [verification evidence](docs/REGISTRY_TEST_EVIDENCE.md).
+and [verification evidence](docs/REGISTRY_TEST_EVIDENCE.md). The later
+[deep review](DEEP_REVIEW.md) records corrected edge cases and remaining gaps
+against the agreed plan.
 
 **Hosting:** the complete stack cannot run unchanged on Vercel alone. See
 [HOSTING.md](docs/HOSTING.md) for the existing deployment assessment.

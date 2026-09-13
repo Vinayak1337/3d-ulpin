@@ -17,14 +17,16 @@ interface Props {
   explode: number;
   finding: Finding | null;
   initialPresentation?: "building" | "volumes";
+  focusTarget?: {footprint: Point2[]; lower?: number; upper?: number; sequence: number};
 }
 
-export default function SpatialViewer({ model, selectedId, onSelect, floor, isolate, explode, finding, initialPresentation = "building" }: Props) {
+export default function SpatialViewer({ model, selectedId, onSelect, floor, isolate, explode, finding, initialPresentation = "building", focusTarget }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const viewer = useRef<Cesium.Viewer | null>(null);
   const choose = useRef(onSelect);
   choose.current = onSelect;
   const resetCamera = useRef<() => void>(() => {});
+  const lastFocus = useRef<number | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [preferredPresentation, setPreferredPresentation] = useState<"building" | "volumes">(initialPresentation);
@@ -204,6 +206,8 @@ export default function SpatialViewer({ model, selectedId, onSelect, floor, isol
     const minElevation = presentation === "building" && !revealBasement ? datum : Math.min(datum, ...framedUnits.map(unit => unit.lower + (offsets.get(unit.id) || 0)));
     const center = position(unitBounds.minX + unitBounds.width / 2, unitBounds.minY + unitBounds.height / 2, (maxElevation + minElevation) / 2 - (presentation === "building" ? 0.45 : 0));
     const range = Math.max(unitBounds.width, unitBounds.height, maxElevation - minElevation, 7) * (presentation === "building" ? 2.48 : 2.65);
+    v.camera.frustum.far = Math.max(600, range * 6);
+    v.scene.screenSpaceCameraController.maximumZoomDistance = Math.max(250, range * 3);
     resetCamera.current = () => {
       v.camera.lookAt(center, new Cesium.HeadingPitchRange(building.cameraHeading, Cesium.Math.toRadians(presentation === "building" && !revealBasement ? -25 : -32), range));
       v.scene.requestRender();
@@ -213,8 +217,15 @@ export default function SpatialViewer({ model, selectedId, onSelect, floor, isol
       resetCamera.current();
       didFrame.current = frameKey;
     }
+    if (focusTarget && lastFocus.current !== focusTarget.sequence) {
+      const bounds = boundsOf([focusTarget.footprint]);
+      const lower = focusTarget.lower ?? minElevation, upper = focusTarget.upper ?? maxElevation;
+      const target = position(bounds.minX + bounds.width / 2, bounds.minY + bounds.height / 2, (lower + upper) / 2);
+      v.camera.lookAt(target, new Cesium.HeadingPitchRange(building.cameraHeading, Cesium.Math.toRadians(-32), Math.max(bounds.width, bounds.height, upper - lower, 7) * 2.65));
+      lastFocus.current = focusTarget.sequence;
+    }
     v.scene.requestRender();
-  }, [model, selectedId, floor, isolate, explode, finding, ready, presentation, revealBasement]);
+  }, [model, selectedId, floor, isolate, explode, finding, ready, presentation, revealBasement, focusTarget]);
 
   return <div className={`spatial-viewer ${styles.viewer}`} data-presentation={presentation} data-visible-unit-count={visibleUnits.length} data-basement-revealed={presentation === "volumes" || revealBasement ? "true" : "false"}>
     <div className="cesium-host" ref={container} aria-label="Interactive 3D property model" />

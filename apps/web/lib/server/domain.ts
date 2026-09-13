@@ -502,6 +502,7 @@ export async function prepareCase(
           kind: feature.kind,
           footprint: feature.footprint,
           name: feature.name,
+          evidence: {sourceId: spatial.id, locator: `feature ${feature.alias}`},
         });
         continue;
       }

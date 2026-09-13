@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type {
   ComputedUnit,
@@ -55,6 +55,12 @@ export default function RegistryWorkbench({
   const [initialized, setInitialized] = useState(false);
   const [sites, setSites] = useState<RegistrySite[]>([]),
     [detail, setDetail] = useState<RegistryDetail | null>(null);
+  const [focusTarget, setFocusTarget] = useState<{
+    footprint: Point2[];
+    lower?: number;
+    upper?: number;
+    sequence: number;
+  }>();
   const [siteId, setSiteId] = useState(initialSiteId || ""),
     [selectedId, setSelectedId] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("records"),
@@ -73,8 +79,14 @@ export default function RegistryWorkbench({
     [limits, setLimits] = useState({ lower: -5, upper: 0 });
   // Responses remain tied to the site and tool that issued them even if the
   // operator navigates while a calculation is in flight.
+  const querySequence = useRef(0);
+  const currentQueryInput =
+    mode === "point"
+      ? { mode: "point", point }
+      : { mode: "volume", footprint: polygon, ...limits };
   const query =
     queryResponse?.siteId === siteId &&
+    JSON.stringify(queryResponse.input) === JSON.stringify(currentQueryInput) &&
     queryResponse.mode === (mode === "point" ? "point" : "volume")
       ? queryResponse
       : null;
@@ -116,6 +128,7 @@ export default function RegistryWorkbench({
   }, [recordIdentifier, initialSiteId]);
   useEffect(() => {
     if (!siteId) return;
+    setFocusTarget(undefined);
     let alive = true;
     setDetail(null);
     request<RegistryDetail>(`/sites/${siteId}`)
@@ -192,29 +205,29 @@ export default function RegistryWorkbench({
   }
   async function pointQuery(p: Point2) {
     if (!detail) return;
+    const sequence = ++querySequence.current;
     setPoint(p);
     await run("Inspecting vertical stack", async () => {
-      setQuery(
-        await request<RegistryQuery>(`/sites/${siteId}/query`, {
-          mode: "point",
-          frame: detail.site.frame,
-          point: p,
-        }),
-      );
+      const result = await request<RegistryQuery>(`/sites/${siteId}/query`, {
+        mode: "point",
+        frame: detail.site.frame,
+        point: p,
+      });
+      if (sequence === querySequence.current) setQuery(result);
     });
   }
   async function volumeQuery() {
     if (!detail) return;
+    const sequence = ++querySequence.current;
     setDrawing(false);
     await run("Checking excavation impact", async () => {
-      setQuery(
-        await request<RegistryQuery>(`/sites/${siteId}/query`, {
-          mode: "volume",
-          frame: detail.site.frame,
-          footprint: polygon,
-          ...limits,
-        }),
-      );
+      const result = await request<RegistryQuery>(`/sites/${siteId}/query`, {
+        mode: "volume",
+        frame: detail.site.frame,
+        footprint: polygon,
+        ...limits,
+      });
+      if (sequence === querySequence.current) setQuery(result);
     });
   }
   const workingRecords = useMemo(() => {
@@ -658,6 +671,7 @@ export default function RegistryWorkbench({
                         explode={0}
                         finding={finding}
                         initialPresentation="volumes"
+                        focusTarget={focusTarget}
                       />
                     </div>
                   )}
@@ -711,6 +725,12 @@ export default function RegistryWorkbench({
                           setFloor("all");
                           setBand("all");
                           setView("split");
+                          setFocusTarget((previous) => ({
+                            footprint: selected.footprint,
+                            lower: selected.geometry?.lower,
+                            upper: selected.geometry?.upper,
+                            sequence: (previous?.sequence || 0) + 1,
+                          }));
                           setNotice(
                             `Located ${selected.alias} in plan and 3D.`,
                           );
@@ -919,7 +939,22 @@ export default function RegistryWorkbench({
                         onSelectFinding={(id) => {
                           const f = review?.findings.find((f) => f.id === id);
                           setFinding(f || null);
-                          if (f?.unitIds[0]) setSelectedId(f.unitIds[0]);
+                          if (f?.unitIds[0]) {
+                            setSelectedId(f.unitIds[0]);
+                            const affected = workingRecords.find(
+                              (r) => r.id === f.unitIds[0],
+                            );
+                            if (affected)
+                              setFocusTarget((previous) => ({
+                                footprint: affected.footprint,
+                                lower: affected.geometry?.lower,
+                                upper: affected.geometry?.upper,
+                                sequence: (previous?.sequence || 0) + 1,
+                              }));
+                            setBuilding("all");
+                            setFloor("all");
+                            setBand("all");
+                          }
                         }}
                       />
                     ) : (
@@ -1090,6 +1125,9 @@ export default function RegistryWorkbench({
                               className="query-record"
                               onClick={() => {
                                 select(r.record.id);
+                                setBuilding("all");
+                                setFloor("all");
+                                setBand("all");
                                 const overlap = r.overlaps[0];
                                 setFinding(
                                   overlap

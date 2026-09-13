@@ -44,3 +44,5 @@ The production correction and excavation rehearsal ran with browser HTTPS resour
 The fixture is synthetic and has no real-world basemap placement. Geometry is bounded to single-ring constant-height prisms, with 100 current volumetric spaces per site. Rights are source-linked fictional assertions. Technical recording does not confer ownership, and intersection results do not certify excavation clearance. Authentication, official issuance, AI extraction, new GIS/BIM/LiDAR importers and formal legal acceptance remain outside this release.
 
 For presentation steps, use the root [REGISTRY_DEMO_GUIDE.md](../REGISTRY_DEMO_GUIDE.md).
+
+The subsequent [deep review](../DEEP_REVIEW.md) records adversarial findings, corrections and remaining scope gaps beyond this initial acceptance run.

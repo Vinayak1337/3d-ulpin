@@ -16,6 +16,10 @@ import {
   fingerprint,
 } from "./domain";
 import { AppError, conflict, notFound } from "./errors";
+import {
+  contextImportEvidence,
+  unitImportEvidence,
+} from "./registry-import-evidence";
 import { settings } from "./config";
 import {
   reserveRecord,
@@ -73,9 +77,6 @@ export async function importRegistryCase(
       caseId,
       siteId,
     ]);
-    const spatial = detail.sources.find(
-      (s) => s.profile === "parcel-local-json-v1" && s.status === "ready",
-    );
     const isDemoFixture = Boolean(
       (
         await client.query(
@@ -87,17 +88,7 @@ export async function importRegistryCase(
     const rights = isDemoFixture
       ? detail.sources.find((s) => s.name === "rights.pdf")
       : undefined;
-    if (!spatial)
-      throw new AppError(
-        422,
-        "EVIDENCE_REQUIRED",
-        "A suitable spatial source is required.",
-      );
     const records: RegistryRecord[] = [];
-    const sourceBinding = (alias: string) => ({
-      sourceId: spatial.id,
-      locator: `feature ${alias}`,
-    });
     for (const context of detail.context)
       records.push(
         await reserveRecord(client, site, {
@@ -107,7 +98,9 @@ export async function importRegistryCase(
           footprint: context.footprint,
           links: [],
           rights: [],
-          evidence: [sourceBinding(context.alias)],
+          evidence: [
+            contextImportEvidence(context, detail.sources, detail.model!.units),
+          ],
           synthetic: site.synthetic,
         }),
       );
@@ -133,7 +126,7 @@ export async function importRegistryCase(
             footprint: b.footprint,
             links: [{ type: "within", targetId: b.id }],
             rights: [],
-            evidence: [sourceBinding(b.alias)],
+            evidence: b.evidence,
             synthetic: site.synthetic,
           }),
         );
@@ -163,7 +156,7 @@ export async function importRegistryCase(
         geometry: unit,
         links: [],
         rights: [],
-        evidence: [sourceBinding(unit.alias)],
+        evidence: unitImportEvidence(unit),
         synthetic: site.synthetic,
       };
       if (building) body.links.push({ type: "within", targetId: building.id });

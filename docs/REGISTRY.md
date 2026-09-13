@@ -1,6 +1,6 @@
 # Registry data and API
 
-The registry is additive to preparation cases. A case does not become a registered property simply because it has a successful build. One site owns one named local-metre frame and benchmark. The current implementation accepts single-ring polygon prisms with constant lower and upper elevations, at most 100 current volumetric spaces per site and 150 total records per check. Holes, multipolygons, curved solids and cross-frame queries are rejected.
+The registry is additive to preparation cases. A case does not become a registered property simply because it has a successful build. One site owns one named local-metre frame and benchmark. The current implementation accepts single-ring polygon prisms with constant lower and upper elevations, at most 100 current volumetric spaces per site and 2,000 total context/spatial records per check. Holes, multipolygons, curved solids and cross-frame queries are rejected.
 
 ## Identity and revisions
 
@@ -8,9 +8,9 @@ The registry is additive to preparation cases. A case does not become a register
 
 Names, floor labels and building memberships are mutable revision data. They are not encoded into permanent space IDs. Official parcel ULPINs are stored separately; the synthetic site cannot assert one.
 
-`registry_records` stores the current body and indexed footprint. `registry_revisions` stores append-only application snapshots. `registry_links` and `registry_rights` mirror the associations in the current body. A shared basement or cross-parcel corridor has one spatial identity with multiple relationships, rather than duplicate geometry. Parties and rights always reference an existing source revision and locator.
+`registry_records` stores the current body and indexed footprint. `registry_revisions` stores append-only application snapshots. `registry_links` and `registry_rights` mirror the associations in the current body. A shared basement or cross-parcel corridor has one spatial identity with multiple relationships, rather than duplicate geometry. Parties and rights always reference an existing source revision and locator. Explicit within/floor relationships are checked for horizontal containment and compatible building membership; crossing relationships must intersect the linked parcel. Shared service links do not require containment inside each served building.
 
-Review preparation captures the expected draft and site revisions, proposed bodies, previous bodies, findings and an input fingerprint. Commit locks the site, draft and review; verifies revisions and a recomputed combined candidate/neighbour fingerprint; enforces blocking errors and warning acknowledgement; then updates current records and appends history atomically. A committed review's retry returns its existing result. Any intervening site change requires fresh checks. This is technical demo review, not formal cadastral acceptance.
+Review preparation captures the expected draft and site revisions, proposed bodies, previous bodies, findings and an input fingerprint. Commit locks the site, draft and review; verifies revisions and a recomputed combined candidate/neighbour fingerprint; enforces blocking errors and warning acknowledgement; then updates current records and appends history atomically. A committed review's retry returns its existing result. Any intervening site change or validator-version change requires fresh checks. This is technical demo review, not formal cadastral acceptance.
 
 Cases, original source objects and old geometry snapshots are retained. Explicit imports preserve legacy space IDs as record lookup aliases. Legacy floor groups map to a corresponding floor where one exists; otherwise their lookup retains the original workspace meaning. Workspace namespace aliases describe the original preparation workspace, not the entire site's identity. No name-based merge or automatic publication of old workspaces occurs.
 
@@ -35,7 +35,7 @@ All routes below are relative to `/api/v1`, local-only and return typed JSON err
 | POST `/sites/:uuid/import` | Explicitly import `{caseId,expectedRevision}` as a draft |
 | POST `/sites/:uuid/query` | Point stack or proposed-volume intersection |
 
-Query bodies contain the exact `frame` and either `{mode:"point",point:[x,y]}` or `{mode:"volume",footprint:[[x,y],...],lower,upper}`. A repeatable-read PostGIS snapshot uses the GiST footprint index for candidate selection. The private Python service reuses the polygon and interval routines for actual intersection quantities and highlight geometry. Results include `registryRevision`, frame, synthetic classification, each record, boundary-contact status and positive intersection pieces. Merely touching volumes have zero intersection volume.
+Query bodies contain the exact `frame` and either `{mode:"point",point:[x,y]}` or `{mode:"volume",footprint:[[x,y],...],lower,upper}`. A repeatable-read PostGIS snapshot uses the GiST footprint index for candidate selection. The private Python service reuses the polygon and interval routines for actual intersection quantities and highlight geometry. Results include `registryRevision`, frame, exact query `input`, synthetic classification, each record, boundary-contact status and positive intersection pieces. Results are only displayed against matching inputs; superseded requests cannot replace a newer result. Merely touching volumes have zero intersection volume.
 
 ## Export format `3d-ulpin-registry-v1`
 
