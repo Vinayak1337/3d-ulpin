@@ -9,3 +9,4 @@ numpy==2.0.2
 Pillow==11.2.1
 pypdf==5.5.0
 pyproj==3.6.1
+pyshp==2.3.1

@@ -43,7 +43,11 @@ EPSILON = 1e-6
 
 
 def _number(value, label):
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+    try:
+        finite = isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+    except OverflowError:
+        finite = False
+    if not finite:
         raise InputError(f"{label} must be a finite number.")
     return float(value)
 
@@ -234,6 +238,9 @@ def _height(properties, fields, warnings, source_key):
 
 
 def normalize_area(data):
+    if isinstance(data, dict) and data.get("format") in ("gpkg", "shapefile_zip"):
+        from .native_gis import normalize_native
+        return normalize_native(data)
     if not isinstance(data, dict) or data.get("format") not in ("geojson", "arcgis"):
         raise InputError("format must be geojson or arcgis.")
     source, fields = data.get("data"), data.get("mapping")
@@ -256,6 +263,8 @@ def normalize_area(data):
         _text(fields["heightMeaning"], "heightMeaning", 500)
     if fields.get("heightUnit") not in (None, "m", "ft"):
         raise InputError("heightUnit must be m or ft; unresolved units may be omitted.")
+    from .area_semantics import selected_semantic_fields, mapped_semantics
+    semantic_fields = selected_semantic_fields(fields)
     world_status = data.get("worldStatus", "observed")
     if world_status not in WORLD_STATES:
         raise InputError("worldStatus must be observed, planned, hypothetical or synthetic.")
@@ -302,11 +311,13 @@ def normalize_area(data):
         if not isinstance(properties, dict):
             raise InputError("Feature attributes/properties must be an object.")
         allowed = {}
-        selected_fields = [fields.get(key) for key in ("idField", "nameField", "heightField")] + identifier_fields
+        selected_fields = [fields.get(key) for key in ("idField", "nameField", "heightField")] + identifier_fields + semantic_fields
         for field in selected_fields:
             if field and field in properties:
                 value = properties[field]
-                if value is not None and (isinstance(value, (dict, list)) or isinstance(value, str) and len(value) > 2048):
+                levels_field = (fields.get("utility") or {}).get("levelsField")
+                allowed_levels = field == levels_field and isinstance(value, list) and len(value) <= MAX_FEATURE_VERTICES and all(isinstance(item, (float, int)) and not isinstance(item, bool) and math.isfinite(item) for item in value)
+                if value is not None and (isinstance(value, dict) or isinstance(value, list) and not allowed_levels or isinstance(value, str) and len(value) > 2048):
                     raise InputError("Mapped fields must be scalar values of at most 2048 characters.")
                 if isinstance(value, (float, int)) and not isinstance(value, bool):
                     _number(value, "Mapped field")
@@ -342,9 +353,12 @@ def normalize_area(data):
         total_vertices += count
         if total_vertices > MAX_VERTICES:
             raise InputError(f"An import supports at most {MAX_VERTICES} vertices.")
+        typed = mapped_semantics(fields, allowed, warnings, source_key)
+        if world_status in ("synthetic", "hypothetical") and typed.get("worldStatus", world_status) not in ("synthetic", "hypothetical"):
+            raise InputError("A synthetic/hypothetical source cannot become observed or planned evidence through an attribute mapping.")
         prepared.append({"sourceKey": source_key, "name": name, "kind": fields["kind"], "sourceGeometry": copy.deepcopy(original),
                          "height": _height(allowed, fields, warnings, source_key), "worldStatus": world_status,
-                         "properties": allowed, "_shape": geometry})
+                         "properties": allowed, "_shape": geometry, **typed})
     if source_crs is None:
         raise InputError("ArcGIS source CRS is unknown; provide spatialReference.wkid or reference.sourceCrs.")
     try:
@@ -382,6 +396,9 @@ def normalize_area(data):
         local = transform(lambda x, y: (x - origin[0], y - origin[1]), local_source)
         row.update(geometry=_json_geometry(local), geographicGeometry=_json_geometry(geographic_shape),
                    areaM2=local.area if local.geom_type in ("Polygon", "MultiPolygon") else None)
+        if row.get("utilityProfile"):
+            from .officer import resolve_utility_profile
+            row["utilityProfile"] = resolve_utility_profile(row)
         features.append(row)
     if fallback_ids:
         warnings.append("Some features have positional source IDs; map a stable source ID field before importing later source revisions.")
@@ -427,7 +444,7 @@ def check_area(data):
         shapes.append(geometry)
     findings, coverage = [], [
         "Horizontal findings describe intersections of the supplied snapshot, not ownership, encroachment or illegality.",
-        "No vertical collision volume was computed: building-relative heights and utility depth/elevation lack an aligned shared vertical reference.",
+        "Vertical volume is computed only for source-backed constant prisms with the same explicit vertical reference. Building-relative heights alone do not establish aligned elevation.",
         "Coverage is limited to supplied features; absent roads, public land or utilities cannot establish absence of conflicts.",
     ]
     if not rows:
@@ -477,13 +494,18 @@ def check_area(data):
     for kind, description in (("road", "road"), ("public_land", "public-land"), ("utility", "utility")):
         if not any(row["kind"] == kind for row in rows):
             coverage.append(f"No {description} layer is present in this snapshot.")
-    return {"findings": sorted(findings, key=lambda f: (f["code"], f["featureIds"])), "coverage": coverage}
+    from .officer import officer_checks
+    officer = officer_checks(data, rows, shapes)
+    resolved = officer.pop("verticalResolvedPairs")
+    findings = [finding for finding in findings if not (finding["code"] == "UTILITY_VERTICAL_UNRESOLVED" and tuple(sorted(finding["featureIds"])) in resolved)]
+    findings.extend(officer.pop("findings"))
+    return {"findings": sorted(findings, key=lambda f: (f["code"], f["featureIds"])), "coverage": coverage, **officer}
 
 
 def extract_document(data):
     """Extract native text with locators, without interpreting document instructions."""
-    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "text"):
-        raise InputError("Native document format must be pdf, docx or text.")
+    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "text", "csv"):
+        raise InputError("Native document format must be pdf, docx, text or the strict CSV level schedule.")
     encoded = data.get("base64")
     if not isinstance(encoded, str) or len(encoded) > (MAX_DOCUMENT_BYTES + 2) // 3 * 4:
         raise InputError("Document must be base64 with at most 10 MiB of decoded bytes.")
@@ -493,6 +515,9 @@ def extract_document(data):
         raise InputError("Document base64 is invalid.") from None
     if not raw or len(raw) > MAX_DOCUMENT_BYTES:
         raise InputError("Document must contain 1 byte–10 MiB.")
+    if data["format"] == "csv":
+        from .native_schedule import extract_schedule
+        return {"format": "csv", "method": "native_parse", "sourceSha256": hashlib.sha256(raw).hexdigest(), **extract_schedule(raw)}
     parts, warnings, total_text = [], [], 0
 
     def add(text, locator):
