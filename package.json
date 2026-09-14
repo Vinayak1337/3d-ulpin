@@ -19,6 +19,8 @@
     "test:demo": "tsx scripts/verify-demo.ts",
     "test:api": "tsx scripts/api-regression.ts",
     "test:registry": "tsx scripts/verify-registry.ts",
+    "test:area": "tsx scripts/verify-area.ts",
+    "test:registry-reimport": "tsx scripts/verify-registry-reimport.ts",
     "test:registry-allocation": "tsx scripts/verify-registry-allocation.ts"
   },
   "devDependencies": {

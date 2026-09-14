@@ -210,3 +210,4 @@ export interface BuildResult {
 }
 
 export * from './registry';
+export * from './area';

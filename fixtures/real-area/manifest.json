@@ -1,0 +1,201 @@
+{
+  "schemaVersion": "real-area-source-v1",
+  "sourceCatalogId": "nyc-building-footprints",
+  "areaKey": "nyc-bronx-353927-context",
+  "name": "Bronx building context around OTI 353927",
+  "provider": "City of New York Office of Technology and Innovation (OTI)",
+  "datasetId": "5zhs-2jue",
+  "datasetUrl": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue",
+  "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+  "sourceFile": "original.geojson",
+  "sourceSha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+  "bboxWgs84": [
+    -73.8715,
+    40.8993,
+    -73.8688,
+    40.90125
+  ],
+  "query": {
+    "$select": "the_geom,doitt_id,bin,base_bbl,height_roof,ground_elevation,feature_code,geom_source,last_edited_date",
+    "$where": "within_box(the_geom,40.90125,-73.8715,40.8993,-73.8688) AND feature_code = '2100'",
+    "$order": "doitt_id ASC",
+    "$limit": "100",
+    "$offset": "0"
+  },
+  "privacyAllowlist": [
+    "the_geom",
+    "doitt_id",
+    "bin",
+    "base_bbl",
+    "height_roof",
+    "ground_elevation",
+    "feature_code",
+    "geom_source",
+    "last_edited_date"
+  ],
+  "countBefore": 62,
+  "countAfter": 62,
+  "fetchedCount": 62,
+  "transferStatus": "complete_for_query",
+  "snapshotNote": "A complete bounded query checked before and after transfer; not a provider transaction or all Bronx buildings. Whole polygons contained by within_box are selected; boundary-crossing buildings are excluded.",
+  "sourceCRS": "EPSG:4326",
+  "sourceCoordinateOrder": "longitude,latitude",
+  "providerNativeCRS": "EPSG:2263",
+  "vertical": {
+    "heightField": "height_roof",
+    "meaning": "roof height above the building ground elevation",
+    "unit": "foot",
+    "metresPerFoot": 0.3048,
+    "evidenceState": "source_supported",
+    "groundElevationField": "ground_elevation",
+    "datumStatus": "unresolved_per_feature",
+    "note": "Provider metadata documents NAVD88 for photogrammetric or modern ground elevations, with varying accuracy; individual feature datum is not stated. Use building-relative bases until datum review. An envelope is a constant-height approximation; no floor count or interior rights inferred."
+  },
+  "license": {
+    "status": "public_open_data_terms",
+    "termsUrl": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+    "metadataUrl": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+    "attribution": "City of New York Office of Technology and Innovation (OTI), BUILDING via NYC Open Data",
+    "scope": "Local informational demonstration under NYC Open Data terms; no warranty, official endorsement or cadastral authority.",
+    "redistributionNote": "Retain attribution and source terms. No unsupported public-domain or CC license claim."
+  },
+  "checks": {
+    "featureCount": 62,
+    "simplePolygonCount": 62,
+    "geometryTypes": {
+      "MultiPolygon": 62
+    },
+    "positiveRoofHeightCount": 62,
+    "roofHeightFeetRange": [
+      12.0,
+      59.55
+    ],
+    "groundElevationSourceRange": [
+      178.0,
+      199.0
+    ],
+    "sourceGeometryMethods": [
+      "Other (Manual)",
+      "Photogrammetric"
+    ],
+    "sourceEditDateRange": [
+      "2017-08-22T17:26:54.000Z",
+      "2026-06-11T15:05:28.000Z"
+    ]
+  },
+  "gmdaGate": {
+    "status": "metadata_verified",
+    "downloadVerified": false,
+    "licenseStatus": "unresolved",
+    "featureAcquisitionEnabled": false,
+    "metadataUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/1",
+    "observedCrs": 32643,
+    "observedLicenseInfo": "",
+    "reason": "The current provider iteminfo returns empty licenseInfo and accessInformation; metadata availability does not establish reuse authorization. No GMDA feature values downloaded."
+  },
+  "assets": [
+    {
+      "file": "evidence/count-before.json",
+      "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.json?%24select=count%28%2A%29&%24where=within_box%28the_geom%2C40.90125%2C-73.8715%2C40.8993%2C-73.8688%29+AND+feature_code+%3D+%272100%27",
+      "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+      "byteLength": 17,
+      "sha256": "c5378e4c9d6b4a3b9d04cd72a61d8445e0798ec95d15db4701fa5910ef5592d8",
+      "responseHeaders": {
+        "Content-Type": "application/json;charset=utf-8",
+        "ETag": "W/\"aW5kaWEuNjA3MjRfMl8xNjFtWl94LUtxaC1QNVQ1M2Vjbk50MWxkOU5fRFk--gzif4fRlNiLVIg1ze9u5ncuvabINzU---gzip\"",
+        "Last-Modified": "Sun, 13 Sep 2026 15:49:22 GMT",
+        "Date": "Sun, 13 Sep 2026 23:50:25 GMT"
+      }
+    },
+    {
+      "file": "original.geojson",
+      "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?%24select=the_geom%2Cdoitt_id%2Cbin%2Cbase_bbl%2Cheight_roof%2Cground_elevation%2Cfeature_code%2Cgeom_source%2Clast_edited_date&%24where=within_box%28the_geom%2C40.90125%2C-73.8715%2C40.8993%2C-73.8688%29+AND+feature_code+%3D+%272100%27&%24order=doitt_id+ASC&%24limit=100&%24offset=0",
+      "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+      "byteLength": 41792,
+      "sha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+      "responseHeaders": {
+        "Content-Type": "application/vnd.geo+json; charset=UTF-8",
+        "ETag": "W/\"aW5kaWEuNjA3MjRfMl8xNjEyRVMwb0EwTDdkQnlpb2FjemcyWVpsZmo2Ync---gzipPvruI1ZHaOFgL-EHkjlpGrOmfcw--gzip--gzip\"",
+        "Last-Modified": "Sun, 13 Sep 2026 15:49:22 GMT",
+        "Date": "Sun, 13 Sep 2026 23:50:26 GMT"
+      }
+    },
+    {
+      "file": "evidence/count-after.json",
+      "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.json?%24select=count%28%2A%29&%24where=within_box%28the_geom%2C40.90125%2C-73.8715%2C40.8993%2C-73.8688%29+AND+feature_code+%3D+%272100%27",
+      "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+      "byteLength": 17,
+      "sha256": "c5378e4c9d6b4a3b9d04cd72a61d8445e0798ec95d15db4701fa5910ef5592d8",
+      "responseHeaders": {
+        "Content-Type": "application/json;charset=utf-8",
+        "ETag": "W/\"aW5kaWEuNjA3MjRfMl8xNjFtWl94LUtxaC1QNVQ1M2Vjbk50MWxkOU5fRFk--gzif4fRlNiLVIg1ze9u5ncuvabINzU---gzip\"",
+        "Last-Modified": "Sun, 13 Sep 2026 15:49:22 GMT",
+        "Date": "Sun, 13 Sep 2026 23:50:30 GMT"
+      }
+    },
+    {
+      "file": "evidence/nyc-building-metadata.md",
+      "url": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+      "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+      "byteLength": 12973,
+      "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27",
+      "responseHeaders": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "ETag": "\"038a8212ec4023e97aafceba2c5f51b1a4ad55617ca6092c41d796608243ff0a\"",
+        "Date": "Sun, 13 Sep 2026 23:50:31 GMT"
+      }
+    },
+    {
+      "file": "evidence/nyc-open-data-terms.html",
+      "url": "https://opendata.cityofnewyork.us/overview/",
+      "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+      "byteLength": 64053,
+      "sha256": "11e8198bc31c8b2bcaa375c71323b29709add8de17379e131f0c16425cadd885",
+      "responseHeaders": {
+        "Content-Type": "text/html; charset=UTF-8",
+        "Last-Modified": "Sun, 13 Sep 2026 23:50:32 GMT",
+        "Date": "Sun, 13 Sep 2026 23:50:32 GMT"
+      }
+    },
+    {
+      "file": "evidence/nyc-terms-of-use.html",
+      "url": "https://www.nyc.gov/main/terms-of-use",
+      "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+      "byteLength": 504528,
+      "sha256": "5fe19df265cf60021f83530ad5753d6ddbb6b7df893faa315abdd387773b4e50",
+      "responseHeaders": {
+        "Content-Type": "text/html;charset=utf-8",
+        "Date": "Sun, 13 Sep 2026 23:50:32 GMT"
+      }
+    },
+    {
+      "file": "evidence/gmda-builtup-metadata.json",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/1?f=pjson",
+      "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+      "byteLength": 7881,
+      "sha256": "c8945d9cecc639120a517a8c9e8f72d7f9f364bbba2b1aab8fd2cf6b238f1ba1",
+      "responseHeaders": {
+        "Content-Type": "text/plain; charset=UTF-8",
+        "ETag": "\"a28ecf66\"",
+        "Date": "Sun, 13 Sep 2026 23:50:32 GMT"
+      }
+    },
+    {
+      "file": "evidence/gmda-builtup-iteminfo.json",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/1/iteminfo?f=json",
+      "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+      "byteLength": 275,
+      "sha256": "8625cece03447fb2a070a114057efe488a6472ae39ad6d3942029844b8c6202a",
+      "responseHeaders": {
+        "Content-Type": "application/json; charset=UTF-8",
+        "Date": "Sun, 13 Sep 2026 23:50:34 GMT"
+      }
+    }
+  ],
+  "suggestedAnalysis": {
+    "crs": "EPSG:2263",
+    "unit": "US survey foot",
+    "metresPerUnit": 0.3048006096012192,
+    "note": "Optional conversion recipe only. No transformation is performed in this source fixture. The importing area retains its actual analytical CRS, common origin and transformation separately."
+  }
+}

@@ -43,5 +43,18 @@ export async function migrateRegistry() {
       meaning text NOT NULL
     );
     ALTER TABLE registry_aliases ADD COLUMN IF NOT EXISTS workspace_id uuid REFERENCES cases(id);
+    CREATE TABLE IF NOT EXISTS registry_case_import_operations (
+      id uuid PRIMARY KEY, case_id uuid NOT NULL REFERENCES cases(id), site_id uuid NOT NULL REFERENCES registry_sites(id),
+      case_revision integer NOT NULL, input_fingerprint text NOT NULL, transform_version text NOT NULL,
+      normalization_version text NOT NULL, operation_key text UNIQUE NOT NULL,
+      draft_id uuid UNIQUE NOT NULL REFERENCES registry_drafts(id),
+      previous_operation_id uuid REFERENCES registry_case_import_operations(id),
+      previous_draft_id uuid REFERENCES registry_drafts(id), created_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE IF NOT EXISTS registry_case_feature_mappings (
+      case_id uuid NOT NULL REFERENCES cases(id), site_id uuid NOT NULL REFERENCES registry_sites(id),
+      feature_key text NOT NULL, record_id uuid NOT NULL REFERENCES registry_records(id),
+      PRIMARY KEY(case_id,site_id,feature_key), UNIQUE(case_id,site_id,record_id)
+    );
   `);
 }
