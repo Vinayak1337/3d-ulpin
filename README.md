@@ -1,7 +1,9 @@
 # 3D ULPIN — local area and property registry
 
-Import a bounded real area, inspect its original sources, review physical building
-envelopes, resolve loaded identifiers, and record corrections with permanent IDs.
+Import a bounded area and keep its shared 3D block in view while searching a
+property, opening its own register and evidence, preparing source-linked floors
+and spaces, and reviewing discrepancies. The centered navigator connects the
+block, property register and selected property's preparation workspace.
 The saved NYC snapshot contains 62 actual footprints and reported roof heights.
 The existing synthetic neighbourhood, rights-volume checks, and preparation
 workbench remain available under **Legacy registry**.
@@ -11,9 +13,17 @@ observations, estimates, and synthetic scenarios. It does not issue
 official ULPINs or confer ownership. The stack
 retains Next.js, Cesium, PostGIS, private object storage and Python processing.
 
-Start with **[AREA_WORKFLOW.md](docs/AREA_WORKFLOW.md)** for the real-area ingestion,
-documents, review and correction workflow. GMDA acquisition remains pending reuse
-authorization; the new workflow needs no AI account. The root
+Start with **[local startup and officer demonstration](docs/OFFICER_STARTUP.md)**,
+the **[implementation ledger](docs/REAL_BLOCK_EXECUTION.md)** and
+**[current verification](docs/OFFICER_DELIVERY.md)**. Native related-document
+preparation, exact parcel/public-context checks, evidenced utility profiles and
+persisted investigations run locally. Optional [Nous assistance](docs/OFFICER_AI.md)
+requires an authorized, verified free route; no live inference was available in
+the recorded run. Permitted coherent Indian sources, building-specific plans
+and surveyed utility evidence remain external acceptance gates.
+
+[AREA_WORKFLOW.md](docs/AREA_WORKFLOW.md) preserves the earlier area ingestion
+workflow. The root
 **[REGISTRY_DEMO_GUIDE.md](REGISTRY_DEMO_GUIDE.md)** retains the
 complete correction and excavation presentation. See [registry data/API](docs/REGISTRY.md)
 and [verification evidence](docs/REGISTRY_TEST_EVIDENCE.md). The later
@@ -49,7 +59,7 @@ and choose **Load synthetic neighbourhood**. The seed runs
 actual inspection, preparation, Python building and registry review. Subsequent
 loads preserve operator revisions. The default property-volume view displays
 both adjoining buildings, one shared basement and one cross-parcel corridor.
-The old [C-001 showcase](http://127.0.0.1:3000/?case=d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5)
+The old [C-001 showcase](http://127.0.0.1:3000/workbench?case=d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5)
 and **Preparation workspaces** remain available.
 
 On a new Apple Silicon Mac, install Node.js, pnpm and the container runtime first:
@@ -71,10 +81,11 @@ Keep that file with the initialized data volumes. Do not replace its database
 password independently of the running database. See [PLATFORM.md](docs/PLATFORM.md)
 for runtime recovery and the pinned legacy MinIO image limitation.
 
-The local production build disables client minification to avoid a Cesium
-compatibility failure. Its client JavaScript is about **17.8 MB uncompressed**;
-server optimization remains enabled. This is a performance task before wider
-distribution.
+The local production build retains the baseline client-minification exception
+for Cesium compatibility; server optimization remains enabled. The earlier
+baseline measured about 17.8 MB uncompressed client JavaScript. Current local
+interaction measurements are in the [officer verification](docs/OFFICER_DELIVERY.md);
+public distribution would need a separate delivery/performance assessment.
 
 ## Legacy workbench story
 

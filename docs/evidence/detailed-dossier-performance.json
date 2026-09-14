@@ -1,0 +1,134 @@
+{
+  "at": "2026-09-14T19:52:32.799Z",
+  "buildId": "qBp7S3GFDeRwiUXAoEQsr",
+  "method": "22 sequential local HTTP dossier requests, first2 warmups excluded. Includes full JSON parsing, real DB/source/fingerprint work; excludes browser rendering. Alternates two recorded synthetic properties with actual detailed spaces.",
+  "cpu": "Apple M3",
+  "ramGiB": 16,
+  "samples": [
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 24.53,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 19.45,
+      "records": 3,
+      "sources": 5
+    },
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 31.12,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 58.72,
+      "records": 3,
+      "sources": 5
+    },
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 81.97,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 67.81,
+      "records": 3,
+      "sources": 5
+    },
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 60.06,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 82.08,
+      "records": 3,
+      "sources": 5
+    },
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 74.95,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 24.55,
+      "records": 3,
+      "sources": 5
+    },
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 20.9,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 19.91,
+      "records": 3,
+      "sources": 5
+    },
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 19.61,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 19.28,
+      "records": 3,
+      "sources": 5
+    },
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 17.06,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 16.18,
+      "records": 3,
+      "sources": 5
+    },
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 17.6,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 15.82,
+      "records": 3,
+      "sources": 5
+    },
+    {
+      "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "ms": 17.6,
+      "records": 3,
+      "sources": 6
+    },
+    {
+      "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+      "ms": 15.95,
+      "records": 3,
+      "sources": 5
+    }
+  ],
+  "n": 20,
+  "p95Ms": 81.97,
+  "maxMs": 82.08,
+  "targetMs": 1000,
+  "targetMet": true
+}

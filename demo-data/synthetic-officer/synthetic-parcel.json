@@ -1,0 +1,1 @@
+{"spatialReference": {"wkid": 32643}, "features": [{"attributes": {"id": "PA", "name": "Synthetic parcel A"}, "geometry": {"rings": [[[500000, 3100000], [500010, 3100000], [500010, 3100010], [500000, 3100010], [500000, 3100000]]]}}]}

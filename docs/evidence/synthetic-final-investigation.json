@@ -1,0 +1,932 @@
+{
+  "schemaVersion": "ulpin-officer-export/1",
+  "exportedAt": "2026-09-14T19:52:04.265Z",
+  "property": {
+    "id": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+    "identifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:B001",
+    "name": "Synthetic Property A",
+    "revision": 1,
+    "geometryRole": "observed_ground_occupation",
+    "worldStatus": "synthetic",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            12,
+            0
+          ],
+          [
+            12,
+            10
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ]
+    },
+    "geographicGeometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            75.00000000000001,
+            28.025254985930832
+          ],
+          [
+            75.0001220757884,
+            28.025254985876604
+          ],
+          [
+            75.00012207589023,
+            28.025345258520083
+          ],
+          [
+            75.00000000000001,
+            28.025345258574298
+          ],
+          [
+            75.00000000000001,
+            28.025254985930832
+          ]
+        ]
+      ]
+    },
+    "height": {
+      "unit": "m",
+      "state": "source_supported",
+      "value": 9,
+      "method": "native_parse",
+      "meaning": "Authored synthetic exterior height for software verification only",
+      "evidence": [
+        {
+          "featureId": "A",
+          "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+        }
+      ],
+      "reference": "building-relative; not aligned between features",
+      "originalUnit": "m",
+      "originalValue": 9
+    }
+  },
+  "area": {
+    "id": "8c61a45e-3ae9-4c7c-95f2-78918f23582a",
+    "name": "Synthetic officer UI test · not a real survey",
+    "extent": [
+      0,
+      0,
+      52,
+      10
+    ],
+    "siteId": "8c61a45e-3ae9-4c7c-95f2-78918f23582a",
+    "revision": 3,
+    "reference": {
+      "anchor": [
+        75.00000000000001,
+        28.025254985930832
+      ],
+      "origin": [
+        500000,
+        3100000
+      ],
+      "sourceCrs": "EPSG:32643",
+      "analysisCrs": "EPSG:32643",
+      "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=noop ellps=GRS80",
+      "verticalReference": "building-relative; not aligned between features"
+    },
+    "geographicExtent": [
+      75.00000000000001,
+      28.025254984912646,
+      75.00052899552428,
+      28.025345258574298
+    ],
+    "administrativeUnits": []
+  },
+  "associations": [
+    {
+      "id": "13d6915a-ffc3-49aa-9292-102c8019ab02",
+      "toId": "89d938fa-6bea-41ab-a842-43059fb8257e",
+      "actor": "local-operator",
+      "fromId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "reason": "Authored synthetic fixture association between building A and parcel PA; intentionally20m² outside to test discrepancy behavior. No real title claim.",
+      "status": "confirmed",
+      "evidence": [
+        {
+          "featureId": "A",
+          "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+        },
+        {
+          "featureId": "A",
+          "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+        }
+      ],
+      "revision": 1,
+      "updatedAt": "2026-09-14T19:21:52.478Z",
+      "toRevision": 1,
+      "fromRevision": 1,
+      "relationship": "occupies_parcel"
+    }
+  ],
+  "register": [
+    {
+      "id": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+      "identifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:B001",
+      "name": "Synthetic Property A",
+      "kind": "building",
+      "revision": 2,
+      "footprint": [
+        [
+          0,
+          0
+        ],
+        [
+          12,
+          0
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "links": [],
+      "evidence": [
+        {
+          "locator": "feature property",
+          "sourceId": "016e5931-981e-44bf-bd5b-c0781f0e0b99"
+        }
+      ]
+    },
+    {
+      "id": "cdddf5f2-44f5-4492-a3fa-06ec51f256d6",
+      "identifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:F001",
+      "name": "property / Ground",
+      "kind": "floor",
+      "revision": 2,
+      "footprint": [
+        [
+          0,
+          0
+        ],
+        [
+          12,
+          0
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "links": [
+        {
+          "type": "within",
+          "targetId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d"
+        }
+      ],
+      "evidence": [
+        {
+          "locator": "feature property",
+          "sourceId": "016e5931-981e-44bf-bd5b-c0781f0e0b99"
+        }
+      ]
+    },
+    {
+      "id": "bd0cd76b-809e-4ed2-b131-6c436a62a76b",
+      "identifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:S001",
+      "name": "Synthetic Room A01",
+      "kind": "space",
+      "revision": 2,
+      "use": "unspecified",
+      "footprint": [
+        [
+          1,
+          1
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          1,
+          7
+        ]
+      ],
+      "geometry": {
+        "id": "bd0cd76b-809e-4ed2-b131-6c436a62a76b",
+        "area": 36,
+        "kind": "unit",
+        "name": "Synthetic Room A01",
+        "alias": "UI-A-01",
+        "lower": 0,
+        "upper": 4,
+        "height": 4,
+        "volume": 144,
+        "bindings": {
+          "lower": {
+            "locator": "canonical space UI-A-01",
+            "sourceId": "016e5931-981e-44bf-bd5b-c0781f0e0b99"
+          },
+          "upper": {
+            "locator": "canonical space UI-A-01",
+            "sourceId": "016e5931-981e-44bf-bd5b-c0781f0e0b99"
+          },
+          "alignment": {
+            "locator": "reviewed placement controls",
+            "sourceId": "016e5931-981e-44bf-bd5b-c0781f0e0b99"
+          },
+          "footprint": {
+            "locator": "canonical space UI-A-01",
+            "sourceId": "016e5931-981e-44bf-bd5b-c0781f0e0b99"
+          }
+        },
+        "revision": 2,
+        "footprint": [
+          [
+            1,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            7,
+            7
+          ],
+          [
+            1,
+            7
+          ]
+        ],
+        "levelLabel": "property / Ground",
+        "lowerVerified": true,
+        "upperVerified": true
+      },
+      "links": [
+        {
+          "type": "within",
+          "targetId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d"
+        },
+        {
+          "type": "floor",
+          "targetId": "cdddf5f2-44f5-4492-a3fa-06ec51f256d6"
+        }
+      ],
+      "evidence": [
+        {
+          "locator": "canonical space UI-A-01",
+          "sourceId": "016e5931-981e-44bf-bd5b-c0781f0e0b99"
+        },
+        {
+          "locator": "reviewed placement controls",
+          "sourceId": "016e5931-981e-44bf-bd5b-c0781f0e0b99"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0",
+      "name": "synthetic-buildings.json",
+      "sha256": "6f00b566d63e7d2d750bd5bf01c1d4ccc345ec90ceaf91cd7d658372712b7d2e",
+      "revision": 1,
+      "profile": "arcgis-area-v2",
+      "createdAt": "2026-09-14T19:05:33.565Z",
+      "url": "/api/v1/sources/eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0/file",
+      "evidence": [
+        {
+          "featureId": "A",
+          "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+        },
+        {
+          "featureId": "A",
+          "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+        },
+        {
+          "featureId": "A",
+          "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+        }
+      ]
+    },
+    {
+      "id": "b570b056-73ef-474a-ada9-ffd6f8f920ae",
+      "url": "/api/v1/sources/b570b056-73ef-474a-ada9-ffd6f8f920ae/file",
+      "name": "synthetic-plan.csv",
+      "sha256": "e984f82adb0e082159f1aa23e82f9d8ea14bc616a050bc4a44e1accc8c3f7047",
+      "profile": "csv-reference-v2",
+      "evidence": [
+        {
+          "partId": "e8a49380-6f5d-45d3-9e71-628a6b3d48d9",
+          "sourceRevisionId": "b570b056-73ef-474a-ada9-ffd6f8f920ae"
+        },
+        {
+          "partId": "e8a49380-6f5d-45d3-9e71-628a6b3d48d9",
+          "sourceRevisionId": "b570b056-73ef-474a-ada9-ffd6f8f920ae"
+        },
+        {
+          "partId": "e8a49380-6f5d-45d3-9e71-628a6b3d48d9",
+          "sourceRevisionId": "b570b056-73ef-474a-ada9-ffd6f8f920ae"
+        }
+      ],
+      "revision": 1,
+      "createdAt": "2026-09-14T19:10:15.915Z"
+    },
+    {
+      "id": "d6bf400f-b4be-488e-bede-8ccc176ae7a6",
+      "url": "/api/v1/sources/d6bf400f-b4be-488e-bede-8ccc176ae7a6/file",
+      "name": "synthetic-levels.csv",
+      "sha256": "855e992bccd750b3d0b31cdd44b3018448d111abb0322c62719d59ee5d975f2f",
+      "profile": "csv-reference-v2",
+      "evidence": [
+        {
+          "partId": "d95c938f-173f-4881-8c15-c9d8384fbb53",
+          "sourceRevisionId": "d6bf400f-b4be-488e-bede-8ccc176ae7a6"
+        },
+        {
+          "partId": "d95c938f-173f-4881-8c15-c9d8384fbb53",
+          "sourceRevisionId": "d6bf400f-b4be-488e-bede-8ccc176ae7a6"
+        }
+      ],
+      "revision": 1,
+      "createdAt": "2026-09-14T19:10:15.954Z"
+    },
+    {
+      "id": "c52d842c-e808-41cc-9b93-90688b82f516",
+      "url": "/api/v1/sources/c52d842c-e808-41cc-9b93-90688b82f516/file",
+      "name": "synthetic-levels-revised.csv",
+      "sha256": "4dca4762cbc92166dbdf7f28c74fbc63dab676bc95f9bd4f15dc1846e20afd54",
+      "profile": "csv-reference-v2",
+      "evidence": [
+        {
+          "partId": "f78aabba-89c7-4c69-86d9-7392fbac77ae",
+          "sourceRevisionId": "c52d842c-e808-41cc-9b93-90688b82f516"
+        },
+        {
+          "partId": "f78aabba-89c7-4c69-86d9-7392fbac77ae",
+          "sourceRevisionId": "c52d842c-e808-41cc-9b93-90688b82f516"
+        }
+      ],
+      "revision": 1,
+      "createdAt": "2026-09-14T19:31:57.966Z"
+    },
+    {
+      "id": "016e5931-981e-44bf-bd5b-c0781f0e0b99",
+      "url": "/api/v1/sources/016e5931-981e-44bf-bd5b-c0781f0e0b99/file",
+      "name": "Synthetic Property A · reviewed detail derivative",
+      "sha256": "777b24d5ba97891c5c8975681b2ac213c618ece53e5c3e3c8bf88e40da2e4486",
+      "profile": "canonical-detail-v1",
+      "evidence": [],
+      "revision": 2,
+      "createdAt": "2026-09-14T19:33:13.292Z"
+    },
+    {
+      "id": "4e98e80c-ed08-4091-bd21-653a53d79563",
+      "name": "synthetic-parcel.json",
+      "sha256": "51e6a16f11194dafded444ee33d9bb1d87813a4f73a989893b0000385b15f0df",
+      "revision": 1,
+      "profile": "arcgis-area-v2",
+      "createdAt": "2026-09-14T19:20:52.304Z",
+      "url": "/api/v1/sources/4e98e80c-ed08-4091-bd21-653a53d79563/file",
+      "evidence": [
+        {
+          "featureId": "PA",
+          "sourceRevisionId": "4e98e80c-ed08-4091-bd21-653a53d79563"
+        },
+        {
+          "featureId": "PA",
+          "sourceRevisionId": "4e98e80c-ed08-4091-bd21-653a53d79563"
+        }
+      ]
+    }
+  ],
+  "missing": [],
+  "investigation": {
+    "id": "63143c47-3e9d-4037-88ad-29f83f5b8db6",
+    "notes": "Software fixture review complete. The confirmed synthetic parcel produces exactly20m² outside A. A retains its original building and room IDs after the source-supported correction to0–4m. B retains a separate16m² room. This is a technical software record, not a real survey or legal conclusion.",
+    "areaId": "8c61a45e-3ae9-4c7c-95f2-78918f23582a",
+    "status": "CLOSED",
+    "history": [
+      {
+        "time": "2026-09-14T19:40:20.434Z",
+        "actor": "local-operator",
+        "reason": "Investigation opened.",
+        "status": "OPEN"
+      },
+      {
+        "time": "2026-09-14T19:40:29.464Z",
+        "actor": "local-operator",
+        "reason": "In-app evidence request created.",
+        "status": "NEEDS_EVIDENCE"
+      },
+      {
+        "time": "2026-09-14T19:40:41.370Z",
+        "actor": "local-operator",
+        "reason": "Response to evidence request recorded.",
+        "status": "NEEDS_EVIDENCE"
+      },
+      {
+        "time": "2026-09-14T19:41:24.021Z",
+        "actor": "local-operator",
+        "reason": "The in-app source request has a retained response. The current synthetic check and source snapshot are ready for technical review.",
+        "status": "READY_FOR_REVIEW"
+      },
+      {
+        "time": "2026-09-14T19:41:39.041Z",
+        "actor": "local-operator",
+        "reason": "Reviewed the exact 20 m² synthetic parcel discrepancy, preserved source revisions, retained answer, and corrected room limits of 0–4 m. The check is current and this record remains a software fixture.",
+        "status": "REVIEWED"
+      },
+      {
+        "time": "2026-09-14T19:41:48.255Z",
+        "actor": "local-operator",
+        "reason": "Closed the completed synthetic technical review after its reviewed stage. Original source files, answered request, exact finding and history remain retained. No legal order or real-world survey acceptance is implied.",
+        "status": "CLOSED"
+      }
+    ],
+    "evidence": [
+      {
+        "featureId": "A",
+        "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+      },
+      {
+        "featureId": "A",
+        "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+      },
+      {
+        "featureId": "PA",
+        "sourceRevisionId": "4e98e80c-ed08-4091-bd21-653a53d79563"
+      }
+    ],
+    "findings": [
+      {
+        "id": "39426b76-986c-5019-9c99-e0229801cc0f",
+        "code": "OUTSIDE_CONFIRMED_PARCEL",
+        "areaM2": 20,
+        "inputs": [
+          {
+            "revision": 1,
+            "featureId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+            "sourceDate": null,
+            "worldStatus": "synthetic",
+            "geometryRole": "observed_ground_occupation",
+            "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+          },
+          {
+            "revision": 1,
+            "featureId": "89d938fa-6bea-41ab-a842-43059fb8257e",
+            "sourceDate": null,
+            "worldStatus": "synthetic",
+            "geometryRole": "recorded_parcel",
+            "sourceRevisionId": "4e98e80c-ed08-4091-bd21-653a53d79563"
+          }
+        ],
+        "method": "officer-spatial-v1",
+        "message": "Ground occupation extends outside the union of explicitly associated recorded parcels. This is a geometric discrepancy requiring evidence review, not a legal conclusion.",
+        "category": "geometric",
+        "evidence": [
+          {
+            "featureId": "A",
+            "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+          },
+          {
+            "featureId": "PA",
+            "sourceRevisionId": "4e98e80c-ed08-4091-bd21-653a53d79563"
+          }
+        ],
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                12,
+                10
+              ],
+              [
+                12,
+                0
+              ],
+              [
+                10,
+                0
+              ],
+              [
+                10,
+                10
+              ],
+              [
+                12,
+                10
+              ]
+            ]
+          ]
+        },
+        "extensionM": 2,
+        "featureIds": [
+          "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+          "89d938fa-6bea-41ab-a842-43059fb8257e"
+        ],
+        "quantities": {
+          "featureId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+          "parcelIds": [
+            "89d938fa-6bea-41ab-a842-43059fb8257e"
+          ],
+          "outsideAreaM2": 20,
+          "occupationAreaM2": 120,
+          "parcelUnionAreaM2": 100
+        },
+        "participants": [
+          {
+            "id": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+            "kind": "building",
+            "name": "Synthetic Property A",
+            "areaId": "8c61a45e-3ae9-4c7c-95f2-78918f23582a",
+            "areaM2": 120,
+            "height": {
+              "unit": "m",
+              "state": "source_supported",
+              "value": 9,
+              "method": "native_parse",
+              "meaning": "Authored synthetic exterior height for software verification only",
+              "evidence": [
+                {
+                  "featureId": "A",
+                  "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+                }
+              ],
+              "reference": "building-relative; not aligned between features",
+              "originalUnit": "m",
+              "originalValue": 9
+            },
+            "evidence": [
+              {
+                "featureId": "A",
+                "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+              }
+            ],
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    12,
+                    0
+                  ],
+                  [
+                    12,
+                    10
+                  ],
+                  [
+                    0,
+                    10
+                  ],
+                  [
+                    0,
+                    0
+                  ]
+                ]
+              ]
+            },
+            "revision": 1,
+            "semantics": {
+              "geometryRole": "observed_ground_occupation",
+              "evidenceState": "source_supported"
+            },
+            "sourceKey": "A",
+            "identifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:B001",
+            "properties": {
+              "id": "A",
+              "name": "Synthetic Property A",
+              "height": 9
+            },
+            "worldStatus": "synthetic",
+            "geometryRole": "observed_ground_occupation",
+            "representation": "physical_exterior",
+            "sourceGeometry": {
+              "rings": [
+                [
+                  [
+                    500000,
+                    3100000
+                  ],
+                  [
+                    500012,
+                    3100000
+                  ],
+                  [
+                    500012,
+                    3100010
+                  ],
+                  [
+                    500000,
+                    3100010
+                  ],
+                  [
+                    500000,
+                    3100000
+                  ]
+                ]
+              ]
+            },
+            "sourceReference": {
+              "anchor": [
+                75.00000000000001,
+                28.025254985930832
+              ],
+              "origin": [
+                500000,
+                3100000
+              ],
+              "sourceCrs": "EPSG:32643",
+              "analysisCrs": "EPSG:32643",
+              "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=noop ellps=GRS80",
+              "verticalReference": "building-relative; not aligned between features"
+            },
+            "datasetNamespace": "ui-officer-20260915-building",
+            "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0",
+            "geographicGeometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    75.00000000000001,
+                    28.025254985930832
+                  ],
+                  [
+                    75.0001220757884,
+                    28.025254985876604
+                  ],
+                  [
+                    75.00012207589023,
+                    28.025345258520083
+                  ],
+                  [
+                    75.00000000000001,
+                    28.025345258574298
+                  ],
+                  [
+                    75.00000000000001,
+                    28.025254985930832
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "id": "89d938fa-6bea-41ab-a842-43059fb8257e",
+            "kind": "parcel",
+            "name": "Synthetic parcel A",
+            "areaId": "8c61a45e-3ae9-4c7c-95f2-78918f23582a",
+            "areaM2": 100,
+            "height": {
+              "unit": "m",
+              "state": "unknown",
+              "value": null,
+              "method": "native_parse",
+              "meaning": "height above the building's own ground level",
+              "evidence": [
+                {
+                  "featureId": "PA",
+                  "sourceRevisionId": "4e98e80c-ed08-4091-bd21-653a53d79563"
+                }
+              ],
+              "reference": "building-relative; not aligned between features"
+            },
+            "evidence": [
+              {
+                "featureId": "PA",
+                "sourceRevisionId": "4e98e80c-ed08-4091-bd21-653a53d79563"
+              }
+            ],
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    10,
+                    0
+                  ],
+                  [
+                    10,
+                    10
+                  ],
+                  [
+                    0,
+                    10
+                  ],
+                  [
+                    0,
+                    0
+                  ]
+                ]
+              ]
+            },
+            "revision": 1,
+            "semantics": {
+              "geometryRole": "recorded_parcel",
+              "evidenceState": "source_supported"
+            },
+            "sourceKey": "PA",
+            "identifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:P001",
+            "properties": {
+              "id": "PA",
+              "name": "Synthetic parcel A"
+            },
+            "worldStatus": "synthetic",
+            "geometryRole": "recorded_parcel",
+            "representation": "physical_context",
+            "sourceGeometry": {
+              "rings": [
+                [
+                  [
+                    500000,
+                    3100000
+                  ],
+                  [
+                    500010,
+                    3100000
+                  ],
+                  [
+                    500010,
+                    3100010
+                  ],
+                  [
+                    500000,
+                    3100010
+                  ],
+                  [
+                    500000,
+                    3100000
+                  ]
+                ]
+              ]
+            },
+            "sourceReference": {
+              "anchor": [
+                75.00000000000001,
+                28.025254985930832
+              ],
+              "origin": [
+                500000,
+                3100000
+              ],
+              "sourceCrs": "EPSG:32643",
+              "analysisCrs": "EPSG:32643",
+              "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=noop ellps=GRS80",
+              "verticalReference": "building-relative; not aligned between features"
+            },
+            "datasetNamespace": "ui-officer-20260915-parcel",
+            "sourceRevisionId": "4e98e80c-ed08-4091-bd21-653a53d79563",
+            "geographicGeometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    75.00000000000001,
+                    28.025254985930832
+                  ],
+                  [
+                    75.00010172982365,
+                    28.025254985893174
+                  ],
+                  [
+                    75.00010172990854,
+                    28.02534525853665
+                  ],
+                  [
+                    75.00000000000001,
+                    28.025345258574298
+                  ],
+                  [
+                    75.00000000000001,
+                    28.025254985930832
+                  ]
+                ]
+              ]
+            }
+          }
+        ],
+        "inputRevisions": [
+          {
+            "revision": 1,
+            "featureId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+            "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+          },
+          {
+            "revision": 1,
+            "featureId": "89d938fa-6bea-41ab-a842-43059fb8257e",
+            "sourceRevisionId": "4e98e80c-ed08-4091-bd21-653a53d79563"
+          }
+        ],
+        "confidenceBasis": "Deterministic geometry of supplied, explicitly interpreted source representations; not independent survey certification.",
+        "extensionMethod": "Rectangular outside strip area divided by its single straight shared parcel-boundary edge.",
+        "associationInputs": [
+          {
+            "id": "13d6915a-ffc3-49aa-9292-102c8019ab02",
+            "evidence": [
+              {
+                "featureId": "A",
+                "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+              },
+              {
+                "featureId": "A",
+                "sourceRevisionId": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0"
+              }
+            ],
+            "parcelId": "89d938fa-6bea-41ab-a842-43059fb8257e",
+            "revision": 1,
+            "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+            "toRevision": 1,
+            "fromRevision": 1
+          }
+        ],
+        "geographicGeometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                75.000122076,
+                28.025345259
+              ],
+              [
+                75.000122076,
+                28.025254986
+              ],
+              [
+                75.00010173,
+                28.025254986
+              ],
+              [
+                75.00010173,
+                28.025345259
+              ],
+              [
+                75.000122076,
+                28.025345259
+              ]
+            ]
+          ]
+        },
+        "numericalTolerance": {
+          "areaM2": 0.000001,
+          "lengthM": 0.000001,
+          "volumeM3": 0.000001
+        },
+        "measurementUncertainty": "Unspecified"
+      }
+    ],
+    "requests": [
+      {
+        "id": "b908cbf1-a9a7-4460-b373-4e691f8e1b53",
+        "status": "ANSWERED",
+        "evidence": [],
+        "question": "Confirm that the retained revised synthetic CSV changes A upper to4m and preserves the0m lower reference.",
+        "response": "The retained synthetic-levels-revised.csv explicitly states lower0, upper4, unitm, benchmark BM-SYNTHETIC-UI-ONLY. This confirms authored fixture content, not field evidence.",
+        "createdAt": "2026-09-14T19:40:29.464Z",
+        "answeredAt": "2026-09-14T19:40:41.370Z"
+      }
+    ],
+    "revision": 6,
+    "createdAt": "2026-09-14T19:40:20.434Z",
+    "reference": "SYNTHETIC-UI-INV-A-FINAL",
+    "updatedAt": "2026-09-14T19:41:48.255Z",
+    "buildingId": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+    "nextAction": "Retain this reviewed fixture and exported source snapshot for reproducibility.",
+    "inputSnapshot": {
+      "checkId": "4d2542e0-95fb-48b9-bb3c-93cbe5e11f16",
+      "fingerprint": "5e3c672e484751f1ed0704985cb7bfc749d4a29deccd02da1c6e3fefe51fb70e",
+      "areaRevision": 3,
+      "featureRevision": 1
+    },
+    "classification": "boundary_discrepancy"
+  },
+  "scope": "Local technical investigation; no official title, certificate or legal order. Sources remain immutable; unresolved conditions are retained."
+}
