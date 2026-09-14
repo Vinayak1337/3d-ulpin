@@ -383,7 +383,7 @@ function ringGeoJson(points: Point2[]): string {
     ring.push(ring[0]);
   return JSON.stringify({ type: "Polygon", coordinates: [ring] });
 }
-async function persistUnit(client: PoolClient, caseId: string, unit: UnitSpec) {
+export async function persistUnit(client: PoolClient, caseId: string, unit: UnitSpec) {
   // Store the same open-ring convention returned by the geometry engine.
   const first = unit.footprint[0],
     last = unit.footprint.at(-1)!;
@@ -930,6 +930,8 @@ export async function loadDemoInputs(
   dataset: "c001" | "c002" | "real-nyc",
   operationKey?: string,
 ) {
+  if((await query("SELECT 1 FROM building_preparations WHERE case_id=$1",[caseId])).rowCount)
+    throw new AppError(422,"PROPERTY_EVIDENCE_REQUIRED","Add this property's own evidence in its block workspace. Sample datasets belong in a separate demonstration workspace.");
   const sourceIds: string[] = [];
   for (const name of dataset === "real-nyc"
     ? ["spatial.json", "levels-r1.csv"]

@@ -21,7 +21,13 @@
     "test:registry": "tsx scripts/verify-registry.ts",
     "test:area": "tsx scripts/verify-area.ts",
     "test:registry-reimport": "tsx scripts/verify-registry-reimport.ts",
-    "test:registry-allocation": "tsx scripts/verify-registry-allocation.ts"
+    "test:registry-allocation": "tsx scripts/verify-registry-allocation.ts",
+    "test:officer": "tsx scripts/verify-officer.ts",
+    "test:block-membership": "tsx scripts/verify-block-membership.ts",
+    "test:horizontal-performance": "tsx scripts/verify-horizontal-performance.ts",
+    "test:fresh-install": "tsx scripts/verify-fresh-install.ts",
+    "test:ai": "tsx --test tests/ai-extraction/*.test.ts",
+    "test:ai-integration": "tsx tests/ai-extraction/integration.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",

@@ -1,5 +1,7 @@
 import { registryRoutes } from "@/lib/server/registry-routes";
 import { areaRoutes } from "@/lib/server/area-routes";
+import { officerRoutes } from "@/lib/server/officer-routes";
+import { officerAiRoutes } from "@/lib/server/officer-ai";
 import { randomUUID } from "node:crypto";
 import { ZodError } from "zod";
 import {
@@ -82,6 +84,10 @@ async function handle(request: Request, context: Context): Promise<Response> {
     localOnly(request);
     const { path: p } = await context.params;
     const method = request.method;
+    const officerResponse = await officerRoutes(request, p);
+    if (officerResponse) return officerResponse;
+    const aiResponse = await officerAiRoutes(request, p);
+    if (aiResponse) return aiResponse;
     const areaResponse = await areaRoutes(request, p);
     if (areaResponse) return areaResponse;
     const registryResponse = await registryRoutes(request, p);

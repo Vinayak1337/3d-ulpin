@@ -68,8 +68,22 @@ export async function resolveAreaIdentifier(identifier: string) {
       matchEvidence: evidence.length
         ? evidence
         : [{ scheme: "app_identifier", value }],
-      relatedBuildings: related,
-      parentParcels: [],
+      relatedBuildings: related.map((r: any) => ({
+        ...r,
+        status: "suggested",
+      })),
+      confirmedBuildings: (
+        await query(
+          "SELECT f.body FROM property_associations a JOIN physical_features f ON f.id=a.from_id WHERE a.to_id=$1 AND a.relationship='occupies_parcel' AND a.status='confirmed' AND f.revision>0 AND (a.body->>'fromRevision')::int=f.revision AND (a.body->>'toRevision')::int=$2",
+          [row.id, row.revision],
+        )
+      ).rows.map((r) => r.body),
+      parentParcels: (
+        await query(
+          "SELECT f.body FROM property_associations a JOIN physical_features f ON f.id=a.to_id WHERE a.from_id=$1 AND a.relationship='occupies_parcel' AND a.status='confirmed' AND f.revision>0 AND (a.body->>'toRevision')::int=f.revision AND (a.body->>'fromRevision')::int=$2",
+          [row.id, row.revision],
+        )
+      ).rows.map((r) => r.body),
       selectionGeometry: row.body.geographicGeometry,
       contextExtent: area.geographicExtent,
       url: `/areas/${area.id}?feature=${encodeURIComponent(row.id)}`,
@@ -91,8 +105,29 @@ export async function resolveAreaIdentifier(identifier: string) {
         [row.id],
       )
     ).rows;
+    const canonical = physical.rows.find(
+      (f) => f.record_id === row.id || f.id === row.id,
+    );
+    if (canonical) {
+      const match = matches.find((m: any) => m.feature?.id === canonical.id);
+      if (match)
+        match.record = {
+          ...row.body,
+          id: row.id,
+          identifier: row.identifier,
+          revision: row.revision,
+        };
+      continue;
+    }
+    const parentBuilding = (
+      await query(
+        `WITH RECURSIVE parents AS (SELECT $1::uuid id UNION SELECT l.target_id FROM registry_links l JOIN parents p ON l.record_id=p.id WHERE l.kind IN ('within','floor','serves')) SELECT f.body,f.area_id FROM physical_features f WHERE (f.id IN (SELECT id FROM parents) OR f.id IN (SELECT a.from_id FROM property_associations a JOIN registry_records t ON t.id=a.to_id WHERE a.to_id IN (SELECT id FROM parents) AND a.relationship IN ('detailed_record','shared_space') AND a.status='confirmed' AND (a.body->>'toRevision')::int=t.revision AND (a.body->>'fromRevision')::int=f.revision)) AND f.body->>'kind'='building' AND f.revision>0 ORDER BY (f.id IN (SELECT id FROM parents)) DESC,f.id LIMIT 100`,
+        [row.id],
+      )
+    ).rows;
     matches.push({
       kind: "registry_record",
+      feature: parentBuilding[0]?.body,
       record: {
         ...row.body,
         id: row.id,
@@ -100,22 +135,36 @@ export async function resolveAreaIdentifier(identifier: string) {
         siteId: row.site_id,
         revision: row.revision,
       },
-      areaIds: area ? [area.id] : [],
+      areaIds: parentBuilding.length
+        ? [...new Set(parentBuilding.map((p) => p.area_id))]
+        : area
+          ? [area.id]
+          : [],
       parentParcels: links
         .filter((r) => r.kind === "parcel")
         .map((r) => ({ ...r.body, id: r.id, identifier: r.identifier })),
-      relatedBuildings: related.map((r) => ({
-        ...r.body,
-        id: r.id,
-        identifier: r.identifier,
-      })),
+      relatedBuildings: [
+        ...new Map(
+          [
+            ...parentBuilding.map((p) => ({ ...p.body, feature: p.body })),
+            ...related.map((r) => ({
+              ...r.body,
+              id: r.id,
+              identifier: r.identifier,
+            })),
+          ].map((r) => [r.id, r]),
+        ).values(),
+      ],
       matchEvidence: (
         await query(
           "SELECT scheme,issuer,evidence,verification_state FROM external_identifiers WHERE record_id=$1 AND normalized_value=$2 AND valid_to IS NULL",
           [row.id, normalized],
         )
       ).rows,
-      url: `/registry/${encodeURIComponent(row.identifier)}`,
+      url:
+        parentBuilding.length > 0
+          ? `/areas/${parentBuilding[0].area_id}?feature=${parentBuilding[0].body.id}&record=${row.id}`
+          : `/registry/${encodeURIComponent(row.identifier)}`,
     });
   }
   for (const row of sites.rows)

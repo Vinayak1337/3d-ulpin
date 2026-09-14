@@ -1,0 +1,345 @@
+import { z } from "zod";
+import {
+  buildingDossier,
+  openPreparation,
+  changeAssociation,
+  createBlockGroup,
+} from "./officer";
+import {
+  appendPreparationFacts,
+  resolvePreparationFact,
+  preparationRequirements,
+  setPreparationPlacement,
+  prepareDetails,
+  factProperties,
+} from "./officer-preparation";
+import {
+  createInvestigation,
+  getInvestigation,
+  updateInvestigation,
+  exportRegister,
+} from "./officer-investigations";
+import { getPackage } from "./areas";
+import { importRegistryCase } from "./registry-seed";
+import { prepareRegistryReview, draftDetail } from "./registry";
+import { query } from "./db";
+import { AppError, notFound } from "./errors";
+const uuid = z.string().uuid(),
+  rev = z.number().int().nonnegative(),
+  str = z.string().trim().min(1).max(200),
+  reason = z.string().trim().min(1).max(2000);
+export const locatorSchema = z
+  .object({
+    sourceRevisionId: uuid,
+    partId: uuid.optional(),
+    featureId: z.string().max(150).optional(),
+    page: z.number().int().positive().optional(),
+    row: z.number().int().positive().optional(),
+    jsonPointer: z.string().max(500).optional(),
+    region: z
+      .object({
+        x: z.number().min(0).max(1),
+        y: z.number().min(0).max(1),
+        width: z.number().positive().max(1),
+        height: z.number().positive().max(1),
+        unit: z.literal("normalized"),
+      })
+      .optional(),
+  })
+  .strict();
+const evidence = z.array(locatorSchema).min(1).max(30),
+  point = z.tuple([
+    z.number().finite().min(-1e7).max(1e7),
+    z.number().finite().min(-1e7).max(1e7),
+  ]),
+  status = z.enum([
+    "OPEN",
+    "NEEDS_EVIDENCE",
+    "READY_FOR_REVIEW",
+    "REVIEWED",
+    "CLOSED",
+  ]);
+const json = (v: unknown, s = 200) =>
+  Response.json(v, { status: s, headers: { "Cache-Control": "no-store" } });
+async function body(r: Request) {
+  if (Number(r.headers.get("content-length") ?? 0) > 1024 * 1024)
+    throw new AppError(
+      413,
+      "INPUT_LIMIT",
+      "This request exceeds the bounded input limit.",
+    );
+  try {
+    return await r.json();
+  } catch {
+    throw new AppError(400, "INVALID_JSON", "Provide a valid request body.");
+  }
+}
+export async function officerRoutes(
+  r: Request,
+  p: string[],
+): Promise<Response | null> {
+  const method = r.method;
+  if (p[0] === "buildings" && p.length === 3) {
+    const id = uuid.parse(p[1]);
+    if (p[2] === "dossier" && method === "GET")
+      return json(await buildingDossier(id));
+    if (p[2] === "register" && method === "GET")
+      return exportRegister(
+        id,
+        z
+          .enum(["json", "csv", "html"])
+          .parse(new URL(r.url).searchParams.get("format") ?? "json"),
+      );
+    if (p[2] === "preparation-cases" && method === "POST") {
+      const b = z
+        .object({ expectedRevision: rev, requestKey: uuid })
+        .strict()
+        .parse(await body(r));
+      return json(await openPreparation(id, b.expectedRevision), 201);
+    }
+    if (p[2] === "detail-review" && method === "POST") {
+      const b = z
+          .object({ expectedRevision: rev })
+          .strict()
+          .parse(await body(r)),
+        prep =
+          (
+            await query(
+              "SELECT body FROM building_preparations WHERE building_id=$1",
+              [id],
+            )
+          ).rows[0]?.body ?? notFound();
+      const d = await buildingDossier(id);
+      const draftId = await importRegistryCase(
+        d.area.siteId,
+        prep.caseId,
+        b.expectedRevision,
+      );
+      const draft = await draftDetail(draftId);
+      return json(
+        await prepareRegistryReview(
+          draftId,
+          draft.revision,
+          d.revisions.registry,
+        ),
+        201,
+      );
+    }
+  }
+  if (p[0] === "property-associations" && p.length === 1 && method === "POST")
+    return json(
+      await changeAssociation(
+        z
+          .object({
+            id: uuid.optional(),
+            fromId: uuid,
+            toId: uuid,
+            relationship: z.enum([
+              "occupies_parcel",
+              "representation_of",
+              "detailed_record",
+              "shared_space",
+            ]),
+            status: z.enum(["suggested", "confirmed", "rejected"]),
+            expectedRevision: rev,
+            expectedFromRevision: rev,
+            expectedToRevision: rev,
+            evidence,
+            reason,
+          })
+          .strict()
+          .parse(await body(r)),
+      ),
+      201,
+    );
+  if (p[0] === "block-groups" && p.length === 1 && method === "POST")
+    return json(
+      await createBlockGroup(
+        z
+          .object({
+            areaId: uuid,
+            name: str,
+            kind: z.enum([
+              "analysis_extent",
+              "layout_block",
+              "development_block",
+              "ward",
+              "locality",
+            ]),
+            authority: str.optional(),
+            code: str.optional(),
+            boundary: z.any(),
+            evidence,
+            featureIds: z.array(uuid).min(1).max(2000),
+            expectedRevision: rev,
+          })
+          .strict()
+          .parse(await body(r)),
+      ),
+      201,
+    );
+  if (p[0] === "import-packages" && p.length === 3) {
+    const id = uuid.parse(p[1]);
+    if (p[2] === "requirements" && method === "GET")
+      return json(await preparationRequirements(id));
+    if (p[2] === "preparation-facts" && method === "POST") {
+      const b = z
+        .object({
+          expectedRevision: rev,
+          entityId: uuid.optional(),
+          subject: z.string().trim().min(1).max(60).optional(),
+          property: z.enum(factProperties),
+          value: z.unknown(),
+          unit: str.optional(),
+          referenceFrameId: str.optional(),
+          evidence,
+        })
+        .strict()
+        .parse(await body(r));
+      const pkg = await getPackage(id);
+      return json(
+        await appendPreparationFacts(id, b.expectedRevision, [
+          {
+            entityId: b.entityId ?? pkg.features[0].id,
+            subject: b.subject,
+            property: b.property,
+            value: b.value,
+            unit: b.unit,
+            referenceFrameId: b.referenceFrameId,
+            evidence: b.evidence,
+            method: "human_entry",
+            evidenceState: "source_supported",
+            worldStatus: pkg.features[0].worldStatus,
+          },
+        ]),
+        201,
+      );
+    }
+    if (p[2] === "resolve-fact" && method === "POST") {
+      const b = z
+        .object({ expectedRevision: rev, claimId: uuid, reason })
+        .strict()
+        .parse(await body(r));
+      return json(
+        await resolvePreparationFact(
+          id,
+          b.expectedRevision,
+          b.claimId,
+          b.reason,
+        ),
+      );
+    }
+    if (p[2] === "placement" && method === "POST") {
+      const b = z
+        .object({
+          expectedRevision: rev,
+          sourceFrame: str,
+          verticalReference: str,
+          sourceVerticalReference: str.optional(),
+          verticalOffset: z.number().finite().min(-10000).max(10000),
+          controlPoints: z
+            .array(z.object({ source: point, target: point }))
+            .length(2)
+            .optional(),
+          evidence,
+          reason,
+        })
+        .strict()
+        .parse(await body(r));
+      return json(await setPreparationPlacement(id, b.expectedRevision, b));
+    }
+    if (p[2] === "prepare-details" && method === "POST") {
+      const b = z
+        .object({ expectedRevision: rev })
+        .strict()
+        .parse(await body(r));
+      return json(await prepareDetails(id, b.expectedRevision), 201);
+    }
+  }
+  if (p[0] === "investigations") {
+    if (p.length === 1 && method === "POST")
+      return json(
+        await createInvestigation(
+          z
+            .object({
+              buildingId: uuid,
+              expectedRevision: rev,
+              requestKey: uuid.optional(),
+              reference: str,
+              classification: str,
+              checkId: uuid.optional(),
+              findingIds: z.array(uuid).max(200).optional(),
+              notes: z.string().max(10000).optional(),
+            })
+            .strict()
+            .parse(await body(r)),
+        ),
+        201,
+      );
+    if (p.length >= 2) {
+      const id = uuid.parse(p[1]);
+      if (p.length === 2 && method === "GET")
+        return json(await getInvestigation(id));
+      if (p.length === 2 && method === "PATCH") {
+        const b = z
+          .object({
+            expectedRevision: rev,
+            status: status.optional(),
+            notes: z.string().max(10000).optional(),
+            nextAction: reason.optional(),
+            reason,
+          })
+          .strict()
+          .parse(await body(r));
+        return json(await updateInvestigation(id, b.expectedRevision, b));
+      }
+      if (p.length === 3 && p[2] === "requests" && method === "POST") {
+        const b = z
+          .object({ expectedRevision: rev, question: reason })
+          .strict()
+          .parse(await body(r));
+        return json(
+          await updateInvestigation(id, b.expectedRevision, {
+            question: b.question,
+            reason: "In-app evidence request created.",
+          }),
+          201,
+        );
+      }
+      if (
+        p.length === 5 &&
+        p[2] === "requests" &&
+        p[4] === "answer" &&
+        method === "POST"
+      ) {
+        const b = z
+          .object({
+            expectedRevision: rev,
+            response: reason,
+            evidence: z.array(locatorSchema).max(30).optional(),
+          })
+          .strict()
+          .parse(await body(r));
+        return json(
+          await updateInvestigation(id, b.expectedRevision, {
+            requestId: uuid.parse(p[3]),
+            response: b.response,
+            evidence: b.evidence,
+            reason: "Response to evidence request recorded.",
+          }),
+        );
+      }
+      if (p.length === 3 && p[2] === "export" && method === "GET") {
+        const i = await getInvestigation(id);
+        return exportRegister(
+          i.buildingId,
+          z
+            .enum(["json", "csv", "html"])
+            .parse(new URL(r.url).searchParams.get("format") ?? "json"),
+          id,
+        );
+      }
+    }
+  }
+  return null;
+}

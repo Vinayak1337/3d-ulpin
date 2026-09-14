@@ -12,6 +12,11 @@ export type FeatureKind =
   | "public_land"
   | "utility";
 export type AreaGeometry =
+  | {
+      type: "GeometryCollection";
+      geometries: AreaGeometry[];
+      coordinates?: never;
+    }
   | { type: "Point"; coordinates: number[] }
   | { type: "MultiPoint"; coordinates: number[][] }
   | { type: "LineString"; coordinates: number[][] }
@@ -54,6 +59,28 @@ export interface AreaHeight {
   method?: "native_parse" | "human_entry" | "derived";
 }
 export interface NormalizedFeature {
+  geometryRole?: import("./officer").GeometryRole;
+  semantics?: {
+    geometryRole?: import("./officer").GeometryRole;
+    evidenceState?: EvidenceState;
+    levelReference?: string;
+    sourceDate?: string;
+    validFrom?: string;
+    validTo?: string;
+    horizontalUncertaintyM?: number;
+    approvalStatus?: string;
+    floorCount?: number;
+    assetId?: string;
+  };
+  verticalExtent?: {
+    lower: number;
+    upper: number;
+    unit: "m";
+    reference: string;
+    evidenceState: EvidenceState;
+    evidence: SourceLocator[];
+  };
+  utilityProfile?: Record<string, unknown>;
   sourceKey: string;
   name: string;
   kind: FeatureKind;
@@ -112,6 +139,17 @@ export interface AreaFinding {
   areaM2?: number;
   volumeM3?: number;
   geometry?: AreaGeometry;
+  geographicGeometry?: AreaGeometry;
+  participants?: PhysicalFeature[];
+  method?: string;
+  inputRevisions?: {
+    featureId: string;
+    revision: number;
+    sourceRevisionId: string;
+  }[];
+  evidence?: SourceLocator[];
+  quantities?: Record<string, number>;
+  limitations?: string[];
 }
 export interface AreaCheck {
   id: string;
@@ -140,6 +178,7 @@ export interface EvidenceQuestion {
   };
 }
 export interface FactCandidate {
+  subject?: string;
   id: string;
   entityId: string;
   property: string;
@@ -159,6 +198,13 @@ export interface DocumentPart {
   entityIds: string[];
 }
 export interface ImportPackage {
+  selectedClaimIds?: string[];
+  factDecisions?: {
+    claimId: string;
+    reason: string;
+    time: string;
+    actor: string;
+  }[];
   id: string;
   schemaVersion: "ulpin-canonical/2";
   areaId: string;
