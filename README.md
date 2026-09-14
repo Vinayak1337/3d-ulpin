@@ -1,15 +1,20 @@
-# 3D ULPIN — local property registry
+# 3D ULPIN — local area and property registry
 
-Explore a connected synthetic neighbourhood, resolve permanent spatial IDs,
-inspect recorded rights and original evidence, review boundary corrections, and
-calculate excavation impacts against persisted property volumes. Preparation
-cases remain available in the existing source/model workbench.
+Import a bounded real area, inspect its original sources, review physical building
+envelopes, resolve loaded identifiers, and record corrections with permanent IDs.
+The saved NYC snapshot contains 62 actual footprints and reported roof heights.
+The existing synthetic neighbourhood, rights-volume checks, and preparation
+workbench remain available under **Legacy registry**.
 
-This is a **local, single-operator synthetic demonstration**. It does not issue
-official ULPINs, assert real survey coordinates or confer ownership. The stack
+This is a **local, single-operator demonstration** with separately labeled real
+observations, estimates, and synthetic scenarios. It does not issue
+official ULPINs or confer ownership. The stack
 retains Next.js, Cesium, PostGIS, private object storage and Python processing.
 
-Start with the root **[REGISTRY_DEMO_GUIDE.md](REGISTRY_DEMO_GUIDE.md)** for the
+Start with **[AREA_WORKFLOW.md](docs/AREA_WORKFLOW.md)** for the real-area ingestion,
+documents, review and correction workflow. GMDA acquisition remains pending reuse
+authorization; the new workflow needs no AI account. The root
+**[REGISTRY_DEMO_GUIDE.md](REGISTRY_DEMO_GUIDE.md)** retains the
 complete correction and excavation presentation. See [registry data/API](docs/REGISTRY.md)
 and [verification evidence](docs/REGISTRY_TEST_EVIDENCE.md). The later
 [deep review](DEEP_REVIEW.md) records corrected edge cases and remaining gaps
@@ -27,7 +32,7 @@ folder, or run this from the repository root:
 pnpm demo
 ```
 
-Open [the registry](http://127.0.0.1:3000) and keep its terminal open. The launcher
+Open [the area workspace](http://127.0.0.1:3000) and keep its terminal open. The launcher
 installs locked JavaScript dependencies, starts the platform, applies database
 migrations, builds the production web application and runs both the web server
 and application job dispatcher. It reuses an already running workbench; stop
@@ -35,7 +40,12 @@ that terminal with **Ctrl+C** before requesting a fresh production build.
 If the workbench is reachable but a processing service is unhealthy, `pnpm demo`
 recovers the platform and migrations before returning to the existing server.
 
-On a fresh database, choose **Load synthetic neighbourhood**. The seed runs
+On a fresh database, open **Data sources → Open saved snapshot**, review the
+62 building observations, and record them with an acknowledgement of the source
+limitations. Use **Refresh source** only when a new bounded download is wanted.
+
+For the older demonstration, open [Legacy registry](http://127.0.0.1:3000/registry)
+and choose **Load synthetic neighbourhood**. The seed runs
 actual inspection, preparation, Python building and registry review. Subsequent
 loads preserve operator revisions. The default property-volume view displays
 both adjoining buildings, one shared basement and one cross-parcel corridor.

@@ -93,3 +93,16 @@ def registry_operation(operation: str, data: dict[str, Any]) -> dict:
         return (check_registry if operation == 'check' else query_registry)(data)
     except (InputError, KeyError, TypeError, ValueError) as error:
         raise HTTPException(status_code=422, detail=str(error)) from None
+
+
+@app.post('/internal/area/{operation}', dependencies=[Depends(authorize)])
+def area_operation(operation: str, data: dict[str, Any]) -> dict:
+    from .area import check_area, extract_document, normalize_area
+    from .validation import InputError
+    operations = {'normalize': normalize_area, 'check': check_area, 'extract': extract_document}
+    if operation not in operations:
+        raise HTTPException(status_code=404, detail='Unknown area operation.')
+    try:
+        return operations[operation](data)
+    except (InputError, KeyError, TypeError, ValueError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from None

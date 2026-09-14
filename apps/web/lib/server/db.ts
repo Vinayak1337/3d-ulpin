@@ -1,5 +1,6 @@
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { migrateRegistry } from "./registry-db";
+import { migrateAreas } from "./area-db";
 import { settings } from "./config";
 const globals = globalThis as unknown as { ulpinPool?: Pool };
 export function pool(): Pool {
@@ -172,4 +173,5 @@ export async function migrate() {
       FROM missing m ON CONFLICT DO NOTHING;
   `);
   await migrateRegistry();
+  await migrateAreas();
 }

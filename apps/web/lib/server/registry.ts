@@ -13,6 +13,7 @@ import type {
   SourceRevision,
 } from "@ulpin/contracts";
 import { query, transaction } from "./db";
+import { syncLegacyIdentifiers } from "./area-resolver";
 import { settings } from "./config";
 import { AppError, conflict, notFound } from "./errors";
 import { assertRegistrySourceFrame } from './registry-import-evidence';
@@ -209,17 +210,20 @@ export async function siteDetail(id: string): Promise<RegistryDetail> {
   });
 }
 export async function resolveRecord(identifier: string) {
+  await syncLegacyIdentifiers();
   return transaction(async (client) => {
     await client.query(
       "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY",
     );
-    const row =
+    const matches =
       (
         await client.query(
-          `SELECT r.* FROM registry_records r WHERE r.revision>0 AND (r.identifier=$1 OR r.id::text=$1 OR r.id IN(SELECT record_id FROM registry_aliases WHERE alias=$1))`,
+          `SELECT r.* FROM registry_records r WHERE r.revision>0 AND (r.identifier=$1 OR r.id::text=$1 OR r.id IN(SELECT record_id FROM registry_aliases WHERE alias=$1) OR r.id IN(SELECT record_id FROM external_identifiers WHERE normalized_value=upper(trim($1)) AND valid_to IS NULL AND verification_state='validated'))`,
           [identifier],
         )
-      ).rows[0] ?? notFound("No current registry record has this identifier.");
+      ).rows;
+    if (matches.length > 1) throw new AppError(409, "AMBIGUOUS_IDENTIFIER", "Several loaded records assert this identifier. Use the area search to compare their evidence.");
+    const row = matches[0] ?? notFound("Not present in loaded data.");
     const record = recordFrom(row);
     const history = (
       await client.query(
@@ -578,6 +582,8 @@ export async function prepareRegistryReview(
       conflict("Draft or neighbours changed. Refresh and build checks again.");
     const current = await currentRecords(client, d.siteId),
       ids = new Set(d.records.map((r) => r.id));
+    if (d.records.some(record => record.revision !== (current.find(r => r.id === record.id)?.revision ?? 0)))
+      conflict("A proposed record has a newer current revision. Create a correction from that current record.");
     const combined = [...current.filter((r) => !ids.has(r.id)), ...d.records];
     await evidenceChecks(client, site, combined);
     return { d, site, current, combined };
@@ -677,6 +683,8 @@ export async function commitRegistryReview(
       );
     const current = await currentRecords(client, site.id),
       ids = new Set((d.records as RegistryRecord[]).map((r) => r.id));
+    if ((d.records as RegistryRecord[]).some(record => record.revision !== (current.find(r => r.id === record.id)?.revision ?? 0)))
+      conflict("A proposed record changed since this draft was created. Review a correction from the current record.");
     const combined = [...current.filter((r) => !ids.has(r.id)), ...d.records];
     if (
       fingerprint({

@@ -8,3 +8,4 @@ Shapely==2.0.7
 numpy==2.0.2
 Pillow==11.2.1
 pypdf==5.5.0
+pyproj==3.6.1
