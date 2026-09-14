@@ -169,6 +169,12 @@ try {
   assert(Math.abs(outside.areaM2 - 20) < 1e-4);
   assert(outside.geographicGeometry);
   assert(outside.participants.length >= 2);
+  assert(
+    (await api(`/buildings/${a.id}/dossier`)).sources.some(
+      (s: any) => s.id === parcels.features[0].sourceRevisionId,
+    ),
+    "The selected property's evidence includes the associated parcel original.",
+  );
   console.log(
     "PASS Three same-property dossiers, exact20m² result, all participants and geographic overlay.",
   );
@@ -496,6 +502,12 @@ try {
     assert(!text.includes("password"));
     if (format === "json") {
       const exported = JSON.parse(text);
+      assert(
+        exported.sources.some(
+          (s: any) => s.id === parcels.features[0].sourceRevisionId,
+        ),
+        "The discrepancy export includes the exact parcel original and local file link.",
+      );
       assert(
         !exported.investigation.registerSnapshot,
         "No raw snapshot bypasses export redaction.",

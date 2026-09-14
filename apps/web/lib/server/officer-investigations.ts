@@ -6,7 +6,7 @@ import type {
   AreaGeometry,
 } from "@ulpin/contracts";
 import { query, transaction } from "./db";
-import { buildingDossier, validateLocators } from "./officer";
+import { buildingDossier, dossierSources, validateLocators } from "./officer";
 import { currentAreaCheckFingerprint } from "./areas";
 import { AppError, conflict, notFound } from "./errors";
 import { fingerprint } from "./domain";
@@ -470,6 +470,26 @@ export async function exportRegister(
       }
     : current;
   if (i && i.buildingId !== buildingId) notFound();
+  // Older snapshots may cite a parcel/finding original without duplicating its
+  // metadata in sources. Resolve those immutable revision IDs, never current
+  // participant geometry, so the exported evidence set remains complete.
+  const relatedEvidence = [
+    ...d.associations.flatMap((a) => a.evidence),
+    ...d.parcels.flatMap((p) => p.feature.evidence),
+    ...(i?.findings ?? []).flatMap((f) => f.evidence ?? []),
+  ];
+  const relatedSources = await dossierSources(
+    [
+      ...relatedEvidence.map((e) => e.sourceRevisionId),
+      ...d.parcels.map((p) => p.feature.sourceRevisionId),
+    ],
+    relatedEvidence,
+  );
+  d.sources = [
+    ...new Map(
+      [...d.sources, ...relatedSources].map((s) => [s.id, s]),
+    ).values(),
+  ];
   const data = {
     schemaVersion: "ulpin-officer-export/1",
     exportedAt: now(),

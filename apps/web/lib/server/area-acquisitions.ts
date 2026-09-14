@@ -23,6 +23,8 @@ async function publicBytes(url: URL) {
     redirect: "error",
     signal: AbortSignal.timeout(20000),
     headers: { Accept: "application/json" },
+  }).catch(() => {
+    throw new AppError(503, "SOURCE_UNAVAILABLE", "The source provider could not be reached. Open the saved snapshot, or retry when online.");
   });
   if (!response.ok)
     throw new AppError(
@@ -58,8 +60,11 @@ async function publicBytes(url: URL) {
         );
       chunks.push(item.value);
     }
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError(503, "SOURCE_UNAVAILABLE", "The source download was interrupted. Open the saved snapshot, or retry when online.");
   } finally {
-    await reader.cancel();
+    await reader.cancel().catch(() => {});
   }
   return {
     bytes: Buffer.concat(chunks),
