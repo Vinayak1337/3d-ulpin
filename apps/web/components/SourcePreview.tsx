@@ -45,6 +45,8 @@ export default function SourcePreview({
   onOpenPreview,
 }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const bodyHost = useRef<HTMLDivElement>(null);
+  const [fitWidth, setFitWidth] = useState<number>();
   const [dimensions, setDimensions] = useState({
     width: source.inspection?.image?.width || 1000,
     height: source.inspection?.image?.height || 700,
@@ -68,6 +70,19 @@ export default function SourcePreview({
   const [lower, setLower] = useState("0");
   const [upper, setUpper] = useState("3");
   const isPdf = source.profile === "plan-pdf-v1";
+  useEffect(() => {
+    const body = bodyHost.current;
+    if (!body || readOnly) return;
+    const observer = new ResizeObserver(() => {
+      const width = Math.max(1, body.clientWidth - 56),
+        height = Math.max(1, body.clientHeight - 56);
+      setFitWidth(
+        Math.min(width, (height * dimensions.width) / dimensions.height),
+      );
+    });
+    observer.observe(body);
+    return () => observer.disconnect();
+  }, [readOnly, dimensions.width, dimensions.height]);
 
   useEffect(() => {
     if (!isPdf) return;
@@ -272,11 +287,15 @@ export default function SourcePreview({
           )}
         </div>
       </div>
-      <div className="reference-body">
+      <div className="reference-body" ref={bodyHost}>
         <div
           className="reference-paper"
           style={
-            readOnly ? { width: `${zoom * 100}%`, maxWidth: "none" } : undefined
+            readOnly
+              ? { width: `${zoom * 100}%`, maxWidth: "none" }
+              : fitWidth
+                ? { width: fitWidth, maxWidth: "100%" }
+                : undefined
           }
         >
           <div
