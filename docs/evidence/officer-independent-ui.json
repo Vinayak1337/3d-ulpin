@@ -1,0 +1,387 @@
+{
+  "verifiedAt": "2026-09-14T19:38:04.890603+00:00",
+  "scope": "Independent headless Chromium production UI checks, then authorized synthetic B preparation through visible UI. Real Bronx read-only. No actual AI inference.",
+  "origin": "http://127.0.0.1:3000",
+  "session": "officer-benchmark; separate earlier officer-independent-prod external-blocked session",
+  "environment": {
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M3, Unspecified Version)",
+    "headless": true,
+    "devicePixelRatio": 1,
+    "concurrency": "Another agent was performing synthetic A/parcel/utility workflow in the same local stack. These are bounded local samples, not an idle-host capacity benchmark.",
+    "fps": {
+      "measured": true,
+      "method": "Browser-only instrumentation wraps WebGL drawArrays/drawElements and instanced variants, counts animation-frame intervals containing actual GL draw calls. Frames without draws are excluded. Continuous mouse drag and sparse wheel input are measured separately; this is not an idle RAF rate or direct GPU-present timing.",
+      "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M3, Unspecified Version)",
+      "viewport": [
+        1366,
+        768
+      ],
+      "continuousDrag": {
+        "sampleCount": 1,
+        "mouseMoveSteps": 360,
+        "durationMs": 6004,
+        "drawnFrames": 360,
+        "actualGlDrawCalls": 11042,
+        "rafTicks": 360,
+        "drawnFramesPerSecond": 59.96002664890074,
+        "p95DrawnFrameIntervalMs": 16.7
+      },
+      "sparseWheel": {
+        "sampleCount": 1,
+        "wheelEvents": 60,
+        "nominalPauseBetweenEventsMs": 80,
+        "durationMs": 6857,
+        "drawnFrames": 131,
+        "actualGlDrawCalls": 4285,
+        "rafTicks": 412,
+        "drawnFramesPerSecond": 19.1045646784308,
+        "p95DrawnFrameIntervalMs": 116.7,
+        "interpretation": "Input-paced/request-render rate, not maximum drawing capacity."
+      },
+      "limitation": "One short sample per interaction on Apple M3 headless Metal. Concurrent local work; not a low-end-GPU or large-interior performance claim."
+    }
+  },
+  "load": {
+    "metric": "Navigation/reload start to completed screenshot of visibly rendered 62-building scene, after networkidle. Includes 500ms quiet wait and capture overhead; upper bound, not internal first-render event.",
+    "coldFreshContextMs": [
+      1299
+    ],
+    "warmReloadMs": [
+      1123
+    ],
+    "sampleCountEach": 1,
+    "viewport": [
+      1366,
+      768
+    ],
+    "buildPhase": "Earlier production build in the same verification session, before final small UI/proposal changes; not rerun as a statistical final-build benchmark."
+  },
+  "selection": {
+    "metric": "Click B/C explorer button, await matching dossier response body completion, correct heading and visible no-interiors message. Alternating20 selections after prior warmup.",
+    "samplesMs": [
+      198,
+      54,
+      54,
+      47,
+      49,
+      49,
+      65,
+      66,
+      64,
+      71,
+      66,
+      66,
+      67,
+      71,
+      66,
+      64,
+      66,
+      54,
+      44,
+      52
+    ],
+    "n": 20,
+    "p95NearestRankMs": 71,
+    "maxMs": 198,
+    "requestSamplesMs": [
+      159.84,
+      11.367,
+      18.556,
+      16.656,
+      16.109,
+      13.909,
+      24.632,
+      29.651,
+      26.17,
+      32.66,
+      32.202,
+      33.035,
+      31.713,
+      35.679,
+      35.541,
+      33.1,
+      32.48,
+      18.886,
+      13.972,
+      12.555
+    ],
+    "requestP95Ms": 35.679,
+    "limitation": "B/C were exterior-only at measurement time; no large detailed interior models benchmarked. Dossier requests are browser request timing, not database-only latency."
+  },
+  "layouts": [
+    {
+      "viewport": [
+        1366,
+        768
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": [
+        1920,
+        1080
+      ],
+      "scrollWidth": 1920,
+      "horizontalOverflow": false
+    },
+    {
+      "viewport": [
+        1093,
+        614
+      ],
+      "scrollWidth": 1093,
+      "horizontalOverflow": false,
+      "label": "CSS viewport equivalent to1366x768 at125%; native browser zoom NOT tested"
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "scrollWidth": 390,
+      "horizontalOverflow": false,
+      "label": "Mobile responsive viewport; inspector below map, explorer overlay"
+    }
+  ],
+  "readOnlyChecks": {
+    "bronxArea": "9e77c608-bac7-4d56-9ac7-3032cc49074d",
+    "featureCount": 62,
+    "externalHttpBlockedSession": "All non-local HTTP(S) requests aborted by route; production scene loaded/fitted correctly. Local assets and blob workers allowed.",
+    "sourceIdentifier": "353927",
+    "resolvedBuildingId": "7ca4fba1-6c6a-44aa-89c8-d17b97bf159f",
+    "globalNavSameProperty": true,
+    "rapidSelectionLastDossierCorrect": true,
+    "unknownResult": "Not present in loaded data.",
+    "AAtReadTime": "Synthetic Room A01 in Ground reopened as0\u20133m at BM-SYNTHETIC-UI-ONLY; retained plan boundary visible. A later correction by the UI agent is outside this snapshot.",
+    "realSourceMutations": 0
+  },
+  "syntheticB": {
+    "areaId": "8c61a45e-3ae9-4c7c-95f2-78918f23582a",
+    "buildingId": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+    "buildingIdentifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:B002",
+    "packageId": "0be28232-d656-4c6f-b4a4-ef571e9d45b6",
+    "files": [
+      {
+        "name": "synthetic-b-plan-missing-upper.csv",
+        "bytes": 215,
+        "sha256": "3f00067883dd6e8fa22b435083214db026c515ee89b6be5809373e09f0048073",
+        "worldStatus": "synthetic"
+      },
+      {
+        "name": "synthetic-b-upper-reference.csv",
+        "bytes": 155,
+        "sha256": "bcac87fa86b5a257f575bd4aa833140f292822c9e25de67b7ecf2fff3c9a2a28",
+        "worldStatus": "synthetic"
+      }
+    ],
+    "workflow": "UI upload plan with missing upper; select lower/name/floor/outline with reasons; reviewed direct metre placement; build returns422 with exact missing-upper question. Upload independent upper-reference file; select3m claim with reason; build ready1space; review3records0findings; record with synthetic review note; reload/select room/section.",
+    "roomId": "a8f6efbb-1d4b-41ee-b168-d78a50e5f3db",
+    "roomIdentifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:S002",
+    "roomRevision": 1,
+    "areaM2": 16,
+    "volumeM3": 48,
+    "lowerM": 0,
+    "upperM": 3,
+    "footprint": [
+      [
+        21,
+        1
+      ],
+      [
+        25,
+        1
+      ],
+      [
+        25,
+        5
+      ],
+      [
+        21,
+        5
+      ]
+    ],
+    "benchmark": "BM-SYNTHETIC-UI-ONLY",
+    "readback": "UI reopen confirms one room with0\u20133m section and unchanged B002. Read-only dossier API confirms16m\u00b2/48m\u00b3 after UI record.",
+    "mutationMethod": "All preparation/source/fact/placement/build/review/record mutations used actual UI; only final dimension readback used read-only API.",
+    "retainedForDemo": true,
+    "originalDownloadVerified": {
+      "sourceId": "3846c25a-ba2f-4622-b9fe-234425420d28",
+      "sha256": "bcac87fa86b5a257f575bd4aa833140f292822c9e25de67b7ecf2fff3c9a2a28",
+      "bytes": 155,
+      "method": "Actual UI Open original action downloaded retained CSV; exact-byte equality with uploaded source passed."
+    }
+  },
+  "console": {
+    "readOnlyProductionErrors": 0,
+    "readOnlyProductionWarnings": 0,
+    "BWorkflowErrors": 1,
+    "classification": "Expected HTTP422 prepare-details request while upper was missing; shown inline with corrective question. No uncaught application error observed."
+  },
+  "screenshots": [
+    "output/playwright/officer-benchmark-cold.png",
+    "output/playwright/officer-benchmark-warm.png",
+    "output/playwright/officer-independent-prod-first-load.png",
+    "output/playwright/officer-independent-1920.png",
+    "output/playwright/officer-independent-125-equivalent.png",
+    "output/playwright/officer-independent-mobile.png",
+    "output/playwright/officer-independent-A-plan.png",
+    "output/playwright/officer-independent-A-section.png",
+    "output/playwright/officer-independent-B-missing-level.png",
+    "output/playwright/officer-independent-B-recorded-section.png",
+    "output/playwright/officer-final-real62.png",
+    "output/playwright/officer-final-B-room.png",
+    "output/playwright/officer-final-fps-before.png",
+    "output/playwright/officer-final-fps-after.png",
+    "output/playwright/officer-final-drag-after.png"
+  ],
+  "actualInferenceRuns": 0,
+  "finalProduction": {
+    "buildId": "OpDR1sWMDzbJEuttlC-vH",
+    "verifiedAt": "2026-09-14T19:43:27.306382+00:00",
+    "real62Rendered": true,
+    "BRoomReopened": true,
+    "externalHttpBlocked": true,
+    "consoleErrorsAfterFreshReload": 0,
+    "interruptedAttempt": "One earlier B screenshot overlapped a deliberate local server rebuild; worker request failed while server was down. Discarded/replaced after server-ready reload. Worker exists and final scene renders."
+  },
+  "retainedArtifacts": [
+    {
+      "path": "docs/evidence/ui/independent/officer-benchmark-cold.png",
+      "bytes": 122386,
+      "sha256": "8ed81c8a5767c85785a7cbd2b8253b21e6995312e712290672deeb8834e3ec1c",
+      "capturedFileModifiedAt": "2026-09-14T19:23:10.412213+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-benchmark-warm.png",
+      "bytes": 122401,
+      "sha256": "98e58a4bb625a727f57a7ab94ed862ec4487b392d32a78a4b869dce6167de91c",
+      "capturedFileModifiedAt": "2026-09-14T19:23:37.849007+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-independent-prod-first-load.png",
+      "bytes": 130800,
+      "sha256": "a7529537e71b209c1149e438c425ca93360930344587fa5bb3c247e67c0ed8bb",
+      "capturedFileModifiedAt": "2026-09-14T19:12:25.556452+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-independent-1920.png",
+      "bytes": 201745,
+      "sha256": "b9d742aed4fd09897120cd521dd91d4562c4ccd448282ac95c4800143cadcbe7",
+      "capturedFileModifiedAt": "2026-09-14T19:30:09.830368+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-independent-125-equivalent.png",
+      "bytes": 147993,
+      "sha256": "aaa55fe49901ee06516af198e587df4ce701011fc6fffa077f055fdd31fc1c16",
+      "capturedFileModifiedAt": "2026-09-14T19:30:09.895304+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-independent-mobile.png",
+      "bytes": 80487,
+      "sha256": "75e9a00caa1140be06b173be724f65a220550f6589d5ab9e842a132ccc2f7899",
+      "capturedFileModifiedAt": "2026-09-14T19:30:09.935700+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-independent-A-plan.png",
+      "bytes": 146547,
+      "sha256": "bee38657593b671c2c9ff49200e3731ea7e6b3c2aab611fc738d87bdcb1fe34b",
+      "capturedFileModifiedAt": "2026-09-14T19:27:50.028232+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-independent-A-section.png",
+      "bytes": 143473,
+      "sha256": "5d00086826255056f4f3164f95872cad5b0e4515030d6269b0e674cdbc34cc80",
+      "capturedFileModifiedAt": "2026-09-14T19:24:30.082977+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-independent-B-missing-level.png",
+      "bytes": 149508,
+      "sha256": "c5cee60b8b3f0945973e2d9f9f15300093f9011d06db8e80c443fc0b6a225efb",
+      "capturedFileModifiedAt": "2026-09-14T19:31:33.794112+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-independent-B-recorded-section.png",
+      "bytes": 125776,
+      "sha256": "ad32f9a31b56ab59dc7b3276ffb277fb48d782149e4b08b7a75358db57bb7a7f",
+      "capturedFileModifiedAt": "2026-09-14T19:32:44.041737+00:00",
+      "phase": "earlier-independent-verification"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-final-real62.png",
+      "bytes": 121866,
+      "sha256": "5f72d6bbfbc0dfb2211951030a2151434339a2c04d5c49713023e7efda29f6db",
+      "capturedFileModifiedAt": "2026-09-14T19:43:26.733876+00:00",
+      "phase": "final-production"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-final-B-room.png",
+      "bytes": 149423,
+      "sha256": "d71c22372ae1ad23b75f11be95666430053bb09199a4a7cca65445a9b1fa49f5",
+      "capturedFileModifiedAt": "2026-09-14T19:44:20.952785+00:00",
+      "phase": "final-production"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-final-fps-before.png",
+      "bytes": 124770,
+      "sha256": "fe383e59b4ac9281941a7192a3e49ca6a664f110b040e8fe9522f249269048b4",
+      "capturedFileModifiedAt": "2026-09-14T19:41:06.608196+00:00",
+      "phase": "final-production"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-final-fps-after.png",
+      "bytes": 121605,
+      "sha256": "6e54a814ee39eb0c6860088bdaeed5f05ea194caedb28563ebcf6a190350f167",
+      "capturedFileModifiedAt": "2026-09-14T19:41:13.522789+00:00",
+      "phase": "final-production"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-final-drag-after.png",
+      "bytes": 121866,
+      "sha256": "5f72d6bbfbc0dfb2211951030a2151434339a2c04d5c49713023e7efda29f6db",
+      "capturedFileModifiedAt": "2026-09-14T19:41:51.144483+00:00",
+      "phase": "final-production"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-restart-real62.png",
+      "bytes": 124563,
+      "sha256": "c8a1d480111caf2a46733f4f4241c7bb46a47efd45acd3a4e16d14c0c4eee198",
+      "capturedFileModifiedAt": "2026-09-14T19:47:20.438884+00:00",
+      "phase": "all-services-restarted-external-egress-blocked"
+    },
+    {
+      "path": "docs/evidence/ui/independent/officer-restart-B-room.png",
+      "bytes": 149420,
+      "sha256": "1af24d0079a3172440494d5e55dab67eb02ec30943def75155ae4fd322d141ca",
+      "capturedFileModifiedAt": "2026-09-14T19:47:34.619797+00:00",
+      "phase": "all-services-restarted-external-egress-blocked"
+    }
+  ],
+  "offlineRestart": {
+    "verifiedAt": "2026-09-14T19:48:18.864014+00:00",
+    "operator": "Independent source_proof browser session officer-restart",
+    "browserFreshContext": true,
+    "browserNonLocalHttpBlocked": true,
+    "serverEgressDenial": "Lead restarted local stack with Node proxy denying external HTTP(S) and reported proxy denial checkpoint; browser independently loaded only local application/originals.",
+    "real62Rendered": true,
+    "BRoomRenderedWithNeighbors": true,
+    "buildingIdentifierPreserved": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:B002",
+    "roomIdentifierPreserved": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:S002",
+    "propertyRegisterHref": "/properties/2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+    "prepareHref": "/properties/2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6/prepare",
+    "originalUpperCsvDownloadedThroughUi": true,
+    "originalUpperCsvSha256": "bcac87fa86b5a257f575bd4aa833140f292822c9e25de67b7ecf2fff3c9a2a28",
+    "exactBytesEqualUploaded": true,
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "sourceOrRecordMutations": 0
+  }
+}

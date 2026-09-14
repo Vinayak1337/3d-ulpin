@@ -1,0 +1,40 @@
+{
+  "project": "ulpin-fresh-20260914191027-19c1fefe",
+  "startedAt": "2026-09-14T19:10:27.232Z",
+  "status": "passed",
+  "ports": {
+    "postgres": 25432,
+    "minio": 29000,
+    "console": 29001,
+    "redis": 26379,
+    "geo": 28000,
+    "web": 3001
+  },
+  "checks": [
+    "A new database, private bucket, Redis, geo and worker started in the isolated project; migrations ran from an empty application schema.",
+    "Second production web and dispatcher passed database/storage/processor/Redis/worker health on the isolated endpoints.",
+    "Saved acquisition normalized and reviewed/committed 62 real exterior observations; original SHA-256 and source/building identities retained without invented detailed spaces or vertical collision volume.",
+    "before-restart: production UI opened the saved area and source-ID search loaded the same property's dossier.",
+    "The existing officer API regression passed on the isolated stack, including native CSV preparation, dispatcher/Celery builds and detailed publication under the same reserved property identities.",
+    "after-restart: production UI opened the saved area and source-ID search loaded the same property's dossier.",
+    "Full isolated service/web/dispatcher restart and repeat migration preserved all 62 identities, committed package, current check and exact original hashes."
+  ],
+  "limitations": [
+    "Saved NYC snapshot acquisition; no new provider download asserted.",
+    "Reuses the installed dependency tree and local geo image; this is a fresh data installation, not a clean OS/dependency installation."
+  ],
+  "productionBuildId": "k1R1Ws5OofY3qu4akUMfJ",
+  "savedSnapshot": {
+    "acquisitionId": "bfe235a6-28da-40a3-9561-943d9012e95b",
+    "areaId": "593731c0-b2f7-43fa-9e0b-b171c0e7c225",
+    "packageId": "01596799-ace9-406f-acc5-03b87eb3bf8e",
+    "sourceSha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+    "featureCount": 62,
+    "originalHashes": {
+      "ca90f696-ceae-4849-a49c-65fe2c119602": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a"
+    },
+    "identitiesSha256": "ab308af98a4553871dac5549591be7bf3a80647810ff593706ef37c971aae19e"
+  },
+  "cleanup": "Only the newly allocated project containers, network and named volumes were removed.",
+  "finishedAt": "2026-09-14T19:11:23.904Z"
+}

@@ -1,0 +1,33 @@
+{
+  "at": "2026-09-14T19:24:12.066Z",
+  "hardware": {
+    "cpu": "Apple M3",
+    "architecture": "arm64",
+    "ramGiB": 16,
+    "node": "v26.7.0"
+  },
+  "dataClass": "authored synthetic software fixture; no real survey inference",
+  "features": 150,
+  "vertices": 750,
+  "confirmedAssociations": 50,
+  "inputSha256": "b38a12380bc3a78bceb091eb8e15b109a4197d1de46f87de4194e00a6648be4c",
+  "method": "Local authenticated HTTP request to running Python /internal/area/check, including JSON serialization/transport/parsing; no database or browser rendering time. Services were already warm. First request reported separately, not a machine cold start.",
+  "samplesMs": [
+    64.25,
+    49.56,
+    50.04,
+    48.88,
+    47.15,
+    47.63,
+    48.53,
+    47.5,
+    47.06,
+    45.97
+  ],
+  "firstRequestMs": 64.25,
+  "warmSamples": 9,
+  "warmP95Ms": 50.04,
+  "targetMs": 5000,
+  "targetMet": true,
+  "expected": "50 independently specified exact20m² outside strips, all verified on every run."
+}
