@@ -50,6 +50,7 @@ import {
 } from "@/lib/ui/icons";
 import { api, sourceUrl } from "@/lib/client";
 import { number, unitColor } from "@/lib/ui/geometry";
+import { retainOfficerContext } from "./OfficerNavigation";
 import PlanView from "./PlanView";
 import SourcePreview from "./SourcePreview";
 import PropertyIdentity, { IdentifierValue } from "./PropertyIdentity";
@@ -243,6 +244,23 @@ export default function Workbench() {
     return result;
   }, []);
 
+  const [blockReturn, setBlockReturn] = useState<string | null>(null);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search),
+      buildingId = q.get("building"),
+      areaId = q.get("area"),
+      linkedCase = q.get("case");
+    if (buildingId && areaId) {
+      setBlockReturn(
+        `/areas/${encodeURIComponent(areaId)}?feature=${encodeURIComponent(buildingId)}`,
+      );
+      retainOfficerContext({
+        buildingId,
+        areaId,
+        caseId: linkedCase || undefined,
+      });
+    }
+  }, []);
   useEffect(() => {
     let alive = true;
     refreshCases()
@@ -611,6 +629,11 @@ export default function Workbench() {
           Skip to model workspace
         </a>
         <header className="topbar">
+          {blockReturn && (
+            <a className="officer-back-link" href={blockReturn}>
+              ← Back to property in block
+            </a>
+          )}
           <a href="/" className="brand" aria-label="3D ULPIN home">
             <Mark />
             <span>3D ULPIN</span>
@@ -632,23 +655,30 @@ export default function Workbench() {
                   }
                 }}
               >
-                {cases.filter((c) => !c.archived || c.id === caseId).map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}{c.archived ? " (archived)" : ""}
-                  </option>
-                ))}
+                {cases
+                  .filter((c) => !c.archived || c.id === caseId)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                      {c.archived ? " (archived)" : ""}
+                    </option>
+                  ))}
                 {showArchived && (
                   <optgroup label="Archived workspaces">
-                    {cases.filter((c) => c.archived && c.id !== caseId).map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} · {c.id.slice(0, 8)}
-                      </option>
-                    ))}
+                    {cases
+                      .filter((c) => c.archived && c.id !== caseId)
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} · {c.id.slice(0, 8)}
+                        </option>
+                      ))}
                   </optgroup>
                 )}
                 {cases.some((c) => c.archived) && (
                   <option value="toggle-archive">
-                    {showArchived ? "Hide archived workspaces" : `Show archived workspaces (${cases.filter((c) => c.archived).length})`}
+                    {showArchived
+                      ? "Hide archived workspaces"
+                      : `Show archived workspaces (${cases.filter((c) => c.archived).length})`}
                   </option>
                 )}
               </select>
@@ -924,10 +954,18 @@ export default function Workbench() {
                       NYC Open Data source ↗
                     </a>
                     <strong>Indian building data</strong>
-                    <a href="https://sites.research.google/gr/open-buildings/" target="_blank" rel="noreferrer">
+                    <a
+                      href="https://sites.research.google/gr/open-buildings/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       Google Open Buildings · India coverage ↗
                     </a>
-                    <a href="https://github.com/microsoft/GlobalMLBuildingFootprints" target="_blank" rel="noreferrer">
+                    <a
+                      href="https://github.com/microsoft/GlobalMLBuildingFootprints"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       Microsoft building footprints · India tiles ↗
                     </a>
                     <p>
@@ -1425,7 +1463,9 @@ export default function Workbench() {
                             ? `${detail.units.length} draft spaces are prepared. Build the model to compute volumes, evidence checks, and intersections.`
                             : detail?.sources.length
                               ? "Inspect your sources, then prepare the footprints and vertical limits. Each step stays explicit and traceable."
-                              : "Import local footprints and level evidence, or open a sample dataset to explore the complete workflow."}
+                              : blockReturn
+                                ? "Add supporting plans in this building’s Plan Workspace."
+                                : "Import local footprints and level evidence, or open a sample dataset to explore the complete workflow."}
                         </p>
                         {detail?.units.length ? (
                           <button
@@ -1461,40 +1501,42 @@ export default function Workbench() {
                           </button>
                         ) : (
                           <>
-                            <div className="sample-choice">
-                              <select
-                                aria-label="Sample dataset"
-                                value={dataset}
-                                onChange={(e) =>
-                                  setDataset(
-                                    e.target.value as
-                                      "c001" | "c002" | "real-nyc",
-                                  )
-                                }
-                              >
-                                <option value="real-nyc">
-                                  NYC · Public building footprint
-                                </option>
-                                <option value="c001">
-                                  C-001 · Reference building
-                                </option>
-                                <option value="c002">
-                                  C-002 · Alternate footprint
-                                </option>
-                              </select>
-                              <button
-                                className="button primary"
-                                disabled={!!busy}
-                                onClick={loadDemo}
-                              >
-                                {busy ? (
-                                  <LoaderCircle size={15} className="spin" />
-                                ) : (
-                                  <ArrowDownToLine size={15} />
-                                )}
-                                Load sample inputs
-                              </button>
-                            </div>
+                            {!blockReturn && (
+                              <div className="sample-choice">
+                                <select
+                                  aria-label="Sample dataset"
+                                  value={dataset}
+                                  onChange={(e) =>
+                                    setDataset(
+                                      e.target.value as
+                                        "c001" | "c002" | "real-nyc",
+                                    )
+                                  }
+                                >
+                                  <option value="real-nyc">
+                                    NYC · Public building footprint
+                                  </option>
+                                  <option value="c001">
+                                    C-001 · Reference building
+                                  </option>
+                                  <option value="c002">
+                                    C-002 · Alternate footprint
+                                  </option>
+                                </select>
+                                <button
+                                  className="button primary"
+                                  disabled={!!busy}
+                                  onClick={loadDemo}
+                                >
+                                  {busy ? (
+                                    <LoaderCircle size={15} className="spin" />
+                                  ) : (
+                                    <ArrowDownToLine size={15} />
+                                  )}
+                                  Load sample inputs
+                                </button>
+                              </div>
+                            )}
                             <button
                               className="text-button"
                               onClick={() => setModal("upload")}

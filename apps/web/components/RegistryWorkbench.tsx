@@ -345,7 +345,11 @@ export default function RegistryWorkbench({
             ))}
           </select>
         </div>
-        <span className="status-tag">Synthetic site</span>
+        <span className="status-tag">
+          {detail?.site.synthetic
+            ? "Synthetic software site"
+            : "Retained site records"}
+        </span>
         <a className="preparation-link" href="/workbench">
           Preparation
         </a>
@@ -372,12 +376,11 @@ export default function RegistryWorkbench({
                 ? "Records could not be opened"
                 : !initialized || siteId
                   ? "Opening site records…"
-                  : "A neighbourhood, connected."}
+                  : "Property register"}
             </h2>
             <p>
-              Load two adjoining buildings, eight apartments, shared
-              circulation, one basement and a cross-parcel utility corridor. All
-              source files and recorded rights are fictional.
+              Choose a property from 3D Block to open its evidenced register, or
+              load the labeled synthetic example below.
             </p>
             {initialized && !siteId && !error && (
               <button

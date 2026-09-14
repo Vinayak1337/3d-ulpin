@@ -4,8 +4,17 @@ export default async function AreaPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ feature?: string }>;
+  searchParams: Promise<{ feature?: string; record?: string }>;
 }) {
-  const [{ id }, { feature }] = await Promise.all([params, searchParams]);
-  return <AreaWorkbench initialAreaId={id} initialFeatureId={feature} />;
+  const [{ id }, { feature, record }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
+  return (
+    <AreaWorkbench
+      initialAreaId={id}
+      initialFeatureId={feature}
+      initialRecordId={record}
+    />
+  );
 }

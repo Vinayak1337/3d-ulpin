@@ -28,7 +28,7 @@ async function detail(
 }
 
 async function createWorkspace(page: Page, name: string) {
-  await page.goto("/");
+  await page.goto("/workbench");
   // Start this workflow after the previous workspace's lazy 3D initialization.
   // Cold Cesium startup under SwiftShader can otherwise stall animation frames
   // while Playwright is checking the new-workspace dialog for stability.

@@ -12,6 +12,9 @@ import {
 import dynamic from "next/dynamic";
 import type {
   AreaCheck,
+  AreaFinding,
+  BuildingDossier,
+  RegistryRecord,
   AreaContext,
   AreaGeometry,
   EvidenceQuestion,
@@ -23,6 +26,13 @@ import type {
 import type { SourceCatalogEntry } from "@/lib/source-catalog";
 import { registryRequest as request } from "@/lib/registry-client";
 import "./AreaWorkbench.css";
+import { geometryParts, utilityScene } from "@/lib/officer-scene";
+import AreaSection from "./AreaSection";
+import PropertyDossierPanel, {
+  type PropertyPanelMode,
+} from "./PropertyDossierPanel";
+import { retainOfficerContext } from "./OfficerNavigation";
+import type { AreaNavigation, SceneDetail, SceneBoundary } from "./AreaViewer";
 
 const AreaViewer = dynamic(() => import("./AreaViewer"), {
   ssr: false,
@@ -34,13 +44,16 @@ const fmt = (value: number) =>
   value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 const originalUrl = (id: string) =>
   `/api/v1/sources/${encodeURIComponent(id)}/file`;
-type Navigation = { action: "fit" | "focus"; sequence: number };
+type Navigation = AreaNavigation;
 type ResolveMatch = {
   kind: string;
   feature?: PhysicalFeature;
   areaIds: string[];
   url: string;
   matchEvidence: unknown[];
+  buildingId?: string;
+  canonicalBuildingId?: string;
+  relatedBuildings?: { feature?: PhysicalFeature; id?: string }[];
 };
 
 function points(geometry: AreaGeometry): number[][] {
@@ -50,7 +63,9 @@ function points(geometry: AreaGeometry): number[][] {
       : typeof v[0] === "number"
         ? [v as number[]]
         : v.flatMap(visit);
-  return visit(geometry.coordinates);
+  return geometry.type === "GeometryCollection"
+    ? geometry.geometries.flatMap(points)
+    : visit(geometry.coordinates);
 }
 function bounds(
   features: PhysicalFeature[],
@@ -72,6 +87,8 @@ function bounds(
   ];
 }
 function path(geometry: AreaGeometry): string {
+  if (geometry.type === "GeometryCollection")
+    return geometry.geometries.map(path).join(" ");
   const ring = (p: number[][], close = true) =>
     p.map(([x, y], i) => `${i ? "L" : "M"}${x},${-y}`).join(" ") +
     (close ? " Z" : "");
@@ -91,12 +108,26 @@ function AreaPlan({
   selectedId,
   onSelect,
   navigation,
+  issueGeometry,
+  highlightedIds = [],
+  details = [],
+  boundaries = [],
+  selectedDetailId,
+  onDetail,
+  labels = true,
 }: {
   features: PhysicalFeature[];
   extent?: MapArea["extent"];
   selectedId: string | null;
   onSelect: (id: string) => void;
   navigation: Navigation;
+  issueGeometry?: AreaGeometry;
+  highlightedIds?: string[];
+  details?: SceneDetail[];
+  boundaries?: SceneBoundary[];
+  selectedDetailId?: string;
+  onDetail?: (id: string) => void;
+  labels?: boolean;
 }) {
   const [view, setView] = useState<[number, number, number, number]>(() =>
     bounds(features, extent),
@@ -105,16 +136,40 @@ function AreaPlan({
   const svg = useRef<SVGSVGElement>(null);
   const selected = useRef(selectedId);
   selected.current = selectedId;
+  const planInputs = useRef({ features, extent, highlightedIds });
+  planInputs.current = { features, extent, highlightedIds };
+  const previousPlan = useRef<typeof view | null>(null);
   useEffect(() => {
-    setView(
-      bounds(
-        navigation.action === "focus"
-          ? features.filter((f) => f.id === selected.current)
-          : features,
-        navigation.action === "fit" ? extent : undefined,
-      ),
-    );
-  }, [features, extent, navigation]);
+    const input = planInputs.current;
+    if (navigation.action === "return" && previousPlan.current) {
+      setView(previousPlan.current);
+      previousPlan.current = null;
+      return;
+    }
+    if (navigation.action === "zoom_in" || navigation.action === "zoom_out") {
+      const factor = navigation.action === "zoom_in" ? 0.8 : 1.25;
+      setView(([x, y, w, h]) => [
+        x + (w * (1 - factor)) / 2,
+        y + (h * (1 - factor)) / 2,
+        w * factor,
+        h * factor,
+      ]);
+      return;
+    }
+    if (navigation.action === "north" || navigation.action === "angle") return;
+    if (navigation.action === "focus" || navigation.action === "issue")
+      setView((current) => {
+        previousPlan.current ||= current;
+        return bounds(
+          input.features.filter((f) =>
+            navigation.action === "focus"
+              ? f.id === selected.current
+              : input.highlightedIds.includes(f.id),
+          ),
+        );
+      });
+    else setView(bounds(input.features, input.extent));
+  }, [navigation]);
   useEffect(() => {
     const element = svg.current;
     if (!element) return;
@@ -192,8 +247,110 @@ function AreaPlan({
           fill="url(#area-grid)"
         />
         {features.map((feature) =>
-          geometryElement(feature, selectedId, onSelect),
+          geometryElement(
+            feature,
+            selectedId,
+            onSelect,
+            highlightedIds.includes(feature.id),
+          ),
         )}
+        {boundaries
+          .filter((boundary) => boundary.localGeometry)
+          .map((boundary) => (
+            <g key={boundary.id} pointerEvents="none">
+              <path
+                d={path(boundary.localGeometry!)}
+                fill="none"
+                stroke="#687c83"
+                strokeWidth="2"
+                strokeDasharray="7 5"
+                vectorEffect="non-scaling-stroke"
+              >
+                <title>{boundary.name}</title>
+              </path>
+              {labels &&
+                view[2] < 350 &&
+                points(boundary.localGeometry!).length > 0 && (
+                  <text
+                    x={points(boundary.localGeometry!)[0][0]}
+                    y={-points(boundary.localGeometry!)[0][1] - view[2] / 70}
+                    fontSize={Math.max(1.5, view[2] / 80)}
+                    fill="#52686d"
+                  >
+                    {boundary.name}
+                  </text>
+                )}
+            </g>
+          ))}
+        {details
+          .filter((detail) => detail.localGeometry)
+          .map((detail) => (
+            <path
+              key={detail.id}
+              d={path(detail.localGeometry!)}
+              fill={detail.id === selectedDetailId ? "#c5734ccc" : "#60979970"}
+              stroke="#3e625f"
+              vectorEffect="non-scaling-stroke"
+              onClick={() => onDetail?.(detail.id)}
+            >
+              <title>{detail.name} · retained space boundary</title>
+            </path>
+          ))}
+        {labels &&
+          view[2] < 350 &&
+          features.map((feature) => {
+            const ps = points(feature.geometry);
+            if (
+              !ps.length ||
+              (feature.kind === "parcel" &&
+                view[2] > 45 &&
+                selectedId !== feature.id &&
+                !highlightedIds.includes(feature.id))
+            )
+              return null;
+            return (
+              <text
+                key={`label:${feature.id}`}
+                className="area-plan-label"
+                x={ps.reduce((n, p) => n + p[0], 0) / ps.length}
+                y={-ps.reduce((n, p) => n + p[1], 0) / ps.length}
+                fontSize={Math.max(1.5, view[2] / 80)}
+                textAnchor="middle"
+                pointerEvents="none"
+              >
+                {feature.kind === "utility" && feature.name.length > 24
+                  ? `${feature.name.slice(0, 23)}…`
+                  : feature.name}
+              </text>
+            );
+          })}
+        {issueGeometry &&
+          geometryParts(issueGeometry).map((geometry, index) =>
+            geometry.type === "Point" || geometry.type === "MultiPoint" ? (
+              (geometry.type === "Point"
+                ? [geometry.coordinates]
+                : geometry.coordinates
+              ).map(([x, y], j) => (
+                <circle
+                  key={`${index}:${j}`}
+                  cx={x}
+                  cy={-y}
+                  r={Math.max(1, view[2] / 150)}
+                  className="area-issue-shape"
+                />
+              ))
+            ) : (
+              <path
+                key={index}
+                d={path(geometry)}
+                className="area-issue-shape"
+                fillRule="evenodd"
+                vectorEffect="non-scaling-stroke"
+              >
+                <title>Exact discrepancy geometry</title>
+              </path>
+            ),
+          )}
       </svg>
       <div className="area-plan-controls">
         <button title="Zoom in" aria-label="Zoom in" onClick={() => zoom(0.8)}>
@@ -220,11 +377,12 @@ function geometryElement(
   feature: PhysicalFeature,
   selectedId: string | null,
   onSelect: (id: string) => void,
+  affected = false,
 ) {
   const shared = {
     "data-feature": feature.id,
     onClick: () => onSelect(feature.id),
-    className: `area-shape ${feature.kind} ${feature.worldStatus === "synthetic" ? "synthetic" : ""} ${feature.height.state === "estimated" ? "estimated" : ""} ${selectedId === feature.id ? "selected" : ""}`,
+    className: `area-shape ${feature.kind} ${feature.worldStatus === "synthetic" ? "synthetic" : ""} ${feature.height.state === "estimated" ? "estimated" : ""} ${selectedId === feature.id ? "selected" : ""} ${affected ? "affected" : ""}`,
   };
   if (feature.geometry.type === "Point")
     return (
@@ -314,9 +472,13 @@ async function upload(path: string, data: FormData): Promise<ImportPackage> {
 export default function AreaWorkbench({
   initialAreaId,
   initialFeatureId,
+  initialPanel,
+  initialRecordId,
 }: {
   initialAreaId?: string;
   initialFeatureId?: string;
+  initialPanel?: PropertyPanelMode;
+  initialRecordId?: string;
 }) {
   const [areas, setAreas] = useState<MapArea[]>([]),
     [areaId, setAreaId] = useState(initialAreaId || "");
@@ -326,7 +488,14 @@ export default function AreaWorkbench({
     [selectedId, setSelected] = useState<string | null>(
       initialFeatureId || null,
     );
-  const [view, setView] = useState<"3d" | "plan">("3d"),
+  const [requestedRecord, setRequestedRecord] = useState(initialRecordId);
+  const [explorerOpen, setExplorerOpen] = useState(false),
+    [labelsVisible, setLabelsVisible] = useState(true),
+    [underground, setUnderground] = useState(false);
+  const [dossier, setDossier] = useState<BuildingDossier | null>(null),
+    [selectedDetail, setSelectedDetail] = useState<RegistryRecord | null>(null),
+    [selectedIssue, setSelectedIssue] = useState<AreaFinding | null>(null);
+  const [view, setView] = useState<"3d" | "plan" | "section">("3d"),
     [navigation, setNavigation] = useState<Navigation>({
       action: "fit",
       sequence: 0,
@@ -361,9 +530,11 @@ export default function AreaWorkbench({
     setAreas(rows);
     return rows;
   }, []);
+  const currentAreaRef = useRef(areaId);
+  currentAreaRef.current = areaId;
   const refreshContext = useCallback(async (id: string) => {
     const result = await request<AreaContext>(`/areas/${id}/context`);
-    setContext(result);
+    if (id === currentAreaRef.current) setContext(result);
     return result;
   }, []);
   useEffect(() => {
@@ -421,13 +592,117 @@ export default function AreaWorkbench({
       (text, feature) => text.replaceAll(feature.id, feature.name),
       message,
     );
-  const selected = features.find((f) => f.id === selectedId) || null;
+  const sceneFeatures = useMemo(() => {
+    const additional = (selectedIssue?.participants || []).filter(
+      (f) => !features.some((current) => current.id === f.id),
+    );
+    return [...features, ...additional];
+  }, [features, selectedIssue]);
+  const selected = sceneFeatures.find((f) => f.id === selectedId) || null;
+  const selectedProfile =
+    selected?.kind === "utility" ? utilityScene(selected) : null;
+  const selectionRef = useRef(selectedId);
+  selectionRef.current = selectedId;
+  const acceptDossier = useCallback((next: BuildingDossier | null) => {
+    if (next && next.canonicalBuildingId !== selectionRef.current) return;
+    setDossier(next);
+  }, []);
+  const chooseFeature = useCallback((id: string) => {
+    setSelected(id);
+    setRequestedRecord(undefined);
+    setSelectedDetail(null);
+    setDossier(null);
+    setTab("feature");
+  }, []);
+  const inspectIssue = useCallback((finding: AreaFinding) => {
+    setSelectedIssue(finding);
+    setTab("findings");
+    setNavigation((old) => ({ action: "issue", sequence: old.sequence + 1 }));
+  }, []);
+  const sceneDetails = useMemo<SceneDetail[]>(() => {
+    if (!dossier || dossier.canonicalBuildingId !== selectedId) return [];
+    return dossier.detailedScene
+      .filter(
+        (detail) =>
+          detail.geographicGeometry &&
+          Number.isFinite(detail.lower) &&
+          Number.isFinite(detail.upper) &&
+          detail.upper! > detail.lower!,
+      )
+      .map((detail) => ({
+        id: detail.record.id,
+        name:
+          detail.record.kind === "floor"
+            ? detail.record.name.replace(/^property\s*\/\s*/i, "")
+            : detail.record.name,
+        geographicGeometry: detail.geographicGeometry!,
+        localGeometry: detail.localGeometry,
+        verticalReference: detail.verticalReference,
+        lower: detail.lower!,
+        upper: detail.upper!,
+        kind: detail.record.kind === "floor" ? "floor" : "space",
+      }));
+  }, [dossier, selectedId]);
+  useEffect(() => {
+    if (areaId && !selected)
+      retainOfficerContext({
+        areaId,
+        buildingId: undefined,
+        caseId: undefined,
+      });
+  }, [areaId, selected?.id]);
+  useEffect(() => {
+    if (selected?.kind === "building")
+      retainOfficerContext({
+        buildingId: selected.id,
+        areaId: selected.areaId,
+        caseId: undefined,
+      });
+  }, [selected?.id, selected?.areaId, selected?.kind]);
   const filtered = features.filter((f) =>
     `${f.name} ${f.identifier} ${f.sourceKey}`
       .toLowerCase()
       .includes(filter.toLowerCase()),
   );
   const area = context?.area || areas.find((a) => a.id === areaId);
+  const sceneBoundaries = useMemo<SceneBoundary[]>(() => {
+    const groups =
+      dossier?.canonicalBuildingId === selectedId ? dossier.groups : [];
+    const stored = [
+      ...new Map(groups.map((group) => [group.id, group])).values(),
+    ].map((group) => ({
+      id: group.id,
+      name: group.name,
+      geographicGeometry: group.geographicBoundary,
+      localGeometry: group.areaId === areaId ? group.boundary : undefined,
+    }));
+    if (stored.length || !area?.geographicExtent) return stored;
+    const rectangle = ([w, s, e, n]: [
+      number,
+      number,
+      number,
+      number,
+    ]): AreaGeometry => ({
+      type: "Polygon",
+      coordinates: [
+        [
+          [w, s],
+          [e, s],
+          [e, n],
+          [w, n],
+          [w, s],
+        ],
+      ],
+    });
+    return [
+      {
+        id: `analysis:${area.id}`,
+        name: "Analysis extent",
+        geographicGeometry: rectangle(area.geographicExtent),
+        localGeometry: area.extent ? rectangle(area.extent) : undefined,
+      },
+    ];
+  }, [dossier, selectedId, areaId, area]);
   const pending =
     pkg && pkg.areaId === areaId && pkg.state !== "COMMITTED" ? pkg : null;
   const findings = context?.latestCheck?.findings || [];
@@ -481,15 +756,31 @@ export default function AreaWorkbench({
   };
   const openMatch = async (match: ResolveMatch) => {
     if (!match.feature) {
+      const buildingId =
+        match.canonicalBuildingId ||
+        match.buildingId ||
+        match.relatedBuildings?.[0]?.feature?.id ||
+        match.relatedBuildings?.[0]?.id;
+      if (buildingId && match.areaIds[0]) {
+        setAreaId(match.areaIds[0]);
+        chooseFeature(buildingId);
+        setMatches([]);
+        return;
+      }
       window.location.assign(match.url);
       return;
     }
     setPackage(null);
     setAreaId(match.areaIds[0] || match.feature.areaId);
-    setSelected(match.feature.id);
+    chooseFeature(match.feature.id);
+    setRequestedRecord(
+      new URL(match.url, window.location.origin).searchParams.get("record") ||
+        undefined,
+    );
     setMatches([]);
     setTab("feature");
-    fit("fit");
+    setSelectedIssue(null);
+    if ((match.areaIds[0] || match.feature.areaId) !== areaId) fit("fit");
   };
   const reviewPackage = () =>
     pending &&
@@ -542,7 +833,10 @@ export default function AreaWorkbench({
     });
 
   return (
-    <main className="area-app">
+    <main
+      data-panel={tab}
+      className={`area-app officer-area ${explorerOpen ? "explorer-open" : ""} ${selected ? "has-property" : ""}`}
+    >
       <header className="area-topbar">
         <a className="area-brand" href="/">
           3D ULPIN<span>Local registry</span>
@@ -556,8 +850,16 @@ export default function AreaWorkbench({
         <span className="area-local">● Local workspace</span>
       </header>
       <section className="area-heading">
+        <button
+          className="area-explorer-toggle"
+          aria-expanded={explorerOpen}
+          onClick={() => setExplorerOpen((value) => !value)}
+          aria-label="Toggle block explorer"
+        >
+          ☰
+        </button>
         <div>
-          <div className="area-eyebrow">GEOGRAPHIC AREA REGISTRY</div>
+          <div className="area-eyebrow">3D BLOCK</div>
           <h1>{area?.name || "A place to begin."}</h1>
           <p>
             {area?.administrativeUnits.map((a) => a.name).join(" / ") ||
@@ -602,7 +904,7 @@ export default function AreaWorkbench({
           <span aria-hidden="true">⌕</span>
           <input
             aria-label="Global identifier search"
-            placeholder="Find a 3D ID, ULPIN, or source identifier"
+            placeholder="Find a property"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -611,7 +913,7 @@ export default function AreaWorkbench({
           </button>
         </form>
         <span className="area-revision">
-          {area ? `Area revision ${area.revision}` : "No area selected"}
+          {area ? `Revision ${area.revision}` : "Choose a block"}
         </span>
       </div>
       {(busy || error || notice) && (
@@ -660,8 +962,7 @@ export default function AreaWorkbench({
                 key={feature.id}
                 className={`area-feature ${selectedId === feature.id ? "active" : ""}`}
                 onClick={() => {
-                  setSelected(feature.id);
-                  setTab("feature");
+                  chooseFeature(feature.id);
                 }}
               >
                 <span className="area-feature-number">
@@ -704,29 +1005,48 @@ export default function AreaWorkbench({
                 aria-pressed={view === "3d"}
                 onClick={() => setView("3d")}
               >
-                3D exterior
+                3D block
               </button>
               <button
                 aria-pressed={view === "plan"}
                 onClick={() => setView("plan")}
               >
-                2D plan
+                Plan
+              </button>
+              <button
+                aria-pressed={view === "section"}
+                onClick={() => setView("section")}
+              >
+                Section
               </button>
             </div>
-            <div>
+            <div hidden={view === "section"}>
               <button
                 title="Fit all features in area"
                 onClick={() => fit("fit")}
                 disabled={!features.length}
               >
-                Fit area
+                Fit block
               </button>
               <button
                 title="Focus selected feature"
                 onClick={() => fit("focus")}
                 disabled={!selected}
               >
-                Focus selection
+                Focus property
+              </button>
+              <button
+                title="Return to previous block view"
+                onClick={() => fit("return")}
+              >
+                ↩ Block
+              </button>
+              <button
+                title="Reset north"
+                aria-label="Reset north"
+                onClick={() => fit("north")}
+              >
+                N ↑
               </button>
             </div>
           </header>
@@ -747,29 +1067,115 @@ export default function AreaWorkbench({
           )}
           <div className="area-map">
             {features.length ? (
-              view === "3d" ? (
-                <AreaViewer
-                  features={features}
-                  geographicExtent={area?.geographicExtent}
-                  selectedId={selectedId}
-                  onSelect={(id) => {
-                    setSelected(id);
-                    setTab("feature");
-                  }}
-                  navigation={navigation}
-                />
-              ) : (
-                <AreaPlan
-                  features={features}
-                  extent={area?.extent}
-                  selectedId={selectedId}
-                  onSelect={(id) => {
-                    setSelected(id);
-                    setTab("feature");
-                  }}
-                  navigation={navigation}
-                />
-              )
+              <>
+                <div className="area-view-pane" hidden={view !== "3d"}>
+                  <AreaViewer
+                    features={sceneFeatures}
+                    geographicExtent={area?.geographicExtent}
+                    sceneKey={areaId}
+                    selectedId={selectedId}
+                    onSelect={chooseFeature}
+                    navigation={navigation}
+                    highlightedIds={selectedIssue?.featureIds}
+                    issueGeometry={selectedIssue?.geographicGeometry}
+                    details={sceneDetails}
+                    boundaries={sceneBoundaries}
+                    selectedDetailId={selectedDetail?.id}
+                    onSelectDetail={(id) =>
+                      setSelectedDetail(
+                        dossier?.records.find((record) => record.id === id) ||
+                          null,
+                      )
+                    }
+                    underground={underground}
+                    labels={labelsVisible}
+                  />
+                </div>
+                <div className="area-view-pane" hidden={view !== "plan"}>
+                  <AreaPlan
+                    key={areaId}
+                    features={sceneFeatures}
+                    extent={area?.extent}
+                    selectedId={selectedId}
+                    onSelect={chooseFeature}
+                    navigation={navigation}
+                    highlightedIds={selectedIssue?.featureIds}
+                    issueGeometry={selectedIssue?.geometry}
+                    details={dossier?.area.id === areaId ? sceneDetails : []}
+                    boundaries={sceneBoundaries}
+                    selectedDetailId={selectedDetail?.id}
+                    onDetail={(id) =>
+                      setSelectedDetail(
+                        dossier?.records.find((record) => record.id === id) ||
+                          null,
+                      )
+                    }
+                    labels={labelsVisible}
+                  />
+                </div>
+                {view === "section" && (
+                  <AreaSection
+                    selected={selected}
+                    details={sceneDetails}
+                    selectedDetailId={selectedDetail?.id}
+                    onSelect={(id) =>
+                      setSelectedDetail(
+                        dossier?.records.find((record) => record.id === id) ||
+                          null,
+                      )
+                    }
+                  />
+                )}
+                <div
+                  className="area-display-controls"
+                  hidden={view === "section"}
+                >
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={labelsVisible}
+                      onChange={(event) =>
+                        setLabelsVisible(event.target.checked)
+                      }
+                    />{" "}
+                    Labels
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={underground}
+                      onChange={(event) => setUnderground(event.target.checked)}
+                    />{" "}
+                    Underground
+                  </label>
+                  <button aria-label="Zoom in" onClick={() => fit("zoom_in")}>
+                    +
+                  </button>
+                  <button aria-label="Zoom out" onClick={() => fit("zoom_out")}>
+                    −
+                  </button>
+                  <button title="Oblique angle" onClick={() => fit("angle")}>
+                    ↗
+                  </button>
+                </div>
+                {selectedIssue && view !== "section" && (
+                  <div className="area-issue-banner">
+                    <span>
+                      Exact issue · {selectedIssue.featureIds.length}{" "}
+                      participants
+                      {selectedIssue.areaM2 !== undefined
+                        ? ` · ${fmt(selectedIssue.areaM2)} m²`
+                        : ""}
+                    </span>
+                    <button
+                      aria-label="Clear issue overlay"
+                      onClick={() => setSelectedIssue(null)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="area-empty">
                 <div className="area-empty-mark">⌑</div>
@@ -782,9 +1188,8 @@ export default function AreaWorkbench({
                       : "Start with a real place."}
                 </h2>
                 <p>
-                  A saved Bronx snapshot brings 62 real building footprints into
-                  one shared geographic frame. Review the source and heights
-                  before recording it.
+                  Open a permitted area package, or import supplied building and
+                  context layers.
                 </p>
                 <button
                   className="area-primary"
@@ -793,7 +1198,7 @@ export default function AreaWorkbench({
                 >
                   Explore data sources →
                 </button>
-                <a href="/registry">Open existing detailed cases</a>
+                <a href="/registry">Browse property records</a>
               </div>
             )}
           </div>
@@ -830,7 +1235,24 @@ export default function AreaWorkbench({
           </div>
           <div className="area-inspector-body">
             {tab === "feature" &&
-              (selected ? (
+              (selected?.kind === "building" ? (
+                <PropertyDossierPanel
+                  checkId={
+                    selected?.areaId === areaId
+                      ? context?.latestCheck?.id
+                      : undefined
+                  }
+                  key={selected.id}
+                  building={selected}
+                  initialMode={initialPanel}
+                  initialRecordId={requestedRecord}
+                  refreshKey={context?.area.revision}
+                  onDossier={acceptDossier}
+                  onDetail={setSelectedDetail}
+                  onInspect={inspectIssue}
+                  onFocus={() => fit("focus")}
+                />
+              ) : selected ? (
                 <>
                   <div className="area-eyebrow">
                     {selected.representation.replaceAll("_", " ")}
@@ -848,23 +1270,37 @@ export default function AreaWorkbench({
                         ? "Not applicable"
                         : `${fmt(selected.areaM2)} m²`}
                     </dd>
-                    <dt>Roof height</dt>
-                    <dd>
-                      {selected.height.value === null
-                        ? "Unknown · 2D only"
-                        : `${fmt(selected.height.value)} m`}
-                    </dd>
-                    <dt>Evidence</dt>
-                    <dd>{selected.height.state.replaceAll("_", " ")}</dd>
-                    <dt>Vertical reference</dt>
-                    <dd>{selected.height.reference}</dd>
+                    {selected.kind === "utility" && (
+                      <>
+                        <dt>Source levels</dt>
+                        <dd>
+                          {selectedProfile
+                            ? `${fmt(selectedProfile.positions[0][2])} to ${fmt(selectedProfile.positions.at(-1)![2])} m`
+                            : "Depth unknown · alignment only"}
+                        </dd>
+                        {selectedProfile && (
+                          <>
+                            <dt>Level reference</dt>
+                            <dd>{selectedProfile.verticalReference}</dd>
+                            <dt>Cross section</dt>
+                            <dd>
+                              {selectedProfile.shape} ·{" "}
+                              {fmt(selectedProfile.width)} ×{" "}
+                              {fmt(selectedProfile.height)} m
+                            </dd>
+                          </>
+                        )}
+                      </>
+                    )}
                   </dl>
-                  <p className="area-note">{selected.height.meaning}</p>
                   <p className="area-note">
-                    Exterior geometry does not establish interior floors,
-                    ownership or legal boundaries.
+                    {selected.kind === "utility"
+                      ? selectedProfile
+                        ? "Supplied levels position this profile. Open Section to inspect them."
+                        : "No depth is inferred from a horizontal utility alignment."
+                      : "Recorded source geometry; any relationship to a property requires evidence and review."}
                   </p>
-                  <h3>Footprint evidence</h3>
+                  <h3>Geometry evidence</h3>
                   {selected.evidence.map((e, i) => (
                     <a
                       className="area-evidence-link"
@@ -882,42 +1318,10 @@ export default function AreaWorkbench({
                       </small>
                     </a>
                   ))}
-                  <h3>Height evidence</h3>
-                  {(
-                    selected.height.evidence ||
-                    (selected.height.state === "source_supported"
-                      ? selected.evidence
-                      : [])
-                  ).map((e, i) => (
-                    <a
-                      className="area-evidence-link"
-                      key={i}
-                      href={`${originalUrl(e.sourceRevisionId)}${e.page ? `#page=${e.page}` : ""}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Height source ↗
-                      <small>
-                        {e.page
-                          ? `Page ${e.page}`
-                          : e.jsonPointer ||
-                            e.featureId ||
-                            (e.partId
-                              ? `Document part ${e.partId.slice(0, 8)}`
-                              : "Original source")}
-                      </small>
-                    </a>
-                  ))}
-                  {selected.height.method && (
+                  {selectedProfile && (
                     <p className="area-note">
-                      Height method:{" "}
-                      {selected.height.method.replaceAll("_", " ")}
-                    </p>
-                  )}
-                  {(selected.height.state === "estimated" ||
-                    selected.height.state === "unknown") && (
-                    <p className="area-note">
-                      This height has no source-supported measurement.
+                      {selectedProfile.limitation ||
+                        selectedProfile.solidMeaning}
                     </p>
                   )}
                   <button onClick={() => fit("focus")}>
@@ -1117,12 +1521,14 @@ export default function AreaWorkbench({
                     )}
                     {pending.review && (
                       <>
-                        <h3>Review coverage</h3>
-                        {pending.review.coverage.map((coverage, i) => (
-                          <p key={i} className="area-note">
-                            {coverage}
-                          </p>
-                        ))}
+                        <details>
+                          <summary>Review coverage and limits</summary>
+                          {pending.review.coverage.map((coverage, i) => (
+                            <p key={i} className="area-note">
+                              {coverage}
+                            </p>
+                          ))}
+                        </details>
                         {pending.review.findings.map((finding) => (
                           <p className="area-warning" key={finding.id}>
                             {findingText(finding.message)}
@@ -1310,11 +1716,14 @@ export default function AreaWorkbench({
                       {context.latestCheck.areaRevision}
                       {context.latestCheck.stale ? " · stale" : ""}
                     </p>
-                    {context.latestCheck.coverage.map((coverage, i) => (
-                      <p className="area-note" key={i}>
-                        {coverage}
-                      </p>
-                    ))}
+                    <details>
+                      <summary>Check coverage and limits</summary>
+                      {context.latestCheck.coverage.map((coverage, i) => (
+                        <p className="area-note" key={i}>
+                          {coverage}
+                        </p>
+                      ))}
+                    </details>
                     {!findings.length &&
                       context.latestCheck.status === "completed" && (
                         <p>
@@ -1326,10 +1735,7 @@ export default function AreaWorkbench({
                       <button
                         key={finding.id}
                         className="area-finding"
-                        onClick={() => {
-                          if (finding.featureIds[0])
-                            setSelected(finding.featureIds[0]);
-                        }}
+                        onClick={() => inspectIssue(finding)}
                       >
                         <small>
                           {finding.category} · {finding.code}
@@ -1423,9 +1829,8 @@ export default function AreaWorkbench({
           close={() => setDrawer(null)}
         >
           <p className="area-dialog-intro">
-            Preserve an original GeoJSON or ArcGIS JSON export and map its
-            stable source ID. Unsupported geometry remains an explicit ingestion
-            error.
+            Upload a source dataset, identify its records, and declare what the
+            geometry represents. Originals are retained before review.
           </p>
           <form
             onSubmit={(event) => {
@@ -1438,6 +1843,31 @@ export default function AreaWorkbench({
                 heightField: data.get("heightField") || undefined,
                 heightUnit: data.get("heightUnit"),
                 heightMeaning: data.get("heightMeaning") || undefined,
+                geometryRole: data.get("geometryRole"),
+                levelReference: data.get("levelReference") || undefined,
+                floorCountField: data.get("floorCountField") || undefined,
+                sourceDateField: data.get("sourceDateField") || undefined,
+                approvalStatusField:
+                  data.get("approvalStatusField") || undefined,
+                ...(data.get("kind") === "utility" &&
+                data.get("startLevelField")
+                  ? {
+                      utility: {
+                        startLevelField: data.get("startLevelField"),
+                        endLevelField: data.get("endLevelField") || undefined,
+                        levelUnit: data.get("utilityUnit"),
+                        levelMeaning: data.get("levelMeaning"),
+                        verticalReference: data.get("utilityReference") || null,
+                        interpolation: "linear_endpoints",
+                        crossSection: data.get("crossSection") || undefined,
+                        diameterField: data.get("diameterField") || undefined,
+                        widthField: data.get("widthField") || undefined,
+                        heightField:
+                          data.get("utilityHeightField") || undefined,
+                        dimensionUnit: data.get("utilityUnit"),
+                      },
+                    }
+                  : {}),
               };
               data.set("mapping", JSON.stringify(mapping));
               if (data.get("destination") === "current" && area) {
@@ -1455,7 +1885,7 @@ export default function AreaWorkbench({
                 required
                 type="file"
                 name="file"
-                accept=".json,.geojson,application/json,application/geo+json"
+                accept=".json,.geojson,.gpkg,.zip,application/json,application/geo+json"
               />
             </label>
             <div className="area-form-grid">
@@ -1464,7 +1894,16 @@ export default function AreaWorkbench({
                 <select name="format">
                   <option value="geojson">GeoJSON</option>
                   <option value="arcgis">ArcGIS JSON</option>
+                  <option value="gpkg">GeoPackage</option>
+                  <option value="shapefile_zip">Shapefile ZIP</option>
                 </select>
+              </label>
+              <label>
+                Layer name
+                <input
+                  name="layer"
+                  placeholder="Required when a package contains several layers"
+                />
               </label>
               <label>
                 Source CRS
@@ -1476,7 +1915,7 @@ export default function AreaWorkbench({
                 />
               </label>
               <label>
-                Dataset namespace
+                Dataset name / stable source group
                 <input
                   name="namespace"
                   required
@@ -1488,11 +1927,11 @@ export default function AreaWorkbench({
                 <input name="name" required placeholder="Survey area name" />
               </label>
               <label>
-                Stable ID field
-                <input name="idField" required placeholder="e.g. doitt_id" />
+                Column containing the stable ID
+                <input name="idField" required placeholder="e.g. property_id" />
               </label>
               <label>
-                Feature name field
+                Name column
                 <input name="nameField" placeholder="Optional" />
               </label>
               <label>
@@ -1531,6 +1970,124 @@ export default function AreaWorkbench({
                 </select>
               </label>
             </div>
+            <div className="area-form-grid">
+              <label>
+                What does the outline represent?
+                <select name="geometryRole">
+                  <option value="unknown">Not established by source</option>
+                  <option value="observed_ground_occupation">
+                    Observed ground occupation
+                  </option>
+                  <option value="observed_roof_projection">
+                    Roof projection
+                  </option>
+                  <option value="approved_building_outline">
+                    Approved building outline
+                  </option>
+                  <option value="recorded_parcel">Recorded parcel</option>
+                  <option value="public_road_land">
+                    Recorded public road land
+                  </option>
+                  <option value="road_surface">Observed road surface</option>
+                  <option value="public_land">Public land</option>
+                  <option value="physical_utility">
+                    Physical utility alignment
+                  </option>
+                  <option value="documented_restriction">
+                    Documented restriction
+                  </option>
+                </select>
+              </label>
+              <label>
+                Source status
+                <select name="worldStatus">
+                  <option value="observed">Observed source data</option>
+                  <option value="planned">Planned</option>
+                  <option value="hypothetical">Hypothetical proposal</option>
+                  <option value="synthetic">Synthetic software fixture</option>
+                </select>
+              </label>
+            </div>
+            <details>
+              <summary>Dates, storeys and level reference</summary>
+              <div className="area-form-grid">
+                <label>
+                  Source date column
+                  <input name="sourceDateField" />
+                </label>
+                <label>
+                  Storey count column
+                  <input name="floorCountField" />
+                </label>
+                <label>
+                  Approval status column
+                  <input name="approvalStatusField" />
+                </label>
+                <label>
+                  Named vertical reference
+                  <input
+                    name="levelReference"
+                    placeholder="Only if supplied by the source"
+                  />
+                </label>
+              </div>
+            </details>
+            <details>
+              <summary>Utility levels and dimensions</summary>
+              <p className="area-note">
+                Leave unknown fields empty. A surface alignment never
+                establishes underground depth.
+              </p>
+              <div className="area-form-grid">
+                <label>
+                  Start level column
+                  <input name="startLevelField" />
+                </label>
+                <label>
+                  End level column
+                  <input name="endLevelField" />
+                </label>
+                <label>
+                  Levels describe
+                  <select name="levelMeaning">
+                    <option value="centre">Centre line</option>
+                    <option value="invert">Invert</option>
+                    <option value="crown">Crown</option>
+                  </select>
+                </label>
+                <label>
+                  Level reference
+                  <input name="utilityReference" />
+                </label>
+                <label>
+                  Units
+                  <select name="utilityUnit">
+                    <option value="m">Metres</option>
+                    <option value="ft">Feet</option>
+                  </select>
+                </label>
+                <label>
+                  Cross section
+                  <select name="crossSection">
+                    <option value="">Unknown</option>
+                    <option value="circular">Circular</option>
+                    <option value="rectangular">Rectangular corridor</option>
+                  </select>
+                </label>
+                <label>
+                  Diameter column
+                  <input name="diameterField" />
+                </label>
+                <label>
+                  Width column
+                  <input name="widthField" />
+                </label>
+                <label>
+                  Section height column
+                  <input name="utilityHeightField" />
+                </label>
+              </div>
+            </details>
             <label>
               Height meaning
               <input
