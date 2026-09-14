@@ -189,6 +189,9 @@ export async function importRegistryCase(
         const previous: RegistryBody = current.revision > 0
           ? current.body
           : historicalRecords.get(recordId) ?? current.body;
+        // Reserved physical identities contain an observation-only marker; it
+        // does not belong in the detailed registry body being reviewed.
+        if (current.revision === 0) delete (previous as any).representation;
         // Preserve independently recorded rights and metadata. Imported relations
         // replace a relation type only when this source explicitly supplies it.
         const replacedLinkTypes = new Set(body.links.map((link) => link.type));
@@ -240,6 +243,7 @@ export async function importRegistryCase(
     const rights = isDemoFixture
       ? detail.sources.find((s) => s.name === "rights.pdf")
       : undefined;
+    const canonicalPreparation=Boolean((await client.query('SELECT 1 FROM building_preparations WHERE case_id=$1',[caseId])).rowCount);
     const records: RegistryRecord[] = [];
     for (const context of detail.model!.context) {
       const evidence = contextImportEvidence(
@@ -323,7 +327,7 @@ export async function importRegistryCase(
             ? "basement"
             : unit.kind === "common"
               ? "common"
-              : "apartment";
+              : canonicalPreparation ? "unspecified" : "apartment";
       const body: RegistryBody = {
         alias: unit.alias,
         name: unit.name,

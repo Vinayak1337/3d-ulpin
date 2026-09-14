@@ -1,4 +1,5 @@
 export type Point2 = [number, number];
+export * from "./officer";
 export interface CoordinateFrame {
   id: string;
   horizontalUnit: "m";

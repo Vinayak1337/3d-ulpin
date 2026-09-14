@@ -43,7 +43,7 @@ export const recordBodySchema = z
     alias: z.string().trim().min(1).max(64),
     name: z.string().trim().min(1).max(120),
     kind: z.enum(["parcel", "building", "floor", "space"]),
-    use: z.enum(["apartment", "common", "basement", "utility"]).optional(),
+    use: z.enum(["apartment", "common", "basement", "utility", "unspecified"]).optional(),
     footprint: footprintSchema,
     geometry: unitSchema.strict().optional(),
     links: z
@@ -557,6 +557,18 @@ export function bodyOnly(r: RegistryRecord): RegistryBody {
   }
   return body;
 }
+async function linkedPreparationFingerprint(client: PoolClient, caseId: string, lock = false): Promise<string | undefined> {
+  const prep=(await client.query("SELECT id,package_id,building_id,body FROM building_preparations WHERE case_id=$1",[caseId])).rows[0];
+  if(!prep)return undefined;
+  const pkg=(await client.query(`SELECT revision FROM import_packages WHERE id=$1 ${lock ? "FOR SHARE" : ""}`,[prep.package_id])).rows[0];
+  const c=(await client.query(`SELECT revision,current_snapshot_id FROM cases WHERE id=$1 ${lock ? "FOR SHARE" : ""}`,[caseId])).rows[0];
+  const f=(await client.query("SELECT revision FROM physical_features WHERE id=$1",[prep.building_id])).rows[0];
+  const built=(await client.query("SELECT result FROM operations WHERE case_id=$1 AND kind='canonical.prepare' ORDER BY created_at DESC LIMIT 1",[caseId])).rows[0]?.result;
+  const snapshot=(await client.query("SELECT revision FROM snapshots WHERE id=$1",[c.current_snapshot_id])).rows[0];
+  if(!built || built.packageRevision!==pkg.revision || !snapshot || snapshot.revision!==c.revision || f.revision!==prep.body.buildingRevision)
+    conflict("The related documents, placement, exterior or prepared details changed. Prepare and build the current evidence before reviewing.");
+  return fingerprint({preparation:prep.body,packageRevision:pkg.revision,caseRevision:c.revision,snapshotId:c.current_snapshot_id,featureRevision:f.revision});
+}
 export async function prepareRegistryReview(
   draftId: string,
   expectedRevision: number,
@@ -586,7 +598,8 @@ export async function prepareRegistryReview(
       conflict("A proposed record has a newer current revision. Create a correction from that current record.");
     const combined = [...current.filter((r) => !ids.has(r.id)), ...d.records];
     await evidenceChecks(client, site, combined);
-    return { d, site, current, combined };
+    const preparationFingerprint=await linkedPreparationFingerprint(client,d.caseId);
+    return { d, site, current, combined, preparationFingerprint };
   });
   const inputFingerprint = fingerprint({
     validatorVersion: "registry-relationships-v2",
@@ -618,6 +631,7 @@ export async function prepareRegistryReview(
       geometry: computed.get(r.id) ?? r.geometry,
     })),
     committed: false,
+    preparationFingerprint: snapshot.preparationFingerprint,
   };
   await query(
     "INSERT INTO registry_reviews(id,draft_id,body) VALUES($1,$2,$3)",
@@ -630,6 +644,7 @@ export async function commitRegistryReview(
   acknowledgement: string,
 ): Promise<RegistryReview> {
   return transaction(async (client) => {
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
     const initial =
       (await client.query("SELECT * FROM registry_reviews WHERE id=$1", [id]))
         .rows[0] ?? notFound();
@@ -666,6 +681,8 @@ export async function commitRegistryReview(
       conflict(
         "Draft or neighbours changed. Build and review a fresh snapshot.",
       );
+    if ((await linkedPreparationFingerprint(client,d.case_id,true)) !== review.preparationFingerprint)
+      conflict("Related property preparation changed after this review. Rebuild and review the current evidence.");
     if (review.findings.some((f) => f.severity === "error"))
       throw new AppError(
         422,

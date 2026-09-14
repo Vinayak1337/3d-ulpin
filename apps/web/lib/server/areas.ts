@@ -19,6 +19,7 @@ import { AppError, conflict, notFound } from "./errors";
 import { putOriginal, readObject, sha256 } from "./storage";
 import { propertyIdentifier } from "../identifiers";
 import { originalAttempt } from "./original-attempt";
+import { checkAssociations, enrichFindings } from "./officer";
 
 export type Mapping = {
   idField?: string;
@@ -28,6 +29,27 @@ export type Mapping = {
   heightUnit?: "m" | "ft";
   heightMeaning?: string;
   identifierFields?: string[];
+  geometryRole?: import("@ulpin/contracts").GeometryRole;
+  geometryRoleField?: string;
+  roleValues?: Record<string, string>;
+  levelReference?: string;
+  floorCountField?: string;
+  approvalStatusField?: string;
+  sourceDateField?: string;
+  validFromField?: string;
+  validToField?: string;
+  horizontalUncertaintyField?: string;
+  horizontalUncertaintyUnit?: "m" | "ft";
+  worldStatusField?: string;
+  worldStatusValues?: Record<string, string>;
+  verticalExtent?: {
+    lowerField: string;
+    upperField: string;
+    unit: "m" | "ft";
+    reference: string;
+  };
+  utility?: Record<string, unknown>;
+  utilityProfile?: Record<string, unknown>;
 };
 type Normalized = {
   reference: AreaReference;
@@ -37,7 +59,7 @@ type Normalized = {
   warnings: string[];
 };
 export async function areaGeo<T>(
-  operation: "normalize" | "check" | "extract",
+  operation: "normalize" | "check" | "extract" | "crop" | "profile",
   input: unknown,
 ): Promise<T> {
   const response = await fetch(
@@ -91,13 +113,43 @@ export async function getArea(id: string): Promise<MapArea> {
   const area = (await listAreas()).find((a) => a.id === id);
   return area || notFound("Map area not found.");
 }
+async function projectedFeatures(
+  rows: { body: PhysicalFeature; area_id: string; local_geometry: string | null }[],
+  area: MapArea,
+): Promise<PhysicalFeature[]> {
+  const features = rows.map((row) => {
+    if (row.area_id === area.id) return row.body;
+    if (!area.reference || !row.local_geometry)
+      throw new AppError(422, "MEMBERSHIP_FRAME", "This block needs a valid analytical frame before another area's feature can be displayed.");
+    return { ...row.body, geometry: JSON.parse(row.local_geometry) } as PhysicalFeature;
+  });
+  const utilities = features.filter((feature) => feature.areaId !== area.id && feature.kind === "utility" && feature.utilityProfile);
+  if (utilities.length) {
+    const resolved = await areaGeo<{ profiles: { id: string; utilityProfile: PhysicalFeature["utilityProfile"] }[] }>("profile", { features: utilities });
+    const profiles = new Map(resolved.profiles.map((item) => [item.id, item.utilityProfile]));
+    for (const feature of utilities) {
+      if (!profiles.has(feature.id))
+        throw new AppError(503, "MEMBERSHIP_PROFILE", "The processor did not return a profile for every shared utility.");
+      feature.utilityProfile = profiles.get(feature.id);
+    }
+  }
+  return features;
+}
+async function loadAreaFeatures(area: MapArea, client?: PoolClient): Promise<PhysicalFeature[]> {
+  const sql = `SELECT f.body,f.area_id,CASE WHEN f.area_id<>$1 AND $2::integer IS NOT NULL THEN ST_AsGeoJSON(ST_Translate(ST_Transform(f.geographic_geometry,$2::integer),-($3::double precision),-($4::double precision)),9,0) END local_geometry
+    FROM physical_features f WHERE f.revision>0 AND (f.area_id=$1 OR EXISTS (
+      SELECT 1 FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id WHERE m.feature_id=f.id AND g.area_id=$1
+    )) ORDER BY f.identifier LIMIT 2001`;
+  const values = [area.id, area.reference ? Number(area.reference.analysisCrs.split(":")[1]) : null, ...(area.reference?.origin ?? [null, null])];
+  const rows = (await (client ? client.query(sql, values) : query(sql, values))).rows;
+  if (rows.length > 2000)
+    throw new AppError(422, "AREA_LIMIT", "This block and its explicit group members exceed 2,000 features. Choose a smaller bounded group.");
+  return projectedFeatures(rows, area);
+}
 export async function areaContext(id: string): Promise<AreaContext> {
   const area = await getArea(id);
   const [features, packages, checks] = await Promise.all([
-    query(
-      "SELECT body FROM physical_features WHERE area_id=$1 AND revision>0 ORDER BY identifier",
-      [id],
-    ),
+    loadAreaFeatures(area),
     query(
       "SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30",
       [id],
@@ -107,19 +159,22 @@ export async function areaContext(id: string): Promise<AreaContext> {
       [id],
     ),
   ]);
-  const currentFeatures = features.rows.map((r) => r.body as PhysicalFeature);
+  const currentFeatures = features;
   const latestCheck = checks.rows[0]?.body as AreaCheck | undefined;
-  if (latestCheck)
+  if (latestCheck) {
+    const effective = await withNeighbours(currentFeatures, area);
     latestCheck.stale =
       latestCheck.areaRevision !== area.revision ||
       latestCheck.inputFingerprint !==
         sha256(
           JSON.stringify({
-            features: await withNeighbours(currentFeatures, area),
+            features: effective,
+            associations: await checkAssociations(effective.map((f) => f.id)),
             reference: area.reference,
-            validator: "area-check-v2",
+            validator: "area-check-officer-v1",
           }),
         );
+  }
   return {
     area,
     features: currentFeatures,
@@ -179,7 +234,8 @@ function mergeExtent(
 export async function ingestArea(input: {
   bytes: Uint8Array;
   filename: string;
-  format: "geojson" | "arcgis";
+  format: "geojson" | "arcgis" | "gpkg" | "shapefile_zip";
+  layer?: string;
   namespace: string;
   name: string;
   mapping: Mapping;
@@ -198,7 +254,9 @@ export async function ingestArea(input: {
     );
   let data: unknown;
   try {
-    data = JSON.parse(new TextDecoder().decode(input.bytes));
+    data = ["gpkg", "shapefile_zip"].includes(input.format)
+      ? undefined
+      : JSON.parse(new TextDecoder().decode(input.bytes));
   } catch {
     throw new AppError(422, "INVALID_JSON", "Choose valid native GIS JSON.");
   }
@@ -217,11 +275,13 @@ export async function ingestArea(input: {
     JSON.stringify({
       destination: area?.id || seedKey,
       namespace: input.namespace,
+      format: input.format,
+      layer: input.layer ?? null,
       digest,
       mapping: input.mapping,
       worldStatus: input.worldStatus || "observed",
       sourceCrs: input.sourceCrs,
-      normalization: "canonical-area-v2",
+      normalization: "canonical-area-officer-v1",
       reference: area?.reference
         ? {
             analysisCrs: area.reference.analysisCrs,
@@ -239,6 +299,9 @@ export async function ingestArea(input: {
         sha256(
           JSON.stringify({
             namespace: input.namespace,
+            format: input.format,
+            layer: input.layer ?? null,
+            normalization: "canonical-area-officer-v1",
             name: input.name,
             areaId: area?.id || null,
             mapping: input.mapping,
@@ -259,6 +322,12 @@ export async function ingestArea(input: {
   const normalized = await areaGeo<Normalized>("normalize", {
     format: input.format,
     data,
+    ...(["gpkg", "shapefile_zip"].includes(input.format)
+      ? {
+          base64: Buffer.from(input.bytes).toString("base64"),
+          layer: input.layer,
+        }
+      : {}),
     mapping: input.mapping,
     worldStatus: input.worldStatus || "observed",
     ...(area?.reference
@@ -275,12 +344,48 @@ export async function ingestArea(input: {
   });
   const sourceId = randomUUID(),
     objectKey = `areas/${sourceId}/${digest}`;
+  const utilityCandidates = normalized.features.filter(
+    (f) => f.kind === "utility" && f.utilityProfile,
+  );
+  if (utilityCandidates.length) {
+    for (const candidate of utilityCandidates)
+      candidate.utilityProfile = {
+        ...candidate.utilityProfile,
+        evidence: [
+          { sourceRevisionId: sourceId, featureId: candidate.sourceKey },
+        ],
+        ...(input.mapping.utility?.groundStartField ||
+        input.mapping.utility?.groundEndField
+          ? {
+              groundEvidence: [
+                { sourceRevisionId: sourceId, featureId: candidate.sourceKey },
+              ],
+            }
+          : {}),
+      };
+    const resolved = await areaGeo<{
+      profiles: {
+        sourceKey: string;
+        utilityProfile: Record<string, unknown>;
+      }[];
+    }>("profile", { features: utilityCandidates });
+    for (const candidate of utilityCandidates)
+      candidate.utilityProfile = resolved.profiles.find(
+        (p) => p.sourceKey === candidate.sourceKey,
+      )!.utilityProfile;
+  }
   return originalAttempt("sources", sourceId, async (remember) => {
     remember(objectKey);
     await putOriginal(
       objectKey,
       input.bytes,
-      input.format === "geojson" ? "application/geo+json" : "application/json",
+      input.format === "geojson"
+        ? "application/geo+json"
+        : input.format === "gpkg"
+          ? "application/geopackage+sqlite3"
+          : input.format === "shapefile_zip"
+            ? "application/zip"
+            : "application/json",
     );
     return transaction(async (client) => {
       await client.query(
@@ -324,8 +429,15 @@ export async function ingestArea(input: {
           benchmark: normalized.reference.verticalReference,
         };
         await client.query(
-          "INSERT INTO registry_sites(id,identifier,name,frame,synthetic) VALUES($1,$2,$3,$4,false)",
-          [id, propertyIdentifier(id), input.name, frame],
+          "INSERT INTO registry_sites(id,identifier,name,frame,synthetic) VALUES($1,$2,$3,$4,$5)",
+          [
+            id,
+            propertyIdentifier(id),
+            input.name,
+            frame,
+            input.worldStatus === "synthetic" ||
+              input.worldStatus === "hypothetical",
+          ],
         );
         areaRow = (
           await client.query(
@@ -404,7 +516,11 @@ export async function ingestArea(input: {
           `${input.format}-area-v2`,
           input.format === "geojson"
             ? "application/geo+json"
-            : "application/json",
+            : input.format === "gpkg"
+              ? "application/geopackage+sqlite3"
+              : input.format === "shapefile_zip"
+                ? "application/zip"
+                : "application/json",
           input.bytes.length,
           digest,
           objectKey,
@@ -430,6 +546,16 @@ export async function ingestArea(input: {
             422,
             "FEATURE_KIND_CHANGED",
             "A stable source feature cannot change representation kind. Resolve its source association explicitly.",
+          );
+        if (
+          linked &&
+          ["synthetic", "hypothetical"].includes(linked.body.worldStatus) &&
+          !["synthetic", "hypothetical"].includes(candidate.worldStatus)
+        )
+          throw new AppError(
+            422,
+            "WORLD_STATUS_PROMOTION",
+            "A synthetic or hypothetical source identity cannot become a real observation through a classification change. Import separately evidenced real data under its actual source identity.",
           );
         if (linked && linked.area_id !== areaRow.id)
           throw new AppError(
@@ -481,6 +607,43 @@ export async function ingestArea(input: {
         identifier ||= `OBS-${id}`;
         const feature: PhysicalFeature = {
           ...candidate,
+          ...(candidate.verticalExtent
+            ? {
+                verticalExtent: {
+                  ...candidate.verticalExtent,
+                  evidence: [
+                    {
+                      sourceRevisionId: sourceId,
+                      featureId: candidate.sourceKey,
+                    },
+                  ],
+                },
+              }
+            : {}),
+          ...(candidate.utilityProfile
+            ? {
+                utilityProfile: {
+                  ...candidate.utilityProfile,
+                  evidence: [
+                    {
+                      sourceRevisionId: sourceId,
+                      featureId: candidate.sourceKey,
+                    },
+                  ],
+                  ...(input.mapping.utility?.groundStartField ||
+                  input.mapping.utility?.groundEndField
+                    ? {
+                        groundEvidence: [
+                          {
+                            sourceRevisionId: sourceId,
+                            featureId: candidate.sourceKey,
+                          },
+                        ],
+                      }
+                    : {}),
+                },
+              }
+            : {}),
           height: {
             ...candidate.height,
             evidence: [
@@ -563,6 +726,9 @@ export async function ingestArea(input: {
         importSignature: sha256(
           JSON.stringify({
             namespace: input.namespace,
+            format: input.format,
+            layer: input.layer ?? null,
+            normalization: "canonical-area-officer-v1",
             name: input.name,
             areaId: areaRow.id,
             mapping: input.mapping,
@@ -722,13 +888,14 @@ async function withNeighbours(
     Math.max(...xs),
     Math.max(...ys),
   ];
-  const sql = `SELECT body,ST_AsGeoJSON(ST_Translate(ST_Transform(geographic_geometry,$6::integer),-($7::double precision),-($8::double precision)),9,0) local_geometry FROM physical_features
-    WHERE area_id<>$1 AND revision>0 AND ST_Intersects(geographic_geometry,ST_MakeEnvelope($2,$3,$4,$5,4326)) ORDER BY id LIMIT 2001`;
+  const sql = `SELECT body,area_id,ST_AsGeoJSON(ST_Translate(ST_Transform(geographic_geometry,$6::integer),-($7::double precision),-($8::double precision)),9,0) local_geometry FROM physical_features
+    WHERE area_id<>$1 AND id<>ALL($9::uuid[]) AND revision>0 AND (ST_Intersects(geographic_geometry,ST_MakeEnvelope($2,$3,$4,$5,4326)) OR id IN (SELECT to_id FROM property_associations WHERE from_id=ANY($9::uuid[]) AND relationship='occupies_parcel' AND status='confirmed') OR id IN (SELECT m.feature_id FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id WHERE g.area_id=$1)) ORDER BY id LIMIT 2001`;
   const values = [
     area.id,
     ...extent,
     Number(area.reference.analysisCrs.split(":")[1]),
     ...area.reference.origin,
+    features.map((f) => f.id),
   ];
   const rows = (await (client ? client.query(sql, values) : query(sql, values)))
     .rows;
@@ -740,7 +907,7 @@ async function withNeighbours(
     );
   return [
     ...features,
-    ...rows.map((r) => ({ ...r.body, geometry: JSON.parse(r.local_geometry) })),
+    ...await projectedFeatures(rows, area),
   ].sort((a, b) => a.id.localeCompare(b.id));
 }
 async function effectiveFeatures(pkg: ImportPackage, area: MapArea) {
@@ -906,10 +1073,12 @@ export async function reviewPackage(id: string, expectedRevision: number) {
     area = await getArea(pkg.areaId);
   if (pkg.revision !== expectedRevision) conflict();
   const features = await effectiveFeatures(pkg, area);
+  const associations = await checkAssociations(features.map((f) => f.id));
   const result = await areaGeo<{ findings: AreaFinding[]; coverage: string[] }>(
     "check",
-    { features, reference: area.reference },
+    { features, associations, reference: area.reference },
   );
+  result.findings = await enrichFindings(result.findings, features, area.id);
   for (const question of pkg.questions.filter(
     (q) => q.kind === "conflicting_claims" && !q.answer,
   ))
@@ -938,13 +1107,15 @@ export async function reviewPackage(id: string, expectedRevision: number) {
       inputFingerprint: sha256(
         JSON.stringify({
           features,
+          associations,
           reference: area.reference,
           areaRevision: area.revision,
           packageRevision: current.revision,
-          validator: "area-check-v2",
+          validator: "area-check-officer-v1",
         }),
       ),
-      ...result,
+      findings: result.findings,
+      coverage: result.coverage,
     };
     await savePackage(client, current);
     return current;
@@ -1008,10 +1179,14 @@ export async function commitPackage(
       sha256(
         JSON.stringify({
           features: effective,
+          associations: await checkAssociations(
+            effective.map((f) => f.id),
+            client,
+          ),
           reference: areaRow.reference,
           areaRevision: areaRow.revision,
           packageRevision: pkg.revision,
-          validator: "area-check-v2",
+          validator: "area-check-officer-v1",
         }),
       ) !== pkg.review.inputFingerprint
     )
@@ -1097,6 +1272,7 @@ export async function runAreaCheck(
   const context = await areaContext(areaId);
   if (context.area.revision !== expectedRevision) conflict();
   const checkFeatures = await withNeighbours(context.features, context.area);
+  const associations = await checkAssociations(checkFeatures.map((f) => f.id));
   const check: AreaCheck = {
     id: randomUUID(),
     areaId,
@@ -1107,8 +1283,9 @@ export async function runAreaCheck(
     inputFingerprint: sha256(
       JSON.stringify({
         features: checkFeatures,
+        associations,
         reference: context.area.reference,
-        validator: "area-check-v2",
+        validator: "area-check-officer-v1",
       }),
     ),
     createdAt: new Date().toISOString(),
@@ -1128,8 +1305,21 @@ export async function runAreaCheck(
     const result = await areaGeo<{
       findings: AreaFinding[];
       coverage: string[];
-    }>("check", { features: checkFeatures, reference: context.area.reference });
-    Object.assign(check, result, { status: "completed" });
+    }>("check", {
+      features: checkFeatures,
+      associations,
+      reference: context.area.reference,
+    });
+    result.findings = await enrichFindings(
+      result.findings,
+      checkFeatures,
+      areaId,
+    );
+    Object.assign(check, {
+      findings: result.findings,
+      coverage: result.coverage,
+      status: "completed",
+    });
   } catch (error) {
     check.status = "failed";
     check.error =
@@ -1155,8 +1345,11 @@ export async function runAreaCheck(
       sha256(
         JSON.stringify({
           features: await withNeighbours(latestFeatures, latestArea),
+          associations: await checkAssociations(
+            (await withNeighbours(latestFeatures, latestArea)).map((f) => f.id),
+          ),
           reference: latestArea.reference,
-          validator: "area-check-v2",
+          validator: "area-check-officer-v1",
         }),
       );
   return check;
@@ -1168,7 +1361,7 @@ export async function attachDocument(
   file: {
     bytes: Uint8Array;
     name: string;
-    format: "pdf" | "docx" | "text" | "png" | "jpeg";
+    format: "pdf" | "docx" | "text" | "csv" | "png" | "jpeg";
     entityIds: string[];
   },
 ) {
@@ -1191,6 +1384,7 @@ export async function attachDocument(
     pdf: "application/pdf",
     docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     text: "text/plain",
+    csv: "text/csv",
     png: "image/png",
     jpeg: "image/jpeg",
   }[file.format];
@@ -1220,6 +1414,14 @@ export async function attachDocument(
             }[];
             warnings?: string[];
             status?: string;
+            candidates?: {
+              subject: string;
+              property: string;
+              value: unknown;
+              unit?: string;
+              referenceFrameId?: string;
+              partIndex: number;
+            }[];
           }>("extract", {
             format: file.format,
             base64: Buffer.from(file.bytes).toString("base64"),
@@ -1251,6 +1453,7 @@ export async function attachDocument(
         current.warnings.push(
           `${file.name}: no native text was extracted. Original retained; manual reading or calibration is required.`,
         );
+      const partsStart = current.parts.length;
       current.parts.push(
         ...extracted.parts.map((part) => ({
           id: randomUUID(),
@@ -1260,6 +1463,64 @@ export async function attachDocument(
           entityIds: file.entityIds,
         })),
       );
+      for (const candidate of "candidates" in extracted
+        ? (extracted.candidates ?? [])
+        : []) {
+        const part = current.parts[partsStart + candidate.partIndex];
+        if (!part) continue;
+        for (const entityId of file.entityIds) {
+          const property =
+            candidate.property === "space.footprint"
+              ? "space.geometry"
+              : candidate.property;
+          const competing = current.factCandidates.filter(
+            (c) =>
+              c.entityId === entityId &&
+              c.subject === candidate.subject &&
+              c.property === property &&
+              JSON.stringify([
+                c.value,
+                c.unit ?? null,
+                c.referenceFrameId ?? null,
+              ]) !==
+                JSON.stringify([
+                  candidate.value,
+                  candidate.unit ?? null,
+                  candidate.referenceFrameId ?? null,
+                ]),
+          );
+          if (competing.length) {
+            current.selectedClaimIds = (current.selectedClaimIds ?? []).filter(
+              (id) => !competing.some((c) => c.id === id),
+            );
+            current.questions.push({
+              id: randomUUID(),
+              kind: "conflicting_claims",
+              entityId,
+              property,
+              message: `Sources disagree about ${candidate.subject}: ${property.split(".").at(-1)}. Review the source alternatives.`,
+              blocks: "dependent detailed geometry",
+            });
+          }
+          current.factCandidates.push({
+            id: randomUUID(),
+            entityId,
+            subject: candidate.subject,
+            property:
+              candidate.property === "space.footprint"
+                ? "space.geometry"
+                : candidate.property,
+            value: candidate.value,
+            unit: candidate.unit,
+            referenceFrameId: candidate.referenceFrameId,
+            evidence: [{ sourceRevisionId: sourceId, partId: part.id }],
+            method: "native_parse",
+            evidenceState: "source_supported",
+            worldStatus: current.features.find((f) => f.id === entityId)!
+              .worldStatus,
+          });
+        }
+      }
       current.revision++;
       delete current.review;
       current.state = current.questions.some((q) => !q.answer)
@@ -1343,4 +1604,20 @@ export async function addFact(
     await savePackage(client, pkg);
     return pkg;
   });
+}
+
+export async function currentAreaCheckFingerprint(areaId: string) {
+  const area = await getArea(areaId);
+  const features = await withNeighbours(
+    await loadAreaFeatures(area),
+    area,
+  );
+  return sha256(
+    JSON.stringify({
+      features,
+      associations: await checkAssociations(features.map((f) => f.id)),
+      reference: area.reference,
+      validator: "area-check-officer-v1",
+    }),
+  );
 }

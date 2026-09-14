@@ -704,11 +704,11 @@ async function writeReport() {
     : stale
       ? "controlled late-result race"
       : "non-disruptive adversarial suite";
-  const filename = closed
+  const filename = process.env.ULPIN_API_EVIDENCE_FILE || (closed
     ? "API_CLOSED_RING_EVIDENCE.md"
     : stale
       ? "API_STALE_RESULT_EVIDENCE.md"
-      : "API_TEST_EVIDENCE.md";
+      : "API_TEST_EVIDENCE.md");
   const command = `pnpm exec tsx scripts/api-regression.ts${closed ? " --closed-ring-only" : stale ? " --stale-race-only" : ""}`;
   const passed = results.filter((result) => result.passed).length;
   const lines = [
