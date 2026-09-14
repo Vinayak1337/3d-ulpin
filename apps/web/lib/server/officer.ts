@@ -268,6 +268,26 @@ const recordFrom = (r: any): RegistryRecord => ({
   identifier: r.identifier,
   revision: r.revision,
 });
+export async function dossierSources(
+  sourceIds: string[],
+  evidence: SourceLocator[],
+) {
+  return (
+    await query(
+      "SELECT id,name,sha256,revision,profile,created_at FROM sources WHERE id=ANY($1::uuid[]) ORDER BY created_at",
+      [[...new Set(sourceIds)]],
+    )
+  ).rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    sha256: r.sha256,
+    revision: r.revision,
+    profile: r.profile,
+    createdAt: new Date(r.created_at).toISOString(),
+    url: `/api/v1/sources/${r.id}/file`,
+    evidence: evidence.filter((e) => e.sourceRevisionId === r.id),
+  }));
+}
 export async function buildingDossier(id: string): Promise<BuildingDossier> {
   const building = await physicalFeature(id),
     area = await getArea(building.areaId);
@@ -353,36 +373,6 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
         questions: p.questions.filter((q) => q.entityId === id),
       };
     });
-  const sourceIds = [
-    ...new Set([
-      building.sourceRevisionId,
-      ...building.evidence.map((e) => e.sourceRevisionId),
-      ...packages.flatMap((p) => p.sourceRevisionIds),
-      ...records.flatMap((r) => r.evidence.map((e) => e.sourceId)),
-    ]),
-  ];
-  const sources = (
-    await query(
-      "SELECT id,name,sha256,revision,profile,created_at FROM sources WHERE id=ANY($1::uuid[]) ORDER BY created_at",
-      [sourceIds],
-    )
-  ).rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    sha256: r.sha256,
-    revision: r.revision,
-    profile: r.profile,
-    createdAt: new Date(r.created_at).toISOString(),
-    url: `/api/v1/sources/${r.id}/file`,
-    evidence: [
-      ...building.evidence,
-      ...packages.flatMap((p) =>
-        p.factCandidates
-          .filter((f) => f.entityId === id)
-          .flatMap((f) => f.evidence),
-      ),
-    ].filter((e) => e.sourceRevisionId === r.id),
-  }));
   const latest = (
     await query(
       "SELECT body FROM area_check_runs WHERE area_id=$1 AND status='completed' ORDER BY created_at DESC LIMIT 1",
@@ -393,6 +383,32 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
     ? latest.areaRevision !== area.revision ||
       latest.inputFingerprint !== (await currentAreaCheckFingerprint(area.id))
     : false;
+  const relationshipEvidence = [
+    ...associations.flatMap((a) => a.evidence),
+    ...parcels.flatMap((p) => p.feature.evidence),
+    ...(staleCheck ? [] : (latest?.findings ?? []))
+      .filter((f: AreaFinding) => f.featureIds.includes(id))
+      .flatMap((f: AreaFinding) => f.evidence ?? []),
+  ];
+  const sourceIds = [
+    ...new Set([
+      building.sourceRevisionId,
+      ...parcels.map((p) => p.feature.sourceRevisionId),
+      ...relationshipEvidence.map((e) => e.sourceRevisionId),
+      ...building.evidence.map((e) => e.sourceRevisionId),
+      ...packages.flatMap((p) => p.sourceRevisionIds),
+      ...records.flatMap((r) => r.evidence.map((e) => e.sourceId)),
+    ]),
+  ];
+  const sources = await dossierSources(sourceIds, [
+    ...building.evidence,
+    ...relationshipEvidence,
+    ...packages.flatMap((p) =>
+      p.factCandidates
+        .filter((f) => f.entityId === id)
+        .flatMap((f) => f.evidence),
+    ),
+  ]);
   const site = (
     await query("SELECT revision,frame FROM registry_sites WHERE id=$1", [
       area.siteId,

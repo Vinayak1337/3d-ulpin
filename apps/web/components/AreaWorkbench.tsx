@@ -134,6 +134,19 @@ function AreaPlan({
   );
   const drag = useRef<{ x: number; y: number; view: typeof view } | null>(null);
   const svg = useRef<SVGSVGElement>(null);
+  const [viewport, setViewport] = useState({ width: 900, height: 500 });
+  useEffect(() => {
+    const element = svg.current;
+    if (!element) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) setViewport({ width, height });
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  const labelSize =
+    12 * Math.max(view[2] / viewport.width, view[3] / viewport.height);
   const selected = useRef(selectedId);
   selected.current = selectedId;
   const planInputs = useRef({ features, extent, highlightedIds });
@@ -274,7 +287,7 @@ function AreaPlan({
                   <text
                     x={points(boundary.localGeometry!)[0][0]}
                     y={-points(boundary.localGeometry!)[0][1] - view[2] / 70}
-                    fontSize={Math.max(1.5, view[2] / 80)}
+                    fontSize={labelSize}
                     fill="#52686d"
                   >
                     {boundary.name}
@@ -312,9 +325,15 @@ function AreaPlan({
               <text
                 key={`label:${feature.id}`}
                 className="area-plan-label"
+                style={{ strokeWidth: labelSize / 6 }}
                 x={ps.reduce((n, p) => n + p[0], 0) / ps.length}
-                y={-ps.reduce((n, p) => n + p[1], 0) / ps.length}
-                fontSize={Math.max(1.5, view[2] / 80)}
+                y={
+                  feature.kind === "parcel"
+                    ? -Math.max(...ps.map((point) => point[1])) - view[3] / 35
+                    : -ps.reduce((n, p) => n + p[1], 0) / ps.length +
+                      (feature.kind === "utility" ? view[3] / 25 : 0)
+                }
+                fontSize={labelSize}
                 textAnchor="middle"
                 pointerEvents="none"
               >
