@@ -45,7 +45,9 @@ against the agreed plan.
 For the illustrated user guide, run `pnpm guide` from the repository root and
 open [the visual guide](http://127.0.0.1:3011) in your browser or Codex's in-app
 browser. It serves the 13 annotated tutorials independently of the application;
-Python 3 is required, but the database and processing services are not. Keep
+The launcher uses Node.js on Windows, macOS and Linux; Python, Bash and the
+database/processing services are not required for the guide. Use `pnpm guide --port 3012`
+for another port, or `node scripts/guide.mjs` without pnpm. Keep
 the terminal open; **Ctrl+C** stops the guide. You can also open
 `docs/tutorial-images/index.html` directly for offline viewing.
 
