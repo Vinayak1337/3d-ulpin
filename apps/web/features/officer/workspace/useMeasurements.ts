@@ -92,8 +92,11 @@ export function useMeasurements(workspaceId: string) {
     const link = document.createElement("a");
     link.href = url;
     link.download = "workspace-measurement-notes.json";
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    // Let the browser consume the blob before releasing it.
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   }, [draft, workspaceId]);
   return {
     ...draft,

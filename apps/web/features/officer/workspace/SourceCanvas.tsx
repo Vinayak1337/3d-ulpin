@@ -99,6 +99,8 @@ function GeometryLayer({
 export default function SourceCanvas({
   source,
   secondary,
+  secondaryPage,
+  onSecondaryPage,
   page,
   mode,
   tool,
@@ -115,6 +117,8 @@ export default function SourceCanvas({
 }: {
   source?: CanvasSource;
   secondary?: CanvasSource;
+  secondaryPage: number;
+  onSecondaryPage: (page: number) => void;
   page: number;
   mode: WorkspaceMode;
   tool: MeasureTool;
@@ -130,7 +134,18 @@ export default function SourceCanvas({
   onPage: (page: number) => void;
 }) {
   const raster = useSourceRaster(source, page),
-    other = useSourceRaster(secondary, 1);
+    other = useSourceRaster(secondary, secondaryPage);
+  const correctedPage = useRef("");
+  useEffect(() => {
+    const key = `${source?.id}:${source?.hash}:${page}:${raster.pages}`;
+    if (source?.kind === "pdf" && !raster.loading && !raster.error && raster.url && page > raster.pages && correctedPage.current !== key) {
+      correctedPage.current = key;
+      onPage(raster.pages);
+    } else if (page <= raster.pages) correctedPage.current = "";
+  }, [source?.id, source?.hash, source?.kind, raster.loading, raster.error, raster.url, raster.pages, page, onPage]);
+  useEffect(() => {
+    if (secondary?.kind === "pdf" && !other.loading && !other.error && other.url && secondaryPage > other.pages) onSecondaryPage(other.pages);
+  }, [secondary?.kind, other.loading, other.error, other.url, other.pages, secondaryPage, onSecondaryPage]);
   const base = useMemo(
     () => sourceBounds(source, raster.width, raster.height),
     [source, raster.width, raster.height],
@@ -144,6 +159,7 @@ export default function SourceCanvas({
     setZoom(1);
   }, [source?.id, source?.hash, page, ...base]);
   const scale = (factor: number) => {
+    if (zoom / factor < 0.1 || zoom / factor > 20) return;
     setZoom((z) => z / factor);
     setView(([x, y, w, h]) => [
       x + (w * (1 - factor)) / 2,
@@ -234,6 +250,13 @@ export default function SourceCanvas({
           </Button>
         </div>
       )}
+      {mode === "compare" && secondary?.kind === "pdf" && (
+        <div className={styles.pageBar} aria-label="Comparison document pages">
+          <Button aria-label="Previous comparison page" disabled={secondaryPage <= 1 || other.loading} onClick={() => onSecondaryPage(secondaryPage - 1)}>Previous</Button>
+          <span>B · Page {secondaryPage} of {other.pages}</span>
+          <Button aria-label="Next comparison page" disabled={secondaryPage >= other.pages || other.loading} onClick={() => onSecondaryPage(secondaryPage + 1)}>Next</Button>
+        </div>
+      )}
       {!source ? (
         <EmptyState
           title="Add a source plan"
@@ -277,6 +300,11 @@ export default function SourceCanvas({
               )}
             </div>
           )}
+          {mode === "compare" && secondary && (other.loading || other.error) && (
+            <div className={styles.canvasNotice} role={other.error ? "alert" : "status"}>
+              {other.error ? `Comparison source: ${other.error}` : "Rendering comparison source…"}
+            </div>
+          )}
           <svg
             ref={svg}
             viewBox={view.join(" ")}
@@ -296,15 +324,17 @@ export default function SourceCanvas({
               }
             }}
             onPointerDown={(event) => {
-              if (raster.loading || raster.error) return;
-              if (canDraw) {
+              if (raster.loading || raster.error || ![0, 1].includes(event.button)) return;
+              event.preventDefault();
+              event.currentTarget.focus();
+              if (canDraw && !event.shiftKey && event.button === 0) {
                 const matrix = event.currentTarget.getScreenCTM();
                 if (matrix) {
                   const p = new DOMPoint(
                     event.clientX,
                     event.clientY,
                   ).matrixTransform(matrix.inverse());
-                  onPoint([p.x, p.y]);
+                  if (metric || (p.x >= 0 && p.y >= 0 && p.x <= raster.width && p.y <= raster.height)) onPoint([p.x, p.y]);
                 }
                 return;
               }
@@ -329,6 +359,7 @@ export default function SourceCanvas({
             onPointerCancel={() => {
               drag.current = null;
             }}
+            onLostPointerCapture={() => { drag.current = null; }}
           >
             <defs>
               <pattern
@@ -464,9 +495,9 @@ export default function SourceCanvas({
           {mode === "compare"
             ? "Visual comparison · no automatic clearance decision"
             : mode === "calibrate"
-              ? `${points.length} / 2 points · apply calibration in Controls`
+              ? `${points.length} / 2 points · Shift + drag to pan`
               : canDraw
-                ? `${points.length} points · Enter to finish · Esc to clear`
+                ? `${points.length} points · Enter to finish · Shift + drag to pan`
                 : "Drag to pan"}
         </span>
       </footer>
