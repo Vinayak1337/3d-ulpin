@@ -1,0 +1,182 @@
+{
+  "scope": "Local measurement notes; not registry geometry",
+  "workspaceId": "f29b8566-fe5f-4a46-85d0-8754a6fccf3e",
+  "calibrations": {
+    "3c3a4d49-fe9a-41d3-98a1-70242f39bebc:1": {
+      "sourceId": "3c3a4d49-fe9a-41d3-98a1-70242f39bebc",
+      "sourceHash": "e6e228539e88b45cc78ec66f761c12959786f49c9fe792e13db55620b3e3bee8",
+      "page": 1,
+      "imagePoints": [
+        [
+          168.75,
+          225.00001971968243
+        ],
+        [
+          1068.75007887873,
+          225.00001971968243
+        ]
+      ],
+      "worldPoints": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ]
+      ],
+      "metresPerUnit": 0.011111110137299715,
+      "method": "known_distance",
+      "reason": "Synthetic PDF page 1 printed 10 m dimension. Local scale only, no registry geometry changes.",
+      "savedAt": "2026-09-15T00:20:30.424Z"
+    }
+  },
+  "measurements": [
+    {
+      "id": "f87ec232-c581-451b-99fd-ca2e8f5e858f",
+      "sourceId": "32aed4a0-d86e-4e12-80a5-b51dd7e55189",
+      "sourceHash": "efdd2b819104cdb9c1b26c28251839699d74d7664b40e3343d747305fa2cf590",
+      "page": 1,
+      "tool": "area",
+      "points": [
+        [
+          22.000000135703118,
+          -1.9999996588659616
+        ],
+        [
+          25.999999899942285,
+          -1.9999996588659616
+        ],
+        [
+          25.999999899942285,
+          -5.999999882119582
+        ],
+        [
+          22.000000135703118,
+          -5.999999882119582
+        ]
+      ],
+      "value": 15.999999949971112,
+      "unit": "m²",
+      "label": "Area",
+      "reference": "AREA-e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3",
+      "noted": false,
+      "createdAt": "2026-09-15T00:21:00.322Z"
+    },
+    {
+      "id": "2303b2dd-491a-4f98-b39b-43316634cf49",
+      "sourceId": "32aed4a0-d86e-4e12-80a5-b51dd7e55189",
+      "sourceHash": "efdd2b819104cdb9c1b26c28251839699d74d7664b40e3343d747305fa2cf590",
+      "page": 1,
+      "tool": "distance",
+      "points": [
+        [
+          21.999999790011017,
+          -1.9999998208512535
+        ],
+        [
+          25.999999640631113,
+          -1.9999998208512535
+        ]
+      ],
+      "value": 3.999999850620096,
+      "unit": "m",
+      "label": "Distance",
+      "reference": "AREA-e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3",
+      "noted": false,
+      "createdAt": "2026-09-15T00:21:22.960Z"
+    },
+    {
+      "id": "bf802099-0eca-40e9-8a0c-3980414d116c",
+      "sourceId": "32aed4a0-d86e-4e12-80a5-b51dd7e55189",
+      "sourceHash": "efdd2b819104cdb9c1b26c28251839699d74d7664b40e3343d747305fa2cf590",
+      "page": 1,
+      "tool": "perimeter",
+      "points": [
+        [
+          21.999999790011017,
+          -1.9999998208512535
+        ],
+        [
+          25.999999640631113,
+          -1.9999998208512535
+        ],
+        [
+          25.999999640631113,
+          -5.999999925310046
+        ],
+        [
+          21.999999790011017,
+          -5.999999925310046
+        ]
+      ],
+      "value": 15.999999910157776,
+      "unit": "m",
+      "label": "Perimeter",
+      "reference": "AREA-e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3",
+      "noted": false,
+      "createdAt": "2026-09-15T00:21:23.021Z"
+    },
+    {
+      "id": "01dc8712-ac27-41e7-a90c-97cfacb16930",
+      "sourceId": "32aed4a0-d86e-4e12-80a5-b51dd7e55189",
+      "sourceHash": "efdd2b819104cdb9c1b26c28251839699d74d7664b40e3343d747305fa2cf590",
+      "page": 1,
+      "tool": "angle",
+      "points": [
+        [
+          21.999999790011017,
+          -5.999999925310046
+        ],
+        [
+          21.999999790011017,
+          -1.9999998208512535
+        ],
+        [
+          25.999999640631113,
+          -1.9999998208512535
+        ]
+      ],
+      "value": 90,
+      "unit": "°",
+      "label": "Angle",
+      "reference": "AREA-e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3",
+      "noted": false,
+      "createdAt": "2026-09-15T00:21:23.060Z"
+    },
+    {
+      "id": "415c0330-e599-474e-9233-eb8e7e857cab",
+      "sourceId": "32aed4a0-d86e-4e12-80a5-b51dd7e55189",
+      "sourceHash": "efdd2b819104cdb9c1b26c28251839699d74d7664b40e3343d747305fa2cf590",
+      "page": 1,
+      "tool": "point",
+      "points": [
+        [
+          23.999999969159763,
+          -3.999999999999999
+        ]
+      ],
+      "value": null,
+      "unit": "point",
+      "label": "Point 24.00, 4.00 m",
+      "reference": "AREA-e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3",
+      "noted": false,
+      "createdAt": "2026-09-15T00:21:23.091Z"
+    },
+    {
+      "id": "ff56dcd7-22bf-48c5-82d1-06722f7580a3",
+      "sourceId": "32aed4a0-d86e-4e12-80a5-b51dd7e55189",
+      "sourceHash": "efdd2b819104cdb9c1b26c28251839699d74d7664b40e3343d747305fa2cf590",
+      "page": 1,
+      "tool": "height",
+      "points": [],
+      "value": 3,
+      "unit": "m",
+      "label": "Height · 0 to 3 m",
+      "reference": "BM-SYNTHETIC-V2-ONLY",
+      "noted": false,
+      "createdAt": "2026-09-15T00:21:56.203Z"
+    }
+  ]
+}

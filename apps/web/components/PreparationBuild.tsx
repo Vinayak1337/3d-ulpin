@@ -8,6 +8,7 @@ import type {
   RegistryReview,
 } from "@ulpin/contracts";
 import { registryRequest as request } from "@/lib/registry-client";
+import { legacyUrl } from "@/lib/legacy-url";
 
 export default function PreparationBuild({
   preparation,
@@ -16,6 +17,7 @@ export default function PreparationBuild({
   onRecorded,
   disabled = false,
   onBusy,
+  editorUrl,
 }: {
   preparation: PreparationCase;
   pkg: ImportPackage;
@@ -23,6 +25,7 @@ export default function PreparationBuild({
   onRecorded: () => void;
   disabled?: boolean;
   onBusy?: (label: string) => void;
+  editorUrl?: string;
 }) {
   const [detail, setDetail] = useState<CaseDetail | null>(null),
     [review, setReview] = useState<RegistryReview | null>(null),
@@ -240,7 +243,7 @@ export default function PreparationBuild({
         <summary>Advanced geometry editing</summary>
         <a
           className="property-link-button"
-          href={`/workbench?case=${preparation.caseId}&building=${preparation.buildingId}&area=${preparation.areaId}`}
+          href={editorUrl ?? legacyUrl(`/workbench?case=${preparation.caseId}&building=${preparation.buildingId}&area=${preparation.areaId}`)}
         >
           Open linked geometry editor ↗
         </a>

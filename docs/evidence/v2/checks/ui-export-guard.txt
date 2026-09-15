@@ -1,0 +1,6 @@
+### Result
+"Data tools\nImport sources\nExport data\nSwitch to 2D Map to export the current vector view.\nSynthetic officer UI test · not a real survey\n\n5 recorded features · revision 3\n\nBlock geometry\nGeographic GeoJSON with identifiers and source references\nSelected feature\nOnly the currently selected record\nCurrent 2D view\nVector SVG of the visible plan\nCheck & evidence report\nLatest check, exact findings and original-source links\nDownload export"
+### Ran Playwright code
+```js
+await (async (page) => { await page.getByRole("radio",{name:"Current 2D view Vector SVG of the visible plan",exact:true}).check(); await page.getByRole("button",{name:"Download export",exact:true}).click(); return await page.getByRole("dialog").innerText(); })(page);
+```

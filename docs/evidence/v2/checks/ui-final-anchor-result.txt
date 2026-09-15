@@ -1,0 +1,12 @@
+### Result
+{"url":"http://127.0.0.1:3000/v2","overflow":false}
+### Ran Playwright code
+```js
+await (async (page) => { await page.getByRole("heading",{name:"Building 353927",exact:true}).waitFor(); await page.getByRole("button",{name:"Run check",exact:true}).click(); await page.getByRole("button",{name:"Close findings",exact:true}).waitFor(); await page.getByRole("button",{name:"Close findings",exact:true}).click(); await page.getByRole("button",{name:"Layers",exact:true}).first().click(); await page.screenshot({path:"output/playwright/v2-root/block-3d-final-1440.png"}); await page.getByRole("button",{name:"2D Map",exact:true}).click(); await page.screenshot({path:"output/playwright/v2-root/block-2d-final-1440.png"}); await page.getByRole("button",{name:"3D",exact:true}).click(); await page.setViewportSize({width:390,height:844}); await page.getByRole("button",{name:"Close inspector",exact:true}).click(); await page.screenshot({path:"output/playwright/v2-root/block-mobile-map-final.png"}); await page.setViewportSize({width:1440,height:900}); await page.getByRole("link",{name:"3D ULPIN home",exact:true}).click(); await page.getByRole("heading",{name:/Your next property/}).waitFor({timeout:3000}).catch(()=>{}); await page.screenshot({path:"output/playwright/v2-root/home-final-1440.png"}); return {url:page.url(),overflow:await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)}; })(page);
+```
+### Page
+- Page URL: http://127.0.0.1:3000/v2
+- Page Title: 3D ULPIN V2 · Property intelligence
+- Console: 0 errors, 3 warnings
+### Events
+- New console entries: .playwright-cli/console-2026-09-15T00-38-42-523Z.log#L1-L3

@@ -1,4 +1,6 @@
-import Workbench from "@/components/Workbench";
-export default function Page() {
-  return <Workbench />;
+import { redirectLegacyFamily } from "@/lib/legacy-redirect-page";
+import type { RouteSearchParams } from "@/lib/legacy-url";
+
+export default async function Page({ searchParams }: { searchParams: Promise<RouteSearchParams> }) {
+  await redirectLegacyFamily("workbench", { params: Promise.resolve({ path: [] }), searchParams });
 }

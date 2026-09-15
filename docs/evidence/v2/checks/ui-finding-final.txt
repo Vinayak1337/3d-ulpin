@@ -1,0 +1,10 @@
+### Result
+"Outside confirmed parcel\nSynthetic Property A · Synthetic parcel A\nGround occupation extends outside the union of explicitly associated recorded parcels. This is a geometric discrepancy requiring evidence review, not a legal conclusion.\n20 m²"
+### Ran Playwright code
+```js
+await (async (page) => { await page.getByRole("button",{name:/^Outside confirmed parcel/}).click(); await page.getByRole("button",{name:"Parcel",exact:true}).click(); await page.screenshot({path:"output/playwright/v2-root/parcel-finding-final.png"}); return await page.getByRole("region",{name:"Block findings"}).getByRole("button",{name:/^Outside confirmed parcel/}).innerText(); })(page);
+```
+### Page
+- Page URL: http://127.0.0.1:3000/v2/blocks/8c61a45e-3ae9-4c7c-95f2-78918f23582a?feature=2c2aa2dc-b83e-4c64-842e-9790407afb0d&findingId=39426b76-986c-5019-9c99-e0229801cc0f
+- Page Title: 3D ULPIN V2 · Property intelligence
+- Console: 0 errors, 4 warnings

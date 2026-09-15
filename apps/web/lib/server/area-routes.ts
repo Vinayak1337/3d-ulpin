@@ -17,6 +17,7 @@ import {
   commitPackage,
   runAreaCheck,
   attachDocument,
+  copyCaseDocuments,
   addFact,
   rebasePackage,
   createPackageCorrection,
@@ -363,6 +364,16 @@ export async function areaRoutes(
             input.acknowledgement,
           ),
         );
+      }
+      if (p[2] === "copy-case-documents") {
+        const input = z.object({
+          expectedRevision: revision,
+          caseId: uuid,
+          sourceIds: z.array(uuid).min(1).max(20).refine(ids => new Set(ids).size === ids.length, "Choose distinct source revisions."),
+          buildingId: uuid,
+          reason: z.string().trim().min(1).max(2000),
+        }).strict().parse(await body(request));
+        return json(await copyCaseDocuments(id, input));
       }
       if (p[2] === "documents") {
         const input = await form(request),

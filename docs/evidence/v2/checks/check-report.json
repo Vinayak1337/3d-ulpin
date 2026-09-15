@@ -1,0 +1,45 @@
+{
+  "schema": "ulpin-officer-report/2",
+  "exportedAt": "2026-09-15T00:16:14.169Z",
+  "area": {
+    "id": "e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3",
+    "siteId": "e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3",
+    "name": "V2 redesign verification · synthetic",
+    "revision": 1,
+    "reference": {
+      "anchor": [
+        75.00000000000001,
+        28.025254985930832
+      ],
+      "origin": [
+        500000,
+        3100000
+      ],
+      "sourceCrs": "EPSG:32643",
+      "analysisCrs": "EPSG:32643",
+      "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=noop ellps=GRS80",
+      "verticalReference": "building-relative; not aligned between features"
+    },
+    "extent": [
+      0,
+      0,
+      52,
+      10
+    ],
+    "geographicExtent": [
+      75.00000000000001,
+      28.025254984912646,
+      75.00052899552428,
+      28.025345258574298
+    ],
+    "administrativeUnits": []
+  },
+  "check": null,
+  "sourceRevisions": [
+    {
+      "id": "60027856-f3a5-41d1-aa94-69110881e7c6",
+      "url": "/api/v1/sources/60027856-f3a5-41d1-aa94-69110881e7c6/file"
+    }
+  ],
+  "note": "Individual findings are not summed; overlapping areas may exist."
+}

@@ -1,10 +1,6 @@
-import Workbench from "@/components/Workbench";
-import AreaWorkbench from "@/components/AreaWorkbench";
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ case?: string }>;
-}) {
-  const params = await searchParams;
-  return params.case ? <Workbench /> : <AreaWorkbench />;
+import { redirect } from "next/navigation";
+import { rootPresentationUrl, type RouteSearchParams } from "@/lib/legacy-url";
+
+export default async function Home({ searchParams }: { searchParams: Promise<RouteSearchParams> }) {
+  redirect(rootPresentationUrl(await searchParams));
 }

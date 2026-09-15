@@ -1,0 +1,85 @@
+{
+  "packageId": "11b1ec96-ea8f-4e60-8387-4488b58501b3",
+  "packageRevision": 10,
+  "copiedParts": [
+    {
+      "sourceId": "ee487168-2085-4a11-8c95-c9c4c63c0a41",
+      "copiedFrom": {
+        "actor": "local-demo-operator",
+        "caseId": "27200fd5-13e4-45ec-9780-8bef1fa7b496",
+        "reason": "These authored software-test originals are assigned to the isolated Synthetic Property B for V2 workflow verification only. They are not survey evidence. Separate native room coordinates and levels will define the proposed test room.",
+        "locator": "image",
+        "copiedAt": "2026-09-15T00:14:30.510Z",
+        "sourceHash": "334a6c522c99937439e83753427e794f6502d026ce5a1202da3b9c1422666747",
+        "sourceProfile": "plan-png-v1",
+        "sourceRevision": 1,
+        "sourceRevisionId": "2626a603-3fc0-4724-bcd5-a23e87d8ed0d"
+      }
+    },
+    {
+      "sourceId": "3c3a4d49-fe9a-41d3-98a1-70242f39bebc",
+      "copiedFrom": {
+        "actor": "local-demo-operator",
+        "caseId": "27200fd5-13e4-45ec-9780-8bef1fa7b496",
+        "reason": "These authored software-test originals are assigned to the isolated Synthetic Property B for V2 workflow verification only. They are not survey evidence. Separate native room coordinates and levels will define the proposed test room.",
+        "locator": "original file",
+        "copiedAt": "2026-09-15T00:14:30.510Z",
+        "sourceHash": "e6e228539e88b45cc78ec66f761c12959786f49c9fe792e13db55620b3e3bee8",
+        "sourceProfile": "plan-pdf-v1",
+        "sourceRevision": 1,
+        "sourceRevisionId": "49ea1260-cac1-4c77-8056-f25e1fd7b26a"
+      }
+    },
+    {
+      "sourceId": "11135df2-1e4b-490d-9e22-8df1b5787f0c",
+      "copiedFrom": {
+        "actor": "local-demo-operator",
+        "caseId": "27200fd5-13e4-45ec-9780-8bef1fa7b496",
+        "reason": "These authored software-test originals are assigned to the isolated Synthetic Property B for V2 workflow verification only. They are not survey evidence. Separate native room coordinates and levels will define the proposed test room.",
+        "locator": "image",
+        "copiedAt": "2026-09-15T00:14:30.510Z",
+        "sourceHash": "3c52f05e2be79ca22a31266062bd7de40ea614048233a95ec5380bd526b2a2f6",
+        "sourceProfile": "plan-png-v1",
+        "sourceRevision": 1,
+        "sourceRevisionId": "9aeb6f5e-96de-432f-abc0-b809ceef112f"
+      }
+    }
+  ],
+  "space": [
+    {
+      "id": "5143128b-05e0-4f1d-b7cd-e2be16c9509e",
+      "name": "Synthetic V2 B room",
+      "area": 16,
+      "lower": 0,
+      "upper": 3,
+      "volume": 48,
+      "verticalReference": "BM-SYNTHETIC-V2-ONLY"
+    }
+  ],
+  "originalByteChecks": [
+    {
+      "id": "ee487168-2085-4a11-8c95-c9c4c63c0a41",
+      "name": "synthetic-plan-1.png",
+      "sha256": "334a6c522c99937439e83753427e794f6502d026ce5a1202da3b9c1422666747",
+      "sameAsAuthoredFixture": true
+    },
+    {
+      "id": "3c3a4d49-fe9a-41d3-98a1-70242f39bebc",
+      "name": "synthetic-two-page-plan.pdf",
+      "sha256": "e6e228539e88b45cc78ec66f761c12959786f49c9fe792e13db55620b3e3bee8",
+      "sameAsAuthoredFixture": true
+    },
+    {
+      "id": "11135df2-1e4b-490d-9e22-8df1b5787f0c",
+      "name": "synthetic-plan-2.png",
+      "sha256": "3c52f05e2be79ca22a31266062bd7de40ea614048233a95ec5380bd526b2a2f6",
+      "sameAsAuthoredFixture": true
+    },
+    {
+      "id": "32aed4a0-d86e-4e12-80a5-b51dd7e55189",
+      "name": "synthetic-b-native-room.csv",
+      "sha256": "efdd2b819104cdb9c1b26c28251839699d74d7664b40e3343d747305fa2cf590",
+      "sameAsAuthoredFixture": true
+    }
+  ]
+}

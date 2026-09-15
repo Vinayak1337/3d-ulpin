@@ -1,8 +1,7 @@
-import RegistryWorkbench from "@/components/RegistryWorkbench";
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ siteId: string }>;
-}) {
-  return <RegistryWorkbench initialSiteId={(await params).siteId} />;
+import { redirectLegacyFamily } from "@/lib/legacy-redirect-page";
+import type { RouteSearchParams } from "@/lib/legacy-url";
+
+export default async function Page({ params, searchParams }: { params: Promise<{ siteId: string }>; searchParams: Promise<RouteSearchParams> }) {
+  const { siteId } = await params;
+  await redirectLegacyFamily("sites", { params: Promise.resolve({ path: [siteId] }), searchParams });
 }

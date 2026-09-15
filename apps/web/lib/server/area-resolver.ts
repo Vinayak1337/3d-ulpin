@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { legacyUrl } from "../legacy-url";
 import { query, transaction } from "./db";
 import { getArea } from "./areas";
 import { conflict, notFound, AppError } from "./errors";
@@ -86,7 +87,7 @@ export async function resolveAreaIdentifier(identifier: string) {
       ).rows.map((r) => r.body),
       selectionGeometry: row.body.geographicGeometry,
       contextExtent: area.geographicExtent,
-      url: `/areas/${area.id}?feature=${encodeURIComponent(row.id)}`,
+      url: legacyUrl(`/areas/${area.id}?feature=${encodeURIComponent(row.id)}`),
     });
   }
   for (const row of registry.rows) {
@@ -163,8 +164,8 @@ export async function resolveAreaIdentifier(identifier: string) {
       ).rows,
       url:
         parentBuilding.length > 0
-          ? `/areas/${parentBuilding[0].area_id}?feature=${parentBuilding[0].body.id}&record=${row.id}`
-          : `/registry/${encodeURIComponent(row.identifier)}`,
+          ? legacyUrl(`/areas/${parentBuilding[0].area_id}?feature=${parentBuilding[0].body.id}&record=${row.id}`)
+          : legacyUrl(`/registry/${encodeURIComponent(row.identifier)}`),
     });
   }
   for (const row of sites.rows)
@@ -175,7 +176,7 @@ export async function resolveAreaIdentifier(identifier: string) {
       matchEvidence: [{ scheme: "app_identifier", value }],
       relatedBuildings: [],
       parentParcels: [],
-      url: row.area_reference ? `/areas/${row.area_id}` : `/sites/${row.id}`,
+      url: legacyUrl(row.area_reference ? `/areas/${row.area_id}` : `/sites/${row.id}`),
     });
   return {
     status:

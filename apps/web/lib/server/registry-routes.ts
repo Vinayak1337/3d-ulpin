@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { legacyUrl } from "../legacy-url";
 import { z } from "zod";
 import { query } from "./db";
 import { caseFrom } from "./domain";
@@ -147,7 +148,7 @@ export async function registryRoutes(
         siteId: legacy.site_id,
         workspaceId: legacy.workspace_id,
         meaning: legacy.meaning,
-        url: `/?case=${legacy.workspace_id}`,
+        url: legacyUrl(`/?case=${legacy.workspace_id}`),
       });
     return json({
       kind: "record",
