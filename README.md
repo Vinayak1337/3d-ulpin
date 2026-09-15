@@ -42,6 +42,13 @@ against the agreed plan.
 
 ## Start the demo
 
+For the illustrated user guide, run `pnpm guide` from the repository root and
+open [the visual guide](http://127.0.0.1:3011) in your browser or Codex's in-app
+browser. It serves the 13 annotated tutorials independently of the application;
+Python 3 is required, but the database and processing services are not. Keep
+the terminal open; **Ctrl+C** stops the guide. You can also open
+`docs/tutorial-images/index.html` directly for offline viewing.
+
 On this configured Mac, double-click **Start Demo.command** in the project
 folder, or run this from the repository root:
 

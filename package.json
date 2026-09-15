@@ -8,6 +8,7 @@
     "build": "pnpm --filter @ulpin/web build",
     "start": "concurrently -k -n web,dispatcher 'pnpm --filter @ulpin/web start' 'pnpm dispatcher'",
     "demo": "bash scripts/demo-start.sh",
+    "guide": "python3 -m http.server 3011 --bind 127.0.0.1 --directory docs/tutorial-images",
     "dispatcher": "tsx scripts/dispatcher.ts",
     "platform:start": "bash scripts/platform-start.sh",
     "platform:health": "bash scripts/platform-health.sh",
