@@ -1,0 +1,8 @@
+
+> 3d-ulpin@ typecheck /Users/vinayak/Desktop/3D Ulpin
+> pnpm --filter @ulpin/web typecheck
+
+
+> @ulpin/web@0.1.0 typecheck /Users/vinayak/Desktop/3D Ulpin/apps/web
+> tsc --noEmit
+

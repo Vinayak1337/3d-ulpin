@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { legacyUrl } from "../legacy-url";
 import type { PoolClient } from "pg";
 import type {
   AreaGeometry,
@@ -339,7 +340,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
       id,
     ])
   ).rows.map(
-    (r) => ({ ...r.body, url: `/properties/${id}/prepare` }) as PreparationCase,
+    (r) => ({ ...r.body, url: legacyUrl(`/properties/${id}/prepare`), returnUrl: legacyUrl(r.body.returnUrl || `/areas/${area.id}?feature=${id}`) }) as PreparationCase,
   );
   const packages = (
     await query(
@@ -518,7 +519,7 @@ export async function openPreparation(
         [buildingId],
       )
     ).rows[0];
-    if (old) return { ...old.body, url: `/properties/${buildingId}/prepare` };
+    if (old) return { ...old.body, url: legacyUrl(`/properties/${buildingId}/prepare`), returnUrl: legacyUrl(old.body.returnUrl || `/areas/${building.areaId}?feature=${buildingId}`) };
     if (building.revision !== expectedRevision) conflict();
     const area = await getArea(building.areaId),
       site = (
@@ -598,8 +599,8 @@ export async function openPreparation(
         evidence: building.evidence,
         status: "unresolved",
       },
-      url: `/properties/${buildingId}/prepare`,
-      returnUrl: `/areas/${area.id}?feature=${buildingId}`,
+      url: legacyUrl(`/properties/${buildingId}/prepare`),
+      returnUrl: legacyUrl(`/areas/${area.id}?feature=${buildingId}`),
     };
     await client.query(
       "INSERT INTO building_preparations(id,building_id,case_id,package_id,body) VALUES($1,$2,$3,$4,$5)",

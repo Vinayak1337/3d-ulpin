@@ -24,6 +24,7 @@ import {
   Copy,
 } from "@/lib/ui/icons";
 import { registryRequest as request } from "@/lib/registry-client";
+import { legacyUrl } from "@/lib/legacy-url";
 import { boundsOf, number } from "@/lib/ui/geometry";
 import RegistryMap from "./RegistryMap";
 import RegistryEditor from "./RegistryEditor";
@@ -314,7 +315,7 @@ export default function RegistryWorkbench({
         Skip to property map
       </a>
       <header className="registry-topbar">
-        <a className="registry-brand" href="/">
+        <a className="registry-brand" href={legacyUrl("/")}>
           <Buildings weight="bold" size={23} />
           3D ULPIN<span>Property registry</span>
         </a>
@@ -350,7 +351,7 @@ export default function RegistryWorkbench({
             ? "Synthetic software site"
             : "Retained site records"}
         </span>
-        <a className="preparation-link" href="/workbench">
+        <a className="preparation-link" href={legacyUrl("/workbench")}>
           Preparation
         </a>
       </header>
@@ -808,7 +809,7 @@ export default function RegistryWorkbench({
                           onClick={() =>
                             run("Copying record link", async () => {
                               await navigator.clipboard.writeText(
-                                `${location.origin}/registry/${encodeURIComponent(selected.identifier)}`,
+                                `${location.origin}${legacyUrl(`/registry/${encodeURIComponent(selected.identifier)}`)}`,
                               );
                               setNotice("Record link copied.");
                             })

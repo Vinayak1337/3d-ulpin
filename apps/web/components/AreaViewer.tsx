@@ -48,6 +48,8 @@ export interface AreaViewerProps {
   onSelectDetail?: (id: string) => void;
   underground?: boolean;
   labels?: boolean;
+  /** Presentation-only camera distance. Canonical geometry is unchanged. */
+  frameScale?: number;
 }
 type CameraState = {
   longitude: number;
@@ -682,7 +684,7 @@ export default function AreaViewer(props: AreaViewerProps) {
       /* Ignore expired camera storage. */
     }
     if (saved && Object.values(saved).every(Number.isFinite)) restore(v, saved);
-    else frame(v, features, geographicExtent, undefined, true);
+    else frame(v, features, geographicExtent, undefined, true, latest.current.frameScale);
   }, [features, geographicExtent, sceneKey, ready]);
 
   useEffect(() => {
@@ -727,6 +729,8 @@ export default function AreaViewer(props: AreaViewerProps) {
       shown,
       navigation.action === "fit" ? current.geographicExtent : undefined,
       navigation.action === "issue" ? current.issueGeometry : undefined,
+      false,
+      current.frameScale,
     );
   }, [navigation, ready]);
 
@@ -756,6 +760,7 @@ function frame(
   extent?: AreaViewerProps["geographicExtent"],
   issue?: AreaGeometry | null,
   instant = false,
+  frameScale = 3.2,
 ) {
   const points = features.flatMap((feature) =>
     positions(feature.geographicGeometry).map(([lon, lat]) =>
@@ -791,7 +796,7 @@ function frame(
       new Cesium.HeadingPitchRange(
         Cesium.Math.toRadians(-18),
         Cesium.Math.toRadians(-48),
-        Math.max(30, sphere.radius * 3.2),
+        Math.max(30, sphere.radius * Math.max(1.8, frameScale)),
       ),
     );
     v.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
@@ -805,7 +810,7 @@ function frame(
     offset: new Cesium.HeadingPitchRange(
       Cesium.Math.toRadians(-18),
       Cesium.Math.toRadians(-48),
-      Math.max(30, sphere.radius * 3.2),
+      Math.max(30, sphere.radius * Math.max(1.8, frameScale)),
     ),
   });
 }

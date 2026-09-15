@@ -22,7 +22,8 @@
     "pg": "^8.16.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "zod": "^4.1.0"
+    "zod": "^4.1.0",
+    "zustand": "^5"
   },
   "devDependencies": {
     "@types/earcut": "^3.0.0",

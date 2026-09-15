@@ -196,6 +196,17 @@ export interface DocumentPart {
   locator: string;
   text: string;
   entityIds: string[];
+  copiedFrom?: {
+    caseId: string;
+    sourceRevisionId: string;
+    sourceHash: string;
+    sourceRevision: number;
+    sourceProfile: string;
+    locator: string;
+    reason: string;
+    copiedAt: string;
+    actor: string;
+  };
 }
 export interface ImportPackage {
   selectedClaimIds?: string[];

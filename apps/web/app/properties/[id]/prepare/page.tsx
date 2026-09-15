@@ -1,9 +1,7 @@
-import PropertyPage from "@/components/PropertyPage";
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+import { redirectLegacyFamily } from "@/lib/legacy-redirect-page";
+import type { RouteSearchParams } from "@/lib/legacy-url";
+
+export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<RouteSearchParams> }) {
   const { id } = await params;
-  return <PropertyPage buildingId={id} mode="prepare" />;
+  await redirectLegacyFamily("properties", { params: Promise.resolve({ path: [id, "prepare"] }), searchParams });
 }

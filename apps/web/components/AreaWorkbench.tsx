@@ -25,6 +25,7 @@ import type {
 } from "@ulpin/contracts";
 import type { SourceCatalogEntry } from "@/lib/source-catalog";
 import { registryRequest as request } from "@/lib/registry-client";
+import { legacyUrl } from "@/lib/legacy-url";
 import "./AreaWorkbench.css";
 import { geometryParts, utilityScene } from "@/lib/officer-scene";
 import AreaSection from "./AreaSection";
@@ -786,7 +787,7 @@ export default function AreaWorkbench({
         setMatches([]);
         return;
       }
-      window.location.assign(match.url);
+      window.location.assign(legacyUrl(match.url));
       return;
     }
     setPackage(null);
@@ -857,14 +858,14 @@ export default function AreaWorkbench({
       className={`area-app officer-area ${explorerOpen ? "explorer-open" : ""} ${selected ? "has-property" : ""}`}
     >
       <header className="area-topbar">
-        <a className="area-brand" href="/">
+        <a className="area-brand" href={legacyUrl("/")}>
           3D ULPIN<span>Local registry</span>
         </a>
         <nav>
-          <a href="/areas" aria-current="page">
+          <a href={legacyUrl("/areas")} aria-current="page">
             Area explorer
           </a>
-          <a href="/registry">Detailed registry</a>
+          <a href={legacyUrl("/registry")}>Detailed registry</a>
         </nav>
         <span className="area-local">● Local workspace</span>
       </header>
@@ -1217,7 +1218,7 @@ export default function AreaWorkbench({
                 >
                   Explore data sources →
                 </button>
-                <a href="/registry">Browse property records</a>
+                <a href={legacyUrl("/registry")}>Browse property records</a>
               </div>
             )}
           </div>

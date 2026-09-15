@@ -293,3 +293,14 @@ def test_native_csv_level_facts_missing_questions_and_cell_locators():
 def test_csv_invalid_levels_are_not_accepted(row):
     with pytest.raises(InputError):
         extract_document({"format": "csv", "base64": base64.b64encode(("alias,lower,upper,unit,benchmark\n" + row).encode()).decode()})
+
+
+def test_existing_levels_csv_method_is_retained_as_text_without_becoming_authority():
+    raw = b"alias,lower,upper,unit,benchmark,method\nB1,-3,0,m,SYNTHETIC-BM,declared survey method\n"
+    result = extract_document({"format": "csv", "base64": base64.b64encode(raw).decode()})
+    assert result["status"] == "ready"
+    assert "method: declared survey method" in result["parts"][0]["text"]
+    assert result["parts"][0]["locator"] == {"row": 2, "label": "CSV row 2"}
+    assert {c["property"] for c in result["candidates"]} == {"space.lower", "space.upper"}
+    assert all(c["method"] == "native_parse" and c["evidenceState"] == "source_supported" for c in result["candidates"])
+    assert [c["value"] for c in result["candidates"]] == [-3, 0]

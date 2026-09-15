@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "cesium/Build/Cesium/Widgets/widgets.css";
-import "./globals.css";
-import OfficerNavigation from "@/components/OfficerNavigation";
+import "./base.css";
 
 export const metadata: Metadata = {
   title: "3D ULPIN — Property registry",
@@ -14,7 +13,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body><OfficerNavigation />{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

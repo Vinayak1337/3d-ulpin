@@ -18,9 +18,9 @@ def extract_schedule(raw):
         raise InputError("CSV schedule exceeds 250,000 text characters or contains binary null bytes.")
     reader = csv.DictReader(io.StringIO(text), strict=True)
     header = reader.fieldnames
-    allowed = {"alias", "label", "level", "lower", "upper", "unit", "benchmark", "footprint_wkt", "frame"}
+    allowed = {"alias", "label", "level", "lower", "upper", "unit", "benchmark", "method", "footprint_wkt", "frame"}
     if not header or len(header) != len(set(header)) or not set(header).issubset(allowed) or not {"alias", "lower", "upper", "unit", "benchmark"}.issubset(header):
-        raise InputError("Native level CSV requires unique alias,lower,upper,unit,benchmark columns; optional label,level,footprint_wkt,frame. Unrecognized schemas require explicit mapping.")
+        raise InputError("Native level CSV requires unique alias,lower,upper,unit,benchmark columns; optional label,level,method,footprint_wkt,frame. Unrecognized schemas require explicit mapping.")
     parts, candidates, questions, aliases = [], [], [], set()
     try:
         for index, row in enumerate(reader):
