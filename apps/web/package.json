@@ -16,13 +16,16 @@
     "@ulpin/contracts": "workspace:*",
     "cesium": "1.145.0",
     "earcut": "^3.0.2",
+    "fflate": "0.8.3",
     "next": "16.3.5",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "^5.4.296",
     "pg": "^8.16.0",
+    "playwright": "1.63.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "zod": "^4.1.0"
+    "zod": "^4.1.0",
+    "zustand": "^5"
   },
   "devDependencies": {
     "@types/earcut": "^3.0.0",

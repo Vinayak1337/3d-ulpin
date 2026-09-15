@@ -1,0 +1,31 @@
+{
+  "result": "PASS",
+  "checks": [
+    "Circular controller orbits horizontally and vertically; keyboard buttons work",
+    "Ctrl + left-button drag rotates actual 3D scene without changing canonical selection",
+    "Selected-floor export defaults to that floor and downloads report plus original sources through UI",
+    "Every floor visibly lists its own canonical 3D ULPIN and keeps that ID in the URL",
+    "Rotation controls remain usable at 800 px without page overflow",
+    "Ctrl+Q clears in-progress calibration points",
+    "Clear button cancels drawing; Ctrl+Q does not interfere while typing in a form",
+    "Clearing a new drawing preserves completed measurements and original sources",
+    "Whole block report and originals downloadable from actual block UI"
+  ],
+  "errors": [],
+  "cameraBefore": {
+    "longitude": 1.3125698204488205,
+    "latitude": 0.4970044122708592,
+    "height": 58.410311254441055,
+    "heading": 5.969027267000757,
+    "pitch": -0.8377653902614219,
+    "roll": 6.15107076384902e-9
+  },
+  "cameraAfter": {
+    "longitude": 1.3125677096159913,
+    "latitude": 0.4970100471876882,
+    "height": 72.8630326327584,
+    "heading": 1.50268802022776,
+    "pitch": -1.5679641816221812,
+    "roll": 0
+  }
+}

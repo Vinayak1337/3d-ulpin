@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Missing-key attempt is persisted, idempotent and performs zero inference calls.",
+    "Mocked free-route output creates an unresolved source-linked candidate with usage/hash provenance.",
+    "Exact revision/source cache reopens offline without catalog or inference calls.",
+    "Role and entity-association proposals persist/reopen/cache with exact source locators and never change source associations or facts.",
+    "Apply changes draft facts only, is retry-safe, and refuses a stale cached run after a human/draft revision.",
+    "One malformed/unsupported output gets exactly one repair; unsupported numeric guesses do not survive.",
+    "Actual private PNG crop, crop bytes/hash/region persistence and reopening work; mocked image transcription stays explicitly unverified.",
+    "Measured source geometry passes native topology, retains courtyard and frame, and applies only as an unresolved draft outline.",
+    "A quoted but topologically invalid outside-hole polygon fails PostGIS validation and the bounded repair leaves no accepted geometry.",
+    "No current physical observation was created by the entire AI integration test."
+  ],
+  "kind": "Scoped synthetic DB/API test with mocked Nous transport; not an inference accuracy benchmark.",
+  "actualInferenceRuns": 0,
+  "areaId": "ec8281c0-5f6d-4edf-9817-6dd7ae1b1d3e",
+  "cleaned": true,
+  "verifiedAt": "2026-09-14T19:36:18.081Z"
+}

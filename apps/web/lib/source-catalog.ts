@@ -120,11 +120,11 @@ export const SOURCE_CATALOG: readonly SourceCatalogEntry[] = [
     status: "metadata_verified",
     license: {
       status: "unresolved",
-      url: "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/1/iteminfo",
-      note: "Current iteminfo has empty licenseInfo and accessInformation. Reuse authorization is required before feature acquisition or bundling.",
+      url: "https://www.gmda.gov.in/policies.html",
+      note: "GMDA's current copyright policy requires prior permission by email for reproduction. Item metadata has empty licenseInfo/accessInformation; no dataset-specific grant was found. Feature acquisition and bundling remain disabled pending permission.",
     },
     acquisitionEnabled: false,
-    retrievedAt: "2026-09-14",
+    retrievedAt: "2026-09-15",
     updateFrequency: "Not stated in inspected provider metadata",
     privacyAllowlist: [
       "OBJECTID",
@@ -151,6 +151,7 @@ export const SOURCE_CATALOG: readonly SourceCatalogEntry[] = [
     limits: { maxFeatures: 100, requiresBoundedArea: true },
     limitations: [
       "Metadata only: no GMDA feature values were downloaded for this snapshot.",
+      "Bounded aggregate queries around Islampur, Wazirabad and Farrukhnagar returned zero built-up, parcel and road features in each tested envelope. This is not evidence that the entire service is empty or that utility layers coincide.",
       "Administrative code authorities, source identifiers, building semantics and floor values require verification.",
       "Never request all fields. Owner names, personal identifiers and free-text remarks are excluded from the allowlist.",
       "A source Uniq_Id is not an official ULPIN without a verified identifier assertion.",

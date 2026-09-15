@@ -9,6 +9,8 @@ export async function migrateAreas() {
       extent jsonb, geographic_extent jsonb, created_at timestamptz NOT NULL DEFAULT now()
     );
     ALTER TABLE map_areas ADD COLUMN IF NOT EXISTS seed_key text UNIQUE;
+    ALTER TABLE map_areas ADD COLUMN IF NOT EXISTS archived_at timestamptz;
+    ALTER TABLE map_areas ADD COLUMN IF NOT EXISTS archive_reason text;
     INSERT INTO map_areas(id,site_id,name)
       SELECT id,id,name FROM registry_sites ON CONFLICT(site_id) DO NOTHING;
     CREATE TABLE IF NOT EXISTS administrative_units (
@@ -62,6 +64,13 @@ export async function migrateAreas() {
       id uuid PRIMARY KEY, area_id uuid NOT NULL REFERENCES map_areas(id), area_revision integer NOT NULL,
       status text NOT NULL, input_fingerprint text NOT NULL, body jsonb NOT NULL,
       created_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE IF NOT EXISTS scene_asset_bindings (
+      feature_id uuid NOT NULL REFERENCES physical_features(id),
+      feature_revision integer NOT NULL,
+      body jsonb NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY(feature_id,feature_revision)
     );
     CREATE TABLE IF NOT EXISTS area_acquisitions (
       id uuid PRIMARY KEY, source_id text NOT NULL, operation_key text UNIQUE NOT NULL,

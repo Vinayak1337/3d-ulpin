@@ -1,0 +1,126 @@
+{
+  "before": "2026-09-14T19:44:31.325Z",
+  "after": "2026-09-14T19:46:45.628Z",
+  "status": "passed",
+  "scope": "Read-only API/byte checks around full local service + web/dispatcher restart. Browser/offline actions recorded separately.",
+  "stable": {
+    "realCount": 62,
+    "realIdentities": "3d60dc058e4afc548db5d32a7711803a76d54018d83d83dd79510c2095ce5afc",
+    "properties": [
+      {
+        "id": "2c2aa2dc-b83e-4c64-842e-9790407afb0d",
+        "identifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:B001",
+        "records": "83a0296c47b3dbe934ce0d23b5dc194ae9e0645aa9a8dcb8b0a26fb34595e6ce",
+        "sources": [
+          [
+            "016e5931-981e-44bf-bd5b-c0781f0e0b99",
+            "777b24d5ba97891c5c8975681b2ac213c618ece53e5c3e3c8bf88e40da2e4486"
+          ],
+          [
+            "b570b056-73ef-474a-ada9-ffd6f8f920ae",
+            "e984f82adb0e082159f1aa23e82f9d8ea14bc616a050bc4a44e1accc8c3f7047"
+          ],
+          [
+            "c52d842c-e808-41cc-9b93-90688b82f516",
+            "4dca4762cbc92166dbdf7f28c74fbc63dab676bc95f9bd4f15dc1846e20afd54"
+          ],
+          [
+            "d6bf400f-b4be-488e-bede-8ccc176ae7a6",
+            "855e992bccd750b3d0b31cdd44b3018448d111abb0322c62719d59ee5d975f2f"
+          ],
+          [
+            "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0",
+            "6f00b566d63e7d2d750bd5bf01c1d4ccc345ec90ceaf91cd7d658372712b7d2e"
+          ]
+        ],
+        "preparations": [
+          [
+            "c5b9f136-6fab-4017-9f4d-392c095ab787",
+            "a99b91c8-c5d7-4a65-83f9-b56e49548010",
+            "73a38abb-727a-464e-adf7-56c571c0df16",
+            2
+          ]
+        ]
+      },
+      {
+        "id": "2d5d12c8-1fa5-42a1-a3a9-80f8fad10ff6",
+        "identifier": "3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:B002",
+        "records": "883700d73da4434b9eab45585cf7689c261ad54fff5874d50c8ecb9d14ce53ef",
+        "sources": [
+          [
+            "3042918e-064e-4029-aab6-bd81604cb2e0",
+            "3f00067883dd6e8fa22b435083214db026c515ee89b6be5809373e09f0048073"
+          ],
+          [
+            "3846c25a-ba2f-4622-b9fe-234425420d28",
+            "bcac87fa86b5a257f575bd4aa833140f292822c9e25de67b7ecf2fff3c9a2a28"
+          ],
+          [
+            "8dda3e00-e589-422d-9cfa-0c82890f342f",
+            "839ca748efff64795a02fcea77c1ba9cb3d25e01c7a76ed93c8902422aed607e"
+          ],
+          [
+            "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0",
+            "6f00b566d63e7d2d750bd5bf01c1d4ccc345ec90ceaf91cd7d658372712b7d2e"
+          ]
+        ],
+        "preparations": [
+          [
+            "0aaf88a0-2823-4557-b612-15582d4f6dc9",
+            "b67a814a-39b0-4031-9e37-bbfd1995341c",
+            "0be28232-d656-4c6f-b4a4-ef571e9d45b6",
+            2
+          ]
+        ]
+      }
+    ],
+    "investigationId": "63143c47-3e9d-4037-88ad-29f83f5b8db6",
+    "investigationDigest": "1614e8dd969104278eb7d0b54d1e165084aaa9f929fb3ca3e9623cde1aacb5b4",
+    "status": "CLOSED",
+    "revision": 6,
+    "areaRevision": 3,
+    "exactAreaM2": 20
+  },
+  "sourceChecks": [
+    {
+      "id": "eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0",
+      "sha256": "6f00b566d63e7d2d750bd5bf01c1d4ccc345ec90ceaf91cd7d658372712b7d2e",
+      "bytes": 639
+    },
+    {
+      "id": "b570b056-73ef-474a-ada9-ffd6f8f920ae",
+      "sha256": "e984f82adb0e082159f1aa23e82f9d8ea14bc616a050bc4a44e1accc8c3f7047",
+      "bytes": 206
+    },
+    {
+      "id": "d6bf400f-b4be-488e-bede-8ccc176ae7a6",
+      "sha256": "855e992bccd750b3d0b31cdd44b3018448d111abb0322c62719d59ee5d975f2f",
+      "bytes": 70
+    },
+    {
+      "id": "c52d842c-e808-41cc-9b93-90688b82f516",
+      "sha256": "4dca4762cbc92166dbdf7f28c74fbc63dab676bc95f9bd4f15dc1846e20afd54",
+      "bytes": 68
+    },
+    {
+      "id": "016e5931-981e-44bf-bd5b-c0781f0e0b99",
+      "sha256": "777b24d5ba97891c5c8975681b2ac213c618ece53e5c3e3c8bf88e40da2e4486",
+      "bytes": 2979
+    },
+    {
+      "id": "3042918e-064e-4029-aab6-bd81604cb2e0",
+      "sha256": "3f00067883dd6e8fa22b435083214db026c515ee89b6be5809373e09f0048073",
+      "bytes": 215
+    },
+    {
+      "id": "3846c25a-ba2f-4622-b9fe-234425420d28",
+      "sha256": "bcac87fa86b5a257f575bd4aa833140f292822c9e25de67b7ecf2fff3c9a2a28",
+      "bytes": 155
+    },
+    {
+      "id": "8dda3e00-e589-422d-9cfa-0c82890f342f",
+      "sha256": "839ca748efff64795a02fcea77c1ba9cb3d25e01c7a76ed93c8902422aed607e",
+      "bytes": 2948
+    }
+  ]
+}

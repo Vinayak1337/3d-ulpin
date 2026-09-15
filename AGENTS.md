@@ -1,9 +1,12 @@
 # 3D ULPIN hackathon implementation
 
-Latest scope: deliver a local, single-operator web MVP in 4–8 hours. Inputs → actual processing → persisted editable 3D geometry → findings → correction. Original plan documents remain preserved in Astra_MVP_Handoff_Pack.
+Current scope (15 September 2026): replace the previous presentation with the reference-led officer interface on unversioned Block Map, Property Register and Plan Workspace routes. Match the supplied reference header and panels. Main navigation always opens directories; contextual property actions preserve canonical identity and the surrounding block. Build a clearly labeled persisted fictional demonstration neighborhood through real ingestion, processing and review, alongside separately selectable real datasets. Extract required capabilities before deleting obsolete screens; retain historical URL resolution, all originals and revision history. Use reusable feature modules, focused hooks and transient Zustand state. No version branding in the interface. The T00–T10 evidence and unresolved real Indian data/free-route Nous gates remain historical acceptance obligations.
+
+
+The active demonstration is Lake View. Extend its existing canonical properties with fictional parcel IDs, visible parcels/roads, computed conflict examples and property PDF exports. Keep real datasets separate. Remove only the two user-selected redundant demonstrations from active directories by reversible archival; retain originals and historical access. Seed reruns must preserve user changes and history. Register scenes support circular orbit controls and Ctrl-drag. Workspace Clear/Ctrl+Q cancels only the current drawing. Block/building/floor/unit downloads keep canonical 3D ULPINs, linked parcel 2D ULPIN assertions and byte-identical source revisions; missing geometry remains explicitly unavailable.
 
 - Keep Next.js, CesiumJS, PostgreSQL/PostGIS, S3-compatible storage, Redis/Celery, and private Python processing.
-- Defer authentication/multiple users, Android, formal acceptance, official identity issuance, offline synchronization, heavy/AI extraction, and exchange.
+- Keep this release local and single-operator. Defer production authentication/multiple users, Android, formal statutory acceptance, official identity issuance, field synchronization and exchange. AI extraction is in current scope as reviewed assistance, never spatial authority or direct publication; no paid fallback.
 - Never fabricate computed results or treat generated synthetic files as real survey evidence.
 - Canonical units are local metres in a named frame and vertical benchmark. Display transformations are not measurements.
 - Source receipt, suitability, draft geometry, and validation are distinct.

@@ -1,0 +1,6 @@
+
+> 3d-ulpin@ test:case-document-copy /Users/vinayak/Desktop/3D Ulpin
+> tsx scripts/verify-case-document-copy.ts
+
+PASS Destination, case/source ownership, unsupported profile, original hash and malformed native input gates are atomic.
+PASS Native PDF/PNG/levels CSV preserve bytes, per-part lineage, typed candidates, original case/history, concurrent idempotency and existing direct uploads.

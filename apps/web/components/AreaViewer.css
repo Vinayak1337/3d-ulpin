@@ -1,0 +1,44 @@
+.ulpin-app .area-cesium,
+.ulpin-app .area-cesium-host {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+.ulpin-app .area-scene-note {
+  position: absolute;
+  bottom: 65px;
+  left: 16px;
+  font-size: 10px;
+  background: #ffffffe0;
+  color: #6c7f70;
+  padding: 5px 8px;
+  border-radius: 4px;
+  max-width: 75%;
+}
+.ulpin-app .area-view-error {
+  position: absolute;
+  top: 84px;
+  left: 20px;
+  right: 20px;
+  z-index: 5;
+  padding: 16px;
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning);
+}
+
+.area-cesium-host:not([data-scene-ready="true"])::after {
+  content: "Rendering scene…";
+  position: absolute;
+  z-index: 2;
+  left: 16px;
+  bottom: 32px;
+  padding: 6px 9px;
+  border-radius: 4px;
+  font: 11px system-ui;
+  color: #365d4c;
+  background: #fffffff0;
+  pointer-events: none;
+}
+.property-scene .area-scene-note {
+  display: none;
+}

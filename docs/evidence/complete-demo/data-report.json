@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "features": 22,
+  "buildings": 9,
+  "parcels": 8,
+  "roads": 3,
+  "spaces": 60,
+  "assets": 10,
+  "parcelIds": 8,
+  "buildingOverlapM2": 12,
+  "roadOverlapM2": [
+    36,
+    40,
+    40,
+    72
+  ],
+  "digest": "b0bb9575fa2e640d57114346f158e73633ac9b4a465b5695f426995492d40da5",
+  "rerunCompared": true
+}

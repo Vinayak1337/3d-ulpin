@@ -1,0 +1,6 @@
+### Result
+{"url":"http://127.0.0.1:3000/v2/properties/f29b8566-fe5f-4a46-85d0-8754a6fccf3e/workspace?area=e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3&mode=build","canvasCount":1}
+### Ran Playwright code
+```js
+await (async (page) => { await page.getByRole("button",{name:"3D draft",exact:true}).click(); await page.getByRole("button",{name:"Property volumes",exact:true}).waitFor(); await page.screenshot({path:"docs/evidence/v2/workspace/recorded-draft-final.png",fullPage:true}); return {url:page.url(),canvasCount:await page.locator("canvas").count()}; })(page);
+```

@@ -1,0 +1,6 @@
+
+> 3d-ulpin@ test:block-membership /Users/vinayak/Desktop/3D Ulpin
+> tsx scripts/verify-block-membership.ts
+
+PASS Explicit multi-block membership keeps one identity, excludes unrelated overlap, projects utility alignment/profile consistently, and invalidates checks on owning-source changes.
+PASS 2,001 owned/member features fail with an explicit area limit.

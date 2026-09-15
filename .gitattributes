@@ -3,3 +3,12 @@
 fixtures/** -text
 fixtures/**/*.csv whitespace=cr-at-eol
 Astra_MVP_Handoff_Pack/** -text
+
+# Keep verified CSV source/export bytes, including CRLF, unchanged on checkout.
+demo-data/synthetic-officer/*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/evidence/*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+demo-data/synthetic-v2-workspace/*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Preserve supplied Markdown hard breaks and verbatim terminal evidence.
+docs/v2-design/design.md -text whitespace=-blank-at-eol
+docs/evidence/v2/checks/*.txt -text whitespace=-blank-at-eol,-blank-at-eof

@@ -1,0 +1,1 @@
+PASS Actual UI creates a fictional investigation, retains a missing-level request, records NEEDS_EVIDENCE and reopens the same case with its request and decision history.

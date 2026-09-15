@@ -1,0 +1,5 @@
+
+> 3d-ulpin@ test:reference /Users/vinayak/Desktop/3D Ulpin
+> tsx scripts/reference/verify.ts
+
+PASS Original eight canonical buildings, three detailed properties, 60 computed spaces, all installed hashed assets, honest missing interiors, original bytes and existing real evidence.

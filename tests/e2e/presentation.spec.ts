@@ -71,7 +71,7 @@ for (const dataset of ["c001", "c002"] as const) {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     const before = await buildFixture(request, dataset);
-    await page.goto(`/?case=${before.case.id}`);
+    await page.goto(`/workbench?case=${before.case.id}`);
     const viewer = page.locator("[data-presentation]");
     const canvas = page.locator(".cesium-widget canvas");
     await expect(canvas).toBeVisible({ timeout: 30_000 });
