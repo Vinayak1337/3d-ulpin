@@ -1,0 +1,2 @@
+alias,lower,upper,unit,benchmark,label,level,footprint_wkt,frame
+D-DRAFT,0,,m,BM-LAKEVIEW-DEMO,Entrance lobby,Ground,"POLYGON ((97 1,101 1,101 5,97 5,97 1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be

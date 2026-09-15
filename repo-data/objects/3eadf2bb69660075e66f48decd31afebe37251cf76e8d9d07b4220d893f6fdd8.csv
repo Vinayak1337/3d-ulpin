@@ -1,0 +1,21 @@
+alias,lower,upper,unit,benchmark,label,level,footprint_wkt,frame
+A-0-01,0.00,3.20,m,BM-LAKEVIEW-DEMO,Living / dining,Ground,"POLYGON ((0.3 0.3, 8.5 0.3, 8.5 8.9, 0.3 8.9, 0.3 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-0-02,0.00,3.20,m,BM-LAKEVIEW-DEMO,Bedroom,Ground,"POLYGON ((0.3 9.1, 8.5 9.1, 8.5 17.7, 0.3 17.7, 0.3 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-0-03,0.00,3.20,m,BM-LAKEVIEW-DEMO,Studio,Ground,"POLYGON ((11.5 0.3, 19.7 0.3, 19.7 8.9, 11.5 8.9, 11.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-0-04,0.00,3.20,m,BM-LAKEVIEW-DEMO,Bedroom / study,Ground,"POLYGON ((11.5 9.1, 19.7 9.1, 19.7 17.7, 11.5 17.7, 11.5 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-0-C,0.00,3.20,m,BM-LAKEVIEW-DEMO,Common hall & stairs,Ground,"POLYGON ((8.5 0.3, 11.5 0.3, 11.5 17.7, 8.5 17.7, 8.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-1-01,3.20,6.40,m,BM-LAKEVIEW-DEMO,Living / dining,Floor 1,"POLYGON ((0.3 0.3, 8.5 0.3, 8.5 8.9, 0.3 8.9, 0.3 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-1-02,3.20,6.40,m,BM-LAKEVIEW-DEMO,Bedroom,Floor 1,"POLYGON ((0.3 9.1, 8.5 9.1, 8.5 17.7, 0.3 17.7, 0.3 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-1-03,3.20,6.40,m,BM-LAKEVIEW-DEMO,Studio,Floor 1,"POLYGON ((11.5 0.3, 19.7 0.3, 19.7 8.9, 11.5 8.9, 11.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-1-04,3.20,6.40,m,BM-LAKEVIEW-DEMO,Bedroom / study,Floor 1,"POLYGON ((11.5 9.1, 19.7 9.1, 19.7 17.7, 11.5 17.7, 11.5 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-1-C,3.20,6.40,m,BM-LAKEVIEW-DEMO,Common hall & stairs,Floor 1,"POLYGON ((8.5 0.3, 11.5 0.3, 11.5 17.7, 8.5 17.7, 8.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-2-01,6.40,9.60,m,BM-LAKEVIEW-DEMO,Living / dining,Floor 2,"POLYGON ((0.3 0.3, 8.5 0.3, 8.5 8.9, 0.3 8.9, 0.3 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-2-02,6.40,9.60,m,BM-LAKEVIEW-DEMO,Bedroom,Floor 2,"POLYGON ((0.3 9.1, 8.5 9.1, 8.5 17.7, 0.3 17.7, 0.3 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-2-03,6.40,9.60,m,BM-LAKEVIEW-DEMO,Studio,Floor 2,"POLYGON ((11.5 0.3, 19.7 0.3, 19.7 8.9, 11.5 8.9, 11.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-2-04,6.40,9.60,m,BM-LAKEVIEW-DEMO,Bedroom / study,Floor 2,"POLYGON ((11.5 9.1, 19.7 9.1, 19.7 17.7, 11.5 17.7, 11.5 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-2-C,6.40,9.60,m,BM-LAKEVIEW-DEMO,Common hall & stairs,Floor 2,"POLYGON ((8.5 0.3, 11.5 0.3, 11.5 17.7, 8.5 17.7, 8.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-3-01,9.60,12.80,m,BM-LAKEVIEW-DEMO,Living / dining,Floor 3,"POLYGON ((0.3 0.3, 8.5 0.3, 8.5 8.9, 0.3 8.9, 0.3 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-3-02,9.60,12.80,m,BM-LAKEVIEW-DEMO,Bedroom,Floor 3,"POLYGON ((0.3 9.1, 8.5 9.1, 8.5 17.7, 0.3 17.7, 0.3 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-3-03,9.60,12.80,m,BM-LAKEVIEW-DEMO,Studio,Floor 3,"POLYGON ((11.5 0.3, 19.7 0.3, 19.7 8.9, 11.5 8.9, 11.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-3-04,9.60,12.80,m,BM-LAKEVIEW-DEMO,Bedroom / study,Floor 3,"POLYGON ((11.5 9.1, 19.7 9.1, 19.7 17.7, 11.5 17.7, 11.5 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+A-3-C,9.60,12.80,m,BM-LAKEVIEW-DEMO,Common hall & stairs,Floor 3,"POLYGON ((8.5 0.3, 11.5 0.3, 11.5 17.7, 8.5 17.7, 8.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be

@@ -17,5 +17,8 @@ else
   exit 1
 fi
 ulpin_compose() {
-  "${ULPIN_COMPOSE[@]}" --project-directory "$ULPIN_ROOT" --env-file "$ULPIN_ROOT/.env" -f "$ULPIN_ROOT/compose.yaml" "$@"
+  local env_file project
+  env_file="$(node "$ULPIN_ROOT/scripts/platform-mode.mjs")"
+  project="$(node "$ULPIN_ROOT/scripts/platform-mode.mjs" project)"
+  "${ULPIN_COMPOSE[@]}" --project-directory "$ULPIN_ROOT" --env-file "$env_file" -p "$project" -f "$ULPIN_ROOT/compose.yaml" "$@"
 }

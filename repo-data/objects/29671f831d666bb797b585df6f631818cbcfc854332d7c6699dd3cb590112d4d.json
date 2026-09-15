@@ -1,0 +1,252 @@
+{
+  "profile": "parcel-local-json-v1",
+  "synthetic": true,
+  "notice": "Generated demo inputs. Not real survey or official identity evidence.",
+  "frame": {
+    "id": "LOCAL-C001",
+    "horizontalUnit": "m",
+    "verticalUnit": "m",
+    "benchmark": "BM-DEMO-A"
+  },
+  "features": [
+    {
+      "alias": "P-A",
+      "name": "Western parcel context",
+      "kind": "parcel",
+      "footprint": [
+        [
+          0,
+          0
+        ],
+        [
+          14,
+          0
+        ],
+        [
+          14,
+          12
+        ],
+        [
+          0,
+          12
+        ]
+      ]
+    },
+    {
+      "alias": "P-B",
+      "name": "Eastern parcel context",
+      "kind": "parcel",
+      "footprint": [
+        [
+          14,
+          0
+        ],
+        [
+          28,
+          0
+        ],
+        [
+          28,
+          12
+        ],
+        [
+          14,
+          12
+        ]
+      ]
+    },
+    {
+      "alias": "B01",
+      "name": "Building context envelope",
+      "kind": "building",
+      "footprint": [
+        [
+          2,
+          2
+        ],
+        [
+          12,
+          2
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          2,
+          10
+        ]
+      ]
+    },
+    {
+      "alias": "U01",
+      "name": "Ground west apartment",
+      "kind": "unit",
+      "footprint": [
+        [
+          2,
+          2
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          2,
+          10
+        ]
+      ],
+      "levelLabel": "Ground"
+    },
+    {
+      "alias": "U02",
+      "name": "Ground east apartment",
+      "kind": "unit",
+      "footprint": [
+        [
+          8,
+          2
+        ],
+        [
+          12,
+          2
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          8,
+          10
+        ]
+      ],
+      "levelLabel": "Ground"
+    },
+    {
+      "alias": "U03",
+      "name": "Upper west apartment",
+      "kind": "unit",
+      "footprint": [
+        [
+          2,
+          2
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          2,
+          10
+        ]
+      ],
+      "draftLower": 2.8,
+      "levelLabel": "Level 1"
+    },
+    {
+      "alias": "U04",
+      "name": "Upper east apartment",
+      "kind": "unit",
+      "footprint": [
+        [
+          8,
+          2
+        ],
+        [
+          12,
+          2
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          8,
+          10
+        ]
+      ],
+      "draftLower": 3.0,
+      "levelLabel": "Level 1"
+    },
+    {
+      "alias": "COMMON-0",
+      "name": "Ground shared circulation",
+      "kind": "common",
+      "footprint": [
+        [
+          6,
+          2
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          8,
+          10
+        ],
+        [
+          6,
+          10
+        ]
+      ],
+      "levelLabel": "Ground"
+    },
+    {
+      "alias": "COMMON-1",
+      "name": "Upper shared circulation",
+      "kind": "common",
+      "footprint": [
+        [
+          6,
+          2
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          8,
+          10
+        ],
+        [
+          6,
+          10
+        ]
+      ],
+      "levelLabel": "Level 1"
+    },
+    {
+      "alias": "BSM-01",
+      "name": "Shared basement",
+      "kind": "basement",
+      "footprint": [
+        [
+          2,
+          2
+        ],
+        [
+          12,
+          2
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          2,
+          10
+        ]
+      ],
+      "levelLabel": "Basement"
+    }
+  ]
+}

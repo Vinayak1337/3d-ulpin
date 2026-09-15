@@ -1,0 +1,439 @@
+{
+  "profile": "parcel-local-json-v1",
+  "frame": {
+    "id": "LOCAL-NANDAN-DEMO",
+    "horizontalUnit": "m",
+    "verticalUnit": "m",
+    "benchmark": "BM-NANDAN-SYNTHETIC"
+  },
+  "features": [
+    {
+      "alias": "PA",
+      "name": "Parcel A",
+      "kind": "parcel",
+      "footprint": [
+        [
+          0,
+          0
+        ],
+        [
+          12,
+          0
+        ],
+        [
+          12,
+          16
+        ],
+        [
+          0,
+          16
+        ]
+      ]
+    },
+    {
+      "alias": "PB",
+      "name": "Parcel B",
+      "kind": "parcel",
+      "footprint": [
+        [
+          12,
+          0
+        ],
+        [
+          24,
+          0
+        ],
+        [
+          24,
+          16
+        ],
+        [
+          12,
+          16
+        ]
+      ]
+    },
+    {
+      "alias": "A",
+      "name": "Building A",
+      "kind": "building",
+      "footprint": [
+        [
+          2,
+          2
+        ],
+        [
+          12,
+          2
+        ],
+        [
+          12,
+          12
+        ],
+        [
+          2,
+          12
+        ]
+      ]
+    },
+    {
+      "alias": "A-101",
+      "name": "Apartment A-101",
+      "kind": "unit",
+      "footprint": [
+        [
+          2,
+          2
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          12
+        ],
+        [
+          2,
+          12
+        ]
+      ],
+      "levelLabel": "A / Ground"
+    },
+    {
+      "alias": "A-102",
+      "name": "Apartment A-102",
+      "kind": "unit",
+      "footprint": [
+        [
+          8,
+          2
+        ],
+        [
+          12,
+          2
+        ],
+        [
+          12,
+          12
+        ],
+        [
+          8,
+          12
+        ]
+      ],
+      "levelLabel": "A / Ground"
+    },
+    {
+      "alias": "A-1C",
+      "name": "Common hall A-1C",
+      "kind": "common",
+      "footprint": [
+        [
+          6,
+          2
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          8,
+          12
+        ],
+        [
+          6,
+          12
+        ]
+      ],
+      "levelLabel": "A / Ground"
+    },
+    {
+      "alias": "A-201",
+      "name": "Apartment A-201",
+      "kind": "unit",
+      "footprint": [
+        [
+          2,
+          2
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          12
+        ],
+        [
+          2,
+          12
+        ]
+      ],
+      "levelLabel": "A / Upper"
+    },
+    {
+      "alias": "A-202",
+      "name": "Apartment A-202",
+      "kind": "unit",
+      "footprint": [
+        [
+          8,
+          2
+        ],
+        [
+          12,
+          2
+        ],
+        [
+          12,
+          12
+        ],
+        [
+          8,
+          12
+        ]
+      ],
+      "levelLabel": "A / Upper"
+    },
+    {
+      "alias": "A-2C",
+      "name": "Common hall A-2C",
+      "kind": "common",
+      "footprint": [
+        [
+          6,
+          2
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          8,
+          12
+        ],
+        [
+          6,
+          12
+        ]
+      ],
+      "levelLabel": "A / Upper"
+    },
+    {
+      "alias": "B",
+      "name": "Building B",
+      "kind": "building",
+      "footprint": [
+        [
+          12,
+          2
+        ],
+        [
+          22,
+          2
+        ],
+        [
+          22,
+          12
+        ],
+        [
+          12,
+          12
+        ]
+      ]
+    },
+    {
+      "alias": "B-101",
+      "name": "Apartment B-101",
+      "kind": "unit",
+      "footprint": [
+        [
+          12,
+          2
+        ],
+        [
+          16,
+          2
+        ],
+        [
+          16,
+          12
+        ],
+        [
+          12,
+          12
+        ]
+      ],
+      "levelLabel": "B / Ground"
+    },
+    {
+      "alias": "B-102",
+      "name": "Apartment B-102",
+      "kind": "unit",
+      "footprint": [
+        [
+          18,
+          2
+        ],
+        [
+          22,
+          2
+        ],
+        [
+          22,
+          12
+        ],
+        [
+          18,
+          12
+        ]
+      ],
+      "levelLabel": "B / Ground"
+    },
+    {
+      "alias": "B-1C",
+      "name": "Common hall B-1C",
+      "kind": "common",
+      "footprint": [
+        [
+          16,
+          2
+        ],
+        [
+          18,
+          2
+        ],
+        [
+          18,
+          12
+        ],
+        [
+          16,
+          12
+        ]
+      ],
+      "levelLabel": "B / Ground"
+    },
+    {
+      "alias": "B-201",
+      "name": "Apartment B-201",
+      "kind": "unit",
+      "footprint": [
+        [
+          12,
+          2
+        ],
+        [
+          16,
+          2
+        ],
+        [
+          16,
+          12
+        ],
+        [
+          12,
+          12
+        ]
+      ],
+      "levelLabel": "B / Upper"
+    },
+    {
+      "alias": "B-202",
+      "name": "Apartment B-202",
+      "kind": "unit",
+      "footprint": [
+        [
+          18,
+          2
+        ],
+        [
+          22,
+          2
+        ],
+        [
+          22,
+          12
+        ],
+        [
+          18,
+          12
+        ]
+      ],
+      "levelLabel": "B / Upper"
+    },
+    {
+      "alias": "B-2C",
+      "name": "Common hall B-2C",
+      "kind": "common",
+      "footprint": [
+        [
+          16,
+          2
+        ],
+        [
+          18,
+          2
+        ],
+        [
+          18,
+          12
+        ],
+        [
+          16,
+          12
+        ]
+      ],
+      "levelLabel": "B / Upper"
+    },
+    {
+      "alias": "BASE",
+      "name": "Shared basement",
+      "kind": "basement",
+      "footprint": [
+        [
+          2,
+          2
+        ],
+        [
+          22,
+          2
+        ],
+        [
+          22,
+          12
+        ],
+        [
+          2,
+          12
+        ]
+      ],
+      "levelLabel": "Shared basement"
+    },
+    {
+      "alias": "UTIL",
+      "name": "Utility corridor",
+      "kind": "basement",
+      "footprint": [
+        [
+          0,
+          13
+        ],
+        [
+          24,
+          13
+        ],
+        [
+          24,
+          15
+        ],
+        [
+          0,
+          15
+        ]
+      ],
+      "levelLabel": "Underground corridor"
+    }
+  ]
+}

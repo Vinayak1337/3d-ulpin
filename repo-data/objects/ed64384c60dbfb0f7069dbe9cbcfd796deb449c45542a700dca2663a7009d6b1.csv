@@ -1,0 +1,15 @@
+alias,lower,upper,unit,benchmark,method
+A-101,0,3,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+A-102,0,3,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+A-1C,0,3,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+A-201,3,6,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+A-202,3,6,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+A-2C,3,6,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+B-101,0,3,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+B-102,0,3,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+B-1C,0,3,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+B-201,3,6,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+B-202,3,6,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+B-2C,3,6,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+BASE,-3,0,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule
+UTIL,-5,-4,m,BM-NANDAN-SYNTHETIC,Synthetic authored level schedule

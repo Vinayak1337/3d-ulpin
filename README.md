@@ -42,6 +42,14 @@ against the agreed plan.
 
 ## Start the demo
 
+**Use the complete saved dataset from this repository:** follow
+[repository-data setup](repo-data/README.md). Run `pnpm repo:init`, set
+`REPO_DATA=true` in `.env`, then build/start the app. The bundle includes the
+saved database, plans, PDFs, source revisions and presentation-asset bindings.
+`REPO_DATA=false` keeps using your existing linked environment settings.
+The two modes use separate persistent services; restart the app and dispatcher
+after switching. No reseeding or overwriting of existing data is required.
+
 For the illustrated user guide, run `pnpm guide` from the repository root and
 open [the visual guide](http://127.0.0.1:3011) in your browser or Codex's in-app
 browser. It serves the 13 annotated tutorials independently of the application;
