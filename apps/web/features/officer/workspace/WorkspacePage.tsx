@@ -62,6 +62,7 @@ export default function WorkspacePage({
     selectPage: setPage,
   } = useDocumentSelection();
   const [secondaryId, setSecondaryId] = useState("");
+  const [secondaryPage, setSecondaryPage] = useState(1);
   const [tool, setTool] = useState<MeasureTool>("pan"),
     [points, setPoints] = useState<Point2[]>([]),
     [error, setError] = useState("");
@@ -112,7 +113,10 @@ export default function WorkspacePage({
   useEffect(() => {
     setPoints([]);
     setError("");
-  }, [source?.id]);
+  }, [source?.id, source?.hash, page, mode, tool]);
+  useEffect(() => {
+    if (secondaryId === source?.id) setSecondaryId("");
+  }, [source?.id, secondaryId]);
   const changeMode = (next: WorkspaceMode) => {
     setMode(next);
     setPoints([]);
@@ -269,7 +273,7 @@ export default function WorkspacePage({
         source={source}
         sources={workspace.sources}
         secondaryId={secondaryId}
-        onSecondary={setSecondaryId}
+        onSecondary={(id) => { setSecondaryId(id); setSecondaryPage(1); }}
         mode={compareMode}
         onMode={setCompareMode}
         opacity={opacity}
@@ -292,6 +296,9 @@ export default function WorkspacePage({
       />
     );
   const property = workspace.dossier?.building;
+  if (workspace.loading && !workspace.dossier && !workspace.detail) {
+    return <LoadingState label="Opening property workspace" />;
+  }
   return (
     <div className={styles.workspace}>
       <header className={styles.workspaceHeading}>
@@ -457,6 +464,8 @@ export default function WorkspacePage({
             <SourceCanvas
               source={source}
               secondary={secondary}
+              secondaryPage={secondaryPage}
+              onSecondaryPage={setSecondaryPage}
               page={page}
               mode={mode}
               tool={tool}
@@ -471,7 +480,7 @@ export default function WorkspacePage({
               onFinish={() => finish()}
               onPage={(value) => {
                 setPage(value);
-                setPoints([]);
+                clearDrawing();
               }}
             />
           </div>
@@ -528,7 +537,7 @@ export default function WorkspacePage({
             <LoadingState label="Opening retained documents" />
           )}
         </main>
-        <aside className={styles.inspector}>{!compact && panel}</aside>
+        <aside key={`${mode}:${source?.id}:${page}`} className={styles.inspector}>{!compact && panel}</aside>
       </div>
       <Dialog
         open={documentsOpen}
