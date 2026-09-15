@@ -92,6 +92,15 @@ export default function BlockPage({ areaId }: { areaId: string }) {
           >
             {check.busy ? "Checking…" : "Run check"}
           </Button>
+          <Button
+            icon="warning"
+            aria-pressed={block.showConflicts}
+            disabled={!block.conflictCount}
+            onClick={block.toggleConflicts}
+          >
+            {block.showConflicts ? "Hide conflicts" : "Show conflicts"}
+            {block.conflictCount ? ` (${block.conflictCount})` : ""}
+          </Button>
           <Button icon="download" onClick={() => setTools("export")}>
             Export
           </Button>
@@ -144,6 +153,15 @@ export default function BlockPage({ areaId }: { areaId: string }) {
               >
                 Underground
               </Button>
+              <Button
+                icon="eye"
+                aria-pressed={block.preferences.labels}
+                onClick={() =>
+                  block.setPreferences({ labels: !block.preferences.labels })
+                }
+              >
+                Labels
+              </Button>
               <span className="ui-toolbar-spacer" />
               <Button icon="expand" onClick={() => block.navigate("fit")}>
                 Fit block
@@ -188,8 +206,9 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                     }}
                     navigation={block.navigation}
                     sceneKey={`block:${areaId}`}
-                    highlightedIds={block.finding?.featureIds}
-                    issueGeometry={block.finding?.geographicGeometry}
+                    highlightedIds={block.highlightedIds}
+                    featureLabels={block.featureLabels}
+                    issueGeometry={block.geographicIssueGeometry}
                     details={block.preferences.underground ? block.details : []}
                     boundaries={block.boundaries}
                     labels={block.preferences.labels}
@@ -213,8 +232,9 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                       setInspectorOpen(true);
                     }}
                     navigation={block.navigation}
-                    issueGeometry={block.finding?.geometry}
-                    highlightedIds={block.finding?.featureIds}
+                    issueGeometry={block.issueGeometry}
+                    highlightedIds={block.highlightedIds}
+                    featureLabels={block.featureLabels}
                     details={block.preferences.underground ? block.details : []}
                     labels={block.preferences.labels}
                   />

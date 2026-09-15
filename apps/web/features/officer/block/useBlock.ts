@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type {
   AreaContext,
+  AreaGeometry,
   BuildingDossier,
   PhysicalFeature,
 } from "@ulpin/contracts";
@@ -24,15 +25,57 @@ export function useBlock(areaId: string) {
     ? null
     : context.data?.latestCheck?.findings.find((f) => f.id === findingId) ||
       null;
+  const showConflicts = query.get("conflicts") === "1";
+  const conflictFindings = useMemo(
+    () =>
+      context.data?.latestCheck?.stale
+        ? []
+        : (context.data?.latestCheck?.findings || []).filter(
+            (f) => f.category === "geometric" && !!f.geometry,
+          ),
+    [context.data?.latestCheck],
+  );
+  const shownFindings = useMemo(
+    () => (showConflicts ? conflictFindings : finding ? [finding] : []),
+    [showConflicts, conflictFindings, finding],
+  );
+  const highlightedIds = [
+    ...new Set(shownFindings.flatMap((f) => f.featureIds)),
+  ];
+  const issueGeometry: AreaGeometry | undefined = shownFindings.length
+    ? {
+        type: "GeometryCollection",
+        geometries: shownFindings.flatMap((f) =>
+          f.geometry ? [f.geometry] : [],
+        ),
+      }
+    : undefined;
+  const geographicIssueGeometry: AreaGeometry | undefined = shownFindings.length
+    ? {
+        type: "GeometryCollection",
+        geometries: shownFindings.flatMap((f) =>
+          f.geographicGeometry ? [f.geographicGeometry] : [],
+        ),
+      }
+    : undefined;
+  const featureLabels = useMemo(
+    () =>
+      Object.fromEntries(
+        (context.data?.parcelIdentifiers || []).map((p) => [
+          p.parcelId,
+          p.value,
+        ]),
+      ),
+    [context.data?.parcelIdentifiers],
+  );
   const features = useMemo(() => {
     const list = context.data?.features || [];
-    return [
-      ...list,
-      ...(finding?.participants || []).filter(
-        (p) => !list.some((f) => f.id === p.id),
-      ),
-    ];
-  }, [context.data, finding]);
+    const extra = new Map(
+      shownFindings.flatMap((f) => f.participants || []).map((p) => [p.id, p]),
+    );
+    for (const feature of list) extra.delete(feature.id);
+    return [...list, ...extra.values()];
+  }, [context.data, shownFindings]);
   const selected = features.find((f) => f.id === selectedId) || null;
   const dossier = useResource<BuildingDossier>(
     selected?.kind === "building" ? `/buildings/${selected.id}/dossier` : null,
@@ -131,10 +174,20 @@ export function useBlock(areaId: string) {
     (f) =>
       !preferences.hiddenLayers.includes(f.kind) ||
       f.id === selectedId ||
-      finding?.featureIds.includes(f.id),
+      highlightedIds.includes(f.id),
   );
   return {
     context,
+    featureLabels,
+    showConflicts,
+    conflictCount: conflictFindings.length,
+    highlightedIds,
+    issueGeometry,
+    geographicIssueGeometry,
+    toggleConflicts: () => {
+      updateQuery({ conflicts: showConflicts ? null : "1", findingId: null });
+      setPreferences(areaId, { findingsOpen: true });
+    },
     dossier,
     features,
     visibleFeatures,

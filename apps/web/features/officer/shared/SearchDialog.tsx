@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { AreaContext } from "@ulpin/contracts";
 import { Dialog, Icon, LoadingState, EmptyState, ErrorState } from "./ui";
 import { useDebouncedValue, useResource } from "./hooks";
+import { useActiveRecents } from "./useActiveRecents";
 import { useOfficerStore } from "./store";
 import {
   searchTargets,
@@ -28,7 +29,7 @@ export function SearchDialog({
       ? `/resolve?identifier=${encodeURIComponent(settled)}`
       : null,
   );
-  const recent = useOfficerStore((state) => state.recentProperties),
+  const recent = useActiveRecents(open),
     selectedArea = useOfficerStore((state) => state.selectedAreaId);
   const membership = useResource<AreaContext>(
     open && settled && selectedArea

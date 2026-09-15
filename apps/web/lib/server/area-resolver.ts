@@ -24,17 +24,17 @@ export async function resolveAreaIdentifier(identifier: string) {
     normalized = value.toUpperCase();
   const [physical, registry, sites] = await Promise.all([
     query(
-      `SELECT DISTINCT f.* FROM physical_features f WHERE f.revision>0 AND
+      `SELECT DISTINCT f.* FROM physical_features f WHERE f.revision>0 AND NOT EXISTS(SELECT 1 FROM map_areas a WHERE a.id=f.area_id AND a.archived_at IS NOT NULL) AND
       (upper(f.identifier)=$1 OR upper(f.id::text)=$1 OR upper(f.body->>'sourceKey')=$1 OR (length($1)>2 AND position($1 in upper(f.body->>'name'))>0) OR f.id IN (SELECT feature_id FROM external_identifiers WHERE normalized_value=$1 AND valid_to IS NULL AND verification_state='validated')) ORDER BY f.id LIMIT 50`,
       [normalized],
     ),
     query(
-      `SELECT DISTINCT r.* FROM registry_records r WHERE r.revision>0 AND
+      `SELECT DISTINCT r.* FROM registry_records r WHERE r.revision>0 AND NOT EXISTS(SELECT 1 FROM map_areas a WHERE a.site_id=r.site_id AND a.archived_at IS NOT NULL) AND
       (upper(r.identifier)=$1 OR upper(r.id::text)=$1 OR r.id IN (SELECT record_id FROM external_identifiers WHERE normalized_value=$1 AND valid_to IS NULL AND verification_state='validated') OR r.id IN (SELECT record_id FROM registry_aliases WHERE upper(alias)=$1))`,
       [normalized],
     ),
     query(
-      "SELECT s.*,a.id area_id,a.reference area_reference FROM registry_sites s LEFT JOIN map_areas a ON a.site_id=s.id WHERE upper(s.identifier)=$1 OR upper(s.id::text)=$1",
+      "SELECT s.*,a.id area_id,a.reference area_reference FROM registry_sites s LEFT JOIN map_areas a ON a.site_id=s.id WHERE a.archived_at IS NULL AND (upper(s.identifier)=$1 OR upper(s.id::text)=$1)",
       [normalized],
     ),
   ]);
@@ -219,7 +219,7 @@ export async function resolveAreaIdentifier(identifier: string) {
 export async function bindExternalIdentifier(input: {
   featureId?: string;
   recordId?: string;
-  scheme: "official_ulpin" | "source_property_id" | "nyc_bin";
+  scheme: "official_ulpin" | "demo_ulpin" | "source_property_id" | "nyc_bin";
   value: string;
   issuer: string;
   sourceId: string;
@@ -248,6 +248,18 @@ export async function bindExternalIdentifier(input: {
         422,
         "PARCEL_REQUIRED",
         "An official ULPIN assertion must target a parcel. A building source ID is a separate identifier.",
+      );
+    if (
+      input.scheme === "demo_ulpin" &&
+      (!isPhysical ||
+        row.body.kind !== "parcel" ||
+        row.body.worldStatus !== "synthetic" ||
+        !input.value.startsWith("DEMO-"))
+    )
+      throw new AppError(
+        422,
+        "DEMO_PARCEL_REQUIRED",
+        "A demo ID must begin DEMO- and target a fictional parcel.",
       );
     const areaId = isPhysical ? row.area_id : row.site_id;
     const source = (

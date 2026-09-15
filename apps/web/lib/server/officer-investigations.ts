@@ -1,3 +1,4 @@
+import { registerPdf } from "./register-pdf";
 import { randomUUID } from "node:crypto";
 import type {
   Investigation,
@@ -136,6 +137,7 @@ export async function createInvestigation(input: {
           sources: d.sources,
           associations: d.associations,
           parcels: d.parcels,
+          parcelIdentifiers: d.parcelIdentifiers,
           missing: d.missing,
         },
         findings,
@@ -316,6 +318,7 @@ function sanitizedDossier(d: BuildingDossier) {
     },
     area: d.area,
     associations: d.associations,
+    parcelIdentifiers: d.parcelIdentifiers ?? [],
     register: d.records.map((r) => ({
       id: r.id,
       identifier: r.identifier,
@@ -339,7 +342,7 @@ function snapshotSvg(d: BuildingDossier, i?: Investigation) {
       geometry: p.feature.geometry,
       color: "#658dbe",
     })),
-    ...(i?.findings ?? [])
+    ...(i ? i.findings : d.issues)
       .filter((f) => f.geometry)
       .map((f) => ({ geometry: f.geometry!, color: "#bd573b" })),
   ];
@@ -467,6 +470,7 @@ export async function exportRegister(
         ...current,
         ...i.registerSnapshot,
         detailedScene: i.registerSnapshot.detailedScene ?? [],
+        parcelIdentifiers: i.registerSnapshot.parcelIdentifiers ?? [],
       }
     : current;
   if (i && i.buildingId !== buildingId) notFound();
@@ -476,7 +480,7 @@ export async function exportRegister(
   const relatedEvidence = [
     ...d.associations.flatMap((a) => a.evidence),
     ...d.parcels.flatMap((p) => p.feature.evidence),
-    ...(i?.findings ?? []).flatMap((f) => f.evidence ?? []),
+    ...(i ? i.findings : d.issues).flatMap((f) => f.evidence ?? []),
   ];
   const relatedSources = await dossierSources(
     [
@@ -494,6 +498,7 @@ export async function exportRegister(
     schemaVersion: "ulpin-officer-export/1",
     exportedAt: now(),
     ...sanitizedDossier(d),
+    findings: i ? i.findings : d.issues,
     // The sanitized register above is the exact saved snapshot. Do not export
     // a second raw copy containing unrelated rights/party fields.
     investigation: i ? { ...i, registerSnapshot: undefined } : undefined,
@@ -530,6 +535,18 @@ export async function exportRegister(
         JSON.stringify(d.building.evidence),
         d.missing.join("; "),
       ],
+      ...(d.parcelIdentifiers ?? []).map((p) => [
+        "2d_ulpin",
+        p.value,
+        p.scheme,
+        "",
+        "",
+        "",
+        JSON.stringify(p.evidence),
+        p.scheme === "demo_ulpin"
+          ? "Fictional - not officially issued"
+          : "Source assertion",
+      ]),
       ...data.register.map((r) => [
         r.kind,
         r.identifier,
@@ -540,7 +557,7 @@ export async function exportRegister(
         JSON.stringify(r.evidence),
         "recorded",
       ]),
-      ...(i?.findings ?? []).map((f) => [
+      ...(i ? i.findings : d.issues).map((f) => [
         "discrepancy",
         f.id,
         f.code,
@@ -569,7 +586,9 @@ export async function exportRegister(
       },
     });
   }
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escape(d.building.name)} · property register</title><style>body{font:16px system-ui;color:#262822;max-width:1000px;margin:40px auto;padding:0 24px;line-height:1.5}h1{font:40px Georgia}table{border-collapse:collapse;width:100%;margin:18px 0}td,th{text-align:left;border-bottom:1px solid #ccc;padding:10px}small{color:#555}a{color:#355b54}button{padding:10px}@media print{button{display:none}body{margin:0}} </style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${escape(d.building.name)}</h1><p>${escape(d.building.identifier)} · revision ${d.building.revision}</p><p>${escape(i?.reference ?? "Property register")} ${escape(i?.status ?? "")}</p>${snapshotSvg(d, i)}<small>Plan in ${escape(d.area.reference?.analysisCrs)} local metres. Blue: parcel; green: property; orange: computed discrepancy. Geometry is tied to the cited revisions.</small><h2>Section</h2>${sectionSnapshot(d)}<h2>Building, floor and unit register</h2>${data.register.length ? `<table><tr><th>ID</th><th>Record</th><th>Level range</th></tr>${data.register.map((r) => `<tr><td>${escape(r.identifier)}</td><td>${escape(r.name)}</td><td>${r.geometry ? escape(`${r.geometry.lower}–${r.geometry.upper} m`) : "—"}</td></tr>`).join("")}</table>` : "<p>No detailed spaces have been recorded.</p>"}<h2>Discrepancies and conditions</h2>${(i?.findings ?? []).map((f) => `<p><b>${escape(f.code)}</b> ${escape(f.message)} ${f.areaM2 !== undefined ? escape(`${f.areaM2} m²`) : ""} ${f.volumeM3 !== undefined ? escape(`${f.volumeM3} m³`) : ""}</p>`).join("") || "<p>No discrepancy is included in this export.</p>"}${d.missing.map((m) => `<p>${escape(m)}</p>`).join("")}${(i?.requests ?? []).map((r) => `<p><b>${escape(r.status)}</b> ${escape(r.question)} ${escape(r.response)}</p>`).join("")}<h2>Evidence</h2>${d.sources.map((s) => `<p><a href="${escape(s.url)}">${escape(s.name)}</a> · revision ${s.revision} · ${escape(s.createdAt)}<br><small>SHA-256 ${escape(s.sha256)}</small></p>`).join("")}<h2>Decision record</h2><p>${escape(i?.notes)} ${escape(i?.nextAction)}</p>${(i?.history ?? []).map((h) => `<p>${escape(h.time)} · ${escape(h.status)} · ${escape(h.reason)}</p>`).join("")}<p><small>${escape(data.scope)}</small></p></body></html>`;
+  const parcelSummary = `<h2>Parcel details</h2><p><b>2D ULPIN:</b> ${(d.parcelIdentifiers ?? []).map((p) => `${escape(p.value)} (${p.scheme === "demo_ulpin" ? "Demo - not officially issued" : "Source assertion"})`).join("; ") || "Not supplied"}</p><p>${d.building.worldStatus === "synthetic" ? "FICTIONAL TRAINING DATA. All properties, plans and parcel IDs in this dataset are authored examples." : "Source-backed context; no official issuance is asserted by this application."}</p><table><thead><tr><th>Parcel</th><th>Recorded area</th><th>Association</th></tr></thead><tbody>${d.parcels.map((p) => `<tr><td>${escape(p.feature.name)}</td><td>${escape(p.feature.areaM2)} m²</td><td>${escape(p.status)}</td></tr>`).join("")}</tbody></table><p>Building footprint: ${escape(d.building.areaM2)} m². Height: ${escape(d.building.height.value ?? "Not supplied")} ${d.building.height.value == null ? "" : "m"}.</p>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escape(d.building.name)} · property register</title><style>body{font:13px system-ui;color:#262822;max-width:1000px;margin:40px auto;padding:0 24px;line-height:1.5}h1{font:30px Georgia}h2{break-after:avoid}tr,p,svg{break-inside:avoid}td{overflow-wrap:anywhere}svg{max-height:360px}thead{display:table-header-group}table{border-collapse:collapse;width:100%;margin:18px 0}td,th{text-align:left;border-bottom:1px solid #ccc;padding:10px}small{color:#555}a{color:#355b54}button{padding:10px}@media print{button{display:none}body{margin:0}} </style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${escape(d.building.name)}</h1><p>${escape(d.building.identifier)} · revision ${d.building.revision}</p><p>${escape(i?.reference ?? "Property register")} ${escape(i?.status ?? "")}</p>${parcelSummary}${snapshotSvg(d, i)}<small>Plan in ${escape(d.area.reference?.analysisCrs)} local metres. Blue: parcel; green: property; orange: computed discrepancy. Geometry is tied to the cited revisions.</small><h2>Section</h2>${sectionSnapshot(d)}<h2>Building, floor and unit register</h2>${data.register.length ? `<table><thead><tr><th>ID</th><th>Record</th><th>Level range</th></tr></thead><tbody>${data.register.map((r) => `<tr><td>${escape(r.identifier)}</td><td>${escape(r.name)}</td><td>${r.geometry ? escape(`${r.geometry.lower}–${r.geometry.upper} m`) : "—"}</td></tr>`).join("")}</tbody></table>` : "<p>No detailed spaces have been recorded.</p>"}<h2>Discrepancies and conditions</h2>${!i && d.check?.stale ? "<p>The previous overlap check is out of date. Run a new check before using discrepancy results.</p>" : ""}${(i ? i.findings : d.issues).map((f) => `<p><b>${escape(f.code)}</b> ${escape(f.message)} ${f.areaM2 !== undefined ? escape(`${f.areaM2} m²`) : ""} ${f.volumeM3 !== undefined ? escape(`${f.volumeM3} m³`) : ""}</p>`).join("") || "<p>No discrepancy is included in this export.</p>"}${d.missing.map((m) => `<p>${escape(m)}</p>`).join("")}${(i?.requests ?? []).map((r) => `<p><b>${escape(r.status)}</b> ${escape(r.question)} ${escape(r.response)}</p>`).join("")}<h2>Evidence</h2>${d.sources.map((s) => `<p><a href="${escape(s.url)}">${escape(s.name)}</a> · revision ${s.revision} · ${escape(s.createdAt)}<br><small>SHA-256 ${escape(s.sha256)}</small></p>`).join("")}<h2>Decision record</h2><p>${escape(i?.notes)} ${escape(i?.nextAction)}</p>${(i?.history ?? []).map((h) => `<p>${escape(h.time)} · ${escape(h.status)} · ${escape(h.reason)}</p>`).join("")}<p><small>${escape(data.scope)}</small></p></body></html>`;
+  if (format === "pdf") return registerPdf(html);
   return new Response(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",

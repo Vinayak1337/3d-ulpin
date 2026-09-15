@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { CaseRecord } from "@ulpin/contracts";
 import { request, useMutation, useResource } from "../shared/hooks";
 import { routes, withQuery } from "../shared/routes";
-import { useOfficerStore } from "../shared/store";
+import { useActiveRecents } from "../shared/useActiveRecents";
 import {
   Badge,
   Button,
@@ -20,7 +20,7 @@ import PropertyChooser from "./PropertyChooser";
 import styles from "./Workspace.module.css";
 export default function WorkspaceStart() {
   const router = useRouter(),
-    recent = useOfficerStore((s) => s.recentProperties);
+    recent = useActiveRecents();
   const cases = useResource<
     (CaseRecord & {
       buildingId?: string;

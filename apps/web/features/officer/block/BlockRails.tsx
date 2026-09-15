@@ -1,4 +1,5 @@
 "use client";
+import ParcelIdentity from "../shared/ParcelIdentity";
 import PropertyScene from "../scene/PropertyScene";
 import Link from "next/link";
 import { useState } from "react";
@@ -31,12 +32,13 @@ export function BlockLeftRail({
   block: BlockController;
   onClose?: () => void;
 }) {
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState(""),
+    [listing, setListing] = useState<"building" | "parcel">("building");
   const { preferences, features } = block;
   const properties = features.filter(
     (f) =>
-      (f.kind === "building" || !!filter.trim()) &&
-      `${f.name} ${f.identifier} ${f.sourceKey}`
+      (f.kind === listing || !!filter.trim()) &&
+      `${f.name} ${f.identifier} ${f.sourceKey} ${block.featureLabels[f.id] || ""}`
         .toLowerCase()
         .includes(filter.toLowerCase()),
   );
@@ -100,6 +102,7 @@ export function BlockLeftRail({
               </label>
             );
           })}
+
           <label className="ui-layer">
             <Icon name="eye" />
             <span>Labels</span>
@@ -123,6 +126,26 @@ export function BlockLeftRail({
         <div className="ui-rail-caption">
           <h3>In this block</h3>
           <Badge>{features.length}</Badge>
+        </div>
+        <div
+          className="ui-parcel-list-tabs"
+          role="group"
+          aria-label="List type"
+        >
+          {(
+            [
+              ["building", "Buildings"],
+              ["parcel", "Parcels"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              aria-pressed={listing === value}
+              onClick={() => setListing(value)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
         <div className="ui-search-input">
           <Icon name="search" size={16} />
@@ -159,7 +182,8 @@ export function BlockLeftRail({
             <span>
               <strong>{f.name}</strong>
               <small>
-                {f.kind.replaceAll("_", " ")} · {f.sourceKey}
+                {block.featureLabels[f.id] ||
+                  `${f.kind.replaceAll("_", " ")} · ${f.sourceKey}`}
               </small>
             </span>
             {block.context.data?.latestCheck?.findings.some((issue) =>
@@ -322,6 +346,15 @@ export function BlockInspector({
                 <h2>{selected.name}</h2>
                 <p>{selected.kind.replaceAll("_", " ")}</p>
               </div>
+              <ParcelIdentity identifiers={dossier.data?.parcelIdentifiers} />
+              <a
+                className="ui-button"
+                href={`/api/v1/buildings/${selected.id}/register?format=pdf`}
+                hidden={selected.kind !== "building"}
+              >
+                <Icon name="download" />
+                Download property PDF
+              </a>
               <div className="ui-inspector-metrics">
                 <div>
                   <small>Footprint</small>
@@ -388,10 +421,31 @@ export function BlockInspector({
                       {status}
                     </Badge>
                   </div>
+                  <ParcelIdentity
+                    identifiers={block.context.data?.parcelIdentifiers?.filter(
+                      (p) => p.parcelId === feature.id,
+                    )}
+                  />
+                  <dl className="ui-parcel-facts">
+                    <dt>Recorded area</dt>
+                    <dd>{formatNumber(feature.areaM2)} m²</dd>
+                    <dt>Source status</dt>
+                    <dd>
+                      {feature.worldStatus === "synthetic"
+                        ? "Fictional training record"
+                        : feature.worldStatus}
+                    </dd>
+                    <dt>Land use / zoning</dt>
+                    <dd>Not supplied</dd>
+                  </dl>
                   <Metadata feature={feature} />
                   <Button
                     icon="target"
-                    onClick={() => block.select(feature.id)}
+                    onClick={() =>
+                      feature.id === block.selectedId
+                        ? block.navigate("focus")
+                        : block.select(feature.id)
+                    }
                   >
                     Show parcel
                   </Button>
@@ -399,9 +453,28 @@ export function BlockInspector({
               ))
             )}
             {selected?.kind === "parcel" && (
-              <p className="ui-muted-note">
-                Nearby buildings are not automatically linked to this parcel.
-              </p>
+              <section className="ui-inspector-section">
+                <h3>Associated buildings</h3>
+                {(block.context.data?.parcelAssociations || [])
+                  .filter((a) => a.toId === selected.id)
+                  .map((a) => {
+                    const building = block.features.find(
+                      (f) => f.id === a.fromId,
+                    );
+                    return building ? (
+                      <Button
+                        key={a.id}
+                        icon="building"
+                        onClick={() => block.select(building.id)}
+                      >
+                        {building.name}
+                      </Button>
+                    ) : null;
+                  })}
+                <p className="ui-muted-note">
+                  Only current, confirmed source associations are shown.
+                </p>
+              </section>
             )}
           </>
         )}

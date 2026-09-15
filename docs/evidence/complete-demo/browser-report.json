@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "checks": [
+    "Only the retained demo is listed; real dataset remains; location filters honestly marked preview",
+    "Actual 3D canvas picking returns the same canonical building A",
+    "Selected property shows linked 2D ULPIN and computed road/building conflicts together in interactive scene",
+    "PDF downloaded through selected-property UI",
+    "2D parcel map supports pointer and keyboard selection with matching IDs",
+    "Parcel selection shows area, identity and confirmed associated building; selection returns to same building",
+    "Interactive floor stack picking selects an actual recorded space of building A",
+    "Register retains canonical property and parcel identity",
+    "Reload preserves property, parcel ID and conflicts URL state at 1920×1080",
+    "Workspace opens same detailed property",
+    "Global navigation returns directory; mobile directory remains usable"
+  ],
+  "errors": []
+}

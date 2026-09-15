@@ -259,6 +259,8 @@ export interface SceneAsset {
   purpose: "presentation";
 }
 export interface AreaContext {
+  parcelAssociations?: import("./officer").PropertyAssociation[];
+  parcelIdentifiers?: import("./officer").ParcelIdentifier[];
   sceneAssets?: SceneAsset[];
   area: MapArea;
   features: PhysicalFeature[];

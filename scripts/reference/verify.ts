@@ -7,6 +7,9 @@ import type {
   BuildingDossier,
 } from "../../packages/contracts/src";
 const base = process.env.ULPIN_TEST_BASE_URL || "http://127.0.0.1:3000";
+const snapshotPath =
+  process.env.REFERENCE_SNAPSHOT_PATH ||
+  "docs/evidence/reference/persistence-snapshot.json";
 const installed = JSON.parse(
   await readFile(
     new URL(
@@ -22,12 +25,18 @@ async function api<T>(path: string): Promise<T> {
   return response.json();
 }
 const context = await api<AreaContext>(`/areas/${installed.areaId}/context`);
-assert.equal(context.features.filter((f) => f.kind === "building").length, 8);
-assert.equal(context.sceneAssets?.length, 9);
+const extensionInstalled = context.features.some(
+  (f) => f.datasetNamespace === "lakeview-complete:K1",
+);
+assert.equal(
+  context.features.filter((f) => f.kind === "building").length,
+  extensionInstalled ? 9 : 8,
+);
+assert.equal(context.sceneAssets?.length, extensionInstalled ? 10 : 9);
 const summaries = await api<
   { buildingId: string; spaces: number; floors: number }[]
 >(`/property-directory?area=${installed.areaId}`);
-assert.equal(summaries.length, 8);
+assert.equal(summaries.length, extensionInstalled ? 9 : 8);
 const features = new Map(context.features.map((f) => [f.id, f]));
 for (const asset of context.sceneAssets || []) {
   assert.equal(asset.featureRevision, features.get(asset.featureId)?.revision);
@@ -163,17 +172,13 @@ const serialized = JSON.stringify(snapshot, null, 2) + "\n";
 if (process.argv.includes("--compare")) {
   assert.equal(
     serialized,
-    await readFile("docs/evidence/reference/persistence-snapshot.json", "utf8"),
+    await readFile(snapshotPath, "utf8"),
     "Seed/restart changed retained identity, geometry, source revisions or asset bindings",
   );
   console.log(
     "PASS Restart and seed replay retained exact identities, revisions, geometry, original hashes and asset bindings.",
   );
-} else
-  await writeFile(
-    "docs/evidence/reference/persistence-snapshot.json",
-    serialized,
-  );
+} else await writeFile(snapshotPath, serialized);
 console.log(
-  "PASS Eight canonical buildings, three detailed properties, 60 computed spaces, nine hashed assets, honest missing interiors, original bytes and existing real evidence.",
+  "PASS Original eight canonical buildings, three detailed properties, 60 computed spaces, all installed hashed assets, honest missing interiors, original bytes and existing real evidence.",
 );

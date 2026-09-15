@@ -18,6 +18,7 @@ export default function MapPlan({
   navigation,
   issueGeometry,
   highlightedIds = [],
+  featureLabels,
   details = [],
   labels = false,
   interactive = true,
@@ -29,6 +30,7 @@ export default function MapPlan({
   navigation?: AreaNavigation;
   issueGeometry?: AreaGeometry;
   highlightedIds?: string[];
+  featureLabels?: Record<string, string>;
   details?: SceneDetail[];
   labels?: boolean;
   interactive?: boolean;
@@ -230,7 +232,7 @@ export default function MapPlan({
                   stroke="#f6faf7"
                   strokeWidth={fontSize * 0.3}
                 >
-                  {feature.name}
+                  {featureLabels?.[feature.id] || feature.name}
                 </text>
               )}
               <title>

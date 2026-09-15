@@ -96,7 +96,7 @@ export async function officerRoutes(
   }
   if (p[0] === "workspace-directory" && p.length === 1 && method === "GET") {
     const rows = await query(
-      `SELECT c.id,c.name,c.revision,c.updated_at "updatedAt",b.building_id "buildingId",b.body->>'areaId' "areaId",f.body->>'name' "propertyName",(SELECT count(*)::integer FROM sources s WHERE s.case_id=c.id) "sourceCount" FROM cases c LEFT JOIN building_preparations b ON b.case_id=c.id LEFT JOIN physical_features f ON f.id=b.building_id WHERE NOT c.archived OR b.id IS NOT NULL ORDER BY c.updated_at DESC,c.id LIMIT 100`,
+      `SELECT c.id,c.name,c.revision,c.updated_at "updatedAt",b.building_id "buildingId",b.body->>'areaId' "areaId",f.body->>'name' "propertyName",(SELECT count(*)::integer FROM sources s WHERE s.case_id=c.id) "sourceCount" FROM cases c LEFT JOIN building_preparations b ON b.case_id=c.id LEFT JOIN physical_features f ON f.id=b.building_id WHERE (NOT c.archived OR b.id IS NOT NULL) AND NOT EXISTS (SELECT 1 FROM map_areas a WHERE a.archived_at IS NOT NULL AND (a.site_id=c.site_id OR a.id=f.area_id)) ORDER BY c.updated_at DESC,c.id LIMIT 100`,
     );
     return json(rows.rows);
   }
@@ -108,7 +108,7 @@ export async function officerRoutes(
       return exportRegister(
         id,
         z
-          .enum(["json", "csv", "html"])
+          .enum(["json", "csv", "html", "pdf"])
           .parse(new URL(r.url).searchParams.get("format") ?? "json"),
       );
     if (p[2] === "preparation-cases" && method === "POST") {
@@ -355,7 +355,7 @@ export async function officerRoutes(
         return exportRegister(
           i.buildingId,
           z
-            .enum(["json", "csv", "html"])
+            .enum(["json", "csv", "html", "pdf"])
             .parse(new URL(r.url).searchParams.get("format") ?? "json"),
           id,
         );

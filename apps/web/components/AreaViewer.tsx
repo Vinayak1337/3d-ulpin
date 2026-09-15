@@ -58,6 +58,7 @@ export interface AreaViewerProps {
   onSelectDetail?: (id: string) => void;
   underground?: boolean;
   labels?: boolean;
+  featureLabels?: Record<string, string>;
   /** Presentation-only camera distance. Canonical geometry is unchanged. */
   frameScale?: number;
 }
@@ -152,6 +153,7 @@ export default function AreaViewer(props: AreaViewerProps) {
     selectedDetailIds,
     underground = false,
     labels = true,
+    featureLabels,
   } = props;
   const host = useRef<HTMLDivElement>(null),
     viewer = useRef<Cesium.Viewer | null>(null);
@@ -366,6 +368,26 @@ export default function AreaViewer(props: AreaViewerProps) {
             }),
           ),
       );
+      // Raise display-only parcel strokes above the authored ground mesh.
+      // Canonical horizontal geometry and measurements are unchanged.
+      if (feature.kind === "parcel")
+        polygons.forEach((rings, index) =>
+          rings.forEach((ring, r) =>
+            entities.push(
+              v.entities.add({
+                id: `${feature.id}:boundary:${index}:${r}`,
+                properties: { featureId: feature.id },
+                polyline: {
+                  positions: ring.map(([lon, lat]) =>
+                    Cesium.Cartesian3.fromDegrees(lon, lat, 0.25),
+                  ),
+                  width: 2,
+                  material: Cesium.Color.fromCssColorString("#f8f7e9"),
+                },
+              }),
+            ),
+          ),
+        );
       const lines =
         geometry.type === "LineString"
           ? [geometry.coordinates]
@@ -452,20 +474,24 @@ export default function AreaViewer(props: AreaViewerProps) {
             id: `${feature.id}:label`,
             properties: { featureId: feature.id },
             position: Cesium.Cartesian3.fromDegrees(
-              lon,
-              lat,
+              feature.kind === "parcel" ? points[0][0] : lon,
+              feature.kind === "parcel" ? points[0][1] : lat,
               feature.kind === "building" ? (feature.height.value || 0) + 2 : 1,
             ),
             label: {
               text:
                 feature.kind === "utility" && feature.name.length > 24
                   ? `${feature.name.slice(0, 23)}…`
-                  : feature.name,
-              font: "13px sans-serif",
+                  : featureLabels?.[feature.id] || feature.name,
+              font: "12px sans-serif",
+              showBackground: true,
+              backgroundColor: Cesium.Color.WHITE.withAlpha(0.96),
+              backgroundPadding: new Cesium.Cartesian2(7, 4),
+              disableDepthTestDistance: Number.POSITIVE_INFINITY,
               fillColor: Cesium.Color.fromCssColorString("#304036"),
               outlineColor: Cesium.Color.WHITE,
-              outlineWidth: 3,
-              style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+              outlineWidth: 0,
+              style: Cesium.LabelStyle.FILL,
               pixelOffset: new Cesium.Cartesian2(0, -8),
               distanceDisplayCondition: new Cesium.DistanceDisplayCondition(
                 0,
@@ -479,7 +505,7 @@ export default function AreaViewer(props: AreaViewerProps) {
       models.current.set(feature.id, { signature, entities });
     }
     v.scene.requestRender();
-  }, [features, sceneAssets, ready, labels]);
+  }, [features, sceneAssets, ready, labels, featureLabels]);
 
   useEffect(() => {
     const v = viewer.current;
@@ -489,7 +515,7 @@ export default function AreaViewer(props: AreaViewerProps) {
       const selected = feature.id === selectedId,
         affected = highlighted.has(feature.id),
         color = Cesium.Color.fromCssColorString(
-          selected ? "#3d745d" : affected ? "#a45750" : baseColor(feature),
+          affected ? "#c23c2e" : selected ? "#3d745d" : baseColor(feature),
         );
       const alpha =
         feature.kind === "parcel"
@@ -507,23 +533,25 @@ export default function AreaViewer(props: AreaViewerProps) {
             !(selected && details.length),
           );
           entity.model.color = new Cesium.ConstantProperty(
-            selected
-              ? Cesium.Color.fromCssColorString("#c1dfc5").withAlpha(
-                  details.length ? 0.08 : 1,
-                )
-              : Cesium.Color.WHITE.withAlpha(details.length ? 0.45 : 1),
+            affected
+              ? Cesium.Color.fromCssColorString("#ec7365")
+              : selected
+                ? Cesium.Color.fromCssColorString("#c1dfc5").withAlpha(
+                    details.length ? 0.08 : 1,
+                  )
+                : Cesium.Color.WHITE.withAlpha(details.length ? 0.45 : 1),
           );
           entity.model.colorBlendMode = new Cesium.ConstantProperty(
             Cesium.ColorBlendMode.MIX,
           );
           entity.model.colorBlendAmount = new Cesium.ConstantProperty(
-            selected ? 0.45 : 0,
+            affected ? 0.65 : selected ? 0.45 : 0,
           );
           entity.model.silhouetteColor = new Cesium.ConstantProperty(
-            Cesium.Color.fromCssColorString("#41715a"),
+            Cesium.Color.fromCssColorString(affected ? "#c23c2e" : "#41715a"),
           );
           entity.model.silhouetteSize = new Cesium.ConstantProperty(
-            selected && !details.length ? 2 : 0,
+            affected || (selected && !details.length) ? 2 : 0,
           );
         }
         if (entity.polygon) {
@@ -543,7 +571,11 @@ export default function AreaViewer(props: AreaViewerProps) {
                   color,
                   dashLength: 12,
                 })
-              : new Cesium.ColorMaterialProperty(color);
+              : new Cesium.ColorMaterialProperty(
+                  feature.kind === "parcel" && !selected && !affected
+                    ? Cesium.Color.fromCssColorString("#f8f7e9")
+                    : color,
+                );
         if (entity.polylineVolume)
           entity.polylineVolume.material = new Cesium.ColorMaterialProperty(
             color.withAlpha(0.85),
@@ -551,14 +583,14 @@ export default function AreaViewer(props: AreaViewerProps) {
         if (entity.point)
           entity.point.color = new Cesium.ConstantProperty(color);
         if (entity.label) {
-          entity.label.show = new Cesium.ConstantProperty(labels);
+          entity.label.show = new Cesium.ConstantProperty(labels || selected);
           entity.label.distanceDisplayCondition = new Cesium.ConstantProperty(
             new Cesium.DistanceDisplayCondition(
               0,
               selected || affected
                 ? 1200
                 : feature.kind === "parcel"
-                  ? 45
+                  ? 600
                   : feature.kind === "building"
                     ? 110
                     : 100,

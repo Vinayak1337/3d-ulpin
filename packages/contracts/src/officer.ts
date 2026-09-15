@@ -140,6 +140,7 @@ export interface Investigation {
     | "sources"
     | "associations"
     | "parcels"
+    | "parcelIdentifiers"
     | "missing"
   >;
   findings: AreaFinding[];
@@ -149,7 +150,15 @@ export interface Investigation {
   createdAt: string;
   updatedAt: string;
 }
+export interface ParcelIdentifier {
+  parcelId: string;
+  scheme: string;
+  value: string;
+  issuer: string;
+  evidence: { sourceRevisionId?: string; locator?: string };
+}
 export interface BuildingDossier {
+  parcelIdentifiers?: ParcelIdentifier[];
   check?: { id: string; areaRevision: number; stale: boolean };
   building: PhysicalFeature;
   canonicalBuildingId: string;
