@@ -1,0 +1,8 @@
+alias,lower,upper,unit,benchmark,method
+U01,0,3,m,BM-DEMO-A,synthetic teaching measurement
+U02,0,3,m,BM-DEMO-A,synthetic teaching measurement
+U03,,6,m,BM-DEMO-A,synthetic teaching measurement
+U04,,6,m,BM-DEMO-A,synthetic teaching measurement
+COMMON-0,0,3,m,BM-DEMO-A,synthetic teaching measurement
+COMMON-1,3,6,m,BM-DEMO-A,synthetic teaching measurement
+BSM-01,-3,0,m,BM-DEMO-A,synthetic teaching measurement

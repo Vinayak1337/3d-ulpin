@@ -134,7 +134,7 @@ async function handle(request: Request, context: Context): Promise<Response> {
         redis: readiness?.redis === true,
         worker: readiness?.worker === true,
       };
-      return json({ ok: Object.values(services).every(Boolean), services });
+      return json({ ok: Object.values(services).every(Boolean), services, dataMode: settings.dataMode });
     }
     if (p[0] === "demo-files" && p.length === 3 && method === "GET") {
       const file = await readDemoFile(p[1], p[2]);

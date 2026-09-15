@@ -1,0 +1,26 @@
+alias,lower,upper,unit,benchmark,label,level,footprint_wkt,frame
+C-0-01,0.00,3.20,m,BM-LAKEVIEW-DEMO,Living / dining,Ground,"POLYGON ((64.3 0.3, 72.5 0.3, 72.5 8.9, 64.3 8.9, 64.3 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-0-02,0.00,3.20,m,BM-LAKEVIEW-DEMO,Bedroom,Ground,"POLYGON ((64.3 9.1, 72.5 9.1, 72.5 17.7, 64.3 17.7, 64.3 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-0-03,0.00,3.20,m,BM-LAKEVIEW-DEMO,Studio,Ground,"POLYGON ((75.5 0.3, 83.7 0.3, 83.7 8.9, 75.5 8.9, 75.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-0-04,0.00,3.20,m,BM-LAKEVIEW-DEMO,Bedroom / study,Ground,"POLYGON ((75.5 9.1, 83.7 9.1, 83.7 17.7, 75.5 17.7, 75.5 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-0-C,0.00,3.20,m,BM-LAKEVIEW-DEMO,Common hall & stairs,Ground,"POLYGON ((72.5 0.3, 75.5 0.3, 75.5 17.7, 72.5 17.7, 72.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-1-01,3.20,6.40,m,BM-LAKEVIEW-DEMO,Living / dining,Floor 1,"POLYGON ((64.3 0.3, 72.5 0.3, 72.5 8.9, 64.3 8.9, 64.3 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-1-02,3.20,6.40,m,BM-LAKEVIEW-DEMO,Bedroom,Floor 1,"POLYGON ((64.3 9.1, 72.5 9.1, 72.5 17.7, 64.3 17.7, 64.3 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-1-03,3.20,6.40,m,BM-LAKEVIEW-DEMO,Studio,Floor 1,"POLYGON ((75.5 0.3, 83.7 0.3, 83.7 8.9, 75.5 8.9, 75.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-1-04,3.20,6.40,m,BM-LAKEVIEW-DEMO,Bedroom / study,Floor 1,"POLYGON ((75.5 9.1, 83.7 9.1, 83.7 17.7, 75.5 17.7, 75.5 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-1-C,3.20,6.40,m,BM-LAKEVIEW-DEMO,Common hall & stairs,Floor 1,"POLYGON ((72.5 0.3, 75.5 0.3, 75.5 17.7, 72.5 17.7, 72.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-2-01,6.40,9.60,m,BM-LAKEVIEW-DEMO,Living / dining,Floor 2,"POLYGON ((64.3 0.3, 72.5 0.3, 72.5 8.9, 64.3 8.9, 64.3 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-2-02,6.40,9.60,m,BM-LAKEVIEW-DEMO,Bedroom,Floor 2,"POLYGON ((64.3 9.1, 72.5 9.1, 72.5 17.7, 64.3 17.7, 64.3 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-2-03,6.40,9.60,m,BM-LAKEVIEW-DEMO,Studio,Floor 2,"POLYGON ((75.5 0.3, 83.7 0.3, 83.7 8.9, 75.5 8.9, 75.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-2-04,6.40,9.60,m,BM-LAKEVIEW-DEMO,Bedroom / study,Floor 2,"POLYGON ((75.5 9.1, 83.7 9.1, 83.7 17.7, 75.5 17.7, 75.5 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-2-C,6.40,9.60,m,BM-LAKEVIEW-DEMO,Common hall & stairs,Floor 2,"POLYGON ((72.5 0.3, 75.5 0.3, 75.5 17.7, 72.5 17.7, 72.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-3-01,9.60,12.80,m,BM-LAKEVIEW-DEMO,Living / dining,Floor 3,"POLYGON ((64.3 0.3, 72.5 0.3, 72.5 8.9, 64.3 8.9, 64.3 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-3-02,9.60,12.80,m,BM-LAKEVIEW-DEMO,Bedroom,Floor 3,"POLYGON ((64.3 9.1, 72.5 9.1, 72.5 17.7, 64.3 17.7, 64.3 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-3-03,9.60,12.80,m,BM-LAKEVIEW-DEMO,Studio,Floor 3,"POLYGON ((75.5 0.3, 83.7 0.3, 83.7 8.9, 75.5 8.9, 75.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-3-04,9.60,12.80,m,BM-LAKEVIEW-DEMO,Bedroom / study,Floor 3,"POLYGON ((75.5 9.1, 83.7 9.1, 83.7 17.7, 75.5 17.7, 75.5 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-3-C,9.60,12.80,m,BM-LAKEVIEW-DEMO,Common hall & stairs,Floor 3,"POLYGON ((72.5 0.3, 75.5 0.3, 75.5 17.7, 72.5 17.7, 72.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-4-01,12.80,16.00,m,BM-LAKEVIEW-DEMO,Living / dining,Floor 4,"POLYGON ((64.3 0.3, 72.5 0.3, 72.5 8.9, 64.3 8.9, 64.3 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-4-02,12.80,16.00,m,BM-LAKEVIEW-DEMO,Bedroom,Floor 4,"POLYGON ((64.3 9.1, 72.5 9.1, 72.5 17.7, 64.3 17.7, 64.3 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-4-03,12.80,16.00,m,BM-LAKEVIEW-DEMO,Studio,Floor 4,"POLYGON ((75.5 0.3, 83.7 0.3, 83.7 8.9, 75.5 8.9, 75.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-4-04,12.80,16.00,m,BM-LAKEVIEW-DEMO,Bedroom / study,Floor 4,"POLYGON ((75.5 9.1, 83.7 9.1, 83.7 17.7, 75.5 17.7, 75.5 9.1))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
+C-4-C,12.80,16.00,m,BM-LAKEVIEW-DEMO,Common hall & stairs,Floor 4,"POLYGON ((72.5 0.3, 75.5 0.3, 75.5 17.7, 72.5 17.7, 72.5 0.3))",AREA-0ded05d3-b596-46a8-9918-ab1bc0a433be
