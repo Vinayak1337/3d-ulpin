@@ -3,10 +3,35 @@
 Open `index.html` in a browser. No server or installation is needed. Click any image to enlarge it. Use Left/Right to change guides and Escape to close. Each PNG can also be opened or shared separately.
 
 From the project root, you can also run `pnpm guide`, then open
-http://127.0.0.1:3011 in a browser or Codex's in-app browser. This command needs
-Python 3 and serves only the guide; the main application does not need to be
+http://127.0.0.1:3011 in a browser or Codex's in-app browser. This command uses
+Node.js and serves only the guide; the main application does not need to be
 running. Keep the terminal open and press Ctrl+C to stop it. The guide is a
 separate local page, not a route in the main application.
+
+## Commands on Windows, macOS and Linux
+
+Open a terminal in the cloned project folder (PowerShell, Command Prompt, or a
+macOS/Linux terminal). All guide commands below are identical on these systems:
+
+```sh
+pnpm guide
+pnpm guide --port 3012
+pnpm guide --help
+```
+
+Run one command at a time. The second uses another port if 3011 is occupied.
+With Node.js installed, pnpm and dependency installation are optional:
+
+```sh
+node scripts/guide.mjs
+node scripts/guide.mjs --port 3012
+```
+
+Keep the terminal open; Ctrl+C stops the server on all three systems. No Python,
+Bash, Docker or database is needed for these guide commands. The downloaded ZIP
+also opens offline by double-clicking `index.html`, without running any command.
+The main application's `pnpm demo` and `pnpm platform:*` are separate Bash
+launchers; on Windows those require a configured WSL environment.
 
 ## Workspace modes
 
