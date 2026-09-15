@@ -42,6 +42,9 @@ export default function FloorIndex({
                   <span>
                     <strong>{name}</strong>
                     <small>{units.length} spaces</small>
+                    <small className={styles.recordUlpin}>
+                      3D ULPIN: {floor.identifier}
+                    </small>
                   </span>
                 </button>
                 <button
@@ -62,7 +65,9 @@ export default function FloorIndex({
                     <Icon name="home" />
                     <span>
                       <strong>{unit.name}</strong>
-                      <small>{unit.identifier.split(":").at(-1)}</small>
+                      <small className={styles.recordUlpin}>
+                        3D ULPIN: {unit.identifier}
+                      </small>
                     </span>
                     <span>{number(unit.geometry?.area, "m²")}</span>
                   </button>

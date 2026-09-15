@@ -1,3 +1,4 @@
+import { exportBlock } from "./block-export";
 import { z } from "zod";
 import {
   buildingDossier,
@@ -79,6 +80,18 @@ export async function officerRoutes(
   p: string[],
 ): Promise<Response | null> {
   const method = r.method;
+  if (
+    p[0] === "areas" &&
+    p.length === 3 &&
+    p[2] === "register" &&
+    method === "GET"
+  )
+    return exportBlock(
+      uuid.parse(p[1]),
+      z
+        .enum(["json", "pdf", "zip"])
+        .parse(new URL(r.url).searchParams.get("format") || "json"),
+    );
   if (p[0] === "property-directory" && p.length === 1 && method === "GET") {
     const areaId = uuid.parse(new URL(r.url).searchParams.get("area"));
     const rows = await query(
@@ -108,8 +121,12 @@ export async function officerRoutes(
       return exportRegister(
         id,
         z
-          .enum(["json", "csv", "html", "pdf"])
+          .enum(["json", "csv", "html", "pdf", "zip"])
           .parse(new URL(r.url).searchParams.get("format") ?? "json"),
+        undefined,
+        new URL(r.url).searchParams.has("record")
+          ? uuid.parse(new URL(r.url).searchParams.get("record"))
+          : undefined,
       );
     if (p[2] === "preparation-cases" && method === "POST") {
       const b = z

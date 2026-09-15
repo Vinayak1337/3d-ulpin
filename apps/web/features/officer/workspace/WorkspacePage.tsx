@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { Point2 } from "@ulpin/contracts";
@@ -18,6 +18,7 @@ import { useWorkspace } from "./useWorkspace";
 import { calibrationKey, useMeasurements } from "./useMeasurements";
 import { currentCalibration, makeMeasurement } from "./measurement";
 import type { MeasureTool, WorkspaceMode } from "./types";
+import { useClearDrawing } from "./useClearDrawing";
 import SourceCanvas from "./SourceCanvas";
 import DocumentThumbnail, {
   documentLabel,
@@ -84,6 +85,14 @@ export default function WorkspacePage({
   const [childBusy, setChildBusy] = useState(""),
     [showModel, setShowModel] = useState(false),
     [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const clearDrawing = useCallback(() => {
+    setPoints([]);
+    setError("");
+  }, []);
+  useClearDrawing(
+    clearDrawing,
+    !assign && !uploadOpen && !documentsOpen && !inspectorOpen,
+  );
   const fileRef = useRef<HTMLInputElement>(null);
   const source =
     workspace.sources.find((s) => s.id === sourceId) ||
@@ -217,7 +226,7 @@ export default function WorkspacePage({
         error={error}
         onCalibrate={() => changeMode("calibrate")}
         onFinish={() => finish()}
-        onClear={() => setPoints([])}
+        onClear={clearDrawing}
         onUndo={() => setPoints((old) => old.slice(0, -1))}
         onDelete={notes.removeMeasurement}
         onNote={notes.noteMeasurement}
@@ -253,7 +262,7 @@ export default function WorkspacePage({
           setError("");
         }}
         onReset={() => source && notes.setCalibration(source.id, page)}
-        onClear={() => setPoints([])}
+        onClear={clearDrawing}
       />
     ) : mode === "compare" ? (
       <ComparePanel
@@ -387,6 +396,15 @@ export default function WorkspacePage({
             Controls
           </Button>
         </div>
+        <Button
+          icon="close"
+          onClick={clearDrawing}
+          disabled={!points.length && !error}
+          aria-keyshortcuts="Control+q"
+          title="Clear current drawing (Ctrl+Q)"
+        >
+          Clear drawing <kbd>Ctrl Q</kbd>
+        </Button>
         <span className={styles.toolbarStatus}>
           {childBusy ||
             (workspace.preparation
@@ -448,7 +466,7 @@ export default function WorkspacePage({
               opacity={opacity}
               swipe={swipe}
               onPoint={addPoint}
-              onClear={() => setPoints([])}
+              onClear={clearDrawing}
               onUndo={() => setPoints((old) => old.slice(0, -1))}
               onFinish={() => finish()}
               onPage={(value) => {

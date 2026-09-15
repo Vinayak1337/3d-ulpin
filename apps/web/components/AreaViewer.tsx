@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
+import { orbitCamera, type OrbitDirection } from "@/lib/scene-orbit";
 import "./AreaViewer.css";
 import { geometryParts, utilityScene } from "@/lib/officer-scene";
 import type {
@@ -19,7 +20,8 @@ export type AreaNavigation = {
     | "north"
     | "angle"
     | "zoom_in"
-    | "zoom_out";
+    | "zoom_out"
+    | OrbitDirection;
   sequence: number;
 };
 export interface SceneDetail {
@@ -206,6 +208,18 @@ export default function AreaViewer(props: AreaViewerProps) {
       v.scene.screenSpaceCameraController.minimumZoomDistance = 4;
       v.scene.screenSpaceCameraController.maximumZoomDistance = 20000000;
       v.scene.screenSpaceCameraController.enableCollisionDetection = false;
+      v.scene.screenSpaceCameraController.tiltEventTypes = [
+        Cesium.CameraEventType.MIDDLE_DRAG,
+        Cesium.CameraEventType.PINCH,
+        {
+          eventType: Cesium.CameraEventType.LEFT_DRAG,
+          modifier: Cesium.KeyboardEventModifier.CTRL,
+        },
+        {
+          eventType: Cesium.CameraEventType.RIGHT_DRAG,
+          modifier: Cesium.KeyboardEventModifier.CTRL,
+        },
+      ];
       v.screenSpaceEventHandler.setInputAction(
         (event: { position: Cesium.Cartesian2 }) => {
           const entity = (
@@ -856,6 +870,27 @@ export default function AreaViewer(props: AreaViewerProps) {
     const v = viewer.current;
     if (!v || !ready || !navigation.sequence) return;
     const current = latest.current;
+    if (navigation.action.startsWith("orbit_")) {
+      const feature = current.features.find(
+        (f) => f.id === (current.framingFeatureId || current.selectedId),
+      );
+      const points = feature
+        ? positions(feature.geographicGeometry).map(([lon, lat]) =>
+            Cesium.Cartesian3.fromDegrees(
+              lon,
+              lat,
+              feature.kind === "building" ? (feature.height.value || 0) / 2 : 0,
+            ),
+          )
+        : [];
+      if (points.length)
+        orbitCamera(
+          v,
+          Cesium.BoundingSphere.fromPoints(points).center,
+          navigation.action as OrbitDirection,
+        );
+      return;
+    }
     if (navigation.action === "return" && previousBlock.current) {
       restore(v, previousBlock.current);
       previousBlock.current = null;
@@ -905,6 +940,7 @@ export default function AreaViewer(props: AreaViewerProps) {
         className="area-cesium-host"
         data-scene-ready="false"
         ref={host}
+        onContextMenu={(event) => event.preventDefault()}
         aria-label="Shared geographic 3D block; selecting a property preserves the camera"
       />
       {error && (

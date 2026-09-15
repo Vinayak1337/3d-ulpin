@@ -6,8 +6,9 @@ import type { AreaContext, BuildingDossier } from "@ulpin/contracts";
 import type { AreaNavigation, SceneDetail } from "@/components/AreaViewer";
 import { useResource } from "../shared/hooks";
 import { routes } from "../shared/routes";
-import { Button, LoadingState, ErrorState } from "../shared/ui";
+import { LoadingState, ErrorState } from "../shared/ui";
 import "./scene.css";
+import OrbitControl from "./OrbitControl";
 import BuildingPreview from "./BuildingPreview";
 const AreaViewer = dynamic(() => import("@/components/AreaViewer"), {
   ssr: false,
@@ -90,14 +91,9 @@ function InteractivePropertyScene({
               Floors & spaces
             </button>
           </div>
-          <Button
-            icon="target"
-            aria-label="Focus this building"
-            onClick={() =>
-              setNavigation((n) => ({
-                action: "focus",
-                sequence: n.sequence + 1,
-              }))
+          <OrbitControl
+            onNavigate={(action) =>
+              setNavigation((n) => ({ action, sequence: n.sequence + 1 }))
             }
           />
         </div>

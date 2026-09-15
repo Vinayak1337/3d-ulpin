@@ -345,6 +345,9 @@ export function BlockInspector({
                 </Badge>
                 <h2>{selected.name}</h2>
                 <p>{selected.kind.replaceAll("_", " ")}</p>
+                <p className="ui-record-ulpin">
+                  3D ULPIN: {selected.identifier}
+                </p>
               </div>
               <ParcelIdentity identifiers={dossier.data?.parcelIdentifiers} />
               <a

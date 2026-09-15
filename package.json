@@ -37,7 +37,10 @@
     "test:reference:investigation": "tsx scripts/reference/investigation-browser.ts",
     "demo:complete": "tsx scripts/reference/complete.ts",
     "test:complete": "tsx scripts/reference/complete-verify.ts",
-    "test:complete:browser": "tsx scripts/reference/complete-browser.ts"
+    "test:complete:browser": "tsx scripts/reference/complete-browser.ts",
+    "test:register-scope": "tsx --test tests/register-scope.test.ts",
+    "test:register-exports": "tsx scripts/reference/register-export-verify.ts",
+    "test:register-controls": "tsx scripts/reference/register-controls-browser.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",

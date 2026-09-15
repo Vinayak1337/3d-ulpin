@@ -4,6 +4,7 @@ import { Badge, Button, EmptyState, Icon, Panel } from "../shared/ui";
 import styles from "./register.module.css";
 import Link from "next/link";
 import type { BuildingDossier, RegistryRecord } from "@ulpin/contracts";
+import ParcelIdentity from "../shared/ParcelIdentity";
 import RegisterGeometry from "./Geometry";
 import PropertyScene from "../scene/PropertyScene";
 import { number, words, recordEvidence } from "./model";
@@ -119,7 +120,7 @@ export default function Floors({
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th>Unit / space</th>
+                      <th>Unit / 3D ULPIN</th>
                       <th>Area</th>
                       <th>Levels</th>
                       <th>Use</th>
@@ -165,7 +166,7 @@ export default function Floors({
                 <div className={styles.unitDetail}>
                   <dl>
                     <div>
-                      <dt>Identifier</dt>
+                      <dt>3D ULPIN</dt>
                       <dd className={styles.mono}>{selected.identifier}</dd>
                     </div>
                     {selected.geometry && (
@@ -188,6 +189,26 @@ export default function Floors({
                       </>
                     )}
                   </dl>
+                  <ParcelIdentity identifiers={dossier.parcelIdentifiers} />
+                  <div className={styles.scopeDownloads}>
+                    <a
+                      className="ui-button"
+                      href={`/api/v1/buildings/${dossier.building.id}/register?format=pdf&record=${selected.id}`}
+                    >
+                      <Icon name="download" />
+                      Download {selected.kind === "floor"
+                        ? "floor"
+                        : "unit"}{" "}
+                      PDF
+                    </a>
+                    <a
+                      className="ui-button"
+                      href={`/api/v1/buildings/${dossier.building.id}/register?format=zip&record=${selected.id}`}
+                    >
+                      <Icon name="download" />
+                      Report + original sources
+                    </a>
+                  </div>
                   <h3>Source evidence</h3>
                   {evidence.length ? (
                     evidence.map(({ source, locator }, index) => (
