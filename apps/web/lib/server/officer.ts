@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { legacyUrl } from "../legacy-url";
 import type { PoolClient } from "pg";
 import type {
+  ParcelIdentifier,
   AreaGeometry,
   AreaFinding,
   PhysicalFeature,
@@ -219,7 +220,10 @@ export async function geographicGeometry(
 ): Promise<AreaGeometry> {
   return geographicGeometryInArea(geometry, await getArea(areaId));
 }
-async function geographicGeometryInArea(geometry: AreaGeometry, area: Awaited<ReturnType<typeof getArea>>): Promise<AreaGeometry> {
+async function geographicGeometryInArea(
+  geometry: AreaGeometry,
+  area: Awaited<ReturnType<typeof getArea>>,
+): Promise<AreaGeometry> {
   if (!area.reference)
     throw new AppError(
       422,
@@ -342,7 +346,14 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
       id,
     ])
   ).rows.map(
-    (r) => ({ ...r.body, url: legacyUrl(`/properties/${id}/prepare`), returnUrl: legacyUrl(r.body.returnUrl || `/areas/${area.id}?feature=${id}`) }) as PreparationCase,
+    (r) =>
+      ({
+        ...r.body,
+        url: legacyUrl(`/properties/${id}/prepare`),
+        returnUrl: legacyUrl(
+          r.body.returnUrl || `/areas/${area.id}?feature=${id}`,
+        ),
+      }) as PreparationCase,
   );
   const packages = (
     await query(
@@ -393,9 +404,20 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
       .filter((f: AreaFinding) => f.featureIds.includes(id))
       .flatMap((f: AreaFinding) => f.evidence ?? []),
   ];
+  const parcelIdentifiers = parcels.length
+    ? (
+        await query<ParcelIdentifier>(
+          `SELECT feature_id "parcelId",scheme,normalized_value value,issuer,evidence FROM external_identifiers WHERE feature_id=ANY($1::uuid[]) AND valid_to IS NULL AND verification_state='validated' AND scheme IN ('official_ulpin','demo_ulpin') ORDER BY feature_id,scheme,normalized_value`,
+          [parcels.map((p) => p.feature.id)],
+        )
+      ).rows
+    : [];
   const sourceIds = [
     ...new Set([
       building.sourceRevisionId,
+      ...parcelIdentifiers.flatMap((p) =>
+        p.evidence?.sourceRevisionId ? [p.evidence.sourceRevisionId] : [],
+      ),
       ...parcels.map((p) => p.feature.sourceRevisionId),
       ...relationshipEvidence.map((e) => e.sourceRevisionId),
       ...building.evidence.map((e) => e.sourceRevisionId),
@@ -417,17 +439,49 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
       area.siteId,
     ])
   ).rows[0];
-  const localGeometries = records.filter(r => r.footprint.length >= 3).map(r => ({id:r.id,geometry:{type:"Polygon" as const,coordinates:[[...r.footprint,r.footprint[0]]]}}));
+  const localGeometries = records
+    .filter((r) => r.footprint.length >= 3)
+    .map((r) => ({
+      id: r.id,
+      geometry: {
+        type: "Polygon" as const,
+        coordinates: [[...r.footprint, r.footprint[0]]],
+      },
+    }));
   // Project the complete record snapshot in one database request. Per-record
   // concurrent queries exhausted the small local pool for detailed buildings.
-  if (localGeometries.length && !area.reference) throw new AppError(422,"PLACEMENT_REQUIRED","This area has no geographic placement.");
-  const projected = localGeometries.length ? (await query<{id:string;geometry:AreaGeometry}>(
-    `SELECT item->>'id' id, ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_Translate(ST_GeomFromGeoJSON((item->'geometry')::text),$2::double precision,$3::double precision),$4::integer),4326),9,0)::jsonb geometry FROM jsonb_array_elements($1::jsonb) item`,
-    [JSON.stringify(localGeometries),...area.reference!.origin,Number(area.reference!.analysisCrs.split(":")[1])]
-  )).rows : [];
-  const geographicById = new Map(projected.map(item=>[item.id,item.geometry]));
-  const localById = new Map(localGeometries.map(item=>[item.id,item.geometry]));
-  const detailedScene = records.map(r=>({record:r,localGeometry:localById.get(r.id),geographicGeometry:geographicById.get(r.id),lower:r.geometry?.lower,upper:r.geometry?.upper,verticalReference:site.frame.benchmark}));
+  if (localGeometries.length && !area.reference)
+    throw new AppError(
+      422,
+      "PLACEMENT_REQUIRED",
+      "This area has no geographic placement.",
+    );
+  const projected = localGeometries.length
+    ? (
+        await query<{ id: string; geometry: AreaGeometry }>(
+          `SELECT item->>'id' id, ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_Translate(ST_GeomFromGeoJSON((item->'geometry')::text),$2::double precision,$3::double precision),$4::integer),4326),9,0)::jsonb geometry FROM jsonb_array_elements($1::jsonb) item`,
+          [
+            JSON.stringify(localGeometries),
+            ...area.reference!.origin,
+            Number(area.reference!.analysisCrs.split(":")[1]),
+          ],
+        )
+      ).rows
+    : [];
+  const geographicById = new Map(
+    projected.map((item) => [item.id, item.geometry]),
+  );
+  const localById = new Map(
+    localGeometries.map((item) => [item.id, item.geometry]),
+  );
+  const detailedScene = records.map((r) => ({
+    record: r,
+    localGeometry: localById.get(r.id),
+    geographicGeometry: geographicById.get(r.id),
+    lower: r.geometry?.lower,
+    upper: r.geometry?.upper,
+    verticalReference: site.frame.benchmark,
+  }));
 
   const groups = (
     await query(
@@ -448,6 +502,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
     representations,
     associations,
     parcels,
+    parcelIdentifiers,
     groups,
     records,
     detailedScene,
@@ -508,7 +563,15 @@ export async function openPreparation(
         [buildingId],
       )
     ).rows[0];
-    if (old) return { ...old.body, url: legacyUrl(`/properties/${buildingId}/prepare`), returnUrl: legacyUrl(old.body.returnUrl || `/areas/${building.areaId}?feature=${buildingId}`) };
+    if (old)
+      return {
+        ...old.body,
+        url: legacyUrl(`/properties/${buildingId}/prepare`),
+        returnUrl: legacyUrl(
+          old.body.returnUrl ||
+            `/areas/${building.areaId}?feature=${buildingId}`,
+        ),
+      };
     if (building.revision !== expectedRevision) conflict();
     const area = await getArea(building.areaId),
       site = (
@@ -541,6 +604,7 @@ export async function openPreparation(
       sourceRevisionIds: [
         ...new Set([
           building.sourceRevisionId,
+
           ...building.evidence.map((e) => e.sourceRevisionId),
         ]),
       ],

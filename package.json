@@ -34,7 +34,10 @@
     "test:ui": "tsx --tsconfig apps/web/tsconfig.json --test tests/v2-*.test.ts apps/web/lib/legacy-url.test.ts apps/web/features/officer/workspace/measurement.test.ts",
     "test:reference": "tsx scripts/reference/verify.ts",
     "test:reference:browser": "tsx scripts/reference/browser.ts",
-    "test:reference:investigation": "tsx scripts/reference/investigation-browser.ts"
+    "test:reference:investigation": "tsx scripts/reference/investigation-browser.ts",
+    "demo:complete": "tsx scripts/reference/complete.ts",
+    "test:complete": "tsx scripts/reference/complete-verify.ts",
+    "test:complete:browser": "tsx scripts/reference/complete-browser.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",

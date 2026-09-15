@@ -87,6 +87,33 @@ export default function BlockHome() {
           Import a block
         </Button>
       </header>
+      <details className="directory-location-preview">
+        <summary>
+          Find by location <Badge>Coming soon</Badge>
+        </summary>
+        <p>
+          Filter preview only. Use the block search below to find saved data.
+        </p>
+        <fieldset disabled aria-label="Location filters preview">
+          <label>
+            State
+            <select defaultValue="">
+              <option value="">Choose state</option>
+            </select>
+          </label>
+          <label>
+            District
+            <select defaultValue="">
+              <option value="">Choose district</option>
+            </select>
+          </label>
+          <label>
+            Area / sector
+            <input placeholder="Area or sector name" />
+          </label>
+          <Button>Find block</Button>
+        </fieldset>
+      </details>
       <div className="directory-filter">
         <div role="group" aria-label="Dataset type">
           {[

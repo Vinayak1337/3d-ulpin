@@ -9,6 +9,8 @@ export async function migrateAreas() {
       extent jsonb, geographic_extent jsonb, created_at timestamptz NOT NULL DEFAULT now()
     );
     ALTER TABLE map_areas ADD COLUMN IF NOT EXISTS seed_key text UNIQUE;
+    ALTER TABLE map_areas ADD COLUMN IF NOT EXISTS archived_at timestamptz;
+    ALTER TABLE map_areas ADD COLUMN IF NOT EXISTS archive_reason text;
     INSERT INTO map_areas(id,site_id,name)
       SELECT id,id,name FROM registry_sites ON CONFLICT(site_id) DO NOTHING;
     CREATE TABLE IF NOT EXISTS administrative_units (

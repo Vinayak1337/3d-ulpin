@@ -20,6 +20,7 @@ import {
   LoadingState,
   type IconName,
 } from "../shared/ui";
+import ParcelIdentity from "../shared/ParcelIdentity";
 import Evidence, { SourcePreview } from "./Evidence";
 import Investigation from "./Investigation";
 import PropertyScene from "../scene/PropertyScene";
@@ -198,6 +199,7 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
             <span className={styles.mono}>{dossier.building.identifier}</span>{" "}
             <span className={styles.dot}>·</span> Building register
           </p>
+          <ParcelIdentity identifiers={dossier.parcelIdentifiers} />
         </div>
         <div className={styles.actions}>
           <Button icon="download" onClick={() => setExportOpen(true)}>
@@ -338,7 +340,7 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
           {dossier.building.name} · current recorded revision
         </p>
         <div className={styles.exportOptions}>
-          {["json", "csv", "html"].map((format) => (
+          {["pdf", "json", "csv", "html"].map((format) => (
             <a
               key={format}
               href={`/api/v1/buildings/${buildingId}/register?format=${format}`}
