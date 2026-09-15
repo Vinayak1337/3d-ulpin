@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Point2 } from "@ulpin/contracts";
 import { Badge, Button, formatNumber } from "../shared/ui";
 import { distance, makeCalibration } from "./measurement";
@@ -24,6 +24,7 @@ export default function CalibratePanel({
 }) {
   const [method, setMethod] = useState<"distance" | "controls">("distance"),
     [error, setError] = useState("");
+  useEffect(() => setError(""), [points]);
   if (source?.kind === "geometry")
     return (
       <div className={styles.modePanel}>
@@ -41,14 +42,14 @@ export default function CalibratePanel({
       <div className={styles.panelHeading}>
         <h2>Calibrate plan</h2>
         <Badge tone={calibration ? "success" : "warning"}>
-          {calibration ? "Scale set" : "Two points needed"}
+          {calibration ? "Scale set" : points.length === 2 ? "Ready to set scale" : `${2 - points.length} ${points.length === 1 ? "point" : "points"} needed`}
         </Badge>
       </div>
       <div className={styles.steps}>
         <span className={points.length > 0 ? styles.complete : ""}>1</span>
         <p>Select two points on the source</p>
         <span className={calibration ? styles.complete : ""}>2</span>
-        <p>Enter their supported distance</p>
+        <p>{method === "controls" ? "Enter the documented coordinates" : "Enter their supported distance"}</p>
       </div>
       <div className={styles.metric}>
         <span>Selected source distance</span>
@@ -64,6 +65,7 @@ export default function CalibratePanel({
       </Button>
       <form
         className={styles.form}
+        onInput={() => setError("")}
         onSubmit={(event) => {
           event.preventDefault();
           if (!source) return;
