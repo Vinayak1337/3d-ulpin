@@ -1,0 +1,282 @@
+{
+  "scope": "Aggregate count and schema inspection only. No GMDA feature values/geometries downloaded; reproduction permission pending.",
+  "probes": [
+    {
+      "probe": "islampur",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/1/query?f=json&where=1%3D1&geometry=77.019%2C28.428%2C77.025%2C28.434&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true",
+      "retrievedAt": "2026-09-14T18:44:50.206494+00:00",
+      "httpStatus": 200,
+      "bytes": 11,
+      "sha256": "618de7d9f46f3f697d827a1b6d84974760d5deda62e4e592adaa3c646602a94c",
+      "result": {
+        "count": 0
+      }
+    },
+    {
+      "probe": "islampur",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/2/query?f=json&where=1%3D1&geometry=77.019%2C28.428%2C77.025%2C28.434&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true",
+      "retrievedAt": "2026-09-14T18:44:50.206762+00:00",
+      "httpStatus": 200,
+      "bytes": 11,
+      "sha256": "618de7d9f46f3f697d827a1b6d84974760d5deda62e4e592adaa3c646602a94c",
+      "result": {
+        "count": 0
+      }
+    },
+    {
+      "probe": "islampur",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/3/query?f=json&where=1%3D1&geometry=77.019%2C28.428%2C77.025%2C28.434&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true",
+      "retrievedAt": "2026-09-14T18:44:50.206902+00:00",
+      "httpStatus": 200,
+      "bytes": 11,
+      "sha256": "618de7d9f46f3f697d827a1b6d84974760d5deda62e4e592adaa3c646602a94c",
+      "result": {
+        "count": 0
+      }
+    },
+    {
+      "probe": "wazirabad",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/1/query?f=json&where=1%3D1&geometry=77.06%2C28.428%2C77.066%2C28.434&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true",
+      "retrievedAt": "2026-09-14T18:44:50.207026+00:00",
+      "httpStatus": 200,
+      "bytes": 11,
+      "sha256": "618de7d9f46f3f697d827a1b6d84974760d5deda62e4e592adaa3c646602a94c",
+      "result": {
+        "count": 0
+      }
+    },
+    {
+      "probe": "wazirabad",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/2/query?f=json&where=1%3D1&geometry=77.06%2C28.428%2C77.066%2C28.434&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true",
+      "retrievedAt": "2026-09-14T18:44:50.207142+00:00",
+      "httpStatus": 200,
+      "bytes": 11,
+      "sha256": "618de7d9f46f3f697d827a1b6d84974760d5deda62e4e592adaa3c646602a94c",
+      "result": {
+        "count": 0
+      }
+    },
+    {
+      "probe": "wazirabad",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/3/query?f=json&where=1%3D1&geometry=77.06%2C28.428%2C77.066%2C28.434&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true",
+      "retrievedAt": "2026-09-14T18:44:50.207258+00:00",
+      "httpStatus": 200,
+      "bytes": 11,
+      "sha256": "618de7d9f46f3f697d827a1b6d84974760d5deda62e4e592adaa3c646602a94c",
+      "result": {
+        "count": 0
+      }
+    },
+    {
+      "probe": "farrukhnagar",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/1/query?f=json&where=1%3D1&geometry=76.822%2C28.445%2C76.828%2C28.451&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true",
+      "retrievedAt": "2026-09-14T18:44:51.383734+00:00",
+      "httpStatus": 200,
+      "bytes": 11,
+      "sha256": "618de7d9f46f3f697d827a1b6d84974760d5deda62e4e592adaa3c646602a94c",
+      "result": {
+        "count": 0
+      }
+    },
+    {
+      "probe": "farrukhnagar",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/2/query?f=json&where=1%3D1&geometry=76.822%2C28.445%2C76.828%2C28.451&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true",
+      "retrievedAt": "2026-09-14T18:44:51.431301+00:00",
+      "httpStatus": 200,
+      "bytes": 11,
+      "sha256": "618de7d9f46f3f697d827a1b6d84974760d5deda62e4e592adaa3c646602a94c",
+      "result": {
+        "count": 0
+      }
+    },
+    {
+      "probe": "farrukhnagar",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/svamitav_Prod/MapServer/3/query?f=json&where=1%3D1&geometry=76.822%2C28.445%2C76.828%2C28.451&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true",
+      "retrievedAt": "2026-09-14T18:44:51.443820+00:00",
+      "httpStatus": 200,
+      "bytes": 11,
+      "sha256": "618de7d9f46f3f697d827a1b6d84974760d5deda62e4e592adaa3c646602a94c",
+      "result": {
+        "count": 0
+      }
+    },
+    {
+      "probe": "utility_metadata",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/GPRSurvey/Layers/MapServer/7?f=pjson",
+      "retrievedAt": "2026-09-14T18:44:51.449101+00:00",
+      "httpStatus": 200,
+      "bytes": 13775,
+      "sha256": "bb2a9b94927bd33103128ba109b0febca0beef13c035c25a709581d396148104",
+      "metadata": {
+        "name": "line",
+        "description": "",
+        "copyrightText": "",
+        "geometryType": "esriGeometryPolyline",
+        "hasZ": null,
+        "hasM": null,
+        "extent": {
+          "xmin": 76.87823703593132,
+          "ymin": 28.357970017530814,
+          "xmax": 77.11284020705428,
+          "ymax": 28.520532157176433,
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326,
+            "vcsWkid": 5773,
+            "latestVcsWkid": 5773,
+            "xyTolerance": 8.983152841195215e-09,
+            "zTolerance": 0.001,
+            "mTolerance": 0.001,
+            "falseX": -400,
+            "falseY": -400,
+            "xyUnits": 11258999068426.24,
+            "falseZ": -100000,
+            "zUnits": 10000,
+            "falseM": -100000,
+            "mUnits": 10000
+          }
+        }
+      },
+      "fields": [
+        "OBJECTID",
+        "Shape",
+        "Id",
+        "Road_ID",
+        "Ut_type",
+        "Ut_subtype",
+        "Surf_type",
+        "Surf_level",
+        "From_level",
+        "To_level",
+        "length",
+        "Collect_by",
+        "Remarks",
+        "Shape_Length"
+      ]
+    },
+    {
+      "probe": "utility_metadata",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Sewerage/Manhole_GMDA/FeatureServer/0?f=pjson",
+      "retrievedAt": "2026-09-14T18:44:52.316010+00:00",
+      "httpStatus": 200,
+      "bytes": 19440,
+      "sha256": "bfe6cea588445eda1a34a41b2b7a5b95c355a6952c51a6f349a1f968b531abdc",
+      "metadata": {
+        "name": "ManholeLocation",
+        "description": "",
+        "copyrightText": "",
+        "geometryType": "esriGeometryPoint",
+        "hasZ": false,
+        "hasM": false,
+        "extent": {
+          "xmin": 8566396.126699999,
+          "ymin": 3288165.3136,
+          "xmax": 8602608.817200001,
+          "ymax": 3324938.3752999976,
+          "spatialReference": {
+            "wkid": 102100,
+            "latestWkid": 3857,
+            "xyTolerance": 0.001,
+            "zTolerance": 0.001,
+            "mTolerance": 0.001,
+            "falseX": -20037700,
+            "falseY": -30241100,
+            "xyUnits": 10000,
+            "falseZ": -100000,
+            "zUnits": 10000,
+            "falseM": -100000,
+            "mUnits": 10000
+          }
+        }
+      },
+      "fields": [
+        "objectid",
+        "asset_id",
+        "invert_level",
+        "silt_level",
+        "chamber_roof_level",
+        "sewer_dimension",
+        "junction_size",
+        "junction_in_size",
+        "junction_out_size",
+        "structural_condition",
+        "maintenance_condition",
+        "toxic_atmospheric_environment",
+        "globalid",
+        "created_user",
+        "created_date",
+        "last_edited_user",
+        "last_edited_date",
+        "esrignss_receiver",
+        "esrignss_h_rms",
+        "esrignss_v_rms",
+        "esrignss_latitude",
+        "esrignss_longitude",
+        "esrignss_altitude",
+        "esrignss_pdop",
+        "esrignss_hdop",
+        "esrignss_vdop",
+        "esrignss_fixtype",
+        "esrignss_correctionage",
+        "esrignss_stationid",
+        "esrignss_numsats",
+        "esrignss_fixdatetime",
+        "esrignss_avg_h_rms",
+        "esrignss_avg_v_rms",
+        "esrignss_avg_positions",
+        "esrignss_h_stddev",
+        "remarks",
+        "manhole_no"
+      ]
+    },
+    {
+      "probe": "pune_report_catalog",
+      "url": "https://opendataapi.pmc.gov.in/reports/search?page=0&size=10&title=Storm",
+      "retrievedAt": "2026-09-14T18:44:52.518474+00:00",
+      "httpStatus": 200,
+      "bytes": 536,
+      "sha256": "b8feaf670e16242a8d02b50ede307e966cc357104ad006e39f597c467cba582e",
+      "result": {
+        "statusCode": 200,
+        "message": "Reports found",
+        "data": {
+          "content": [
+            {
+              "id": 11,
+              "title": "PMC- Storm Water Drainage",
+              "format": ".pdf",
+              "publishedOn": "2016-10-02",
+              "path": "opendata/PMCReports/PMC-Storm-Water-Drainage.pdf",
+              "modifiedDate": null
+            }
+          ],
+          "pageable": {
+            "sort": {
+              "sorted": true,
+              "empty": false,
+              "unsorted": false
+            },
+            "pageNumber": 0,
+            "pageSize": 10,
+            "offset": 0,
+            "paged": true,
+            "unpaged": false
+          },
+          "last": true,
+          "totalPages": 1,
+          "totalElements": 1,
+          "size": 10,
+          "number": 0,
+          "sort": {
+            "sorted": true,
+            "empty": false,
+            "unsorted": false
+          },
+          "first": true,
+          "numberOfElements": 1,
+          "empty": false
+        }
+      }
+    }
+  ]
+}

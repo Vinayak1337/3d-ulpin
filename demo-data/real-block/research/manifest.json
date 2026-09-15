@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "real-block-source-access/1",
+  "status": "blocked_before_feature_acquisition",
+  "scope": "Indian coherent pilot acceptance remains unfulfilled. This folder contains access research and aggregate probes, not survey data.",
+  "featureCount": 0,
+  "sourceBytesBundled": false,
+  "observations": [
+    {
+      "id": "gmda_policy",
+      "url": "https://www.gmda.gov.in/policies.html",
+      "retrievedAt": "2026-09-14T18:53:52.668175+00:00",
+      "bundled": false,
+      "httpStatus": 200,
+      "bytes": 69897,
+      "sha256": "17d90dc37cb37612383461b525c66b7865df7ce58071284f402c50f1316c268f",
+      "contentType": "text/html;charset=UTF-8"
+    },
+    {
+      "id": "dda_policy",
+      "url": "https://dda.gov.in/copyright-policy",
+      "retrievedAt": "2026-09-14T18:53:52.668454+00:00",
+      "bundled": false,
+      "httpStatus": 200,
+      "bytes": 40623,
+      "sha256": "d4037d6b9a40bc6486288462702e9c89f64fecff5ea2566e3285b152ccac5516",
+      "contentType": "text/html; charset=UTF-8"
+    },
+    {
+      "id": "pune_policy",
+      "url": "https://opendata.pmc.gov.in/open-data-policy",
+      "retrievedAt": "2026-09-14T18:53:52.668605+00:00",
+      "bundled": false,
+      "httpStatus": 200,
+      "bytes": 24315,
+      "sha256": "7f4be9832c625f3a8efd6dad494efe3c76dd0b348b805ecd0276c455fc031e29",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "id": "pune_policy_client",
+      "url": "https://opendata.pmc.gov.in/_next/static/chunks/app/open-data-policy/page-06c4d42c7095d10d.js",
+      "retrievedAt": "2026-09-14T18:53:52.668732+00:00",
+      "bundled": false,
+      "httpStatus": 200,
+      "bytes": 83353,
+      "sha256": "a6ad6e4b970516c6a648dfe174fad02b09381a3fdd4cfaeacdc4a979a35292fd",
+      "contentType": "application/javascript; charset=UTF-8"
+    },
+    {
+      "id": "pune_stormwater_report",
+      "url": "https://opendata.pmc.gov.in/opendata/PMCReports/PMC-Storm-Water-Drainage.pdf",
+      "retrievedAt": "2026-09-14T18:53:52.668844+00:00",
+      "bundled": false,
+      "httpStatus": 200,
+      "bytes": 183785,
+      "sha256": "2d88b859e379def3881904b1ab72a0d49836330a1e38ccf276ce7f316d4b3de8",
+      "contentType": "application/pdf"
+    }
+  ],
+  "probeFile": "probe-results.json",
+  "probeSha256": "1a55596f6075ad27295c7091eb2a4b7825ce369aea7e1fbaae3c8691a2ea15b6",
+  "gmda": {
+    "layers": {
+      "building": "svamitav_Prod/MapServer/1",
+      "parcel": "svamitav_Prod/MapServer/2",
+      "road": "svamitav_Prod/MapServer/3",
+      "utility": "GPRSurvey/Layers/MapServer/7",
+      "manhole": "Sewerage/Manhole_GMDA/FeatureServer/0"
+    },
+    "spatialReference": "EPSG:32643 for the three SVAMITVA layers; GPR4326 with advertised VCS5773; manholes3857 hasZfalse",
+    "permissions": "Prior emailed reproduction permission required by website policy; dataset-specific licenseInfo/accessInformation empty. No email sent.",
+    "privacy": "Only schema fields and aggregate counts inspected. No owner, Aadhaar, mobile, personal values or free text remarks requested. No outFields=*.",
+    "geometry": "No features acquired; no accepted overlap, feature identity, heights or floors inferred. Three test envelopes each returned0builtup,0parcels,0roads; this is not a full-service emptiness claim."
+  },
+  "dda": {
+    "permissions": "Current copyright policy requires permission before reproduction.",
+    "missing": "No authorized same-building plan/section/parcel set acquired; public layout is not title or an occupied-building outline."
+  },
+  "pune": {
+    "reportId": 11,
+    "title": "PMC- Storm Water Drainage",
+    "publishedOn": "2016-10-02",
+    "permissions": "Policy endorses NDSAP but separately requires reproduction permission and compliance with each package license. No dataset-specific grant established for report.",
+    "missing": "No matched30\u2013150building block with parcels and two real building plan/section packages obtained."
+  },
+  "nextAcquisitionRequirements": [
+    "Written right to cache, process, show and redistribute a bounded footprint/parcel/road/utility subset and associated drawings, including derivative use and external AI processing where applicable.",
+    "Exact locality/stable building IDs and full intersecting geometry with a context margin.",
+    "A CRS and vertical benchmark; surveyed values, height/depth meaning, document revisions and building associations.",
+    "Two real matched plan+section packages and third dossier source set for same locality; privacy-redacted permitted documents."
+  ]
+}

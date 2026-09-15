@@ -119,7 +119,7 @@ try {
   assert.equal((await ingestArea({...realInput,expectedAreaRevision:0})).id,real.id,"An exact successful source retry remains idempotent after area revision advances");
   const realCheck = await runAreaCheck(real.areaId,1);
   assert.equal(realCheck.status,"completed");
-  assert(realCheck.coverage.some(note=>/No vertical collision volume/.test(note)));
+  assert(realCheck.coverage.some(note=>/Building-relative heights alone do not establish aligned elevation/.test(note)));
   assert(realCheck.findings.every(finding=>finding.volumeM3===undefined));
   assert.equal((await areaContext(real.areaId)).latestCheck!.id,realCheck.id);
   console.log("PASS Saved acquisition preserves 62 real exterior footprints, original bytes, BIN/source IDs, metre heights and review/commit persistence without invented apartments.");

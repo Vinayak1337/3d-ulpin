@@ -1,6 +1,8 @@
+import { areaSceneAssets } from "./scene-assets";
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
 import type {
+  ParcelIdentifier,
   MapArea,
   AreaContext,
   AreaReference,
@@ -19,6 +21,7 @@ import { AppError, conflict, notFound } from "./errors";
 import { putOriginal, readObject, sha256 } from "./storage";
 import { propertyIdentifier } from "../identifiers";
 import { originalAttempt } from "./original-attempt";
+import { checkAssociations, enrichFindings } from "./officer";
 
 export type Mapping = {
   idField?: string;
@@ -28,6 +31,27 @@ export type Mapping = {
   heightUnit?: "m" | "ft";
   heightMeaning?: string;
   identifierFields?: string[];
+  geometryRole?: import("@ulpin/contracts").GeometryRole;
+  geometryRoleField?: string;
+  roleValues?: Record<string, string>;
+  levelReference?: string;
+  floorCountField?: string;
+  approvalStatusField?: string;
+  sourceDateField?: string;
+  validFromField?: string;
+  validToField?: string;
+  horizontalUncertaintyField?: string;
+  horizontalUncertaintyUnit?: "m" | "ft";
+  worldStatusField?: string;
+  worldStatusValues?: Record<string, string>;
+  verticalExtent?: {
+    lowerField: string;
+    upperField: string;
+    unit: "m" | "ft";
+    reference: string;
+  };
+  utility?: Record<string, unknown>;
+  utilityProfile?: Record<string, unknown>;
 };
 type Normalized = {
   reference: AreaReference;
@@ -37,7 +61,7 @@ type Normalized = {
   warnings: string[];
 };
 export async function areaGeo<T>(
-  operation: "normalize" | "check" | "extract",
+  operation: "normalize" | "check" | "extract" | "crop" | "profile",
   input: unknown,
 ): Promise<T> {
   const response = await fetch(
@@ -74,30 +98,104 @@ function areaFrom(row: any): MapArea {
     extent: row.extent,
     geographicExtent: row.geographic_extent,
     administrativeUnits: row.administrative_units || [],
+    dataKind: row.data_kind || "empty",
+    featureCount: Number(row.feature_count || 0),
   };
 }
-export async function listAreas(): Promise<MapArea[]> {
+export async function listAreas(includeArchived = false): Promise<MapArea[]> {
   // Include legacy sites added after the additive migration, without georeferencing them.
   await query(
     "INSERT INTO map_areas(id,site_id,name) SELECT id,id,name FROM registry_sites ON CONFLICT(site_id) DO NOTHING",
   );
   return (
     await query(
-      `SELECT a.*, COALESCE((SELECT jsonb_agg(jsonb_strip_nulls(to_jsonb(u))) FROM administrative_units u JOIN area_memberships m ON m.unit_id=u.id WHERE m.area_id=a.id),'[]') administrative_units FROM map_areas a ORDER BY (a.reference IS NOT NULL) DESC,a.created_at DESC`,
+      `SELECT a.*, (SELECT count(*) FROM physical_features f WHERE f.revision>0 AND (f.area_id=a.id OR EXISTS (SELECT 1 FROM block_group_memberships gm JOIN block_groups gg ON gg.id=gm.group_id WHERE gm.feature_id=f.id AND gg.area_id=a.id))) feature_count,
+        (SELECT CASE WHEN count(*)=0 THEN 'empty' WHEN bool_and(f.body->>'worldStatus'='synthetic') THEN 'demonstration' WHEN bool_and(f.body->>'worldStatus'='observed') THEN 'real' ELSE 'mixed' END FROM physical_features f WHERE f.revision>0 AND (f.area_id=a.id OR EXISTS (SELECT 1 FROM block_group_memberships gm JOIN block_groups gg ON gg.id=gm.group_id WHERE gm.feature_id=f.id AND gg.area_id=a.id))) data_kind,
+        COALESCE((SELECT jsonb_agg(jsonb_strip_nulls(to_jsonb(u))) FROM administrative_units u JOIN area_memberships m ON m.unit_id=u.id WHERE m.area_id=a.id),'[]') administrative_units FROM map_areas a WHERE ($1::boolean OR a.archived_at IS NULL) ORDER BY (a.reference IS NOT NULL) DESC,a.created_at DESC`,
+      [includeArchived],
     )
   ).rows.map(areaFrom);
 }
 export async function getArea(id: string): Promise<MapArea> {
-  const area = (await listAreas()).find((a) => a.id === id);
+  const area = (await listAreas(true)).find((a) => a.id === id);
   return area || notFound("Map area not found.");
+}
+async function projectedFeatures(
+  rows: {
+    body: PhysicalFeature;
+    area_id: string;
+    local_geometry: string | null;
+  }[],
+  area: MapArea,
+): Promise<PhysicalFeature[]> {
+  const features = rows.map((row) => {
+    if (row.area_id === area.id) return row.body;
+    if (!area.reference || !row.local_geometry)
+      throw new AppError(
+        422,
+        "MEMBERSHIP_FRAME",
+        "This block needs a valid analytical frame before another area's feature can be displayed.",
+      );
+    return {
+      ...row.body,
+      geometry: JSON.parse(row.local_geometry),
+    } as PhysicalFeature;
+  });
+  const utilities = features.filter(
+    (feature) =>
+      feature.areaId !== area.id &&
+      feature.kind === "utility" &&
+      feature.utilityProfile,
+  );
+  if (utilities.length) {
+    const resolved = await areaGeo<{
+      profiles: {
+        id: string;
+        utilityProfile: PhysicalFeature["utilityProfile"];
+      }[];
+    }>("profile", { features: utilities });
+    const profiles = new Map(
+      resolved.profiles.map((item) => [item.id, item.utilityProfile]),
+    );
+    for (const feature of utilities) {
+      if (!profiles.has(feature.id))
+        throw new AppError(
+          503,
+          "MEMBERSHIP_PROFILE",
+          "The processor did not return a profile for every shared utility.",
+        );
+      feature.utilityProfile = profiles.get(feature.id);
+    }
+  }
+  return features;
+}
+async function loadAreaFeatures(
+  area: MapArea,
+  client?: PoolClient,
+): Promise<PhysicalFeature[]> {
+  const sql = `SELECT f.body,f.area_id,CASE WHEN f.area_id<>$1 AND $2::integer IS NOT NULL THEN ST_AsGeoJSON(ST_Translate(ST_Transform(f.geographic_geometry,$2::integer),-($3::double precision),-($4::double precision)),9,0) END local_geometry
+    FROM physical_features f WHERE f.revision>0 AND (f.area_id=$1 OR EXISTS (
+      SELECT 1 FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id WHERE m.feature_id=f.id AND g.area_id=$1
+    )) ORDER BY f.identifier LIMIT 2001`;
+  const values = [
+    area.id,
+    area.reference ? Number(area.reference.analysisCrs.split(":")[1]) : null,
+    ...(area.reference?.origin ?? [null, null]),
+  ];
+  const rows = (await (client ? client.query(sql, values) : query(sql, values)))
+    .rows;
+  if (rows.length > 2000)
+    throw new AppError(
+      422,
+      "AREA_LIMIT",
+      "This block and its explicit group members exceed 2,000 features. Choose a smaller bounded group.",
+    );
+  return projectedFeatures(rows, area);
 }
 export async function areaContext(id: string): Promise<AreaContext> {
   const area = await getArea(id);
   const [features, packages, checks] = await Promise.all([
-    query(
-      "SELECT body FROM physical_features WHERE area_id=$1 AND revision>0 ORDER BY identifier",
-      [id],
-    ),
+    loadAreaFeatures(area),
     query(
       "SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30",
       [id],
@@ -107,22 +205,38 @@ export async function areaContext(id: string): Promise<AreaContext> {
       [id],
     ),
   ]);
-  const currentFeatures = features.rows.map((r) => r.body as PhysicalFeature);
+  const currentFeatures = features;
   const latestCheck = checks.rows[0]?.body as AreaCheck | undefined;
-  if (latestCheck)
+  if (latestCheck) {
+    const effective = await withNeighbours(currentFeatures, area);
     latestCheck.stale =
       latestCheck.areaRevision !== area.revision ||
       latestCheck.inputFingerprint !==
         sha256(
           JSON.stringify({
-            features: await withNeighbours(currentFeatures, area),
+            features: effective,
+            associations: await checkAssociations(effective.map((f) => f.id)),
             reference: area.reference,
-            validator: "area-check-v2",
+            validator: "area-check-officer-v1",
           }),
         );
+  }
   return {
     area,
     features: currentFeatures,
+    parcelAssociations: (
+      await query(
+        `SELECT a.body FROM property_associations a JOIN physical_features f ON f.id=a.from_id JOIN physical_features p ON p.id=a.to_id WHERE a.relationship='occupies_parcel' AND a.status='confirmed' AND (a.body->>'fromRevision')::int=f.revision AND (a.body->>'toRevision')::int=p.revision AND p.id=ANY($1::uuid[])`,
+        [currentFeatures.filter((f) => f.kind === "parcel").map((f) => f.id)],
+      )
+    ).rows.map((r) => r.body),
+    parcelIdentifiers: (
+      await query<ParcelIdentifier>(
+        `SELECT e.feature_id "parcelId",e.scheme,e.normalized_value value,e.issuer,e.evidence FROM external_identifiers e WHERE e.feature_id=ANY($1::uuid[]) AND e.valid_to IS NULL AND e.verification_state='validated' AND e.scheme IN ('official_ulpin','demo_ulpin') ORDER BY e.feature_id,e.scheme,e.normalized_value`,
+        [currentFeatures.filter((f) => f.kind === "parcel").map((f) => f.id)],
+      )
+    ).rows,
+    sceneAssets: await areaSceneAssets(id),
     packages: packages.rows.map((r) => r.body),
     latestCheck: latestCheck || null,
   };
@@ -179,7 +293,8 @@ function mergeExtent(
 export async function ingestArea(input: {
   bytes: Uint8Array;
   filename: string;
-  format: "geojson" | "arcgis";
+  format: "geojson" | "arcgis" | "gpkg" | "shapefile_zip";
+  layer?: string;
   namespace: string;
   name: string;
   mapping: Mapping;
@@ -198,7 +313,9 @@ export async function ingestArea(input: {
     );
   let data: unknown;
   try {
-    data = JSON.parse(new TextDecoder().decode(input.bytes));
+    data = ["gpkg", "shapefile_zip"].includes(input.format)
+      ? undefined
+      : JSON.parse(new TextDecoder().decode(input.bytes));
   } catch {
     throw new AppError(422, "INVALID_JSON", "Choose valid native GIS JSON.");
   }
@@ -217,11 +334,13 @@ export async function ingestArea(input: {
     JSON.stringify({
       destination: area?.id || seedKey,
       namespace: input.namespace,
+      format: input.format,
+      layer: input.layer ?? null,
       digest,
       mapping: input.mapping,
       worldStatus: input.worldStatus || "observed",
       sourceCrs: input.sourceCrs,
-      normalization: "canonical-area-v2",
+      normalization: "canonical-area-officer-v1",
       reference: area?.reference
         ? {
             analysisCrs: area.reference.analysisCrs,
@@ -239,6 +358,9 @@ export async function ingestArea(input: {
         sha256(
           JSON.stringify({
             namespace: input.namespace,
+            format: input.format,
+            layer: input.layer ?? null,
+            normalization: "canonical-area-officer-v1",
             name: input.name,
             areaId: area?.id || null,
             mapping: input.mapping,
@@ -259,6 +381,12 @@ export async function ingestArea(input: {
   const normalized = await areaGeo<Normalized>("normalize", {
     format: input.format,
     data,
+    ...(["gpkg", "shapefile_zip"].includes(input.format)
+      ? {
+          base64: Buffer.from(input.bytes).toString("base64"),
+          layer: input.layer,
+        }
+      : {}),
     mapping: input.mapping,
     worldStatus: input.worldStatus || "observed",
     ...(area?.reference
@@ -275,12 +403,48 @@ export async function ingestArea(input: {
   });
   const sourceId = randomUUID(),
     objectKey = `areas/${sourceId}/${digest}`;
+  const utilityCandidates = normalized.features.filter(
+    (f) => f.kind === "utility" && f.utilityProfile,
+  );
+  if (utilityCandidates.length) {
+    for (const candidate of utilityCandidates)
+      candidate.utilityProfile = {
+        ...candidate.utilityProfile,
+        evidence: [
+          { sourceRevisionId: sourceId, featureId: candidate.sourceKey },
+        ],
+        ...(input.mapping.utility?.groundStartField ||
+        input.mapping.utility?.groundEndField
+          ? {
+              groundEvidence: [
+                { sourceRevisionId: sourceId, featureId: candidate.sourceKey },
+              ],
+            }
+          : {}),
+      };
+    const resolved = await areaGeo<{
+      profiles: {
+        sourceKey: string;
+        utilityProfile: Record<string, unknown>;
+      }[];
+    }>("profile", { features: utilityCandidates });
+    for (const candidate of utilityCandidates)
+      candidate.utilityProfile = resolved.profiles.find(
+        (p) => p.sourceKey === candidate.sourceKey,
+      )!.utilityProfile;
+  }
   return originalAttempt("sources", sourceId, async (remember) => {
     remember(objectKey);
     await putOriginal(
       objectKey,
       input.bytes,
-      input.format === "geojson" ? "application/geo+json" : "application/json",
+      input.format === "geojson"
+        ? "application/geo+json"
+        : input.format === "gpkg"
+          ? "application/geopackage+sqlite3"
+          : input.format === "shapefile_zip"
+            ? "application/zip"
+            : "application/json",
     );
     return transaction(async (client) => {
       await client.query(
@@ -324,8 +488,15 @@ export async function ingestArea(input: {
           benchmark: normalized.reference.verticalReference,
         };
         await client.query(
-          "INSERT INTO registry_sites(id,identifier,name,frame,synthetic) VALUES($1,$2,$3,$4,false)",
-          [id, propertyIdentifier(id), input.name, frame],
+          "INSERT INTO registry_sites(id,identifier,name,frame,synthetic) VALUES($1,$2,$3,$4,$5)",
+          [
+            id,
+            propertyIdentifier(id),
+            input.name,
+            frame,
+            input.worldStatus === "synthetic" ||
+              input.worldStatus === "hypothetical",
+          ],
         );
         areaRow = (
           await client.query(
@@ -404,7 +575,11 @@ export async function ingestArea(input: {
           `${input.format}-area-v2`,
           input.format === "geojson"
             ? "application/geo+json"
-            : "application/json",
+            : input.format === "gpkg"
+              ? "application/geopackage+sqlite3"
+              : input.format === "shapefile_zip"
+                ? "application/zip"
+                : "application/json",
           input.bytes.length,
           digest,
           objectKey,
@@ -430,6 +605,16 @@ export async function ingestArea(input: {
             422,
             "FEATURE_KIND_CHANGED",
             "A stable source feature cannot change representation kind. Resolve its source association explicitly.",
+          );
+        if (
+          linked &&
+          ["synthetic", "hypothetical"].includes(linked.body.worldStatus) &&
+          !["synthetic", "hypothetical"].includes(candidate.worldStatus)
+        )
+          throw new AppError(
+            422,
+            "WORLD_STATUS_PROMOTION",
+            "A synthetic or hypothetical source identity cannot become a real observation through a classification change. Import separately evidenced real data under its actual source identity.",
           );
         if (linked && linked.area_id !== areaRow.id)
           throw new AppError(
@@ -481,6 +666,43 @@ export async function ingestArea(input: {
         identifier ||= `OBS-${id}`;
         const feature: PhysicalFeature = {
           ...candidate,
+          ...(candidate.verticalExtent
+            ? {
+                verticalExtent: {
+                  ...candidate.verticalExtent,
+                  evidence: [
+                    {
+                      sourceRevisionId: sourceId,
+                      featureId: candidate.sourceKey,
+                    },
+                  ],
+                },
+              }
+            : {}),
+          ...(candidate.utilityProfile
+            ? {
+                utilityProfile: {
+                  ...candidate.utilityProfile,
+                  evidence: [
+                    {
+                      sourceRevisionId: sourceId,
+                      featureId: candidate.sourceKey,
+                    },
+                  ],
+                  ...(input.mapping.utility?.groundStartField ||
+                  input.mapping.utility?.groundEndField
+                    ? {
+                        groundEvidence: [
+                          {
+                            sourceRevisionId: sourceId,
+                            featureId: candidate.sourceKey,
+                          },
+                        ],
+                      }
+                    : {}),
+                },
+              }
+            : {}),
           height: {
             ...candidate.height,
             evidence: [
@@ -563,6 +785,9 @@ export async function ingestArea(input: {
         importSignature: sha256(
           JSON.stringify({
             namespace: input.namespace,
+            format: input.format,
+            layer: input.layer ?? null,
+            normalization: "canonical-area-officer-v1",
             name: input.name,
             areaId: areaRow.id,
             mapping: input.mapping,
@@ -722,13 +947,14 @@ async function withNeighbours(
     Math.max(...xs),
     Math.max(...ys),
   ];
-  const sql = `SELECT body,ST_AsGeoJSON(ST_Translate(ST_Transform(geographic_geometry,$6::integer),-($7::double precision),-($8::double precision)),9,0) local_geometry FROM physical_features
-    WHERE area_id<>$1 AND revision>0 AND ST_Intersects(geographic_geometry,ST_MakeEnvelope($2,$3,$4,$5,4326)) ORDER BY id LIMIT 2001`;
+  const sql = `SELECT body,area_id,ST_AsGeoJSON(ST_Translate(ST_Transform(geographic_geometry,$6::integer),-($7::double precision),-($8::double precision)),9,0) local_geometry FROM physical_features
+    WHERE area_id<>$1 AND id<>ALL($9::uuid[]) AND revision>0 AND (ST_Intersects(geographic_geometry,ST_MakeEnvelope($2,$3,$4,$5,4326)) OR id IN (SELECT to_id FROM property_associations WHERE from_id=ANY($9::uuid[]) AND relationship='occupies_parcel' AND status='confirmed') OR id IN (SELECT m.feature_id FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id WHERE g.area_id=$1)) ORDER BY id LIMIT 2001`;
   const values = [
     area.id,
     ...extent,
     Number(area.reference.analysisCrs.split(":")[1]),
     ...area.reference.origin,
+    features.map((f) => f.id),
   ];
   const rows = (await (client ? client.query(sql, values) : query(sql, values)))
     .rows;
@@ -738,10 +964,9 @@ async function withNeighbours(
       "AREA_LIMIT",
       "This area and its crossing neighbours exceed 2,000 features. Choose a smaller bounded area.",
     );
-  return [
-    ...features,
-    ...rows.map((r) => ({ ...r.body, geometry: JSON.parse(r.local_geometry) })),
-  ].sort((a, b) => a.id.localeCompare(b.id));
+  return [...features, ...(await projectedFeatures(rows, area))].sort((a, b) =>
+    a.id.localeCompare(b.id),
+  );
 }
 async function effectiveFeatures(pkg: ImportPackage, area: MapArea) {
   const current = (
@@ -906,10 +1131,12 @@ export async function reviewPackage(id: string, expectedRevision: number) {
     area = await getArea(pkg.areaId);
   if (pkg.revision !== expectedRevision) conflict();
   const features = await effectiveFeatures(pkg, area);
+  const associations = await checkAssociations(features.map((f) => f.id));
   const result = await areaGeo<{ findings: AreaFinding[]; coverage: string[] }>(
     "check",
-    { features, reference: area.reference },
+    { features, associations, reference: area.reference },
   );
+  result.findings = await enrichFindings(result.findings, features, area.id);
   for (const question of pkg.questions.filter(
     (q) => q.kind === "conflicting_claims" && !q.answer,
   ))
@@ -938,13 +1165,15 @@ export async function reviewPackage(id: string, expectedRevision: number) {
       inputFingerprint: sha256(
         JSON.stringify({
           features,
+          associations,
           reference: area.reference,
           areaRevision: area.revision,
           packageRevision: current.revision,
-          validator: "area-check-v2",
+          validator: "area-check-officer-v1",
         }),
       ),
-      ...result,
+      findings: result.findings,
+      coverage: result.coverage,
     };
     await savePackage(client, current);
     return current;
@@ -1008,10 +1237,14 @@ export async function commitPackage(
       sha256(
         JSON.stringify({
           features: effective,
+          associations: await checkAssociations(
+            effective.map((f) => f.id),
+            client,
+          ),
           reference: areaRow.reference,
           areaRevision: areaRow.revision,
           packageRevision: pkg.revision,
-          validator: "area-check-v2",
+          validator: "area-check-officer-v1",
         }),
       ) !== pkg.review.inputFingerprint
     )
@@ -1097,6 +1330,7 @@ export async function runAreaCheck(
   const context = await areaContext(areaId);
   if (context.area.revision !== expectedRevision) conflict();
   const checkFeatures = await withNeighbours(context.features, context.area);
+  const associations = await checkAssociations(checkFeatures.map((f) => f.id));
   const check: AreaCheck = {
     id: randomUUID(),
     areaId,
@@ -1107,8 +1341,9 @@ export async function runAreaCheck(
     inputFingerprint: sha256(
       JSON.stringify({
         features: checkFeatures,
+        associations,
         reference: context.area.reference,
-        validator: "area-check-v2",
+        validator: "area-check-officer-v1",
       }),
     ),
     createdAt: new Date().toISOString(),
@@ -1128,8 +1363,21 @@ export async function runAreaCheck(
     const result = await areaGeo<{
       findings: AreaFinding[];
       coverage: string[];
-    }>("check", { features: checkFeatures, reference: context.area.reference });
-    Object.assign(check, result, { status: "completed" });
+    }>("check", {
+      features: checkFeatures,
+      associations,
+      reference: context.area.reference,
+    });
+    result.findings = await enrichFindings(
+      result.findings,
+      checkFeatures,
+      areaId,
+    );
+    Object.assign(check, {
+      findings: result.findings,
+      coverage: result.coverage,
+      status: "completed",
+    });
   } catch (error) {
     check.status = "failed";
     check.error =
@@ -1155,121 +1403,561 @@ export async function runAreaCheck(
       sha256(
         JSON.stringify({
           features: await withNeighbours(latestFeatures, latestArea),
+          associations: await checkAssociations(
+            (await withNeighbours(latestFeatures, latestArea)).map((f) => f.id),
+          ),
           reference: latestArea.reference,
-          validator: "area-check-v2",
+          validator: "area-check-officer-v1",
         }),
       );
   return check;
 }
 
+type CopySourceRow = {
+  id: string;
+  case_id: string;
+  revision: number;
+  name: string;
+  profile: string;
+  mime_type: string;
+  bytes: number;
+  sha256: string;
+  object_key: string;
+};
+const copyFormats: Record<string, DocumentFile["format"]> = {
+  "plan-pdf-v1": "pdf",
+  "plan-png-v1": "png",
+  "levels-csv-v1": "csv",
+};
+function sourceCopyFingerprint(rows: CopySourceRow[]) {
+  return sha256(
+    JSON.stringify(
+      rows
+        .map((row) => [
+          row.id,
+          row.case_id,
+          row.revision,
+          row.name,
+          row.profile,
+          row.mime_type,
+          Number(row.bytes),
+          row.sha256,
+          row.object_key,
+        ])
+        .sort((a, b) => String(a[0]).localeCompare(String(b[0]))),
+    ),
+  );
+}
+async function copiedOperation(
+  client: PoolClient,
+  targetCaseId: string,
+  copy: CopyBatch,
+) {
+  const existing = (
+    await client.query(
+      "SELECT payload_hash FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='copy-case-documents'",
+      [targetCaseId, copy.operationKey],
+    )
+  ).rows[0];
+  if (existing && existing.payload_hash !== copy.payloadHash)
+    throw new AppError(
+      409,
+      "COPY_ALREADY_RECORDED",
+      "These selected originals were already copied with a different assignment request. Refresh the preparation.",
+    );
+  return !!existing;
+}
+async function copySources(
+  client: PoolClient,
+  packageId: string,
+  copy: Pick<CopyBatch, "caseId" | "buildingId" | "sourceIds">,
+): Promise<CopySourceRow[]> {
+  const target = (
+    await client.query(
+      "SELECT case_id FROM building_preparations WHERE package_id=$1 AND building_id=$2",
+      [packageId, copy.buildingId],
+    )
+  ).rows[0];
+  if (!target)
+    throw new AppError(
+      422,
+      "PREPARATION_BUILDING",
+      "The destination must be this building's canonical preparation package.",
+    );
+  if (
+    !(
+      await client.query("SELECT id FROM cases WHERE id=$1 FOR SHARE", [
+        copy.caseId,
+      ])
+    ).rows.length
+  )
+    notFound("The original case no longer exists.");
+  const owners = (
+    await client.query(
+      `
+    SELECT building_id FROM building_preparations WHERE case_id=$1
+    UNION SELECT f.id AS building_id FROM registry_case_feature_mappings m JOIN physical_features f ON (f.id=m.record_id OR f.record_id=m.record_id) WHERE m.case_id=$1 AND f.body->>'kind'='building'
+    UNION SELECT a.from_id AS building_id FROM registry_case_feature_mappings m JOIN property_associations a ON a.to_id=m.record_id WHERE m.case_id=$1 AND a.relationship IN ('detailed_record','shared_space') AND a.status <> 'rejected'`,
+      [copy.caseId],
+    )
+  ).rows;
+  if (owners.some((owner) => owner.building_id !== copy.buildingId))
+    throw new AppError(
+      422,
+      "CASE_ALREADY_ASSIGNED",
+      "This case belongs to another property. Documents cannot be reassigned through the unassigned-document flow.",
+    );
+  const rows = (
+    await client.query<CopySourceRow>(
+      "SELECT id,case_id,revision,name,profile,mime_type,bytes,sha256,object_key FROM sources WHERE case_id=$1 AND id=ANY($2::uuid[]) ORDER BY id FOR SHARE",
+      [copy.caseId, copy.sourceIds],
+    )
+  ).rows;
+  if (rows.length !== copy.sourceIds.length)
+    throw new AppError(
+      422,
+      "SOURCE_OWNERSHIP",
+      "Every selected source revision must belong to the specified original case.",
+    );
+  let total = 0;
+  for (const row of rows) {
+    if (!Object.hasOwn(copyFormats, row.profile))
+      throw new AppError(
+        422,
+        "COPY_PROFILE",
+        "Only PDF plans, PNG plans and levels CSV sources can be assigned. Other source profiles require their own explicit import mapping.",
+      );
+    const limit =
+      row.profile === "plan-png-v1" ? 16 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (Number(row.bytes) <= 0 || Number(row.bytes) > limit)
+      throw new AppError(
+        413,
+        "COPY_SIZE",
+        "Each PDF or CSV must be at most 10 MiB; each PNG at most 16 MiB.",
+      );
+    total += Number(row.bytes);
+  }
+  if (total > 64 * 1024 * 1024)
+    throw new AppError(
+      413,
+      "COPY_SIZE",
+      "Select at most 64 MiB of documents in one assignment.",
+    );
+  return rows;
+}
+
+export async function copyCaseDocuments(
+  id: string,
+  input: {
+    expectedRevision: number;
+    caseId: string;
+    sourceIds: string[];
+    buildingId: string;
+    reason: string;
+  },
+): Promise<ImportPackage> {
+  if (
+    !input.sourceIds.length ||
+    input.sourceIds.length > 20 ||
+    new Set(input.sourceIds).size !== input.sourceIds.length
+  )
+    throw new AppError(
+      422,
+      "COPY_SELECTION",
+      "Select between one and twenty distinct source revisions.",
+    );
+  const reason = input.reason.trim();
+  if (!reason || reason.length > 2000)
+    throw new AppError(
+      422,
+      "COPY_REASON",
+      "Record an assignment reason of one to 2,000 characters.",
+    );
+  const sourceIds = [...input.sourceIds].sort();
+  const copy: CopyBatch = {
+    caseId: input.caseId,
+    buildingId: input.buildingId,
+    sourceIds,
+    reason,
+    operationKey: sha256(
+      JSON.stringify([
+        "copy-case-documents",
+        id,
+        input.caseId,
+        input.buildingId,
+        sourceIds,
+      ]),
+    ),
+    payloadHash: sha256(JSON.stringify([input.expectedRevision, reason])),
+    sourceFingerprint: "",
+  };
+  const { rows, replay } = await transaction(async (client) => {
+    const rows = await copySources(client, id, copy);
+    const pkg = (
+      await client.query("SELECT case_id FROM import_packages WHERE id=$1", [
+        id,
+      ])
+    ).rows[0];
+    return { rows, replay: await copiedOperation(client, pkg.case_id, copy) };
+  });
+  copy.sourceFingerprint = sourceCopyFingerprint(rows);
+  if (replay) return getPackage(id);
+  const copiedAt = new Date().toISOString(),
+    files: DocumentFile[] = [];
+  for (const source of rows) {
+    const bytes = await readObject(source.object_key);
+    if (
+      bytes.length !== Number(source.bytes) ||
+      sha256(bytes) !== source.sha256
+    )
+      throw new AppError(
+        422,
+        "COPY_SOURCE_INTEGRITY",
+        "The retained original does not match its recorded byte count and hash. Assignment was not saved.",
+      );
+    if (
+      source.profile === "plan-png-v1" &&
+      Buffer.from(bytes.subarray(0, 8)).toString("hex") !== "89504e470d0a1a0a"
+    )
+      throw new AppError(
+        422,
+        "COPY_FORMAT",
+        "The selected PNG source does not contain a PNG file.",
+      );
+    files.push({
+      bytes,
+      name: source.name,
+      format: copyFormats[source.profile],
+      entityIds: [input.buildingId],
+      copiedFrom: {
+        caseId: input.caseId,
+        sourceRevisionId: source.id,
+        sourceHash: source.sha256,
+        sourceRevision: source.revision,
+        sourceProfile: source.profile,
+        reason,
+        copiedAt,
+        actor: "local-demo-operator",
+      },
+    });
+  }
+  return attachDocumentBatch(id, input.expectedRevision, files, copy);
+}
+
+type DocumentFile = {
+  bytes: Uint8Array;
+  name: string;
+  format: "pdf" | "docx" | "text" | "csv" | "png" | "jpeg";
+  entityIds: string[];
+  copiedFrom?: Omit<
+    NonNullable<import("@ulpin/contracts").DocumentPart["copiedFrom"]>,
+    "locator"
+  >;
+};
+type CopyBatch = {
+  caseId: string;
+  buildingId: string;
+  sourceIds: string[];
+  reason: string;
+  operationKey: string;
+  payloadHash: string;
+  sourceFingerprint: string;
+};
+const documentMime = {
+  pdf: "application/pdf",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  text: "text/plain",
+  csv: "text/csv",
+  png: "image/png",
+  jpeg: "image/jpeg",
+};
+async function extractDocument(file: DocumentFile) {
+  return file.format === "png" || file.format === "jpeg"
+    ? {
+        parts: [
+          {
+            locator: { label: "image" },
+            text: "Image reference: manual calibration and interpretation required.",
+          },
+        ],
+        warnings: [
+          "Image received as reference only; no dimensions or geometry have been extracted.",
+        ],
+      }
+    : await areaGeo<{
+        parts: {
+          locator: { label: string; page?: number; row?: number };
+          text: string;
+        }[];
+        warnings?: string[];
+        status?: string;
+        candidates?: {
+          subject: string;
+          property: string;
+          value: unknown;
+          unit?: string;
+          referenceFrameId?: string;
+          partIndex: number;
+        }[];
+      }>("extract", {
+        format: file.format,
+        base64: Buffer.from(file.bytes).toString("base64"),
+      });
+}
+
 export async function attachDocument(
   id: string,
   expectedRevision: number,
-  file: {
-    bytes: Uint8Array;
-    name: string;
-    format: "pdf" | "docx" | "text" | "png" | "jpeg";
-    entityIds: string[];
-  },
+  file: DocumentFile,
 ) {
-  if (!file.bytes.length || file.bytes.length > 16 * 1024 * 1024)
-    throw new AppError(
-      413,
-      "FILE_SIZE",
-      "Choose a nonempty document up to 16 MiB.",
-    );
+  return attachDocumentBatch(id, expectedRevision, [file]);
+}
+
+async function attachDocumentBatch(
+  id: string,
+  expectedRevision: number,
+  files: DocumentFile[],
+  copy?: CopyBatch,
+) {
   const pkg = await getPackage(id);
-  if (pkg.revision !== expectedRevision || pkg.state === "COMMITTED")
+  if (pkg.revision !== expectedRevision || pkg.state === "COMMITTED") {
+    if (
+      copy &&
+      (await transaction(async (client) => {
+        const row = (
+          await client.query(
+            "SELECT case_id FROM import_packages WHERE id=$1",
+            [id],
+          )
+        ).rows[0];
+        return copiedOperation(client, row.case_id, copy);
+      }))
+    )
+      return pkg;
     conflict();
-  if (file.entityIds.some((id) => !pkg.features.some((f) => f.id === id)))
-    throw new AppError(
-      422,
-      "ASSOCIATION",
-      "Choose buildings present in this package.",
-    );
-  const mime = {
-    pdf: "application/pdf",
-    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    text: "text/plain",
-    png: "image/png",
-    jpeg: "image/jpeg",
-  }[file.format];
-  const sourceId = randomUUID(),
-    digest = sha256(file.bytes),
-    key = `areas/${sourceId}/${digest}`;
-  return originalAttempt("sources", sourceId, async (remember) => {
-    remember(key);
-    await putOriginal(key, file.bytes, mime);
-    const extracted =
-      file.format === "png" || file.format === "jpeg"
-        ? {
-            parts: [
-              {
-                locator: { label: "image" },
-                text: "Image reference: manual calibration and interpretation required.",
-              },
-            ],
-            warnings: [
-              "Image received as reference only; no dimensions or geometry have been extracted.",
-            ],
-          }
-        : await areaGeo<{
-            parts: {
-              locator: { label: string; page?: number; row?: number };
-              text: string;
-            }[];
-            warnings?: string[];
-            status?: string;
-          }>("extract", {
-            format: file.format,
-            base64: Buffer.from(file.bytes).toString("base64"),
-          });
+  }
+  for (const file of files) {
+    if (!file.bytes.length || file.bytes.length > 16 * 1024 * 1024)
+      throw new AppError(
+        413,
+        "FILE_SIZE",
+        "Choose a nonempty document up to 16 MiB.",
+      );
+    if (
+      file.entityIds.some(
+        (entityId) => !pkg.features.some((f) => f.id === entityId),
+      )
+    )
+      throw new AppError(
+        422,
+        "ASSOCIATION",
+        "Choose buildings present in this package.",
+      );
+  }
+  const prepared: {
+    file: DocumentFile;
+    sourceId: string;
+    digest: string;
+    key: string;
+    extracted: Awaited<ReturnType<typeof extractDocument>>;
+  }[] = [];
+  for (const file of files) {
+    const sourceId = randomUUID(),
+      digest = sha256(file.bytes),
+      key = `areas/${sourceId}/${digest}`;
+    const extracted = await extractDocument(file);
+    if (!extracted.parts.length && file.copiedFrom)
+      extracted.parts.push({
+        locator: { label: "original file" },
+        text: "No native text was extracted. Read the retained original; geometry and dimensions require explicit evidence.",
+      });
+    prepared.push({ file, sourceId, digest, key, extracted });
+  }
+  // All allocated sources are committed together. The first row owns cleanup for the entire attempt.
+  return originalAttempt("sources", prepared[0].sourceId, async (remember) => {
+    for (const item of prepared) {
+      remember(item.key);
+      await putOriginal(
+        item.key,
+        item.file.bytes,
+        documentMime[item.file.format],
+      );
+    }
     return transaction(async (client) => {
-      const current = await lockedPackage(client, id, expectedRevision);
       const row = (
-        await client.query("SELECT case_id FROM import_packages WHERE id=$1", [
-          id,
-        ])
+        await client.query(
+          "SELECT case_id,body FROM import_packages WHERE id=$1 FOR UPDATE",
+          [id],
+        )
       ).rows[0];
-      await client.query(
-        "INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,$4,$5,$6,$7,$8,'inspected',$9)",
-        [
-          sourceId,
-          row.case_id,
-          file.name,
-          `${file.format}-reference-v2`,
-          mime,
-          file.bytes.length,
-          digest,
-          key,
-          { status: "reference_only", partCount: extracted.parts.length },
-        ],
-      );
-      current.sourceRevisionIds.push(sourceId);
-      current.warnings.push(...(extracted.warnings || []));
-      if (!extracted.parts.length)
-        current.warnings.push(
-          `${file.name}: no native text was extracted. Original retained; manual reading or calibration is required.`,
+      if (!row) notFound("Import package not found.");
+      if (copy) {
+        const replay = await copiedOperation(client, row.case_id, copy);
+        if (replay) return row.body as ImportPackage;
+      }
+      const current = await lockedPackage(client, id, expectedRevision);
+      if (copy) {
+        const selected = await copySources(client, id, copy);
+        if (sourceCopyFingerprint(selected) !== copy.sourceFingerprint)
+          conflict(
+            "A selected original or its property association changed. Refresh before assigning documents.",
+          );
+        if (
+          current.parts.some(
+            (part) =>
+              part.copiedFrom?.caseId === copy.caseId &&
+              copy.sourceIds.includes(part.copiedFrom.sourceRevisionId),
+          )
+        )
+          throw new AppError(
+            409,
+            "DOCUMENT_ALREADY_COPIED",
+            "A selected document is already in this property's preparation. Select only new documents.",
+          );
+      }
+      for (const { file, sourceId, digest, key, extracted } of prepared) {
+        await client.query(
+          "INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,$4,$5,$6,$7,$8,'inspected',$9)",
+          [
+            sourceId,
+            row.case_id,
+            file.name,
+            `${file.format}-reference-v2`,
+            documentMime[file.format],
+            file.bytes.length,
+            digest,
+            key,
+            {
+              status: "reference_only",
+              partCount: extracted.parts.length,
+              ...(file.copiedFrom
+                ? {
+                    copiedFrom: {
+                      ...file.copiedFrom,
+                      locator: "original file",
+                    },
+                  }
+                : {}),
+            },
+          ],
         );
-      current.parts.push(
-        ...extracted.parts.map((part) => ({
-          id: randomUUID(),
-          sourceRevisionId: sourceId,
-          locator: part.locator.label,
-          text: part.text,
-          entityIds: file.entityIds,
-        })),
-      );
+        current.sourceRevisionIds.push(sourceId);
+        current.warnings.push(...(extracted.warnings || []));
+        if (!extracted.parts.length)
+          current.warnings.push(
+            `${file.name}: no native text was extracted. Original retained; manual reading or calibration is required.`,
+          );
+        const partsStart = current.parts.length;
+        current.parts.push(
+          ...extracted.parts.map((part) => ({
+            id: randomUUID(),
+            sourceRevisionId: sourceId,
+            locator: part.locator.label,
+            text: part.text,
+            entityIds: file.entityIds,
+            ...(file.copiedFrom
+              ? {
+                  copiedFrom: {
+                    ...file.copiedFrom,
+                    locator: part.locator.label,
+                  },
+                }
+              : {}),
+          })),
+        );
+        for (const candidate of "candidates" in extracted
+          ? (extracted.candidates ?? [])
+          : []) {
+          const part = current.parts[partsStart + candidate.partIndex];
+          if (!part) continue;
+          for (const entityId of file.entityIds) {
+            const property =
+              candidate.property === "space.footprint"
+                ? "space.geometry"
+                : candidate.property;
+            const competing = current.factCandidates.filter(
+              (c) =>
+                c.entityId === entityId &&
+                c.subject === candidate.subject &&
+                c.property === property &&
+                JSON.stringify([
+                  c.value,
+                  c.unit ?? null,
+                  c.referenceFrameId ?? null,
+                ]) !==
+                  JSON.stringify([
+                    candidate.value,
+                    candidate.unit ?? null,
+                    candidate.referenceFrameId ?? null,
+                  ]),
+            );
+            if (competing.length) {
+              current.selectedClaimIds = (
+                current.selectedClaimIds ?? []
+              ).filter((id) => !competing.some((c) => c.id === id));
+              current.questions.push({
+                id: randomUUID(),
+                kind: "conflicting_claims",
+                entityId,
+                property,
+                message: `Sources disagree about ${candidate.subject}: ${property.split(".").at(-1)}. Review the source alternatives.`,
+                blocks: "dependent detailed geometry",
+              });
+            }
+            current.factCandidates.push({
+              id: randomUUID(),
+              entityId,
+              subject: candidate.subject,
+              property:
+                candidate.property === "space.footprint"
+                  ? "space.geometry"
+                  : candidate.property,
+              value: candidate.value,
+              unit: candidate.unit,
+              referenceFrameId: candidate.referenceFrameId,
+              evidence: [{ sourceRevisionId: sourceId, partId: part.id }],
+              method: "native_parse",
+              evidenceState: "source_supported",
+              worldStatus: current.features.find((f) => f.id === entityId)!
+                .worldStatus,
+            });
+          }
+        }
+      }
       current.revision++;
       delete current.review;
       current.state = current.questions.some((q) => !q.answer)
         ? "NEEDS_INPUT"
         : "READY_FOR_REVIEW";
       await savePackage(client, current);
+      if (copy) {
+        await client.query(
+          "INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'copy-case-documents',$3,$4)",
+          [
+            row.case_id,
+            copy.operationKey,
+            copy.payloadHash,
+            {
+              packageId: id,
+              revision: current.revision,
+              sourceRevisionIds: prepared.map((p) => p.sourceId),
+            },
+          ],
+        );
+        await client.query(
+          "INSERT INTO events(id,case_id,kind,message) VALUES($1,$2,'documents_assigned',$3)",
+          [
+            randomUUID(),
+            row.case_id,
+            `Explicitly copied ${files.length} document(s) from case ${copy.caseId} to building ${copy.buildingId}. ${copy.reason}`,
+          ],
+        );
+      }
       return current;
     });
   });
 }
+
 export async function addFact(
   id: string,
   expectedRevision: number,
@@ -1343,4 +2031,17 @@ export async function addFact(
     await savePackage(client, pkg);
     return pkg;
   });
+}
+
+export async function currentAreaCheckFingerprint(areaId: string) {
+  const area = await getArea(areaId);
+  const features = await withNeighbours(await loadAreaFeatures(area), area);
+  return sha256(
+    JSON.stringify({
+      features,
+      associations: await checkAssociations(features.map((f) => f.id)),
+      reference: area.reference,
+      validator: "area-check-officer-v1",
+    }),
+  );
 }

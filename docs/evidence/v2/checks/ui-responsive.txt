@@ -1,0 +1,6 @@
+### Result
+{"url":"http://127.0.0.1:3002/v2/blocks/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=7ca4fba1-6c6a-44aa-89c8-d17b97bf159f","sizes":[{"width":1920,"height":1080,"scrollWidth":1920},{"width":1366,"height":768,"scrollWidth":1366},{"width":1093,"height":614,"scrollWidth":1093},{"width":390,"height":844,"scrollWidth":390}]}
+### Ran Playwright code
+```js
+await (async (page) => { await page.getByRole("heading",{name:"Building 353927",exact:true}).waitFor(); await page.getByRole("button",{name:"Fit block",exact:true}).click(); await page.screenshot({path:"output/playwright/v2-root/block-3d-final-1440.png"}); const sizes=[]; for(const [width,height] of [[1920,1080],[1366,768],[1093,614],[390,844]]) { await page.setViewportSize({width,height}); await page.screenshot({path:`output/playwright/v2-root/block-final-${width}.png`}); sizes.push(await page.evaluate(()=>({width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth}))); } await page.setViewportSize({width:1440,height:900}); return {url:page.url(),sizes}; })(page);
+```

@@ -1,0 +1,32 @@
+
+> 3d-ulpin@ test:ui /Users/vinayak/Desktop/3D Ulpin
+> tsx --tsconfig apps/web/tsconfig.json --test tests/v2-*.test.ts apps/web/lib/legacy-url.test.ts apps/web/features/officer/workspace/measurement.test.ts
+
+✔ pixel scale produces metric length, area and closed perimeter without changing original points (1.868541ms)
+✔ two actual controls rotate, scale and translate pixel geometry into a named metre frame (0.110583ms)
+✔ calibration validity is bound to original bytes and page (0.213041ms)
+✔ invalid crossing boundaries are rejected and angle corner is the middle point (0.182417ms)
+✔ native geometry retains declared metric coordinates while display Y is inverted (0.10825ms)
+✔ historical links preserve identity and repeated context while reaching the replacement interface (1.395208ms)
+✔ root opens the block directory and case bookmarks open their saved workspace (0.111375ms)
+✔ compatibility is idempotent and leaves source/API/external URLs unchanged (0.116833ms)
+✔ shared block bounds support 200,000 vertices without argument-count overflow (43.142291ms)
+✔ empty, extent-only and degenerate selections retain usable display bounds (0.126292ms)
+✔ mixed finding geometry retains polygon holes, open contacts and every point (0.742583ms)
+✔ independent layout stores retain coherent selection and bounded recency through block switches (0.297167ms)
+✔ versioned browser storage rejects malformed state and projects only safe recent fields (0.215791ms)
+✔ hydration preserves a route-driven selection and safely restores a separate new layout (0.202167ms)
+✔ navigation preserves encoded physical and record identities without rewriting evidence endpoints (0.219792ms)
+✔ shared basement lookup offers each physical parent and never pairs first parent with another parent's area (0.216209ms)
+✔ parcel intersections and legacy registry IDs do not become canonical building choices (0.099958ms)
+✔ main navigation always opens directories independently of contextual property routes (0.056459ms)
+✔ plan geometry keeps independent rings, multipart islands and line contacts with a display-only y flip (0.203917ms)
+✔ actual React resource hook ignores stale refreshes and callbacks from a previous property (270.657042ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 617.793375

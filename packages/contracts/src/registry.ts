@@ -7,7 +7,7 @@ import type {
   SourceRevision,
 } from "./index";
 export type RegistryKind = "parcel" | "building" | "floor" | "space";
-export type SpaceUse = "apartment" | "common" | "basement" | "utility";
+export type SpaceUse = "apartment" | "common" | "basement" | "utility" | "unspecified";
 export interface RegistryRight {
   party: string;
   type: "ownership_claim" | "shared_use" | "easement";
@@ -61,6 +61,7 @@ export interface RegistryDraft {
   createdAt: string;
 }
 export interface RegistryReview {
+  preparationFingerprint?: string;
   id: string;
   draftId: string;
   draftRevision: number;

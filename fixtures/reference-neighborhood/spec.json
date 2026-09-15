@@ -1,0 +1,443 @@
+{
+  "name": "Lake View \u00b7 demonstration",
+  "origin": [
+    520000,
+    3150000
+  ],
+  "benchmark": "BM-LAKEVIEW-DEMO",
+  "landscapeHash": "db6defdb36ef0e5fb4498d6ffa4bf822389a851734ff5b48f66cd1580707b566",
+  "buildings": [
+    {
+      "key": "A",
+      "name": "12 Lake View Road",
+      "x": 14,
+      "y": 14,
+      "w": 20,
+      "d": 18,
+      "floors": 4,
+      "color": "#d6c7b4",
+      "roof": "terrace",
+      "assetHash": "4b9bb5dbce49015dd5c310b5a7e4c674066b947596b44a45f60583711eee0dff",
+      "rooms": [
+        {
+          "alias": "01",
+          "name": "Living / dining",
+          "x": 0.3,
+          "y": 0.3,
+          "w": 8.2,
+          "d": 8.6
+        },
+        {
+          "alias": "02",
+          "name": "Bedroom",
+          "x": 0.3,
+          "y": 9.1,
+          "w": 8.2,
+          "d": 8.6
+        },
+        {
+          "alias": "03",
+          "name": "Studio",
+          "x": 11.5,
+          "y": 0.3,
+          "w": 8.2,
+          "d": 8.6
+        },
+        {
+          "alias": "04",
+          "name": "Bedroom / study",
+          "x": 11.5,
+          "y": 9.1,
+          "w": 8.2,
+          "d": 8.6
+        },
+        {
+          "alias": "C",
+          "name": "Common hall & stairs",
+          "x": 8.5,
+          "y": 0.3,
+          "w": 3,
+          "d": 17.4
+        }
+      ]
+    },
+    {
+      "key": "B",
+      "name": "18 Lake View Road",
+      "x": 46,
+      "y": 14,
+      "w": 18,
+      "d": 20,
+      "floors": 3,
+      "color": "#c9d2cf",
+      "roof": "gable",
+      "assetHash": "9f487da4ce6ff5be6c63b7eef20d2882023df7d9177f95708c08b59be8752b62",
+      "rooms": [
+        {
+          "alias": "01",
+          "name": "Living / dining",
+          "x": 0.3,
+          "y": 0.3,
+          "w": 7.2,
+          "d": 9.6
+        },
+        {
+          "alias": "02",
+          "name": "Bedroom",
+          "x": 0.3,
+          "y": 10.1,
+          "w": 7.2,
+          "d": 9.6
+        },
+        {
+          "alias": "03",
+          "name": "Studio",
+          "x": 10.5,
+          "y": 0.3,
+          "w": 7.2,
+          "d": 9.6
+        },
+        {
+          "alias": "04",
+          "name": "Bedroom / study",
+          "x": 10.5,
+          "y": 10.1,
+          "w": 7.2,
+          "d": 9.6
+        },
+        {
+          "alias": "C",
+          "name": "Common hall & stairs",
+          "x": 7.5,
+          "y": 0.3,
+          "w": 3,
+          "d": 19.4
+        }
+      ]
+    },
+    {
+      "key": "C",
+      "name": "24 Lake View Road",
+      "x": 78,
+      "y": 14,
+      "w": 20,
+      "d": 18,
+      "floors": 5,
+      "color": "#e5d6c4",
+      "roof": "terrace",
+      "assetHash": "80f48f1fbb94812801a71a5ef8c9e23dc0ae534b37d0093a6f81d668eae90f89",
+      "rooms": [
+        {
+          "alias": "01",
+          "name": "Living / dining",
+          "x": 0.3,
+          "y": 0.3,
+          "w": 8.2,
+          "d": 8.6
+        },
+        {
+          "alias": "02",
+          "name": "Bedroom",
+          "x": 0.3,
+          "y": 9.1,
+          "w": 8.2,
+          "d": 8.6
+        },
+        {
+          "alias": "03",
+          "name": "Studio",
+          "x": 11.5,
+          "y": 0.3,
+          "w": 8.2,
+          "d": 8.6
+        },
+        {
+          "alias": "04",
+          "name": "Bedroom / study",
+          "x": 11.5,
+          "y": 9.1,
+          "w": 8.2,
+          "d": 8.6
+        },
+        {
+          "alias": "C",
+          "name": "Common hall & stairs",
+          "x": 8.5,
+          "y": 0.3,
+          "w": 3,
+          "d": 17.4
+        }
+      ]
+    },
+    {
+      "key": "D",
+      "name": "2 Park Lane",
+      "x": 110,
+      "y": 14,
+      "w": 16,
+      "d": 20,
+      "floors": 3,
+      "color": "#cbd0d4",
+      "roof": "gable",
+      "assetHash": "0bd6e5cbe95ff044cc0fa5da8ccbff22041002d2ab288e7901c805202fbedde5",
+      "rooms": [
+        {
+          "alias": "01",
+          "name": "Living / dining",
+          "x": 0.3,
+          "y": 0.3,
+          "w": 6.2,
+          "d": 9.6
+        },
+        {
+          "alias": "02",
+          "name": "Bedroom",
+          "x": 0.3,
+          "y": 10.1,
+          "w": 6.2,
+          "d": 9.6
+        },
+        {
+          "alias": "03",
+          "name": "Studio",
+          "x": 9.5,
+          "y": 0.3,
+          "w": 6.2,
+          "d": 9.6
+        },
+        {
+          "alias": "04",
+          "name": "Bedroom / study",
+          "x": 9.5,
+          "y": 10.1,
+          "w": 6.2,
+          "d": 9.6
+        },
+        {
+          "alias": "C",
+          "name": "Common hall & stairs",
+          "x": 6.5,
+          "y": 0.3,
+          "w": 3,
+          "d": 19.4
+        }
+      ]
+    },
+    {
+      "key": "E",
+      "name": "7 Garden Walk",
+      "x": 14,
+      "y": 66,
+      "w": 18,
+      "d": 16,
+      "floors": 2,
+      "color": "#e1d9c9",
+      "roof": "gable",
+      "assetHash": "b80839a946a9112c39aa782639d1f76a09b07a1a783569b3216c80de07f21d8d",
+      "rooms": [
+        {
+          "alias": "01",
+          "name": "Living / dining",
+          "x": 0.3,
+          "y": 0.3,
+          "w": 7.2,
+          "d": 7.6
+        },
+        {
+          "alias": "02",
+          "name": "Bedroom",
+          "x": 0.3,
+          "y": 8.1,
+          "w": 7.2,
+          "d": 7.6
+        },
+        {
+          "alias": "03",
+          "name": "Studio",
+          "x": 10.5,
+          "y": 0.3,
+          "w": 7.2,
+          "d": 7.6
+        },
+        {
+          "alias": "04",
+          "name": "Bedroom / study",
+          "x": 10.5,
+          "y": 8.1,
+          "w": 7.2,
+          "d": 7.6
+        },
+        {
+          "alias": "C",
+          "name": "Common hall & stairs",
+          "x": 7.5,
+          "y": 0.3,
+          "w": 3,
+          "d": 15.4
+        }
+      ]
+    },
+    {
+      "key": "F",
+      "name": "11 Garden Walk",
+      "x": 46,
+      "y": 66,
+      "w": 20,
+      "d": 20,
+      "floors": 4,
+      "color": "#d7c8bf",
+      "roof": "terrace",
+      "assetHash": "a2b81299c63d29c0b95ed83b6a7cf301925c530fc0f2bf80b4e28959324c1df0",
+      "rooms": [
+        {
+          "alias": "01",
+          "name": "Living / dining",
+          "x": 0.3,
+          "y": 0.3,
+          "w": 8.2,
+          "d": 9.6
+        },
+        {
+          "alias": "02",
+          "name": "Bedroom",
+          "x": 0.3,
+          "y": 10.1,
+          "w": 8.2,
+          "d": 9.6
+        },
+        {
+          "alias": "03",
+          "name": "Studio",
+          "x": 11.5,
+          "y": 0.3,
+          "w": 8.2,
+          "d": 9.6
+        },
+        {
+          "alias": "04",
+          "name": "Bedroom / study",
+          "x": 11.5,
+          "y": 10.1,
+          "w": 8.2,
+          "d": 9.6
+        },
+        {
+          "alias": "C",
+          "name": "Common hall & stairs",
+          "x": 8.5,
+          "y": 0.3,
+          "w": 3,
+          "d": 19.4
+        }
+      ]
+    },
+    {
+      "key": "G",
+      "name": "15 Garden Walk",
+      "x": 78,
+      "y": 66,
+      "w": 16,
+      "d": 18,
+      "floors": 3,
+      "color": "#ced5cd",
+      "roof": "terrace",
+      "assetHash": "86177872b430a647be7fa36d5b606bc4f3b1ea971b9f731c2c896d28b02096b5",
+      "rooms": [
+        {
+          "alias": "01",
+          "name": "Living / dining",
+          "x": 0.3,
+          "y": 0.3,
+          "w": 6.2,
+          "d": 8.6
+        },
+        {
+          "alias": "02",
+          "name": "Bedroom",
+          "x": 0.3,
+          "y": 9.1,
+          "w": 6.2,
+          "d": 8.6
+        },
+        {
+          "alias": "03",
+          "name": "Studio",
+          "x": 9.5,
+          "y": 0.3,
+          "w": 6.2,
+          "d": 8.6
+        },
+        {
+          "alias": "04",
+          "name": "Bedroom / study",
+          "x": 9.5,
+          "y": 9.1,
+          "w": 6.2,
+          "d": 8.6
+        },
+        {
+          "alias": "C",
+          "name": "Common hall & stairs",
+          "x": 6.5,
+          "y": 0.3,
+          "w": 3,
+          "d": 17.4
+        }
+      ]
+    },
+    {
+      "key": "H",
+      "name": "6 Park Lane",
+      "x": 110,
+      "y": 66,
+      "w": 18,
+      "d": 20,
+      "floors": 4,
+      "color": "#ddd6c5",
+      "roof": "gable",
+      "assetHash": "af3699aa02a04f88a6bc2702097d2c21f918e5f0bde533ce4eeeecfc401d311c",
+      "rooms": [
+        {
+          "alias": "01",
+          "name": "Living / dining",
+          "x": 0.3,
+          "y": 0.3,
+          "w": 7.2,
+          "d": 9.6
+        },
+        {
+          "alias": "02",
+          "name": "Bedroom",
+          "x": 0.3,
+          "y": 10.1,
+          "w": 7.2,
+          "d": 9.6
+        },
+        {
+          "alias": "03",
+          "name": "Studio",
+          "x": 10.5,
+          "y": 0.3,
+          "w": 7.2,
+          "d": 9.6
+        },
+        {
+          "alias": "04",
+          "name": "Bedroom / study",
+          "x": 10.5,
+          "y": 10.1,
+          "w": 7.2,
+          "d": 9.6
+        },
+        {
+          "alias": "C",
+          "name": "Common hall & stairs",
+          "x": 7.5,
+          "y": 0.3,
+          "w": 3,
+          "d": 19.4
+        }
+      ]
+    }
+  ]
+}

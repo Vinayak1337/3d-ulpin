@@ -1,0 +1,34 @@
+
+> 3d-ulpin@ test:v2 /Users/vinayak/Desktop/3D Ulpin
+> tsx --tsconfig apps/web/tsconfig.json --test tests/v2-*.test.ts apps/web/lib/legacy-url.test.ts apps/web/features/v2/workspace/measurement.test.ts
+
+✔ pixel scale produces metric length, area and closed perimeter without changing original points (3.088625ms)
+✔ two actual controls rotate, scale and translate pixel geometry into a named metre frame (0.246292ms)
+✔ calibration validity is bound to original bytes and page (0.320208ms)
+✔ invalid crossing boundaries are rejected and angle corner is the middle point (0.153ms)
+✔ native geometry retains declared metric coordinates while display Y is inverted (0.118875ms)
+✔ compatibility pages redirect without losing encoded or repeated queries (1.368167ms)
+✔ root defaults to V2 while case bookmarks preserve all their legacy context (0.123875ms)
+✔ legacy presentation URLs are idempotent and never rewrite API/evidence/external links (0.066083ms)
+✔ retained legacy styles affect only the legacy subtree even after its removal (482.635459ms)
+✔ shared block bounds support 200,000 vertices without argument-count overflow (39.087375ms)
+✔ empty, extent-only and degenerate selections retain usable display bounds (0.1125ms)
+✔ mixed finding geometry retains polygon holes, open contacts and every point (0.842542ms)
+✔ independent layout stores retain coherent selection and bounded recency through block switches (0.314834ms)
+✔ versioned browser storage rejects malformed state and projects only safe recent fields (0.231791ms)
+✔ hydration preserves a route-driven selection and safely restores a separate new layout (0.217208ms)
+✔ navigation preserves encoded physical and record identities without rewriting evidence endpoints (0.228875ms)
+✔ shared basement lookup offers each physical parent and never pairs first parent with another parent's area (0.215166ms)
+✔ parcel intersections and legacy registry IDs do not become canonical building choices (0.102417ms)
+✔ header navigation rejects an unrelated query block and stale stored property before and after dossier loading (0.2325ms)
+✔ header accepts actual cross-block membership, handles areaId alias and never makes a parcel a building (0.158ms)
+✔ plan geometry keeps independent rings, multipart islands and line contacts with a display-only y flip (0.230083ms)
+✔ actual React resource hook ignores stale refreshes and callbacks from a previous property (501.86825ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 828.485917

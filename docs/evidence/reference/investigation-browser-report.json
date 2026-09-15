@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "reference": "LV-UI-1789470348822",
+  "buildingId": "2ae217bb-e058-4f21-8c4f-2bed50f0b865",
+  "investigationId": "ff175fff-af0d-4afd-b09c-12e9c2f7bd8e",
+  "status": "NEEDS_EVIDENCE",
+  "requestCount": 1,
+  "historyCount": 2,
+  "pendingEvidenceReviewGuard": "PASS",
+  "errors": []
+}

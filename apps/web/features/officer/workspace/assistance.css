@@ -1,0 +1,86 @@
+.assistance-panel {
+  border: 1px solid #dbe5dc;
+  border-radius: 6px;
+  padding: 12px;
+  margin-block: 14px;
+  font-size: 12px;
+  background: #f7faf5;
+}
+.assistance-panel summary {
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.assistance-panel p {
+  color: #6b7b6e;
+  line-height: 1.5;
+  margin: 12px 0;
+}
+.assistance-panel > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  margin: 12px 0;
+}
+.assistance-panel blockquote {
+  margin: 10px 0;
+  padding: 10px;
+  border-left: 2px solid #9bb89b;
+  background: white;
+  max-height: 150px;
+  overflow: auto;
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+.assistance-panel > small {
+  font-size: 10px;
+  color: #7e897d;
+  display: block;
+  margin-top: 10px;
+}
+.assistance-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.assistance-check,
+.assistance-candidate {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 8px !important;
+}
+.assistance-candidate span {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.assistance-candidate small {
+  font-size: 10px;
+}
+.assistance-crop {
+  position: relative;
+}
+.assistance-crop img {
+  display: block;
+  width: 100%;
+}
+.assistance-crop span {
+  position: absolute;
+  border: 2px solid #346845;
+  pointer-events: none;
+}
+.assistance-crop-fields {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.assistance-crop-fields input {
+  width: 100%;
+  padding: 5px !important;
+  font-size: 11px !important;
+}

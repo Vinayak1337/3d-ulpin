@@ -1,0 +1,97 @@
+{
+  "scope": "Local measurement notes; not registry geometry",
+  "workspaceId": "27200fd5-13e4-45ec-9780-8bef1fa7b496",
+  "calibrations": {
+    "2626a603-3fc0-4724-bcd5-a23e87d8ed0d:1": {
+      "sourceId": "2626a603-3fc0-4724-bcd5-a23e87d8ed0d",
+      "sourceHash": "334a6c522c99937439e83753427e794f6502d026ce5a1202da3b9c1422666747",
+      "page": 1,
+      "imagePoints": [
+        [
+          150,
+          199.99996871621352
+        ],
+        [
+          950.0000156418932,
+          199.99996871621352
+        ]
+      ],
+      "worldPoints": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ]
+      ],
+      "metresPerUnit": 0.012499999755595423,
+      "method": "known_distance",
+      "reason": "Authored synthetic fixture: 10.00 m dimension between pixel controls printed on retained source.",
+      "savedAt": "2026-09-15T00:07:09.073Z"
+    }
+  },
+  "measurements": [
+    {
+      "id": "df3505e2-f16a-4c99-8cad-90312c5ed4e2",
+      "sourceId": "2626a603-3fc0-4724-bcd5-a23e87d8ed0d",
+      "sourceHash": "334a6c522c99937439e83753427e794f6502d026ce5a1202da3b9c1422666747",
+      "page": 1,
+      "tool": "area",
+      "points": [
+        [
+          150,
+          199.99999084114893
+        ],
+        [
+          949.9999633645955,
+          199.99999084114893
+        ],
+        [
+          949.9999633645955,
+          680.0000183177024
+        ],
+        [
+          150,
+          680.0000183177024
+        ]
+      ],
+      "value": 59.999998340629745,
+      "unit": "m²",
+      "label": "Area",
+      "reference": "Local scale only",
+      "calibration": {
+        "sourceId": "2626a603-3fc0-4724-bcd5-a23e87d8ed0d",
+        "sourceHash": "334a6c522c99937439e83753427e794f6502d026ce5a1202da3b9c1422666747",
+        "page": 1,
+        "imagePoints": [
+          [
+            150,
+            199.99996871621352
+          ],
+          [
+            950.0000156418932,
+            199.99996871621352
+          ]
+        ],
+        "worldPoints": [
+          [
+            0,
+            0
+          ],
+          [
+            10,
+            0
+          ]
+        ],
+        "metresPerUnit": 0.012499999755595423,
+        "method": "known_distance",
+        "reason": "Authored synthetic fixture: 10.00 m dimension between pixel controls printed on retained source.",
+        "savedAt": "2026-09-15T00:07:09.073Z"
+      },
+      "noted": true,
+      "createdAt": "2026-09-15T00:07:23.421Z"
+    }
+  ]
+}

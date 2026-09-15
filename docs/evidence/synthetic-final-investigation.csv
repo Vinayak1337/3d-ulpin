@@ -1,0 +1,7 @@
+"record_type","permanent_id","name_or_issue","revision","area_m2","volume_m3","source_locators","status_or_missing"
+"building","3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:B001","Synthetic Property A","1","120","","[{""featureId"":""A"",""sourceRevisionId"":""eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0""}]",""
+"building","3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:B001","Synthetic Property A","2","","","[{""locator"":""feature property"",""sourceId"":""016e5931-981e-44bf-bd5b-c0781f0e0b99""}]","recorded"
+"floor","3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:F001","property / Ground","2","","","[{""locator"":""feature property"",""sourceId"":""016e5931-981e-44bf-bd5b-c0781f0e0b99""}]","recorded"
+"space","3DU-4CC6J5WEQ99HY9BWKRJ67J6P1A:S001","Synthetic Room A01","2","36","144","[{""locator"":""canonical space UI-A-01"",""sourceId"":""016e5931-981e-44bf-bd5b-c0781f0e0b99""},{""locator"":""reviewed placement controls"",""sourceId"":""016e5931-981e-44bf-bd5b-c0781f0e0b99""}]","recorded"
+"discrepancy","39426b76-986c-5019-9c99-e0229801cc0f","OUTSIDE_CONFIRMED_PARCEL","6","20","","[{""featureId"":""A"",""sourceRevisionId"":""eb71c699-5ea2-4eea-a1b7-4c7cfb87c8f0""},{""featureId"":""PA"",""sourceRevisionId"":""4e98e80c-ed08-4091-bd21-653a53d79563""}]","Ground occupation extends outside the union of explicitly associated recorded parcels. This is a geometric discrepancy requiring evidence review, not a legal conclusion."
+"request","b908cbf1-a9a7-4460-b373-4e691f8e1b53","Confirm that the retained revised synthetic CSV changes A upper to4m and preserves the0m lower reference.","","","","[]","ANSWERED"

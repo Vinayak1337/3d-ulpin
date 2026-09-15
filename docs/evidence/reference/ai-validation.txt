@@ -1,0 +1,34 @@
+
+> 3d-ulpin@ test:ai /Users/vinayak/Desktop/3D Ulpin
+> tsx --test tests/ai-extraction/*.test.ts
+
+✔ 01 explicit exterior metres preserves unresolved evidence and entity world status (3.865459ms)
+✔ 02 source millimetres remain source units until deterministic apply conversion (0.627417ms)
+✔ 03 conflicting height claims stay separate (0.304208ms)
+✔ 04 labels must quote actual source words (0.290083ms)
+✔ 05 guessed floor count and unknown vertical reference fail (0.443625ms)
+✔ 06 source-part and entity association cannot be widened by model (0.300709ms)
+✔ 07 uncalibrated geometry and arbitrary commands rejected (0.246208ms)
+✔ 08 image quote is explicitly unresolved and references only selected region (0.378667ms)
+✔ 09 private identifiers are excluded from outbound text (4.060208ms)
+✔ 10 source status and questions remain proposals; fingerprints change with evidence (1.258208ms)
+✔ catalog must prove every fee zero, not merely a free-looking route name (0.845042ms)
+✔ missing credential does not call network and does not report free entitlement (0.696833ms)
+✔ authenticated catalog uses fixed Nous HTTPS host and forbids redirect credentials (66.177209ms)
+✔ model has no tools and selected image data stays bounded to supplied crop (1.827125ms)
+✔ measured WKT geometry preserves exact outer ring and courtyard with authorized source frame (1.778458ms)
+✔ measured multipart source GeoJSON preserves every component (0.631959ms)
+✔ AI cannot translate source outlines or add invented holes (0.562083ms)
+✔ geometry requires source metres and authorized explicit horizontal frame; pixels remain questions (0.460583ms)
+✔ native geometry profile rejects open, three-dimensional, oversized and non-finite rings (0.159875ms)
+✔ 20 bounded source roles retain exact part locator and remain unresolved (0.248584ms)
+✔ 21 associations require selected entities and their exact identifier in selected evidence (0.329958ms)
+✔ 22 suggestions reject unknown roles, outside parts, fabricated quotes and excess output (0.225584ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 454.40025

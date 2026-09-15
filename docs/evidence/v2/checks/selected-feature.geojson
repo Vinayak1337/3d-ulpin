@@ -1,0 +1,76 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "f5ec75e8-b72b-4f72-9db2-1fb996e1372f",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              75.00000000000001,
+              28.025254985930832
+            ],
+            [
+              75.0001220757884,
+              28.025254985876604
+            ],
+            [
+              75.00012207589023,
+              28.025345258520083
+            ],
+            [
+              75.00000000000001,
+              28.025345258574298
+            ],
+            [
+              75.00000000000001,
+              28.025254985930832
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Synthetic Property A",
+        "identifier": "3DU-74XTKVHWFG9TGBV0H9W31AEG53:B001",
+        "kind": "building",
+        "geometryRole": "observed_ground_occupation",
+        "worldStatus": "synthetic",
+        "sourceRevisionId": "60027856-f3a5-41d1-aa94-69110881e7c6",
+        "revision": 1,
+        "height": {
+          "unit": "m",
+          "state": "source_supported",
+          "value": 9,
+          "method": "native_parse",
+          "meaning": "Authored fixture height only",
+          "evidence": [
+            {
+              "featureId": "A",
+              "sourceRevisionId": "60027856-f3a5-41d1-aa94-69110881e7c6"
+            }
+          ],
+          "reference": "building-relative; not aligned between features",
+          "originalUnit": "m",
+          "originalValue": 9
+        },
+        "areaM2": 120,
+        "analysisReference": {
+          "anchor": [
+            75.00000000000001,
+            28.025254985930832
+          ],
+          "origin": [
+            500000,
+            3100000
+          ],
+          "sourceCrs": "EPSG:32643",
+          "analysisCrs": "EPSG:32643",
+          "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=noop ellps=GRS80",
+          "verticalReference": "building-relative; not aligned between features"
+        }
+      }
+    }
+  ]
+}

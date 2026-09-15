@@ -1,0 +1,8 @@
+
+> 3d-ulpin@ test:officer /Users/vinayak/Desktop/3D Ulpin
+> tsx scripts/verify-officer.ts
+
+PASS Three same-property dossiers, exact20m² result, all participants and geographic overlay.
+PASS Two native CSV plan/level packages → reviewed canonical facts → existing worker build → same reserved building IDs, own floors/units and global unit lookup; concurrent opening does not duplicate cases.
+PASS Investigation request/response, explicit review transitions, retained snapshot/history and JSON/CSV/print registers.
+PASS AI route reports actual configuration; no mocked inference asserted.

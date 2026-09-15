@@ -1,0 +1,1 @@
+{"spatialReference": {"wkid": 32643}, "features": [{"attributes": {"id": "U-KNOWN", "name": "Synthetic source-level utility", "start_z": -1.2, "end_z": -2, "diameter_m": 0.8}, "geometry": {"paths": [[[500018, 3100005], [500042, 3100005]]]}}]}

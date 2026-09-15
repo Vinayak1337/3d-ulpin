@@ -1,0 +1,6 @@
+### Result
+{"header":{"x":0,"y":0,"width":1440,"height":70},"scroll":0}
+### Ran Playwright code
+```js
+await (async (page) => { await page.getByRole("heading",{name:"Building 353927",exact:true}).waitFor(); await page.screenshot({path:"output/playwright/v2-root/block-3d-final-1440.png",fullPage:true}); return {header:await page.locator(".v2-topbar").boundingBox(),scroll:await page.evaluate(()=>scrollY)}; })(page);
+```

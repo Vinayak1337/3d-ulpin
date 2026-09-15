@@ -1,0 +1,182 @@
+{
+  "generator": "Built-in image generation; annotations on real application captures",
+  "date": "2026-09-15",
+  "outputs": [
+    {
+      "id": "01-start",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-47d784cc-a8db-4d18-bbdd-44f2c8ec5174.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/01-start.png"
+    },
+    {
+      "id": "02-block-map",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-a0dc0a68-3eed-4c37-bf10-6a029903015b.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/02-block-map.png"
+    },
+    {
+      "id": "03-import",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-78b5efc7-bda2-4184-b982-f7975f22344d.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/03-import.png"
+    },
+    {
+      "id": "04-register-floors",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-5f670d00-12ac-4c68-8315-ae0d4ccd6e8e.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/04-register-floors.png"
+    },
+    {
+      "id": "05-calibrate",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-cece323a-7a2f-415c-9e8c-b5e8b0d59987.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/05-calibrate.png"
+    },
+    {
+      "id": "06-measure-clear",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-bb70b316-b398-4e34-8ef0-61fd8b7a8513.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/06-measure-clear.png"
+    },
+    {
+      "id": "07-compare",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-31e1739a-f798-48d6-9e5f-801a5ff676ad.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/07-compare.png"
+    },
+    {
+      "id": "08-build-review",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-82bf217a-b36b-41c4-924d-cb80e01ca15d.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/08-build-review.png"
+    },
+    {
+      "id": "09-evidence-history",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-38f071d8-f96d-4a58-bcd8-0625b719dc49.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/09-evidence-history.png"
+    },
+    {
+      "id": "10-investigation",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-b287f318-b07a-4742-919e-8cb41efb7741.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/10-investigation.png"
+    },
+    {
+      "id": "11-downloads",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-b8f57317-e243-4915-960b-9186cf533f23.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/11-downloads.png"
+    },
+    {
+      "id": "12-workspace-start",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-871cd0b8-4c31-484d-a228-749e2f1f7b73.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/12-workspace-start.png"
+    },
+    {
+      "id": "13-parcels",
+      "generated": "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-c9636e4b-f694-448f-b167-024db77a2a2b.png",
+      "saved": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/13-parcels.png"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "01-start",
+      "prompt": "Use case: infographic-diagram. Edit the supplied REAL application screenshot into a polished instructional image, not a redesign. Preserve the screenshot's interface, controls, labels and dataset cards exactly. Add a clean white title band ABOVE it and numbered green annotation cards in unused space, with thin orange arrows pointing exactly to the named controls. Make all callout text large and readable. Landscape high resolution.\nTitle: \"01 / Start here — choose your block\"\nFive annotations: \"1. Choose a page\" arrow to the top navigation (Block Map / Property Register / Plan Workspace). \"2. Pick Demo or Real data\" arrow to the dataset buttons. \"3. Open Lake View to practise\" arrow to the Lake View Open block link. \"4. Find a saved block\" arrow to Find a block search. \"5. Search a property from any page\" arrow to top Search property or address.\nSmall bottom note: \"Location filters are coming soon. Lake View is fictional training data.\"\nDo not invent working filters or change the screenshot. Keep annotations outside important controls."
+    },
+    {
+      "name": "05-calibrate",
+      "prompt": "Create a high-resolution landscape how-to image by annotating the supplied REAL UI screenshot. This is a tutorial, NOT a UI redesign. Preserve all controls, labels and actual data. Add a white title band above the screen, dark green numbered callout cards and thin orange arrows to the exact controls. Keep text large and readable; do not cover targets. Use outer margins or unused space for callouts. No invented controls, measurements, statuses or records. Title \"05 / Calibrate — set the scale first\". Numbered callouts: \"1. Choose the original and page\" arrow to left Floor plan set thumbnail and Next page. \"2. Select Calibrate\" arrow to Calibrate tab. \"3. Click both ends of a known dimension\" two arrows to the two ends of the overall-width dimension along the bottom of the plan, not to rooms. \"4. Enter the supported distance in metres\" arrow to 20 input. \"5. Cite the dimension, then Apply calibration\" arrow to evidence field and Apply calibration. Bottom note: \"Apply enables after two points are selected. Calibration belongs to this source and page; scale is not geographic placement.\" The visible document's overall width is 20.00 m. Do not fabricate drawn points or change disabled state; annotations instruct the next action.",
+      "reference": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/screens/calibrate.png"
+    },
+    {
+      "name": "06-measure-clear",
+      "prompt": "Create a high-resolution landscape how-to image by annotating the supplied REAL UI screenshot. This is a tutorial, NOT a UI redesign. Preserve all controls, labels and actual data. Add a white title band above the screen, dark green numbered callout cards and thin orange arrows to the exact controls. Keep text large and readable; do not cover targets. Use outer margins or unused space for callouts. No invented controls, measurements, statuses or records. Title \"06 / Measure — draw, save or clear\". Callouts: \"1. Calibrate this page before metre measurements\" arrow to Calibrate tab and Uncalibrated badge. \"2. Choose a tool\" arrow to Distance / Area / Perimeter / Angle toolbar. \"3. Click the measurement points on the plan\" arrow to plan; subline \"Distance: 2 ends. Area: 3+ corners, then Finish.\" \"4. Read or delete saved notes here\" arrow to saved point note and Delete on right. \"5. Clear only the current drawing\" arrow to top Clear drawing Ctrl Q button; subline \"Ctrl+Q also works. Saved notes stay.\" \"6. Download measurement notes\" arrow to Export measurement notes bottom-right. Bottom note \"The visible saved point is in pixels. Metre values require calibration. Notes do not edit registry geometry.\" Preserve Uncalibrated and saved point state honestly.",
+      "reference": "/Users/vinayak/Desktop/3D Ulpin/docs/evidence/register-controls/workspace-clear-1920.png"
+    },
+    {
+      "name": "07-compare",
+      "prompt": "Create a high-resolution landscape how-to image by annotating the supplied REAL UI screenshot. This is a tutorial, NOT a UI redesign. Preserve all controls, labels and actual data. Add a white title band above the screen, dark green numbered callout cards and thin orange arrows to the exact controls. Keep text large and readable; do not cover targets. Use outer margins or unused space for callouts. No invented controls, measurements, statuses or records. Title \"07 / Compare — inspect two sources\". Callouts \"1. Choose source A on the left\" to selectedFloor plan set thumbnail. \"2. Open Compare\" to Compare tab. \"3. Choose source B\" to Compare with dropdown. \"4. Pick Overlay, Swipe or Side by side\" to corresponding right buttons. \"5. Adjust opacity in Overlay\" to Source B opacity slider. Bottom note \"This is visual inspection, not a measured conflict. Use Run check on the block for computed geometry findings.\" Preserve all real UI.",
+      "reference": "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/screens/compare.png"
+    },
+    {
+      "name": "02-block-map",
+      "prompt": "Annotate the supplied REAL app screenshot into a high-resolution instructional image, not a redesign. Preserve screenshot content. Use white outer margins, a title band, dark green numbered callout cards, and thin orange arrows pointing to the exact named controls. Large readable text, no obscured targets, no invented UI, measurements or records. Title \"02 / Block Map — select and check\". Six callouts: \"1. Choose Buildings or Parcels\" to left toggle. \"2. Click a building in the scene or list\" to selected 12 Lake View Road. \"3. Switch 2D / 3D or open Layers\" to scene modebuttons and Layers. \"4. Run check, then show conflicts\" to Run check and Hide conflicts(7) top; explain \"Hide conflicts means highlighting is already on.\" \"5. Open a finding to inspect the overlap\" to bottom findings list. \"6. Continue with this same property\" to Open register and Open workspace bottom right. Small footer \"Red marks computed overlaps for review. It does not prove a legal violation.\"",
+      "references": [
+        "/Users/vinayak/Desktop/3D Ulpin/docs/evidence/complete-demo/block-conflicts-1440.png"
+      ]
+    },
+    {
+      "name": "03-import",
+      "prompt": "Annotate the supplied REAL app screenshot into a high-resolution instructional image, not a redesign. Preserve screenshot content. Use white outer margins, a title band, dark green numbered callout cards, and thin orange arrows pointing to the exact named controls. Large readable text, no obscured targets, no invented UI, measurements or records. Title \"03 / Import — add a geographic source\". Portrait source screenshot can sit centered with broad left/right instruction margins in landscape final. Callouts: \"1. Choose the original GIS file\" to Choose File. \"2. Match its format and source CRS\" to Format and Source CRS. \"3. Name the dataset and package\" to namespace and package fields. \"4. Map a stable ID and feature type\" to Stable ID and Feature type. \"5. Describe what the geometry represents\" to Geometry meaning. Footer workflow with text \"Then scroll down: choose World status and Destination → Import & preview → review the result.\" Additional bottom note \"GeoJSON, ArcGIS JSON, GeoPackage or a proper Shapefile ZIP. A mixed plan/PDF ZIP is not a Shapefile ZIP.\" Do not invent or draw hidden buttons.",
+      "references": [
+        "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/screens/import.png"
+      ]
+    },
+    {
+      "name": "04-register-floors",
+      "prompt": "Annotate the supplied REAL app screenshot into a high-resolution instructional image, not a redesign. Preserve screenshot content. Use white outer margins, a title band, dark green numbered callout cards, and thin orange arrows pointing to the exact named controls. Large readable text, no obscured targets, no invented UI, measurements or records. Title \"04 / Register — explore floors and units\". Six callouts: \"1. Confirm the property and ULPINs\" to top building name, 3DULPIN line and2DULPIN badge. \"2. Open Floors & Units\" to active tab. \"3. Rotate with this circle\" to circular controller; subline \"Or hold Ctrl + left mouse and drag.\" \"4. Separate floors for inspection\" to Separate floors slider. \"5. Select a floor or unit\" arrows to Ground floorchip below scene and Living/dining unit table. \"6. Open plans for this property\" to Open Workspace top. Footer \"Selection keeps the canonical property. Exploded floors change the view, not measurements. Scroll down for selected-floor ID, evidence and downloads.\"",
+      "references": [
+        "/Users/vinayak/Desktop/3D Ulpin/docs/evidence/register-controls/floors-orbit-controller.png"
+      ]
+    },
+    {
+      "name": "08-build-review",
+      "prompt": "Annotate the supplied REAL app screenshot into a high-resolution instructional image, not a redesign. Preserve screenshot content. Use white outer margins, a title band, dark green numbered callout cards, and thin orange arrows pointing to the exact named controls. Large readable text, no obscured targets, no invented UI, measurements or records. Title \"08 / Build details — evidence, placement, review\". Create one tutorial sheet using two faithful screenshot crops side by side: Image1 right Source facts panel labeled \"A. Check the inputs\"; Image2 right lower Build and review panel labeled \"B. Build a proposal\". Include enough of the real workspace header to show Build details tab. Numbered callouts: \"1. Review each space and its cited source facts\" to Review a space and Lower level in image1. \"2. Confirm plan placement in the block\" to Place plans in this block in image2. \"3. Build proposed 3D details\" to actual button image2. \"4. Inspect actual 3D draft\" to actual bottom button image2. Bottom strip \"After processing: open Review proposed records, inspect the result, then record only the reviewed proposal.\" Second small note \"Missing facts or placement must be resolved first. Document assistance requires configuration; it is not spatial authority.\" Do not invent a visible review button in screenshots; stepafterprocessingis explanatory footer text.",
+      "references": [
+        "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/screens/build-facts.png",
+        "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/screens/build-action.png"
+      ]
+    },
+    {
+      "name": "09-evidence-history",
+      "prompt": "Make a high-resolution landscape tutorial sheet from the supplied REAL application screenshot(s). Preserve actual UI text, controls, data and state. Add a title band, dark green numbered callouts and thin orange arrows to exactly named controls. Put callouts in margins so controls remain visible. Short readable text. No fake UI or invented records. Title \"09 / Evidence — open the original\". Callouts \"1. Open Evidence\" to Evidence tab. \"2. Search or filter documents\" to Search documents and All dropdown. \"3. Select the source revision\" to A-floor-plans.pdf row and rev1. \"4. Open the unchanged original\" to Open original link. \"5. Use Issues and History for context\" arrows to Issues1 andHistory tabs. Footer \"Scroll below the preview for source details and hashes. A retained file is evidence receipt, not approval.\" Use portrait screenshot centered with side callouts; no fake preview.",
+      "references": [
+        "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/screens/evidence.png"
+      ]
+    },
+    {
+      "name": "10-investigation",
+      "prompt": "Make a high-resolution landscape tutorial sheet from the supplied REAL application screenshot(s). Preserve actual UI text, controls, data and state. Add a title band, dark green numbered callouts and thin orange arrows to exactly named controls. Put callouts in margins so controls remain visible. Short readable text. No fake UI or invented records. Title \"10 / Investigation — record what needs review\". Use portrait real form with broad instruction margins. Numbered callouts \"1. Open Investigation\" to tab. \"2. Give the case a reference\" to Local case reference. \"3. Select the case type\" to dropdown. \"4. Describe the observation\" to Initial observation field. \"5. Include the relevant findings\" to checked finding. Footer \"Scroll down and choose Open local case. Then use Evidence requests and Decisions to record follow-up.\" Second small note \"Opening a local case does not approve ownership or resolve a discrepancy. Do not mark ready while required evidence is missing.\" Do not invent offscreen buttons.",
+      "references": [
+        "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/screens/investigation.png"
+      ]
+    },
+    {
+      "name": "11-downloads",
+      "prompt": "Make a high-resolution landscape tutorial sheet from the supplied REAL application screenshot(s). Preserve actual UI text, controls, data and state. Add a title band, dark green numbered callouts and thin orange arrows to exactly named controls. Put callouts in margins so controls remain visible. Short readable text. No fake UI or invented records. Title \"11 / Download — choose the scope and evidence\". Two faithful screenshot crops side-by-side, image1 mainExportpropertyregisterdialog onleft andimage2 only Block register & sources box + heading onright. Labels \"A. Property, floor or unit\" and \"B. Entire saved block\". Callouts \"1. Select the download scope\" to left Download scope dropdown; subline \"Whole building, a floor, or the selected unit.\" \"2. PDF for the readable report\" to leftPDFtile. \"3. Report + sources for the originals too\" to leftZIPtile; subline \"ZIP: PDF + JSON + original files + source manifest.\" \"4. Block Export downloads all available records\" to rightblockPDF andblockreport+originalsourcesbuttons. Footer \"Reports carry 3D ULPINs, linked parcel 2D ULPINs, recorded data and revisions. Original files may span multiple floors. Demo IDs are not officially issued.\" Preserve selected floor ID; do not rewrite actual data.",
+      "references": [
+        "/Users/vinayak/Desktop/3D Ulpin/docs/evidence/register-controls/floor-export-dialog.png",
+        "/Users/vinayak/Desktop/3D Ulpin/docs/evidence/register-controls/block-export.png"
+      ]
+    },
+    {
+      "name": "12-workspace-start",
+      "prompt": "Make a high-resolution landscape tutorial sheet from the supplied REAL application screenshot(s). Preserve actual UI text, controls, data and state. Add a title band, dark green numbered callouts and thin orange arrows to exactly named controls. Put callouts in margins so controls remain visible. Short readable text. No fake UI or invented records. Title \"12 / Plan Workspace — open or start work\". Image1directory onleft; crop image2actualCreateaplanworkspace dialog onright. Numbered callouts \"1. Choose the workspace route\" to Plan Workspace nav. \"2. Open a property or saved workspace\" to Open a property card andSaved workspaces list. \"3. Start a new draft when needed\" to New workspace. \"4. Name it, then Create workspace\" to dialog Workspace name andCreateworkspacebutton. Footer \"Next use Add documents inside the workspace for original PDF, PNG or level CSV files. Assign the correct property before recording geometry.\" Second note \"Creating a workspace does not issue a property identity.\" No fake upload button in dialog.",
+      "references": [
+        "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/screens/workspace-start.png",
+        "/Users/vinayak/Desktop/3D Ulpin/docs/tutorial-images/screens/workspace-create.png"
+      ]
+    },
+    {
+      "name": "13-parcels",
+      "prompt": "Make a high-resolution landscape tutorial sheet from the supplied REAL application screenshot(s). Preserve actual UI text, controls, data and state. Add a title band, dark green numbered callouts and thin orange arrows to exactly named controls. Put callouts in margins so controls remain visible. Short readable text. No fake UI or invented records. Title \"13 / Parcels — read the land record\". Five callouts \"1. Switch the list to Parcels\" to leftParcelsbutton. \"2. Select a parcel\" to Parcel A row. \"3. Show labels on the map\" to topLabelsbutton. \"4. Read the 2D ULPIN and source status\" to rightDEMO-LV-P01,source status andrecordedarea. \"5. Open an associated building\" to bottomright12LakeViewRoadbutton. Footer \"Only confirmed associations link a building to a parcel. Nearby boundaries are not proof. DEMO-LV identifiers are fictional, not official issuance.\" Preserve all boundaries, measurements and demo labels.",
+      "references": [
+        "/Users/vinayak/Desktop/3D Ulpin/docs/evidence/complete-demo/parcel-1440.png"
+      ]
+    },
+    {
+      "name": "02-block-map",
+      "correction": true,
+      "prompt": "Edit this existing annotated UI tutorial, preserving the screenshot, layout and all other annotations exactly. Correct callout 4 body to exactly: 'Click Run check, then Show conflicts. If it says Hide conflicts, red highlighting is already on.' Keep its arrows aimed at the actual Run check and Hide conflicts buttons. Correct callout 3 arrows: the left arrow must point to the actual Layers control (left rail, x~238 y~311 on 1536x1024 image), not Properties. The other arrow must point to the actual 2D Map button (x~482 y~317), not Underground. Keep all actual UI labels and the scene unchanged. Make text clean and accurate.",
+      "references": [
+        "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-239c9f20-aed8-4201-a150-1b3f0b850ba7.png"
+      ]
+    },
+    {
+      "name": "06-measure-clear",
+      "correction": true,
+      "prompt": "Edit this existing annotated UI tutorial minimally. Preserve the actual UI screenshot and other callouts. Remove only the orange arrow from callout 5 to the Uncalibrated badge; retain the arrow from callout 5 to Clear drawing. Replace callout 3 body with exactly 'Distance: 2 ends. Area: 3+ corners, then Finish.' Do not change any application labels, controls or plan geometry. Preserve all remaining tutorial content, screenshot and layout.",
+      "references": [
+        "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-d5055a5b-fc9f-4457-9bda-3a33818709fa.png"
+      ]
+    },
+    {
+      "name": "02-block-map",
+      "correction": true,
+      "prompt": "Change ONLY the text inside the top-left callout numbered 3 in this tutorial image. Preserve its existing two arrows pointing to Layers and Underground. New heading exactly: 'Layers and view controls'. New body exactly: 'Open Layers to show or hide data. Underground toggles utility context. Use 3D / 2D Map to switch views.' Leave every other pixel, screenshot, callout, arrows, number and title unchanged.",
+      "references": [
+        "/Users/vinayak/.codex/generated_images/01a09d2a-c252-7330-8311-3dcf1959cdb9/exec-89a04580-4ec4-4fb7-90e7-9099c5430fa6.png"
+      ]
+    }
+  ]
+}
