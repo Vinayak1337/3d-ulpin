@@ -1,0 +1,34 @@
+{
+  "snapshotSha256": "92cbdeb930c7b20f9a90f7857f92787ebe2562c65892ad835a758bdf1b6cfda8",
+  "tables": 44,
+  "rows": 7211,
+  "objects": 497,
+  "distinctObjectPayloads": 88,
+  "presentationAssets": 10,
+  "checks": {
+    "coldRestoreTableHashes": "passed",
+    "allObjectHashesAndMetadata": "passed",
+    "originalLinkedDataUnchanged": "passed",
+    "localEditPreservedOnInitRerun": "passed",
+    "restartPersistence": "passed",
+    "productionBuildLinkedMode": "passed",
+    "productionBuildRepositoryMode": "passed",
+    "runtimeFalseUsesLinkedAfterTrueBuild": "passed",
+    "runtimeTrueUsesRepository": "passed",
+    "originalPdfHttpHash": "passed",
+    "existingUiStateTests": 20,
+    "registerScopeTests": 3,
+    "environmentTests": 2,
+    "typecheck": "passed",
+    "windowsAutocrlfCheckoutHashes": "passed"
+  },
+  "browser": {
+    "actualUi": "Block directory -> Lake View -> 12 Lake View Road -> Floors & Units -> Ground -> Open Workspace; original four-page PDF visible",
+    "captures": [
+      "block.png",
+      "floors.png",
+      "workspace.png"
+    ]
+  },
+  "platformLimit": "Executed on macOS using separate Linux containers. No native Windows run claimed."
+}

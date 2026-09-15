@@ -1,8 +1,11 @@
 import { config as loadDotenv } from "dotenv";
 import path from "node:path";
+import { applyRepositoryEnvironment } from "../../../../scripts/repo-env.mjs";
 
 loadDotenv({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 loadDotenv({ path: path.resolve(process.cwd(), "../../.env"), quiet: true });
+// Server-only selection; never expose database or object-store credentials to clients.
+applyRepositoryEnvironment();
 
 function required(name: string): string {
   const value = process.env[name];
@@ -11,6 +14,9 @@ function required(name: string): string {
 }
 
 export const settings = {
+  get dataMode() {
+    return process.env.REPO_DATA === "true" ? "repository" : "linked";
+  },
   get databaseUrl() {
     return required("DATABASE_URL");
   },

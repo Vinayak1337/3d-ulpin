@@ -1,5 +1,11 @@
 *.pdf binary
 *.png binary
+*.sh text eol=lf
+# Snapshot and presentation hashes must survive Windows autocrlf checkouts.
+repo-data/** -text -diff
+repo-data/README.md text eol=lf diff
+repo-data/manifest.json -text diff
+apps/web/public/scene-assets/** -text
 fixtures/** -text
 fixtures/**/*.csv whitespace=cr-at-eol
 Astra_MVP_Handoff_Pack/** -text

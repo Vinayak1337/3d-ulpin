@@ -12,5 +12,6 @@ The active demonstration is Lake View. Extend its existing canonical properties 
 - Source receipt, suitability, draft geometry, and validation are distinct.
 - Preserve originals, source revisions, geometry revisions, and input fingerprints.
 - No private secrets in committed files or tool output. Services stay local.
+- `REPO_DATA=true` selects the isolated `ulpin-repo` services and committed snapshot; false preserves the linked environment. Never overwrite populated repository volumes or refresh the committed snapshot implicitly. Preserve original object bytes, source attribution, identities and revision history; run `repo:check` before publishing a snapshot.
 - Limit command output aggressively; never inspect binary files as text.
 - You are working alongside other agents. Respect assigned files and coordinate shared-contract changes with the lead. Do not revert another agent's work. No recursive agent spawning.
