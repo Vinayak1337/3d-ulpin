@@ -306,6 +306,31 @@ export default function DataTools({
               {context.features.length} recorded features · revision{" "}
               {context.area.revision}
             </p>
+            <div className="ui-block-report-downloads">
+              <h4>Block register & sources</h4>
+              <p>
+                Includes every building, floor and unit 3D ULPIN, linked parcel
+                2D ULPINs, measurements and evidence.
+              </p>
+              <a
+                className="ui-button"
+                href={`/api/v1/areas/${context.area.id}/register?format=pdf`}
+              >
+                Download block PDF
+              </a>
+              <a
+                className="ui-button"
+                href={`/api/v1/areas/${context.area.id}/register?format=zip`}
+              >
+                Block report + original sources
+              </a>
+              <a
+                className="ui-button"
+                href={`/api/v1/areas/${context.area.id}/register?format=json`}
+              >
+                Block register JSON
+              </a>
+            </div>
             {[
               {
                 id: "all",

@@ -16,6 +16,7 @@
     "@ulpin/contracts": "workspace:*",
     "cesium": "1.145.0",
     "earcut": "^3.0.2",
+    "fflate": "0.8.3",
     "next": "16.3.5",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "^5.4.296",

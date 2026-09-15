@@ -76,6 +76,7 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
     [sourceId, setSourceId] = useState<string>(),
     [sourceDialog, setSourceDialog] = useState<string>(),
     [exportOpen, setExportOpen] = useState(false),
+    [exportRecord, setExportRecord] = useState(""),
     [findingId, setFindingId] = useState<string>();
   const selectProperty = useOfficerStore((state) => state.selectProperty);
   const dossier = resource.data;
@@ -196,13 +197,25 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
             </Badge>
           </div>
           <p>
-            <span className={styles.mono}>{dossier.building.identifier}</span>{" "}
+            <span className={styles.mono}>
+              3D ULPIN: {dossier.building.identifier}
+            </span>{" "}
             <span className={styles.dot}>·</span> Building register
           </p>
           <ParcelIdentity identifiers={dossier.parcelIdentifiers} />
         </div>
         <div className={styles.actions}>
-          <Button icon="download" onClick={() => setExportOpen(true)}>
+          <Button
+            icon="download"
+            onClick={() => {
+              setExportRecord(
+                selected?.kind === "floor" || selected?.kind === "space"
+                  ? selected.id
+                  : "",
+              );
+              setExportOpen(true);
+            }}
+          >
             Export register
           </Button>
           <Link
@@ -339,11 +352,40 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
         <p className={styles.note}>
           {dossier.building.name} · current recorded revision
         </p>
+        <label className={styles.exportScope}>
+          Download scope
+          <select
+            value={exportRecord}
+            onChange={(e) => setExportRecord(e.target.value)}
+            aria-label="Download scope"
+          >
+            <option value="">Whole building</option>
+            {dossier.records
+              .filter((r) => r.kind === "floor")
+              .map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name} · {r.identifier.split(":").at(-1)}
+                </option>
+              ))}
+            {selected?.kind === "space" && (
+              <option value={selected.id}>
+                Selected unit · {selected.name}
+              </option>
+            )}
+          </select>
+        </label>
+        <p className={styles.note}>
+          3D ULPIN:{" "}
+          {dossier.records.find((r) => r.id === exportRecord)?.identifier ||
+            dossier.building.identifier}
+          . Linked parcel 2D ULPIN and source revisions are included. Original
+          files may span several floors.
+        </p>
         <div className={styles.exportOptions}>
-          {["pdf", "json", "csv", "html"].map((format) => (
+          {["zip", "pdf", "json", "csv", "html"].map((format) => (
             <a
               key={format}
-              href={`/api/v1/buildings/${buildingId}/register?format=${format}`}
+              href={`/api/v1/buildings/${buildingId}/register?format=${format}${exportRecord ? `&record=${encodeURIComponent(exportRecord)}` : ""}`}
               target={format === "html" ? "_blank" : undefined}
               rel="noreferrer"
             >
@@ -352,14 +394,20 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
                 size={25}
               />
               <strong>
-                {format === "html" ? "Print / save PDF" : format.toUpperCase()}
+                {format === "zip"
+                  ? "Report + sources"
+                  : format === "html"
+                    ? "Print / save PDF"
+                    : format.toUpperCase()}
               </strong>
               <span>
-                {format === "html"
-                  ? "Plan, section and register report"
-                  : format === "json"
-                    ? "Structured register and evidence"
-                    : "Tabular records and source references"}
+                {format === "zip"
+                  ? "ZIP with PDF, data and original attachments"
+                  : format === "html" || format === "pdf"
+                    ? "Plan, section and register report"
+                    : format === "json"
+                      ? "Structured register and evidence"
+                      : "Tabular records and source references"}
               </span>
             </a>
           ))}

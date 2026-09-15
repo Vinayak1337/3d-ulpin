@@ -1,0 +1,26 @@
+{
+  "textChecks": [
+    {
+      "file": "block-register.pdf",
+      "pages": 9,
+      "identityAndSourceText": "PASS"
+    },
+    {
+      "file": "unit-register.pdf",
+      "pages": 3,
+      "identityAndSourceText": "PASS"
+    },
+    {
+      "file": "floor-register.pdf",
+      "pages": 3,
+      "identityAndSourceText": "PASS"
+    },
+    {
+      "file": "building-register.pdf",
+      "pages": 4,
+      "identityAndSourceText": "PASS"
+    }
+  ],
+  "visualInspection": "PASS: all 19 pages rendered and inspected; readable IDs, source hashes, repeated table headers, no clipping or overlap.",
+  "checkedAt": "2026-09-15T13:04:51.099409+00:00"
+}

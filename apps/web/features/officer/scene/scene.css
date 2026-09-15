@@ -21,6 +21,7 @@
   top: 14px;
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 10px;
   pointer-events: none;
 }
@@ -93,4 +94,58 @@
   max-height: 180px;
   border-radius: 7px;
   overflow: hidden;
+}
+.scene-orbit-control {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.scene-orbit-pad {
+  display: grid;
+  grid-template-columns: 24px 24px 24px;
+  grid-template-rows: 24px 24px 24px;
+  border: 1px solid #c9d7ce;
+  border-radius: 50%;
+  padding: 4px;
+  background: #fffffff2;
+  box-shadow: 0 2px 8px #203d3712;
+}
+.scene-orbit-pad button {
+  border: 0;
+  background: transparent;
+  color: #285748;
+  border-radius: 50%;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  cursor: pointer;
+}
+.scene-orbit-pad button:hover,
+.scene-orbit-pad button:focus-visible {
+  background: #dce9e0;
+  outline: 2px solid #557a67;
+}
+.orbit-up {
+  grid-area: 1/2;
+}
+.orbit-left {
+  grid-area: 2/1;
+}
+.orbit-reset {
+  grid-area: 2/2;
+}
+.orbit-right {
+  grid-area: 2/3;
+}
+.orbit-down {
+  grid-area: 3/2;
+}
+.scene-orbit-control > span {
+  font-size: 10px;
+  background: #ffffffeb;
+  padding: 3px 5px;
+  border-radius: 4px;
+  color: #355b4d;
 }

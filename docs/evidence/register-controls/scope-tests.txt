@@ -1,0 +1,11 @@
+✔ floor scope excludes other floors while retaining original objects (0.623458ms)
+✔ unit scope returns only that unit; foreign record is rejected (0.0655ms)
+✔ whole building remains unchanged (0.0505ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 63.607

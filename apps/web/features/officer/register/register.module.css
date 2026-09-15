@@ -1905,3 +1905,26 @@
 .headerIdentity :global(.ui-parcel-identity strong) {
   font-size: 12px;
 }
+.recordUlpin {
+  font-size: 9px !important;
+  overflow-wrap: anywhere;
+  white-space: normal !important;
+}
+.floorHeading > button > span,
+.spaceIndexRow > span {
+  min-width: 0;
+}
+.scopeDownloads {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.exportScope {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0;
+}
+.exportScope select {
+  width: 100%;
+}
