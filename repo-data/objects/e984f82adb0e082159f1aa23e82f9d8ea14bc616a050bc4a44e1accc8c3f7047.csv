@@ -1,0 +1,2 @@
+alias,label,level,lower,upper,unit,benchmark,footprint_wkt,frame
+UI-A-01,Synthetic Room A01,Ground,,,m,BM-SYNTHETIC-UI-ONLY,"POLYGON ((1 1, 7 1, 7 7, 1 7, 1 1))",AREA-8c61a45e-3ae9-4c7c-95f2-78918f23582a

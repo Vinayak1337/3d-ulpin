@@ -1,0 +1,200 @@
+{
+  "profile": "parcel-local-json-v1",
+  "synthetic": true,
+  "notice": "Generated demo inputs. Not real survey or official identity evidence.",
+  "frame": {
+    "id": "LOCAL-C002",
+    "horizontalUnit": "m",
+    "verticalUnit": "m",
+    "benchmark": "BM-DEMO-B"
+  },
+  "features": [
+    {
+      "alias": "SITE-X",
+      "name": "Workshop site",
+      "kind": "parcel",
+      "footprint": [
+        [
+          -2,
+          -2
+        ],
+        [
+          14,
+          -2
+        ],
+        [
+          14,
+          12
+        ],
+        [
+          -2,
+          12
+        ]
+      ]
+    },
+    {
+      "alias": "BLDG-X",
+      "name": "Workshop context",
+      "kind": "building",
+      "footprint": [
+        [
+          0,
+          0
+        ],
+        [
+          12,
+          0
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ]
+    },
+    {
+      "alias": "ELBOW-A",
+      "name": "Lower L-shaped studio",
+      "kind": "unit",
+      "footprint": [
+        [
+          0,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          8,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          0,
+          8
+        ]
+      ],
+      "levelLabel": "Ground"
+    },
+    {
+      "alias": "ELBOW-B",
+      "name": "Upper L-shaped studio",
+      "kind": "unit",
+      "footprint": [
+        [
+          0,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          8,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          0,
+          8
+        ]
+      ],
+      "draftLower": 2.2,
+      "levelLabel": "Level 1"
+    },
+    {
+      "alias": "TRI-C",
+      "name": "Triangular ground studio",
+      "kind": "unit",
+      "footprint": [
+        [
+          8,
+          4
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          12,
+          10
+        ]
+      ],
+      "levelLabel": "Ground"
+    },
+    {
+      "alias": "WALK-X",
+      "name": "Ground circulation",
+      "kind": "common",
+      "footprint": [
+        [
+          4,
+          4
+        ],
+        [
+          8,
+          4
+        ],
+        [
+          8,
+          10
+        ],
+        [
+          0,
+          10
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          4,
+          8
+        ]
+      ],
+      "levelLabel": "Ground"
+    },
+    {
+      "alias": "CELLAR-X",
+      "name": "Workshop basement",
+      "kind": "basement",
+      "footprint": [
+        [
+          0,
+          0
+        ],
+        [
+          12,
+          0
+        ],
+        [
+          12,
+          10
+        ],
+        [
+          0,
+          10
+        ]
+      ],
+      "levelLabel": "Basement"
+    }
+  ]
+}
