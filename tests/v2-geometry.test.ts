@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { PhysicalFeature } from "../packages/contracts/src/index";
-import { featureBounds } from "../apps/web/features/v2/block/geometry";
+import { featureBounds } from "../apps/web/features/officer/block/geometry";
 
 test("shared block bounds support 200,000 vertices without argument-count overflow", () => {
   // Each feature remains within the native 10,000-vertex limit. Several valid source blocks can share membership.

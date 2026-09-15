@@ -217,7 +217,9 @@ export async function geographicGeometry(
   geometry: AreaGeometry,
   areaId: string,
 ): Promise<AreaGeometry> {
-  const area = await getArea(areaId);
+  return geographicGeometryInArea(geometry, await getArea(areaId));
+}
+async function geographicGeometryInArea(geometry: AreaGeometry, area: Awaited<ReturnType<typeof getArea>>): Promise<AreaGeometry> {
   if (!area.reference)
     throw new AppError(
       422,
@@ -415,31 +417,18 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
       area.siteId,
     ])
   ).rows[0];
-  const detailedScene = await Promise.all(
-    records.map(async (r) => ({
-      record: r,
-      localGeometry:
-        r.footprint.length >= 3
-          ? {
-              type: "Polygon" as const,
-              coordinates: [[...r.footprint, r.footprint[0]]],
-            }
-          : undefined,
-      geographicGeometry:
-        r.footprint.length >= 3
-          ? await geographicGeometry(
-              {
-                type: "Polygon",
-                coordinates: [[...r.footprint, r.footprint[0]]],
-              },
-              area.id,
-            )
-          : undefined,
-      lower: r.geometry?.lower,
-      upper: r.geometry?.upper,
-      verticalReference: site.frame.benchmark,
-    })),
-  );
+  const localGeometries = records.filter(r => r.footprint.length >= 3).map(r => ({id:r.id,geometry:{type:"Polygon" as const,coordinates:[[...r.footprint,r.footprint[0]]]}}));
+  // Project the complete record snapshot in one database request. Per-record
+  // concurrent queries exhausted the small local pool for detailed buildings.
+  if (localGeometries.length && !area.reference) throw new AppError(422,"PLACEMENT_REQUIRED","This area has no geographic placement.");
+  const projected = localGeometries.length ? (await query<{id:string;geometry:AreaGeometry}>(
+    `SELECT item->>'id' id, ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_Translate(ST_GeomFromGeoJSON((item->'geometry')::text),$2::double precision,$3::double precision),$4::integer),4326),9,0)::jsonb geometry FROM jsonb_array_elements($1::jsonb) item`,
+    [JSON.stringify(localGeometries),...area.reference!.origin,Number(area.reference!.analysisCrs.split(":")[1])]
+  )).rows : [];
+  const geographicById = new Map(projected.map(item=>[item.id,item.geometry]));
+  const localById = new Map(localGeometries.map(item=>[item.id,item.geometry]));
+  const detailedScene = records.map(r=>({record:r,localGeometry:localById.get(r.id),geographicGeometry:geographicById.get(r.id),lower:r.geometry?.lower,upper:r.geometry?.upper,verticalReference:site.frame.benchmark}));
+
   const groups = (
     await query(
       `SELECT g.body,COALESCE((SELECT jsonb_agg(m.feature_id) FROM block_group_memberships m WHERE m.group_id=g.id),'[]') members FROM block_groups g WHERE g.area_id=$1 OR g.id IN (SELECT group_id FROM block_group_memberships WHERE feature_id=$2)`,

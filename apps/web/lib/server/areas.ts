@@ -1,3 +1,4 @@
+import { areaSceneAssets } from "./scene-assets";
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
 import type {
@@ -96,6 +97,8 @@ function areaFrom(row: any): MapArea {
     extent: row.extent,
     geographicExtent: row.geographic_extent,
     administrativeUnits: row.administrative_units || [],
+    dataKind: row.data_kind || "empty",
+    featureCount: Number(row.feature_count || 0),
   };
 }
 export async function listAreas(): Promise<MapArea[]> {
@@ -105,7 +108,9 @@ export async function listAreas(): Promise<MapArea[]> {
   );
   return (
     await query(
-      `SELECT a.*, COALESCE((SELECT jsonb_agg(jsonb_strip_nulls(to_jsonb(u))) FROM administrative_units u JOIN area_memberships m ON m.unit_id=u.id WHERE m.area_id=a.id),'[]') administrative_units FROM map_areas a ORDER BY (a.reference IS NOT NULL) DESC,a.created_at DESC`,
+      `SELECT a.*, (SELECT count(*) FROM physical_features f WHERE f.revision>0 AND (f.area_id=a.id OR EXISTS (SELECT 1 FROM block_group_memberships gm JOIN block_groups gg ON gg.id=gm.group_id WHERE gm.feature_id=f.id AND gg.area_id=a.id))) feature_count,
+        (SELECT CASE WHEN count(*)=0 THEN 'empty' WHEN bool_and(f.body->>'worldStatus'='synthetic') THEN 'demonstration' WHEN bool_and(f.body->>'worldStatus'='observed') THEN 'real' ELSE 'mixed' END FROM physical_features f WHERE f.revision>0 AND (f.area_id=a.id OR EXISTS (SELECT 1 FROM block_group_memberships gm JOIN block_groups gg ON gg.id=gm.group_id WHERE gm.feature_id=f.id AND gg.area_id=a.id))) data_kind,
+        COALESCE((SELECT jsonb_agg(jsonb_strip_nulls(to_jsonb(u))) FROM administrative_units u JOIN area_memberships m ON m.unit_id=u.id WHERE m.area_id=a.id),'[]') administrative_units FROM map_areas a ORDER BY (a.reference IS NOT NULL) DESC,a.created_at DESC`,
     )
   ).rows.map(areaFrom);
 }
@@ -178,6 +183,7 @@ export async function areaContext(id: string): Promise<AreaContext> {
   return {
     area,
     features: currentFeatures,
+    sceneAssets: await areaSceneAssets(id),
     packages: packages.rows.map((r) => r.body),
     latestCheck: latestCheck || null,
   };

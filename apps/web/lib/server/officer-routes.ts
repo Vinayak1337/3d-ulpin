@@ -79,6 +79,27 @@ export async function officerRoutes(
   p: string[],
 ): Promise<Response | null> {
   const method = r.method;
+  if (p[0] === "property-directory" && p.length === 1 && method === "GET") {
+    const areaId = uuid.parse(new URL(r.url).searchParams.get("area"));
+    const rows = await query(
+      `WITH RECURSIVE buildings AS (
+      SELECT f.id,f.revision FROM physical_features f WHERE f.revision>0 AND f.body->>'kind'='building' AND (f.area_id=$1 OR EXISTS(SELECT 1 FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id WHERE m.feature_id=f.id AND g.area_id=$1))
+    ), roots AS (
+      SELECT b.id building_id,r.id record_id FROM buildings b JOIN registry_records r ON r.id=b.id AND r.revision>0
+      UNION SELECT b.id,t.id FROM buildings b JOIN property_associations a ON a.from_id=b.id JOIN registry_records t ON t.id=a.to_id WHERE a.relationship IN ('detailed_record','shared_space') AND a.status='confirmed' AND (a.body->>'fromRevision')::int=b.revision AND (a.body->>'toRevision')::int=t.revision
+    ), related AS (
+      SELECT * FROM roots UNION SELECT x.building_id,l.record_id FROM related x JOIN registry_links l ON l.target_id=x.record_id WHERE l.kind IN ('within','floor','serves')
+    ) SELECT b.id "buildingId",count(DISTINCT r.id) FILTER(WHERE r.kind='space')::integer spaces,count(DISTINCT r.id) FILTER(WHERE r.kind='floor')::integer floors FROM buildings b LEFT JOIN related x ON x.building_id=b.id LEFT JOIN registry_records r ON r.id=x.record_id AND r.revision>0 GROUP BY b.id ORDER BY b.id LIMIT 2000`,
+      [areaId],
+    );
+    return json(rows.rows);
+  }
+  if (p[0] === "workspace-directory" && p.length === 1 && method === "GET") {
+    const rows = await query(
+      `SELECT c.id,c.name,c.revision,c.updated_at "updatedAt",b.building_id "buildingId",b.body->>'areaId' "areaId",f.body->>'name' "propertyName",(SELECT count(*)::integer FROM sources s WHERE s.case_id=c.id) "sourceCount" FROM cases c LEFT JOIN building_preparations b ON b.case_id=c.id LEFT JOIN physical_features f ON f.id=b.building_id WHERE NOT c.archived OR b.id IS NOT NULL ORDER BY c.updated_at DESC,c.id LIMIT 100`,
+    );
+    return json(rows.rows);
+  }
   if (p[0] === "buildings" && p.length === 3) {
     const id = uuid.parse(p[1]);
     if (p[2] === "dossier" && method === "GET")

@@ -1,0 +1,96 @@
+.property-scene {
+  height: 430px;
+  min-height: 280px;
+  position: relative;
+  overflow: hidden;
+  background: #e6ebe7;
+  border-radius: 8px;
+}
+.property-scene .area-cesium,
+.property-scene .area-cesium-host {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+.property-scene-tools {
+  position: absolute;
+  z-index: 3;
+  left: 14px;
+  right: 14px;
+  top: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;
+}
+.property-scene-tools > * {
+  pointer-events: auto;
+}
+.property-scene-switch {
+  display: flex;
+  background: #fffc;
+  border: 1px solid #d1ddd5;
+  border-radius: 6px;
+  padding: 3px;
+}
+.property-scene-switch button {
+  border: 0;
+  background: transparent;
+  border-radius: 4px;
+  color: #50645a;
+  font-size: 12px;
+  padding: 8px 12px;
+}
+.property-scene-switch button[aria-pressed="true"] {
+  background: #285748;
+  color: white;
+}
+.property-scene-footer {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  background: #fffffff0;
+  border: 1px solid #d7e1da;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: #4f6259;
+}
+.property-scene-footer label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
+}
+.property-scene-footer input {
+  width: 90px;
+  min-height: 16px !important;
+  padding: 0 !important;
+  accent-color: #345c4d;
+}
+.property-scene-footer small {
+  width: 100%;
+  font-size: 10px;
+}
+.property-scene--compact {
+  height: 170px;
+  min-height: 170px;
+}
+.property-scene--compact .cesium-viewer-bottom {
+  display: none;
+}
+
+.building-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  border-radius: 7px;
+  overflow: hidden;
+}

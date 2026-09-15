@@ -25,7 +25,7 @@ export async function resolveAreaIdentifier(identifier: string) {
   const [physical, registry, sites] = await Promise.all([
     query(
       `SELECT DISTINCT f.* FROM physical_features f WHERE f.revision>0 AND
-      (upper(f.identifier)=$1 OR upper(f.id::text)=$1 OR f.id IN (SELECT feature_id FROM external_identifiers WHERE normalized_value=$1 AND valid_to IS NULL AND verification_state='validated'))`,
+      (upper(f.identifier)=$1 OR upper(f.id::text)=$1 OR upper(f.body->>'sourceKey')=$1 OR (length($1)>2 AND position($1 in upper(f.body->>'name'))>0) OR f.id IN (SELECT feature_id FROM external_identifiers WHERE normalized_value=$1 AND valid_to IS NULL AND verification_state='validated')) ORDER BY f.id LIMIT 50`,
       [normalized],
     ),
     query(
@@ -68,7 +68,16 @@ export async function resolveAreaIdentifier(identifier: string) {
       area,
       matchEvidence: evidence.length
         ? evidence
-        : [{ scheme: "app_identifier", value }],
+        : [
+            {
+              scheme: [row.body.identifier, row.id].some(
+                (v) => v?.toUpperCase() === normalized,
+              )
+                ? "app_identifier"
+                : "source_name_or_key",
+              value,
+            },
+          ],
       relatedBuildings: related.map((r: any) => ({
         ...r,
         status: "suggested",
@@ -164,7 +173,9 @@ export async function resolveAreaIdentifier(identifier: string) {
       ).rows,
       url:
         parentBuilding.length > 0
-          ? legacyUrl(`/areas/${parentBuilding[0].area_id}?feature=${parentBuilding[0].body.id}&record=${row.id}`)
+          ? legacyUrl(
+              `/areas/${parentBuilding[0].area_id}?feature=${parentBuilding[0].body.id}&record=${row.id}`,
+            )
           : legacyUrl(`/registry/${encodeURIComponent(row.identifier)}`),
     });
   }
@@ -173,10 +184,21 @@ export async function resolveAreaIdentifier(identifier: string) {
       kind: "site",
       site: { id: row.id, identifier: row.identifier, name: row.name },
       areaIds: row.area_id ? [row.area_id] : [],
-      matchEvidence: [{ scheme: "app_identifier", value }],
+      matchEvidence: [
+        {
+          scheme: [row.body.identifier, row.id].some(
+            (v) => v?.toUpperCase() === normalized,
+          )
+            ? "app_identifier"
+            : "source_name_or_key",
+          value,
+        },
+      ],
       relatedBuildings: [],
       parentParcels: [],
-      url: legacyUrl(row.area_reference ? `/areas/${row.area_id}` : `/sites/${row.id}`),
+      url: legacyUrl(
+        row.area_reference ? `/areas/${row.area_id}` : `/sites/${row.id}`,
+      ),
     });
   return {
     status:

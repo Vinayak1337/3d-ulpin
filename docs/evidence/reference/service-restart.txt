@@ -1,0 +1,107 @@
+
+> 3d-ulpin@ platform:stop /Users/vinayak/Desktop/3D Ulpin
+> bash scripts/platform-stop.sh
+
+ Container ulpin-worker-1 Stopping
+ Container ulpin-postgres-1 Stopping
+ Container ulpin-postgres-1 Stopped
+ Container ulpin-worker-1 Stopped
+ Container ulpin-geo-1 Stopping
+ Container ulpin-geo-1 Stopped
+ Container ulpin-redis-1 Stopping
+ Container ulpin-minio-init-1 Stopping
+ Container ulpin-minio-init-1 Stopped
+ Container ulpin-minio-1 Stopping
+ Container ulpin-minio-1 Stopped
+ Container ulpin-redis-1 Stopped
+Services stopped; database, objects, and queue volumes preserved.
+
+> 3d-ulpin@ platform:start /Users/vinayak/Desktop/3D Ulpin
+> bash scripts/platform-start.sh
+
+Existing .env preserved.
+time="2026-09-15T16:43:26+05:30" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image ulpin-geo:local Building
+ Image ulpin-geo:local Building
+Sending build context to Docker daemon  43.58kB
+
+Step 1/11 : FROM python:3.12-slim-bookworm@sha256:782412e85d0f0984994c290652577d4018aff08145c85b262bb63dc0c7522254
+ ---> 782412e85d0f
+Step 2/11 : ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ ---> Using cache
+ ---> 864bd3b3232c
+Step 3/11 : WORKDIR /app
+ ---> Using cache
+ ---> f2496f8b3155
+Step 4/11 : COPY requirements.txt .
+ ---> Using cache
+ ---> ad1022a310d7
+Step 5/11 : RUN pip install --no-cache-dir -r requirements.txt
+ ---> Using cache
+ ---> e2af56233786
+Step 6/11 : COPY geo ./geo
+ ---> Using cache
+ ---> 0156c5b33353
+Step 7/11 : RUN useradd --create-home --uid 10001 processor
+ ---> Using cache
+ ---> 5e5ddb494908
+Step 8/11 : USER processor
+ ---> Using cache
+ ---> 5b93d69e9d3c
+Step 9/11 : EXPOSE 8000
+ ---> Using cache
+ ---> e3f92abb8bba
+Step 10/11 : CMD ["uvicorn", "geo.api:app", "--host", "0.0.0.0", "--port", "8000"]
+ ---> Using cache
+ ---> ca34c4211aa5
+Step 11/11 : LABEL com.docker.compose.image.builder=classic
+ ---> Using cache
+ ---> 6fd979b2622a
+Successfully built 6fd979b2622a
+Successfully tagged ulpin-geo:local
+ Image ulpin-geo:local Built
+ Image ulpin-geo:local Built
+ Container ulpin-minio-1 Starting
+ Container ulpin-postgres-1 Starting
+ Container ulpin-redis-1 Starting
+ Container ulpin-minio-1 Started
+ Container ulpin-minio-1 Waiting
+ Container ulpin-postgres-1 Started
+ Container ulpin-redis-1 Started
+ Container ulpin-minio-1 Healthy
+ Container ulpin-minio-init-1 Starting
+ Container ulpin-minio-init-1 Started
+ Container ulpin-redis-1 Waiting
+ Container ulpin-minio-init-1 Waiting
+ Container ulpin-minio-init-1 Exited
+ Container ulpin-redis-1 Healthy
+ Container ulpin-geo-1 Starting
+ Container ulpin-geo-1 Started
+ Container ulpin-geo-1 Waiting
+ Container ulpin-geo-1 Healthy
+ Container ulpin-worker-1 Starting
+ Container ulpin-worker-1 Started
+ Container ulpin-geo-1 Waiting
+ Container ulpin-worker-1 Waiting
+ Container ulpin-postgres-1 Waiting
+ Container ulpin-minio-1 Waiting
+ Container ulpin-minio-init-1 Waiting
+ Container ulpin-redis-1 Waiting
+ Container ulpin-geo-1 Healthy
+ Container ulpin-minio-init-1 Exited
+ Container ulpin-redis-1 Healthy
+ Container ulpin-minio-1 Healthy
+ Container ulpin-postgres-1 Healthy
+ Container ulpin-worker-1 Healthy
+POSTGIS="3.5.2 dea6d0a" [EXTENSION] PGSQL="170" GEOS="3.9.0-CAPI-1.16.2" PROJ="7.2.1 NETWORK_ENABLED=OFF URL_ENDPOINT=https://cdn.proj.org USER_WRITABLE_DIRECTORY=/var/lib/postgresql/.local/share/proj DATABASE_PATH=/usr/share/proj/proj.db" (compiled against PROJ 7.2.1) LIBXML="2.9.10" LIBJSON="0.15" LIBPROTOBUF="1.3.3" WAGYU="0.5.0 (Internal)" TOPOLOGY
+PASS: Redis responds.
+ Container ulpin-storage-check-run-20074ef16880 Creating
+ Container ulpin-storage-check-run-20074ef16880 Created
+PASS: private S3 upload, exact readback, and object cleanup.
+PASS: anonymous bucket access is denied (403).
+{"ok":true}
+->  celery@2df374be1ce9: OK
+        pong
+
+1 node online.
+Platform checks passed.

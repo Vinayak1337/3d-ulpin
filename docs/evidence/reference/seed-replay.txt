@@ -1,0 +1,10 @@
+
+> 3d-ulpin@ demo:seed /Users/vinayak/Desktop/3D Ulpin
+> tsx scripts/reference/seed.ts
+
+Block 0ded05d3-b596-46a8-9918-ab1bc0a433be: exterior sources recorded
+12 Lake View Road: existing reviewed records preserved
+18 Lake View Road: existing reviewed records preserved
+24 Lake View Road: existing reviewed records preserved
+Fictional utility, incomplete property draft, two original plan revisions and investigation retained.
+{"areaId":"0ded05d3-b596-46a8-9918-ab1bc0a433be","properties":{"A":{"buildingId":"fdb6f855-f533-487c-9ac7-525944640b2b","caseId":"a5b0e537-d3b1-4164-b7ab-2331ee9aca4e"},"B":{"buildingId":"9d4246c9-6a17-411c-a4c0-70e06aa3e22b","caseId":"49ae4256-ab64-48b7-85c7-69c3edb92420"},"C":{"buildingId":"14e4a20a-35be-4c92-a202-b161ca829dea","caseId":"cad957b8-e8b4-4a41-817e-2e93449d08ff"},"D":{"buildingId":"2ae217bb-e058-4f21-8c4f-2bed50f0b865","caseId":"9767ac23-e89e-442e-8335-0b52530df119"},"E":{"buildingId":"406a9ad3-172c-46bb-8c3d-542ce0ad5358"},"F":{"buildingId":"23f2fd60-5942-4751-aeb8-4c0edb90b328"},"G":{"buildingId":"486e10bf-5cb4-4f12-b20d-9d7f10449a11"},"H":{"buildingId":"074d6108-06c7-4339-8f5e-c96f2a6da391"}}}
