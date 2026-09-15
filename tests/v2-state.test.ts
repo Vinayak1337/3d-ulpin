@@ -10,27 +10,24 @@ import type {
   RegistryRecord,
 } from "../packages/contracts/src/index";
 import {
-  createV2Store,
-  hydrateV2Store,
-  parseV2Navigation,
+  createOfficerStore,
+  hydrateOfficerStore,
+  parseOfficerNavigation,
   type RecentProperty,
-} from "../apps/web/features/v2/shared/store";
-import { routes } from "../apps/web/features/v2/shared/routes";
+} from "../apps/web/features/officer/shared/store";
+import { routes } from "../apps/web/features/officer/shared/routes";
 import {
   searchTargets,
   searchTargetRoute,
   type ResolveMatch,
-} from "../apps/web/features/v2/shared/search-targets";
+} from "../apps/web/features/officer/shared/search-targets";
 import {
   featureBounds,
   geometryPath,
   geometryPoints,
   geometryPrimitives,
-} from "../apps/web/features/v2/block/geometry";
-import {
-  navigationRequest,
-  validatedNavigationTargets,
-} from "../apps/web/features/v2/shared/navigation-targets";
+} from "../apps/web/features/officer/block/geometry";
+import { mainNavigation } from "../apps/web/features/officer/shared/navigation";
 
 const property = (index: number, area = "area-A"): RecentProperty => ({
   buildingId: `building-${index}`,
@@ -111,8 +108,8 @@ function feature(
 }
 
 test("independent layout stores retain coherent selection and bounded recency through block switches", () => {
-  const first = createV2Store(),
-    second = createV2Store();
+  const first = createOfficerStore(),
+    second = createOfficerStore();
   first.getState().selectBlock("area-A", "Block A");
   for (let index = 0; index < 15; index++)
     first.getState().selectProperty(property(index));
@@ -161,11 +158,11 @@ test("versioned browser storage rejects malformed state and projects only safe r
     JSON.stringify({ version: 2, recentProperties: [property(1)] }),
     " ".repeat(1024 * 1024 + 1),
   ]) {
-    const parsed = parseV2Navigation(raw);
+    const parsed = parseOfficerNavigation(raw);
     assert.equal(parsed.selectedBuildingId, null);
     assert.deepEqual(parsed.recentProperties, []);
   }
-  const parsed = parseV2Navigation(
+  const parsed = parseOfficerNavigation(
     JSON.stringify({
       version: 1,
       selectedAreaId: "area-A",
@@ -195,7 +192,7 @@ test("versioned browser storage rejects malformed state and projects only safe r
   ]);
   assert.equal(parsed.selectedBuildingId, "building-1");
   assert.equal(parsed.areaName, "");
-  const mismatched = parseV2Navigation(
+  const mismatched = parseOfficerNavigation(
     JSON.stringify({
       selectedAreaId: "area-B",
       selectedBuildingId: "building-1",
@@ -219,13 +216,13 @@ test("hydration preserves a route-driven selection and safely restores a separat
       ...Array.from({ length: 20 }, (_, index) => property(index)),
     ],
   });
-  const live = createV2Store();
+  const live = createOfficerStore();
   live.getState().selectProperty({
     ...property(4, "area-current"),
     name: "Current route property",
   });
   live.getState().setMapPreferences("area-current", { underground: true });
-  hydrateV2Store(live, saved);
+  hydrateOfficerStore(live, saved);
   assert.equal(live.getState().selectedAreaId, "area-current");
   assert.equal(live.getState().selectedBuildingId, "building-4");
   assert.equal(
@@ -243,8 +240,8 @@ test("hydration preserves a route-driven selection and safely restores a separat
     true,
   );
   assert.equal(live.getState().hydrated, true);
-  const resumed = createV2Store();
-  hydrateV2Store(resumed, saved);
+  const resumed = createOfficerStore();
+  hydrateOfficerStore(resumed, saved);
   assert.equal(resumed.getState().selectedAreaId, "area-old");
   assert.equal(resumed.getState().selectedBuildingId, "building-4");
   assert.equal(resumed.getState().areaName, "Block area-old");
@@ -282,7 +279,7 @@ test("navigation preserves encoded physical and record identities without rewrit
     routes.source("source/1?x=y"),
     "/api/v1/sources/source%2F1%3Fx%3Dy/file",
   );
-  assert.equal(routes.block(null, building), "/v2");
+  assert.equal(routes.block(null, building), "/blocks");
 });
 
 test("shared basement lookup offers each physical parent and never pairs first parent with another parent's area", () => {
@@ -380,113 +377,18 @@ test("parcel intersections and legacy registry IDs do not become canonical build
   );
 });
 
-test("header navigation rejects an unrelated query block and stale stored property before and after dossier loading", () => {
-  const stored = { buildingId: "A", areaId: "old-block" };
-  const request = navigationRequest(
-    "/v2/properties/B/register",
-    new URLSearchParams("area=bronx&record=room-B"),
-    stored,
-  );
-  const pending = validatedNavigationTargets(request, {});
-  assert.equal(
-    pending.workspace,
-    "/v2/properties/B/workspace",
-    "The current route wins over saved A while its owner is unknown.",
+test("main navigation always opens directories independently of contextual property routes", () => {
+  assert.deepEqual(
+    mainNavigation.map((item) => item.href),
+    ["/blocks", "/register", "/workspace"],
   );
   assert.equal(
-    pending.block,
-    "/v2",
-    "An unverified query block is never paired with B.",
+    routes.register("building-B", "block-A"),
+    "/properties/building-B/register?area=block-A",
   );
-  const dossier = {
-    canonicalBuildingId: "B",
-    building: feature("B", "synthetic"),
-    area: { id: "synthetic" } as MapArea,
-    records: [{ id: "room-B" } as RegistryRecord],
-  };
-  const unrelated = {
-    area: { id: "bronx" } as MapArea,
-    features: [feature("real-building", "bronx")],
-  };
-  const targets = validatedNavigationTargets(request, {
-    dossier,
-    context: unrelated,
-  });
-  assert.equal(targets.block, "/v2/blocks/synthetic?feature=B&record=room-B");
-  assert.equal(
-    targets.register,
-    "/v2/properties/B/register?area=synthetic&record=room-B",
-  );
-  assert.equal(
-    targets.workspace,
-    "/v2/properties/B/workspace?area=synthetic&record=room-B",
-  );
-  const wrongDossier = {
-    ...dossier,
-    canonicalBuildingId: "A",
-    building: feature("A", "old-block"),
-  };
-  assert.equal(
-    validatedNavigationTargets(request, {
-      dossier: wrongDossier,
-      context: unrelated,
-    }).block,
-    "/v2",
-  );
-  assert.equal(
-    validatedNavigationTargets({ ...request, recordId: "room-A" }, { dossier })
-      .recordId,
-    null,
-    "Only this dossier's actual record IDs enter header links.",
-  );
-});
-
-test("header accepts actual cross-block membership, handles areaId alias and never makes a parcel a building", () => {
-  const request = navigationRequest(
-    "/v2/properties/B/workspace",
-    new URLSearchParams("areaId=member-block"),
-    { areaId: null, buildingId: null },
-  );
-  const dossier = {
-    canonicalBuildingId: "B",
-    building: feature("B", "owner"),
-    area: { id: "owner" } as MapArea,
-    records: [],
-  };
-  const context = {
-    area: { id: "member-block" } as MapArea,
-    features: [feature("B", "owner")],
-  };
-  assert.equal(
-    validatedNavigationTargets(request, { dossier, context }).block,
-    "/v2/blocks/member-block?feature=B",
-  );
-  assert.equal(
-    validatedNavigationTargets(request, {
-      dossier,
-      context: { ...context, area: { id: "stale-block" } as MapArea },
-    }).block,
-    "/v2/blocks/owner?feature=B",
-  );
-  const parcelRequest = navigationRequest(
-    "/v2/blocks/member-block",
-    new URLSearchParams("feature=P"),
-    { areaId: "owner", buildingId: "B" },
-  );
-  const parcel = validatedNavigationTargets(parcelRequest, {
-    context: { ...context, features: [feature("P", "member-block", "parcel")] },
-  });
-  assert.equal(parcel.block, "/v2/blocks/member-block?feature=P");
-  assert.equal(parcel.register, "/v2/register");
-  assert.equal(parcel.workspace, "/v2/workspace");
-  assert.equal(
-    navigationRequest(
-      "/v2/properties/%E0%A4%A/register",
-      new URLSearchParams(),
-      { areaId: "owner", buildingId: "B" },
-    ).candidateId,
-    null,
-    "Malformed route encoding cannot crash or inherit another property.",
+  assert.deepEqual(
+    mainNavigation.map((item) => item.label),
+    ["Block Map", "Property Register", "Plan Workspace"],
   );
 });
 
@@ -574,7 +476,7 @@ test("actual React resource hook ignores stale refreshes and callbacks from a pr
       contents: `
       import React, {act,useEffect} from 'react';
       import {createRoot} from 'react-dom/client';
-      import {useResource} from './features/v2/shared/hooks';
+      import {useResource} from './features/officer/shared/hooks';
       window.IS_REACT_ACT_ENVIRONMENT = true;
       window.pending = [];
       window.fetch = (url,options={}) => new Promise(resolve=>window.pending.push({url,signal:options.signal,resolve}));

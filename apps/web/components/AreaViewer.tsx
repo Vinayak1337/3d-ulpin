@@ -2,8 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
+import "./AreaViewer.css";
 import { geometryParts, utilityScene } from "@/lib/officer-scene";
-import type { AreaGeometry, PhysicalFeature } from "@ulpin/contracts";
+import type {
+  AreaGeometry,
+  PhysicalFeature,
+  SceneAsset,
+} from "@ulpin/contracts";
 
 export type AreaNavigation = {
   action:
@@ -35,6 +40,10 @@ export interface SceneBoundary {
 }
 export interface AreaViewerProps {
   features: PhysicalFeature[];
+  sceneAssets?: SceneAsset[];
+  framingFeatureId?: string;
+  explode?: number;
+  detailStyle?: "volume" | "floorplan";
   geographicExtent?: [number, number, number, number] | null;
   selectedId: string | null;
   onSelect: (id: string) => void;
@@ -45,6 +54,7 @@ export interface AreaViewerProps {
   details?: SceneDetail[];
   boundaries?: SceneBoundary[];
   selectedDetailId?: string | null;
+  selectedDetailIds?: string[];
   onSelectDetail?: (id: string) => void;
   underground?: boolean;
   labels?: boolean;
@@ -73,19 +83,17 @@ const positions = (geometry: AreaGeometry): number[][] => {
     : visit(geometry.coordinates);
 };
 const baseColor = (feature: PhysicalFeature) =>
-  feature.worldStatus === "synthetic"
-    ? "#a88db5"
-    : feature.kind === "road"
-      ? "#939c9b"
-      : feature.kind === "parcel"
-        ? "#b59a57"
-        : feature.kind === "public_land"
-          ? "#80a681"
-          : feature.kind === "utility"
-            ? "#527a9f"
-            : feature.height.state === "estimated"
-              ? "#bfaa82"
-              : "#aab9ab";
+  feature.kind === "road"
+    ? "#687572"
+    : feature.kind === "parcel"
+      ? "#c3bd96"
+      : feature.kind === "public_land"
+        ? "#8fa47c"
+        : feature.kind === "utility"
+          ? "#527a9f"
+          : feature.height.state === "estimated"
+            ? "#bfaa82"
+            : "#c7cebf";
 const snapshot = (v: Cesium.Viewer): CameraState => ({
   longitude: v.camera.positionCartographic.longitude,
   latitude: v.camera.positionCartographic.latitude,
@@ -121,18 +129,27 @@ const hierarchy = (rings: number[][][]) =>
       ),
   );
 
+const emptyAssets: SceneAsset[] = [];
+const emptyIds: string[] = [];
+const emptyDetails: SceneDetail[] = [];
+const emptyBoundaries: SceneBoundary[] = [];
+
 export default function AreaViewer(props: AreaViewerProps) {
   const {
     features,
+    sceneAssets = emptyAssets,
+    explode = 0,
+    detailStyle = "volume",
     selectedId,
     navigation,
     geographicExtent,
     sceneKey = "area",
-    highlightedIds = [],
+    highlightedIds = emptyIds,
     issueGeometry,
-    details = [],
-    boundaries = [],
+    details = emptyDetails,
+    boundaries = emptyBoundaries,
     selectedDetailId,
+    selectedDetailIds,
     underground = false,
     labels = true,
   } = props;
@@ -177,7 +194,9 @@ export default function AreaViewer(props: AreaViewerProps) {
         scene3DOnly: true,
         requestRenderMode: true,
         maximumRenderTimeChange: Infinity,
+        contextOptions: { webgl: { antialias: false } },
       });
+      v.scene.msaaSamples = 1;
       v.scene.globe.baseColor = Cesium.Color.fromCssColorString("#e9e9e1");
       v.scene.backgroundColor = Cesium.Color.fromCssColorString("#f2f2eb");
       v.scene.globe.enableLighting = false;
@@ -220,6 +239,14 @@ export default function AreaViewer(props: AreaViewerProps) {
         }
       };
       v.camera.moveEnd.addEventListener(retain);
+      v.scene.postRender.addEventListener(() => {
+        if (!host.current || !v || v.isDestroyed()) return;
+        const complete = v.dataSourceDisplay.ready;
+        host.current.dataset.sceneReady = String(complete);
+        // Asynchronous polygon/model construction needs another render until
+        // the complete scene snapshot is ready, even in request-render mode.
+        if (!complete) v.scene.requestRender();
+      });
       v.scene.renderError.addEventListener((_scene, cause: Error) =>
         setError(cause.message),
       );
@@ -246,6 +273,12 @@ export default function AreaViewer(props: AreaViewerProps) {
         v.destroy();
       }
       viewer.current = null;
+      initialized.current = null;
+      models.current.clear();
+      detailModels.current = [];
+      boundaryModels.current = [];
+      issueModels.current = [];
+      setReady(false);
     };
   }, []);
 
@@ -266,6 +299,7 @@ export default function AreaViewer(props: AreaViewerProps) {
         feature.kind,
         feature.name,
         feature.utilityProfile,
+        sceneAssets.find((asset) => asset.featureId === feature.id),
       ]);
       if (models.current.get(feature.id)?.signature === signature) continue;
       models.current
@@ -281,32 +315,56 @@ export default function AreaViewer(props: AreaViewerProps) {
           : geometry.type === "MultiPolygon"
             ? geometry.coordinates
             : [];
-      polygons.forEach((rings, index) =>
+      const asset = sceneAssets.find(
+        (a) =>
+          a.featureId === feature.id && a.featureRevision === feature.revision,
+      );
+      if (asset) {
+        const position = Cesium.Cartesian3.fromDegrees(...asset.position);
         entities.push(
           v.entities.add({
-            id: `${feature.id}:polygon:${index}`,
+            id: `${feature.id}:asset`,
             properties: { featureId: feature.id },
-            polygon: {
-              hierarchy: hierarchy(rings),
-              height: 0,
-              extrudedHeight:
-                feature.kind === "building" &&
-                feature.height.value !== null &&
-                feature.height.value > 0
-                  ? feature.height.value
-                  : undefined,
-              material: color.withAlpha(
-                feature.kind === "parcel"
-                  ? 0.12
-                  : feature.kind === "public_land"
-                    ? 0.45
-                    : 0.94,
+            position,
+            orientation: Cesium.Transforms.headingPitchRollQuaternion(
+              position,
+              new Cesium.HeadingPitchRoll(
+                Cesium.Math.toRadians(asset.heading),
+                0,
+                0,
               ),
-              outline: true,
-              outlineColor: color.darken(0.4, new Cesium.Color()),
-            },
+            ),
+            model: { uri: asset.url, shadows: Cesium.ShadowMode.ENABLED },
           }),
-        ),
+        );
+      }
+      (asset && feature.kind === "building" ? [] : polygons).forEach(
+        (rings, index) =>
+          entities.push(
+            v.entities.add({
+              id: `${feature.id}:polygon:${index}`,
+              properties: { featureId: feature.id },
+              polygon: {
+                hierarchy: hierarchy(rings),
+                height: 0,
+                extrudedHeight:
+                  feature.kind === "building" &&
+                  feature.height.value !== null &&
+                  feature.height.value > 0
+                    ? feature.height.value
+                    : undefined,
+                material: color.withAlpha(
+                  feature.kind === "parcel"
+                    ? 0.12
+                    : feature.kind === "public_land"
+                      ? 0.45
+                      : 0.94,
+                ),
+                outline: true,
+                outlineColor: color.darken(0.4, new Cesium.Color()),
+              },
+            }),
+          ),
       );
       const lines =
         geometry.type === "LineString"
@@ -421,7 +479,7 @@ export default function AreaViewer(props: AreaViewerProps) {
       models.current.set(feature.id, { signature, entities });
     }
     v.scene.requestRender();
-  }, [features, ready, labels]);
+  }, [features, sceneAssets, ready, labels]);
 
   useEffect(() => {
     const v = viewer.current;
@@ -431,7 +489,7 @@ export default function AreaViewer(props: AreaViewerProps) {
       const selected = feature.id === selectedId,
         affected = highlighted.has(feature.id),
         color = Cesium.Color.fromCssColorString(
-          selected ? "#ba6746" : affected ? "#a45750" : baseColor(feature),
+          selected ? "#3d745d" : affected ? "#a45750" : baseColor(feature),
         );
       const alpha =
         feature.kind === "parcel"
@@ -444,6 +502,30 @@ export default function AreaViewer(props: AreaViewerProps) {
                 ? 0.38
                 : 0.94;
       for (const entity of models.current.get(feature.id)?.entities || []) {
+        if (entity.model) {
+          entity.model.show = new Cesium.ConstantProperty(
+            !(selected && details.length),
+          );
+          entity.model.color = new Cesium.ConstantProperty(
+            selected
+              ? Cesium.Color.fromCssColorString("#c1dfc5").withAlpha(
+                  details.length ? 0.08 : 1,
+                )
+              : Cesium.Color.WHITE.withAlpha(details.length ? 0.45 : 1),
+          );
+          entity.model.colorBlendMode = new Cesium.ConstantProperty(
+            Cesium.ColorBlendMode.MIX,
+          );
+          entity.model.colorBlendAmount = new Cesium.ConstantProperty(
+            selected ? 0.45 : 0,
+          );
+          entity.model.silhouetteColor = new Cesium.ConstantProperty(
+            Cesium.Color.fromCssColorString("#41715a"),
+          );
+          entity.model.silhouetteSize = new Cesium.ConstantProperty(
+            selected && !details.length ? 2 : 0,
+          );
+        }
         if (entity.polygon) {
           entity.polygon.material = new Cesium.ColorMaterialProperty(
             color.withAlpha(alpha),
@@ -490,6 +572,7 @@ export default function AreaViewer(props: AreaViewerProps) {
     v.scene.requestRender();
   }, [
     features,
+    sceneAssets,
     selectedId,
     highlightedIds,
     details.length,
@@ -503,6 +586,9 @@ export default function AreaViewer(props: AreaViewerProps) {
     if (!v || !ready) return;
     detailModels.current.forEach((entity) => v.entities.remove(entity));
     detailModels.current = [];
+    const levels = [...new Set(details.map((d) => d.lower))].sort(
+      (a, b) => a - b,
+    );
     for (const detail of details) {
       const geometry = detail.geographicGeometry,
         polygons =
@@ -518,24 +604,61 @@ export default function AreaViewer(props: AreaViewerProps) {
             properties: { detailId: detail.id },
             polygon: {
               hierarchy: hierarchy(rings),
-              height: detail.lower,
-              extrudedHeight: detail.upper,
+              height: detail.lower + levels.indexOf(detail.lower) * explode,
+              extrudedHeight:
+                (detailStyle === "floorplan"
+                  ? detail.lower + 0.12
+                  : detail.upper) +
+                levels.indexOf(detail.lower) * explode,
               material: Cesium.Color.fromCssColorString(
-                detail.id === selectedDetailId
-                  ? "#c5734c"
+                detail.id === selectedDetailId ||
+                  selectedDetailIds?.includes(detail.id)
+                  ? "#d6ac58"
                   : detail.kind === "space"
-                    ? "#649697"
+                    ? detailStyle === "floorplan"
+                      ? "#dcd5c1"
+                      : "#b8cfb9"
                     : "#819983",
-              ).withAlpha(0.84),
+              ).withAlpha(detailStyle === "floorplan" ? 1 : 0.84),
               outline: true,
               outlineColor: Cesium.Color.fromCssColorString("#3e625f"),
             },
           }),
         ),
       );
+      if (detailStyle === "floorplan")
+        for (const rings of polygons)
+          for (const ring of rings) {
+            const lower = detail.lower + levels.indexOf(detail.lower) * explode;
+            detailModels.current.push(
+              v.entities.add({
+                id: `detail-wall:${detail.id}:${detailModels.current.length}`,
+                properties: { detailId: detail.id },
+                wall: {
+                  positions: ring.map(([lon, lat]) =>
+                    Cesium.Cartesian3.fromDegrees(lon, lat),
+                  ),
+                  minimumHeights: ring.map(() => lower + 0.12),
+                  maximumHeights: ring.map(
+                    () => lower + Math.min(2.4, detail.upper - detail.lower),
+                  ),
+                  material: Cesium.Color.fromCssColorString("#f4f1e7"),
+                  outline: true,
+                  outlineColor: Cesium.Color.fromCssColorString("#b7c6b6"),
+                },
+              }),
+            );
+          }
     }
     v.scene.requestRender();
-  }, [details, selectedDetailId, ready]);
+  }, [
+    details,
+    selectedDetailId,
+    selectedDetailIds,
+    explode,
+    detailStyle,
+    ready,
+  ]);
 
   useEffect(() => {
     const v = viewer.current;
@@ -684,7 +807,17 @@ export default function AreaViewer(props: AreaViewerProps) {
       /* Ignore expired camera storage. */
     }
     if (saved && Object.values(saved).every(Number.isFinite)) restore(v, saved);
-    else frame(v, features, geographicExtent, undefined, true, latest.current.frameScale);
+    else
+      frame(
+        v,
+        latest.current.framingFeatureId
+          ? features.filter((f) => f.id === latest.current.framingFeatureId)
+          : features,
+        latest.current.framingFeatureId ? undefined : geographicExtent,
+        undefined,
+        true,
+        latest.current.frameScale,
+      );
   }, [features, geographicExtent, sceneKey, ready]);
 
   useEffect(() => {
@@ -738,6 +871,7 @@ export default function AreaViewer(props: AreaViewerProps) {
     <div className="area-cesium">
       <div
         className="area-cesium-host"
+        data-scene-ready="false"
         ref={host}
         aria-label="Shared geographic 3D block; selecting a property preserves the camera"
       />

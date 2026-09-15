@@ -1,0 +1,43 @@
+.document-thumbnail {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #f4f5f0;
+  border: 1px solid #dfe5df;
+  border-radius: 4px;
+  min-width: 0;
+  height: 90px;
+  width: 100%;
+  color: #789080;
+}
+.document-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.document-card {
+  padding: 12px;
+  border-bottom: 1px solid #e3e9e5;
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 12px;
+  text-align: left;
+  width: 100%;
+  background: white;
+  border-inline: 0;
+  border-top: 0;
+  color: #344c40;
+}
+.document-card .document-thumbnail {
+  height: 64px;
+}
+.document-card strong {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 5px;
+}
+.document-card small {
+  color: #7c8b82;
+  font-size: 10px;
+}

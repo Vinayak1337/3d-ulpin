@@ -16,7 +16,7 @@
     "typecheck": "pnpm --filter @ulpin/web typecheck",
     "test:e2e": "playwright test",
     "test:scene": "tsx --test tests/building-scene.test.ts",
-    "test:v2": "tsx --tsconfig apps/web/tsconfig.json --test tests/v2-*.test.ts apps/web/lib/legacy-url.test.ts apps/web/features/v2/workspace/measurement.test.ts",
+    "test:v2": "tsx --tsconfig apps/web/tsconfig.json --test tests/v2-*.test.ts apps/web/lib/legacy-url.test.ts apps/web/features/officer/workspace/measurement.test.ts",
     "test:case-document-copy": "tsx scripts/verify-case-document-copy.ts",
     "test:demo": "tsx scripts/verify-demo.ts",
     "test:api": "tsx scripts/api-regression.ts",
@@ -29,7 +29,12 @@
     "test:horizontal-performance": "tsx scripts/verify-horizontal-performance.ts",
     "test:fresh-install": "tsx scripts/verify-fresh-install.ts",
     "test:ai": "tsx --test tests/ai-extraction/*.test.ts",
-    "test:ai-integration": "tsx tests/ai-extraction/integration.ts"
+    "test:ai-integration": "tsx tests/ai-extraction/integration.ts",
+    "demo:seed": "tsx scripts/reference/seed.ts",
+    "test:ui": "tsx --tsconfig apps/web/tsconfig.json --test tests/v2-*.test.ts apps/web/lib/legacy-url.test.ts apps/web/features/officer/workspace/measurement.test.ts",
+    "test:reference": "tsx scripts/reference/verify.ts",
+    "test:reference:browser": "tsx scripts/reference/browser.ts",
+    "test:reference:investigation": "tsx scripts/reference/investigation-browser.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",

@@ -63,6 +63,13 @@ export async function migrateAreas() {
       status text NOT NULL, input_fingerprint text NOT NULL, body jsonb NOT NULL,
       created_at timestamptz NOT NULL DEFAULT now()
     );
+    CREATE TABLE IF NOT EXISTS scene_asset_bindings (
+      feature_id uuid NOT NULL REFERENCES physical_features(id),
+      feature_revision integer NOT NULL,
+      body jsonb NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY(feature_id,feature_revision)
+    );
     CREATE TABLE IF NOT EXISTS area_acquisitions (
       id uuid PRIMARY KEY, source_id text NOT NULL, operation_key text UNIQUE NOT NULL,
       status text NOT NULL, body jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now()

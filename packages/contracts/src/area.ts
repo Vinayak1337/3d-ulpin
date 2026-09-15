@@ -121,6 +121,8 @@ export interface AdministrativeUnit {
   source?: string;
 }
 export interface MapArea {
+  dataKind?: "real" | "demonstration" | "mixed" | "empty";
+  featureCount?: number;
   id: string;
   siteId: string;
   name: string;
@@ -244,7 +246,20 @@ export interface ImportPackage {
   createdAt: string;
   acknowledgement?: string;
 }
+/** Presentation only. Analytical geometry remains on the canonical feature. */
+export interface SceneAsset {
+  featureId: string;
+  featureRevision: number;
+  url: string;
+  sha256: string;
+  frame: string;
+  position: [number, number, number];
+  heading: number;
+  provenance: string;
+  purpose: "presentation";
+}
 export interface AreaContext {
+  sceneAssets?: SceneAsset[];
   area: MapArea;
   features: PhysicalFeature[];
   packages: ImportPackage[];

@@ -1,0 +1,238 @@
+.register-directory {
+  height: calc(100dvh - var(--ui-header-height));
+  overflow: auto;
+  padding: 32px 38px;
+  background: #f5f7f4;
+}
+.register-directory .directory-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+.register-directory .directory-kicker {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #718372;
+}
+.register-directory h1 {
+  font-size: 27px;
+  letter-spacing: -0.7px;
+  margin: 5px 0 !important;
+}
+.register-directory p {
+  color: #718171;
+  font-size: 12px;
+  margin-top: 6px !important;
+}
+.register-search {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 16px;
+  background: white;
+  border: 1px solid #d9e3d8;
+  border-radius: 7px;
+  margin-bottom: 28px;
+}
+.register-search > svg {
+  color: #5e7a63;
+}
+.register-search input {
+  border: 0 !important;
+  padding: 5px !important;
+  flex: 1;
+  min-width: 0;
+  outline-offset: 0 !important;
+  font-size: 13px !important;
+}
+.register-directory-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 30px;
+}
+.register-directory-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 16px;
+}
+.register-directory h2 {
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.register-directory-heading select {
+  font-size: 11px !important;
+  max-width: 300px;
+  min-height: 34px !important;
+  padding: 6px 10px !important;
+}
+.property-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.property-card {
+  border: 1px solid #dce4d8;
+  border-radius: 7px;
+  background: white;
+  overflow: hidden;
+  min-width: 0;
+}
+.property-card:hover {
+  border-color: #789d7f;
+}
+.property-card .building-preview {
+  border-radius: 0;
+  height: 150px;
+}
+.property-card > div {
+  padding: 14px;
+}
+.property-card h3 {
+  font-size: 13px;
+}
+.property-card p {
+  font-size: 10px;
+}
+.property-card p > span {
+  padding: 0 5px;
+}
+.property-card footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #4b7254;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid #e8eee4;
+}
+.register-directory-layout > aside {
+  border-left: 1px solid #dce4d7;
+  padding-left: 24px;
+}
+.register-directory-layout > aside > h2 {
+  margin: 5px 0 18px;
+}
+.register-directory-layout > aside > a {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #e1e8dc;
+  color: #55715a;
+}
+.register-directory-layout > aside > a > span {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+.register-directory-layout > aside strong {
+  font-size: 12px;
+}
+.register-directory-layout > aside small {
+  font-size: 10px;
+  color: #899383;
+}
+.directory-help {
+  margin-top: 30px;
+  padding: 18px;
+  background: #eaf0e6;
+  border-radius: 7px;
+  color: #56795a;
+}
+.directory-help h3 {
+  font-size: 13px;
+  margin: 10px 0 !important;
+}
+.directory-help a {
+  font-size: 11px;
+  display: inline-block;
+  margin-top: 15px;
+}
+.register-search-results {
+  background: white;
+  border: 1px solid #dbe4d8;
+  border-radius: 7px;
+  margin-bottom: 25px;
+  padding: 8px 15px;
+}
+.register-search-results a {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid #e5ebe1;
+  font-size: 12px;
+}
+.register-search-results a > span:first-of-type {
+  flex: 1;
+}
+.register-search-results strong,
+.register-search-results small {
+  display: block;
+}
+.register-search-results small {
+  font-size: 10px;
+  color: #869080;
+  margin-top: 5px;
+}
+@media (min-width: 1750px) {
+  .property-card .building-preview {
+    height: 190px;
+  }
+}
+@media (max-width: 1150px) {
+  .property-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .register-directory-layout {
+    grid-template-columns: minmax(0, 1fr) 230px;
+    gap: 20px;
+  }
+}
+@media (max-width: 800px) {
+  .register-directory {
+    padding: 22px 14px;
+  }
+  .register-directory-layout {
+    grid-template-columns: 1fr;
+  }
+  .register-directory-layout > aside {
+    border-left: 0;
+    padding: 0;
+  }
+  .register-directory-heading {
+    flex-wrap: wrap;
+  }
+  .register-search {
+    padding: 10px;
+    gap: 7px;
+  }
+  .register-search > svg {
+    display: none;
+  }
+  .register-search .ui-button {
+    font-size: 11px;
+  }
+}
+@media (max-width: 450px) {
+  .property-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .register-directory .directory-heading {
+    align-items: flex-start;
+  }
+  .register-directory h1 {
+    font-size: 24px;
+  }
+  .register-directory .directory-heading > a {
+    font-size: 10px;
+  }
+}

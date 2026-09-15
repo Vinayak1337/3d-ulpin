@@ -1,0 +1,12 @@
+PASS Directory destinations remain fixed after selecting a property
+PASS Shared block → same register, floors, plans → same block; reload and history
+PASS Picking a building in the actual 3D canvas preserves its canonical identity
+PASS Picking a recorded space in the floor stack opens that same property record
+PASS Global address search changes canonical property and closes with keyboard
+PASS Original PDF calibration and measurement use the drawn 20 m dimension
+PASS Original comparison, reviewed draft, and honest assistance status
+PASS Incomplete property and retained investigation
+PASS Block secondary states: layers, parcel, utility, photos, history and import
+PASS Reference anchors at 1920 × 1080
+PASS Smaller screens, reachable global navigation, and no horizontal document overflow
+PASS Historical links resolve identifiers without a second interface

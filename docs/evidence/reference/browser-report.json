@@ -1,0 +1,57 @@
+{
+  "checks": [
+    {
+      "name": "Directory destinations remain fixed after selecting a property",
+      "result": "PASS"
+    },
+    {
+      "name": "Shared block → same register, floors, plans → same block; reload and history",
+      "result": "PASS"
+    },
+    {
+      "name": "Picking a building in the actual 3D canvas preserves its canonical identity",
+      "result": "PASS"
+    },
+    {
+      "name": "Picking a recorded space in the floor stack opens that same property record",
+      "result": "PASS"
+    },
+    {
+      "name": "Global address search changes canonical property and closes with keyboard",
+      "result": "PASS"
+    },
+    {
+      "name": "Original PDF calibration and measurement use the drawn 20 m dimension",
+      "result": "PASS"
+    },
+    {
+      "name": "Original comparison, reviewed draft, and honest assistance status",
+      "result": "PASS"
+    },
+    {
+      "name": "Incomplete property and retained investigation",
+      "result": "PASS"
+    },
+    {
+      "name": "Block secondary states: layers, parcel, utility, photos, history and import",
+      "result": "PASS"
+    },
+    {
+      "name": "Reference anchors at 1920 × 1080",
+      "result": "PASS"
+    },
+    {
+      "name": "Smaller screens, reachable global navigation, and no horizontal document overflow",
+      "result": "PASS"
+    },
+    {
+      "name": "Historical links resolve identifiers without a second interface",
+      "result": "PASS"
+    }
+  ],
+  "errors": [],
+  "warnings": [
+    "The resource http://127.0.0.1:3000/_next/static/css/599ac3469c1f23bd.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "The resource http://127.0.0.1:3000/_next/static/css/32a14006249b46f0.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+  ]
+}

@@ -1,0 +1,138 @@
+.geometry-workspace {
+  height: calc(100dvh - var(--ui-header-height));
+  display: flex;
+  flex-direction: column;
+  background: #f3f6f2;
+}
+.geometry-workspace > header {
+  padding: 16px 22px;
+  background: white;
+  border-bottom: 1px solid #dce5db;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.geometry-workspace > header > div {
+  flex: 1;
+}
+.geometry-workspace h1 {
+  font-size: 19px;
+}
+.geometry-workspace h2 {
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+.geometry-workspace p,
+.geometry-workspace small {
+  font-size: 12px;
+  color: #708373;
+  margin: 8px 0;
+}
+.geometry-workspace a {
+  font-size: 11px;
+  color: #345e47;
+}
+.geometry-workspace-grid {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 270px;
+  min-height: 0;
+  flex: 1;
+}
+.geometry-workspace aside {
+  background: white;
+  padding: 18px;
+  border-right: 1px solid #dce5db;
+  overflow: auto;
+}
+.geometry-workspace aside > button {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #e4eae1;
+  background: white;
+  padding: 10px 4px;
+  font-size: 12px;
+}
+.geometry-workspace aside > button[aria-pressed="true"] {
+  background: #e7f0e5;
+}
+.geometry-workspace label {
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  margin: 14px 0;
+  gap: 7px;
+}
+.geometry-workspace select {
+  width: 100%;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.geometry-workspace details {
+  margin-top: 22px;
+  font-size: 12px;
+}
+.geometry-workspace .plan-view {
+  height: 100%;
+  min-height: 350px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.geometry-workspace .plan-view > svg {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  touch-action: none;
+}
+.geometry-workspace .plan-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 12px 18px;
+  font-size: 11px;
+}
+.geometry-workspace .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #c9d9ca;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 5px;
+  color: #375b43;
+  font-size: 12px;
+}
+.geometry-workspace .plan-edit-bar {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  right: 15px;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #cfdbcc;
+  border-radius: 6px;
+}
+.geometry-workspace section {
+  min-height: 0;
+  min-width: 0;
+}
+@media (max-width: 800px) {
+  .geometry-workspace-grid {
+    grid-template-columns: 160px 1fr;
+    overflow: auto;
+  }
+  .geometry-workspace-grid > aside:last-child {
+    grid-column: 1/-1;
+  }
+  .geometry-workspace aside {
+    padding: 12px;
+  }
+}
