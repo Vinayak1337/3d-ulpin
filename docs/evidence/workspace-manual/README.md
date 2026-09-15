@@ -54,9 +54,11 @@ The hand-picked area/perimeter differ slightly from the authored 20 × 18 m dime
 - [Pixel difference](compare-difference.png)
 - [Recorded model and rendered 3D draft](build-recorded.png)
 
-## Remaining verification limitation
+## Download verification — Safari follow-up
 
-Measurement-note export dispatched `Page.downloadWillBegin` with filename `workspace-measurement-notes.json` and total size 7297 bytes, but this in-app browser then reported `Page.downloadProgress: canceled` with zero received bytes. File delivery is therefore **not verified** in this browser. No claim of flawless behavior on every browser or arbitrary source document is made.
+Measurement-note export dispatched `Page.downloadWillBegin` with filename `workspace-measurement-notes.json` and total size 7297 bytes, but this in-app browser then reported `Page.downloadProgress: canceled` with zero received bytes. File delivery remains canceled in the in-app browser.
+
+Follow-up through native Safari computer use passed: created a 3.2 m height note from the authored demo levels, clicked Export measurement notes, accepted Safari’s local download prompt, and verified `/Users/vinayak/Downloads/workspace-measurement-notes.json` on disk. The 669-byte file parsed as JSON and contained the correct property/workspace ID, `height` tool, value `3.2`, unit `m`, benchmark/source reference, and local-note scope. The normal-browser download verification gap is closed; no application code change was needed for this follow-up. No claim of flawless behavior on every browser or arbitrary source document is made.
 
 ## Reproduce
 
