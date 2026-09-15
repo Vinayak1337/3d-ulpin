@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { legacyUrl } from "@/lib/legacy-url";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   CaseDetail,
@@ -252,7 +253,7 @@ export default function Workbench() {
       linkedCase = q.get("case");
     if (buildingId && areaId) {
       setBlockReturn(
-        `/areas/${encodeURIComponent(areaId)}?feature=${encodeURIComponent(buildingId)}`,
+        legacyUrl(`/areas/${encodeURIComponent(areaId)}?feature=${encodeURIComponent(buildingId)}`),
       );
       retainOfficerContext({
         buildingId,
@@ -634,7 +635,7 @@ export default function Workbench() {
               ← Back to property in block
             </a>
           )}
-          <a href="/" className="brand" aria-label="3D ULPIN home">
+          <a href={legacyUrl("/")} className="brand" aria-label="3D ULPIN home">
             <Mark />
             <span>3D ULPIN</span>
           </a>

@@ -4,6 +4,7 @@ import type { BuildingDossier } from "@ulpin/contracts";
 import AreaWorkbench from "./AreaWorkbench";
 import type { PropertyPanelMode } from "./PropertyDossierPanel";
 import { registryRequest } from "@/lib/registry-client";
+import { legacyUrl } from "@/lib/legacy-url";
 export default function PropertyPage({
   buildingId,
   mode = "register",
@@ -33,7 +34,7 @@ export default function PropertyPage({
       <main className="property-page-message">
         <h1>Property unavailable</h1>
         <p role="alert">{error}</p>
-        <a href="/areas">Return to 3D Block</a>
+        <a href={legacyUrl("/areas")}>Return to 3D Block</a>
       </main>
     );
   if (!areaId)

@@ -16,6 +16,8 @@
     "typecheck": "pnpm --filter @ulpin/web typecheck",
     "test:e2e": "playwright test",
     "test:scene": "tsx --test tests/building-scene.test.ts",
+    "test:v2": "tsx --tsconfig apps/web/tsconfig.json --test tests/v2-*.test.ts apps/web/lib/legacy-url.test.ts apps/web/features/v2/workspace/measurement.test.ts",
+    "test:case-document-copy": "tsx scripts/verify-case-document-copy.ts",
     "test:demo": "tsx scripts/verify-demo.ts",
     "test:api": "tsx scripts/api-regression.ts",
     "test:registry": "tsx scripts/verify-registry.ts",

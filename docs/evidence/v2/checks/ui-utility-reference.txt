@@ -1,0 +1,12 @@
+### Result
+{"profileReference":"Identifier\nOBS-71d3c272-7cf4-4d90-b275-60f71bf34f82\nSource ID\nU-KNOWN\nGeometry role\nphysical utility\nSource revision\n1\nVertical reference\nBM-SYNTHETIC-UI-ONLY"}
+### Ran Playwright code
+```js
+await (async (page) => { await page.getByRole("button",{name:"Utility",exact:true}).click(); await page.getByText("BM-SYNTHETIC-UI-ONLY",{exact:true}).waitFor(); await page.screenshot({path:"output/playwright/v2-root/utility-profile-final.png"}); return {profileReference:await page.locator(".v2-metadata").innerText()}; })(page);
+```
+### Page
+- Page URL: http://127.0.0.1:3000/v2/blocks/8c61a45e-3ae9-4c7c-95f2-78918f23582a?feature=71d3c272-7cf4-4d90-b275-60f71bf34f82
+- Page Title: 3D ULPIN V2 · Property intelligence
+- Console: 0 errors, 2 warnings
+### Events
+- New console entries: .playwright-cli/console-2026-09-15T00-37-36-162Z.log#L1-L2

@@ -5,8 +5,15 @@ property, opening its own register and evidence, preparing source-linked floors
 and spaces, and reviewing discrepancies. The centered navigator connects the
 block, property register and selected property's preparation workspace.
 The saved NYC snapshot contains 62 actual footprints and reported roof heights.
-The existing synthetic neighbourhood, rights-volume checks, and preparation
-workbench remain available under **Legacy registry**.
+The redesigned interface starts at **[/v2](http://127.0.0.1:3000/v2)**. The previous
+interface, synthetic neighbourhood and rights-volume workbench remain available
+at **[/legacy](http://127.0.0.1:3000/legacy)**; former page links redirect there.
+
+Read the **[V2 delivery and demo guide](docs/V2_DELIVERY.md)** for exact routes,
+actual UI captures, test results and remaining limits, and **[V2 architecture](docs/V2_ARCHITECTURE.md)**
+for the component, state and route conventions. The white/green/gray design uses
+a centered floating navigator, contextual map rails, register tabs and a single
+document canvas with Measure, Calibrate, Compare and Build Details modes.
 
 This is a **local, single-operator demonstration** with separately labeled real
 observations, estimates, and synthetic scenarios. It does not issue

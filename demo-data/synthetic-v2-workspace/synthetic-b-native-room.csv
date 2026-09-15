@@ -1,0 +1,2 @@
+alias,label,level,lower,upper,unit,benchmark,footprint_wkt,frame
+v2b-room,Synthetic V2 B room,Ground,0,3,m,BM-SYNTHETIC-V2-ONLY,"POLYGON((22 2,26 2,26 6,22 6,22 2))",AREA-e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3

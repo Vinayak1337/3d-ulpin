@@ -1,4 +1,6 @@
-:root {
+/* Legacy styles remain inert outside the legacy layout, including soft navigation. */
+@scope (.legacy-app) {
+:scope {
   --paper: #faf9f5;
   --surface: #fffefa;
   --canvas: #f2f0eb;
@@ -30,8 +32,9 @@
 * {
   box-sizing: border-box;
 }
-html,
-body {
+:scope {
+  position: fixed;
+  inset: 0;
   width: 100%;
   height: 100%;
   margin: 0;
@@ -3790,4 +3793,6 @@ button.floor-group-heading:hover {
 .unit-identity h2.long-unit-alias {
   font-size: 22px;
   line-height: 1.3;
+}
+
 }

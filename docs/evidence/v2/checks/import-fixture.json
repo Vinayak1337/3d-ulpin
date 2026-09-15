@@ -1,0 +1,28 @@
+{
+  "areaId": "e4eea7b8-f1f0-4ea0-bd82-29e0c2a740a3",
+  "areaName": "V2 redesign verification \u00b7 synthetic",
+  "features": [
+    {
+      "id": "f5ec75e8-b72b-4f72-9db2-1fb996e1372f",
+      "name": "Synthetic Property A",
+      "identifier": "3DU-74XTKVHWFG9TGBV0H9W31AEG53:B001",
+      "revision": 1
+    },
+    {
+      "id": "f29b8566-fe5f-4a46-85d0-8754a6fccf3e",
+      "name": "Synthetic Property B",
+      "identifier": "3DU-74XTKVHWFG9TGBV0H9W31AEG53:B002",
+      "revision": 1
+    },
+    {
+      "id": "66c776fc-4944-449d-b0f3-3dbaa92e6c38",
+      "name": "Synthetic Property C",
+      "identifier": "3DU-74XTKVHWFG9TGBV0H9W31AEG53:B003",
+      "revision": 1
+    }
+  ],
+  "packageId": "e492d1cb-50b1-4fa9-8d14-9fb58f4b60a7",
+  "sourceIds": [
+    "60027856-f3a5-41d1-aa94-69110881e7c6"
+  ]
+}

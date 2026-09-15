@@ -7,6 +7,7 @@ import type {
   RegistrySite,
 } from "@ulpin/contracts";
 import { registryRequest as request } from "@/lib/registry-client";
+import { legacyUrl } from "@/lib/legacy-url";
 export default function RegistryCreate({
   detail,
   onDraft,
@@ -329,7 +330,7 @@ export default function RegistryCreate({
                   `/sites/${detail.site.id}/workspace`,
                   {},
                 );
-                location.href = `/?case=${c.id}`;
+                location.href = legacyUrl(`/?case=${c.id}`);
               })
             }
           >

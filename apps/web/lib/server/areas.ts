@@ -1355,47 +1355,105 @@ export async function runAreaCheck(
   return check;
 }
 
-export async function attachDocument(
-  id: string,
-  expectedRevision: number,
-  file: {
-    bytes: Uint8Array;
-    name: string;
-    format: "pdf" | "docx" | "text" | "csv" | "png" | "jpeg";
-    entityIds: string[];
-  },
-) {
-  if (!file.bytes.length || file.bytes.length > 16 * 1024 * 1024)
-    throw new AppError(
-      413,
-      "FILE_SIZE",
-      "Choose a nonempty document up to 16 MiB.",
-    );
-  const pkg = await getPackage(id);
-  if (pkg.revision !== expectedRevision || pkg.state === "COMMITTED")
-    conflict();
-  if (file.entityIds.some((id) => !pkg.features.some((f) => f.id === id)))
-    throw new AppError(
-      422,
-      "ASSOCIATION",
-      "Choose buildings present in this package.",
-    );
-  const mime = {
-    pdf: "application/pdf",
-    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    text: "text/plain",
-    csv: "text/csv",
-    png: "image/png",
-    jpeg: "image/jpeg",
-  }[file.format];
-  const sourceId = randomUUID(),
-    digest = sha256(file.bytes),
-    key = `areas/${sourceId}/${digest}`;
-  return originalAttempt("sources", sourceId, async (remember) => {
-    remember(key);
-    await putOriginal(key, file.bytes, mime);
-    const extracted =
-      file.format === "png" || file.format === "jpeg"
+type CopySourceRow = {
+  id: string; case_id: string; revision: number; name: string; profile: string;
+  mime_type: string; bytes: number; sha256: string; object_key: string;
+};
+const copyFormats: Record<string, DocumentFile["format"]> = {
+  "plan-pdf-v1": "pdf", "plan-png-v1": "png", "levels-csv-v1": "csv",
+};
+function sourceCopyFingerprint(rows: CopySourceRow[]) {
+  return sha256(JSON.stringify(rows.map(row => [row.id, row.case_id, row.revision, row.name, row.profile, row.mime_type, Number(row.bytes), row.sha256, row.object_key]).sort((a,b)=>String(a[0]).localeCompare(String(b[0])))));
+}
+async function copiedOperation(client: PoolClient, targetCaseId: string, copy: CopyBatch) {
+  const existing = (await client.query("SELECT payload_hash FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='copy-case-documents'", [targetCaseId, copy.operationKey])).rows[0];
+  if (existing && existing.payload_hash !== copy.payloadHash)
+    throw new AppError(409, "COPY_ALREADY_RECORDED", "These selected originals were already copied with a different assignment request. Refresh the preparation.");
+  return !!existing;
+}
+async function copySources(client: PoolClient, packageId: string, copy: Pick<CopyBatch, "caseId" | "buildingId" | "sourceIds">): Promise<CopySourceRow[]> {
+  const target = (await client.query("SELECT case_id FROM building_preparations WHERE package_id=$1 AND building_id=$2", [packageId, copy.buildingId])).rows[0];
+  if (!target) throw new AppError(422, "PREPARATION_BUILDING", "The destination must be this building's canonical preparation package.");
+  if (!(await client.query("SELECT id FROM cases WHERE id=$1 FOR SHARE", [copy.caseId])).rows.length)
+    notFound("The original case no longer exists.");
+  const owners = (await client.query(`
+    SELECT building_id FROM building_preparations WHERE case_id=$1
+    UNION SELECT f.id AS building_id FROM registry_case_feature_mappings m JOIN physical_features f ON (f.id=m.record_id OR f.record_id=m.record_id) WHERE m.case_id=$1 AND f.body->>'kind'='building'
+    UNION SELECT a.from_id AS building_id FROM registry_case_feature_mappings m JOIN property_associations a ON a.to_id=m.record_id WHERE m.case_id=$1 AND a.relationship IN ('detailed_record','shared_space') AND a.status <> 'rejected'`, [copy.caseId])).rows;
+  if (owners.some(owner=>owner.building_id !== copy.buildingId))
+    throw new AppError(422, "CASE_ALREADY_ASSIGNED", "This case belongs to another property. Documents cannot be reassigned through the unassigned-document flow.");
+  const rows = (await client.query<CopySourceRow>("SELECT id,case_id,revision,name,profile,mime_type,bytes,sha256,object_key FROM sources WHERE case_id=$1 AND id=ANY($2::uuid[]) ORDER BY id FOR SHARE", [copy.caseId, copy.sourceIds])).rows;
+  if (rows.length !== copy.sourceIds.length)
+    throw new AppError(422, "SOURCE_OWNERSHIP", "Every selected source revision must belong to the specified original case.");
+  let total = 0;
+  for (const row of rows) {
+    if (!Object.hasOwn(copyFormats, row.profile))
+      throw new AppError(422, "COPY_PROFILE", "Only PDF plans, PNG plans and levels CSV sources can be assigned. Other source profiles require their own explicit import mapping.");
+    const limit = row.profile === "plan-png-v1" ? 16 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (Number(row.bytes) <= 0 || Number(row.bytes) > limit)
+      throw new AppError(413, "COPY_SIZE", "Each PDF or CSV must be at most 10 MiB; each PNG at most 16 MiB.");
+    total += Number(row.bytes);
+  }
+  if (total > 64 * 1024 * 1024)
+    throw new AppError(413, "COPY_SIZE", "Select at most 64 MiB of documents in one assignment.");
+  return rows;
+}
+
+export async function copyCaseDocuments(id: string, input: { expectedRevision: number; caseId: string; sourceIds: string[]; buildingId: string; reason: string }): Promise<ImportPackage> {
+  if (!input.sourceIds.length || input.sourceIds.length > 20 || new Set(input.sourceIds).size !== input.sourceIds.length)
+    throw new AppError(422, "COPY_SELECTION", "Select between one and twenty distinct source revisions.");
+  const reason = input.reason.trim();
+  if (!reason || reason.length > 2000)
+    throw new AppError(422, "COPY_REASON", "Record an assignment reason of one to 2,000 characters.");
+  const sourceIds = [...input.sourceIds].sort();
+  const copy: CopyBatch = {caseId:input.caseId, buildingId:input.buildingId, sourceIds, reason,
+    operationKey:sha256(JSON.stringify(["copy-case-documents", id, input.caseId, input.buildingId, sourceIds])),
+    payloadHash:sha256(JSON.stringify([input.expectedRevision, reason])), sourceFingerprint:""};
+  const {rows, replay} = await transaction(async client => {
+    const rows = await copySources(client, id, copy);
+    const pkg = (await client.query("SELECT case_id FROM import_packages WHERE id=$1", [id])).rows[0];
+    return {rows, replay:await copiedOperation(client, pkg.case_id, copy)};
+  });
+  copy.sourceFingerprint = sourceCopyFingerprint(rows);
+  if (replay) return getPackage(id);
+  const copiedAt = new Date().toISOString(), files: DocumentFile[] = [];
+  for (const source of rows) {
+    const bytes = await readObject(source.object_key);
+    if (bytes.length !== Number(source.bytes) || sha256(bytes) !== source.sha256)
+      throw new AppError(422, "COPY_SOURCE_INTEGRITY", "The retained original does not match its recorded byte count and hash. Assignment was not saved.");
+    if (source.profile === "plan-png-v1" && Buffer.from(bytes.subarray(0,8)).toString("hex") !== "89504e470d0a1a0a")
+      throw new AppError(422, "COPY_FORMAT", "The selected PNG source does not contain a PNG file.");
+    files.push({bytes, name:source.name, format:copyFormats[source.profile], entityIds:[input.buildingId], copiedFrom:{
+      caseId:input.caseId, sourceRevisionId:source.id, sourceHash:source.sha256,
+      sourceRevision:source.revision, sourceProfile:source.profile, reason, copiedAt, actor:"local-demo-operator",
+    }});
+  }
+  return attachDocumentBatch(id, input.expectedRevision, files, copy);
+}
+
+type DocumentFile = {
+  bytes: Uint8Array;
+  name: string;
+  format: "pdf" | "docx" | "text" | "csv" | "png" | "jpeg";
+  entityIds: string[];
+  copiedFrom?: Omit<NonNullable<import("@ulpin/contracts").DocumentPart["copiedFrom"]>, "locator">;
+};
+type CopyBatch = {
+  caseId: string;
+  buildingId: string;
+  sourceIds: string[];
+  reason: string;
+  operationKey: string;
+  payloadHash: string;
+  sourceFingerprint: string;
+};
+const documentMime = {
+  pdf: "application/pdf",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  text: "text/plain", csv: "text/csv", png: "image/png", jpeg: "image/jpeg",
+};
+async function extractDocument(file: DocumentFile) {
+  return file.format === "png" || file.format === "jpeg"
         ? {
             parts: [
               {
@@ -1426,27 +1484,62 @@ export async function attachDocument(
             format: file.format,
             base64: Buffer.from(file.bytes).toString("base64"),
           });
-    return transaction(async (client) => {
+}
+
+export async function attachDocument(id: string, expectedRevision: number, file: DocumentFile) {
+  return attachDocumentBatch(id, expectedRevision, [file]);
+}
+
+async function attachDocumentBatch(id: string, expectedRevision: number, files: DocumentFile[], copy?: CopyBatch) {
+  const pkg = await getPackage(id);
+  if (pkg.revision !== expectedRevision || pkg.state === "COMMITTED") {
+    if (copy && await transaction(async client => {
+      const row = (await client.query("SELECT case_id FROM import_packages WHERE id=$1", [id])).rows[0];
+      return copiedOperation(client, row.case_id, copy);
+    })) return pkg;
+    conflict();
+  }
+  for (const file of files) {
+    if (!file.bytes.length || file.bytes.length > 16 * 1024 * 1024)
+      throw new AppError(413, "FILE_SIZE", "Choose a nonempty document up to 16 MiB.");
+    if (file.entityIds.some(entityId => !pkg.features.some(f => f.id === entityId)))
+      throw new AppError(422, "ASSOCIATION", "Choose buildings present in this package.");
+  }
+  const prepared: {file: DocumentFile; sourceId: string; digest: string; key: string; extracted: Awaited<ReturnType<typeof extractDocument>>}[] = [];
+  for (const file of files) {
+    const sourceId = randomUUID(), digest = sha256(file.bytes), key = `areas/${sourceId}/${digest}`;
+    const extracted = await extractDocument(file);
+    if (!extracted.parts.length && file.copiedFrom)
+      extracted.parts.push({locator:{label:"original file"},text:"No native text was extracted. Read the retained original; geometry and dimensions require explicit evidence."});
+    prepared.push({file, sourceId, digest, key, extracted});
+  }
+  // All allocated sources are committed together. The first row owns cleanup for the entire attempt.
+  return originalAttempt("sources", prepared[0].sourceId, async remember => {
+    for (const item of prepared) {
+      remember(item.key);
+      await putOriginal(item.key, item.file.bytes, documentMime[item.file.format]);
+    }
+    return transaction(async client => {
+      const row = (await client.query("SELECT case_id,body FROM import_packages WHERE id=$1 FOR UPDATE", [id])).rows[0];
+      if (!row) notFound("Import package not found.");
+      if (copy) {
+        const replay = await copiedOperation(client, row.case_id, copy);
+        if (replay) return row.body as ImportPackage;
+      }
       const current = await lockedPackage(client, id, expectedRevision);
-      const row = (
-        await client.query("SELECT case_id FROM import_packages WHERE id=$1", [
-          id,
-        ])
-      ).rows[0];
-      await client.query(
-        "INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,$4,$5,$6,$7,$8,'inspected',$9)",
-        [
-          sourceId,
-          row.case_id,
-          file.name,
-          `${file.format}-reference-v2`,
-          mime,
-          file.bytes.length,
-          digest,
-          key,
-          { status: "reference_only", partCount: extracted.parts.length },
-        ],
-      );
+      if (copy) {
+        const selected = await copySources(client, id, copy);
+        if (sourceCopyFingerprint(selected) !== copy.sourceFingerprint)
+          conflict("A selected original or its property association changed. Refresh before assigning documents.");
+        if (current.parts.some(part => part.copiedFrom?.caseId === copy.caseId && copy.sourceIds.includes(part.copiedFrom.sourceRevisionId)))
+          throw new AppError(409, "DOCUMENT_ALREADY_COPIED", "A selected document is already in this property's preparation. Select only new documents.");
+      }
+      for (const {file, sourceId, digest, key, extracted} of prepared) {
+        await client.query(
+          "INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,$4,$5,$6,$7,$8,'inspected',$9)",
+          [sourceId, row.case_id, file.name, `${file.format}-reference-v2`, documentMime[file.format], file.bytes.length, digest, key,
+            {status:"reference_only", partCount:extracted.parts.length, ...(file.copiedFrom ? {copiedFrom:{...file.copiedFrom,locator:"original file"}} : {})}],
+        );
       current.sourceRevisionIds.push(sourceId);
       current.warnings.push(...(extracted.warnings || []));
       if (!extracted.parts.length)
@@ -1461,6 +1554,7 @@ export async function attachDocument(
           locator: part.locator.label,
           text: part.text,
           entityIds: file.entityIds,
+          ...(file.copiedFrom ? { copiedFrom: { ...file.copiedFrom, locator: part.locator.label } } : {}),
         })),
       );
       for (const candidate of "candidates" in extracted
@@ -1521,16 +1615,22 @@ export async function attachDocument(
           });
         }
       }
+      }
       current.revision++;
       delete current.review;
-      current.state = current.questions.some((q) => !q.answer)
-        ? "NEEDS_INPUT"
-        : "READY_FOR_REVIEW";
+      current.state = current.questions.some(q => !q.answer) ? "NEEDS_INPUT" : "READY_FOR_REVIEW";
       await savePackage(client, current);
+      if (copy) {
+        await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'copy-case-documents',$3,$4)",
+          [row.case_id, copy.operationKey, copy.payloadHash, {packageId:id, revision:current.revision, sourceRevisionIds:prepared.map(p=>p.sourceId)}]);
+        await client.query("INSERT INTO events(id,case_id,kind,message) VALUES($1,$2,'documents_assigned',$3)",
+          [randomUUID(), row.case_id, `Explicitly copied ${files.length} document(s) from case ${copy.caseId} to building ${copy.buildingId}. ${copy.reason}`]);
+      }
       return current;
     });
   });
 }
+
 export async function addFact(
   id: string,
   expectedRevision: number,

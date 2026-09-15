@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { legacyUrl } from "@/lib/legacy-url";
 import "./OfficerNavigation.css";
 export interface OfficerContext {
   buildingId?: string;
@@ -34,7 +35,7 @@ export function retainOfficerContext(context: OfficerContext) {
   }
 }
 export default function OfficerNavigation() {
-  const pathname = usePathname(),
+  const pathname = usePathname().replace(/^\/legacy(?=\/|$)/, "") || "/",
     [context, setContext] = useState<OfficerContext>({}),
     [hasCase, setHasCase] = useState(false);
   useEffect(() => {
@@ -75,22 +76,22 @@ export default function OfficerNavigation() {
     <nav className="officer-navigation" aria-label="Main workspace">
       <a
         className="officer-nav-mark"
-        href={block}
+        href={legacyUrl(block)}
         aria-label="3D ULPIN block home"
       >
         ◈
       </a>
-      <a href={block} aria-current={active === "block" ? "page" : undefined}>
+      <a href={legacyUrl(block)} aria-current={active === "block" ? "page" : undefined}>
         <span aria-hidden="true">▧</span>3D Block
       </a>
       <a
-        href={register}
+        href={legacyUrl(register)}
         aria-current={active === "register" ? "page" : undefined}
       >
         <span aria-hidden="true">▤</span>Property Register
       </a>
       <a
-        href={workspace}
+        href={legacyUrl(workspace)}
         aria-current={active === "workspace" ? "page" : undefined}
       >
         <span aria-hidden="true">⌑</span>Plan Workspace
