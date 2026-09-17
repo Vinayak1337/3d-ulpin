@@ -1,0 +1,4646 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "attribution": "\u00a9 OpenStreetMap contributors",
+    "license": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "source": "https://overpass-api.de/api/interpreter",
+    "osm_timestamp": "2026-09-16T20:48:53Z",
+    "study_bbox": [
+      77.0594,
+      28.6204,
+      77.0618,
+      28.6223
+    ],
+    "selection_note": "Analyst-selected study window near the OSM Uttam Nagar suburb point; not an official administrative block."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "way/350566672",
+      "properties": {
+        "osm_id": "way/350566672",
+        "name": "OSM building 350566672",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350566672",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0607563,
+              28.6221902
+            ],
+            [
+              77.0608679,
+              28.6222351
+            ],
+            [
+              77.0608998,
+              28.622174
+            ],
+            [
+              77.0607882,
+              28.6221291
+            ],
+            [
+              77.0607563,
+              28.6221902
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350566674",
+      "properties": {
+        "osm_id": "way/350566674",
+        "name": "OSM building 350566674",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350566674",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0607944,
+              28.6221222
+            ],
+            [
+              77.0609072,
+              28.6221703
+            ],
+            [
+              77.0609523,
+              28.6220857
+            ],
+            [
+              77.0608297,
+              28.6220419
+            ],
+            [
+              77.0607944,
+              28.6221222
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350566675",
+      "properties": {
+        "osm_id": "way/350566675",
+        "name": "OSM building 350566675",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350566675",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0608396,
+              28.6220314
+            ],
+            [
+              77.0609587,
+              28.6220784
+            ],
+            [
+              77.0610251,
+              28.6219488
+            ],
+            [
+              77.0609061,
+              28.6219018
+            ],
+            [
+              77.0608396,
+              28.6220314
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350566681",
+      "properties": {
+        "osm_id": "way/350566681",
+        "name": "OSM building 350566681",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350566681",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0608899,
+              28.6222255
+            ],
+            [
+              77.0609922,
+              28.6222746
+            ],
+            [
+              77.0610496,
+              28.6221824
+            ],
+            [
+              77.0609473,
+              28.6221333
+            ],
+            [
+              77.0608899,
+              28.6222255
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350566688",
+      "properties": {
+        "osm_id": "way/350566688",
+        "name": "OSM building 350566688",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350566688",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610634,
+              28.6221882
+            ],
+            [
+              77.061177,
+              28.6222346
+            ],
+            [
+              77.061286,
+              28.6220289
+            ],
+            [
+              77.0611724,
+              28.6219825
+            ],
+            [
+              77.0610634,
+              28.6221882
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350566707",
+      "properties": {
+        "osm_id": "way/350566707",
+        "name": "OSM building 350566707",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350566707",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0609514,
+              28.6221211
+            ],
+            [
+              77.0610596,
+              28.6221673
+            ],
+            [
+              77.0611569,
+              28.621984
+            ],
+            [
+              77.0610475,
+              28.6219429
+            ],
+            [
+              77.0609514,
+              28.6221211
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350566712",
+      "properties": {
+        "osm_id": "way/350566712",
+        "name": "OSM building 350566712",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350566712",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611939,
+              28.6222452
+            ],
+            [
+              77.0613062,
+              28.6222892
+            ],
+            [
+              77.0614198,
+              28.6220744
+            ],
+            [
+              77.0612995,
+              28.6220284
+            ],
+            [
+              77.0611939,
+              28.6222452
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590365",
+      "properties": {
+        "osm_id": "way/350590365",
+        "name": "OSM building 350590365",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590365",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060705,
+              28.6220066
+            ],
+            [
+              77.0608181,
+              28.6220448
+            ],
+            [
+              77.0608935,
+              28.6219002
+            ],
+            [
+              77.0607746,
+              28.621862
+            ],
+            [
+              77.060705,
+              28.6220066
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590366",
+      "properties": {
+        "osm_id": "way/350590366",
+        "name": "OSM building 350590366",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590366",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0600457,
+              28.6220686
+            ],
+            [
+              77.0601559,
+              28.6221118
+            ],
+            [
+              77.0601747,
+              28.622075
+            ],
+            [
+              77.0600645,
+              28.6220318
+            ],
+            [
+              77.0600457,
+              28.6220686
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590370",
+      "properties": {
+        "osm_id": "way/350590370",
+        "name": "OSM building 350590370",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590370",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060554,
+              28.6219634
+            ],
+            [
+              77.0606237,
+              28.6218151
+            ],
+            [
+              77.0605071,
+              28.6217728
+            ],
+            [
+              77.0604374,
+              28.6219211
+            ],
+            [
+              77.060554,
+              28.6219634
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590374",
+      "properties": {
+        "osm_id": "way/350590374",
+        "name": "OSM building 350590374",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590374",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0605553,
+              28.6222283
+            ],
+            [
+              77.0605954,
+              28.6221528
+            ],
+            [
+              77.0604832,
+              28.6221068
+            ],
+            [
+              77.0604431,
+              28.6221824
+            ],
+            [
+              77.0605553,
+              28.6222283
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590376",
+      "properties": {
+        "osm_id": "way/350590376",
+        "name": "OSM building 350590376",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590376",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0600968,
+              28.6222419
+            ],
+            [
+              77.0602084,
+              28.6222921
+            ],
+            [
+              77.0602449,
+              28.6222294
+            ],
+            [
+              77.0601333,
+              28.6221793
+            ],
+            [
+              77.0600968,
+              28.6222419
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590379",
+      "properties": {
+        "osm_id": "way/350590379",
+        "name": "OSM building 350590379",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590379",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0606668,
+              28.6222993
+            ],
+            [
+              77.0607168,
+              28.6222115
+            ],
+            [
+              77.0606089,
+              28.6221641
+            ],
+            [
+              77.0605589,
+              28.6222519
+            ],
+            [
+              77.0606668,
+              28.6222993
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590380",
+      "properties": {
+        "osm_id": "way/350590380",
+        "name": "OSM building 350590380",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590380",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0607308,
+              28.6221956
+            ],
+            [
+              77.0607677,
+              28.6221287
+            ],
+            [
+              77.0606626,
+              28.6220841
+            ],
+            [
+              77.0606257,
+              28.622151
+            ],
+            [
+              77.0607308,
+              28.6221956
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590383",
+      "properties": {
+        "osm_id": "way/350590383",
+        "name": "OSM building 350590383",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590383",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0605696,
+              28.6219517
+            ],
+            [
+              77.0606752,
+              28.6219975
+            ],
+            [
+              77.0607001,
+              28.6219532
+            ],
+            [
+              77.0605945,
+              28.6219074
+            ],
+            [
+              77.0605696,
+              28.6219517
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590387",
+      "properties": {
+        "osm_id": "way/350590387",
+        "name": "OSM building 350590387",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590387",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0604162,
+              28.6221825
+            ],
+            [
+              77.0604564,
+              28.6221185
+            ],
+            [
+              77.060361,
+              28.6220723
+            ],
+            [
+              77.0603208,
+              28.6221364
+            ],
+            [
+              77.0604162,
+              28.6221825
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590388",
+      "properties": {
+        "osm_id": "way/350590388",
+        "name": "OSM building 350590388",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590388",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0605983,
+              28.6219007
+            ],
+            [
+              77.060707,
+              28.6219482
+            ],
+            [
+              77.0607562,
+              28.6218567
+            ],
+            [
+              77.0606417,
+              28.6218136
+            ],
+            [
+              77.0605983,
+              28.6219007
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590391",
+      "properties": {
+        "osm_id": "way/350590391",
+        "name": "OSM building 350590391",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590391",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0599636,
+              28.6222013
+            ],
+            [
+              77.0600757,
+              28.6222425
+            ],
+            [
+              77.0601041,
+              28.622183
+            ],
+            [
+              77.0599921,
+              28.6221418
+            ],
+            [
+              77.0599636,
+              28.6222013
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590393",
+      "properties": {
+        "osm_id": "way/350590393",
+        "name": "OSM building 350590393",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590393",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0601769,
+              28.6220687
+            ],
+            [
+              77.0601908,
+              28.6220417
+            ],
+            [
+              77.0601019,
+              28.6220063
+            ],
+            [
+              77.060088,
+              28.6220333
+            ],
+            [
+              77.0601769,
+              28.6220687
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590397",
+      "properties": {
+        "osm_id": "way/350590397",
+        "name": "OSM building 350590397",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590397",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0601616,
+              28.6221286
+            ],
+            [
+              77.0602774,
+              28.6221751
+            ],
+            [
+              77.0603086,
+              28.6221154
+            ],
+            [
+              77.0601928,
+              28.6220688
+            ],
+            [
+              77.0601616,
+              28.6221286
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590398",
+      "properties": {
+        "osm_id": "way/350590398",
+        "name": "OSM building 350590398",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590398",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0600097,
+              28.6218474
+            ],
+            [
+              77.0601106,
+              28.621892
+            ],
+            [
+              77.0602265,
+              28.6216802
+            ],
+            [
+              77.0601166,
+              28.6216384
+            ],
+            [
+              77.0600097,
+              28.6218474
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590403",
+      "properties": {
+        "osm_id": "way/350590403",
+        "name": "OSM building 350590403",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590403",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0605927,
+              28.6221458
+            ],
+            [
+              77.0606306,
+              28.6220761
+            ],
+            [
+              77.0605262,
+              28.6220324
+            ],
+            [
+              77.0604883,
+              28.6221021
+            ],
+            [
+              77.0605927,
+              28.6221458
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590404",
+      "properties": {
+        "osm_id": "way/350590404",
+        "name": "OSM building 350590404",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590404",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0607701,
+              28.6221157
+            ],
+            [
+              77.0608005,
+              28.6220567
+            ],
+            [
+              77.0606946,
+              28.6220147
+            ],
+            [
+              77.0606642,
+              28.6220738
+            ],
+            [
+              77.0607701,
+              28.6221157
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590406",
+      "properties": {
+        "osm_id": "way/350590406",
+        "name": "OSM building 350590406",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590406",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0603102,
+              28.6221893
+            ],
+            [
+              77.0603959,
+              28.6222347
+            ],
+            [
+              77.0604185,
+              28.6221884
+            ],
+            [
+              77.0603299,
+              28.6221486
+            ],
+            [
+              77.0603102,
+              28.6221893
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590409",
+      "properties": {
+        "osm_id": "way/350590409",
+        "name": "OSM building 350590409",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590409",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0603551,
+              28.6220608
+            ],
+            [
+              77.0604694,
+              28.6221098
+            ],
+            [
+              77.0605038,
+              28.6220479
+            ],
+            [
+              77.0603896,
+              28.6219989
+            ],
+            [
+              77.0603551,
+              28.6220608
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590410",
+      "properties": {
+        "osm_id": "way/350590410",
+        "name": "OSM building 350590410",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590410",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0603957,
+              28.6219906
+            ],
+            [
+              77.0605109,
+              28.6220398
+            ],
+            [
+              77.060549,
+              28.6219711
+            ],
+            [
+              77.0604338,
+              28.6219219
+            ],
+            [
+              77.0603957,
+              28.6219906
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590411",
+      "properties": {
+        "osm_id": "way/350590411",
+        "name": "OSM building 350590411",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590411",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0600935,
+              28.6219993
+            ],
+            [
+              77.0601956,
+              28.6220375
+            ],
+            [
+              77.0602316,
+              28.6219633
+            ],
+            [
+              77.0601295,
+              28.6219251
+            ],
+            [
+              77.0600935,
+              28.6219993
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590412",
+      "properties": {
+        "osm_id": "way/350590412",
+        "name": "OSM building 350590412",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590412",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0601337,
+              28.6219136
+            ],
+            [
+              77.0602451,
+              28.6219572
+            ],
+            [
+              77.0603588,
+              28.6217332
+            ],
+            [
+              77.0602474,
+              28.6216896
+            ],
+            [
+              77.0601337,
+              28.6219136
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590415",
+      "properties": {
+        "osm_id": "way/350590415",
+        "name": "OSM building 350590415",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590415",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060529,
+              28.6220298
+            ],
+            [
+              77.0606358,
+              28.6220756
+            ],
+            [
+              77.0606744,
+              28.6220026
+            ],
+            [
+              77.0605659,
+              28.6219585
+            ],
+            [
+              77.060529,
+              28.6220298
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590416",
+      "properties": {
+        "osm_id": "way/350590416",
+        "name": "OSM building 350590416",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590416",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.059995,
+              28.6221357
+            ],
+            [
+              77.060115,
+              28.6221864
+            ],
+            [
+              77.0601521,
+              28.6221187
+            ],
+            [
+              77.0600338,
+              28.6220705
+            ],
+            [
+              77.059995,
+              28.6221357
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590418",
+      "properties": {
+        "osm_id": "way/350590418",
+        "name": "OSM building 350590418",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590418",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0603132,
+              28.6221099
+            ],
+            [
+              77.0603649,
+              28.6220157
+            ],
+            [
+              77.0602478,
+              28.6219663
+            ],
+            [
+              77.0601962,
+              28.6220605
+            ],
+            [
+              77.0603132,
+              28.6221099
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590420",
+      "properties": {
+        "osm_id": "way/350590420",
+        "name": "OSM building 350590420",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590420",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0603678,
+              28.6220046
+            ],
+            [
+              77.0604049,
+              28.6219374
+            ],
+            [
+              77.0602902,
+              28.6218885
+            ],
+            [
+              77.060253,
+              28.6219557
+            ],
+            [
+              77.0603678,
+              28.6220046
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590421",
+      "properties": {
+        "osm_id": "way/350590421",
+        "name": "OSM building 350590421",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590421",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0604093,
+              28.6219273
+            ],
+            [
+              77.0604951,
+              28.621773
+            ],
+            [
+              77.0603938,
+              28.6217296
+            ],
+            [
+              77.060308,
+              28.6218839
+            ],
+            [
+              77.0604093,
+              28.6219273
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350590422",
+      "properties": {
+        "osm_id": "way/350590422",
+        "name": "OSM building 350590422",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350590422",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0598113,
+              28.6217797
+            ],
+            [
+              77.0599988,
+              28.6218503
+            ],
+            [
+              77.0600459,
+              28.6217423
+            ],
+            [
+              77.0600923,
+              28.6216314
+            ],
+            [
+              77.0598901,
+              28.6215594
+            ],
+            [
+              77.0598113,
+              28.6217797
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350826514",
+      "properties": {
+        "osm_id": "way/350826514",
+        "name": "OSM building 350826514",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350826514",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0596249,
+              28.6206047
+            ],
+            [
+              77.0597086,
+              28.6206275
+            ],
+            [
+              77.0597383,
+              28.6205437
+            ],
+            [
+              77.0596545,
+              28.6205209
+            ],
+            [
+              77.0596249,
+              28.6206047
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350826517",
+      "properties": {
+        "osm_id": "way/350826517",
+        "name": "OSM building 350826517",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350826517",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0598515,
+              28.6205388
+            ],
+            [
+              77.0599381,
+              28.6205623
+            ],
+            [
+              77.0599695,
+              28.6204733
+            ],
+            [
+              77.059883,
+              28.6204498
+            ],
+            [
+              77.0598515,
+              28.6205388
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350826533",
+      "properties": {
+        "osm_id": "way/350826533",
+        "name": "OSM building 350826533",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350826533",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0597255,
+              28.6206334
+            ],
+            [
+              77.0597987,
+              28.6206533
+            ],
+            [
+              77.0598285,
+              28.6205689
+            ],
+            [
+              77.0597553,
+              28.620549
+            ],
+            [
+              77.0597255,
+              28.6206334
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350826546",
+      "properties": {
+        "osm_id": "way/350826546",
+        "name": "OSM building 350826546",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350826546",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0597601,
+              28.620515
+            ],
+            [
+              77.0598375,
+              28.6205361
+            ],
+            [
+              77.0598707,
+              28.6204421
+            ],
+            [
+              77.0597933,
+              28.620421
+            ],
+            [
+              77.0597601,
+              28.620515
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350826558",
+      "properties": {
+        "osm_id": "way/350826558",
+        "name": "OSM building 350826558",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350826558",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0595378,
+              28.620578
+            ],
+            [
+              77.0596147,
+              28.620599
+            ],
+            [
+              77.0596424,
+              28.6205206
+            ],
+            [
+              77.0595656,
+              28.6204996
+            ],
+            [
+              77.0595378,
+              28.620578
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350826566",
+      "properties": {
+        "osm_id": "way/350826566",
+        "name": "OSM building 350826566",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350826566",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0598069,
+              28.620658
+            ],
+            [
+              77.0598879,
+              28.62068
+            ],
+            [
+              77.0599187,
+              28.6205928
+            ],
+            [
+              77.0598378,
+              28.6205707
+            ],
+            [
+              77.0598069,
+              28.620658
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866200",
+      "properties": {
+        "osm_id": "way/350866200",
+        "name": "OSM building 350866200",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866200",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0596028,
+              28.6211715
+            ],
+            [
+              77.0597138,
+              28.6212045
+            ],
+            [
+              77.0597408,
+              28.6211344
+            ],
+            [
+              77.0596298,
+              28.6211015
+            ],
+            [
+              77.0596028,
+              28.6211715
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866204",
+      "properties": {
+        "osm_id": "way/350866204",
+        "name": "OSM building 350866204",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866204",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0594463,
+              28.6211975
+            ],
+            [
+              77.0595509,
+              28.6212262
+            ],
+            [
+              77.0595729,
+              28.6211647
+            ],
+            [
+              77.0594683,
+              28.6211359
+            ],
+            [
+              77.0594463,
+              28.6211975
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866218",
+      "properties": {
+        "osm_id": "way/350866218",
+        "name": "OSM building 350866218",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866218",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0614737,
+              28.621444
+            ],
+            [
+              77.0615942,
+              28.6214917
+            ],
+            [
+              77.0616402,
+              28.621402
+            ],
+            [
+              77.0615197,
+              28.6213544
+            ],
+            [
+              77.0614737,
+              28.621444
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866244",
+      "properties": {
+        "osm_id": "way/350866244",
+        "name": "OSM building 350866244",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866244",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.059911,
+              28.6210419
+            ],
+            [
+              77.0600045,
+              28.6210687
+            ],
+            [
+              77.0600421,
+              28.6209677
+            ],
+            [
+              77.0599486,
+              28.6209409
+            ],
+            [
+              77.059911,
+              28.6210419
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866254",
+      "properties": {
+        "osm_id": "way/350866254",
+        "name": "OSM building 350866254",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866254",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0594751,
+              28.6211274
+            ],
+            [
+              77.0595781,
+              28.6211533
+            ],
+            [
+              77.0595999,
+              28.6210864
+            ],
+            [
+              77.0594969,
+              28.6210605
+            ],
+            [
+              77.0594751,
+              28.6211274
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866258",
+      "properties": {
+        "osm_id": "way/350866258",
+        "name": "OSM building 350866258",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866258",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0596052,
+              28.6209476
+            ],
+            [
+              77.0596783,
+              28.6209699
+            ],
+            [
+              77.0597144,
+              28.6208787
+            ],
+            [
+              77.0596414,
+              28.6208564
+            ],
+            [
+              77.0596052,
+              28.6209476
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866270",
+      "properties": {
+        "osm_id": "way/350866270",
+        "name": "OSM building 350866270",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866270",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0595158,
+              28.6209262
+            ],
+            [
+              77.0595976,
+              28.6209486
+            ],
+            [
+              77.059631,
+              28.6208544
+            ],
+            [
+              77.0595491,
+              28.6208321
+            ],
+            [
+              77.0595158,
+              28.6209262
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866292",
+      "properties": {
+        "osm_id": "way/350866292",
+        "name": "OSM building 350866292",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866292",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0598136,
+              28.6210152
+            ],
+            [
+              77.0598998,
+              28.6210386
+            ],
+            [
+              77.0599365,
+              28.6209341
+            ],
+            [
+              77.0598504,
+              28.6209108
+            ],
+            [
+              77.0598136,
+              28.6210152
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866296",
+      "properties": {
+        "osm_id": "way/350866296",
+        "name": "OSM building 350866296",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866296",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0596922,
+              28.6209774
+            ],
+            [
+              77.0597949,
+              28.6210082
+            ],
+            [
+              77.0598356,
+              28.6209038
+            ],
+            [
+              77.059733,
+              28.6208729
+            ],
+            [
+              77.0596922,
+              28.6209774
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866301",
+      "properties": {
+        "osm_id": "way/350866301",
+        "name": "OSM building 350866301",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866301",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0594213,
+              28.6216203
+            ],
+            [
+              77.0595337,
+              28.6216555
+            ],
+            [
+              77.0595642,
+              28.6215804
+            ],
+            [
+              77.0594518,
+              28.6215453
+            ],
+            [
+              77.0594213,
+              28.6216203
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866333",
+      "properties": {
+        "osm_id": "way/350866333",
+        "name": "OSM building 350866333",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866333",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0594871,
+              28.6210488
+            ],
+            [
+              77.0596109,
+              28.6210782
+            ],
+            [
+              77.059643,
+              28.6209741
+            ],
+            [
+              77.0595193,
+              28.6209446
+            ],
+            [
+              77.0594871,
+              28.6210488
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866347",
+      "properties": {
+        "osm_id": "way/350866347",
+        "name": "OSM building 350866347",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866347",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0596347,
+              28.6210916
+            ],
+            [
+              77.0597426,
+              28.6211253
+            ],
+            [
+              77.0597827,
+              28.6210261
+            ],
+            [
+              77.0596749,
+              28.6209924
+            ],
+            [
+              77.0596347,
+              28.6210916
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866349",
+      "properties": {
+        "osm_id": "way/350866349",
+        "name": "OSM building 350866349",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866349",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0594146,
+              28.6212848
+            ],
+            [
+              77.0595248,
+              28.6213156
+            ],
+            [
+              77.0595535,
+              28.6212366
+            ],
+            [
+              77.0594433,
+              28.6212058
+            ],
+            [
+              77.0594146,
+              28.6212848
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/350866358",
+      "properties": {
+        "osm_id": "way/350866358",
+        "name": "OSM building 350866358",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/350866358",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0594535,
+              28.6215386
+            ],
+            [
+              77.0595675,
+              28.6215772
+            ],
+            [
+              77.0596001,
+              28.6215031
+            ],
+            [
+              77.0594861,
+              28.6214645
+            ],
+            [
+              77.0594535,
+              28.6215386
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081118",
+      "properties": {
+        "osm_id": "way/351081118",
+        "name": "OSM building 351081118",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081118",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0616103,
+              28.6204903
+            ],
+            [
+              77.0617039,
+              28.6205185
+            ],
+            [
+              77.0617391,
+              28.6204285
+            ],
+            [
+              77.0616456,
+              28.6204003
+            ],
+            [
+              77.0616103,
+              28.6204903
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081145",
+      "properties": {
+        "osm_id": "way/351081145",
+        "name": "OSM building 351081145",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081145",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611536,
+              28.6217561
+            ],
+            [
+              77.0612453,
+              28.6217924
+            ],
+            [
+              77.0612749,
+              28.6217345
+            ],
+            [
+              77.0611832,
+              28.6216983
+            ],
+            [
+              77.0611536,
+              28.6217561
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081205",
+      "properties": {
+        "osm_id": "way/351081205",
+        "name": "OSM building 351081205",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081205",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0607599,
+              28.6205158
+            ],
+            [
+              77.0608428,
+              28.6205409
+            ],
+            [
+              77.0608772,
+              28.6204532
+            ],
+            [
+              77.0607942,
+              28.6204282
+            ],
+            [
+              77.0607599,
+              28.6205158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081236",
+      "properties": {
+        "osm_id": "way/351081236",
+        "name": "OSM building 351081236",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081236",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611998,
+              28.6213966
+            ],
+            [
+              77.0612984,
+              28.6214375
+            ],
+            [
+              77.0613575,
+              28.6213275
+            ],
+            [
+              77.0612589,
+              28.6212867
+            ],
+            [
+              77.0611998,
+              28.6213966
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081292",
+      "properties": {
+        "osm_id": "way/351081292",
+        "name": "OSM building 351081292",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081292",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.061142,
+              28.6206224
+            ],
+            [
+              77.0612349,
+              28.6206505
+            ],
+            [
+              77.0612743,
+              28.6205501
+            ],
+            [
+              77.0611814,
+              28.6205221
+            ],
+            [
+              77.061142,
+              28.6206224
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081323",
+      "properties": {
+        "osm_id": "way/351081323",
+        "name": "OSM building 351081323",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081323",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0616049,
+              28.6210928
+            ],
+            [
+              77.0616977,
+              28.6211208
+            ],
+            [
+              77.0617534,
+              28.6209788
+            ],
+            [
+              77.0616606,
+              28.6209507
+            ],
+            [
+              77.0616049,
+              28.6210928
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081333",
+      "properties": {
+        "osm_id": "way/351081333",
+        "name": "OSM building 351081333",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081333",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0615735,
+              28.6206159
+            ],
+            [
+              77.0616685,
+              28.6206445
+            ],
+            [
+              77.0617081,
+              28.6205436
+            ],
+            [
+              77.0616131,
+              28.6205149
+            ],
+            [
+              77.0615735,
+              28.6206159
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081337",
+      "properties": {
+        "osm_id": "way/351081337",
+        "name": "OSM building 351081337",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081337",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0614535,
+              28.6220644
+            ],
+            [
+              77.0615503,
+              28.6220954
+            ],
+            [
+              77.0615821,
+              28.6220189
+            ],
+            [
+              77.0614853,
+              28.6219879
+            ],
+            [
+              77.0614535,
+              28.6220644
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081354",
+      "properties": {
+        "osm_id": "way/351081354",
+        "name": "OSM building 351081354",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081354",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0609525,
+              28.6207434
+            ],
+            [
+              77.06103,
+              28.6207668
+            ],
+            [
+              77.0610796,
+              28.6206404
+            ],
+            [
+              77.061002,
+              28.620617
+            ],
+            [
+              77.0609525,
+              28.6207434
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081414",
+      "properties": {
+        "osm_id": "way/351081414",
+        "name": "OSM building 351081414",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081414",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.061106,
+              28.6218433
+            ],
+            [
+              77.0611991,
+              28.62188
+            ],
+            [
+              77.0612397,
+              28.6218008
+            ],
+            [
+              77.0611466,
+              28.621764
+            ],
+            [
+              77.061106,
+              28.6218433
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081416",
+      "properties": {
+        "osm_id": "way/351081416",
+        "name": "OSM building 351081416",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081416",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0613707,
+              28.6219399
+            ],
+            [
+              77.0614667,
+              28.621978
+            ],
+            [
+              77.0615085,
+              28.6218969
+            ],
+            [
+              77.0614126,
+              28.6218587
+            ],
+            [
+              77.0613707,
+              28.6219399
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081428",
+      "properties": {
+        "osm_id": "way/351081428",
+        "name": "OSM building 351081428",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081428",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060859,
+              28.6207168
+            ],
+            [
+              77.0609365,
+              28.6207402
+            ],
+            [
+              77.0609885,
+              28.6206073
+            ],
+            [
+              77.060911,
+              28.6205839
+            ],
+            [
+              77.060859,
+              28.6207168
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081443",
+      "properties": {
+        "osm_id": "way/351081443",
+        "name": "OSM building 351081443",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081443",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0613308,
+              28.6214373
+            ],
+            [
+              77.0614286,
+              28.6214759
+            ],
+            [
+              77.0614912,
+              28.6213538
+            ],
+            [
+              77.0613935,
+              28.6213152
+            ],
+            [
+              77.0613308,
+              28.6214373
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081446",
+      "properties": {
+        "osm_id": "way/351081446",
+        "name": "OSM building 351081446",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081446",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0602801,
+              28.6216561
+            ],
+            [
+              77.0603867,
+              28.6216981
+            ],
+            [
+              77.0604392,
+              28.6215956
+            ],
+            [
+              77.0603326,
+              28.6215535
+            ],
+            [
+              77.0602801,
+              28.6216561
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081447",
+      "properties": {
+        "osm_id": "way/351081447",
+        "name": "OSM building 351081447",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081447",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.061324,
+              28.6220198
+            ],
+            [
+              77.0614207,
+              28.6220594
+            ],
+            [
+              77.0614591,
+              28.6219872
+            ],
+            [
+              77.0613623,
+              28.6219476
+            ],
+            [
+              77.061324,
+              28.6220198
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081454",
+      "properties": {
+        "osm_id": "way/351081454",
+        "name": "OSM building 351081454",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081454",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0601274,
+              28.6216072
+            ],
+            [
+              77.0602445,
+              28.6216449
+            ],
+            [
+              77.060277,
+              28.621567
+            ],
+            [
+              77.0601599,
+              28.6215294
+            ],
+            [
+              77.0601274,
+              28.6216072
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081464",
+      "properties": {
+        "osm_id": "way/351081464",
+        "name": "OSM building 351081464",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081464",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0614042,
+              28.6215998
+            ],
+            [
+              77.0615016,
+              28.6216354
+            ],
+            [
+              77.0615694,
+              28.6214925
+            ],
+            [
+              77.061472,
+              28.6214568
+            ],
+            [
+              77.0614042,
+              28.6215998
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081493",
+      "properties": {
+        "osm_id": "way/351081493",
+        "name": "OSM building 351081493",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081493",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611779,
+              28.6205002
+            ],
+            [
+              77.0613258,
+              28.6205449
+            ],
+            [
+              77.0613608,
+              28.6204556
+            ],
+            [
+              77.0612129,
+              28.6204109
+            ],
+            [
+              77.0611779,
+              28.6205002
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081507",
+      "properties": {
+        "osm_id": "way/351081507",
+        "name": "OSM building 351081507",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081507",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0614945,
+              28.6219795
+            ],
+            [
+              77.0615946,
+              28.6220148
+            ],
+            [
+              77.0616305,
+              28.6219363
+            ],
+            [
+              77.0615305,
+              28.621901
+            ],
+            [
+              77.0614945,
+              28.6219795
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081515",
+      "properties": {
+        "osm_id": "way/351081515",
+        "name": "OSM building 351081515",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081515",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0613485,
+              28.6216975
+            ],
+            [
+              77.0614413,
+              28.6217342
+            ],
+            [
+              77.0614849,
+              28.621649
+            ],
+            [
+              77.0613921,
+              28.6216124
+            ],
+            [
+              77.0613485,
+              28.6216975
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081540",
+      "properties": {
+        "osm_id": "way/351081540",
+        "name": "OSM building 351081540",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081540",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0612351,
+              28.6218878
+            ],
+            [
+              77.0613345,
+              28.621931
+            ],
+            [
+              77.0613682,
+              28.6218712
+            ],
+            [
+              77.0612688,
+              28.6218281
+            ],
+            [
+              77.0612351,
+              28.6218878
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081556",
+      "properties": {
+        "osm_id": "way/351081556",
+        "name": "OSM building 351081556",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081556",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611867,
+              28.6219692
+            ],
+            [
+              77.0612846,
+              28.6220105
+            ],
+            [
+              77.0613256,
+              28.6219356
+            ],
+            [
+              77.0612277,
+              28.6218943
+            ],
+            [
+              77.0611867,
+              28.6219692
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351081591",
+      "properties": {
+        "osm_id": "way/351081591",
+        "name": "OSM building 351081591",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351081591",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610585,
+              28.6219302
+            ],
+            [
+              77.061152,
+              28.6219671
+            ],
+            [
+              77.0611922,
+              28.6218886
+            ],
+            [
+              77.0610987,
+              28.6218517
+            ],
+            [
+              77.0610585,
+              28.6219302
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351334699",
+      "properties": {
+        "osm_id": "way/351334699",
+        "name": "OSM building 351334699",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351334699",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0595367,
+              28.621738
+            ],
+            [
+              77.0597106,
+              28.6217905
+            ],
+            [
+              77.0597375,
+              28.6217219
+            ],
+            [
+              77.0595636,
+              28.6216694
+            ],
+            [
+              77.0595367,
+              28.621738
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/351334861",
+      "properties": {
+        "osm_id": "way/351334861",
+        "name": "OSM building 351334861",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/351334861",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0595367,
+              28.6217449
+            ],
+            [
+              77.0595039,
+              28.6218235
+            ],
+            [
+              77.0596902,
+              28.6218834
+            ],
+            [
+              77.059723,
+              28.6218049
+            ],
+            [
+              77.0595367,
+              28.6217449
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/352922524",
+      "properties": {
+        "osm_id": "way/352922524",
+        "name": "OSM building 352922524",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/352922524",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060354,
+              28.6209673
+            ],
+            [
+              77.0605502,
+              28.6210211
+            ],
+            [
+              77.0606112,
+              28.6208496
+            ],
+            [
+              77.060415,
+              28.6207958
+            ],
+            [
+              77.060354,
+              28.6209673
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/352922526",
+      "properties": {
+        "osm_id": "way/352922526",
+        "name": "OSM building 352922526",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/352922526",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0601959,
+              28.6207502
+            ],
+            [
+              77.0601369,
+              28.6209103
+            ],
+            [
+              77.060343,
+              28.6209688
+            ],
+            [
+              77.060402,
+              28.6208087
+            ],
+            [
+              77.0601959,
+              28.6207502
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/352927068",
+      "properties": {
+        "osm_id": "way/352927068",
+        "name": "OSM building 352927068",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/352927068",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060896,
+              28.6209083
+            ],
+            [
+              77.0609926,
+              28.6209347
+            ],
+            [
+              77.0610445,
+              28.6207882
+            ],
+            [
+              77.0609479,
+              28.6207618
+            ],
+            [
+              77.060896,
+              28.6209083
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/352927082",
+      "properties": {
+        "osm_id": "way/352927082",
+        "name": "OSM building 352927082",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/352927082",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610162,
+              28.6209405
+            ],
+            [
+              77.0611172,
+              28.6209663
+            ],
+            [
+              77.0611646,
+              28.6208235
+            ],
+            [
+              77.0610636,
+              28.6207977
+            ],
+            [
+              77.0610162,
+              28.6209405
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259782",
+      "properties": {
+        "osm_id": "way/1521259782",
+        "name": "OSM building 1521259782",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259782",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611869,
+              28.6216895
+            ],
+            [
+              77.0612896,
+              28.6217305
+            ],
+            [
+              77.0613253,
+              28.6216617
+            ],
+            [
+              77.0612225,
+              28.6216206
+            ],
+            [
+              77.0611869,
+              28.6216895
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259783",
+      "properties": {
+        "osm_id": "way/1521259783",
+        "name": "OSM building 1521259783",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259783",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0612319,
+              28.6216162
+            ],
+            [
+              77.0612892,
+              28.6216391
+            ],
+            [
+              77.0613031,
+              28.6216123
+            ],
+            [
+              77.0613387,
+              28.6216266
+            ],
+            [
+              77.061357,
+              28.6215914
+            ],
+            [
+              77.0612641,
+              28.6215542
+            ],
+            [
+              77.0612319,
+              28.6216162
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259784",
+      "properties": {
+        "osm_id": "way/1521259784",
+        "name": "OSM building 1521259784",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259784",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060927,
+              28.6218815
+            ],
+            [
+              77.0610319,
+              28.6219219
+            ],
+            [
+              77.0610698,
+              28.621846
+            ],
+            [
+              77.0609649,
+              28.6218056
+            ],
+            [
+              77.060927,
+              28.6218815
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259785",
+      "properties": {
+        "osm_id": "way/1521259785",
+        "name": "OSM building 1521259785",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259785",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0609688,
+              28.6217998
+            ],
+            [
+              77.0610753,
+              28.6218409
+            ],
+            [
+              77.0611141,
+              28.6217633
+            ],
+            [
+              77.0610076,
+              28.6217222
+            ],
+            [
+              77.0609688,
+              28.6217998
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259786",
+      "properties": {
+        "osm_id": "way/1521259786",
+        "name": "OSM building 1521259786",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259786",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610299,
+              28.6216898
+            ],
+            [
+              77.0610709,
+              28.6217049
+            ],
+            [
+              77.0610793,
+              28.6216874
+            ],
+            [
+              77.0611157,
+              28.6217007
+            ],
+            [
+              77.0611069,
+              28.621719
+            ],
+            [
+              77.0611405,
+              28.6217313
+            ],
+            [
+              77.0611782,
+              28.6216523
+            ],
+            [
+              77.0610673,
+              28.6216115
+            ],
+            [
+              77.0610299,
+              28.6216898
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259787",
+      "properties": {
+        "osm_id": "way/1521259787",
+        "name": "OSM building 1521259787",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259787",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611276,
+              28.621622
+            ],
+            [
+              77.0611365,
+              28.6216064
+            ],
+            [
+              77.0611833,
+              28.6216269
+            ],
+            [
+              77.0611729,
+              28.6216451
+            ],
+            [
+              77.0611215,
+              28.6216226
+            ],
+            [
+              77.0611276,
+              28.621622
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259788",
+      "properties": {
+        "osm_id": "way/1521259788",
+        "name": "OSM building 1521259788",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259788",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610949,
+              28.6215824
+            ],
+            [
+              77.0611921,
+              28.6216215
+            ],
+            [
+              77.0612103,
+              28.6215866
+            ],
+            [
+              77.0611131,
+              28.6215475
+            ],
+            [
+              77.0611043,
+              28.6215643
+            ],
+            [
+              77.0610949,
+              28.6215824
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259789",
+      "properties": {
+        "osm_id": "way/1521259789",
+        "name": "OSM building 1521259789",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259789",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611156,
+              28.6215429
+            ],
+            [
+              77.0612143,
+              28.6215835
+            ],
+            [
+              77.0612326,
+              28.6215491
+            ],
+            [
+              77.0611339,
+              28.6215085
+            ],
+            [
+              77.0611156,
+              28.6215429
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259790",
+      "properties": {
+        "osm_id": "way/1521259790",
+        "name": "OSM building 1521259790",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259790",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611505,
+              28.6215087
+            ],
+            [
+              77.0612392,
+              28.6215446
+            ],
+            [
+              77.0612575,
+              28.62151
+            ],
+            [
+              77.0611687,
+              28.621474
+            ],
+            [
+              77.0611505,
+              28.6215087
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521259918",
+      "properties": {
+        "osm_id": "way/1521259918",
+        "name": "OSM building 1521259918",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521259918",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0607922,
+              28.6218392
+            ],
+            [
+              77.0608299,
+              28.6217652
+            ],
+            [
+              77.0609298,
+              28.6218044
+            ],
+            [
+              77.0609102,
+              28.6218428
+            ],
+            [
+              77.0608707,
+              28.6218273
+            ],
+            [
+              77.0608571,
+              28.621854
+            ],
+            [
+              77.0608978,
+              28.62187
+            ],
+            [
+              77.0608932,
+              28.6218789
+            ],
+            [
+              77.0607922,
+              28.6218392
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521262895",
+      "properties": {
+        "osm_id": "way/1521262895",
+        "name": "OSM building 1521262895",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521262895",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060863,
+              28.6217139
+            ],
+            [
+              77.0609151,
+              28.6216287
+            ],
+            [
+              77.0610116,
+              28.6216674
+            ],
+            [
+              77.0609826,
+              28.6217218
+            ],
+            [
+              77.0609453,
+              28.6217064
+            ],
+            [
+              77.0609273,
+              28.6217402
+            ],
+            [
+              77.060863,
+              28.6217139
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521263869",
+      "properties": {
+        "osm_id": "way/1521263869",
+        "name": "OSM building 1521263869",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521263869",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0609604,
+              28.6215522
+            ],
+            [
+              77.0610495,
+              28.6215858
+            ],
+            [
+              77.0610881,
+              28.621507
+            ],
+            [
+              77.060999,
+              28.6214734
+            ],
+            [
+              77.0609604,
+              28.6215522
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521264292",
+      "properties": {
+        "osm_id": "way/1521264292",
+        "name": "OSM building 1521264292",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521264292",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610072,
+              28.6214699
+            ],
+            [
+              77.0610937,
+              28.6215019
+            ],
+            [
+              77.0611219,
+              28.6214431
+            ],
+            [
+              77.0610353,
+              28.6214112
+            ],
+            [
+              77.0610072,
+              28.6214699
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521264614",
+      "properties": {
+        "osm_id": "way/1521264614",
+        "name": "OSM building 1521264614",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521264614",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610504,
+              28.6214024
+            ],
+            [
+              77.0611424,
+              28.6214362
+            ],
+            [
+              77.061178,
+              28.6213616
+            ],
+            [
+              77.061086,
+              28.6213278
+            ],
+            [
+              77.0610504,
+              28.6214024
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521266396",
+      "properties": {
+        "osm_id": "way/1521266396",
+        "name": "OSM building 1521266396",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521266396",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610957,
+              28.6213226
+            ],
+            [
+              77.0611862,
+              28.6213572
+            ],
+            [
+              77.061227,
+              28.6212752
+            ],
+            [
+              77.0611406,
+              28.6212463
+            ],
+            [
+              77.0610957,
+              28.6213226
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521272006",
+      "properties": {
+        "osm_id": "way/1521272006",
+        "name": "OSM building 1521272006",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521272006",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0606754,
+              28.6217848
+            ],
+            [
+              77.0606683,
+              28.6217921
+            ],
+            [
+              77.0607652,
+              28.6218291
+            ],
+            [
+              77.0607827,
+              28.6217938
+            ],
+            [
+              77.0606887,
+              28.621758
+            ],
+            [
+              77.0606754,
+              28.6217848
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521272362",
+      "properties": {
+        "osm_id": "way/1521272362",
+        "name": "OSM building 1521272362",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521272362",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0607012,
+              28.6217503
+            ],
+            [
+              77.0607865,
+              28.6217872
+            ],
+            [
+              77.0608156,
+              28.6217352
+            ],
+            [
+              77.0607303,
+              28.6216983
+            ],
+            [
+              77.0607012,
+              28.6217503
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521272980",
+      "properties": {
+        "osm_id": "way/1521272980",
+        "name": "OSM building 1521272980",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521272980",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0607327,
+              28.621691
+            ],
+            [
+              77.0608195,
+              28.6217228
+            ],
+            [
+              77.0608327,
+              28.6216951
+            ],
+            [
+              77.0607459,
+              28.6216633
+            ],
+            [
+              77.0607327,
+              28.621691
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521273362",
+      "properties": {
+        "osm_id": "way/1521273362",
+        "name": "OSM building 1521273362",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521273362",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0607629,
+              28.6216533
+            ],
+            [
+              77.0608353,
+              28.6216772
+            ],
+            [
+              77.0608644,
+              28.6216093
+            ],
+            [
+              77.0607919,
+              28.6215854
+            ],
+            [
+              77.0607629,
+              28.6216533
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521273986",
+      "properties": {
+        "osm_id": "way/1521273986",
+        "name": "OSM building 1521273986",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521273986",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0609401,
+              28.6215279
+            ],
+            [
+              77.0610062,
+              28.6214105
+            ],
+            [
+              77.0609139,
+              28.6213726
+            ],
+            [
+              77.0608479,
+              28.6214888
+            ],
+            [
+              77.0609401,
+              28.6215279
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521275261",
+      "properties": {
+        "osm_id": "way/1521275261",
+        "name": "OSM building 1521275261",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521275261",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060926,
+              28.6213639
+            ],
+            [
+              77.0610117,
+              28.6213941
+            ],
+            [
+              77.0610389,
+              28.6213347
+            ],
+            [
+              77.0609532,
+              28.6213045
+            ],
+            [
+              77.060926,
+              28.6213639
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521275854",
+      "properties": {
+        "osm_id": "way/1521275854",
+        "name": "OSM building 1521275854",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521275854",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610779,
+              28.6212914
+            ],
+            [
+              77.0610383,
+              28.6212812
+            ],
+            [
+              77.0610437,
+              28.6212649
+            ],
+            [
+              77.0609931,
+              28.6212518
+            ],
+            [
+              77.061005,
+              28.6212163
+            ],
+            [
+              77.0611103,
+              28.6212435
+            ],
+            [
+              77.0610779,
+              28.6212914
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521276830",
+      "properties": {
+        "osm_id": "way/1521276830",
+        "name": "OSM building 1521276830",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521276830",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0604243,
+              28.6214076
+            ],
+            [
+              77.0605199,
+              28.6214497
+            ],
+            [
+              77.0605577,
+              28.6213836
+            ],
+            [
+              77.060462,
+              28.6213415
+            ],
+            [
+              77.0604243,
+              28.6214076
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521280176",
+      "properties": {
+        "osm_id": "way/1521280176",
+        "name": "OSM building 1521280176",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521280176",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060486,
+              28.6213089
+            ],
+            [
+              77.0605821,
+              28.6213472
+            ],
+            [
+              77.0605692,
+              28.621335
+            ],
+            [
+              77.0605712,
+              28.6213255
+            ],
+            [
+              77.0605583,
+              28.6213194
+            ],
+            [
+              77.0605692,
+              28.6213046
+            ],
+            [
+              77.060594,
+              28.621315
+            ],
+            [
+              77.0606098,
+              28.621282
+            ],
+            [
+              77.0605216,
+              28.6212481
+            ],
+            [
+              77.060486,
+              28.6213089
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521280372",
+      "properties": {
+        "osm_id": "way/1521280372",
+        "name": "OSM building 1521280372",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521280372",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0605301,
+              28.6212289
+            ],
+            [
+              77.0606302,
+              28.6212629
+            ],
+            [
+              77.0606425,
+              28.6212351
+            ],
+            [
+              77.0606132,
+              28.6212252
+            ],
+            [
+              77.0606194,
+              28.6212111
+            ],
+            [
+              77.0605486,
+              28.621187
+            ],
+            [
+              77.0605301,
+              28.6212289
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521280547",
+      "properties": {
+        "osm_id": "way/1521280547",
+        "name": "OSM building 1521280547",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521280547",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0605624,
+              28.6211824
+            ],
+            [
+              77.0606231,
+              28.6212017
+            ],
+            [
+              77.0606348,
+              28.6211732
+            ],
+            [
+              77.0605741,
+              28.6211539
+            ],
+            [
+              77.0605624,
+              28.6211824
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521280891",
+      "properties": {
+        "osm_id": "way/1521280891",
+        "name": "OSM building 1521280891",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521280891",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0601627,
+              28.6215203
+            ],
+            [
+              77.0601884,
+              28.6214608
+            ],
+            [
+              77.0602547,
+              28.621483
+            ],
+            [
+              77.0602289,
+              28.6215424
+            ],
+            [
+              77.0601627,
+              28.6215203
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521281078",
+      "properties": {
+        "osm_id": "way/1521281078",
+        "name": "OSM building 1521281078",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521281078",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0602421,
+              28.621543
+            ],
+            [
+              77.0602958,
+              28.6215611
+            ],
+            [
+              77.0603222,
+              28.6215009
+            ],
+            [
+              77.0602685,
+              28.6214827
+            ],
+            [
+              77.0602421,
+              28.621543
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521281947",
+      "properties": {
+        "osm_id": "way/1521281947",
+        "name": "OSM building 1521281947",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521281947",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0602022,
+              28.6214467
+            ],
+            [
+              77.0602245,
+              28.621397
+            ],
+            [
+              77.0603569,
+              28.6214427
+            ],
+            [
+              77.0603347,
+              28.6214924
+            ],
+            [
+              77.0602022,
+              28.6214467
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1521282142",
+      "properties": {
+        "osm_id": "way/1521282142",
+        "name": "OSM building 1521282142",
+        "building": "yes",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1521282142",
+        "provenance": "OpenStreetMap building outline; not cadastral or surveyed interior evidence"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0602618,
+              28.6212809
+            ],
+            [
+              77.0604183,
+              28.62133
+            ],
+            [
+              77.0605313,
+              28.6211201
+            ],
+            [
+              77.0604641,
+              28.6210964
+            ],
+            [
+              77.0603992,
+              28.621238
+            ],
+            [
+              77.0602979,
+              28.6212022
+            ],
+            [
+              77.0602618,
+              28.6212809
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

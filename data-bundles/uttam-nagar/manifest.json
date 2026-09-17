@@ -1,0 +1,788 @@
+{
+  "version": 1,
+  "id": "uttam-nagar-2026-09-17-v1",
+  "createdAt": "2026-09-17T10:10:28.033Z",
+  "areas": [
+    {
+      "id": "9bb67cbc-9773-4cee-ad1a-df29fc6c23a5",
+      "name": "Uttam Nagar | OSM reference | no ownership data",
+      "siteId": "9bb67cbc-9773-4cee-ad1a-df29fc6c23a5",
+      "classification": "reference",
+      "features": 148,
+      "buildings": 113,
+      "roads": 35,
+      "parcels": 0,
+      "floors": 0,
+      "spaces": 0
+    },
+    {
+      "id": "eb82b76d-84cc-4fd0-ae93-b4a229fc4837",
+      "name": "Uttam Nagar | FICTIONAL rooms and conflicts | OSM-derived",
+      "siteId": "eb82b76d-84cc-4fd0-ae93-b4a229fc4837",
+      "classification": "fictional",
+      "features": 153,
+      "buildings": 114,
+      "roads": 36,
+      "parcels": 3,
+      "floors": 9,
+      "spaces": 36
+    },
+    {
+      "id": "d1b4ca2e-378e-4b43-8c34-04406dbb285b",
+      "name": "Uttam Nagar - real OSM block",
+      "siteId": "d1b4ca2e-378e-4b43-8c34-04406dbb285b",
+      "classification": "reference",
+      "features": 29,
+      "buildings": 20,
+      "roads": 9,
+      "parcels": 0,
+      "floors": 0,
+      "spaces": 0
+    },
+    {
+      "id": "6a190c0f-3940-4dc4-b5b6-c2e8fbd26f16",
+      "name": "Uttam Nagar - FICTIONAL registry and conflicts",
+      "siteId": "6a190c0f-3940-4dc4-b5b6-c2e8fbd26f16",
+      "classification": "fictional",
+      "features": 34,
+      "buildings": 21,
+      "roads": 10,
+      "parcels": 3,
+      "floors": 9,
+      "spaces": 27
+    },
+    {
+      "id": "276dc595-97c4-4253-bf47-db4a12fd542b",
+      "name": "Google Uttam Nagar | public footprints and roads",
+      "siteId": "276dc595-97c4-4253-bf47-db4a12fd542b",
+      "classification": "reference",
+      "features": 50,
+      "buildings": 15,
+      "roads": 35,
+      "parcels": 0,
+      "floors": 0,
+      "spaces": 0
+    },
+    {
+      "id": "457bac4c-1c6c-4157-a12a-1d44ba3c1bcf",
+      "name": "Google Uttam Nagar | FICTIONAL 3D registry",
+      "siteId": "457bac4c-1c6c-4157-a12a-1d44ba3c1bcf",
+      "classification": "fictional",
+      "features": 51,
+      "buildings": 15,
+      "roads": 36,
+      "parcels": 0,
+      "floors": 9,
+      "spaces": 27
+    }
+  ],
+  "database": {
+    "file": "rows.json.gz",
+    "sha256": "d5b08aa68a86bae4e6b45c18cdf8c7f7f1f96087ee0d2d7b031d460c5efcfb07",
+    "bytes": 11279057
+  },
+  "tables": [
+    {
+      "name": "area_check_runs",
+      "rows": 19,
+      "sha256": "53a4d31e117469461d9c779cdd1c94f3008dd48c027300ee19d77e44fcd45d90"
+    },
+    {
+      "name": "building_preparation_revisions",
+      "rows": 18,
+      "sha256": "1715d614adbae75a4e0f1d6d7e98b7654398b6533382a7531ec58340fd20634b"
+    },
+    {
+      "name": "building_preparations",
+      "rows": 9,
+      "sha256": "bb1a556cf965bc4768e48858c6f5e29f249b8046a428095a271d5c1ccc2d938d"
+    },
+    {
+      "name": "cases",
+      "rows": 83,
+      "sha256": "fdd4d658725427735a81b1c70b76e1fb1961824246befeba288bd206763d540a"
+    },
+    {
+      "name": "events",
+      "rows": 24,
+      "sha256": "c8e79a1aea31b1d8872c95d2c1a99cbd0f3a3cd00f07f5c391f4afdb7a39023a"
+    },
+    {
+      "name": "external_identifiers",
+      "rows": 471,
+      "sha256": "d43508f4fb7a5bd2af690622969b2e7df403a22dcfbb14ada8af8c03ea814ebd"
+    },
+    {
+      "name": "identity_floors",
+      "rows": 27,
+      "sha256": "b06a3220191d63e408b63329d85ee86e924ccc669fd62dc66b538b4c4cc9cb41"
+    },
+    {
+      "name": "identity_spaces",
+      "rows": 90,
+      "sha256": "6d65129699f2d165506be581c67026610ad9833d6b3fc8a0724ae10d8024fb8c"
+    },
+    {
+      "name": "import_package_revisions",
+      "rows": 700,
+      "sha256": "772ffc475f48076c7835ab9f194343e94bb589087c4578e1cec891071ab5c159"
+    },
+    {
+      "name": "import_packages",
+      "rows": 26,
+      "sha256": "4180801d04d3009b7da24bbf8b8080cfff78a49b12035c6988b22a8fe5e59f51"
+    },
+    {
+      "name": "jobs",
+      "rows": 12,
+      "sha256": "7c0cc9445d82e937e5e9a7ff45bdb91dbddf16857f777a92e49a12b29b1c8201"
+    },
+    {
+      "name": "map_areas",
+      "rows": 6,
+      "sha256": "a794eacd1998770e0886de9eea9f5462f2f1450d447f00405c7492ea6374fdb4"
+    },
+    {
+      "name": "operations",
+      "rows": 12,
+      "sha256": "9b54cf8ec8aca9c6397dd13db727cc60ea43798c3ec4035ae4626a3a37902f5e"
+    },
+    {
+      "name": "physical_feature_revisions",
+      "rows": 465,
+      "sha256": "e06a609d05681b26ed8b676d9b4bc7d1191705cd29b5e957c3ff2802b49d0fab"
+    },
+    {
+      "name": "physical_features",
+      "rows": 465,
+      "sha256": "c1029e87a450927f86488c0c6f257ddeac5c0b156d897798c7d5a5df75bb591a"
+    },
+    {
+      "name": "property_association_revisions",
+      "rows": 6,
+      "sha256": "f7517a4c9b61d6aa6ce7b511175557d670599ef8ff130471d5611d28c771a3c8"
+    },
+    {
+      "name": "property_associations",
+      "rows": 6,
+      "sha256": "fecd5edca9fe2fad46756088e20781724bdf8908716287e72c2e29ccf1a9b5b0"
+    },
+    {
+      "name": "registry_aliases",
+      "rows": 126,
+      "sha256": "cf37e7ec5ed018e6846564dabcf54001a615e588a61fe7ae61571c06f5f25f1e"
+    },
+    {
+      "name": "registry_case_feature_mappings",
+      "rows": 126,
+      "sha256": "a9ac44ba26b725d7f73dcc252dc5ace27456d2a59e9da0d97fca9e270640dd85"
+    },
+    {
+      "name": "registry_case_import_operations",
+      "rows": 9,
+      "sha256": "28ceb98b3a960ab6538e11bc5792e1ac205cce06fb1ed672bbbf5e441d19fcaa"
+    },
+    {
+      "name": "registry_drafts",
+      "rows": 63,
+      "sha256": "ac68011d2ae8671a17f477235dc17b2723a5ada9d1100afe942af753f86033da"
+    },
+    {
+      "name": "registry_links",
+      "rows": 207,
+      "sha256": "a5374a3b61bbc25175bad2a18171de8cbd1a8f537e41df4ef63d6b3d0f8259e8"
+    },
+    {
+      "name": "registry_records",
+      "rows": 421,
+      "sha256": "13c305588280da78b8e8aa4f732cdb2ee6ff127d1bdb21d189cd77c31a485345"
+    },
+    {
+      "name": "registry_reviews",
+      "rows": 66,
+      "sha256": "68189143b8fbdae083a39f11c37d324d3a6705d038f3fd885ac8c310738641fb"
+    },
+    {
+      "name": "registry_revisions",
+      "rows": 180,
+      "sha256": "6b9631917adb064f746b01e6a62e20f19736ab19f72b01adc35dba1186edcaee"
+    },
+    {
+      "name": "registry_rights",
+      "rows": 90,
+      "sha256": "ac2fc663faca57aeffa1c36ce551a06afb5aec6c8278311122305757251554d8"
+    },
+    {
+      "name": "registry_sites",
+      "rows": 6,
+      "sha256": "0d0b6676984cf0d9c3672960841c09a981a3753953ae96ebb2b441e4c02f4f91"
+    },
+    {
+      "name": "snapshots",
+      "rows": 9,
+      "sha256": "80f5fb07fa970416252c2466163efa654ad3fb7bd952ef210ea4e42e195f5990"
+    },
+    {
+      "name": "source_feature_links",
+      "rows": 465,
+      "sha256": "6f3888f04ef9fa2027433dc63115f8eb5bec9294e7d89efd24b6d4446051e504"
+    },
+    {
+      "name": "sources",
+      "rows": 53,
+      "sha256": "adeb0be1f0c7098068600708bb864968bdb99cd753221f210e4ac20d56c94d75"
+    },
+    {
+      "name": "unit_revisions",
+      "rows": 90,
+      "sha256": "dfa240574deae598f09bedbe7bc1987b22b0036fd74ee44575f637d419a89bd2"
+    },
+    {
+      "name": "units",
+      "rows": 90,
+      "sha256": "b0a350da7b124452374104a2554630a15dc3e744f9ff38c0f61c6e53e2f752e7"
+    }
+  ],
+  "objects": [
+    {
+      "key": "areas/0baebc6b-febf-4d26-ab3d-0a0a1bda1267/a911d329c5bc45246f9548affa239264c85662b0fa20fefaa8e38a90cba1f63a",
+      "file": "objects/a911d329c5bc45246f9548affa239264c85662b0fa20fefaa8e38a90cba1f63a.csv",
+      "sha256": "a911d329c5bc45246f9548affa239264c85662b0fa20fefaa8e38a90cba1f63a",
+      "bytes": 2848,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "a911d329c5bc45246f9548affa239264c85662b0fa20fefaa8e38a90cba1f63a"
+      }
+    },
+    {
+      "key": "areas/1293748e-7000-4125-8570-fbb86b8d7589/25052183072b49e47da943f4495e0d3ac8a66895e8efad59866de9df15d02ad2",
+      "file": "objects/25052183072b49e47da943f4495e0d3ac8a66895e8efad59866de9df15d02ad2.csv",
+      "sha256": "25052183072b49e47da943f4495e0d3ac8a66895e8efad59866de9df15d02ad2",
+      "bytes": 1573,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "25052183072b49e47da943f4495e0d3ac8a66895e8efad59866de9df15d02ad2"
+      }
+    },
+    {
+      "key": "areas/1e4e869a-a108-4803-8d2c-47e9e60d71e1/274c8489420c8163ccd19e8358e8702697d2c0a995a61358edd6395a50f51653",
+      "file": "objects/274c8489420c8163ccd19e8358e8702697d2c0a995a61358edd6395a50f51653.png",
+      "sha256": "274c8489420c8163ccd19e8358e8702697d2c0a995a61358edd6395a50f51653",
+      "bytes": 52820,
+      "contentType": "image/png",
+      "metadata": {
+        "sha256": "274c8489420c8163ccd19e8358e8702697d2c0a995a61358edd6395a50f51653"
+      }
+    },
+    {
+      "key": "areas/20693f38-d3fb-45ce-a20a-3bf522126900/6b79d46a629f30ba0287c615798fccce7df1c055990693083cb48f407ed2c9b6",
+      "file": "objects/6b79d46a629f30ba0287c615798fccce7df1c055990693083cb48f407ed2c9b6.geojson",
+      "sha256": "6b79d46a629f30ba0287c615798fccce7df1c055990693083cb48f407ed2c9b6",
+      "bytes": 54791,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "6b79d46a629f30ba0287c615798fccce7df1c055990693083cb48f407ed2c9b6"
+      }
+    },
+    {
+      "key": "areas/22a0a390-9448-4e2a-8cd9-1766e04410e0/cd0c61a3844548f1f611723f56870af1c5308de9bfbc486ee9ef4f2a80598fb2",
+      "file": "objects/cd0c61a3844548f1f611723f56870af1c5308de9bfbc486ee9ef4f2a80598fb2.png",
+      "sha256": "cd0c61a3844548f1f611723f56870af1c5308de9bfbc486ee9ef4f2a80598fb2",
+      "bytes": 51250,
+      "contentType": "image/png",
+      "metadata": {
+        "sha256": "cd0c61a3844548f1f611723f56870af1c5308de9bfbc486ee9ef4f2a80598fb2"
+      }
+    },
+    {
+      "key": "areas/253ffcb7-f522-4fd0-80a6-6f384215829b/5e116a96e3d59a7ef1d83d4d38563db2587fc0281f1ee2a6ed85915933a52dae",
+      "file": "objects/5e116a96e3d59a7ef1d83d4d38563db2587fc0281f1ee2a6ed85915933a52dae.txt",
+      "sha256": "5e116a96e3d59a7ef1d83d4d38563db2587fc0281f1ee2a6ed85915933a52dae",
+      "bytes": 1773,
+      "contentType": "text/plain",
+      "metadata": {
+        "sha256": "5e116a96e3d59a7ef1d83d4d38563db2587fc0281f1ee2a6ed85915933a52dae"
+      }
+    },
+    {
+      "key": "areas/28f3f739-fac4-4121-b61d-3a32a6471bbc/382df8ea749b6e0b44d9d897b6fd1d7ff3486a8c83dd3144d3e9af92a7cf9e88",
+      "file": "objects/382df8ea749b6e0b44d9d897b6fd1d7ff3486a8c83dd3144d3e9af92a7cf9e88.png",
+      "sha256": "382df8ea749b6e0b44d9d897b6fd1d7ff3486a8c83dd3144d3e9af92a7cf9e88",
+      "bytes": 54877,
+      "contentType": "image/png",
+      "metadata": {
+        "sha256": "382df8ea749b6e0b44d9d897b6fd1d7ff3486a8c83dd3144d3e9af92a7cf9e88"
+      }
+    },
+    {
+      "key": "areas/2c0109e8-41c3-47e4-ba89-de1c159edd29/1e708d7307c46c8e9bf8b5733b76755b5078279eae24b5467393e7baf983bfaf",
+      "file": "objects/1e708d7307c46c8e9bf8b5733b76755b5078279eae24b5467393e7baf983bfaf.geojson",
+      "sha256": "1e708d7307c46c8e9bf8b5733b76755b5078279eae24b5467393e7baf983bfaf",
+      "bytes": 32171,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "1e708d7307c46c8e9bf8b5733b76755b5078279eae24b5467393e7baf983bfaf"
+      }
+    },
+    {
+      "key": "areas/33768a42-0db6-4dba-aaf8-aa22ea3bed47/6416a73348b4df24cd88e0f8f4efcc7788b4d399747312bb2ca170eedb99048c",
+      "file": "objects/6416a73348b4df24cd88e0f8f4efcc7788b4d399747312bb2ca170eedb99048c.txt",
+      "sha256": "6416a73348b4df24cd88e0f8f4efcc7788b4d399747312bb2ca170eedb99048c",
+      "bytes": 1763,
+      "contentType": "text/plain",
+      "metadata": {
+        "sha256": "6416a73348b4df24cd88e0f8f4efcc7788b4d399747312bb2ca170eedb99048c"
+      }
+    },
+    {
+      "key": "areas/36387542-6cc9-4cf9-913a-f687348e05d7/8fb70e73319aaaac8a828aaca398ebf01f379bf9ec3ee18850e653e826f45533",
+      "file": "objects/8fb70e73319aaaac8a828aaca398ebf01f379bf9ec3ee18850e653e826f45533.txt",
+      "sha256": "8fb70e73319aaaac8a828aaca398ebf01f379bf9ec3ee18850e653e826f45533",
+      "bytes": 1763,
+      "contentType": "text/plain",
+      "metadata": {
+        "sha256": "8fb70e73319aaaac8a828aaca398ebf01f379bf9ec3ee18850e653e826f45533"
+      }
+    },
+    {
+      "key": "areas/3b2627ef-4fc4-45d5-8147-112654ef50d3/5c838c437da5b30ddd9f0fc3ebd5a13aeca26ae687a64b137e140860d451abfe",
+      "file": "objects/5c838c437da5b30ddd9f0fc3ebd5a13aeca26ae687a64b137e140860d451abfe.txt",
+      "sha256": "5c838c437da5b30ddd9f0fc3ebd5a13aeca26ae687a64b137e140860d451abfe",
+      "bytes": 1070,
+      "contentType": "text/plain",
+      "metadata": {
+        "sha256": "5c838c437da5b30ddd9f0fc3ebd5a13aeca26ae687a64b137e140860d451abfe"
+      }
+    },
+    {
+      "key": "areas/3cfb5089-cc91-4cb1-977e-705b0b12940f/270eaf6da905e68be69053ce60869633ca0f9b1ebe59beb6a28070baa890d636",
+      "file": "objects/270eaf6da905e68be69053ce60869633ca0f9b1ebe59beb6a28070baa890d636.geojson",
+      "sha256": "270eaf6da905e68be69053ce60869633ca0f9b1ebe59beb6a28070baa890d636",
+      "bytes": 1780,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "270eaf6da905e68be69053ce60869633ca0f9b1ebe59beb6a28070baa890d636"
+      }
+    },
+    {
+      "key": "areas/40eb8928-af83-46ee-9358-62a4eef673d9/a367264bbbd1425a26dbe124b15bd3bc7ad131552464f343af25f6f060dc874e",
+      "file": "objects/a367264bbbd1425a26dbe124b15bd3bc7ad131552464f343af25f6f060dc874e.geojson",
+      "sha256": "a367264bbbd1425a26dbe124b15bd3bc7ad131552464f343af25f6f060dc874e",
+      "bytes": 136727,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "a367264bbbd1425a26dbe124b15bd3bc7ad131552464f343af25f6f060dc874e"
+      }
+    },
+    {
+      "key": "areas/4126d425-6625-4cab-a172-9864c0b8d441/9cfea954b64d86a586b31980ecc49fdedb6d84e8ce73c9a851229f5392dea6a8",
+      "file": "objects/9cfea954b64d86a586b31980ecc49fdedb6d84e8ce73c9a851229f5392dea6a8.geojson",
+      "sha256": "9cfea954b64d86a586b31980ecc49fdedb6d84e8ce73c9a851229f5392dea6a8",
+      "bytes": 32543,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "9cfea954b64d86a586b31980ecc49fdedb6d84e8ce73c9a851229f5392dea6a8"
+      }
+    },
+    {
+      "key": "areas/42e6b345-14a4-4cb6-832a-7ce5e9d4ff3b/cbc811bd3c9382ad8ee1fe376fec55cb2b8055e85a405ce8b8be5c2e9b9a7b81",
+      "file": "objects/cbc811bd3c9382ad8ee1fe376fec55cb2b8055e85a405ce8b8be5c2e9b9a7b81.geojson",
+      "sha256": "cbc811bd3c9382ad8ee1fe376fec55cb2b8055e85a405ce8b8be5c2e9b9a7b81",
+      "bytes": 3332,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "cbc811bd3c9382ad8ee1fe376fec55cb2b8055e85a405ce8b8be5c2e9b9a7b81"
+      }
+    },
+    {
+      "key": "areas/53a740b9-01d3-43d7-af81-1fd328041cf1/4fe8b39f00d36a5d94faaa8e9c727076f01bd104b757b2f64580b79787c55ccf",
+      "file": "objects/4fe8b39f00d36a5d94faaa8e9c727076f01bd104b757b2f64580b79787c55ccf.txt",
+      "sha256": "4fe8b39f00d36a5d94faaa8e9c727076f01bd104b757b2f64580b79787c55ccf",
+      "bytes": 1763,
+      "contentType": "text/plain",
+      "metadata": {
+        "sha256": "4fe8b39f00d36a5d94faaa8e9c727076f01bd104b757b2f64580b79787c55ccf"
+      }
+    },
+    {
+      "key": "areas/548b1af7-2443-4f6d-8c76-34fa88043984/902f09f5db0488f316e2dd96ad9d255b373f04f24b9c2ea0f0f50716e9609b65",
+      "file": "objects/902f09f5db0488f316e2dd96ad9d255b373f04f24b9c2ea0f0f50716e9609b65.geojson",
+      "sha256": "902f09f5db0488f316e2dd96ad9d255b373f04f24b9c2ea0f0f50716e9609b65",
+      "bytes": 1109,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "902f09f5db0488f316e2dd96ad9d255b373f04f24b9c2ea0f0f50716e9609b65"
+      }
+    },
+    {
+      "key": "areas/61a5b0d1-4797-4f82-862a-83e366914288/d7cee8186414ac89f35d0fcaad0186e884117c2e5eef1ef50ad7881f4f0e2ae7",
+      "file": "objects/d7cee8186414ac89f35d0fcaad0186e884117c2e5eef1ef50ad7881f4f0e2ae7.txt",
+      "sha256": "d7cee8186414ac89f35d0fcaad0186e884117c2e5eef1ef50ad7881f4f0e2ae7",
+      "bytes": 1347,
+      "contentType": "text/plain",
+      "metadata": {
+        "sha256": "d7cee8186414ac89f35d0fcaad0186e884117c2e5eef1ef50ad7881f4f0e2ae7"
+      }
+    },
+    {
+      "key": "areas/6530d6b7-4efd-4340-bc74-fecd3a42651e/d5c94b774ebc6286da91e84c5c3158090b28fd817888173289bfa29c13e5b165",
+      "file": "objects/d5c94b774ebc6286da91e84c5c3158090b28fd817888173289bfa29c13e5b165.txt",
+      "sha256": "d5c94b774ebc6286da91e84c5c3158090b28fd817888173289bfa29c13e5b165",
+      "bytes": 1766,
+      "contentType": "text/plain",
+      "metadata": {
+        "sha256": "d5c94b774ebc6286da91e84c5c3158090b28fd817888173289bfa29c13e5b165"
+      }
+    },
+    {
+      "key": "areas/7c0977dc-b753-4532-89ba-3c870d3cb35a/4e493d0cad716b4bd78c6e7d8c3e2d708898caa076c7b836d8d707dac25051b8",
+      "file": "objects/4e493d0cad716b4bd78c6e7d8c3e2d708898caa076c7b836d8d707dac25051b8.csv",
+      "sha256": "4e493d0cad716b4bd78c6e7d8c3e2d708898caa076c7b836d8d707dac25051b8",
+      "bytes": 2282,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "4e493d0cad716b4bd78c6e7d8c3e2d708898caa076c7b836d8d707dac25051b8"
+      }
+    },
+    {
+      "key": "areas/85b146c7-689a-4845-8660-7c0a0de50059/c6ac3c71d1103805b20c3c4713f37c5b7752e7aaa5883d46f8b9a70a42278256",
+      "file": "objects/c6ac3c71d1103805b20c3c4713f37c5b7752e7aaa5883d46f8b9a70a42278256.geojson",
+      "sha256": "c6ac3c71d1103805b20c3c4713f37c5b7752e7aaa5883d46f8b9a70a42278256",
+      "bytes": 54045,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "c6ac3c71d1103805b20c3c4713f37c5b7752e7aaa5883d46f8b9a70a42278256"
+      }
+    },
+    {
+      "key": "areas/92eea68d-8186-450c-84be-f1b86d3876a4/15e50b795f2738d5dcaf51c33e450e03aa1d9b86a3d6ffd90e90bb82019a01c7",
+      "file": "objects/15e50b795f2738d5dcaf51c33e450e03aa1d9b86a3d6ffd90e90bb82019a01c7.csv",
+      "sha256": "15e50b795f2738d5dcaf51c33e450e03aa1d9b86a3d6ffd90e90bb82019a01c7",
+      "bytes": 2261,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "15e50b795f2738d5dcaf51c33e450e03aa1d9b86a3d6ffd90e90bb82019a01c7"
+      }
+    },
+    {
+      "key": "areas/93568edb-52c9-4061-835b-2d20a8030cbe/2d92fd1a95c989f3b6107928387bf0c3d1c0c0749c3f83ef98a69a2ae427caf9",
+      "file": "objects/2d92fd1a95c989f3b6107928387bf0c3d1c0c0749c3f83ef98a69a2ae427caf9.png",
+      "sha256": "2d92fd1a95c989f3b6107928387bf0c3d1c0c0749c3f83ef98a69a2ae427caf9",
+      "bytes": 50703,
+      "contentType": "image/png",
+      "metadata": {
+        "sha256": "2d92fd1a95c989f3b6107928387bf0c3d1c0c0749c3f83ef98a69a2ae427caf9"
+      }
+    },
+    {
+      "key": "areas/a08c3b12-aff8-436c-a055-bcff95eaf3ba/55f330ce782d1e30b49f5ae5f7a8f515461a39d80d021d439a71a1accd29fe5a",
+      "file": "objects/55f330ce782d1e30b49f5ae5f7a8f515461a39d80d021d439a71a1accd29fe5a.geojson",
+      "sha256": "55f330ce782d1e30b49f5ae5f7a8f515461a39d80d021d439a71a1accd29fe5a",
+      "bytes": 1104,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "55f330ce782d1e30b49f5ae5f7a8f515461a39d80d021d439a71a1accd29fe5a"
+      }
+    },
+    {
+      "key": "areas/a0ef0f2e-250a-403b-bd39-a5cc4bc55818/dbd094fadae4621ea7149bb39720472bf65ba8c0545d4b439cd2fcb9be4f2eb9",
+      "file": "objects/dbd094fadae4621ea7149bb39720472bf65ba8c0545d4b439cd2fcb9be4f2eb9.geojson",
+      "sha256": "dbd094fadae4621ea7149bb39720472bf65ba8c0545d4b439cd2fcb9be4f2eb9",
+      "bytes": 23023,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "dbd094fadae4621ea7149bb39720472bf65ba8c0545d4b439cd2fcb9be4f2eb9"
+      }
+    },
+    {
+      "key": "areas/a3a68731-0b87-4109-8543-874b1d6aebd2/0620ccd34cc76bddbf0180583514c75e9e3237acd093aa22cd506014fd097e0e",
+      "file": "objects/0620ccd34cc76bddbf0180583514c75e9e3237acd093aa22cd506014fd097e0e.csv",
+      "sha256": "0620ccd34cc76bddbf0180583514c75e9e3237acd093aa22cd506014fd097e0e",
+      "bytes": 2288,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "0620ccd34cc76bddbf0180583514c75e9e3237acd093aa22cd506014fd097e0e"
+      }
+    },
+    {
+      "key": "areas/b0090d48-54fd-49de-8377-3f9a76bf5353/74158a07f3f9a787b56e9f4ba3644be73641ada41ca7fbaad7fa2c939129657e",
+      "file": "objects/74158a07f3f9a787b56e9f4ba3644be73641ada41ca7fbaad7fa2c939129657e.txt",
+      "sha256": "74158a07f3f9a787b56e9f4ba3644be73641ada41ca7fbaad7fa2c939129657e",
+      "bytes": 1626,
+      "contentType": "text/plain",
+      "metadata": {
+        "sha256": "74158a07f3f9a787b56e9f4ba3644be73641ada41ca7fbaad7fa2c939129657e"
+      }
+    },
+    {
+      "key": "areas/b01ab8b2-b727-42ee-9295-4c32d0191060/bb7be57612fdc463a9d67187e3ae5f571f271191b1395e3ed35c79b74dbf8f02",
+      "file": "objects/bb7be57612fdc463a9d67187e3ae5f571f271191b1395e3ed35c79b74dbf8f02.csv",
+      "sha256": "bb7be57612fdc463a9d67187e3ae5f571f271191b1395e3ed35c79b74dbf8f02",
+      "bytes": 2243,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "bb7be57612fdc463a9d67187e3ae5f571f271191b1395e3ed35c79b74dbf8f02"
+      }
+    },
+    {
+      "key": "areas/b876ba57-0d35-4971-9e37-8fbb8c59a5de/3e231dcfcf779076b616f87bc9f6cb16bb0c64c249c7e0e319043be4cd785785",
+      "file": "objects/3e231dcfcf779076b616f87bc9f6cb16bb0c64c249c7e0e319043be4cd785785.geojson",
+      "sha256": "3e231dcfcf779076b616f87bc9f6cb16bb0c64c249c7e0e319043be4cd785785",
+      "bytes": 13904,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "3e231dcfcf779076b616f87bc9f6cb16bb0c64c249c7e0e319043be4cd785785"
+      }
+    },
+    {
+      "key": "areas/b88e844a-1faa-4226-876f-b4b4df4bfc0e/bad1a52ccc23126bb22b887c6b318781b5a42dd9192ab3752a6249d947aa09d2",
+      "file": "objects/bad1a52ccc23126bb22b887c6b318781b5a42dd9192ab3752a6249d947aa09d2.geojson",
+      "sha256": "bad1a52ccc23126bb22b887c6b318781b5a42dd9192ab3752a6249d947aa09d2",
+      "bytes": 2922,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "bad1a52ccc23126bb22b887c6b318781b5a42dd9192ab3752a6249d947aa09d2"
+      }
+    },
+    {
+      "key": "areas/bcf7b974-f360-4aad-be02-e59f6b6dc894/7e211055d2f8807470841290af199653df6518db52d88e62f33859dac92275cb",
+      "file": "objects/7e211055d2f8807470841290af199653df6518db52d88e62f33859dac92275cb.geojson",
+      "sha256": "7e211055d2f8807470841290af199653df6518db52d88e62f33859dac92275cb",
+      "bytes": 25195,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "7e211055d2f8807470841290af199653df6518db52d88e62f33859dac92275cb"
+      }
+    },
+    {
+      "key": "areas/c1b546f7-86cf-4327-8afe-7fed4c7cd2c2/fe34b52f0cf6706380527da4e659ca2a22624fd561e85d6bab5b8a22d32c2736",
+      "file": "objects/fe34b52f0cf6706380527da4e659ca2a22624fd561e85d6bab5b8a22d32c2736.geojson",
+      "sha256": "fe34b52f0cf6706380527da4e659ca2a22624fd561e85d6bab5b8a22d32c2736",
+      "bytes": 21574,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "fe34b52f0cf6706380527da4e659ca2a22624fd561e85d6bab5b8a22d32c2736"
+      }
+    },
+    {
+      "key": "areas/ccffe059-5c0f-4df1-a6f2-6d5f6971d9b4/00a0417e2896a94ccd87a7cab19181886cd06d260967522eddebc47a8aacbfe6",
+      "file": "objects/00a0417e2896a94ccd87a7cab19181886cd06d260967522eddebc47a8aacbfe6.csv",
+      "sha256": "00a0417e2896a94ccd87a7cab19181886cd06d260967522eddebc47a8aacbfe6",
+      "bytes": 2995,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "00a0417e2896a94ccd87a7cab19181886cd06d260967522eddebc47a8aacbfe6"
+      }
+    },
+    {
+      "key": "areas/cf91e578-9624-4e61-89e8-2ff8d5de8f79/317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+      "file": "objects/317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93.geojson",
+      "sha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+      "bytes": 8838,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93"
+      }
+    },
+    {
+      "key": "areas/d833a8fe-1ff8-469b-ac56-c0a678882296/9f5af0e0d25fc133e840e0152fc540b949198efe44b47116c3c32a31a735d7cf",
+      "file": "objects/9f5af0e0d25fc133e840e0152fc540b949198efe44b47116c3c32a31a735d7cf.geojson",
+      "sha256": "9f5af0e0d25fc133e840e0152fc540b949198efe44b47116c3c32a31a735d7cf",
+      "bytes": 112849,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "9f5af0e0d25fc133e840e0152fc540b949198efe44b47116c3c32a31a735d7cf"
+      }
+    },
+    {
+      "key": "areas/df06b751-a5db-4de7-87e6-77f4bc5bdbbf/78cf36c241631b346c28746663d758ac0bccc141f046daa1b69de92006be563a",
+      "file": "objects/78cf36c241631b346c28746663d758ac0bccc141f046daa1b69de92006be563a.csv",
+      "sha256": "78cf36c241631b346c28746663d758ac0bccc141f046daa1b69de92006be563a",
+      "bytes": 2857,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "78cf36c241631b346c28746663d758ac0bccc141f046daa1b69de92006be563a"
+      }
+    },
+    {
+      "key": "areas/e872f29b-0720-4972-8ce4-c8a2cca50dc3/dd0a958646327381a4f3884ae9049dddf40bb1b095d776942684ab0c8f767c07",
+      "file": "objects/dd0a958646327381a4f3884ae9049dddf40bb1b095d776942684ab0c8f767c07.png",
+      "sha256": "dd0a958646327381a4f3884ae9049dddf40bb1b095d776942684ab0c8f767c07",
+      "bytes": 46545,
+      "contentType": "image/png",
+      "metadata": {
+        "sha256": "dd0a958646327381a4f3884ae9049dddf40bb1b095d776942684ab0c8f767c07"
+      }
+    },
+    {
+      "key": "areas/eb53c5a0-5840-42c0-aac0-850b66f0fcb6/b304e0406b8f95b1d8a03389e5fe45e7854f7b0e62a007301f742bb58df9ae2a",
+      "file": "objects/b304e0406b8f95b1d8a03389e5fe45e7854f7b0e62a007301f742bb58df9ae2a.csv",
+      "sha256": "b304e0406b8f95b1d8a03389e5fe45e7854f7b0e62a007301f742bb58df9ae2a",
+      "bytes": 3008,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "b304e0406b8f95b1d8a03389e5fe45e7854f7b0e62a007301f742bb58df9ae2a"
+      }
+    },
+    {
+      "key": "areas/ee5ae359-1816-4e9e-98a9-0c34d443b687/07d6cd8ce0174b6f1a0777b3862435c4620d634d0725a2775f6db8cef5231460",
+      "file": "objects/07d6cd8ce0174b6f1a0777b3862435c4620d634d0725a2775f6db8cef5231460.txt",
+      "sha256": "07d6cd8ce0174b6f1a0777b3862435c4620d634d0725a2775f6db8cef5231460",
+      "bytes": 1774,
+      "contentType": "text/plain",
+      "metadata": {
+        "sha256": "07d6cd8ce0174b6f1a0777b3862435c4620d634d0725a2775f6db8cef5231460"
+      }
+    },
+    {
+      "key": "areas/fbd7fd09-ef7d-4389-8019-7b5fae7b370f/e3b90921735614c7fab4af5b714a06ff3d57b05f1009c473bbc4a9892e1df9f8",
+      "file": "objects/e3b90921735614c7fab4af5b714a06ff3d57b05f1009c473bbc4a9892e1df9f8.png",
+      "sha256": "e3b90921735614c7fab4af5b714a06ff3d57b05f1009c473bbc4a9892e1df9f8",
+      "bytes": 54347,
+      "contentType": "image/png",
+      "metadata": {
+        "sha256": "e3b90921735614c7fab4af5b714a06ff3d57b05f1009c473bbc4a9892e1df9f8"
+      }
+    },
+    {
+      "key": "areas/fca36a21-3cff-497d-bfb4-616c241bd818/861cad91fd72174c502ff29715bafe9b69a7ced9d7d5569305efb8b3b32ff279",
+      "file": "objects/861cad91fd72174c502ff29715bafe9b69a7ced9d7d5569305efb8b3b32ff279.geojson",
+      "sha256": "861cad91fd72174c502ff29715bafe9b69a7ced9d7d5569305efb8b3b32ff279",
+      "bytes": 24227,
+      "contentType": "application/geo+json",
+      "metadata": {
+        "sha256": "861cad91fd72174c502ff29715bafe9b69a7ced9d7d5569305efb8b3b32ff279"
+      }
+    },
+    {
+      "key": "derivatives/27f952d3-8587-4f2f-b5cc-dd12a4c57a5c/f8e12a31e60d2c0e1863ca4d10a1ff5c07f89332f007f866ffd40e39e2a5542a",
+      "file": "objects/f8e12a31e60d2c0e1863ca4d10a1ff5c07f89332f007f866ffd40e39e2a5542a.json",
+      "sha256": "f8e12a31e60d2c0e1863ca4d10a1ff5c07f89332f007f866ffd40e39e2a5542a",
+      "bytes": 21070,
+      "contentType": "application/json",
+      "metadata": {
+        "sha256": "f8e12a31e60d2c0e1863ca4d10a1ff5c07f89332f007f866ffd40e39e2a5542a"
+      }
+    },
+    {
+      "key": "derivatives/3f96856e-10f5-45dd-aec4-fe1d4fdc6a2f/4273f42349db68a9591f96ba41df7c1160d55fa540a721577221a1e3010a15ea",
+      "file": "objects/4273f42349db68a9591f96ba41df7c1160d55fa540a721577221a1e3010a15ea.json",
+      "sha256": "4273f42349db68a9591f96ba41df7c1160d55fa540a721577221a1e3010a15ea",
+      "bytes": 27815,
+      "contentType": "application/json",
+      "metadata": {
+        "sha256": "4273f42349db68a9591f96ba41df7c1160d55fa540a721577221a1e3010a15ea"
+      }
+    },
+    {
+      "key": "derivatives/4d3636dc-c47c-4a69-9a97-3eb89c8093d6/937f903d9a5fbf58479c126dc2f353b741ab6e26d4c71b76041085483ac56b12",
+      "file": "objects/937f903d9a5fbf58479c126dc2f353b741ab6e26d4c71b76041085483ac56b12.json",
+      "sha256": "937f903d9a5fbf58479c126dc2f353b741ab6e26d4c71b76041085483ac56b12",
+      "bytes": 14338,
+      "contentType": "application/json",
+      "metadata": {
+        "sha256": "937f903d9a5fbf58479c126dc2f353b741ab6e26d4c71b76041085483ac56b12"
+      }
+    },
+    {
+      "key": "derivatives/604890af-3cb0-493a-825c-449e3521f314/b85313b71d8dd38eb81158c5a6fda95e7ddcfd838b9fb4b3779b45c144bc5e36",
+      "file": "objects/b85313b71d8dd38eb81158c5a6fda95e7ddcfd838b9fb4b3779b45c144bc5e36.json",
+      "sha256": "b85313b71d8dd38eb81158c5a6fda95e7ddcfd838b9fb4b3779b45c144bc5e36",
+      "bytes": 21291,
+      "contentType": "application/json",
+      "metadata": {
+        "sha256": "b85313b71d8dd38eb81158c5a6fda95e7ddcfd838b9fb4b3779b45c144bc5e36"
+      }
+    },
+    {
+      "key": "derivatives/77aed5b0-3540-4e58-9ca7-44ca0087bcc9/ceb6eea4d93d6b6eef14bcc1f1568cb4e994dae1c91ec6b0053edc3ecb33ca67",
+      "file": "objects/ceb6eea4d93d6b6eef14bcc1f1568cb4e994dae1c91ec6b0053edc3ecb33ca67.json",
+      "sha256": "ceb6eea4d93d6b6eef14bcc1f1568cb4e994dae1c91ec6b0053edc3ecb33ca67",
+      "bytes": 21234,
+      "contentType": "application/json",
+      "metadata": {
+        "sha256": "ceb6eea4d93d6b6eef14bcc1f1568cb4e994dae1c91ec6b0053edc3ecb33ca67"
+      }
+    },
+    {
+      "key": "derivatives/90a06ac4-3ba5-4a38-94ac-89425329f8f6/52ef091e0665382067f638a6b39cb3df7da46dd2a2b2c2892acc1f7d35084b6e",
+      "file": "objects/52ef091e0665382067f638a6b39cb3df7da46dd2a2b2c2892acc1f7d35084b6e.json",
+      "sha256": "52ef091e0665382067f638a6b39cb3df7da46dd2a2b2c2892acc1f7d35084b6e",
+      "bytes": 27773,
+      "contentType": "application/json",
+      "metadata": {
+        "sha256": "52ef091e0665382067f638a6b39cb3df7da46dd2a2b2c2892acc1f7d35084b6e"
+      }
+    },
+    {
+      "key": "derivatives/9e5e2769-4694-4d4c-a8d3-fd3dca412bb7/035f22515ce7460c4c58a585886c063fa7ea59fa268de654ad725df9f4fcfa81",
+      "file": "objects/035f22515ce7460c4c58a585886c063fa7ea59fa268de654ad725df9f4fcfa81.json",
+      "sha256": "035f22515ce7460c4c58a585886c063fa7ea59fa268de654ad725df9f4fcfa81",
+      "bytes": 27608,
+      "contentType": "application/json",
+      "metadata": {
+        "sha256": "035f22515ce7460c4c58a585886c063fa7ea59fa268de654ad725df9f4fcfa81"
+      }
+    },
+    {
+      "key": "derivatives/bccf3b79-f52b-44bd-88b8-59a24307c0ea/77c23ac4114737b0fe4ad79e3672750fd973e54d4eafa38f53a74ed7ec1d63cf",
+      "file": "objects/77c23ac4114737b0fe4ad79e3672750fd973e54d4eafa38f53a74ed7ec1d63cf.json",
+      "sha256": "77c23ac4114737b0fe4ad79e3672750fd973e54d4eafa38f53a74ed7ec1d63cf",
+      "bytes": 21273,
+      "contentType": "application/json",
+      "metadata": {
+        "sha256": "77c23ac4114737b0fe4ad79e3672750fd973e54d4eafa38f53a74ed7ec1d63cf"
+      }
+    },
+    {
+      "key": "derivatives/eef3882e-5f4b-4a2c-9101-6e4c49386e87/43fa1040d3a8248fd862734a2f717d78b93b4b85950ebe6b65cbef9625526be0",
+      "file": "objects/43fa1040d3a8248fd862734a2f717d78b93b4b85950ebe6b65cbef9625526be0.json",
+      "sha256": "43fa1040d3a8248fd862734a2f717d78b93b4b85950ebe6b65cbef9625526be0",
+      "bytes": 27638,
+      "contentType": "application/json",
+      "metadata": {
+        "sha256": "43fa1040d3a8248fd862734a2f717d78b93b4b85950ebe6b65cbef9625526be0"
+      }
+    },
+    {
+      "key": "originals/157ac9f1-9c8c-4664-90b9-258ab62239ad/96ddef53-a3fb-4a84-bb50-8590296e0b32/0ab4a22a73117589451ab94161f7ed18e0481beb245fc27319d4e4e874475946",
+      "file": "objects/0ab4a22a73117589451ab94161f7ed18e0481beb245fc27319d4e4e874475946.csv",
+      "sha256": "0ab4a22a73117589451ab94161f7ed18e0481beb245fc27319d4e4e874475946",
+      "bytes": 1440,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "0ab4a22a73117589451ab94161f7ed18e0481beb245fc27319d4e4e874475946"
+      }
+    },
+    {
+      "key": "originals/8bdbb70f-9d95-4ea3-a31a-e7529a301be8/f68ef5df-a753-4005-b9cf-89a707fe899e/341af2178d76aa7666478094e490778f22c48923ed6d5a4f479385a881b6b5ab",
+      "file": "objects/341af2178d76aa7666478094e490778f22c48923ed6d5a4f479385a881b6b5ab.csv",
+      "sha256": "341af2178d76aa7666478094e490778f22c48923ed6d5a4f479385a881b6b5ab",
+      "bytes": 1433,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "341af2178d76aa7666478094e490778f22c48923ed6d5a4f479385a881b6b5ab"
+      }
+    },
+    {
+      "key": "originals/eb326842-9cf2-4dbd-9bbd-9eb9bed0f3d4/1d2f2c3b-1596-4f26-8887-d9d86b31772b/50dce88c64ed54e5a4c05af69080c2166a1d35c336379d80ed2f62ad382d6eb5",
+      "file": "objects/50dce88c64ed54e5a4c05af69080c2166a1d35c336379d80ed2f62ad382d6eb5.csv",
+      "sha256": "50dce88c64ed54e5a4c05af69080c2166a1d35c336379d80ed2f62ad382d6eb5",
+      "bytes": 1441,
+      "contentType": "text/csv",
+      "metadata": {
+        "sha256": "50dce88c64ed54e5a4c05af69080c2166a1d35c336379d80ed2f62ad382d6eb5"
+      }
+    }
+  ],
+  "licence": "ODbL-1.0 (Google Open Buildings V3 ODbL option; OpenStreetMap boundary/road data). Authored demo sources explicitly marked fictional.",
+  "provenance": "Append-only saved-state transfer of six Uttam Nagar reference/scenario areas. Includes actual previously reviewed geometry, original files, fictional room/shared-use records and recorded history; not official title or resident data.",
+  "exclusions": [
+    "Local credentials and .env files",
+    "PostgreSQL roles",
+    "Redis queue/cache",
+    "Other areas such as Lake View and Bronx",
+    "Browser-local notes",
+    "7.19 GB regional Google download and 236 MB Delhi-wide extract"
+  ]
+}

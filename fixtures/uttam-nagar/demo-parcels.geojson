@@ -1,0 +1,117 @@
+{
+  "type": "FeatureCollection",
+  "name": "FICTIONAL parcel buffers. These are not cadastral/ownership boundaries.",
+  "attribution": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06407557575206,
+              28.61981637395496
+            ],
+            [
+              77.06418390984665,
+              28.61981366252094
+            ],
+            [
+              77.06417913112534,
+              28.61966472615648
+            ],
+            [
+              77.06407068327303,
+              28.619667437352312
+            ],
+            [
+              77.06407557575206,
+              28.61981637395496
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-parcel-01",
+        "name": "DEMO Parcel 01 - fictional",
+        "demo_identifier": "DEMO-UN-P01",
+        "notice": "Authored buffer for demonstration linkage only; no official cadastral evidence."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06451966823936,
+              28.619625364619626
+            ],
+            [
+              77.06461480959572,
+              28.619623072056406
+            ],
+            [
+              77.06460933149592,
+              28.619452021701356
+            ],
+            [
+              77.06451419067106,
+              28.619454441614817
+            ],
+            [
+              77.06451966823936,
+              28.619625364619626
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-parcel-02",
+        "name": "DEMO Parcel 02 - fictional",
+        "demo_identifier": "DEMO-UN-P02",
+        "notice": "Authored buffer for demonstration linkage only; no official cadastral evidence."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06301680088954,
+              28.619993056084066
+            ],
+            [
+              77.06310011633913,
+              28.619940343758287
+            ],
+            [
+              77.06299619592944,
+              28.619814033543697
+            ],
+            [
+              77.06291288688963,
+              28.619866866710538
+            ],
+            [
+              77.06301680088954,
+              28.619993056084066
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-parcel-03",
+        "name": "DEMO Parcel 03 - fictional",
+        "demo_identifier": "DEMO-UN-P03",
+        "notice": "Authored buffer for demonstration linkage only; no official cadastral evidence."
+      }
+    }
+  ]
+}

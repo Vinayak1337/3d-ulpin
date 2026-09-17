@@ -1,0 +1,520 @@
+{
+  "type": "FeatureCollection",
+  "name": "FICTIONAL widths around mapped centrelines; not legal road boundaries",
+  "attribution": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06261129835615,
+              28.620052283490505
+            ],
+            [
+              77.06265250714856,
+              28.620100576615357
+            ],
+            [
+              77.06267465101284,
+              28.620127050842257
+            ],
+            [
+              77.06272616192894,
+              28.620192601025582
+            ],
+            [
+              77.06286994450441,
+              28.620345006580617
+            ],
+            [
+              77.06298025046756,
+              28.62047431695171
+            ],
+            [
+              77.0630292654528,
+              28.620441763473377
+            ],
+            [
+              77.0629180554878,
+              28.620311393415456
+            ],
+            [
+              77.06277503806334,
+              28.62015979897036
+            ],
+            [
+              77.06272454897956,
+              28.620095549153515
+            ],
+            [
+              77.06270169284377,
+              28.620068223380528
+            ],
+            [
+              77.06266030454317,
+              28.62001971991219
+            ],
+            [
+              77.06254944916171,
+              28.61988989200175
+            ],
+            [
+              77.06250045172453,
+              28.619922465764425
+            ],
+            [
+              77.06261129835615,
+              28.620052283490505
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-road-01",
+        "name": "DEMO width - Gurudwara Kalgidhar Marg",
+        "source_osm_way": "235103510",
+        "source_provider": "OpenStreetMap + assumed demonstration width",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "notice": "Synthetic road-surface corridor around observed centreline. Width assumed 6m (paths 4.5m); not a surveyed road or right-of-way boundary."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06267753310482,
+              28.620385830196717
+            ],
+            [
+              77.0627388575465,
+              28.620384331208868
+            ],
+            [
+              77.0627302621411,
+              28.62011055050862
+            ],
+            [
+              77.062668937858,
+              28.620112049484472
+            ],
+            [
+              77.06267753310482,
+              28.620385830196717
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-road-02",
+        "name": "DEMO width - residential",
+        "source_osm_way": "235115525",
+        "source_provider": "OpenStreetMap + assumed demonstration width",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "notice": "Synthetic road-surface corridor around observed centreline. Width assumed 6m (paths 4.5m); not a surveyed road or right-of-way boundary."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06240165588781,
+              28.619996715103127
+            ],
+            [
+              77.06238699596885,
+              28.620049278512575
+            ],
+            [
+              77.06266977010714,
+              28.62011068171626
+            ],
+            [
+              77.06268442988963,
+              28.620058118283435
+            ],
+            [
+              77.06240165588781,
+              28.619996715103127
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-road-03",
+        "name": "DEMO width - School Road",
+        "source_osm_way": "423590906",
+        "source_provider": "OpenStreetMap + assumed demonstration width",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "notice": "Synthetic road-surface corridor around observed centreline. Width assumed 6m (paths 4.5m); not a surveyed road or right-of-way boundary."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0642986529938,
+              28.619610846829538
+            ],
+            [
+              77.06380039381492,
+              28.619636781134396
+            ],
+            [
+              77.06380400618646,
+              28.619690818865426
+            ],
+            [
+              77.06430094700725,
+              28.61966495317032
+            ],
+            [
+              77.06522858687653,
+              28.619651962400404
+            ],
+            [
+              77.06522761312418,
+              28.61959783759948
+            ],
+            [
+              77.0642986529938,
+              28.619610846829538
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-road-04",
+        "name": "DEMO width - residential",
+        "source_osm_way": "423591067",
+        "source_provider": "OpenStreetMap + assumed demonstration width",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "notice": "Synthetic road-surface corridor around observed centreline. Width assumed 6m (paths 4.5m); not a surveyed road or right-of-way boundary."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06357043047217,
+              28.61969818488663
+            ],
+            [
+              77.0637942277558,
+              28.619576122685032
+            ],
+            [
+              77.06376197225143,
+              28.619530077312625
+            ],
+            [
+              77.06353656953524,
+              28.61965301511081
+            ],
+            [
+              77.06273289888381,
+              28.62015409554471
+            ],
+            [
+              77.06276830112375,
+              28.62019830445252
+            ],
+            [
+              77.06357043047217,
+              28.61969818488663
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-road-05",
+        "name": "DEMO width - residential",
+        "source_osm_way": "423591085",
+        "source_provider": "OpenStreetMap + assumed demonstration width",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "notice": "Synthetic road-surface corridor around observed centreline. Width assumed 6m (paths 4.5m); not a surveyed road or right-of-way boundary."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06374382066475,
+              28.619799919633788
+            ],
+            [
+              77.06370834178516,
+              28.61980802207632
+            ],
+            [
+              77.06368227451858,
+              28.619819593992894
+            ],
+            [
+              77.06326117328558,
+              28.620069964912258
+            ],
+            [
+              77.06287950281015,
+              28.620304128910213
+            ],
+            [
+              77.06270182264566,
+              28.620364823531787
+            ],
+            [
+              77.06272397064683,
+              28.620415304414337
+            ],
+            [
+              77.06290849719672,
+              28.620352271087814
+            ],
+            [
+              77.06329582672193,
+              28.62011463508509
+            ],
+            [
+              77.06371332548854,
+              28.619866406004892
+            ],
+            [
+              77.06373005822041,
+              28.61985897792244
+            ],
+            [
+              77.06375237933788,
+              28.619853880365863
+            ],
+            [
+              77.06523096224348,
+              28.619821457451337
+            ],
+            [
+              77.06522943775738,
+              28.61976734254855
+            ],
+            [
+              77.06374382066475,
+              28.619799919633788
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-road-06",
+        "name": "DEMO width - residential",
+        "source_osm_way": "423591232",
+        "source_provider": "OpenStreetMap + assumed demonstration width",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "notice": "Synthetic road-surface corridor around observed centreline. Width assumed 6m (paths 4.5m); not a surveyed road or right-of-way boundary."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06358021441447,
+              28.619495176155667
+            ],
+            [
+              77.06395732472151,
+              28.619483656848857
+            ],
+            [
+              77.06465377210276,
+              28.61947187126906
+            ],
+            [
+              77.06522525612857,
+              28.61948245984727
+            ],
+            [
+              77.06522654387157,
+              28.619428340152638
+            ],
+            [
+              77.06465382789769,
+              28.619417728730834
+            ],
+            [
+              77.06395567527936,
+              28.619429543151007
+            ],
+            [
+              77.06356018559103,
+              28.61944162384323
+            ],
+            [
+              77.06261840662194,
+              28.620013706165906
+            ],
+            [
+              77.06265319338559,
+              28.620058293831406
+            ],
+            [
+              77.06358021441447,
+              28.619495176155667
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-road-07",
+        "name": "DEMO width - residential",
+        "source_osm_way": "423591239",
+        "source_provider": "OpenStreetMap + assumed demonstration width",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "notice": "Synthetic road-surface corridor around observed centreline. Width assumed 6m (paths 4.5m); not a surveyed road or right-of-way boundary."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06393961958754,
+              28.619325964792843
+            ],
+            [
+              77.06522394630335,
+              28.61932056550359
+            ],
+            [
+              77.06522365369717,
+              28.61926643449631
+            ],
+            [
+              77.06393898041308,
+              28.619271835207044
+            ],
+            [
+              77.06367797308693,
+              28.619275538391598
+            ],
+            [
+              77.06367895931442,
+              28.619329663059908
+            ],
+            [
+              77.06393961958754,
+              28.619325964792843
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-road-08",
+        "name": "DEMO width - residential",
+        "source_osm_way": "423591301",
+        "source_provider": "OpenStreetMap + assumed demonstration width",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "notice": "Synthetic road-surface corridor around observed centreline. Width assumed 6m (paths 4.5m); not a surveyed road or right-of-way boundary."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06526087941911,
+              28.61979470768239
+            ],
+            [
+              77.06525877189196,
+              28.619624604129456
+            ],
+            [
+              77.06525657166401,
+              28.619455090041786
+            ],
+            [
+              77.06525446594637,
+              28.61929275287575
+            ],
+            [
+              77.06525441596773,
+              28.619291745814614
+            ],
+            [
+              77.0651931274468,
+              28.61929411400705
+            ],
+            [
+              77.06519313405275,
+              28.619294247117338
+            ],
+            [
+              77.06519522833283,
+              28.619455709754604
+            ],
+            [
+              77.06519742819471,
+              28.619625202910292
+            ],
+            [
+              77.06519952058062,
+              28.61979409231066
+            ],
+            [
+              77.06519333873437,
+              28.619956070177324
+            ],
+            [
+              77.06525465162223,
+              28.619957892047083
+            ],
+            [
+              77.06526087941911,
+              28.61979470768239
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-road-09",
+        "name": "DEMO width - residential",
+        "source_osm_way": "1081317173",
+        "source_provider": "OpenStreetMap + assumed demonstration width",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "notice": "Synthetic road-surface corridor around observed centreline. Width assumed 6m (paths 4.5m); not a surveyed road or right-of-way boundary."
+      }
+    }
+  ]
+}

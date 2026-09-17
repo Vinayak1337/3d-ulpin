@@ -1,0 +1,93 @@
+{
+  "type": "FeatureCollection",
+  "name": "Road-bounded analytical extent, not an official boundary",
+  "attribution": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0626358,
+              28.620035999999995
+            ],
+            [
+              77.0626771,
+              28.6200844
+            ],
+            [
+              77.0626996,
+              28.620111300000005
+            ],
+            [
+              77.0627506,
+              28.620176199999992
+            ],
+            [
+              77.062894,
+              28.620328199999992
+            ],
+            [
+              77.0632785,
+              28.6200923
+            ],
+            [
+              77.0636978,
+              28.619843
+            ],
+            [
+              77.0637192,
+              28.6198335
+            ],
+            [
+              77.0637481,
+              28.619826900000003
+            ],
+            [
+              77.0652302,
+              28.619794400000004
+            ],
+            [
+              77.0652281,
+              28.619624899999994
+            ],
+            [
+              77.0652259,
+              28.619455399999996
+            ],
+            [
+              77.0646538,
+              28.6194448
+            ],
+            [
+              77.0639565,
+              28.619456599999996
+            ],
+            [
+              77.0635702,
+              28.6194684
+            ],
+            [
+              77.0626358,
+              28.620035999999995
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "analysis-block-01",
+        "name": "Uttam Nagar road-bounded analytical block",
+        "meaning": "Derived from OSM street centreline polygonization; NOT a cadastral or administrative block",
+        "source_roads": [
+          "Gurudwara Kalgidhar Marg",
+          "School Road",
+          "Unnamed residential"
+        ]
+      }
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { AreaGeometry, PhysicalFeature } from "@ulpin/contracts";
 import type { AreaNavigation, SceneDetail } from "@/components/AreaViewer";
+import { hasGoogleAttribution, hasOsmAttribution } from "@/lib/map-attribution";
 import {
   featureBounds,
   featureColor,
@@ -88,6 +89,7 @@ export default function MapPlan({
   }, [navigation]);
   const fontSize = (12 * view[2]) / width;
   return (
+    <div style={{ width: "100%", height: "100%", position: "relative" }}>
     <svg
       ref={ref}
       className="ui-plan-svg"
@@ -278,5 +280,13 @@ export default function MapPlan({
           ),
         )}
     </svg>
+    {(hasGoogleAttribution(features) || hasOsmAttribution(features)) && (
+      <span style={{ position: "absolute", left: 8, bottom: interactive ? 92 : 8, padding: "3px 6px", fontSize: 10, background: "#fffffff0", color: "#284e42", borderRadius: 3 }}>
+        {hasGoogleAttribution(features) && <>{interactive ? <a href="https://sites.research.google/gr/open-buildings/" target="_blank" rel="noreferrer">Google Open Buildings V3</a> : "Google Open Buildings V3"} · </>}
+        {hasOsmAttribution(features) && (interactive ? <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a> : "© OpenStreetMap contributors")}
+        {" · ODbL"}
+      </span>
+    )}
+    </div>
   );
 }

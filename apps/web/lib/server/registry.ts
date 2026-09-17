@@ -17,6 +17,7 @@ import { syncLegacyIdentifiers } from "./area-resolver";
 import { settings } from "./config";
 import { AppError, conflict, notFound } from "./errors";
 import { assertRegistrySourceFrame } from './registry-import-evidence';
+import { permitsReferenceRightSource } from './registry-reference-policy';
 import { propertyIdentifier } from "../identifiers";
 import { fingerprint, sourceFrom } from "./domain";
 import {
@@ -500,9 +501,9 @@ async function evidenceChecks(
           );
       }
     const references = [
-      ...r.evidence,
-      ...r.rights.map((x) => x.evidence),
-      ...Object.values(r.geometry?.bindings ?? {}),
+      ...r.evidence.map((binding) => ({ binding, purpose: "geometry" as const })),
+      ...r.rights.map((x) => ({ binding: x.evidence, purpose: "right" as const })),
+      ...Object.values(r.geometry?.bindings ?? {}).map((binding) => ({ binding, purpose: "geometry" as const })),
     ];
     if (!r.evidence.length)
       throw new AppError(
@@ -510,7 +511,7 @@ async function evidenceChecks(
         "EVIDENCE_REQUIRED",
         `${r.alias} needs source evidence.`,
       );
-    for (const b of references) {
+    for (const { binding: b, purpose } of references) {
       if (!b) continue;
       const source = (
         await client.query(
@@ -518,10 +519,18 @@ async function evidenceChecks(
           [b.sourceId, site.id],
         )
       ).rows[0];
+      const retainedRightPart = source && permitsReferenceRightSource(source, purpose)
+        ? Boolean((await client.query(
+          `SELECT 1 FROM import_packages p, jsonb_array_elements(COALESCE(p.body->'parts','[]'::jsonb)) part
+           WHERE p.case_id=$1 AND part->>'sourceRevisionId'=$2
+           AND ($3=part->>'locator' OR starts_with($3,(part->>'locator')||':')) LIMIT 1`,
+          [source.case_id, b.sourceId, b.locator],
+        )).rowCount)
+        : false;
       if (
         !source ||
         !(
-          source.status === "ready" ||
+          retainedRightPart || source.status === "ready" ||
           (source.status === "needs_input" &&
             (source.inspection?.image ||
               source.inspection?.levels?.length ||

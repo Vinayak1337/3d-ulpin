@@ -1,0 +1,54 @@
+{
+  "createdAt": "2026-09-16T21:17:27.165979+00:00",
+  "selectionMethod": "Street-enclosed polygon generated from intersecting OpenStreetMap road centrelines; not an official cadastral or administrative block",
+  "licence": "ODbL-1.0; Google Research Open Buildings V3 and OpenStreetMap contributors",
+  "sourceDateNotice": "Google inference May 2023; OSM retrieved in this session; these are not a shared survey epoch",
+  "centreWgs84": [
+    77.06213054525935,
+    28.620778925616072
+  ],
+  "boundsWgs84": [
+    77.0613137,
+    28.619898,
+    77.0627171,
+    28.621617400000005
+  ],
+  "areaM2": 18858.560166885698,
+  "buildings": 15,
+  "roads": 35,
+  "confidenceThreshold": 0.801,
+  "precisionQualification": "Tile-wide estimated 80% precision threshold, not a probability guarantee for this block or any feature",
+  "sourceCacheRows": 28502,
+  "sourceGeometriesRejected": [],
+  "streetCandidates": 18,
+  "roadWaysFetched": 890,
+  "roadWaysSkipped": [],
+  "interiorBuildings": 3,
+  "demoFloors": 9,
+  "demoSpaces": 27,
+  "syntheticCrossingExpectedM2": 64.84958794616,
+  "osmAcquisition": {
+    "sourceUrl": "https://api.openstreetmap.org/api/0.6/map?bbox=77.053,28.615,77.069,28.629",
+    "processedAt": "2026-09-16T21:13:24.339821+00:00",
+    "sourceSha256": "4694ca7aa52ee8b29e109fbe219b15c9f6acd34ecd8b3a2bff4eac4797682a96",
+    "licence": "ODbL-1.0",
+    "attribution": "OpenStreetMap contributors",
+    "sourceBounds": {
+      "minlat": "28.6150000",
+      "minlon": "77.0530000",
+      "maxlat": "28.6290000",
+      "maxlon": "77.0690000"
+    },
+    "method": "Select highway ways, exclude area=yes, resolve all referenced nodes; preserve source coordinates and selected tags",
+    "notice": "Community map centrelines; not surveyed road widths or legal rights of way"
+  },
+  "publicSourceHashes": {
+    "roadsRaw": "4694ca7aa52ee8b29e109fbe219b15c9f6acd34ecd8b3a2bff4eac4797682a96",
+    "roadsDerivative": "4c857bc226f9478fda9efa49f60a39b77f06c92a43615f4ce5d3d98237a29bf3",
+    "googleNeighbourhood": "fc27f8491895e95f102ff4fc480b039ad553ac8309b31ee3b6d92fca623328ac"
+  },
+  "allDetectionsInBlock": 91,
+  "belowSelectedConfidence": 76,
+  "filteredDetectionsRetainedSeparately": true,
+  "bundleCompletedAt": "2026-09-16T21:20:34.765440+00:00"
+}

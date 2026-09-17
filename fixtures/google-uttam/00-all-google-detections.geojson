@@ -1,0 +1,3971 @@
+{
+  "type": "FeatureCollection",
+  "notice": "All model detections whose centroid lies inside the selected street block. The main imported layer applies the documented confidence threshold; this complete unfiltered block extract is retained for inspection.",
+  "attribution": "Google Research Open Buildings V3; OpenStreetMap contributors (selection boundary)",
+  "license": "ODbL-1.0",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0621149125303,
+              28.6200127439074
+            ],
+            [
+              77.0620839381532,
+              28.6201269189799
+            ],
+            [
+              77.0620181685314,
+              28.6201132152592
+            ],
+            [
+              77.0620491912677,
+              28.6199988621934
+            ],
+            [
+              77.0621149125303,
+              28.6200127439074
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-123174",
+        "full_plus_code": "7JWVJ3C6+2RGC",
+        "confidence": 0.7081,
+        "google_area_m2": 86.1766,
+        "google_wkt": "POLYGON((77.0621149125303 28.6200127439074, 77.0620839381532 28.6201269189799, 77.0620181685314 28.6201132152592, 77.0620491912677 28.6199988621934, 77.0621149125303 28.6200127439074))",
+        "google_tile": "391",
+        "google_csv_row": 123174,
+        "name": "Google footprint 7JWVJ3C6+2RGC",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0620220554535,
+              28.6210976131558
+            ],
+            [
+              77.0621299022637,
+              28.6211282890741
+            ],
+            [
+              77.0621173879074,
+              28.6211625433915
+            ],
+            [
+              77.0620519704367,
+              28.6211439360765
+            ],
+            [
+              77.0620397002397,
+              28.6211775220019
+            ],
+            [
+              77.0619972708551,
+              28.6211654533872
+            ],
+            [
+              77.0620220554535,
+              28.6210976131558
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-3442095",
+        "full_plus_code": "7JWVJ3C6+FR3H",
+        "confidence": 0.7455,
+        "google_area_m2": 61.3356,
+        "google_wkt": "POLYGON((77.0620220554535 28.6210976131558, 77.0621299022637 28.6211282890741, 77.0621173879074 28.6211625433915, 77.0620519704367 28.6211439360765, 77.0620397002397 28.6211775220019, 77.0619972708551 28.6211654533872, 77.0620220554535 28.6210976131558))",
+        "google_tile": "391",
+        "google_csv_row": 3442095,
+        "name": "Google footprint 7JWVJ3C6+FR3H",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0627466480296,
+              28.6204854827728
+            ],
+            [
+              77.0627470488466,
+              28.6206505618772
+            ],
+            [
+              77.0626038609488,
+              28.6206508324907
+            ],
+            [
+              77.0626034603558,
+              28.6204857533741
+            ],
+            [
+              77.0627466480296,
+              28.6204854827728
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-3714750",
+        "full_plus_code": "7JWVJ3C7+63FP",
+        "confidence": 0.8137,
+        "google_area_m2": 256.5503,
+        "google_wkt": "POLYGON((77.0627466480296 28.6204854827728, 77.0627470488466 28.6206505618772, 77.0626038609488 28.6206508324907, 77.0626034603558 28.6204857533741, 77.0627466480296 28.6204854827728))",
+        "google_tile": "391",
+        "google_csv_row": 3714750,
+        "name": "Google footprint 7JWVJ3C7+63FP",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0617969859555,
+              28.6206746653853
+            ],
+            [
+              77.0617651749139,
+              28.6207652032526
+            ],
+            [
+              77.0616589067791,
+              28.6207361328333
+            ],
+            [
+              77.0616907179062,
+              28.6206455949865
+            ],
+            [
+              77.0617969859555,
+              28.6206746653853
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-5380876",
+        "full_plus_code": "7JWVJ3C6+7MQ7",
+        "confidence": 0.8321,
+        "google_area_m2": 114.462,
+        "google_wkt": "POLYGON((77.0617969859555 28.6206746653853, 77.0617651749139 28.6207652032526, 77.0616589067791 28.6207361328333, 77.0616907179062 28.6206455949865, 77.0617969859555 28.6206746653853))",
+        "google_tile": "391",
+        "google_csv_row": 5380876,
+        "name": "Google footprint 7JWVJ3C6+7MQ7",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0621173808323,
+              28.6206832567321
+            ],
+            [
+              77.0620728808447,
+              28.6208032567353
+            ],
+            [
+              77.0619536808448,
+              28.6207687567438
+            ],
+            [
+              77.0619364808496,
+              28.620815056745
+            ],
+            [
+              77.0618651808497,
+              28.6207944567501
+            ],
+            [
+              77.0619268808326,
+              28.6206282567457
+            ],
+            [
+              77.0621173808323,
+              28.6206832567321
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-5508739",
+        "full_plus_code": "7JWVJ3C6+7QQW",
+        "confidence": 0.746,
+        "google_area_m2": 314.2591,
+        "google_wkt": "POLYGON((77.0621173808323 28.6206832567321, 77.0620728808447 28.6208032567353, 77.0619536808448 28.6207687567438, 77.0619364808496 28.620815056745, 77.0618651808497 28.6207944567501, 77.0619268808326 28.6206282567457, 77.0621173808323 28.6206832567321))",
+        "google_tile": "391",
+        "google_csv_row": 5508739,
+        "name": "Google footprint 7JWVJ3C6+7QQW",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618615199145,
+              28.6201668843523
+            ],
+            [
+              77.0618333459036,
+              28.6202737747106
+            ],
+            [
+              77.0617405874488,
+              28.6202547390277
+            ],
+            [
+              77.0617687615512,
+              28.6201478486847
+            ],
+            [
+              77.0618615199145,
+              28.6201668843523
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-6483086",
+        "full_plus_code": "7JWVJ3C6+3PMG",
+        "confidence": 0.7867,
+        "google_area_m2": 113.4341,
+        "google_wkt": "POLYGON((77.0618615199145 28.6201668843523, 77.0618333459036 28.6202737747106, 77.0617405874488 28.6202547390277, 77.0617687615512 28.6201478486847, 77.0618615199145 28.6201668843523))",
+        "google_tile": "391",
+        "google_csv_row": 6483086,
+        "name": "Google footprint 7JWVJ3C6+3PMG",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618865114704,
+              28.6205763115188
+            ],
+            [
+              77.0618493516632,
+              28.620676420782
+            ],
+            [
+              77.0617934707636,
+              28.6206602711133
+            ],
+            [
+              77.0618306306221,
+              28.6205601618634
+            ],
+            [
+              77.0618865114704,
+              28.6205763115188
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-6600328",
+        "full_plus_code": "7JWVJ3C6+6PWQ",
+        "confidence": 0.7681,
+        "google_area_m2": 67.2303,
+        "google_wkt": "POLYGON((77.0618865114704 28.6205763115188, 77.0618493516632 28.620676420782, 77.0617934707636 28.6206602711133, 77.0618306306221 28.6205601618634, 77.0618865114704 28.6205763115188))",
+        "google_tile": "391",
+        "google_csv_row": 6600328,
+        "name": "Google footprint 7JWVJ3C6+6PWQ",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0617738684222,
+              28.6205398350678
+            ],
+            [
+              77.0617485682437,
+              28.6205900355289
+            ],
+            [
+              77.0617173267814,
+              28.6205777767111
+            ],
+            [
+              77.0617426269713,
+              28.6205275762547
+            ],
+            [
+              77.0617738684222,
+              28.6205398350678
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-6915914",
+        "full_plus_code": "7JWVJ3C6+6MH9",
+        "confidence": 0.6559,
+        "google_area_m2": 20.3883,
+        "google_wkt": "POLYGON((77.0617738684222 28.6205398350678, 77.0617485682437 28.6205900355289, 77.0617173267814 28.6205777767111, 77.0617426269713 28.6205275762547, 77.0617738684222 28.6205398350678))",
+        "google_tile": "391",
+        "google_csv_row": 6915914,
+        "name": "Google footprint 7JWVJ3C6+6MH9",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0621399751941,
+              28.620269759477
+            ],
+            [
+              77.0621047073941,
+              28.6203608223787
+            ],
+            [
+              77.0620515551663,
+              28.6203447950202
+            ],
+            [
+              77.0620868230086,
+              28.6202537321301
+            ],
+            [
+              77.0621399751941,
+              28.620269759477
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-7002534",
+        "full_plus_code": "7JWVJ3C6+4RH6",
+        "confidence": 0.7929,
+        "google_area_m2": 58.6685,
+        "google_wkt": "POLYGON((77.0621399751941 28.620269759477, 77.0621047073941 28.6203608223787, 77.0620515551663 28.6203447950202, 77.0620868230086 28.6202537321301, 77.0621399751941 28.620269759477))",
+        "google_tile": "391",
+        "google_csv_row": 7002534,
+        "name": "Google footprint 7JWVJ3C6+4RH6",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0616327027875,
+              28.6208551958007
+            ],
+            [
+              77.061614566548,
+              28.6209068133111
+            ],
+            [
+              77.0615323011259,
+              28.6208843089536
+            ],
+            [
+              77.0615504374033,
+              28.6208326914522
+            ],
+            [
+              77.0616327027875,
+              28.6208551958007
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-10044083",
+        "full_plus_code": "7JWVJ3C6+8JWP",
+        "confidence": 0.7937,
+        "google_area_m2": 50.5175,
+        "google_wkt": "POLYGON((77.0616327027875 28.6208551958007, 77.061614566548 28.6209068133111, 77.0615323011259 28.6208843089536, 77.0615504374033 28.6208326914522, 77.0616327027875 28.6208551958007))",
+        "google_tile": "391",
+        "google_csv_row": 10044083,
+        "name": "Google footprint 7JWVJ3C6+8JWP",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618732771066,
+              28.6202813939754
+            ],
+            [
+              77.061862470961,
+              28.6203155012049
+            ],
+            [
+              77.0618138652194,
+              28.620303511301
+            ],
+            [
+              77.0618246713801,
+              28.6202694040746
+            ],
+            [
+              77.0618732771066,
+              28.6202813939754
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-11661905",
+        "full_plus_code": "7JWVJ3C6+4P8Q",
+        "confidence": 0.6577,
+        "google_area_m2": 19.3994,
+        "google_wkt": "POLYGON((77.0618732771066 28.6202813939754, 77.061862470961 28.6203155012049, 77.0618138652194 28.620303511301, 77.0618246713801 28.6202694040746, 77.0618732771066 28.6202813939754))",
+        "google_tile": "391",
+        "google_csv_row": 11661905,
+        "name": "Google footprint 7JWVJ3C6+4P8Q",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0622227486556,
+              28.620024779376
+            ],
+            [
+              77.0621800695776,
+              28.6201403622859
+            ],
+            [
+              77.0620889552341,
+              28.6201141675542
+            ],
+            [
+              77.0621201019831,
+              28.620029816569
+            ],
+            [
+              77.0621455652845,
+              28.6200371370971
+            ],
+            [
+              77.0621570976996,
+              28.6200059051941
+            ],
+            [
+              77.0622227486556,
+              28.620024779376
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-12708118",
+        "full_plus_code": "7JWVJ3C6+2VFR",
+        "confidence": 0.7382,
+        "google_area_m2": 116.8883,
+        "google_wkt": "POLYGON((77.0622227486556 28.620024779376, 77.0621800695776 28.6201403622859, 77.0620889552341 28.6201141675542, 77.0621201019831 28.620029816569, 77.0621455652845 28.6200371370971, 77.0621570976996 28.6200059051941, 77.0622227486556 28.620024779376))",
+        "google_tile": "391",
+        "google_csv_row": 12708118,
+        "name": "Google footprint 7JWVJ3C6+2VFR",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0616899484053,
+              28.6209431607785
+            ],
+            [
+              77.0616677812703,
+              28.6210062506694
+            ],
+            [
+              77.0615730991655,
+              28.6209803496952
+            ],
+            [
+              77.0615952663535,
+              28.6209172598172
+            ],
+            [
+              77.0616899484053,
+              28.6209431607785
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-12817737",
+        "full_plus_code": "7JWVJ3C6+9MJC",
+        "confidence": 0.8437,
+        "google_area_m2": 71.0649,
+        "google_wkt": "POLYGON((77.0616899484053 28.6209431607785, 77.0616677812703 28.6210062506694, 77.0615730991655 28.6209803496952, 77.0615952663535 28.6209172598172, 77.0616899484053 28.6209431607785))",
+        "google_tile": "391",
+        "google_csv_row": 12817737,
+        "name": "Google footprint 7JWVJ3C6+9MJC",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618332976939,
+              28.6207053443321
+            ],
+            [
+              77.0617984656246,
+              28.6208091646455
+            ],
+            [
+              77.0617519783213,
+              28.6207970215009
+            ],
+            [
+              77.0617868104347,
+              28.6206932011972
+            ],
+            [
+              77.0618332976939,
+              28.6207053443321
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-13143298",
+        "full_plus_code": "7JWVJ3C6+8P33",
+        "confidence": 0.8108,
+        "google_area_m2": 56.9735,
+        "google_wkt": "POLYGON((77.0618332976939 28.6207053443321, 77.0617984656246 28.6208091646455, 77.0617519783213 28.6207970215009, 77.0617868104347 28.6206932011972, 77.0618332976939 28.6207053443321))",
+        "google_tile": "391",
+        "google_csv_row": 13143298,
+        "name": "Google footprint 7JWVJ3C6+8P33",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0620692598748,
+              28.6208021718849
+            ],
+            [
+              77.0620471863056,
+              28.6208649962512
+            ],
+            [
+              77.0619377289893,
+              28.6208350536912
+            ],
+            [
+              77.0619598026189,
+              28.6207722293421
+            ],
+            [
+              77.0620692598748,
+              28.6208021718849
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-13878483",
+        "full_plus_code": "7JWVJ3C6+8RCJ",
+        "confidence": 0.7793,
+        "google_area_m2": 81.8088,
+        "google_wkt": "POLYGON((77.0620692598748 28.6208021718849, 77.0620471863056 28.6208649962512, 77.0619377289893 28.6208350536912, 77.0619598026189 28.6207722293421, 77.0620692598748 28.6208021718849))",
+        "google_tile": "391",
+        "google_csv_row": 13878483,
+        "name": "Google footprint 7JWVJ3C6+8RCJ",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619360641711,
+              28.6206034591107
+            ],
+            [
+              77.0619032043384,
+              28.6206919842641
+            ],
+            [
+              77.0618493516634,
+              28.6206764207825
+            ],
+            [
+              77.0618822115357,
+              28.6205878956392
+            ],
+            [
+              77.0619360641711,
+              28.6206034591107
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-13995562",
+        "full_plus_code": "7JWVJ3C6+7Q2G",
+        "confidence": 0.7819,
+        "google_area_m2": 57.293,
+        "google_wkt": "POLYGON((77.0619360641711 28.6206034591107, 77.0619032043384 28.6206919842641, 77.0618493516634 28.6206764207825, 77.0618822115357 28.6205878956392, 77.0619360641711 28.6206034591107))",
+        "google_tile": "391",
+        "google_csv_row": 13995562,
+        "name": "Google footprint 7JWVJ3C6+7Q2G",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0621941889925,
+              28.6203806611622
+            ],
+            [
+              77.0621581162908,
+              28.6204783524394
+            ],
+            [
+              77.0620651364444,
+              28.6204516214752
+            ],
+            [
+              77.0620555465277,
+              28.6204775925786
+            ],
+            [
+              77.0620102126398,
+              28.6204645594191
+            ],
+            [
+              77.0620264389887,
+              28.6204206157885
+            ],
+            [
+              77.0620590400745,
+              28.6204299883628
+            ],
+            [
+              77.0620884764506,
+              28.6203502696404
+            ],
+            [
+              77.0621941889925,
+              28.6203806611622
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-14374239",
+        "full_plus_code": "7JWVJ3C6+5R9P",
+        "confidence": 0.7875,
+        "google_area_m2": 145.1556,
+        "google_wkt": "POLYGON((77.0621941889925 28.6203806611622, 77.0621581162908 28.6204783524394, 77.0620651364444 28.6204516214752, 77.0620555465277 28.6204775925786, 77.0620102126398 28.6204645594191, 77.0620264389887 28.6204206157885, 77.0620590400745 28.6204299883628, 77.0620884764506 28.6203502696404, 77.0621941889925 28.6203806611622))",
+        "google_tile": "391",
+        "google_csv_row": 14374239,
+        "name": "Google footprint 7JWVJ3C6+5R9P",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0626479425564,
+              28.6212200476183
+            ],
+            [
+              77.0626474679281,
+              28.6212597831991
+            ],
+            [
+              77.062689615147,
+              28.6212601751488
+            ],
+            [
+              77.0626900769405,
+              28.6212215127526
+            ],
+            [
+              77.0627440126483,
+              28.6212220143123
+            ],
+            [
+              77.0627423242473,
+              28.6213633771547
+            ],
+            [
+              77.0626098746577,
+              28.621362145448
+            ],
+            [
+              77.0626115760567,
+              28.6212197094149
+            ],
+            [
+              77.0626479425564,
+              28.6212200476183
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-14675677",
+        "full_plus_code": "7JWVJ3C7+G37W",
+        "confidence": 0.7221,
+        "google_area_m2": 185.973,
+        "google_wkt": "POLYGON((77.0626479425564 28.6212200476183, 77.0626474679281 28.6212597831991, 77.062689615147 28.6212601751488, 77.0626900769405 28.6212215127526, 77.0627440126483 28.6212220143123, 77.0627423242473 28.6213633771547, 77.0626098746577 28.621362145448, 77.0626115760567 28.6212197094149, 77.0626479425564 28.6212200476183))",
+        "google_tile": "391",
+        "google_csv_row": 14675677,
+        "name": "Google footprint 7JWVJ3C7+G37W",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618306306212,
+              28.620560161861
+            ],
+            [
+              77.0617986795263,
+              28.6205509279301
+            ],
+            [
+              77.0618120911774,
+              28.6205147967139
+            ],
+            [
+              77.0618440422619,
+              28.6205240306429
+            ],
+            [
+              77.0618306306212,
+              28.620560161861
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-15539838",
+        "full_plus_code": "7JWVJ3C6+6P8F",
+        "confidence": 0.6533,
+        "google_area_m2": 13.8738,
+        "google_wkt": "POLYGON((77.0618306306212 28.620560161861, 77.0617986795263 28.6205509279301, 77.0618120911774 28.6205147967139, 77.0618440422619 28.6205240306429, 77.0618306306212 28.620560161861))",
+        "google_tile": "391",
+        "google_csv_row": 15539838,
+        "name": "Google footprint 7JWVJ3C6+6P8F",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0616593780381,
+              28.6207312005108
+            ],
+            [
+              77.0616277993791,
+              28.6208495448923
+            ],
+            [
+              77.0615544237591,
+              28.6208349481871
+            ],
+            [
+              77.0615847265383,
+              28.6207163499892
+            ],
+            [
+              77.0616593780381,
+              28.6207312005108
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-16588060",
+        "full_plus_code": "7JWVJ3C6+8J97",
+        "confidence": 0.713,
+        "google_area_m2": 100.1135,
+        "google_wkt": "POLYGON((77.0616593780381 28.6207312005108, 77.0616277993791 28.6208495448923, 77.0615544237591 28.6208349481871, 77.0615847265383 28.6207163499892, 77.0616593780381 28.6207312005108))",
+        "google_tile": "391",
+        "google_csv_row": 16588060,
+        "name": "Google footprint 7JWVJ3C6+8J97",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0617063730681,
+              28.6204129416447
+            ],
+            [
+              77.0618679449277,
+              28.6204596363387
+            ],
+            [
+              77.0618567609958,
+              28.6204897661038
+            ],
+            [
+              77.0618248099207,
+              28.620480532178
+            ],
+            [
+              77.0617986795257,
+              28.6205509279285
+            ],
+            [
+              77.0616690586177,
+              28.6205134671289
+            ],
+            [
+              77.0617063730681,
+              28.6204129416447
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-17107683",
+        "full_plus_code": "7JWVJ3C6+5PR7",
+        "confidence": 0.7299,
+        "google_area_m2": 168.165,
+        "google_wkt": "POLYGON((77.0617063730681 28.6204129416447, 77.0618679449277 28.6204596363387, 77.0618567609958 28.6204897661038, 77.0618248099207 28.620480532178, 77.0617986795257 28.6205509279285, 77.0616690586177 28.6205134671289, 77.0617063730681 28.6204129416447))",
+        "google_tile": "391",
+        "google_csv_row": 17107683,
+        "name": "Google footprint 7JWVJ3C6+5PR7",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0620407501229,
+              28.6212984183691
+            ],
+            [
+              77.0620168912549,
+              28.6213834149108
+            ],
+            [
+              77.0619568593084,
+              28.6213702951428
+            ],
+            [
+              77.0619807182232,
+              28.6212852986092
+            ],
+            [
+              77.0620407501229,
+              28.6212984183691
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-17177328",
+        "full_plus_code": "7JWVJ3C6+GQQ9",
+        "confidence": 0.7288,
+        "google_area_m2": 58.7774,
+        "google_wkt": "POLYGON((77.0620407501229 28.6212984183691, 77.0620168912549 28.6213834149108, 77.0619568593084 28.6213702951428, 77.0619807182232 28.6212852986092, 77.0620407501229 28.6212984183691))",
+        "google_tile": "391",
+        "google_csv_row": 17177328,
+        "name": "Google footprint 7JWVJ3C6+GQQ9",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0624822809102,
+              28.6215465567276
+            ],
+            [
+              77.0623432809113,
+              28.6215161567375
+            ],
+            [
+              77.0623747809,
+              28.6214037567353
+            ],
+            [
+              77.0624380808995,
+              28.6214175567308
+            ],
+            [
+              77.0624465808965,
+              28.6213871567302
+            ],
+            [
+              77.0625223808959,
+              28.6214036567248
+            ],
+            [
+              77.0624822809102,
+              28.6215465567276
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-18078510",
+        "full_plus_code": "7JWVJ3C6+HXMQ",
+        "confidence": 0.7063,
+        "google_area_m2": 206.599,
+        "google_wkt": "POLYGON((77.0624822809102 28.6215465567276, 77.0623432809113 28.6215161567375, 77.0623747809 28.6214037567353, 77.0624380808995 28.6214175567308, 77.0624465808965 28.6213871567302, 77.0625223808959 28.6214036567248, 77.0624822809102 28.6215465567276))",
+        "google_tile": "391",
+        "google_csv_row": 18078510,
+        "name": "Google footprint 7JWVJ3C6+HXMQ",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0615437636338,
+              28.6211058599029
+            ],
+            [
+              77.0614940051246,
+              28.6212017410865
+            ],
+            [
+              77.0614250888365,
+              28.6211738957485
+            ],
+            [
+              77.0614748473997,
+              28.621078014587
+            ],
+            [
+              77.0615437636338,
+              28.6211058599029
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-18180175",
+        "full_plus_code": "7JWVJ3C6+FH5G",
+        "confidence": 0.705,
+        "google_area_m2": 86.7555,
+        "google_wkt": "POLYGON((77.0615437636338 28.6211058599029, 77.0614940051246 28.6212017410865, 77.0614250888365 28.6211738957485, 77.0614748473997 28.621078014587, 77.0615437636338 28.6211058599029))",
+        "google_tile": "391",
+        "google_csv_row": 18180175,
+        "name": "Google footprint 7JWVJ3C6+FH5G",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0620910439285,
+              28.621164992223
+            ],
+            [
+              77.0620834168077,
+              28.6211899720451
+            ],
+            [
+              77.062045755744,
+              28.6211810192173
+            ],
+            [
+              77.0620533828737,
+              28.621156039397
+            ],
+            [
+              77.0620910439285,
+              28.621164992223
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-19039356",
+        "full_plus_code": "7JWVJ3C6+FR8R",
+        "confidence": 0.6719,
+        "google_area_m2": 10.9517,
+        "google_wkt": "POLYGON((77.0620910439285 28.621164992223, 77.0620834168077 28.6211899720451, 77.062045755744 28.6211810192173, 77.0620533828737 28.621156039397, 77.0620910439285 28.621164992223))",
+        "google_tile": "391",
+        "google_csv_row": 19039356,
+        "name": "Google footprint 7JWVJ3C6+FR8R",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0616301995686,
+              28.6212144470921
+            ],
+            [
+              77.0616001288213,
+              28.6212960959262
+            ],
+            [
+              77.0615260196448,
+              28.6212748457686
+            ],
+            [
+              77.0615560904485,
+              28.6211931969485
+            ],
+            [
+              77.0616301995686,
+              28.6212144470921
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-19464379",
+        "full_plus_code": "7JWVJ3C6+FJWM",
+        "confidence": 0.6869,
+        "google_area_m2": 72.6092,
+        "google_wkt": "POLYGON((77.0616301995686 28.6212144470921, 77.0616001288213 28.6212960959262, 77.0615260196448 28.6212748457686, 77.0615560904485 28.6211931969485, 77.0616301995686 28.6212144470921))",
+        "google_tile": "391",
+        "google_csv_row": 19464379,
+        "name": "Google footprint 7JWVJ3C6+FJWM",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618920892421,
+              28.620721928567
+            ],
+            [
+              77.0618580885415,
+              28.6208135270438
+            ],
+            [
+              77.0618042358125,
+              28.6207979635485
+            ],
+            [
+              77.061838236554,
+              28.6207063650819
+            ],
+            [
+              77.0618920892421,
+              28.620721928567
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-19593198",
+        "full_plus_code": "7JWVJ3C6+8P56",
+        "confidence": 0.7872,
+        "google_area_m2": 59.282,
+        "google_wkt": "POLYGON((77.0618920892421 28.620721928567, 77.0618580885415 28.6208135270438, 77.0618042358125 28.6207979635485, 77.061838236554 28.6207063650819, 77.0618920892421 28.620721928567))",
+        "google_tile": "391",
+        "google_csv_row": 19593198,
+        "name": "Google footprint 7JWVJ3C6+8P56",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0621930917893,
+              28.6212604929894
+            ],
+            [
+              77.0622543612552,
+              28.6210874014196
+            ],
+            [
+              77.0625096558144,
+              28.6211574968765
+            ],
+            [
+              77.0624914073203,
+              28.6212092428459
+            ],
+            [
+              77.0625801450316,
+              28.6212336071531
+            ],
+            [
+              77.0625373317851,
+              28.6213550097705
+            ],
+            [
+              77.0621930917893,
+              28.6212604929894
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-21689349",
+        "full_plus_code": "7JWVJ3C6+FXJV",
+        "confidence": 0.7999,
+        "google_area_m2": 654.7674,
+        "google_wkt": "POLYGON((77.0621930917893 28.6212604929894, 77.0622543612552 28.6210874014196, 77.0625096558144 28.6211574968765, 77.0624914073203 28.6212092428459, 77.0625801450316 28.6212336071531, 77.0625373317851 28.6213550097705, 77.0621930917893 28.6212604929894))",
+        "google_tile": "391",
+        "google_csv_row": 21689349,
+        "name": "Google footprint 7JWVJ3C6+FXJV",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0625617732616,
+              28.6209922746778
+            ],
+            [
+              77.0625510225542,
+              28.6210414707515
+            ],
+            [
+              77.0625010389942,
+              28.6210329665867
+            ],
+            [
+              77.0625117897247,
+              28.6209837705159
+            ],
+            [
+              77.0625617732616,
+              28.6209922746778
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-23931458",
+        "full_plus_code": "7JWVJ3C7+C23C",
+        "confidence": 0.7092,
+        "google_area_m2": 27.681,
+        "google_wkt": "POLYGON((77.0625617732616 28.6209922746778, 77.0625510225542 28.6210414707515, 77.0625010389942 28.6210329665867, 77.0625117897247 28.6209837705159, 77.0625617732616 28.6209922746778))",
+        "google_tile": "391",
+        "google_csv_row": 23931458,
+        "name": "Google footprint 7JWVJ3C7+C23C",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0622739722351,
+              28.6201804912912
+            ],
+            [
+              77.0622432409826,
+              28.620266905578
+            ],
+            [
+              77.0621682302953,
+              28.6202461362526
+            ],
+            [
+              77.0621989616053,
+              28.62015972198
+            ],
+            [
+              77.0622739722351,
+              28.6201804912912
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-24867750",
+        "full_plus_code": "7JWVJ3C6+3VQC",
+        "confidence": 0.7656,
+        "google_area_m2": 77.2805,
+        "google_wkt": "POLYGON((77.0622739722351 28.6201804912912, 77.0622432409826 28.620266905578, 77.0621682302953 28.6202461362526, 77.0621989616053 28.62015972198, 77.0622739722351 28.6201804912912))",
+        "google_tile": "391",
+        "google_csv_row": 24867750,
+        "name": "Google footprint 7JWVJ3C6+3VQC",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0622775599256,
+              28.6213604504725
+            ],
+            [
+              77.0622483978645,
+              28.6214429176974
+            ],
+            [
+              77.0620501578753,
+              28.6213883389386
+            ],
+            [
+              77.0620422472507,
+              28.6214107092071
+            ],
+            [
+              77.0620066193914,
+              28.621400900229
+            ],
+            [
+              77.0620436922562,
+              28.6212960627781
+            ],
+            [
+              77.0622775599256,
+              28.6213604504725
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-27472909",
+        "full_plus_code": "7JWVJ3C6+GVRW",
+        "confidence": 0.7854,
+        "google_area_m2": 239.1967,
+        "google_wkt": "POLYGON((77.0622775599256 28.6213604504725, 77.0622483978645 28.6214429176974, 77.0620501578753 28.6213883389386, 77.0620422472507 28.6214107092071, 77.0620066193914 28.621400900229, 77.0620436922562 28.6212960627781, 77.0622775599256 28.6213604504725))",
+        "google_tile": "391",
+        "google_csv_row": 27472909,
+        "name": "Google footprint 7JWVJ3C6+GVRW",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0617881282865,
+              28.6209823899221
+            ],
+            [
+              77.0617404656455,
+              28.6211168803726
+            ],
+            [
+              77.061646595784,
+              28.6210909797276
+            ],
+            [
+              77.0616942585373,
+              28.6209564893041
+            ],
+            [
+              77.0617881282865,
+              28.6209823899221
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-27608685",
+        "full_plus_code": "7JWVJ3C6+CM8H",
+        "confidence": 0.7471,
+        "google_area_m2": 150.4198,
+        "google_wkt": "POLYGON((77.0617881282865 28.6209823899221, 77.0617404656455 28.6211168803726, 77.061646595784 28.6210909797276, 77.0616942585373 28.6209564893041, 77.0617881282865 28.6209823899221))",
+        "google_tile": "391",
+        "google_csv_row": 27608685,
+        "name": "Google footprint 7JWVJ3C6+CM8H",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619101101707,
+              28.6209027265701
+            ],
+            [
+              77.0618665653838,
+              28.6208942100182
+            ],
+            [
+              77.0618817201345,
+              28.6208338819525
+            ],
+            [
+              77.061925039919,
+              28.6208423545
+            ],
+            [
+              77.0619101101707,
+              28.6209027265701
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-27697405",
+        "full_plus_code": "7JWVJ3C6+8QRP",
+        "confidence": 0.745,
+        "google_area_m2": 29.8355,
+        "google_wkt": "POLYGON((77.0619101101707 28.6209027265701, 77.0618665653838 28.6208942100182, 77.0618817201345 28.6208338819525, 77.061925039919 28.6208423545, 77.0619101101707 28.6209027265701))",
+        "google_tile": "391",
+        "google_csv_row": 27697405,
+        "name": "Google footprint 7JWVJ3C6+8QRP",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618408798489,
+              28.6208304783022
+            ],
+            [
+              77.0618179984222,
+              28.6208956014848
+            ],
+            [
+              77.0617280081068,
+              28.6208709840634
+            ],
+            [
+              77.0617508895859,
+              28.6208058608932
+            ],
+            [
+              77.0618408798489,
+              28.6208304783022
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-27837740",
+        "full_plus_code": "7JWVJ3C6+8PV2",
+        "confidence": 0.77,
+        "google_area_m2": 69.7202,
+        "google_wkt": "POLYGON((77.0618408798489 28.6208304783022, 77.0618179984222 28.6208956014848, 77.0617280081068 28.6208709840634, 77.0617508895859 28.6208058608932, 77.0618408798489 28.6208304783022))",
+        "google_tile": "391",
+        "google_csv_row": 27837740,
+        "name": "Google footprint 7JWVJ3C6+8PV2",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0615887972427,
+              28.620971218594
+            ],
+            [
+              77.0615720702715,
+              28.6210826479195
+            ],
+            [
+              77.0614707759241,
+              28.6210708092836
+            ],
+            [
+              77.0614828840594,
+              28.6209901495915
+            ],
+            [
+              77.0615106316811,
+              28.620993392565
+            ],
+            [
+              77.0615152506156,
+              28.6209626229378
+            ],
+            [
+              77.0615887972427,
+              28.620971218594
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-28124264",
+        "full_plus_code": "7JWVJ3C6+CJ3R",
+        "confidence": 0.7626,
+        "google_area_m2": 115.2255,
+        "google_wkt": "POLYGON((77.0615887972427 28.620971218594, 77.0615720702715 28.6210826479195, 77.0614707759241 28.6210708092836, 77.0614828840594 28.6209901495915, 77.0615106316811 28.620993392565, 77.0615152506156 28.6209626229378, 77.0615887972427 28.620971218594))",
+        "google_tile": "391",
+        "google_csv_row": 28124264,
+        "name": "Google footprint 7JWVJ3C6+CJ3R",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.061881885729,
+              28.6208459326478
+            ],
+            [
+              77.0618411000446,
+              28.6209330634138
+            ],
+            [
+              77.0618036605357,
+              28.6209198796195
+            ],
+            [
+              77.0618432577368,
+              28.6208323303459
+            ],
+            [
+              77.061881885729,
+              28.6208459326478
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-28895262",
+        "full_plus_code": "7JWVJ3C6+9P49",
+        "confidence": 0.6695,
+        "google_area_m2": 41.8963,
+        "google_wkt": "POLYGON((77.061881885729 28.6208459326478, 77.0618411000446 28.6209330634138, 77.0618036605357 28.6209198796195, 77.0618432577368 28.6208323303459, 77.061881885729 28.6208459326478))",
+        "google_tile": "391",
+        "google_csv_row": 28895262,
+        "name": "Google footprint 7JWVJ3C6+9P49",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0614272809044,
+              28.621183356798
+            ],
+            [
+              77.0615094809042,
+              28.6212058567921
+            ],
+            [
+              77.0614902809098,
+              28.6212605567935
+            ],
+            [
+              77.06140798091,
+              28.6212380567993
+            ],
+            [
+              77.0614272809044,
+              28.621183356798
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-29378671",
+        "full_plus_code": "7JWVJ3C6+FHPW",
+        "confidence": 0.6889,
+        "google_area_m2": 53.5316,
+        "google_wkt": "POLYGON((77.0614272809044 28.621183356798, 77.0615094809042 28.6212058567921, 77.0614902809098 28.6212605567935, 77.06140798091 28.6212380567993, 77.0614272809044 28.621183356798))",
+        "google_tile": "391",
+        "google_csv_row": 29378671,
+        "name": "Google footprint 7JWVJ3C6+FHPW",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0626458420905,
+              28.6213958978137
+            ],
+            [
+              77.062645115283,
+              28.6214567460512
+            ],
+            [
+              77.0626087486989,
+              28.6214564078513
+            ],
+            [
+              77.0626094755281,
+              28.6213955596132
+            ],
+            [
+              77.0626458420905,
+              28.6213958978137
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-29602031",
+        "full_plus_code": "7JWVJ3C7+H3C2",
+        "confidence": 0.6689,
+        "google_area_m2": 24.0197,
+        "google_wkt": "POLYGON((77.0626458420905 28.6213958978137, 77.062645115283 28.6214567460512, 77.0626087486989 28.6214564078513, 77.0626094755281 28.6213955596132, 77.0626458420905 28.6213958978137))",
+        "google_tile": "391",
+        "google_csv_row": 29602031,
+        "name": "Google footprint 7JWVJ3C7+H3C2",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0617463291738,
+              28.6207826951213
+            ],
+            [
+              77.0616949894078,
+              28.6209288135615
+            ],
+            [
+              77.0616145665476,
+              28.6209068133101
+            ],
+            [
+              77.0616659064184,
+              28.6207606948947
+            ],
+            [
+              77.0617463291738,
+              28.6207826951213
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-31337840",
+        "full_plus_code": "7JWVJ3C6+8MMQ",
+        "confidence": 0.7811,
+        "google_area_m2": 139.8016,
+        "google_wkt": "POLYGON((77.0617463291738 28.6207826951213, 77.0616949894078 28.6209288135615, 77.0616145665476 28.6209068133101, 77.0616659064184 28.6207606948947, 77.0617463291738 28.6207826951213))",
+        "google_tile": "391",
+        "google_csv_row": 31337840,
+        "name": "Google footprint 7JWVJ3C6+8MMQ",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0627451209887,
+              28.6211292177846
+            ],
+            [
+              77.0627440254647,
+              28.6212209411252
+            ],
+            [
+              77.0625979384784,
+              28.621219582581
+            ],
+            [
+              77.0625990341296,
+              28.6211278592349
+            ],
+            [
+              77.0627451209887,
+              28.6211292177846
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-31842229",
+        "full_plus_code": "7JWVJ3C7+F37V",
+        "confidence": 0.7488,
+        "google_area_m2": 145.4485,
+        "google_wkt": "POLYGON((77.0627451209887 28.6211292177846, 77.0627440254647 28.6212209411252, 77.0625979384784 28.621219582581, 77.0625990341296 28.6211278592349, 77.0627451209887 28.6211292177846))",
+        "google_tile": "391",
+        "google_csv_row": 31842229,
+        "name": "Google footprint 7JWVJ3C7+F37V",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619602958138,
+              28.6212805526453
+            ],
+            [
+              77.0619254793432,
+              28.6213796443183
+            ],
+            [
+              77.0618715457379,
+              28.6213648905768
+            ],
+            [
+              77.061906362256,
+              28.6212657989156
+            ],
+            [
+              77.0619602958138,
+              28.6212805526453
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-33240823",
+        "full_plus_code": "7JWVJ3C6+GQFV",
+        "confidence": 0.8365,
+        "google_area_m2": 63.5802,
+        "google_wkt": "POLYGON((77.0619602958138 28.6212805526453, 77.0619254793432 28.6213796443183, 77.0618715457379 28.6213648905768, 77.061906362256 28.6212657989156, 77.0619602958138 28.6212805526453))",
+        "google_tile": "391",
+        "google_csv_row": 33240823,
+        "name": "Google footprint 7JWVJ3C6+GQFV",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.062332074669,
+              28.6205873403033
+            ],
+            [
+              77.0622355825096,
+              28.6205595949503
+            ],
+            [
+              77.0623240711571,
+              28.6203199927367
+            ],
+            [
+              77.0624205631124,
+              28.6203477380376
+            ],
+            [
+              77.062332074669,
+              28.6205873403033
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-34156430",
+        "full_plus_code": "7JWVJ3C6+5WP3",
+        "confidence": 0.8427,
+        "google_area_m2": 277.5786,
+        "google_wkt": "POLYGON((77.062332074669 28.6205873403033, 77.0622355825096 28.6205595949503, 77.0623240711571 28.6203199927367, 77.0624205631124 28.6203477380376, 77.062332074669 28.6205873403033))",
+        "google_tile": "391",
+        "google_csv_row": 34156430,
+        "name": "Google footprint 7JWVJ3C6+5WP3",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618067142683,
+              28.6208969587183
+            ],
+            [
+              77.0617796540309,
+              28.6209533220195
+            ],
+            [
+              77.0616916477253,
+              28.6209204256742
+            ],
+            [
+              77.0617187080035,
+              28.6208640623881
+            ],
+            [
+              77.0618067142683,
+              28.6208969587183
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-35287295",
+        "full_plus_code": "7JWVJ3C6+9M99",
+        "confidence": 0.7196,
+        "google_area_m2": 63.4987,
+        "google_wkt": "POLYGON((77.0618067142683 28.6208969587183, 77.0617796540309 28.6209533220195, 77.0616916477253 28.6209204256742, 77.0617187080035 28.6208640623881, 77.0618067142683 28.6208969587183))",
+        "google_tile": "391",
+        "google_csv_row": 35287295,
+        "name": "Google footprint 7JWVJ3C6+9M99",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619154526155,
+              28.6203386825499
+            ],
+            [
+              77.0618857758581,
+              28.6204304818735
+            ],
+            [
+              77.0618007293418,
+              28.6204090758114
+            ],
+            [
+              77.0618304061697,
+              28.6203172765028
+            ],
+            [
+              77.0619154526155,
+              28.6203386825499
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-35405797",
+        "full_plus_code": "7JWVJ3C6+4PXV",
+        "confidence": 0.7893,
+        "google_area_m2": 91.6311,
+        "google_wkt": "POLYGON((77.0619154526155 28.6203386825499, 77.0618857758581 28.6204304818735, 77.0618007293418 28.6204090758114, 77.0618304061697 28.6203172765028, 77.0619154526155 28.6203386825499))",
+        "google_tile": "391",
+        "google_csv_row": 35405797,
+        "name": "Google footprint 7JWVJ3C6+4PXV",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0621989616051,
+              28.6201597219795
+            ],
+            [
+              77.0621682302951,
+              28.6202461362521
+            ],
+            [
+              77.0620625476492,
+              28.6202168742393
+            ],
+            [
+              77.0620932790403,
+              28.6201304599865
+            ],
+            [
+              77.0621989616051,
+              28.6201597219795
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-35588269",
+        "full_plus_code": "7JWVJ3C6+3VCC",
+        "confidence": 0.7981,
+        "google_area_m2": 108.8806,
+        "google_wkt": "POLYGON((77.0621989616051 28.6201597219795, 77.0621682302951 28.6202461362521, 77.0620625476492 28.6202168742393, 77.0620932790403 28.6201304599865, 77.0621989616051 28.6201597219795))",
+        "google_tile": "391",
+        "google_csv_row": 35588269,
+        "name": "Google footprint 7JWVJ3C6+3VCC",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619511566119,
+              28.620235461649
+            ],
+            [
+              77.0619645345496,
+              28.6201994210133
+            ],
+            [
+              77.0620935288765,
+              28.6202367005525
+            ],
+            [
+              77.0620554331586,
+              28.6203393320424
+            ],
+            [
+              77.0619364317086,
+              28.6203049404674
+            ],
+            [
+              77.0619243753652,
+              28.6203374206292
+            ],
+            [
+              77.0618824313369,
+              28.6203252987195
+            ],
+            [
+              77.0619192056082,
+              28.6202262277416
+            ],
+            [
+              77.0619511566119,
+              28.620235461649
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-36633957",
+        "full_plus_code": "7JWVJ3C6+4Q5W",
+        "confidence": 0.79,
+        "google_area_m2": 201.0461,
+        "google_wkt": "POLYGON((77.0619511566119 28.620235461649, 77.0619645345496 28.6201994210133, 77.0620935288765 28.6202367005525, 77.0620554331586 28.6203393320424, 77.0619364317086 28.6203049404674, 77.0619243753652 28.6203374206292, 77.0618824313369 28.6203252987195, 77.0619192056082 28.6202262277416, 77.0619511566119 28.620235461649))",
+        "google_tile": "391",
+        "google_csv_row": 36633957,
+        "name": "Google footprint 7JWVJ3C6+4Q5W",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0620887848523,
+              28.6201337934794
+            ],
+            [
+              77.0620607730632,
+              28.6202156837088
+            ],
+            [
+              77.0619760627855,
+              28.6201931231482
+            ],
+            [
+              77.0620040746366,
+              28.6201112329329
+            ],
+            [
+              77.0620887848523,
+              28.6201337934794
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-36770474",
+        "full_plus_code": "7JWVJ3C6+3R7C",
+        "confidence": 0.7698,
+        "google_area_m2": 82.1499,
+        "google_wkt": "POLYGON((77.0620887848523 28.6201337934794, 77.0620607730632 28.6202156837088, 77.0619760627855 28.6201931231482, 77.0620040746366 28.6201112329329, 77.0620887848523 28.6201337934794))",
+        "google_tile": "391",
+        "google_csv_row": 36770474,
+        "name": "Google footprint 7JWVJ3C6+3R7C",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619654738151,
+              28.6204534320118
+            ],
+            [
+              77.0619300425486,
+              28.6205488848544
+            ],
+            [
+              77.0618260386755,
+              28.6205188275691
+            ],
+            [
+              77.0618387574153,
+              28.6204845630333
+            ],
+            [
+              77.0618567609957,
+              28.6204897661036
+            ],
+            [
+              77.0618794735996,
+              28.6204285778189
+            ],
+            [
+              77.0619654738151,
+              28.6204534320118
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-37280277",
+        "full_plus_code": "7JWVJ3C6+5QRH",
+        "confidence": 0.8661,
+        "google_area_m2": 106.0681,
+        "google_wkt": "POLYGON((77.0619654738151 28.6204534320118, 77.0619300425486 28.6205488848544, 77.0618260386755 28.6205188275691, 77.0618387574153 28.6204845630333, 77.0618567609957 28.6204897661036, 77.0618794735996 28.6204285778189, 77.0619654738151 28.6204534320118))",
+        "google_tile": "391",
+        "google_csv_row": 37280277,
+        "name": "Google footprint 7JWVJ3C6+5QRH",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618766200044,
+              28.6212826181655
+            ],
+            [
+              77.0618663327797,
+              28.6213118967337
+            ],
+            [
+              77.0618880756676,
+              28.6213178445905
+            ],
+            [
+              77.0618664676211,
+              28.6213793434437
+            ],
+            [
+              77.0616277215865,
+              28.6213140332522
+            ],
+            [
+              77.0616596170452,
+              28.6212232558753
+            ],
+            [
+              77.0618766200044,
+              28.6212826181655
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-38944608",
+        "full_plus_code": "7JWVJ3C6+GPC3",
+        "confidence": 0.7698,
+        "google_area_m2": 250.2602,
+        "google_wkt": "POLYGON((77.0618766200044 28.6212826181655, 77.0618663327797 28.6213118967337, 77.0618880756676 28.6213178445905, 77.0618664676211 28.6213793434437, 77.0616277215865 28.6213140332522, 77.0616596170452 28.6212232558753, 77.0618766200044 28.6212826181655))",
+        "google_tile": "391",
+        "google_csv_row": 38944608,
+        "name": "Google footprint 7JWVJ3C6+GPC3",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0626393578186,
+              28.621487338678
+            ],
+            [
+              77.0626146308179,
+              28.6215754296854
+            ],
+            [
+              77.0625379006821,
+              28.6215586609804
+            ],
+            [
+              77.062562627745,
+              28.6214705699837
+            ],
+            [
+              77.0626393578186,
+              28.621487338678
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-39381913",
+        "full_plus_code": "7JWVJ3C7+J24X",
+        "confidence": 0.7768,
+        "google_area_m2": 77.8614,
+        "google_wkt": "POLYGON((77.0626393578186 28.621487338678, 77.0626146308179 28.6215754296854, 77.0625379006821 28.6215586609804, 77.062562627745 28.6214705699837, 77.0626393578186 28.621487338678))",
+        "google_tile": "391",
+        "google_csv_row": 39381913,
+        "name": "Google footprint 7JWVJ3C7+J24X",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0623320746725,
+              28.6205873403122
+            ],
+            [
+              77.0622659845825,
+              28.62076629334
+            ],
+            [
+              77.0622430750223,
+              28.6207597059347
+            ],
+            [
+              77.0621802524117,
+              28.620929810921
+            ],
+            [
+              77.0621066695494,
+              28.6209086529064
+            ],
+            [
+              77.0622355825131,
+              28.6205595949592
+            ],
+            [
+              77.0623320746725,
+              28.6205873403122
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-40220460",
+        "full_plus_code": "7JWVJ3C6+7VX6",
+        "confidence": 0.8023,
+        "google_area_m2": 357.5948,
+        "google_wkt": "POLYGON((77.0623320746725 28.6205873403122, 77.0622659845825 28.62076629334, 77.0622430750223 28.6207597059347, 77.0621802524117 28.620929810921, 77.0621066695494 28.6209086529064, 77.0622355825131 28.6205595949592, 77.0623320746725 28.6205873403122))",
+        "google_tile": "391",
+        "google_csv_row": 40220460,
+        "name": "Google footprint 7JWVJ3C6+7VX6",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0617370286558,
+              28.6211260501952
+            ],
+            [
+              77.0616990814849,
+              28.6212340516065
+            ],
+            [
+              77.0616494120548,
+              28.6212204642333
+            ],
+            [
+              77.0616873592734,
+              28.6211124628333
+            ],
+            [
+              77.0617370286558,
+              28.6211260501952
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-41596562",
+        "full_plus_code": "7JWVJ3C6+FM8R",
+        "confidence": 0.7515,
+        "google_area_m2": 63.8182,
+        "google_wkt": "POLYGON((77.0617370286558 28.6211260501952, 77.0616990814849 28.6212340516065, 77.0616494120548 28.6212204642333, 77.0616873592734 28.6211124628333, 77.0617370286558 28.6211260501952))",
+        "google_tile": "391",
+        "google_csv_row": 41596562,
+        "name": "Google footprint 7JWVJ3C6+FM8R",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0620525171231,
+              28.6208866558606
+            ],
+            [
+              77.0620092596144,
+              28.6210180795679
+            ],
+            [
+              77.0618832111919,
+              28.6209857779681
+            ],
+            [
+              77.0619264688501,
+              28.6208543542933
+            ],
+            [
+              77.0620525171231,
+              28.6208866558606
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-42355208",
+        "full_plus_code": "7JWVJ3C6+9QGH",
+        "confidence": 0.7695,
+        "google_area_m2": 194.9622,
+        "google_wkt": "POLYGON((77.0620525171231 28.6208866558606, 77.0620092596144 28.6210180795679, 77.0618832111919 28.6209857779681, 77.0619264688501 28.6208543542933, 77.0620525171231 28.6208866558606))",
+        "google_tile": "391",
+        "google_csv_row": 42355208,
+        "name": "Google footprint 7JWVJ3C6+9QGH",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0625998808573,
+              28.6210606567072
+            ],
+            [
+              77.0627458808533,
+              28.6210620566968
+            ],
+            [
+              77.0627450808596,
+              28.6211292566969
+            ],
+            [
+              77.0625990808635,
+              28.6211278567073
+            ],
+            [
+              77.0625998808573,
+              28.6210606567072
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-43485542",
+        "full_plus_code": "7JWVJ3C7+C3MP",
+        "confidence": 0.7768,
+        "google_area_m2": 106.4981,
+        "google_wkt": "POLYGON((77.0625998808573 28.6210606567072, 77.0627458808533 28.6210620566968, 77.0627450808596 28.6211292566969, 77.0625990808635 28.6211278567073, 77.0625998808573 28.6210606567072))",
+        "google_tile": "391",
+        "google_csv_row": 43485542,
+        "name": "Google footprint 7JWVJ3C7+C3MP",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0623748236142,
+              28.6214037169624
+            ],
+            [
+              77.0623506879527,
+              28.6214897005381
+            ],
+            [
+              77.0622427182134,
+              28.6214661044268
+            ],
+            [
+              77.0622668539603,
+              28.6213801208662
+            ],
+            [
+              77.0623748236142,
+              28.6214037169624
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-44511592",
+        "full_plus_code": "7JWVJ3C6+HWF9",
+        "confidence": 0.8059,
+        "google_area_m2": 106.9407,
+        "google_wkt": "POLYGON((77.0623748236142 28.6214037169624, 77.0623506879527 28.6214897005381, 77.0622427182134 28.6214661044268, 77.0622668539603 28.6213801208662, 77.0623748236142 28.6214037169624))",
+        "google_tile": "391",
+        "google_csv_row": 44511592,
+        "name": "Google footprint 7JWVJ3C6+HWF9",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0621375373044,
+              28.6212430293892
+            ],
+            [
+              77.0621175806865,
+              28.6213067214727
+            ],
+            [
+              77.0619676302379,
+              28.6212701413107
+            ],
+            [
+              77.0619875869428,
+              28.6212064492435
+            ],
+            [
+              77.0621375373044,
+              28.6212430293892
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-44610718",
+        "full_plus_code": "7JWVJ3C6+GR38",
+        "confidence": 0.6672,
+        "google_area_m2": 111.5812,
+        "google_wkt": "POLYGON((77.0621375373044 28.6212430293892, 77.0621175806865 28.6213067214727, 77.0619676302379 28.6212701413107, 77.0619875869428 28.6212064492435, 77.0621375373044 28.6212430293892))",
+        "google_tile": "391",
+        "google_csv_row": 44610718,
+        "name": "Google footprint 7JWVJ3C6+GR38",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0626135243288,
+              28.620056120612
+            ],
+            [
+              77.0626190556006,
+              28.6200400949235
+            ],
+            [
+              77.0627116560215,
+              28.6200649792635
+            ],
+            [
+              77.0626917715964,
+              28.6201225902976
+            ],
+            [
+              77.0625365469204,
+              28.6200808770166
+            ],
+            [
+              77.0625509001445,
+              28.6200392916877
+            ],
+            [
+              77.0626135243288,
+              28.620056120612
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-45348455",
+        "full_plus_code": "7JWVJ3C7+23J2",
+        "confidence": 0.7218,
+        "google_area_m2": 94.1596,
+        "google_wkt": "POLYGON((77.0626135243288 28.620056120612, 77.0626190556006 28.6200400949235, 77.0627116560215 28.6200649792635, 77.0626917715964 28.6201225902976, 77.0625365469204 28.6200808770166, 77.0625509001445 28.6200392916877, 77.0626135243288 28.620056120612))",
+        "google_tile": "391",
+        "google_csv_row": 45348455,
+        "name": "Google footprint 7JWVJ3C7+23J2",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0616428704583,
+              28.621024250693
+            ],
+            [
+              77.0616330869285,
+              28.6210851209473
+            ],
+            [
+              77.0615780562814,
+              28.6210782345378
+            ],
+            [
+              77.0615878398424,
+              28.6210173642861
+            ],
+            [
+              77.0616428704583,
+              28.621024250693
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-47131451",
+        "full_plus_code": "7JWVJ3C6+CJH4",
+        "confidence": 0.7424,
+        "google_area_m2": 37.0876,
+        "google_wkt": "POLYGON((77.0616428704583 28.621024250693, 77.0616330869285 28.6210851209473, 77.0615780562814 28.6210782345378, 77.0615878398424 28.6210173642861, 77.0616428704583 28.621024250693))",
+        "google_tile": "391",
+        "google_csv_row": 47131451,
+        "name": "Google footprint 7JWVJ3C6+CJH4",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0625626277449,
+              28.6214705699835
+            ],
+            [
+              77.062537900682,
+              28.6215586609801
+            ],
+            [
+              77.0624822967507,
+              28.6215465091927
+            ],
+            [
+              77.0625070238582,
+              28.6214584182037
+            ],
+            [
+              77.0625626277449,
+              28.6214705699835
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-47829323",
+        "full_plus_code": "7JWVJ3C7+J228",
+        "confidence": 0.7622,
+        "google_area_m2": 56.4237,
+        "google_wkt": "POLYGON((77.0625626277449 28.6214705699835, 77.062537900682 28.6215586609801, 77.0624822967507 28.6215465091927, 77.0625070238582 28.6214584182037, 77.0625626277449 28.6214705699835))",
+        "google_tile": "391",
+        "google_csv_row": 47829323,
+        "name": "Google footprint 7JWVJ3C7+J228",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.061830630622,
+              28.6205601618631
+            ],
+            [
+              77.0617934707635,
+              28.620660271113
+            ],
+            [
+              77.061710193122,
+              28.6206362036894
+            ],
+            [
+              77.0617338631702,
+              28.6205724363622
+            ],
+            [
+              77.0617592325908,
+              28.6205797681883
+            ],
+            [
+              77.0617727224665,
+              28.6205434262825
+            ],
+            [
+              77.061830630622,
+              28.6205601618631
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-50066360",
+        "full_plus_code": "7JWVJ3C6+6PR4",
+        "confidence": 0.777,
+        "google_area_m2": 89.1112,
+        "google_wkt": "POLYGON((77.061830630622 28.6205601618631, 77.0617934707635 28.620660271113, 77.061710193122 28.6206362036894, 77.0617338631702 28.6205724363622, 77.0617592325908 28.6205797681883, 77.0617727224665 28.6205434262825, 77.061830630622 28.6205601618631))",
+        "google_tile": "391",
+        "google_csv_row": 50066360,
+        "name": "Google footprint 7JWVJ3C6+6PR4",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0622083837889,
+              28.6211043920582
+            ],
+            [
+              77.0621708907974,
+              28.6212166555167
+            ],
+            [
+              77.0621079357809,
+              28.621200285895
+            ],
+            [
+              77.062145428836,
+              28.6210880224507
+            ],
+            [
+              77.0622083837889,
+              28.6211043920582
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-51452804",
+        "full_plus_code": "7JWVJ3C6+FV72",
+        "confidence": 0.7779,
+        "google_area_m2": 83.3689,
+        "google_wkt": "POLYGON((77.0622083837889 28.6211043920582, 77.0621708907974 28.6212166555167, 77.0621079357809 28.621200285895, 77.062145428836 28.6210880224507, 77.0622083837889 28.6211043920582))",
+        "google_tile": "391",
+        "google_csv_row": 51452804,
+        "name": "Google footprint 7JWVJ3C6+FV72",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0621721205523,
+              28.6205270758992
+            ],
+            [
+              77.0621307623896,
+              28.6206390809305
+            ],
+            [
+              77.0619432061632,
+              28.6205851599878
+            ],
+            [
+              77.0619845645114,
+              28.6204731550039
+            ],
+            [
+              77.0621721205523,
+              28.6205270758992
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-52064419",
+        "full_plus_code": "7JWVJ3C6+6RF9",
+        "confidence": 0.807,
+        "google_area_m2": 252.2076,
+        "google_wkt": "POLYGON((77.0621721205523 28.6205270758992, 77.0621307623896 28.6206390809305, 77.0619432061632 28.6205851599878, 77.0619845645114 28.6204731550039, 77.0621721205523 28.6205270758992))",
+        "google_tile": "391",
+        "google_csv_row": 52064419,
+        "name": "Google footprint 7JWVJ3C6+6RF9",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0623808857608,
+              28.6208124778517
+            ],
+            [
+              77.0623667280194,
+              28.6208530417923
+            ],
+            [
+              77.0623216429424,
+              28.6208407903874
+            ],
+            [
+              77.0623358007,
+              28.6208002264506
+            ],
+            [
+              77.0623808857608,
+              28.6208124778517
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-52316389",
+        "full_plus_code": "7JWVJ3C6+8WQ2",
+        "confidence": 0.8293,
+        "google_area_m2": 21.7318,
+        "google_wkt": "POLYGON((77.0623808857608 28.6208124778517, 77.0623667280194 28.6208530417923, 77.0623216429424 28.6208407903874, 77.0623358007 28.6208002264506, 77.0623808857608 28.6208124778517))",
+        "google_tile": "391",
+        "google_csv_row": 52316389,
+        "name": "Google footprint 7JWVJ3C6+8WQ2",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0625919992105,
+              28.6201308962526
+            ],
+            [
+              77.0625911093608,
+              28.6201635391053
+            ],
+            [
+              77.0625593440692,
+              28.620162864906
+            ],
+            [
+              77.062560233929,
+              28.6201302220529
+            ],
+            [
+              77.0625919992105,
+              28.6201308962526
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-53317660",
+        "full_plus_code": "7JWVJ3C7+324V",
+        "confidence": 0.6543,
+        "google_area_m2": 11.2607,
+        "google_wkt": "POLYGON((77.0625919992105 28.6201308962526, 77.0625911093608 28.6201635391053, 77.0625593440692 28.620162864906, 77.062560233929 28.6201302220529, 77.0625919992105 28.6201308962526))",
+        "google_tile": "391",
+        "google_csv_row": 53317660,
+        "name": "Google footprint 7JWVJ3C7+324V",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0620558753878,
+              28.6203408970707
+            ],
+            [
+              77.0620198025666,
+              28.6204385883175
+            ],
+            [
+              77.06197402185,
+              28.6204254266787
+            ],
+            [
+              77.0620100947107,
+              28.620327735442
+            ],
+            [
+              77.0620558753878,
+              28.6203408970707
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-54796111",
+        "full_plus_code": "7JWVJ3C6+5R27",
+        "confidence": 0.7888,
+        "google_area_m2": 53.6943,
+        "google_wkt": "POLYGON((77.0620558753878 28.6203408970707, 77.0620198025666 28.6204385883175, 77.06197402185 28.6204254266787, 77.0620100947107 28.620327735442, 77.0620558753878 28.6203408970707))",
+        "google_tile": "391",
+        "google_csv_row": 54796111,
+        "name": "Google footprint 7JWVJ3C6+5R27",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.061805258998,
+              28.6211675805556
+            ],
+            [
+              77.0617746414015,
+              28.6212547214371
+            ],
+            [
+              77.0616990814852,
+              28.6212340516071
+            ],
+            [
+              77.0617296991407,
+              28.6211469107397
+            ],
+            [
+              77.061805258998,
+              28.6211675805556
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-56516145",
+        "full_plus_code": "7JWVJ3C6+FPJ2",
+        "confidence": 0.6898,
+        "google_area_m2": 78.332,
+        "google_wkt": "POLYGON((77.061805258998 28.6211675805556, 77.0617746414015 28.6212547214371, 77.0616990814852 28.6212340516071, 77.0617296991407 28.6211469107397, 77.061805258998 28.6211675805556))",
+        "google_tile": "391",
+        "google_csv_row": 56516145,
+        "name": "Google footprint 7JWVJ3C6+FPJ2",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619642621974,
+              28.6211010088728
+            ],
+            [
+              77.0619363098632,
+              28.6211805645587
+            ],
+            [
+              77.0618530470198,
+              28.6211577876372
+            ],
+            [
+              77.0618809994132,
+              28.6210782319651
+            ],
+            [
+              77.0619642621974,
+              28.6211010088728
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-58039305",
+        "full_plus_code": "7JWVJ3C6+FQ32",
+        "confidence": 0.6507,
+        "google_area_m2": 78.804,
+        "google_wkt": "POLYGON((77.0619642621974 28.6211010088728, 77.0619363098632 28.6211805645587, 77.0618530470198 28.6211577876372, 77.0618809994132 28.6210782319651, 77.0619642621974 28.6211010088728))",
+        "google_tile": "391",
+        "google_csv_row": 58039305,
+        "name": "Google footprint 7JWVJ3C6+FQ32",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619908059689,
+              28.6210254620131
+            ],
+            [
+              77.0619686390028,
+              28.6210885519449
+            ],
+            [
+              77.0617891558921,
+              28.6210394534583
+            ],
+            [
+              77.0618113229593,
+              28.6209763635509
+            ],
+            [
+              77.0619908059689,
+              28.6210254620131
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-58237458",
+        "full_plus_code": "7JWVJ3C6+CQ67",
+        "confidence": 0.8121,
+        "google_area_m2": 134.7132,
+        "google_wkt": "POLYGON((77.0619908059689 28.6210254620131, 77.0619686390028 28.6210885519449, 77.0617891558921 28.6210394534583, 77.0618113229593 28.6209763635509, 77.0619908059689 28.6210254620131))",
+        "google_tile": "391",
+        "google_csv_row": 58237458,
+        "name": "Google footprint 7JWVJ3C6+CQ67",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0626828807586,
+              28.6201328566738
+            ],
+            [
+              77.0626819807616,
+              28.6201654566738
+            ],
+            [
+              77.0627152807607,
+              28.6201661566715
+            ],
+            [
+              77.0627130807683,
+              28.6202475566716
+            ],
+            [
+              77.0626063807711,
+              28.6202452566792
+            ],
+            [
+              77.0626094807605,
+              28.620131256679
+            ],
+            [
+              77.0626828807586,
+              28.6201328566738
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-59842764",
+        "full_plus_code": "7JWVJ3C7+33FJ",
+        "confidence": 0.7951,
+        "google_area_m2": 120.2905,
+        "google_wkt": "POLYGON((77.0626828807586 28.6201328566738, 77.0626819807616 28.6201654566738, 77.0627152807607 28.6201661566715, 77.0627130807683 28.6202475566716, 77.0626063807711 28.6202452566792, 77.0626094807605 28.620131256679, 77.0626828807586 28.6201328566738))",
+        "google_tile": "391",
+        "google_csv_row": 59842764,
+        "name": "Google footprint 7JWVJ3C7+33FJ",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.062247034888,
+              28.6203020418494
+            ],
+            [
+              77.0622332926251,
+              28.6203375250471
+            ],
+            [
+              77.0622142507568,
+              28.6203317832428
+            ],
+            [
+              77.0621927252957,
+              28.6203873629673
+            ],
+            [
+              77.0621047073943,
+              28.6203608223791
+            ],
+            [
+              77.0621399751943,
+              28.6202697594774
+            ],
+            [
+              77.062247034888,
+              28.6203020418494
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-59961456",
+        "full_plus_code": "7JWVJ3C6+4VM3",
+        "confidence": 0.6689,
+        "google_area_m2": 105.3423,
+        "google_wkt": "POLYGON((77.062247034888 28.6203020418494, 77.0622332926251 28.6203375250471, 77.0622142507568 28.6203317832428, 77.0621927252957 28.6203873629673, 77.0621047073943 28.6203608223791, 77.0621399751943 28.6202697594774, 77.062247034888 28.6203020418494))",
+        "google_tile": "391",
+        "google_csv_row": 59961456,
+        "name": "Google footprint 7JWVJ3C6+4VM3",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0627508808103,
+              28.6206437566855
+            ],
+            [
+              77.0627486808277,
+              28.6208320566857
+            ],
+            [
+              77.0626025808317,
+              28.6208306566961
+            ],
+            [
+              77.0626048808143,
+              28.6206424566959
+            ],
+            [
+              77.0627508808103,
+              28.6206437566855
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-59995802",
+        "full_plus_code": "7JWVJ3C7+73VG",
+        "confidence": 0.773,
+        "google_area_m2": 298.4394,
+        "google_wkt": "POLYGON((77.0627508808103 28.6206437566855, 77.0627486808277 28.6208320566857, 77.0626025808317 28.6208306566961, 77.0626048808143 28.6206424566959, 77.0627508808103 28.6206437566855))",
+        "google_tile": "391",
+        "google_csv_row": 59995802,
+        "name": "Google footprint 7JWVJ3C7+73VG",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618809994134,
+              28.6210782319657
+            ],
+            [
+              77.0618530470201,
+              28.6211577876378
+            ],
+            [
+              77.0619145670022,
+              28.6211746167089
+            ],
+            [
+              77.0618929306157,
+              28.621236196337
+            ],
+            [
+              77.0617909520558,
+              28.6212082996217
+            ],
+            [
+              77.0618125884983,
+              28.6211467200066
+            ],
+            [
+              77.0617763031215,
+              28.6211367939476
+            ],
+            [
+              77.0617689736135,
+              28.6211576544931
+            ],
+            [
+              77.0617494970936,
+              28.6211523265821
+            ],
+            [
+              77.0617847790672,
+              28.6210519103816
+            ],
+            [
+              77.0618809994134,
+              28.6210782319657
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-60069479",
+        "full_plus_code": "7JWVJ3C6+FP4P",
+        "confidence": 0.7458,
+        "google_area_m2": 170.6101,
+        "google_wkt": "POLYGON((77.0618809994134 28.6210782319657, 77.0618530470201 28.6211577876378, 77.0619145670022 28.6211746167089, 77.0618929306157 28.621236196337, 77.0617909520558 28.6212082996217, 77.0618125884983 28.6211467200066, 77.0617763031215 28.6211367939476, 77.0617689736135 28.6211576544931, 77.0617494970936 28.6211523265821, 77.0617847790672 28.6210519103816, 77.0618809994134 28.6210782319657))",
+        "google_tile": "391",
+        "google_csv_row": 60069479,
+        "name": "Google footprint 7JWVJ3C6+FP4P",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0625336752278,
+              28.6209481998453
+            ],
+            [
+              77.0625062180588,
+              28.621023258949
+            ],
+            [
+              77.0621805751377,
+              28.6209305132207
+            ],
+            [
+              77.0622080325225,
+              28.6208554541713
+            ],
+            [
+              77.0625336752278,
+              28.6209481998453
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-60091042",
+        "full_plus_code": "7JWVJ3C6+9WHF",
+        "confidence": 0.8526,
+        "google_area_m2": 292.9257,
+        "google_wkt": "POLYGON((77.0625336752278 28.6209481998453, 77.0625062180588 28.621023258949, 77.0621805751377 28.6209305132207, 77.0622080325225 28.6208554541713, 77.0625336752278 28.6209481998453))",
+        "google_tile": "391",
+        "google_csv_row": 60091042,
+        "name": "Google footprint 7JWVJ3C6+9WHF",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.061690717906,
+              28.6206455949861
+            ],
+            [
+              77.061658906779,
+              28.6207361328328
+            ],
+            [
+              77.0615909006377,
+              28.6207175292064
+            ],
+            [
+              77.0616227118197,
+              28.6206269913728
+            ],
+            [
+              77.061690717906,
+              28.6206455949861
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-60632615",
+        "full_plus_code": "7JWVJ3C6+7MC8",
+        "confidence": 0.6518,
+        "google_area_m2": 73.2499,
+        "google_wkt": "POLYGON((77.061690717906 28.6206455949861, 77.061658906779 28.6207361328328, 77.0615909006377 28.6207175292064, 77.0616227118197 28.6206269913728, 77.061690717906 28.6206455949861))",
+        "google_tile": "391",
+        "google_csv_row": 60632615,
+        "name": "Google footprint 7JWVJ3C6+7MC8",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0627423242486,
+              28.6213633771581
+            ],
+            [
+              77.0627411984074,
+              28.6214576395519
+            ],
+            [
+              77.0626451152827,
+              28.6214567460505
+            ],
+            [
+              77.0626462412094,
+              28.6213624836527
+            ],
+            [
+              77.0627423242486,
+              28.6213633771581
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-60990623",
+        "full_plus_code": "7JWVJ3C7+H38C",
+        "confidence": 0.8246,
+        "google_area_m2": 98.3111,
+        "google_wkt": "POLYGON((77.0627423242486 28.6213633771581, 77.0627411984074 28.6214576395519, 77.0626451152827 28.6214567460505, 77.0626462412094 28.6213624836527, 77.0627423242486 28.6213633771581))",
+        "google_tile": "391",
+        "google_csv_row": 60990623,
+        "name": "Google footprint 7JWVJ3C7+H38C",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0615208097125,
+              28.6212847867985
+            ],
+            [
+              77.0614851859843,
+              28.6212750416686
+            ],
+            [
+              77.061525081004,
+              28.6211614972348
+            ],
+            [
+              77.0615607046961,
+              28.6211712423558
+            ],
+            [
+              77.0615208097125,
+              28.6212847867985
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-61401031",
+        "full_plus_code": "7JWVJ3C6+FJJW",
+        "confidence": 0.8006,
+        "google_area_m2": 48.1207,
+        "google_wkt": "POLYGON((77.0615208097125 28.6212847867985, 77.0614851859843 28.6212750416686, 77.061525081004 28.6211614972348, 77.0615607046961 28.6211712423558, 77.0615208097125 28.6212847867985))",
+        "google_tile": "391",
+        "google_csv_row": 61401031,
+        "name": "Google footprint 7JWVJ3C6+FJJW",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0627477808492,
+              28.6210299566939
+            ],
+            [
+              77.0626052808542,
+              28.6210403567041
+            ],
+            [
+              77.0625995808488,
+              28.6209795567045
+            ],
+            [
+              77.0627420808438,
+              28.6209691566943
+            ],
+            [
+              77.0627477808492,
+              28.6210299566939
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-61508192",
+        "full_plus_code": "7JWVJ3C7+C334",
+        "confidence": 0.7845,
+        "google_area_m2": 94.6783,
+        "google_wkt": "POLYGON((77.0627477808492 28.6210299566939, 77.0626052808542 28.6210403567041, 77.0625995808488 28.6209795567045, 77.0627420808438 28.6209691566943, 77.0627477808492 28.6210299566939))",
+        "google_tile": "391",
+        "google_csv_row": 61508192,
+        "name": "Google footprint 7JWVJ3C7+C334",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.061981673132,
+              28.6201828176479
+            ],
+            [
+              77.0619290304129,
+              28.6201676037898
+            ],
+            [
+              77.0619218040678,
+              28.6201870718062
+            ],
+            [
+              77.0618812572444,
+              28.6201753536708
+            ],
+            [
+              77.0619544047578,
+              28.6199782917011
+            ],
+            [
+              77.0620475941465,
+              28.6200052236577
+            ],
+            [
+              77.061981673132,
+              28.6201828176479
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-62079741",
+        "full_plus_code": "7JWVJ3C6+2QP9",
+        "confidence": 0.7666,
+        "google_area_m2": 208.382,
+        "google_wkt": "POLYGON((77.061981673132 28.6201828176479, 77.0619290304129 28.6201676037898, 77.0619218040678 28.6201870718062, 77.0618812572444 28.6201753536708, 77.0619544047578 28.6199782917011, 77.0620475941465 28.6200052236577, 77.061981673132 28.6201828176479))",
+        "google_tile": "391",
+        "google_csv_row": 62079741,
+        "name": "Google footprint 7JWVJ3C6+2QP9",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0616574114739,
+              28.6211976971412
+            ],
+            [
+              77.0616170903252,
+              28.6211866670308
+            ],
+            [
+              77.0616090908979,
+              28.6212094341203
+            ],
+            [
+              77.0615650535433,
+              28.621197387401
+            ],
+            [
+              77.0615956713033,
+              28.6211102465585
+            ],
+            [
+              77.0616327491239,
+              28.6211203894518
+            ],
+            [
+              77.0616400786575,
+              28.621099528912
+            ],
+            [
+              77.0616873592733,
+              28.6211124628329
+            ],
+            [
+              77.0616574114739,
+              28.6211976971412
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-62384142",
+        "full_plus_code": "7JWVJ3C6+FM62",
+        "confidence": 0.667,
+        "google_area_m2": 88.2661,
+        "google_wkt": "POLYGON((77.0616574114739 28.6211976971412, 77.0616170903252 28.6211866670308, 77.0616090908979 28.6212094341203, 77.0615650535433 28.621197387401, 77.0615956713033 28.6211102465585, 77.0616327491239 28.6211203894518, 77.0616400786575 28.621099528912, 77.0616873592733 28.6211124628329, 77.0616574114739 28.6211976971412))",
+        "google_tile": "391",
+        "google_csv_row": 62384142,
+        "name": "Google footprint 7JWVJ3C6+FM62",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.062744855196,
+              28.6204626647241
+            ],
+            [
+              77.0626459856382,
+              28.6204720145039
+            ],
+            [
+              77.0626431000516,
+              28.6204482570957
+            ],
+            [
+              77.0626013849934,
+              28.6204522019339
+            ],
+            [
+              77.0625802258665,
+              28.6202779950979
+            ],
+            [
+              77.0627208102341,
+              28.62026470052
+            ],
+            [
+              77.062744855196,
+              28.6204626647241
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-62464661",
+        "full_plus_code": "7JWVJ3C7+43VJ",
+        "confidence": 0.7828,
+        "google_area_m2": 294.6525,
+        "google_wkt": "POLYGON((77.062744855196 28.6204626647241, 77.0626459856382 28.6204720145039, 77.0626431000516 28.6204482570957, 77.0626013849934 28.6204522019339, 77.0625802258665 28.6202779950979, 77.0627208102341 28.62026470052, 77.062744855196 28.6204626647241))",
+        "google_tile": "391",
+        "google_csv_row": 62464661,
+        "name": "Google footprint 7JWVJ3C7+43VJ",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0617273190576,
+              28.6205338363391
+            ],
+            [
+              77.0617061172872,
+              28.6206379536048
+            ],
+            [
+              77.0616332291193,
+              28.6206263975889
+            ],
+            [
+              77.0616544309604,
+              28.6205222803309
+            ],
+            [
+              77.0617273190576,
+              28.6205338363391
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-63097546",
+        "full_plus_code": "7JWVJ3C6+6MM9",
+        "confidence": 0.7212,
+        "google_area_m2": 85.026,
+        "google_wkt": "POLYGON((77.0617273190576 28.6205338363391, 77.0617061172872 28.6206379536048, 77.0616332291193 28.6206263975889, 77.0616544309604 28.6205222803309, 77.0617273190576 28.6205338363391))",
+        "google_tile": "391",
+        "google_csv_row": 63097546,
+        "name": "Google footprint 7JWVJ3C6+6MM9",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0625366808464,
+              28.6209445567066
+            ],
+            [
+              77.062459280847,
+              28.6209284567121
+            ],
+            [
+              77.0624718808424,
+              28.6208813567112
+            ],
+            [
+              77.0625492808417,
+              28.6208975567057
+            ],
+            [
+              77.0625366808464,
+              28.6209445567066
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-65156746",
+        "full_plus_code": "7JWVJ3C7+926C",
+        "confidence": 0.7797,
+        "google_area_m2": 41.7336,
+        "google_wkt": "POLYGON((77.0625366808464 28.6209445567066, 77.062459280847 28.6209284567121, 77.0624718808424 28.6208813567112, 77.0625492808417 28.6208975567057, 77.0625366808464 28.6209445567066))",
+        "google_tile": "391",
+        "google_csv_row": 65156746,
+        "name": "Google footprint 7JWVJ3C7+926C",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0626883690916,
+              28.6214875227758
+            ],
+            [
+              77.0626697869634,
+              28.6215914833217
+            ],
+            [
+              77.0626223930113,
+              28.6215848878882
+            ],
+            [
+              77.0626409751861,
+              28.6214809273464
+            ],
+            [
+              77.0626883690916,
+              28.6214875227758
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-65515883",
+        "full_plus_code": "7JWVJ3C7+J36H",
+        "confidence": 0.7723,
+        "google_area_m2": 54.8063,
+        "google_wkt": "POLYGON((77.0626883690916 28.6214875227758, 77.0626697869634 28.6215914833217, 77.0626223930113 28.6215848878882, 77.0626409751861 28.6214809273464, 77.0626883690916 28.6214875227758))",
+        "google_tile": "391",
+        "google_csv_row": 65515883,
+        "name": "Google footprint 7JWVJ3C7+J36H",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0623157281513,
+              28.6200515102514
+            ],
+            [
+              77.062267012822,
+              28.6201834407583
+            ],
+            [
+              77.0622486128465,
+              28.6201781509166
+            ],
+            [
+              77.0622546491955,
+              28.6201618033446
+            ],
+            [
+              77.0621800695778,
+              28.6201403622864
+            ],
+            [
+              77.0622227486558,
+              28.6200247793764
+            ],
+            [
+              77.0623157281513,
+              28.6200515102514
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-67440935",
+        "full_plus_code": "7JWVJ3C6+2VQX",
+        "confidence": 0.7884,
+        "google_area_m2": 132.6357,
+        "google_wkt": "POLYGON((77.0623157281513 28.6200515102514, 77.062267012822 28.6201834407583, 77.0622486128465 28.6201781509166, 77.0622546491955 28.6201618033446, 77.0621800695778 28.6201403622864, 77.0622227486558 28.6200247793764, 77.0623157281513 28.6200515102514))",
+        "google_tile": "391",
+        "google_csv_row": 67440935,
+        "name": "Google footprint 7JWVJ3C6+2VQX",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619043785563,
+              28.6201908168263
+            ],
+            [
+              77.0618729428028,
+              28.6202894231163
+            ],
+            [
+              77.0618231176672,
+              28.6202770558994
+            ],
+            [
+              77.0618545534651,
+              28.6201784496188
+            ],
+            [
+              77.0619043785563,
+              28.6201908168263
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-68181689",
+        "full_plus_code": "7JWVJ3C6+3PX8",
+        "confidence": 0.7776,
+        "google_area_m2": 57.5441,
+        "google_wkt": "POLYGON((77.0619043785563 28.6201908168263, 77.0618729428028 28.6202894231163, 77.0618231176672 28.6202770558994, 77.0618545534651 28.6201784496188, 77.0619043785563 28.6201908168263))",
+        "google_tile": "391",
+        "google_csv_row": 68181689,
+        "name": "Google footprint 7JWVJ3C6+3PX8",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619544047577,
+              28.6199782917007
+            ],
+            [
+              77.0618812572443,
+              28.6201753536704
+            ],
+            [
+              77.061774697397,
+              28.6201445575311
+            ],
+            [
+              77.0618478450968,
+              28.6199474956063
+            ],
+            [
+              77.0619544047577,
+              28.6199782917007
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-69486804",
+        "full_plus_code": "7JWVJ3C6+2PHG",
+        "confidence": 0.7251,
+        "google_area_m2": 252.3632,
+        "google_wkt": "POLYGON((77.0619544047577 28.6199782917007, 77.0618812572443 28.6201753536704, 77.061774697397 28.6201445575311, 77.0618478450968 28.6199474956063, 77.0619544047577 28.6199782917007))",
+        "google_tile": "391",
+        "google_csv_row": 69486804,
+        "name": "Google footprint 7JWVJ3C6+2PHG",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619120250725,
+              28.6209202243957
+            ],
+            [
+              77.0618885398504,
+              28.6209868898498
+            ],
+            [
+              77.0618337764,
+              28.6209718694006
+            ],
+            [
+              77.0618572616548,
+              28.6209052039541
+            ],
+            [
+              77.0619120250725,
+              28.6209202243957
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-69632304",
+        "full_plus_code": "7JWVJ3C6+9PHX",
+        "confidence": 0.6769,
+        "google_area_m2": 43.453,
+        "google_wkt": "POLYGON((77.0619120250725 28.6209202243957, 77.0618885398504 28.6209868898498, 77.0618337764 28.6209718694006, 77.0618572616548 28.6209052039541, 77.0619120250725 28.6209202243957))",
+        "google_tile": "391",
+        "google_csv_row": 69632304,
+        "name": "Google footprint 7JWVJ3C6+9PHX",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0627489808429,
+              28.620973656691
+            ],
+            [
+              77.0626019808478,
+              28.6209816567015
+            ],
+            [
+              77.0625926808358,
+              28.6208495567021
+            ],
+            [
+              77.062739580831,
+              28.6208414566917
+            ],
+            [
+              77.0627489808429,
+              28.620973656691
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-70811992",
+        "full_plus_code": "7JWVJ3C7+937F",
+        "confidence": 0.7567,
+        "google_area_m2": 211.5864,
+        "google_wkt": "POLYGON((77.0627489808429 28.620973656691, 77.0626019808478 28.6209816567015, 77.0625926808358 28.6208495567021, 77.062739580831 28.6208414566917, 77.0627489808429 28.620973656691))",
+        "google_tile": "391",
+        "google_csv_row": 70811992,
+        "name": "Google footprint 7JWVJ3C7+937F",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0615956713031,
+              28.6211102465582
+            ],
+            [
+              77.0615730529794,
+              28.6211746203137
+            ],
+            [
+              77.0615250810029,
+              28.621161497232
+            ],
+            [
+              77.061547699354,
+              28.6210971234827
+            ],
+            [
+              77.0615956713031,
+              28.6211102465582
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-71355031",
+        "full_plus_code": "7JWVJ3C6+FJ3H",
+        "confidence": 0.6786,
+        "google_area_m2": 36.7387,
+        "google_wkt": "POLYGON((77.0615956713031 28.6211102465582, 77.0615730529794 28.6211746203137, 77.0615250810029 28.621161497232, 77.061547699354 28.6210971234827, 77.0615956713031 28.6211102465582))",
+        "google_tile": "391",
+        "google_csv_row": 71355031,
+        "name": "Google footprint 7JWVJ3C6+FJ3H",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618243404801,
+              28.6203286889612
+            ],
+            [
+              77.0617866989645,
+              28.6204300959657
+            ],
+            [
+              77.0617084046026,
+              28.6204074686586
+            ],
+            [
+              77.0617460461883,
+              28.6203060616719
+            ],
+            [
+              77.0618243404801,
+              28.6203286889612
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-71458153",
+        "full_plus_code": "7JWVJ3C6+4PRP",
+        "confidence": 0.8537,
+        "google_area_m2": 95.4173,
+        "google_wkt": "POLYGON((77.0618243404801 28.6203286889612, 77.0617866989645 28.6204300959657, 77.0617084046026 28.6204074686586, 77.0617460461883 28.6203060616719, 77.0618243404801 28.6203286889612))",
+        "google_tile": "391",
+        "google_csv_row": 71458153,
+        "name": "Google footprint 7JWVJ3C6+4PRP",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0619634986373,
+              28.6203689059552
+            ],
+            [
+              77.0619467237732,
+              28.620414097968
+            ],
+            [
+              77.0619008360107,
+              28.6204008363306
+            ],
+            [
+              77.0619176108943,
+              28.6203556443225
+            ],
+            [
+              77.0619634986373,
+              28.6203689059552
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "gob-v3-391-71785929",
+        "full_plus_code": "7JWVJ3C6+5Q39",
+        "confidence": 0.7526,
+        "google_area_m2": 24.9222,
+        "google_wkt": "POLYGON((77.0619634986373 28.6203689059552, 77.0619467237732 28.620414097968, 77.0619008360107 28.6204008363306, 77.0619176108943 28.6203556443225, 77.0619634986373 28.6203689059552))",
+        "google_tile": "391",
+        "google_csv_row": 71785929,
+        "name": "Google footprint 7JWVJ3C6+5Q39",
+        "source_notice": "Google V3 model detection, May 2023 inference; no measured height or legal parcel evidence"
+      }
+    }
+  ]
+}

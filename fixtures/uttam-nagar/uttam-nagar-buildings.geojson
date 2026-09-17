@@ -1,0 +1,869 @@
+{
+  "type": "FeatureCollection",
+  "name": "Observed OSM footprints. No invented heights, owners or interiors.",
+  "attribution": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.062927,
+              28.620282099999997
+            ],
+            [
+              77.0630783,
+              28.620182800000002
+            ],
+            [
+              77.06296550000002,
+              28.620050299999996
+            ],
+            [
+              77.0628141,
+              28.620149599999994
+            ],
+            [
+              77.062927,
+              28.620282099999997
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518441",
+        "name": "Uttam Nagar mapped building 01",
+        "osm_id": "350518441",
+        "osm_url": "https://www.openstreetmap.org/way/350518441",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0646309,
+              28.6197719
+            ],
+            [
+              77.0646846,
+              28.619770499999998
+            ],
+            [
+              77.06468020000001,
+              28.6196354
+            ],
+            [
+              77.0646265,
+              28.619636799999995
+            ],
+            [
+              77.0646309,
+              28.6197719
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518453",
+        "name": "Uttam Nagar mapped building 02",
+        "osm_id": "350518453",
+        "osm_url": "https://www.openstreetmap.org/way/350518453",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0632093,
+              28.619860800000005
+            ],
+            [
+              77.0633493,
+              28.6197695
+            ],
+            [
+              77.0632655,
+              28.619670399999993
+            ],
+            [
+              77.0631254,
+              28.6197618
+            ],
+            [
+              77.0632093,
+              28.619860800000005
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518505",
+        "name": "Uttam Nagar mapped building 03",
+        "osm_id": "350518505",
+        "osm_url": "https://www.openstreetmap.org/way/350518505",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0630949,
+              28.619927400000005
+            ],
+            [
+              77.0631992,
+              28.6198594
+            ],
+            [
+              77.0631111,
+              28.619755399999995
+            ],
+            [
+              77.06300690000002,
+              28.6198234
+            ],
+            [
+              77.0630949,
+              28.619927400000005
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518528",
+        "name": "Uttam Nagar mapped building 04",
+        "osm_id": "350518528",
+        "osm_url": "https://www.openstreetmap.org/way/350518528",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0646133,
+              28.619613199999996
+            ],
+            [
+              77.0646787,
+              28.619611599999995
+            ],
+            [
+              77.064674,
+              28.619465699999996
+            ],
+            [
+              77.0646085,
+              28.6194673
+            ],
+            [
+              77.0646133,
+              28.619613199999996
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518574",
+        "name": "Uttam Nagar mapped building 05",
+        "osm_id": "350518574",
+        "osm_url": "https://www.openstreetmap.org/way/350518574",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0645296,
+              28.61961609999999
+            ],
+            [
+              77.0646043,
+              28.6196143
+            ],
+            [
+              77.0645994,
+              28.619461300000005
+            ],
+            [
+              77.0645247,
+              28.6194632
+            ],
+            [
+              77.0645296,
+              28.61961609999999
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518575",
+        "name": "Uttam Nagar mapped building 06",
+        "osm_id": "350518575",
+        "osm_url": "https://www.openstreetmap.org/way/350518575",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.063695,
+              28.619826899999996
+            ],
+            [
+              77.0638013,
+              28.619757599999996
+            ],
+            [
+              77.0636799,
+              28.6196142
+            ],
+            [
+              77.0635736,
+              28.619683500000004
+            ],
+            [
+              77.063695,
+              28.619826899999996
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518576",
+        "name": "Uttam Nagar mapped building 07",
+        "osm_id": "350518576",
+        "osm_url": "https://www.openstreetmap.org/way/350518576",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0648593,
+              28.619601
+            ],
+            [
+              77.0649313,
+              28.6195992
+            ],
+            [
+              77.0649266,
+              28.619454099999995
+            ],
+            [
+              77.0648546,
+              28.619455899999995
+            ],
+            [
+              77.0648593,
+              28.619601
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518602",
+        "name": "Uttam Nagar mapped building 08",
+        "osm_id": "350518602",
+        "osm_url": "https://www.openstreetmap.org/way/350518602",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0645735,
+              28.6197563
+            ],
+            [
+              77.064622,
+              28.619755099999995
+            ],
+            [
+              77.0646181,
+              28.619636199999995
+            ],
+            [
+              77.0645696,
+              28.6196374
+            ],
+            [
+              77.0645735,
+              28.6197563
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518614",
+        "name": "Uttam Nagar mapped building 09",
+        "osm_id": "350518614",
+        "osm_url": "https://www.openstreetmap.org/way/350518614",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0647749,
+              28.619614699999993
+            ],
+            [
+              77.0648414,
+              28.619612999999998
+            ],
+            [
+              77.0648364,
+              28.619457000000004
+            ],
+            [
+              77.06476980000001,
+              28.6194587
+            ],
+            [
+              77.0647749,
+              28.619614699999993
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518690",
+        "name": "Uttam Nagar mapped building 10",
+        "osm_id": "350518690",
+        "osm_url": "https://www.openstreetmap.org/way/350518690",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.063441,
+              28.6197221
+            ],
+            [
+              77.0635096,
+              28.619677399999997
+            ],
+            [
+              77.0634238,
+              28.619575999999995
+            ],
+            [
+              77.0633552,
+              28.6196207
+            ],
+            [
+              77.063441,
+              28.6197221
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518699",
+        "name": "Uttam Nagar mapped building 11",
+        "osm_id": "350518699",
+        "osm_url": "https://www.openstreetmap.org/way/350518699",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.063359,
+              28.619770300000003
+            ],
+            [
+              77.0634294,
+              28.6197245
+            ],
+            [
+              77.0633451,
+              28.619624899999998
+            ],
+            [
+              77.0632748,
+              28.619670799999994
+            ],
+            [
+              77.063359,
+              28.619770300000003
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518705",
+        "name": "Uttam Nagar mapped building 12",
+        "osm_id": "350518705",
+        "osm_url": "https://www.openstreetmap.org/way/350518705",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0640855,
+              28.619807100000003
+            ],
+            [
+              77.0641734,
+              28.619804899999995
+            ],
+            [
+              77.0641692,
+              28.61967399999999
+            ],
+            [
+              77.0640812,
+              28.6196762
+            ],
+            [
+              77.0640855,
+              28.619807100000003
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518759",
+        "name": "Uttam Nagar mapped building 13",
+        "osm_id": "350518759",
+        "osm_url": "https://www.openstreetmap.org/way/350518759",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0644697,
+              28.619774699999997
+            ],
+            [
+              77.0645673,
+              28.6197722
+            ],
+            [
+              77.064563,
+              28.619641300000005
+            ],
+            [
+              77.0644654,
+              28.619643699999997
+            ],
+            [
+              77.0644697,
+              28.619774699999997
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518778",
+        "name": "Uttam Nagar mapped building 14",
+        "osm_id": "350518778",
+        "osm_url": "https://www.openstreetmap.org/way/350518778",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0650633,
+              28.619603399999995
+            ],
+            [
+              77.0652035,
+              28.6195999
+            ],
+            [
+              77.0652011,
+              28.6195256
+            ],
+            [
+              77.0650609,
+              28.6195292
+            ],
+            [
+              77.0650633,
+              28.619603399999995
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518786",
+        "name": "Uttam Nagar mapped building 15",
+        "osm_id": "350518786",
+        "osm_url": "https://www.openstreetmap.org/way/350518786",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0646896,
+              28.619608199999995
+            ],
+            [
+              77.0647607,
+              28.619606399999995
+            ],
+            [
+              77.064756,
+              28.6194628
+            ],
+            [
+              77.0646849,
+              28.6194646
+            ],
+            [
+              77.0646896,
+              28.619608199999995
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-350518824",
+        "name": "Uttam Nagar mapped building 16",
+        "osm_id": "350518824",
+        "osm_url": "https://www.openstreetmap.org/way/350518824",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0630191,
+              28.619980499999997
+            ],
+            [
+              77.0630858,
+              28.6199383
+            ],
+            [
+              77.0629939,
+              28.619826599999993
+            ],
+            [
+              77.0629272,
+              28.6198689
+            ],
+            [
+              77.0630191,
+              28.619980499999997
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-352286682",
+        "name": "Uttam Nagar mapped building 17",
+        "osm_id": "352286682",
+        "osm_url": "https://www.openstreetmap.org/way/352286682",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0628773,
+              28.6200802
+            ],
+            [
+              77.0629451,
+              28.6200364
+            ],
+            [
+              77.0628477,
+              28.619920199999996
+            ],
+            [
+              77.0627798,
+              28.619964
+            ],
+            [
+              77.0628773,
+              28.6200802
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-352286697",
+        "name": "Uttam Nagar mapped building 18",
+        "osm_id": "352286697",
+        "osm_url": "https://www.openstreetmap.org/way/352286697",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0629502,
+              28.620033300000003
+            ],
+            [
+              77.0630134,
+              28.619993399999995
+            ],
+            [
+              77.0629207,
+              28.6198802
+            ],
+            [
+              77.0628575,
+              28.619920100000005
+            ],
+            [
+              77.0629502,
+              28.620033300000003
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-352286721",
+        "name": "Uttam Nagar mapped building 19",
+        "osm_id": "352286721",
+        "osm_url": "https://www.openstreetmap.org/way/352286721",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0627898,
+              28.620131199999996
+            ],
+            [
+              77.0628685,
+              28.620082299999996
+            ],
+            [
+              77.0627773,
+              28.6199694
+            ],
+            [
+              77.0626987,
+              28.620018300000005
+            ],
+            [
+              77.0627898,
+              28.620131199999996
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-352286803",
+        "name": "Uttam Nagar mapped building 20",
+        "osm_id": "352286803",
+        "osm_url": "https://www.openstreetmap.org/way/352286803",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "building": "yes"
+        },
+        "evidence_note": "Community-mapped footprint. Occupancy, title, parcel boundary, floors and heights are not established by this outline."
+      }
+    }
+  ]
+}

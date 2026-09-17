@@ -1,0 +1,9 @@
+{
+  "url": "https://nominatim.openstreetmap.org/search?state=Delhi&country=India&format=jsonv2&limit=2&polygon_geojson=1&extratags=1",
+  "method": "GET",
+  "at": "2026-09-16T20:52:31.589Z",
+  "status": 200,
+  "contentType": "application/json; charset=utf-8",
+  "bytes": 21806,
+  "sha256": "463823194d1c517bf444aca3175753e923e4f96353b56b672c455b98300088b6"
+}

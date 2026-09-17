@@ -1,0 +1,13 @@
+FICTIONAL Uttam Nagar training scenario. OSM-derived footprints; authored heights, parcel buffers, rooms, people, rights and conflict overlays. No real resident, owner, cadastral boundary, approval or encroachment is asserted.
+
+Demo residents for DEMO Residence 02 - fictional
+FICTIONAL parcel schedule: DEMO-UN-P02 links this demo residence to its authored demonstration parcel. Not officially issued.
+Row 1: UN2-0-A | Living / sleeping room A | Fictional: Isha Anand | Invented demo resident/use entry. Not a real resident, owner or registered deed.
+Row 2: UN2-0-B | Living / sleeping room B | Fictional: Dev Kapoor | Invented demo resident/use entry. Not a real resident, owner or registered deed.
+Row 3: UN2-0-C | Common stairs and passage | Fictional shared household 2 | Invented demo resident/use entry. Not a real resident, owner or registered deed.
+Row 4: UN2-1-A | Living / sleeping room A | Fictional: Tara Bansal | Invented demo resident/use entry. Not a real resident, owner or registered deed.
+Row 5: UN2-1-B | Living / sleeping room B | Fictional: Nikhil Sethi | Invented demo resident/use entry. Not a real resident, owner or registered deed.
+Row 6: UN2-1-C | Common stairs and passage | Fictional shared household 2 | Invented demo resident/use entry. Not a real resident, owner or registered deed.
+Row 7: UN2-2-A | Living / sleeping room A | Fictional: Pooja Arora | Invented demo resident/use entry. Not a real resident, owner or registered deed.
+Row 8: UN2-2-B | Living / sleeping room B | Fictional: Varun Khanna | Invented demo resident/use entry. Not a real resident, owner or registered deed.
+Row 9: UN2-2-C | Common stairs and passage | Fictional shared household 2 | Invented demo resident/use entry. Not a real resident, owner or registered deed.

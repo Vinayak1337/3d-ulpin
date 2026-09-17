@@ -325,6 +325,13 @@ export default function BlockPage({ areaId }: { areaId: string }) {
           </div>
           {block.preferences.findingsOpen && <FindingsTray block={block} />}
           <footer className="ui-map-status">
+            {context.features.some((feature) =>
+              String(feature.properties.source_provider || "").includes("OpenStreetMap"),
+            ) && (
+              <span>
+                © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> · ODbL
+              </span>
+            )}
             <span>
               <i />
               Saved block · revision {context.area.revision}

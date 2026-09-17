@@ -1,0 +1,2146 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "notice": "SYNTHETIC TEST FIXTURE. Map-derived outline only. Heights, floors, rooms, people, parcels and test conflicts are invented. No real household, cadastral or official ULPIN claim.",
+    "license": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "attribution": "\u00a9 OpenStreetMap contributors",
+    "reference_bbox": [
+      77.0594,
+      28.6204,
+      77.0618,
+      28.6223
+    ]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423590890",
+        "name": "DEMO assumed width | OSM residential 423590890",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423590890",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06050816212422,
+              28.62046197121197
+            ],
+            [
+              77.06045320884856,
+              28.62061474123817
+            ],
+            [
+              77.06039670917806,
+              28.6207718402396
+            ],
+            [
+              77.06031642931366,
+              28.620994884179648
+            ],
+            [
+              77.06008734906229,
+              28.62161773016636
+            ],
+            [
+              77.06012625093962,
+              28.62162886983074
+            ],
+            [
+              77.06035537068821,
+              28.62100591581744
+            ],
+            [
+              77.06043569011999,
+              28.620782761712874
+            ],
+            [
+              77.06049219132974,
+              28.62062565826843
+            ],
+            [
+              77.06054723787759,
+              28.620472628785112
+            ],
+            [
+              77.06057022806209,
+              28.620405198206647
+            ],
+            [
+              77.06053106329368,
+              28.62039480179041
+            ],
+            [
+              77.06050816212422,
+              28.62046197121197
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423590895",
+        "name": "DEMO assumed width | OSM residential 423590895",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423590895",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06141234878484,
+              28.621060875365284
+            ],
+            [
+              77.06147295170774,
+              28.620895867338437
+            ],
+            [
+              77.06153104878337,
+              28.620737975205465
+            ],
+            [
+              77.06157304758241,
+              28.620623978406975
+            ],
+            [
+              77.06161755142335,
+              28.620503167918667
+            ],
+            [
+              77.06165336759463,
+              28.62040555801394
+            ],
+            [
+              77.06161445751779,
+              28.62039444198315
+            ],
+            [
+              77.06157864857853,
+              28.620492032078428
+            ],
+            [
+              77.06153415230841,
+              28.62061282189158
+            ],
+            [
+              77.06149215239991,
+              28.620726821585148
+            ],
+            [
+              77.06143405001484,
+              28.620884727982325
+            ],
+            [
+              77.06137344887921,
+              28.621049730981184
+            ],
+            [
+              77.06129425118006,
+              28.621264824622425
+            ],
+            [
+              77.06133314882183,
+              28.62127597537468
+            ],
+            [
+              77.06141234878484,
+              28.621060875365284
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423590904",
+        "name": "DEMO assumed width | OSM residential 423590904",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423590904",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0599642304249,
+              28.62045558168144
+            ],
+            [
+              77.05992052726438,
+              28.620575990304445
+            ],
+            [
+              77.05987762952016,
+              28.620693884044076
+            ],
+            [
+              77.05981642941074,
+              28.620862084257745
+            ],
+            [
+              77.05985537059111,
+              28.62087311573935
+            ],
+            [
+              77.05991657053234,
+              28.620704915813896
+            ],
+            [
+              77.05995947046137,
+              28.62058701594793
+            ],
+            [
+              77.06000317228546,
+              28.62046661087559
+            ],
+            [
+              77.06002541234768,
+              28.62040551831301
+            ],
+            [
+              77.05998647321665,
+              28.620394481684087
+            ],
+            [
+              77.0599642304249,
+              28.62045558168144
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423590932",
+        "name": "DEMO assumed width | OSM residential 423590932",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423590932",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.05976785748778,
+              28.62038277504038
+            ],
+            [
+              77.05975567584375,
+              28.620417224959407
+            ],
+            [
+              77.05997760921112,
+              28.620478324967564
+            ],
+            [
+              77.05998979078709,
+              28.620443875032212
+            ],
+            [
+              77.05976785748778,
+              28.62038277504038
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423590966",
+        "name": "DEMO assumed width | OSM residential 423590966",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423590966",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.05940596739187,
+              28.620418872365285
+            ],
+            [
+              77.05939403260633,
+              28.62045338950005
+            ],
+            [
+              77.05993403268963,
+              28.62059875858661
+            ],
+            [
+              77.05994596730858,
+              28.620564241413167
+            ],
+            [
+              77.05940596739187,
+              28.620418872365285
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591052",
+        "name": "DEMO assumed width | Arya Samaj Road",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591052",
+        "assumed_width_m": 6
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06005310960566,
+              28.62092208389661
+            ],
+            [
+              77.05999601215603,
+              28.621077976813257
+            ],
+            [
+              77.05983120640228,
+              28.621529092189846
+            ],
+            [
+              77.05955232288358,
+              28.622291688341807
+            ],
+            [
+              77.0596107076992,
+              28.622308311651643
+            ],
+            [
+              77.05988959221284,
+              28.621545711602096
+            ],
+            [
+              77.06005439136507,
+              28.62109461357813
+            ],
+            [
+              77.06011148780794,
+              28.620938723170045
+            ],
+            [
+              77.06030539140511,
+              28.620408308981666
+            ],
+            [
+              77.06024700570933,
+              28.6203916910118
+            ],
+            [
+              77.06005310960566,
+              28.62092208389661
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591060",
+        "name": "DEMO assumed width | School Road",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591060",
+        "assumed_width_m": 6
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06167992795751,
+              28.62135275917409
+            ],
+            [
+              77.06153584207813,
+              28.621303440519977
+            ],
+            [
+              77.06140207040248,
+              28.62126647199164
+            ],
+            [
+              77.061322872838,
+              28.621244572664462
+            ],
+            [
+              77.06126735406619,
+              28.621229267478416
+            ],
+            [
+              77.0611438663361,
+              28.621195170865285
+            ],
+            [
+              77.0610060720024,
+              28.621157072430837
+            ],
+            [
+              77.06093285593495,
+              28.621136867992043
+            ],
+            [
+              77.06088305621223,
+              28.621123168056837
+            ],
+            [
+              77.06074798239025,
+              28.621085775302642
+            ],
+            [
+              77.06060115646343,
+              28.621045268135063
+            ],
+            [
+              77.0603450591917,
+              28.620974568886144
+            ],
+            [
+              77.06009113847811,
+              28.620904480358632
+            ],
+            [
+              77.05986178375092,
+              28.620845989893603
+            ],
+            [
+              77.0598443773201,
+              28.62084158826726
+            ],
+            [
+              77.05940850413809,
+              28.620730611633995
+            ],
+            [
+              77.0593914958581,
+              28.620782621451195
+            ],
+            [
+              77.0598274226761,
+              28.620893611732328
+            ],
+            [
+              77.05984481624527,
+              28.620898010105975
+            ],
+            [
+              77.06007346151793,
+              28.6209563196409
+            ],
+            [
+              77.06032674140229,
+              28.62102623127849
+            ],
+            [
+              77.06058284086306,
+              28.621096931127536
+            ],
+            [
+              77.06072963192044,
+              28.62113742865968
+            ],
+            [
+              77.06086474378367,
+              28.62117483194268
+            ],
+            [
+              77.06091455700647,
+              28.62118853557988
+            ],
+            [
+              77.06098773603863,
+              28.62120872979308
+            ],
+            [
+              77.06112552802514,
+              28.621246827576314
+            ],
+            [
+              77.06124903932678,
+              28.621280930697953
+            ],
+            [
+              77.0613045398489,
+              28.62129623084433
+            ],
+            [
+              77.06138372717608,
+              28.621318127339446
+            ],
+            [
+              77.06151555791732,
+              28.621354559479425
+            ],
+            [
+              77.06166187203841,
+              28.621404640825432
+            ],
+            [
+              77.0617931315308,
+              28.62143125016242
+            ],
+            [
+              77.06180686846619,
+              28.621378492953788
+            ],
+            [
+              77.06167992795751,
+              28.62135275917409
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591076",
+        "name": "DEMO assumed width | Street Number 63",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591076",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.05938054404189,
+              28.62124407745753
+            ],
+            [
+              77.05941945595998,
+              28.621255189450007
+            ],
+            [
+              77.0595355559055,
+              28.620938655981018
+            ],
+            [
+              77.05949664409637,
+              28.620927544016062
+            ],
+            [
+              77.05938054404189,
+              28.62124407745753
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591093",
+        "name": "DEMO assumed width | Street Number 62",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591093",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.05938064434415,
+              28.6216418041511
+            ],
+            [
+              77.05941935565782,
+              28.621653449264265
+            ],
+            [
+              77.05950645561961,
+              28.621428022544755
+            ],
+            [
+              77.05946774438236,
+              28.62141637745237
+            ],
+            [
+              77.05938064434415,
+              28.6216418041511
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591128",
+        "name": "DEMO assumed width | OSM residential 423591128",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591128",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06153792585732,
+              28.62210386190813
+            ],
+            [
+              77.06143507766996,
+              28.62229216641403
+            ],
+            [
+              77.06147192171203,
+              28.622307833583307
+            ],
+            [
+              77.06157487414526,
+              28.622119338089185
+            ],
+            [
+              77.06167162499364,
+              28.621936742061887
+            ],
+            [
+              77.06163457500892,
+              28.621921457935432
+            ],
+            [
+              77.06153792585732,
+              28.62210386190813
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591156",
+        "name": "DEMO assumed width | OSM residential 423591156",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591156",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06141473073745,
+              28.622059849118667
+            ],
+            [
+              77.0612848522417,
+              28.62229201330569
+            ],
+            [
+              77.06132152701407,
+              28.622307986691666
+            ],
+            [
+              77.06145166926513,
+              28.622075350878667
+            ],
+            [
+              77.06154369330588,
+              28.621898011778793
+            ],
+            [
+              77.06150650669665,
+              28.621882988218506
+            ],
+            [
+              77.06141473073745,
+              28.622059849118667
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591159",
+        "name": "DEMO assumed width | OSM residential 423591159",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591159",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0617976895069,
+              28.622178308886653
+            ],
+            [
+              77.06156407256108,
+              28.6220948742627
+            ],
+            [
+              77.06144087946788,
+              28.622050876729308
+            ],
+            [
+              77.06130784313048,
+              28.622003263724164
+            ],
+            [
+              77.06117650459458,
+              28.6219568735069
+            ],
+            [
+              77.06104898261731,
+              28.621918506721816
+            ],
+            [
+              77.0609118485153,
+              28.62187325942905
+            ],
+            [
+              77.06078505498763,
+              28.621824823700447
+            ],
+            [
+              77.06065275150786,
+              28.621782490590277
+            ],
+            [
+              77.06051877691372,
+              28.621732814616202
+            ],
+            [
+              77.06039243963902,
+              28.621698623338084
+            ],
+            [
+              77.0602561874978,
+              28.621652907158328
+            ],
+            [
+              77.06011411117947,
+              28.62160644760254
+            ],
+            [
+              77.05986753550422,
+              28.62152048635751
+            ],
+            [
+              77.05963675100134,
+              28.62144926770183
+            ],
+            [
+              77.05949385125484,
+              28.62140516777951
+            ],
+            [
+              77.05948034874312,
+              28.62143923222023
+            ],
+            [
+              77.05962324876434,
+              28.621483332226205
+            ],
+            [
+              77.05985326449364,
+              28.621554313642182
+            ],
+            [
+              77.06009948881834,
+              28.62164015239715
+            ],
+            [
+              77.06024181250004,
+              28.621686692841358
+            ],
+            [
+              77.06037916035902,
+              28.621732776661652
+            ],
+            [
+              77.06050482308417,
+              28.621766785383507
+            ],
+            [
+              77.06063784848992,
+              28.621816109409394
+            ],
+            [
+              77.06076994501011,
+              28.621858376299212
+            ],
+            [
+              77.0608965514824,
+              28.621906740570605
+            ],
+            [
+              77.06103521738063,
+              28.62195249327789
+            ],
+            [
+              77.06116229540328,
+              28.621990726492797
+            ],
+            [
+              77.06129255686727,
+              28.622036736275483
+            ],
+            [
+              77.06142551360337,
+              28.62208432079141
+            ],
+            [
+              77.06154872746967,
+              28.622128325748736
+            ],
+            [
+              77.06178271049087,
+              28.622211891113004
+            ],
+            [
+              77.06179269491027,
+              28.622215260490673
+            ],
+            [
+              77.06180730508758,
+              28.62218155379474
+            ],
+            [
+              77.0617976895069,
+              28.622178308886653
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591162",
+        "name": "DEMO assumed width | OSM residential 423591162",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591162",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0594066265426,
+              28.622241175282838
+            ],
+            [
+              77.0593933734554,
+              28.622275315931276
+            ],
+            [
+              77.0595315298068,
+              28.622317070329746
+            ],
+            [
+              77.05954478285273,
+              28.62228292967
+            ],
+            [
+              77.0594066265426,
+              28.622241175282838
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591166",
+        "name": "DEMO assumed width | OSM residential 423591166",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591166",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06062697137197,
+              28.62179129688285
+            ],
+            [
+              77.06041359072283,
+              28.62217832441572
+            ],
+            [
+              77.06035486050268,
+              28.622292545003237
+            ],
+            [
+              77.0603921059452,
+              28.622307454994054
+            ],
+            [
+              77.06045060927975,
+              28.622193675581617
+            ],
+            [
+              77.0606636286307,
+              28.62180730311452
+            ],
+            [
+              77.06101516637067,
+              28.621191012070348
+            ],
+            [
+              77.06097863363205,
+              28.62117478792704
+            ],
+            [
+              77.06062697137197,
+              28.62179129688285
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591173",
+        "name": "DEMO assumed width | OSM residential 423591173",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591173",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06049350974666,
+              28.62174171768246
+            ],
+            [
+              77.06022114013247,
+              28.622252435553985
+            ],
+            [
+              77.06019940510387,
+              28.622292154279144
+            ],
+            [
+              77.06023623590491,
+              28.622307845718204
+            ],
+            [
+              77.06025805987014,
+              28.622267964443346
+            ],
+            [
+              77.06053009025601,
+              28.621757882314903
+            ],
+            [
+              77.06089195518959,
+              28.621157472160448
+            ],
+            [
+              77.06085584481319,
+              28.62114052783698
+            ],
+            [
+              77.06049350974666,
+              28.62174171768246
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591175",
+        "name": "DEMO assumed width | OSM residential 423591175",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591175",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06036756466087,
+              28.621707532781432
+            ],
+            [
+              77.06003664688622,
+              28.62229193521498
+            ],
+            [
+              77.06007323378184,
+              28.622308064782388
+            ],
+            [
+              77.06040403534186,
+              28.621723867215948
+            ],
+            [
+              77.06075697576405,
+              28.621119868988433
+            ],
+            [
+              77.06072062423868,
+              28.62110333100897
+            ],
+            [
+              77.06036756466087,
+              28.621707532781432
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591186",
+        "name": "DEMO assumed width | OSM residential 423591186",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591186",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06169819847105,
+              28.62038290313227
+            ],
+            [
+              77.06168512269787,
+              28.620417096867484
+            ],
+            [
+              77.0617934621287,
+              28.62044935276969
+            ],
+            [
+              77.06180653786936,
+              28.62041515902577
+            ],
+            [
+              77.06169819847105,
+              28.62038290313227
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591187",
+        "name": "DEMO assumed width | OSM residential 423591187",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591187",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06023073194213,
+              28.621661690653465
+            ],
+            [
+              77.05996506256328,
+              28.622129889006874
+            ],
+            [
+              77.05988032474438,
+              28.62229246050797
+            ],
+            [
+              77.05991748271008,
+              28.62230753948932
+            ],
+            [
+              77.06000193743932,
+              28.622145510990464
+            ],
+            [
+              77.06026726806056,
+              28.621677909343912
+            ],
+            [
+              77.06061025016082,
+              28.6210792404005
+            ],
+            [
+              77.06057374984188,
+              28.621062959596884
+            ],
+            [
+              77.06023073194213,
+              28.621661690653465
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591191",
+        "name": "DEMO assumed width | OSM residential 423591191",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591191",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0615599377268,
+              28.620601244519968
+            ],
+            [
+              77.0611587821702,
+              28.62048519951868
+            ],
+            [
+              77.06077996592462,
+              28.620382748270195
+            ],
+            [
+              77.06076798055425,
+              28.620417251729588
+            ],
+            [
+              77.06114641782796,
+              28.62051960048109
+            ],
+            [
+              77.0615472622713,
+              28.620635555479808
+            ],
+            [
+              77.06179369510913,
+              28.620706030855896
+            ],
+            [
+              77.06180630488899,
+              28.62067170111638
+            ],
+            [
+              77.0615599377268,
+              28.620601244519968
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591192",
+        "name": "DEMO assumed width | OSM residential 423591192",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591192",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06139917314914,
+              28.62103812553499
+            ],
+            [
+              77.06100505344828,
+              28.62092892007451
+            ],
+            [
+              77.06042257972524,
+              28.62076015665829
+            ],
+            [
+              77.06040982027284,
+              28.620794443341467
+            ],
+            [
+              77.06099254654984,
+              28.620963279925274
+            ],
+            [
+              77.06138662684899,
+              28.621072474464775
+            ],
+            [
+              77.06179358114017,
+              28.62119118665089
+            ],
+            [
+              77.06180641885793,
+              28.621156922734635
+            ],
+            [
+              77.06139917314914,
+              28.62103812553499
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591206",
+        "name": "DEMO assumed width | OSM residential 423591206",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591206",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06160442521195,
+              28.620480440069528
+            ],
+            [
+              77.06125265121099,
+              28.620382787813785
+            ],
+            [
+              77.06124037725694,
+              28.620417212185995
+            ],
+            [
+              77.06159177478615,
+              28.62051475993023
+            ],
+            [
+              77.0617934877054,
+              28.6205745543417
+            ],
+            [
+              77.06180651229266,
+              28.620540345397078
+            ],
+            [
+              77.06160442521195,
+              28.620480440069528
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591211",
+        "name": "DEMO assumed width | OSM residential 423591211",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591211",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06145948025382,
+              28.620873043936125
+            ],
+            [
+              77.06106270620431,
+              28.620762079157792
+            ],
+            [
+              77.06047873374803,
+              28.620602959411972
+            ],
+            [
+              77.06046666625019,
+              28.62063744058782
+            ],
+            [
+              77.06105049379387,
+              28.620796520841985
+            ],
+            [
+              77.0614475197444,
+              28.62090755606366
+            ],
+            [
+              77.06179421930332,
+              28.620997710664913
+            ],
+            [
+              77.06180578069497,
+              28.620963094755716
+            ],
+            [
+              77.06145948025382,
+              28.620873043936125
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591219",
+        "name": "DEMO assumed width | OSM residential 423591219",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591219",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06151766744374,
+              28.62071516862954
+            ],
+            [
+              77.06111678481973,
+              28.62060554602853
+            ],
+            [
+              77.06053361615245,
+              28.620450027713268
+            ],
+            [
+              77.06052178384577,
+              28.620484572286536
+            ],
+            [
+              77.06110481517847,
+              28.62064005397125
+            ],
+            [
+              77.06150553958977,
+              28.62074963329896
+            ],
+            [
+              77.06179393259876,
+              28.62082869541696
+            ],
+            [
+              77.06180606739944,
+              28.620794232655157
+            ],
+            [
+              77.06151766744374,
+              28.62071516862954
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591234",
+        "name": "DEMO assumed width | OSM residential 423591234",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591234",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06075925352833,
+              28.621833452894954
+            ],
+            [
+              77.06075035275734,
+              28.621849029239304
+            ],
+            [
+              77.06053100438224,
+              28.622251717915944
+            ],
+            [
+              77.06050857781466,
+              28.62229205256137
+            ],
+            [
+              77.06054529639147,
+              28.622307947435985
+            ],
+            [
+              77.0605677956204,
+              28.6222674820814
+            ],
+            [
+              77.0607870472453,
+              28.621864970758057
+            ],
+            [
+              77.06079574647437,
+              28.621849747102427
+            ],
+            [
+              77.06115293290007,
+              28.621229170493585
+            ],
+            [
+              77.06111646710261,
+              28.621212829503786
+            ],
+            [
+              77.06075925352833,
+              28.621833452894954
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591236",
+        "name": "DEMO assumed width | Shoe Market",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591236",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06177183305242,
+              28.62218716640605
+            ],
+            [
+              77.06176177012081,
+              28.62220527967707
+            ],
+            [
+              77.06171525067725,
+              28.622292302407168
+            ],
+            [
+              77.06175224168432,
+              28.622307697590166
+            ],
+            [
+              77.06179862988179,
+              28.62222092032028
+            ],
+            [
+              77.06180856695022,
+              28.622203033591287
+            ],
+            [
+              77.0618183717035,
+              28.62218533763206
+            ],
+            [
+              77.06178162829916,
+              28.62216948761599
+            ],
+            [
+              77.06177183305242,
+              28.62218716640605
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591249",
+        "name": "DEMO assumed width | OSM residential 423591249",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591249",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.05977744075818,
+              28.621012687041
+            ],
+            [
+              77.0596957751979,
+              28.62122445694459
+            ],
+            [
+              77.0596106446847,
+              28.62146046418425
+            ],
+            [
+              77.0594579292262,
+              28.621829159911
+            ],
+            [
+              77.05938066864056,
+              28.6220267410197
+            ],
+            [
+              77.05941933136143,
+              28.622038511507903
+            ],
+            [
+              77.05949647077587,
+              28.621841240086138
+            ],
+            [
+              77.05964935531729,
+              28.62147213581286
+            ],
+            [
+              77.05973462480402,
+              28.621235743052512
+            ],
+            [
+              77.05981615933061,
+              28.621024312731006
+            ],
+            [
+              77.05987265921894,
+              28.620877812949377
+            ],
+            [
+              77.05983394078302,
+              28.620866187047735
+            ],
+            [
+              77.05977744075818,
+              28.621012687041
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591260",
+        "name": "DEMO assumed width | OSM residential 423591260",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591260",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0613155147083,
+              28.621662798811908
+            ],
+            [
+              77.06115096640778,
+              28.62196598770781
+            ],
+            [
+              77.06114146977866,
+              28.62198338152804
+            ],
+            [
+              77.0609813115951,
+              28.62227790453228
+            ],
+            [
+              77.06097342008884,
+              28.622292015266087
+            ],
+            [
+              77.06101009706119,
+              28.622307984731272
+            ],
+            [
+              77.06101808840752,
+              28.622293695465082
+            ],
+            [
+              77.06117833022395,
+              28.621999018469296
+            ],
+            [
+              77.06118783359483,
+              28.62198161228953
+            ],
+            [
+              77.06135228529433,
+              28.62167860118545
+            ],
+            [
+              77.06154402508307,
+              28.621337008344877
+            ],
+            [
+              77.0615073749196,
+              28.621320991652492
+            ],
+            [
+              77.0613155147083,
+              28.621662798811908
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591265",
+        "name": "DEMO assumed width | OSM residential 423591265",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591265",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06128198490627,
+              28.62201179840952
+            ],
+            [
+              77.06127263889285,
+              28.62202795075375
+            ],
+            [
+              77.06113149834522,
+              28.622292310293417
+            ],
+            [
+              77.06116849779131,
+              28.622307689703902
+            ],
+            [
+              77.06130936110978,
+              28.622043849243603
+            ],
+            [
+              77.06131841324915,
+              28.622028204780502
+            ],
+            [
+              77.06168911685609,
+              28.621386898345634
+            ],
+            [
+              77.06165268314662,
+              28.621370501651754
+            ],
+            [
+              77.06128198490627,
+              28.62201179840952
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591293",
+        "name": "DEMO assumed width | OSM residential 423591293",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591293",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06088553897136,
+              28.621882593842
+            ],
+            [
+              77.06088166169616,
+              28.62189096059051
+            ],
+            [
+              77.06076534817156,
+              28.622110519749665
+            ],
+            [
+              77.06066485272108,
+              28.622292081470974
+            ],
+            [
+              77.06070160337015,
+              28.622307918526378
+            ],
+            [
+              77.06080225183105,
+              28.62212608024767
+            ],
+            [
+              77.06091913830625,
+              28.62190543940676
+            ],
+            [
+              77.06092286103112,
+              28.621897406155284
+            ],
+            [
+              77.06127654911788,
+              28.62126306536466
+            ],
+            [
+              77.06123985088476,
+              28.62124713463269
+            ],
+            [
+              77.06088553897136,
+              28.621882593842
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591297",
+        "name": "DEMO assumed width | OSM residential 423591297",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591297",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06114112541633,
+              28.62169945739362
+            ],
+            [
+              77.06102347518144,
+              28.62192804921675
+            ],
+            [
+              77.06101572692033,
+              28.621943153416606
+            ],
+            [
+              77.06081875662161,
+              28.622291952804066
+            ],
+            [
+              77.06085536339248,
+              28.6223080471933
+            ],
+            [
+              77.06105267308223,
+              28.621958646580726
+            ],
+            [
+              77.06106072482106,
+              28.621942950780532
+            ],
+            [
+              77.06117807458624,
+              28.62171494260371
+            ],
+            [
+              77.06141121869064,
+              28.62130031971456
+            ],
+            [
+              77.06137458131204,
+              28.621284280282797
+            ],
+            [
+              77.06114112541633,
+              28.62169945739362
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/423591327",
+        "name": "DEMO assumed width | OSM residential 423591327",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/423591327",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0610183547864,
+              28.620951378755603
+            ],
+            [
+              77.06107615571321,
+              28.620784575990864
+            ],
+            [
+              77.06113035457871,
+              28.62062807918211
+            ],
+            [
+              77.06117215250147,
+              28.620507685099902
+            ],
+            [
+              77.06120762918539,
+              28.62040527452966
+            ],
+            [
+              77.06116851689148,
+              28.6203947254674
+            ],
+            [
+              77.06113304566665,
+              28.620497120178868
+            ],
+            [
+              77.0610912474793,
+              28.62061751489225
+            ],
+            [
+              77.06103704381712,
+              28.620774025366774
+            ],
+            [
+              77.06097924473625,
+              28.620940822623453
+            ],
+            [
+              77.06090414517756,
+              28.621157421232652
+            ],
+            [
+              77.06094325482422,
+              28.62116797876442
+            ],
+            [
+              77.0610183547864,
+              28.620951378755603
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/1429146381",
+        "name": "DEMO assumed width | OSM residential 1429146381",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/1429146381",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.05980341265935,
+              28.62100142529365
+            ],
+            [
+              77.05966826720477,
+              28.620960041995545
+            ],
+            [
+              77.05952221440081,
+              28.620915874823645
+            ],
+            [
+              77.05940559022991,
+              28.620886629890077
+            ],
+            [
+              77.05939440976842,
+              28.620921343128053
+            ],
+            [
+              77.05950998559734,
+              28.62095032517613
+            ],
+            [
+              77.05965493279322,
+              28.6209941580042
+            ],
+            [
+              77.05979018733869,
+              28.6210355747061
+            ],
+            [
+              77.0600186794607,
+              28.621103402051357
+            ],
+            [
+              77.06003172053734,
+              28.62106919794838
+            ],
+            [
+              77.05980341265935,
+              28.62100142529365
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/1429146383",
+        "name": "DEMO assumed width | OSM residential 1429146383",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/1429146383",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.05940675227657,
+              28.62137828378659
+            ],
+            [
+              77.0593932477214,
+              28.62141234759731
+            ],
+            [
+              77.05948034773432,
+              28.621439231908873
+            ],
+            [
+              77.05949385226364,
+              28.621405168090863
+            ],
+            [
+              77.05940675227657,
+              28.62137828378659
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/1429146384",
+        "name": "DEMO assumed width | OSM residential 1429146384",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/1429146384",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.05946777411114,
+              28.621416301070173
+            ],
+            [
+              77.05950642589085,
+              28.62142809892696
+            ],
+            [
+              77.05968092581575,
+              28.62098299890609
+            ],
+            [
+              77.05964227418625,
+              28.620971201091027
+            ],
+            [
+              77.05946777411114,
+              28.621416301070173
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-road-way/1429146385",
+        "name": "DEMO assumed width | OSM residential 1429146385",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented test width around OSM centreline, not surveyed road land",
+        "source_osm_id": "way/1429146385",
+        "assumed_width_m": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.05940582413287,
+              28.620551783360902
+            ],
+            [
+              77.05939417586539,
+              28.620586376621002
+            ],
+            [
+              77.05989127594255,
+              28.620716696647207
+            ],
+            [
+              77.0599029240557,
+              28.62068210335259
+            ],
+            [
+              77.05940582413287,
+              28.620551783360902
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "DEMO-TEST-CORRIDOR",
+        "name": "DEMO invented widening corridor | test only",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented corridor through DEMO A for testing; not a real development or allegation."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06115171041913,
+              28.621433074968724
+            ],
+            [
+              77.06115223915826,
+              28.62146013680463
+            ],
+            [
+              77.0607024158971,
+              28.621466978641337
+            ],
+            [
+              77.06070188727314,
+              28.62143991679778
+            ],
+            [
+              77.06115171041913,
+              28.621433074968724
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

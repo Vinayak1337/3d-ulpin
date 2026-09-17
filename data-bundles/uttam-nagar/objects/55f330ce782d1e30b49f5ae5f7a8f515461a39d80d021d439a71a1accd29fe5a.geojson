@@ -1,0 +1,45 @@
+{
+  "type": "FeatureCollection",
+  "name": "FICTIONAL building overlap test",
+  "attribution": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0641929605225,
+              28.61975932428576
+            ],
+            [
+              77.06419421597859,
+              28.61982349047645
+            ],
+            [
+              77.06414687322747,
+              28.61982421167004
+            ],
+            [
+              77.06414561780012,
+              28.61976004547744
+            ],
+            [
+              77.0641929605225,
+              28.61975932428576
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-shed-01",
+        "name": "DEMO overlapping shed - fictional conflict",
+        "height_m": 3,
+        "notice": "Deliberately authored synthetic shed intersecting a demo copy of a footprint."
+      }
+    }
+  ]
+}

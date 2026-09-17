@@ -1,0 +1,129 @@
+{
+  "type": "FeatureCollection",
+  "createdAt": "2026-09-16T21:17:27.165979+00:00",
+  "selectionMethod": "Street-enclosed polygon generated from intersecting OpenStreetMap road centrelines; not an official cadastral or administrative block",
+  "licence": "ODbL-1.0; Google Research Open Buildings V3 and OpenStreetMap contributors",
+  "sourceDateNotice": "Google inference May 2023; OSM retrieved in this session; these are not a shared survey epoch",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0626996,
+              28.620111300000005
+            ],
+            [
+              77.0626771,
+              28.6200844
+            ],
+            [
+              77.0618187,
+              28.619898
+            ],
+            [
+              77.0617267,
+              28.620147899999996
+            ],
+            [
+              77.0616873,
+              28.620255099999994
+            ],
+            [
+              77.0616396,
+              28.620384499999993
+            ],
+            [
+              77.0615981,
+              28.6204976
+            ],
+            [
+              77.0615536,
+              28.6206184
+            ],
+            [
+              77.06151160000002,
+              28.620732399999998
+            ],
+            [
+              77.0614535,
+              28.6208903
+            ],
+            [
+              77.0613929,
+              28.6210553
+            ],
+            [
+              77.0613137,
+              28.6212704
+            ],
+            [
+              77.0613929,
+              28.621292299999997
+            ],
+            [
+              77.0615257,
+              28.621328999999996
+            ],
+            [
+              77.0616709,
+              28.621378699999998
+            ],
+            [
+              77.0618031,
+              28.6214055
+            ],
+            [
+              77.0621791,
+              28.6214932
+            ],
+            [
+              77.0623323,
+              28.6215289
+            ],
+            [
+              77.0624765,
+              28.621562499999996
+            ],
+            [
+              77.0625876,
+              28.621588399999997
+            ],
+            [
+              77.0627121,
+              28.621617400000005
+            ],
+            [
+              77.0627123,
+              28.6215698
+            ],
+            [
+              77.0627134,
+              28.62134659999999
+            ],
+            [
+              77.0627171,
+              28.620518999999998
+            ],
+            [
+              77.0627084,
+              28.620391599999994
+            ],
+            [
+              77.0626996,
+              28.620111300000005
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Uttam Nagar selected analysis block",
+        "method": "Street-enclosed polygon generated from intersecting OpenStreetMap road centrelines; not an official cadastral or administrative block",
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "url": "https://nominatim.openstreetmap.org/search?q=Uttam%20Nagar%2C%20Delhi%2C%20India&format=jsonv2&limit=3&addressdetails=1",
+  "method": "GET",
+  "at": "2026-09-16T20:50:04.283Z",
+  "status": 200,
+  "contentType": "application/json; charset=utf-8",
+  "bytes": 657,
+  "sha256": "ddcef764dd167a77e0ef5580ef26bc2c7310ea688e9581f6d96b07a731ad6faf"
+}

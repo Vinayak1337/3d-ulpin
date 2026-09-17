@@ -1,0 +1,1292 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "attribution": "\u00a9 OpenStreetMap contributors",
+    "license": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "source": "https://overpass-api.de/api/interpreter",
+    "osm_timestamp": "2026-09-16T20:48:53Z",
+    "study_bbox": [
+      77.0594,
+      28.6204,
+      77.0618,
+      28.6223
+    ],
+    "selection_note": "Analyst-selected study window near the OSM Uttam Nagar suburb point; not an official administrative block."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "way/423590890",
+      "properties": {
+        "osm_id": "way/423590890",
+        "highway": "residential",
+        "name": "OSM residential 423590890",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423590890",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.060550645677,
+            28.6204
+          ],
+          [
+            77.0605277,
+            28.6204673
+          ],
+          [
+            77.0604727,
+            28.6206202
+          ],
+          [
+            77.0604162,
+            28.6207773
+          ],
+          [
+            77.0603359,
+            28.6210004
+          ],
+          [
+            77.0601068,
+            28.6216233
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423590895",
+      "properties": {
+        "osm_id": "way/423590895",
+        "highway": "residential",
+        "name": "OSM residential 423590895",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423590895",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0613137,
+            28.6212704
+          ],
+          [
+            77.0613929,
+            28.6210553
+          ],
+          [
+            77.0614535,
+            28.6208903
+          ],
+          [
+            77.0615116,
+            28.6207324
+          ],
+          [
+            77.0615536,
+            28.6206184
+          ],
+          [
+            77.0615981,
+            28.6204976
+          ],
+          [
+            77.06163391255527,
+            28.6204
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423590904",
+      "properties": {
+        "osm_id": "way/423590904",
+        "highway": "residential",
+        "name": "OSM residential 423590904",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423590904",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.06000594278122,
+            28.6204
+          ],
+          [
+            77.0599837,
+            28.6204611
+          ],
+          [
+            77.05994,
+            28.6205815
+          ],
+          [
+            77.0598971,
+            28.6206994
+          ],
+          [
+            77.0598359,
+            28.6208676
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423590932",
+      "properties": {
+        "osm_id": "way/423590932",
+        "highway": "residential",
+        "name": "OSM residential 423590932",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423590932",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0599837,
+            28.6204611
+          ],
+          [
+            77.05976176666667,
+            28.6204
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423590966",
+      "properties": {
+        "osm_id": "way/423590966",
+        "highway": "residential",
+        "name": "OSM residential 423590966",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423590966",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.05994,
+            28.6205815
+          ],
+          [
+            77.0594,
+            28.620436130932774
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591052",
+      "properties": {
+        "osm_id": "way/423591052",
+        "highway": "residential",
+        "name": "Arya Samaj Road",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591052",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0602761985551,
+            28.6204
+          ],
+          [
+            77.0600823,
+            28.6209304
+          ],
+          [
+            77.0600252,
+            28.6210863
+          ],
+          [
+            77.0598604,
+            28.6215374
+          ],
+          [
+            77.05958151528927,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591060",
+      "properties": {
+        "osm_id": "way/423591060",
+        "highway": "residential",
+        "name": "School Road",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591060",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0618,
+            28.621404871558248
+          ],
+          [
+            77.0616709,
+            28.6213787
+          ],
+          [
+            77.0615257,
+            28.621329
+          ],
+          [
+            77.0613929,
+            28.6212923
+          ],
+          [
+            77.0613137,
+            28.6212704
+          ],
+          [
+            77.0612582,
+            28.6212551
+          ],
+          [
+            77.0611347,
+            28.621221
+          ],
+          [
+            77.0609969,
+            28.6211829
+          ],
+          [
+            77.0609237,
+            28.6211627
+          ],
+          [
+            77.0608739,
+            28.621149
+          ],
+          [
+            77.0607388,
+            28.6211116
+          ],
+          [
+            77.060592,
+            28.6210711
+          ],
+          [
+            77.0603359,
+            28.6210004
+          ],
+          [
+            77.0600823,
+            28.6209304
+          ],
+          [
+            77.0598533,
+            28.620872
+          ],
+          [
+            77.0598359,
+            28.6208676
+          ],
+          [
+            77.0594,
+            28.620756616542803
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591076",
+      "properties": {
+        "osm_id": "way/423591076",
+        "highway": "residential",
+        "name": "Street Number 63",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591076",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0595161,
+            28.6209331
+          ],
+          [
+            77.0594,
+            28.621249633455225
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591093",
+      "properties": {
+        "osm_id": "way/423591093",
+        "highway": "residential",
+        "name": "Street Number 62",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591093",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0594871,
+            28.6214222
+          ],
+          [
+            77.0594,
+            28.621647626709127
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591128",
+      "properties": {
+        "osm_id": "way/423591128",
+        "highway": "residential",
+        "name": "OSM residential 423591128",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591128",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0616531,
+            28.6219291
+          ],
+          [
+            77.0615564,
+            28.6221116
+          ],
+          [
+            77.06145349968968,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591156",
+      "properties": {
+        "osm_id": "way/423591156",
+        "highway": "residential",
+        "name": "OSM residential 423591156",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591156",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0615251,
+            28.6218905
+          ],
+          [
+            77.0614332,
+            28.6220676
+          ],
+          [
+            77.06130318962656,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591159",
+      "properties": {
+        "osm_id": "way/423591159",
+        "highway": "residential",
+        "name": "OSM residential 423591159",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591159",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0618,
+            28.622198407142857
+          ],
+          [
+            77.0617902,
+            28.6221951
+          ],
+          [
+            77.0615564,
+            28.6221116
+          ],
+          [
+            77.0614332,
+            28.6220676
+          ],
+          [
+            77.0613002,
+            28.62202
+          ],
+          [
+            77.0611694,
+            28.6219738
+          ],
+          [
+            77.0610421,
+            28.6219355
+          ],
+          [
+            77.0609042,
+            28.62189
+          ],
+          [
+            77.0607775,
+            28.6218416
+          ],
+          [
+            77.0606453,
+            28.6217993
+          ],
+          [
+            77.0605118,
+            28.6217498
+          ],
+          [
+            77.0603858,
+            28.6217157
+          ],
+          [
+            77.060249,
+            28.6216698
+          ],
+          [
+            77.0601068,
+            28.6216233
+          ],
+          [
+            77.0598604,
+            28.6215374
+          ],
+          [
+            77.05963,
+            28.6214663
+          ],
+          [
+            77.0594871,
+            28.6214222
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591162",
+      "properties": {
+        "osm_id": "way/423591162",
+        "highway": "residential",
+        "name": "OSM residential 423591162",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591162",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.05953815633076,
+            28.6223
+          ],
+          [
+            77.0594,
+            28.62225824560718
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591166",
+      "properties": {
+        "osm_id": "way/423591166",
+        "highway": "residential",
+        "name": "OSM residential 423591166",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591166",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0609969,
+            28.6211829
+          ],
+          [
+            77.0606453,
+            28.6217993
+          ],
+          [
+            77.0604321,
+            28.622186
+          ],
+          [
+            77.06037348322269,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591173",
+      "properties": {
+        "osm_id": "way/423591173",
+        "highway": "residential",
+        "name": "OSM residential 423591173",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591173",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0608739,
+            28.621149
+          ],
+          [
+            77.0605118,
+            28.6217498
+          ],
+          [
+            77.0602396,
+            28.6222602
+          ],
+          [
+            77.06021782050308,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591175",
+      "properties": {
+        "osm_id": "way/423591175",
+        "highway": "residential",
+        "name": "OSM residential 423591175",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591175",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0607388,
+            28.6211116
+          ],
+          [
+            77.0603858,
+            28.6217157
+          ],
+          [
+            77.06005494033268,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591186",
+      "properties": {
+        "osm_id": "way/423591186",
+        "highway": "residential",
+        "name": "OSM residential 423591186",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591186",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0618,
+            28.620432255897853
+          ],
+          [
+            77.06169166058544,
+            28.6204
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591187",
+      "properties": {
+        "osm_id": "way/423591187",
+        "highway": "residential",
+        "name": "OSM residential 423591187",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591187",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.060592,
+            28.6210711
+          ],
+          [
+            77.060249,
+            28.6216698
+          ],
+          [
+            77.0599835,
+            28.6221377
+          ],
+          [
+            77.05989890372597,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591191",
+      "properties": {
+        "osm_id": "way/423591191",
+        "highway": "residential",
+        "name": "OSM residential 423591191",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591191",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0618,
+            28.620688865986256
+          ],
+          [
+            77.0615536,
+            28.6206184
+          ],
+          [
+            77.0611526,
+            28.6205024
+          ],
+          [
+            77.06077397324033,
+            28.6204
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591192",
+      "properties": {
+        "osm_id": "way/423591192",
+        "highway": "residential",
+        "name": "OSM residential 423591192",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591192",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0618,
+            28.621174054692883
+          ],
+          [
+            77.0613929,
+            28.6210553
+          ],
+          [
+            77.0609988,
+            28.6209461
+          ],
+          [
+            77.0604162,
+            28.6207773
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591206",
+      "properties": {
+        "osm_id": "way/423591206",
+        "highway": "residential",
+        "name": "OSM residential 423591206",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591206",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0618,
+            28.620557449869512
+          ],
+          [
+            77.0615981,
+            28.6204976
+          ],
+          [
+            77.06124651423488,
+            28.6204
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591211",
+      "properties": {
+        "osm_id": "way/423591211",
+        "highway": "residential",
+        "name": "OSM residential 423591211",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591211",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0618,
+            28.620980402710416
+          ],
+          [
+            77.0614535,
+            28.6208903
+          ],
+          [
+            77.0610566,
+            28.6207793
+          ],
+          [
+            77.0604727,
+            28.6206202
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591219",
+      "properties": {
+        "osm_id": "way/423591219",
+        "highway": "residential",
+        "name": "OSM residential 423591219",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591219",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0618,
+            28.62081146403617
+          ],
+          [
+            77.0615116,
+            28.6207324
+          ],
+          [
+            77.0611108,
+            28.6206228
+          ],
+          [
+            77.0605277,
+            28.6204673
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591234",
+      "properties": {
+        "osm_id": "way/423591234",
+        "highway": "residential",
+        "name": "OSM residential 423591234",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591234",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0611347,
+            28.621221
+          ],
+          [
+            77.0607775,
+            28.6218416
+          ],
+          [
+            77.0607687,
+            28.621857
+          ],
+          [
+            77.0605494,
+            28.6222596
+          ],
+          [
+            77.06052693710174,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591236",
+      "properties": {
+        "osm_id": "way/423591236",
+        "highway": "residential",
+        "name": "Shoe Market",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591236",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0618,
+            28.62217741262535
+          ],
+          [
+            77.0617902,
+            28.6221951
+          ],
+          [
+            77.0617802,
+            28.6222131
+          ],
+          [
+            77.0617337461795,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591249",
+      "properties": {
+        "osm_id": "way/423591249",
+        "highway": "residential",
+        "name": "OSM residential 423591249",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591249",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0598533,
+            28.620872
+          ],
+          [
+            77.0597968,
+            28.6210185
+          ],
+          [
+            77.0597152,
+            28.6212301
+          ],
+          [
+            77.05963,
+            28.6214663
+          ],
+          [
+            77.0594772,
+            28.6218352
+          ],
+          [
+            77.0594,
+            28.622032626265234
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591260",
+      "properties": {
+        "osm_id": "way/423591260",
+        "highway": "residential",
+        "name": "OSM residential 423591260",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591260",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0615257,
+            28.621329
+          ],
+          [
+            77.0613339,
+            28.6216707
+          ],
+          [
+            77.0611694,
+            28.6219738
+          ],
+          [
+            77.0611599,
+            28.6219912
+          ],
+          [
+            77.0609997,
+            28.6222858
+          ],
+          [
+            77.06099175857368,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591265",
+      "properties": {
+        "osm_id": "way/423591265",
+        "highway": "residential",
+        "name": "OSM residential 423591265",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591265",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0616709,
+            28.6213787
+          ],
+          [
+            77.0613002,
+            28.62202
+          ],
+          [
+            77.061291,
+            28.6220359
+          ],
+          [
+            77.06114999806698,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591293",
+      "properties": {
+        "osm_id": "way/423591293",
+        "highway": "residential",
+        "name": "OSM residential 423591293",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591293",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0612582,
+            28.6212551
+          ],
+          [
+            77.0609042,
+            28.62189
+          ],
+          [
+            77.0609004,
+            28.6218982
+          ],
+          [
+            77.0607838,
+            28.6221183
+          ],
+          [
+            77.06068322804428,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591297",
+      "properties": {
+        "osm_id": "way/423591297",
+        "highway": "residential",
+        "name": "OSM residential 423591297",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591297",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0613929,
+            28.6212923
+          ],
+          [
+            77.0611596,
+            28.6217072
+          ],
+          [
+            77.0610421,
+            28.6219355
+          ],
+          [
+            77.0610342,
+            28.6219509
+          ],
+          [
+            77.06083706000571,
+            28.6223
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/423591327",
+      "properties": {
+        "osm_id": "way/423591327",
+        "highway": "residential",
+        "name": "OSM residential 423591327",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/423591327",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0609237,
+            28.6211627
+          ],
+          [
+            77.0609988,
+            28.6209461
+          ],
+          [
+            77.0610566,
+            28.6207793
+          ],
+          [
+            77.0611108,
+            28.6206228
+          ],
+          [
+            77.0611526,
+            28.6205024
+          ],
+          [
+            77.06118807303754,
+            28.6204
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1429146381",
+      "properties": {
+        "osm_id": "way/1429146381",
+        "highway": "residential",
+        "name": "OSM residential 1429146381",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1429146381",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0600252,
+            28.6210863
+          ],
+          [
+            77.0597968,
+            28.6210185
+          ],
+          [
+            77.0596616,
+            28.6209771
+          ],
+          [
+            77.0595161,
+            28.6209331
+          ],
+          [
+            77.0594,
+            28.62090398650915
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1429146383",
+      "properties": {
+        "osm_id": "way/1429146383",
+        "highway": "residential",
+        "name": "OSM residential 1429146383",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1429146383",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0594871,
+            28.6214222
+          ],
+          [
+            77.0594,
+            28.62139531569208
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1429146384",
+      "properties": {
+        "osm_id": "way/1429146384",
+        "highway": "residential",
+        "name": "OSM residential 1429146384",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1429146384",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0596616,
+            28.6209771
+          ],
+          [
+            77.0594871,
+            28.6214222
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way/1429146385",
+      "properties": {
+        "osm_id": "way/1429146385",
+        "highway": "residential",
+        "name": "OSM residential 1429146385",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_url": "https://www.openstreetmap.org/way/1429146385",
+        "provenance": "OpenStreetMap road centreline clipped to study extent; surveyed road width/ownership unknown"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0598971,
+            28.6206994
+          ],
+          [
+            77.0594,
+            28.620569079991046
+          ]
+        ]
+      }
+    }
+  ]
+}

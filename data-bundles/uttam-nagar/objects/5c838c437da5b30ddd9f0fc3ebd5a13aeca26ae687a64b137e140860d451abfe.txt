@@ -1,0 +1,12 @@
+FICTIONAL ROOM AND OCCUPANT REGISTER
+Explicitly authored fictional Uttam Nagar scenario. No real resident, surveyed interior, approval, land title or public road reservation is asserted. Public source outlines are retained separately.
+Synthetic building UN-C; assumed 2 floors at 3 metres each.
+Google reference: gob-v3-391-3714750
+No genuine street address, owner identity, resident identity or registration number is supplied.
+All entries below are invented shared-use demo allocations, not ownership determinations.
+1. UN-C-0-R1 | DEMO Resident C01 (fictional occupant) | demo residential use | floor 0
+2. UN-C-0-R2 | DEMO Resident C02 (fictional occupant) | demo residential use | floor 0
+3. UN-C-0-COMMON | DEMO residents of UN-C floor 0 (fictional shared access) | common access | floor 0
+4. UN-C-1-R1 | DEMO Resident C11 (fictional occupant) | demo residential use | floor 1
+5. UN-C-1-R2 | DEMO Resident C12 (fictional occupant) | demo residential use | floor 1
+6. UN-C-1-COMMON | DEMO residents of UN-C floor 1 (fictional shared access) | common access | floor 1
