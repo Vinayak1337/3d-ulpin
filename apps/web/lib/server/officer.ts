@@ -423,6 +423,15 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
       ...building.evidence.map((e) => e.sourceRevisionId),
       ...packages.flatMap((p) => p.sourceRevisionIds),
       ...records.flatMap((r) => r.evidence.map((e) => e.sourceId)),
+      // A recorded party/use claim can cite a separately retained site source.
+      // Include that exact original, rather than making it disappear from the
+      // property evidence panel merely because geometry uses another source.
+      ...records.flatMap((r) => r.rights.map((right) => right.evidence.sourceId)),
+      ...records.flatMap((r) =>
+        Object.values(r.geometry?.bindings ?? {}).flatMap((binding) =>
+          binding?.sourceId ? [binding.sourceId] : [],
+        ),
+      ),
     ]),
   ];
   const sources = await dossierSources(sourceIds, [

@@ -1,0 +1,1201 @@
+{
+  "notice": "SYNTHETIC TEST FIXTURE. Map-derived outline only. Heights, floors, rooms, people, parcels and test conflicts are invented. No real household, cadastral or official ULPIN claim.",
+  "buildings": [
+    {
+      "key": "A",
+      "source_osm_id": "way/1521273986",
+      "demo_source_id": "demo-way/1521273986",
+      "floors": 3,
+      "outline": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              701485.9540900576,
+              3167791.661863836
+            ],
+            [
+              701492.6421028521,
+              3167778.7625169638
+            ],
+            [
+              701483.6887479406,
+              3167774.40668973
+            ],
+            [
+              701477.0128144319,
+              3167787.1732206484
+            ],
+            [
+              701485.9540900576,
+              3167791.661863836
+            ]
+          ]
+        ]
+      },
+      "rooms": [
+        {
+          "suffix": "C",
+          "label": "DEMO common corridor",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701492.3701107227,
+                  3167778.852604811
+                ],
+                [
+                  701491.2007313324,
+                  3167778.2836991167
+                ],
+                [
+                  701484.7054819064,
+                  3167790.8112581903
+                ],
+                [
+                  701485.8673990336,
+                  3167791.394556549
+                ],
+                [
+                  701492.3701107227,
+                  3167778.852604811
+                ]
+              ]
+            ]
+          },
+          "area_m2": 18.35519168206182,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701477.6659814734,
+                  3167778.2274815952
+                ],
+                [
+                  701477.6991755833,
+                  3167779.527481595
+                ],
+                [
+                  701491.8104477248,
+                  3167779.527481595
+                ],
+                [
+                  701491.7934657756,
+                  3167778.2274815952
+                ],
+                [
+                  701477.6659814734,
+                  3167778.2274815952
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "suffix": "R1",
+          "label": "DEMO room 1",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701483.7759522675,
+                  3167774.6715274584
+                ],
+                [
+                  701481.7152270293,
+                  3167778.612296556
+                ],
+                [
+                  701488.9502773955,
+                  3167782.363502714
+                ],
+                [
+                  701491.0818605446,
+                  3167778.2522620102
+                ],
+                [
+                  701490.2563994708,
+                  3167777.824279549
+                ],
+                [
+                  701483.7759522675,
+                  3167774.6715274584
+                ]
+              ]
+            ]
+          },
+          "area_m2": 37.04094632124651,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701477.9099360378,
+                  3167787.781614395
+                ],
+                [
+                  701482.3569583512,
+                  3167787.797174929
+                ],
+                [
+                  701482.3569583512,
+                  3167779.647481595
+                ],
+                [
+                  701477.7259814735,
+                  3167779.647481595
+                ],
+                [
+                  701477.7259814735,
+                  3167780.5772960773
+                ],
+                [
+                  701477.9099360378,
+                  3167787.781614395
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "suffix": "R2",
+          "label": "DEMO room 2",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701479.5136509473,
+                  3167782.8224177435
+                ],
+                [
+                  701486.7634596853,
+                  3167786.581275775
+                ],
+                [
+                  701488.8950428339,
+                  3167782.4700350715
+                ],
+                [
+                  701481.6596197011,
+                  3167778.718635643
+                ],
+                [
+                  701479.5136509473,
+                  3167782.8224177435
+                ]
+              ]
+            ]
+          },
+          "area_m2": 37.78050655739535,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701487.1079352292,
+                  3167787.8137990288
+                ],
+                [
+                  701487.1079352292,
+                  3167779.647481595
+                ],
+                [
+                  701482.4769583513,
+                  3167779.647481595
+                ],
+                [
+                  701482.4769583513,
+                  3167787.79759482
+                ],
+                [
+                  701487.1079352292,
+                  3167787.8137990288
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "suffix": "R3",
+          "label": "DEMO room 3",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701477.3120748666,
+                  3167787.032538931
+                ],
+                [
+                  701481.3895141687,
+                  3167789.146596836
+                ],
+                [
+                  701484.5982280173,
+                  3167790.757415265
+                ],
+                [
+                  701486.7082251231,
+                  3167786.6878081327
+                ],
+                [
+                  701479.4580436195,
+                  3167782.9287568303
+                ],
+                [
+                  701477.3120748666,
+                  3167787.032538931
+                ]
+              ]
+            ]
+          },
+          "area_m2": 37.77331166708312,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701491.8589121071,
+                  3167787.830423128
+                ],
+                [
+                  701491.8589121071,
+                  3167783.237520768
+                ],
+                [
+                  701491.8120152893,
+                  3167779.647481595
+                ],
+                [
+                  701487.2279352293,
+                  3167779.647481595
+                ],
+                [
+                  701487.2279352293,
+                  3167787.8142189193
+                ],
+                [
+                  701491.8589121071,
+                  3167787.830423128
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "notice": "SYNTHETIC TEST FIXTURE. Map-derived outline only. Heights, floors, rooms, people, parcels and test conflicts are invented. No real household, cadastral or official ULPIN claim."
+    },
+    {
+      "key": "B",
+      "source_osm_id": "way/1521263869",
+      "demo_source_id": "demo-way/1521263869",
+      "floors": 3,
+      "outline": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              701487.8927447717,
+              3167794.3891128283
+            ],
+            [
+              701496.5413790406,
+              3167798.263005551
+            ],
+            [
+              701500.4665081863,
+              3167789.595122396
+            ],
+            [
+              701491.8178683242,
+              3167785.7212271104
+            ],
+            [
+              701487.8927447717,
+              3167794.3891128283
+            ]
+          ]
+        ]
+      },
+      "rooms": [
+        {
+          "suffix": "C",
+          "label": "DEMO common corridor",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701489.3442051318,
+                  3167794.8201036532
+                ],
+                [
+                  701493.1043227739,
+                  3167786.516601975
+                ],
+                [
+                  701491.9178930246,
+                  3167785.9851768394
+                ],
+                [
+                  701488.1577753797,
+                  3167794.288678524
+                ],
+                [
+                  701489.3442051318,
+                  3167794.8201036532
+                ]
+              ]
+            ]
+          },
+          "area_m2": 11.849742445935277,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701489.6087978312,
+                  3167788.753855272
+                ],
+                [
+                  701498.7239843241,
+                  3167788.753855272
+                ],
+                [
+                  701498.7186716599,
+                  3167787.4538552724
+                ],
+                [
+                  701489.6034851599,
+                  3167787.4538552724
+                ],
+                [
+                  701489.6087978312,
+                  3167788.753855272
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "suffix": "R1",
+          "label": "DEMO room 1",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701497.6597772785,
+                  3167795.308406408
+                ],
+                [
+                  701490.685050149,
+                  3167792.1500046225
+                ],
+                [
+                  701489.4760785713,
+                  3167794.819787455
+                ],
+                [
+                  701496.4508039746,
+                  3167797.9781884584
+                ],
+                [
+                  701497.6597772785,
+                  3167795.308406408
+                ]
+              ]
+            ]
+          },
+          "area_m2": 22.439421962293494,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701492.5942448988,
+                  3167796.5303766998
+                ],
+                [
+                  701492.5942448988,
+                  3167788.8738552723
+                ],
+                [
+                  701489.66348516,
+                  3167788.8738552723
+                ],
+                [
+                  701489.66348516,
+                  3167796.530374805
+                ],
+                [
+                  701492.5942448988,
+                  3167796.5303766998
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "suffix": "R2",
+          "label": "DEMO room 2",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701498.9182520118,
+                  3167792.529310093
+                ],
+                [
+                  701491.9435230857,
+                  3167789.370907494
+                ],
+                [
+                  701490.734551508,
+                  3167792.0406903257
+                ],
+                [
+                  701497.7092787083,
+                  3167795.199092143
+                ],
+                [
+                  701498.9182520118,
+                  3167792.529310093
+                ]
+              ]
+            ]
+          },
+          "area_m2": 22.439427740669657,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701495.6450046377,
+                  3167796.5303786723
+                ],
+                [
+                  701495.6450046377,
+                  3167788.8738552723
+                ],
+                [
+                  701492.7142448989,
+                  3167788.8738552723
+                ],
+                [
+                  701492.7142448989,
+                  3167796.5303767775
+                ],
+                [
+                  701495.6450046377,
+                  3167796.5303786723
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "suffix": "R3",
+          "label": "DEMO room 3",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701500.1767267459,
+                  3167789.7502137776
+                ],
+                [
+                  701493.2019960224,
+                  3167786.5918103647
+                ],
+                [
+                  701491.9930244447,
+                  3167789.2615931965
+                ],
+                [
+                  701498.9677534415,
+                  3167792.4199958276
+                ],
+                [
+                  701500.1767267459,
+                  3167789.7502137776
+                ]
+              ]
+            ]
+          },
+          "area_m2": 22.439433521873546,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701498.6957643765,
+                  3167796.530380645
+                ],
+                [
+                  701498.6957643765,
+                  3167788.8738552723
+                ],
+                [
+                  701495.7650046378,
+                  3167788.8738552723
+                ],
+                [
+                  701495.7650046378,
+                  3167796.5303787496
+                ],
+                [
+                  701498.6957643765,
+                  3167796.530380645
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "notice": "SYNTHETIC TEST FIXTURE. Map-derived outline only. Heights, floors, rooms, people, parcels and test conflicts are invented. No real household, cadastral or official ULPIN claim."
+    },
+    {
+      "key": "C",
+      "source_osm_id": "way/1521276830",
+      "demo_source_id": "demo-way/1521276830",
+      "floors": 3,
+      "outline": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              701435.7452811769,
+              3167777.4603529894
+            ],
+            [
+              701445.0133243059,
+              3167782.2871660576
+            ],
+            [
+              701448.835931121,
+              3167775.025387552
+            ],
+            [
+              701439.5581045877,
+              3167770.198403217
+            ],
+            [
+              701435.7452811769,
+              3167777.4603529894
+            ]
+          ]
+        ]
+      },
+      "rooms": [
+        {
+          "suffix": "C",
+          "label": "DEMO common corridor",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701444.9290994636,
+                  3167782.0178035446
+                ],
+                [
+                  701445.5346523501,
+                  3167780.8674391084
+                ],
+                [
+                  701436.619964963,
+                  3167776.224654328
+                ],
+                [
+                  701436.0156402979,
+                  3167777.3756584246
+                ],
+                [
+                  701444.9290994636,
+                  3167782.0178035446
+                ]
+              ]
+            ]
+          },
+          "area_m2": 13.065690932038189,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701437.279453756,
+                  3167772.339872531
+                ],
+                [
+                  701437.2737410008,
+                  3167773.639872531
+                ],
+                [
+                  701447.3249648927,
+                  3167773.639872531
+                ],
+                [
+                  701447.3292928402,
+                  3167772.339872531
+                ],
+                [
+                  701437.279453756,
+                  3167772.339872531
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "suffix": "R1",
+          "label": "DEMO room 1",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701445.6366271883,
+                  3167773.586331468
+                ],
+                [
+                  701442.6873610044,
+                  3167779.2492659558
+                ],
+                [
+                  701445.5622247315,
+                  3167780.7465000125
+                ],
+                [
+                  701448.5121161251,
+                  3167775.082365049
+                ],
+                [
+                  701445.6366271883,
+                  3167773.586331468
+                ]
+              ]
+            ]
+          },
+          "area_m2": 20.698100364652777,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701440.5465306912,
+                  3167780.1447764486
+                ],
+                [
+                  701440.5465306912,
+                  3167773.759872531
+                ],
+                [
+                  701437.3051496169,
+                  3167773.759872531
+                ],
+                [
+                  701437.3051496169,
+                  3167780.1461299728
+                ],
+                [
+                  701440.5465306912,
+                  3167780.1447764486
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "suffix": "R2",
+          "label": "DEMO room 2",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701442.6546840381,
+                  3167772.034912844
+                ],
+                [
+                  701439.7060662098,
+                  3167777.6966024134
+                ],
+                [
+                  701442.5809299371,
+                  3167779.19383647
+                ],
+                [
+                  701445.5301729748,
+                  3167773.530946425
+                ],
+                [
+                  701442.6546840381,
+                  3167772.034912844
+                ]
+              ]
+            ]
+          },
+          "area_m2": 20.693550653551874,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701443.9079117657,
+                  3167780.143372815
+                ],
+                [
+                  701443.9079117657,
+                  3167773.759872531
+                ],
+                [
+                  701440.6665306913,
+                  3167773.759872531
+                ],
+                [
+                  701440.6665306913,
+                  3167780.1447263393
+                ],
+                [
+                  701443.9079117657,
+                  3167780.143372815
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "suffix": "R3",
+          "label": "DEMO room 3",
+          "absolutePolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701439.6727408881,
+                  3167770.48349422
+                ],
+                [
+                  701436.7247714153,
+                  3167776.143938871
+                ],
+                [
+                  701439.5996351424,
+                  3167777.641172928
+                ],
+                [
+                  701442.5482298248,
+                  3167771.9795278013
+                ],
+                [
+                  701439.6727408881,
+                  3167770.48349422
+                ]
+              ]
+            ]
+          },
+          "area_m2": 20.689000943496282,
+          "previewPolygon": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701447.2692928402,
+                  3167780.141969182
+                ],
+                [
+                  701447.2692928402,
+                  3167773.759872531
+                ],
+                [
+                  701444.0279117659,
+                  3167773.759872531
+                ],
+                [
+                  701444.0279117659,
+                  3167780.143322706
+                ],
+                [
+                  701447.2692928402,
+                  3167780.141969182
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "notice": "SYNTHETIC TEST FIXTURE. Map-derived outline only. Heights, floors, rooms, people, parcels and test conflicts are invented. No real household, cadastral or official ULPIN claim."
+    }
+  ],
+  "residents": [
+    {
+      "alias": "UN-A-0-C",
+      "building": "A",
+      "floor": 0,
+      "room": "C",
+      "party": "DEMO common-use group A1 (fictional)",
+      "common": true,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-A-0-R1",
+      "building": "A",
+      "floor": 0,
+      "room": "R1",
+      "party": "DEMO Resident A1R1 (fictional)",
+      "common": false,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-A-0-R2",
+      "building": "A",
+      "floor": 0,
+      "room": "R2",
+      "party": "DEMO Resident A1R2 (fictional)",
+      "common": false,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-A-0-R3",
+      "building": "A",
+      "floor": 0,
+      "room": "R3",
+      "party": "DEMO Resident A1R3 (fictional)",
+      "common": false,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-A-1-C",
+      "building": "A",
+      "floor": 1,
+      "room": "C",
+      "party": "DEMO common-use group A2 (fictional)",
+      "common": true,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-A-1-R1",
+      "building": "A",
+      "floor": 1,
+      "room": "R1",
+      "party": "DEMO Resident A2R1 (fictional)",
+      "common": false,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-A-1-R2",
+      "building": "A",
+      "floor": 1,
+      "room": "R2",
+      "party": "DEMO Resident A2R2 (fictional)",
+      "common": false,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-A-1-R3",
+      "building": "A",
+      "floor": 1,
+      "room": "R3",
+      "party": "DEMO Resident A2R3 (fictional)",
+      "common": false,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-A-2-C",
+      "building": "A",
+      "floor": 2,
+      "room": "C",
+      "party": "DEMO common-use group A3 (fictional)",
+      "common": true,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-A-2-R1",
+      "building": "A",
+      "floor": 2,
+      "room": "R1",
+      "party": "DEMO Resident A3R1 (fictional)",
+      "common": false,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-A-2-R2",
+      "building": "A",
+      "floor": 2,
+      "room": "R2",
+      "party": "DEMO Resident A3R2 (fictional)",
+      "common": false,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-A-2-R3",
+      "building": "A",
+      "floor": 2,
+      "room": "R3",
+      "party": "DEMO Resident A3R3 (fictional)",
+      "common": false,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-B-0-C",
+      "building": "B",
+      "floor": 0,
+      "room": "C",
+      "party": "DEMO common-use group B1 (fictional)",
+      "common": true,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-B-0-R1",
+      "building": "B",
+      "floor": 0,
+      "room": "R1",
+      "party": "DEMO Resident B1R1 (fictional)",
+      "common": false,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-B-0-R2",
+      "building": "B",
+      "floor": 0,
+      "room": "R2",
+      "party": "DEMO Resident B1R2 (fictional)",
+      "common": false,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-B-0-R3",
+      "building": "B",
+      "floor": 0,
+      "room": "R3",
+      "party": "DEMO Resident B1R3 (fictional)",
+      "common": false,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-B-1-C",
+      "building": "B",
+      "floor": 1,
+      "room": "C",
+      "party": "DEMO common-use group B2 (fictional)",
+      "common": true,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-B-1-R1",
+      "building": "B",
+      "floor": 1,
+      "room": "R1",
+      "party": "DEMO Resident B2R1 (fictional)",
+      "common": false,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-B-1-R2",
+      "building": "B",
+      "floor": 1,
+      "room": "R2",
+      "party": "DEMO Resident B2R2 (fictional)",
+      "common": false,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-B-1-R3",
+      "building": "B",
+      "floor": 1,
+      "room": "R3",
+      "party": "DEMO Resident B2R3 (fictional)",
+      "common": false,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-B-2-C",
+      "building": "B",
+      "floor": 2,
+      "room": "C",
+      "party": "DEMO common-use group B3 (fictional)",
+      "common": true,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-B-2-R1",
+      "building": "B",
+      "floor": 2,
+      "room": "R1",
+      "party": "DEMO Resident B3R1 (fictional)",
+      "common": false,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-B-2-R2",
+      "building": "B",
+      "floor": 2,
+      "room": "R2",
+      "party": "DEMO Resident B3R2 (fictional)",
+      "common": false,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-B-2-R3",
+      "building": "B",
+      "floor": 2,
+      "room": "R3",
+      "party": "DEMO Resident B3R3 (fictional)",
+      "common": false,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-C-0-C",
+      "building": "C",
+      "floor": 0,
+      "room": "C",
+      "party": "DEMO common-use group C1 (fictional)",
+      "common": true,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-C-0-R1",
+      "building": "C",
+      "floor": 0,
+      "room": "R1",
+      "party": "DEMO Resident C1R1 (fictional)",
+      "common": false,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-C-0-R2",
+      "building": "C",
+      "floor": 0,
+      "room": "R2",
+      "party": "DEMO Resident C1R2 (fictional)",
+      "common": false,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-C-0-R3",
+      "building": "C",
+      "floor": 0,
+      "room": "R3",
+      "party": "DEMO Resident C1R3 (fictional)",
+      "common": false,
+      "lower": 0.0,
+      "upper": 3.2
+    },
+    {
+      "alias": "UN-C-1-C",
+      "building": "C",
+      "floor": 1,
+      "room": "C",
+      "party": "DEMO common-use group C2 (fictional)",
+      "common": true,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-C-1-R1",
+      "building": "C",
+      "floor": 1,
+      "room": "R1",
+      "party": "DEMO Resident C2R1 (fictional)",
+      "common": false,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-C-1-R2",
+      "building": "C",
+      "floor": 1,
+      "room": "R2",
+      "party": "DEMO Resident C2R2 (fictional)",
+      "common": false,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-C-1-R3",
+      "building": "C",
+      "floor": 1,
+      "room": "R3",
+      "party": "DEMO Resident C2R3 (fictional)",
+      "common": false,
+      "lower": 3.2,
+      "upper": 6.4
+    },
+    {
+      "alias": "UN-C-2-C",
+      "building": "C",
+      "floor": 2,
+      "room": "C",
+      "party": "DEMO common-use group C3 (fictional)",
+      "common": true,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-C-2-R1",
+      "building": "C",
+      "floor": 2,
+      "room": "R1",
+      "party": "DEMO Resident C3R1 (fictional)",
+      "common": false,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-C-2-R2",
+      "building": "C",
+      "floor": 2,
+      "room": "R2",
+      "party": "DEMO Resident C3R2 (fictional)",
+      "common": false,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    },
+    {
+      "alias": "UN-C-2-R3",
+      "building": "C",
+      "floor": 2,
+      "room": "R3",
+      "party": "DEMO Resident C3R3 (fictional)",
+      "common": false,
+      "lower": 6.4,
+      "upper": 9.600000000000001
+    }
+  ],
+  "expected_corridor_intersection_A_m2": 33.75004399556201,
+  "expected_kiosk_intersection_A_m2": 16.0
+}

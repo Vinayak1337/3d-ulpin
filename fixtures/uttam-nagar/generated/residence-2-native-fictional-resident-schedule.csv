@@ -1,0 +1,10 @@
+alias,lower,upper,unit,benchmark,method,fictional_party,notice
+UN2-0-A,0,3,m,DEMO-UN-GROUND-0-NOT-SURVEYED,authored_synthetic_demo,Fictional: Isha Anand,Fictional person and occupancy; no official rights asserted
+UN2-0-B,0,3,m,DEMO-UN-GROUND-0-NOT-SURVEYED,authored_synthetic_demo,Fictional: Dev Kapoor,Fictional person and occupancy; no official rights asserted
+UN2-0-C,0,3,m,DEMO-UN-GROUND-0-NOT-SURVEYED,authored_synthetic_demo,Fictional shared household 2,Fictional person and occupancy; no official rights asserted
+UN2-1-A,3,6,m,DEMO-UN-GROUND-0-NOT-SURVEYED,authored_synthetic_demo,Fictional: Tara Bansal,Fictional person and occupancy; no official rights asserted
+UN2-1-B,3,6,m,DEMO-UN-GROUND-0-NOT-SURVEYED,authored_synthetic_demo,Fictional: Nikhil Sethi,Fictional person and occupancy; no official rights asserted
+UN2-1-C,3,6,m,DEMO-UN-GROUND-0-NOT-SURVEYED,authored_synthetic_demo,Fictional shared household 2,Fictional person and occupancy; no official rights asserted
+UN2-2-A,6,9,m,DEMO-UN-GROUND-0-NOT-SURVEYED,authored_synthetic_demo,Fictional: Pooja Arora,Fictional person and occupancy; no official rights asserted
+UN2-2-B,6,9,m,DEMO-UN-GROUND-0-NOT-SURVEYED,authored_synthetic_demo,Fictional: Varun Khanna,Fictional person and occupancy; no official rights asserted
+UN2-2-C,6,9,m,DEMO-UN-GROUND-0-NOT-SURVEYED,authored_synthetic_demo,Fictional shared household 2,Fictional person and occupancy; no official rights asserted

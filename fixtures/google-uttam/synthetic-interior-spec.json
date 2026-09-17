@@ -1,0 +1,326 @@
+{
+  "notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted.",
+  "details": [
+    {
+      "key": "A",
+      "source_id": "DEMO-gob-v3-391-60091042",
+      "reference_source_id": "gob-v3-391-60091042",
+      "floors": 3,
+      "floor_height_m": 3.0,
+      "benchmark": "DEMO-UTTAM-NAGAR",
+      "rooms": [
+        {
+          "alias": "R1",
+          "name": "Demo apartment 1",
+          "area_m2": 105.87531411282365,
+          "utm_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701624.4719673663,
+                  3167732.568967812
+                ],
+                [
+                  701626.5886510044,
+                  3167726.378583096
+                ],
+                [
+                  701641.9015098495,
+                  3167731.6145222588
+                ],
+                [
+                  701639.7848262114,
+                  3167737.804906975
+                ],
+                [
+                  701624.4719673663,
+                  3167732.568967812
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "alias": "R2",
+          "name": "Demo apartment 2",
+          "area_m2": 105.87531411282365,
+          "utm_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701608.9698656191,
+                  3167727.2683206587
+                ],
+                [
+                  701611.0865492572,
+                  3167721.0779359424
+                ],
+                [
+                  701626.3994081023,
+                  3167726.313875105
+                ],
+                [
+                  701624.2827244642,
+                  3167732.5042598215
+                ],
+                [
+                  701608.9698656191,
+                  3167727.2683206587
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "alias": "COMMON",
+          "name": "Demo shared access",
+          "area_m2": 39.07988338376404,
+          "utm_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701611.1189032524,
+                  3167720.9833144913
+                ],
+                [
+                  701611.5071511945,
+                  3167719.8478570785
+                ],
+                [
+                  701642.3221117868,
+                  3167730.384443395
+                ],
+                [
+                  701641.9338638447,
+                  3167731.5199008076
+                ],
+                [
+                  701611.1189032524,
+                  3167720.9833144913
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "layout_method": "Authored inset rectangle, two demo apartments plus common corridor per floor; not extracted from real building plans"
+    },
+    {
+      "key": "B",
+      "source_id": "DEMO-gob-v3-391-34156430",
+      "reference_source_id": "gob-v3-391-34156430",
+      "floors": 4,
+      "floor_height_m": 3.0,
+      "benchmark": "DEMO-UTTAM-NAGAR",
+      "rooms": [
+        {
+          "alias": "R1",
+          "name": "Demo apartment 1",
+          "area_m2": 103.64788719058674,
+          "utm_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701628.0320950453,
+                  3167676.328591798
+                ],
+                [
+                  701620.7290273043,
+                  3167673.808589586
+                ],
+                [
+                  701625.1052020187,
+                  3167661.126259295
+                ],
+                [
+                  701632.4082697597,
+                  3167663.6462615067
+                ],
+                [
+                  701628.0320950453,
+                  3167676.328591798
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "alias": "R2",
+          "name": "Demo apartment 2",
+          "area_m2": 103.64788719107875,
+          "utm_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701623.5906827934,
+                  3167689.199983095
+                ],
+                [
+                  701616.2876150524,
+                  3167686.6799808824
+                ],
+                [
+                  701620.6637897673,
+                  3167673.9976505917
+                ],
+                [
+                  701627.9668575083,
+                  3167676.5176528036
+                ],
+                [
+                  701623.5906827934,
+                  3167689.199983095
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "alias": "COMMON",
+          "name": "Demo shared access",
+          "area_m2": 32.43869971034806,
+          "utm_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701616.1930845496,
+                  3167686.647362114
+                ],
+                [
+                  701615.058718517,
+                  3167686.2559368922
+                ],
+                [
+                  701623.8763054833,
+                  3167660.7022153046
+                ],
+                [
+                  701625.010671516,
+                  3167661.0936405263
+                ],
+                [
+                  701616.1930845496,
+                  3167686.647362114
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "layout_method": "Authored inset rectangle, two demo apartments plus common corridor per floor; not extracted from real building plans"
+    },
+    {
+      "key": "C",
+      "source_id": "DEMO-gob-v3-391-3714750",
+      "reference_source_id": "gob-v3-391-3714750",
+      "floors": 2,
+      "floor_height_m": 3.0,
+      "benchmark": "DEMO-UTTAM-NAGAR",
+      "rooms": [
+        {
+          "alias": "R1",
+          "name": "Demo apartment 1",
+          "area_m2": 101.50135398978622,
+          "utm_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701664.0176834702,
+                  3167688.22416027
+                ],
+                [
+                  701652.2148637492,
+                  3167688.0458238744
+                ],
+                [
+                  701652.3447733158,
+                  3167679.4480320937
+                ],
+                [
+                  701664.1475930368,
+                  3167679.626368489
+                ],
+                [
+                  701664.0176834702,
+                  3167688.22416027
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "alias": "R2",
+          "name": "Demo apartment 2",
+          "area_m2": 101.50135398978622,
+          "utm_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701663.8847523201,
+                  3167697.021929224
+                ],
+                [
+                  701652.0819325992,
+                  3167696.8435928286
+                ],
+                [
+                  701652.2118421658,
+                  3167688.245801048
+                ],
+                [
+                  701664.0146618867,
+                  3167688.4241374433
+                ],
+                [
+                  701663.8847523201,
+                  3167697.021929224
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "alias": "COMMON",
+          "name": "Demo shared access",
+          "area_m2": 20.87705561205967,
+          "utm_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  701651.9819440125,
+                  3167696.8420820367
+                ],
+                [
+                  701650.7820809693,
+                  3167696.8239525342
+                ],
+                [
+                  701651.0449216859,
+                  3167679.4283917993
+                ],
+                [
+                  701652.2447847291,
+                  3167679.4465213018
+                ],
+                [
+                  701651.9819440125,
+                  3167696.8420820367
+                ]
+              ]
+            ]
+          }
+        }
+      ],
+      "layout_method": "Authored inset rectangle, two demo apartments plus common corridor per floor; not extracted from real building plans"
+    }
+  ]
+}

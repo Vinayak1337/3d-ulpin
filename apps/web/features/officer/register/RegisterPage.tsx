@@ -21,6 +21,7 @@ import {
   type IconName,
 } from "../shared/ui";
 import ParcelIdentity from "../shared/ParcelIdentity";
+import { hasGoogleAttribution } from "@/lib/map-attribution";
 import Evidence, { SourcePreview } from "./Evidence";
 import Investigation from "./Investigation";
 import PropertyScene from "../scene/PropertyScene";
@@ -203,6 +204,15 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
             <span className={styles.dot}>·</span> Building register
           </p>
           <ParcelIdentity identifiers={dossier.parcelIdentifiers} />
+          {hasGoogleAttribution([dossier.building]) && (
+            <p>Reference outline: <a href="https://sites.research.google/gr/open-buildings/" target="_blank" rel="noreferrer">Google Open Buildings V3</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> (selection / road context) · ODbL. {dossier.building.worldStatus === "synthetic" && "Heights, interiors and occupants are fictional."}</p>
+          )}
+          {String(dossier.building.properties.source_provider || "").includes("OpenStreetMap") && (
+            <p>
+              Footprint source: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> · ODbL.
+              {dossier.building.worldStatus === "synthetic" && " Heights, rooms, residents and parcel links in this scenario are fictional."}
+            </p>
+          )}
         </div>
         <div className={styles.actions}>
           <Button

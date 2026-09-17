@@ -1,0 +1,16 @@
+FICTIONAL OCCUPANCY SCHEDULE - GENERATED TEST DATA, NOT ACTUAL RESIDENTS
+Explicit synthetic fixture: OSM-derived outlines only. All heights, road widths, parcels, floors, rooms, occupants and proposed conflicts are invented for testing. No real ownership, actual residents, cadastral evidence or official ULPIN claimed.
+Each person and common-use allocation below is invented. No ownership claim is made.
+UN-B-0-C | DEMO common-use group B1 (fictional) | fictional shared use only | assumed levels 0 to 3.2 m
+UN-B-0-R1 | DEMO Resident B1R1 (fictional) | fictional shared use only | assumed levels 0 to 3.2 m
+UN-B-0-R2 | DEMO Resident B1R2 (fictional) | fictional shared use only | assumed levels 0 to 3.2 m
+UN-B-0-R3 | DEMO Resident B1R3 (fictional) | fictional shared use only | assumed levels 0 to 3.2 m
+UN-B-1-C | DEMO common-use group B2 (fictional) | fictional shared use only | assumed levels 3.2 to 6.4 m
+UN-B-1-R1 | DEMO Resident B2R1 (fictional) | fictional shared use only | assumed levels 3.2 to 6.4 m
+UN-B-1-R2 | DEMO Resident B2R2 (fictional) | fictional shared use only | assumed levels 3.2 to 6.4 m
+UN-B-1-R3 | DEMO Resident B2R3 (fictional) | fictional shared use only | assumed levels 3.2 to 6.4 m
+UN-B-2-C | DEMO common-use group B3 (fictional) | fictional shared use only | assumed levels 6.4 to 9.600000000000001 m
+UN-B-2-R1 | DEMO Resident B3R1 (fictional) | fictional shared use only | assumed levels 6.4 to 9.600000000000001 m
+UN-B-2-R2 | DEMO Resident B3R2 (fictional) | fictional shared use only | assumed levels 6.4 to 9.600000000000001 m
+UN-B-2-R3 | DEMO Resident B3R3 (fictional) | fictional shared use only | assumed levels 6.4 to 9.600000000000001 m
+Demo parcel identifier: DEMO-UN-P02; invented parcel around the scenario footprint.

@@ -5,6 +5,7 @@ import * as Cesium from "cesium";
 import { orbitCamera, type OrbitDirection } from "@/lib/scene-orbit";
 import "./AreaViewer.css";
 import { geometryParts, utilityScene } from "@/lib/officer-scene";
+import { hasGoogleAttribution, hasOsmAttribution } from "@/lib/map-attribution";
 import type {
   AreaGeometry,
   PhysicalFeature,
@@ -953,6 +954,13 @@ export default function AreaViewer(props: AreaViewerProps) {
           ? "Translucent context · only evidenced utility levels are underground"
           : "Shared block · relative building heights · no surveyed terrain"}
       </span>
+      {(hasGoogleAttribution(features) || hasOsmAttribution(features)) && (
+        <span className="area-source-credit">
+          {hasGoogleAttribution(features) && <><a href="https://sites.research.google/gr/open-buildings/" target="_blank" rel="noreferrer">Google Open Buildings V3</a> · </>}
+          {hasOsmAttribution(features) && <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a>}
+          {" · ODbL"}
+        </span>
+      )}
     </div>
   );
 }

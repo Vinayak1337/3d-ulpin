@@ -1,0 +1,130 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "notice": "SYNTHETIC TEST FIXTURE. Map-derived outline only. Heights, floors, rooms, people, parcels and test conflicts are invented. No real household, cadastral or official ULPIN claim.",
+    "license": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "attribution": "\u00a9 OpenStreetMap contributors",
+    "reference_bbox": [
+      77.0594,
+      28.6204,
+      77.0618,
+      28.6223
+    ]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-parcel-A",
+        "name": "DEMO Parcel A",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented half-metre buffer around mapped outline. NOT cadastral land boundary.",
+        "demo_parcel_id": "DEMO-UN-P01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06094243343094,
+              28.621533894488373
+            ],
+            [
+              77.0610131119176,
+              28.621408362642562
+            ],
+            [
+              77.06091155454376,
+              28.621366661402597
+            ],
+            [
+              77.06084100062138,
+              28.62149087905593
+            ],
+            [
+              77.06094243343094,
+              28.621533894488373
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-parcel-B",
+        "name": "DEMO Parcel B",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented half-metre buffer around mapped outline. NOT cadastral land boundary.",
+        "demo_parcel_id": "DEMO-UN-P02"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.060953670554,
+              28.62155456797742
+            ],
+            [
+              77.06105217274053,
+              28.621591713583147
+            ],
+            [
+              77.06109482944262,
+              28.621504632017373
+            ],
+            [
+              77.06099632726279,
+              28.621467486414236
+            ],
+            [
+              77.060953670554,
+              28.62155456797742
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "demo-parcel-C",
+        "name": "DEMO Parcel C",
+        "attribution": "\u00a9 OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "provenance": "Invented half-metre buffer around mapped outline. NOT cadastral land boundary.",
+        "demo_parcel_id": "DEMO-UN-P03"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06041742742967,
+              28.6214096150665
+            ],
+            [
+              77.06052217127977,
+              28.62145574180401
+            ],
+            [
+              77.06056457842324,
+              28.621381585391216
+            ],
+            [
+              77.0604597229163,
+              28.621335457733707
+            ],
+            [
+              77.06041742742967,
+              28.6214096150665
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

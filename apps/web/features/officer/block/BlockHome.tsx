@@ -78,6 +78,9 @@ export default function BlockHome() {
           <span className="directory-kicker">SPATIAL RECORDS</span>
           <h1>Block Map</h1>
           <p>Choose a neighborhood to explore its properties.</p>
+          <Link href="/delhi" className="ui-button" style={{ marginTop: 12 }}>
+            Delhi / Uttam Nagar study & downloads <Icon name="arrow" />
+          </Link>
         </div>
         <Button
           icon="upload"

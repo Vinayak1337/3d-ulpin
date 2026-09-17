@@ -1,0 +1,1848 @@
+{
+  "type": "FeatureCollection",
+  "notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted.",
+  "createdAt": "2026-09-16T21:17:27.165979+00:00",
+  "selectionMethod": "Street-enclosed polygon generated from intersecting OpenStreetMap road centrelines; not an official cadastral or administrative block",
+  "licence": "ODbL-1.0; Google Research Open Buildings V3 and OpenStreetMap contributors",
+  "sourceDateNotice": "Google inference May 2023; OSM retrieved in this session; these are not a shared survey epoch",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0624111971739,
+              28.61981788204591
+            ],
+            [
+              77.06249969672795,
+              28.619921581549427
+            ],
+            [
+              77.06261129835615,
+              28.620052283490505
+            ],
+            [
+              77.06265250714856,
+              28.620100576615357
+            ],
+            [
+              77.06267465101284,
+              28.620127050842257
+            ],
+            [
+              77.06272616192894,
+              28.620192601025582
+            ],
+            [
+              77.0628699445044,
+              28.620345006580603
+            ],
+            [
+              77.06294139968966,
+              28.620428772694897
+            ],
+            [
+              77.06299041466758,
+              28.620396219230884
+            ],
+            [
+              77.06291805548781,
+              28.620311393415474
+            ],
+            [
+              77.06277503806334,
+              28.62015979897036
+            ],
+            [
+              77.06272454897956,
+              28.620095549153515
+            ],
+            [
+              77.06270169284377,
+              28.620068223380528
+            ],
+            [
+              77.06266030454317,
+              28.62001971991219
+            ],
+            [
+              77.0625487009928,
+              28.619889015784782
+            ],
+            [
+              77.06246020325602,
+              28.6197853184628
+            ],
+            [
+              77.06245821474869,
+              28.619782988665573
+            ],
+            [
+              77.06240921006908,
+              28.619815553890792
+            ],
+            [
+              77.0624111971739,
+              28.61981788204591
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-235103510-part-1",
+        "osm_way_id": "235103510",
+        "name": "DEMO 6 m road corridor / Gurudwara Kalgidhar Marg",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06267775157579,
+              28.620392789020713
+            ],
+            [
+              77.0626864223342,
+              28.620519761356586
+            ],
+            [
+              77.06268272599942,
+              28.62134648776691
+            ],
+            [
+              77.06268162596142,
+              28.621569682301793
+            ],
+            [
+              77.06268142485425,
+              28.621617540988648
+            ],
+            [
+              77.06268402861885,
+              28.621780179084187
+            ],
+            [
+              77.06268501989472,
+              28.621843157503104
+            ],
+            [
+              77.06274636279431,
+              28.62184240576529
+            ],
+            [
+              77.06274537143118,
+              28.621779424128782
+            ],
+            [
+              77.0627427751452,
+              28.62161725900442
+            ],
+            [
+              77.06274297408098,
+              28.621569909015776
+            ],
+            [
+              77.06274407397325,
+              28.621346717694326
+            ],
+            [
+              77.06274777766492,
+              28.620518238636485
+            ],
+            [
+              77.06273904842307,
+              28.62039041097238
+            ],
+            [
+              77.0627302621411,
+              28.62011055050862
+            ],
+            [
+              77.062668937858,
+              28.620112049484472
+            ],
+            [
+              77.06267775157579,
+              28.620392789020713
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-235115525-part-1",
+        "osm_way_id": "235115525",
+        "name": "DEMO 6 m road corridor / OSM residential 235115525",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06142207317798,
+              28.62106366304684
+            ],
+            [
+              77.06148267756308,
+              28.620898651004506
+            ],
+            [
+              77.06154077317224,
+              28.62074076281661
+            ],
+            [
+              77.06158277137432,
+              28.620626767609377
+            ],
+            [
+              77.06162727713566,
+              28.620505951877146
+            ],
+            [
+              77.06166877616961,
+              28.620392854423024
+            ],
+            [
+              77.0617164697232,
+              28.620263471811757
+            ],
+            [
+              77.06175587560271,
+              28.62015625576537
+            ],
+            [
+              77.06184787322685,
+              28.619906362027507
+            ],
+            [
+              77.0617895267774,
+              28.619889637965954
+            ],
+            [
+              77.06169752671293,
+              28.62013953794959
+            ],
+            [
+              77.06165812616749,
+              28.620246739341002
+            ],
+            [
+              77.06161042383465,
+              28.620376145570443
+            ],
+            [
+              77.06156892286859,
+              28.62048924811631
+            ],
+            [
+              77.06152442847228,
+              28.620610032812017
+            ],
+            [
+              77.06148242860056,
+              28.620724032376625
+            ],
+            [
+              77.06142432502295,
+              28.620881941972403
+            ],
+            [
+              77.06136372332027,
+              28.621046946468695
+            ],
+            [
+              77.0612845267708,
+              28.621262036932546
+            ],
+            [
+              77.06134287323346,
+              28.621278763060936
+            ],
+            [
+              77.06142207317798,
+              28.62106366304684
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423590895-part-1",
+        "osm_way_id": "423590895",
+        "name": "DEMO 6 m road corridor / OSM residential 423590895",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0618264589828,
+              28.61987181145228
+            ],
+            [
+              77.06159438662813,
+              28.619815115923775
+            ],
+            [
+              77.06158030283925,
+              28.61981167348332
+            ],
+            [
+              77.06156392572467,
+              28.619863840693487
+            ],
+            [
+              77.0615780114442,
+              28.619867283605565
+            ],
+            [
+              77.06181094101376,
+              28.619924188547373
+            ],
+            [
+              77.06266977010714,
+              28.62011068171626
+            ],
+            [
+              77.06268442988963,
+              28.620058118283435
+            ],
+            [
+              77.0618264589828,
+              28.61987181145228
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423590906-part-1",
+        "osm_way_id": "423590906",
+        "name": "DEMO 6 m road corridor / School Road",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06291955289831,
+              28.620790978757785
+            ],
+            [
+              77.06278325242451,
+              28.620569778073907
+            ],
+            [
+              77.06274405639054,
+              28.620506084543962
+            ],
+            [
+              77.06269014360262,
+              28.620531915450986
+            ],
+            [
+              77.06272934359215,
+              28.62059561545926
+            ],
+            [
+              77.06286564930531,
+              28.620816824827088
+            ],
+            [
+              77.06294392477032,
+              28.62094394828672
+            ],
+            [
+              77.0629978306155,
+              28.620918105774276
+            ],
+            [
+              77.06291955289831,
+              28.620790978757785
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423590919-part-1",
+        "osm_way_id": "423590919",
+        "name": "DEMO 6 m road corridor / Ramchand Gehlot Marg",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06298351375803,
+              28.620533344467578
+            ],
+            [
+              77.06296116671896,
+              28.62048293192646
+            ],
+            [
+              77.0627451265247,
+              28.620557493708986
+            ],
+            [
+              77.06276747348097,
+              28.620607906289727
+            ],
+            [
+              77.06298351375803,
+              28.620533344467578
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423590941-part-1",
+        "osm_way_id": "423590941",
+        "name": "DEMO 6 m road corridor / OSM residential 423590941",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0628802424893,
+              28.62077912773416
+            ],
+            [
+              77.0629049575168,
+              28.620828672264324
+            ],
+            [
+              77.06298394035439,
+              28.62079799633242
+            ],
+            [
+              77.06295922529885,
+              28.620748451817995
+            ],
+            [
+              77.0628802424893,
+              28.62077912773416
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423590960-part-1",
+        "osm_way_id": "423590960",
+        "name": "DEMO 6 m road corridor / OSM residential 423590960",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06245524119618,
+              28.619822609552763
+            ],
+            [
+              77.06242081167055,
+              28.61977780655852
+            ],
+            [
+              77.06241848524115,
+              28.619779198501252
+            ],
+            [
+              77.06245291476633,
+              28.61982400149611
+            ],
+            [
+              77.06245524119618,
+              28.619822609552763
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591026-part-1",
+        "osm_way_id": "423591026",
+        "name": "DEMO 6 m road corridor / OSM residential 423591026",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06269898253376,
+              28.621322710159607
+            ],
+            [
+              77.06272781747306,
+              28.621370489838416
+            ],
+            [
+              77.06298397611114,
+              28.62125013021084
+            ],
+            [
+              77.06295514109587,
+              28.621202350590053
+            ],
+            [
+              77.06269898253376,
+              28.621322710159607
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591027-part-1",
+        "osm_way_id": "423591027",
+        "name": "DEMO 6 m road corridor / OSM residential 423591027",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06259543241147,
+              28.621562231365257
+            ],
+            [
+              77.06248433543388,
+              28.62153633206869
+            ],
+            [
+              77.06234013202386,
+              28.621502731272415
+            ],
+            [
+              77.06218693582055,
+              28.621467032155557
+            ],
+            [
+              77.0618104558183,
+              28.621379220192892
+            ],
+            [
+              77.06167992795771,
+              28.621352759174155
+            ],
+            [
+              77.06153584207813,
+              28.621303440519977
+            ],
+            [
+              77.06140207040248,
+              28.62126647199164
+            ],
+            [
+              77.061322872838,
+              28.621244572664462
+            ],
+            [
+              77.06126735406619,
+              28.621229267478416
+            ],
+            [
+              77.0611438663361,
+              28.621195170865285
+            ],
+            [
+              77.0610790350395,
+              28.621177245832328
+            ],
+            [
+              77.06106069106411,
+              28.621228900978267
+            ],
+            [
+              77.06112552802514,
+              28.621246827576314
+            ],
+            [
+              77.06124903932678,
+              28.621280930697953
+            ],
+            [
+              77.0613045398489,
+              28.62129623084433
+            ],
+            [
+              77.06138372717608,
+              28.621318127339446
+            ],
+            [
+              77.06151555791732,
+              28.621354559479425
+            ],
+            [
+              77.06166187203821,
+              28.621404640825364
+            ],
+            [
+              77.06179574417844,
+              28.62143177980681
+            ],
+            [
+              77.06217126082399,
+              28.62151936706227
+            ],
+            [
+              77.06232446757437,
+              28.621555068634425
+            ],
+            [
+              77.06246866635678,
+              28.621588668349215
+            ],
+            [
+              77.06257976458912,
+              28.62161456793598
+            ],
+            [
+              77.06270427060683,
+              28.621643569336975
+            ],
+            [
+              77.06271992938967,
+              28.62159123066269
+            ],
+            [
+              77.06259543241147,
+              28.621562231365257
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591060-part-1",
+        "osm_way_id": "423591060",
+        "name": "DEMO 6 m road corridor / School Road",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06296427199035,
+              28.62007611944464
+            ],
+            [
+              77.06292886971603,
+              28.620031910589432
+            ],
+            [
+              77.06273289888381,
+              28.62015409554471
+            ],
+            [
+              77.06276830112375,
+              28.62019830445252
+            ],
+            [
+              77.06296427199035,
+              28.62007611944464
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591085-part-1",
+        "osm_way_id": "423591085",
+        "name": "DEMO 6 m road corridor / OSM residential 423591085",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0627008289944,
+              28.621755659554584
+            ],
+            [
+              77.06272857101223,
+              28.62180394044358
+            ],
+            [
+              77.0629742820669,
+              28.62169401965352
+            ],
+            [
+              77.06294653997212,
+              28.621645738818415
+            ],
+            [
+              77.0627008289944,
+              28.621755659554584
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591136-part-1",
+        "osm_way_id": "423591136",
+        "name": "DEMO 6 m road corridor / OSM residential 423591136",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06164935010784,
+              28.620358837810628
+            ],
+            [
+              77.06140676956589,
+              28.62028754363469
+            ],
+            [
+              77.06138738292566,
+              28.620338901397115
+            ],
+            [
+              77.06162984988781,
+              28.62041016218882
+            ],
+            [
+              77.06212319322887,
+              28.62055704531632
+            ],
+            [
+              77.06214280676673,
+              28.620505754683126
+            ],
+            [
+              77.06164935010784,
+              28.620358837810628
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591186-part-1",
+        "osm_way_id": "423591186",
+        "name": "DEMO 6 m road corridor / OSM residential 423591186",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06156310660576,
+              28.62059266678456
+            ],
+            [
+              77.06132025796063,
+              28.620522416477293
+            ],
+            [
+              77.06130114637273,
+              28.620573854454605
+            ],
+            [
+              77.06154409338997,
+              28.620644133214928
+            ],
+            [
+              77.06202424268439,
+              28.620781447308733
+            ],
+            [
+              77.06204315731135,
+              28.62072995269075
+            ],
+            [
+              77.06156310660576,
+              28.62059266678456
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591191-part-1",
+        "osm_way_id": "423591191",
+        "name": "DEMO 6 m road corridor / OSM residential 423591191",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06140230972916,
+              28.621029538304118
+            ],
+            [
+              77.06115820194374,
+              28.620961899365206
+            ],
+            [
+              77.06113982181347,
+              28.621013544492897
+            ],
+            [
+              77.06138349026662,
+              28.62108106169537
+            ],
+            [
+              77.06187657171729,
+              28.621224897938582
+            ],
+            [
+              77.06189582827838,
+              28.621173502060895
+            ],
+            [
+              77.06140230972916,
+              28.621029538304118
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591192-part-1",
+        "osm_way_id": "423591192",
+        "name": "DEMO 6 m road corridor / OSM residential 423591192",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06218781329834,
+              28.621722770182963
+            ],
+            [
+              77.06224265397637,
+              28.621747033814405
+            ],
+            [
+              77.0623597202988,
+              28.62154103179147
+            ],
+            [
+              77.06230487970723,
+              28.62151676820264
+            ],
+            [
+              77.06218781329834,
+              28.621722770182963
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591198-part-1",
+        "osm_way_id": "423591198",
+        "name": "DEMO 6 m road corridor / OSM residential 423591198",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06160758783135,
+              28.62047186010807
+            ],
+            [
+              77.06136345991804,
+              28.62040409051941
+            ],
+            [
+              77.06134504905091,
+              28.620455727093745
+            ],
+            [
+              77.06158861216439,
+              28.620523339891406
+            ],
+            [
+              77.06204813158026,
+              28.620659556713225
+            ],
+            [
+              77.06206766841535,
+              28.620608243286213
+            ],
+            [
+              77.06160758783135,
+              28.62047186010807
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591206-part-1",
+        "osm_way_id": "423591206",
+        "name": "DEMO 6 m road corridor / OSM residential 423591206",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0614624703896,
+              28.620864415906787
+            ],
+            [
+              77.06121909142259,
+              28.620796350904474
+            ],
+            [
+              77.06120055574367,
+              28.620847952722414
+            ],
+            [
+              77.06144452960639,
+              28.620916184092742
+            ],
+            [
+              77.06193552896846,
+              28.621043861934048
+            ],
+            [
+              77.06195287102764,
+              28.620991938065515
+            ],
+            [
+              77.0614624703896,
+              28.620864415906787
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591211-part-1",
+        "osm_way_id": "423591211",
+        "name": "DEMO 6 m road corridor / OSM residential 423591211",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06169620804273,
+              28.62022919281722
+            ],
+            [
+              77.06144899958583,
+              28.62016857048115
+            ],
+            [
+              77.0614325724191,
+              28.620220725451798
+            ],
+            [
+              77.06167839195328,
+              28.62028100718232
+            ],
+            [
+              77.06214480737306,
+              28.620416508296017
+            ],
+            [
+              77.06216399262264,
+              28.620365091703444
+            ],
+            [
+              77.06169620804273,
+              28.62022919281722
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591218-part-1",
+        "osm_way_id": "423591218",
+        "name": "DEMO 6 m road corridor / OSM residential 423591218",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06152070119181,
+              28.620706552951606
+            ],
+            [
+              77.06127649686377,
+              28.620639774684516
+            ],
+            [
+              77.06125833664376,
+              28.620691480330446
+            ],
+            [
+              77.0615025093696,
+              28.620758249944434
+            ],
+            [
+              77.06198909891621,
+              28.62089164707461
+            ],
+            [
+              77.06200730107973,
+              28.620839952924907
+            ],
+            [
+              77.06152070119181,
+              28.620706552951606
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591219-part-1",
+        "osm_way_id": "423591219",
+        "name": "DEMO 6 m road corridor / OSM residential 423591219",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06287950281016,
+              28.620304128910202
+            ],
+            [
+              77.0626973260031,
+              28.62036635955768
+            ],
+            [
+              77.06271947400253,
+              28.62041684044105
+            ],
+            [
+              77.0629084971967,
+              28.620352271087818
+            ],
+            [
+              77.06297834753168,
+              28.62030941637983
+            ],
+            [
+              77.06294332553146,
+              28.620264972282097
+            ],
+            [
+              77.06287950281016,
+              28.620304128910202
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591232-part-1",
+        "osm_way_id": "423591232",
+        "name": "DEMO 6 m road corridor / OSM residential 423591232",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06104164104512,
+              28.621322908793722
+            ],
+            [
+              77.06109633978878,
+              28.621347420302314
+            ],
+            [
+              77.06116204935114,
+              28.6212332557394
+            ],
+            [
+              77.06110735065494,
+              28.621208744254716
+            ],
+            [
+              77.06104164104512,
+              28.621322908793722
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591234-part-1",
+        "osm_way_id": "423591234",
+        "name": "DEMO 6 m road corridor / OSM residential 423591234",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06203707450923,
+              28.62168790938735
+            ],
+            [
+              77.06209218933886,
+              28.621711684446197
+            ],
+            [
+              77.06220665737362,
+              28.621505087505597
+            ],
+            [
+              77.06215154263231,
+              28.62148131248845
+            ],
+            [
+              77.06203707450923,
+              28.62168790938735
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591236-part-1",
+        "osm_way_id": "423591236",
+        "name": "DEMO 6 m road corridor / Shoe Market",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06285815796582,
+              28.619933789408982
+            ],
+            [
+              77.0628233711635,
+              28.619889201797708
+            ],
+            [
+              77.06261840662194,
+              28.620013706165906
+            ],
+            [
+              77.06265319338559,
+              28.620058293831406
+            ],
+            [
+              77.06285815796582,
+              28.619933789408982
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591239-part-1",
+        "osm_way_id": "423591239",
+        "name": "DEMO 6 m road corridor / OSM residential 423591239",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0616434726393,
+              28.61977119474986
+            ],
+            [
+              77.06158498243516,
+              28.61975486652225
+            ],
+            [
+              77.0615569548797,
+              28.619833035877953
+            ],
+            [
+              77.06161544512446,
+              28.61984936411549
+            ],
+            [
+              77.0616434726393,
+              28.61977119474986
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591258-part-1",
+        "osm_way_id": "423591258",
+        "name": "DEMO 6 m road corridor / OSM residential 423591258",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0613833610842,
+              28.621521600215065
+            ],
+            [
+              77.06143833641607,
+              28.621545625295457
+            ],
+            [
+              77.0615531876256,
+              28.62134101251633
+            ],
+            [
+              77.06149821238039,
+              28.621316987477744
+            ],
+            [
+              77.0613833610842,
+              28.621521600215065
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591260-part-1",
+        "osm_way_id": "423591260",
+        "name": "DEMO 6 m road corridor / OSM residential 423591260",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06152683048623,
+              28.62156836734167
+            ],
+            [
+              77.06158148113408,
+              28.62159296242495
+            ],
+            [
+              77.06169822528516,
+              28.621390997517477
+            ],
+            [
+              77.06164357472095,
+              28.621366402476653
+            ],
+            [
+              77.06152683048623,
+              28.62156836734167
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591265-part-1",
+        "osm_way_id": "423591265",
+        "name": "DEMO 6 m road corridor / OSM residential 423591265",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06173643888924,
+              28.62012223222937
+            ],
+            [
+              77.06149541502069,
+              28.62004799848229
+            ],
+            [
+              77.06147519765916,
+              28.620099106241398
+            ],
+            [
+              77.06171696110636,
+              28.62017356777007
+            ],
+            [
+              77.06220543412772,
+              28.62031177330747
+            ],
+            [
+              77.0622241658681,
+              28.620260226692015
+            ],
+            [
+              77.06173643888924,
+              28.62012223222937
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591283-part-1",
+        "osm_way_id": "423591283",
+        "name": "DEMO 6 m road corridor / OSM residential 423591283",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0611247417632,
+              28.62143314664351
+            ],
+            [
+              77.06117978919373,
+              28.62145704278005
+            ],
+            [
+              77.06128572367781,
+              28.621267048046004
+            ],
+            [
+              77.06123067632814,
+              28.62124315194805
+            ],
+            [
+              77.0611247417632,
+              28.62143314664351
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591293-part-1",
+        "osm_way_id": "423591293",
+        "name": "DEMO 6 m road corridor / OSM residential 423591293",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06233562467993,
+              28.621757619369333
+            ],
+            [
+              77.06239086692851,
+              28.6217811631142
+            ],
+            [
+              77.06250412108263,
+              28.621574271848807
+            ],
+            [
+              77.06244887892325,
+              28.62155072814521
+            ],
+            [
+              77.06233562467993,
+              28.621757619369333
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591295-part-1",
+        "osm_way_id": "423591295",
+        "name": "DEMO 6 m road corridor / OSM residential 423591295",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06125039787962,
+              28.621484829242497
+            ],
+            [
+              77.06130535403405,
+              28.62150888843202
+            ],
+            [
+              77.06142037803696,
+              28.62130432957086
+            ],
+            [
+              77.06136542196904,
+              28.621280270423213
+            ],
+            [
+              77.06125039787962,
+              28.621484829242497
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591297-part-1",
+        "osm_way_id": "423591297",
+        "name": "DEMO 6 m road corridor / OSM residential 423591297",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06252805731158,
+              28.621760297030395
+            ],
+            [
+              77.06246674268742,
+              28.621762102962695
+            ],
+            [
+              77.06246824877462,
+              28.621801914313536
+            ],
+            [
+              77.06252956342182,
+              28.621800108379382
+            ],
+            [
+              77.06252805731158,
+              28.621760297030395
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591304-part-1",
+        "osm_way_id": "423591304",
+        "name": "DEMO 6 m road corridor / OSM residential 423591304",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06264565527015,
+              28.61986370695765
+            ],
+            [
+              77.06261061759828,
+              28.619819272555514
+            ],
+            [
+              77.06250668117737,
+              28.619883082783744
+            ],
+            [
+              77.06254171883018,
+              28.619927517213537
+            ],
+            [
+              77.06264565527015,
+              28.61986370695765
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-423591331-part-1",
+        "osm_way_id": "423591331",
+        "name": "DEMO 6 m road corridor / OSM residential 423591331",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06246953879862,
+              28.621749877177308
+            ],
+            [
+              77.0624511804245,
+              28.62178506217676
+            ],
+            [
+              77.0625069070521,
+              28.621807699768198
+            ],
+            [
+              77.06252526225711,
+              28.621772520804996
+            ],
+            [
+              77.06261546116863,
+              28.621599722800195
+            ],
+            [
+              77.06255973883705,
+              28.62157707719375
+            ],
+            [
+              77.06246953879862,
+              28.621749877177308
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-449398966-part-1",
+        "osm_way_id": "449398966",
+        "name": "DEMO 6 m road corridor / OSM residential 449398966",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0629836064648,
+              28.62146598847505
+            ],
+            [
+              77.06295349218165,
+              28.621418827243886
+            ],
+            [
+              77.06269724289729,
+              28.62154621935328
+            ],
+            [
+              77.0627273571097,
+              28.621593380644615
+            ],
+            [
+              77.0629836064648,
+              28.62146598847505
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-osm-way-1081337938-part-1",
+        "osm_way_id": "1081337938",
+        "name": "DEMO 6 m road corridor / OSM residential 1081337938",
+        "highway": "residential",
+        "width": null,
+        "lanes": null,
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Assumed 6 m corridor about an OSM centreline; NOT the measured road surface or right of way.",
+        "assumed_width_m": 6,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    }
+  ]
+}

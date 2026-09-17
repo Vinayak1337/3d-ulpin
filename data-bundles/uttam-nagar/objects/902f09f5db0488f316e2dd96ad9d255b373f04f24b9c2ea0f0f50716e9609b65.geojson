@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "name": "FICTIONAL road overlap test",
+  "attribution": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0642127551439,
+              28.619725714065005
+            ],
+            [
+              77.06421328463047,
+              28.619752775855456
+            ],
+            [
+              77.06404184480049,
+              28.619755387417612
+            ],
+            [
+              77.06404131535781,
+              28.619728325624237
+            ],
+            [
+              77.0642127551439,
+              28.619725714065005
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "demo-crossing-01",
+        "name": "DEMO proposed crossing - fictional conflict",
+        "notice": "Deliberately authored synthetic road crossing a demo copy; no real project or encroachment alleged."
+      }
+    }
+  ]
+}

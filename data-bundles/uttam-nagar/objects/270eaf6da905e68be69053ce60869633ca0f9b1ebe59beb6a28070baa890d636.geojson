@@ -1,0 +1,48 @@
+{
+  "type": "FeatureCollection",
+  "notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted.",
+  "createdAt": "2026-09-16T21:17:27.165979+00:00",
+  "selectionMethod": "Street-enclosed polygon generated from intersecting OpenStreetMap road centrelines; not an official cadastral or administrative block",
+  "licence": "ODbL-1.0; Google Research Open Buildings V3 and OpenStreetMap contributors",
+  "sourceDateNotice": "Google inference May 2023; OSM retrieved in this session; these are not a shared survey epoch",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.06254346142443,
+              28.620925692454176
+            ],
+            [
+              77.06254388469227,
+              28.62094734190553
+            ],
+            [
+              77.0621707888615,
+              28.620953020589585
+            ],
+            [
+              77.06217036567008,
+              28.62093137113315
+            ],
+            [
+              77.06254346142443,
+              28.620925692454176
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "DEMO-UN-CROSSING",
+        "name": "DEMO proposed road reservation / intentionally crosses UN-A",
+        "source_notice": "SYNTHETIC DEMO ONLY: no actual resident, title, surveyed interior, measured height or road reservation is asserted. Authored conflict test; no such public reservation is claimed.",
+        "expected_target_overlap_m2": 64.84958794616,
+        "attribution": "OpenStreetMap contributors; authored synthetic scenario where explicitly marked DEMO",
+        "license": "ODbL-1.0"
+      }
+    }
+  ]
+}

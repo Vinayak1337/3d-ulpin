@@ -42,3 +42,15 @@
 .property-scene .area-scene-note {
   display: none;
 }
+.area-source-credit {
+  position: absolute;
+  left: 16px;
+  bottom: 92px;
+  z-index: 3;
+  padding: 4px 7px;
+  border-radius: 4px;
+  background: #ffffffed;
+  color: #284e42;
+  font: 11px system-ui, sans-serif;
+}
+.property-scene .area-source-credit { bottom: 87px; }

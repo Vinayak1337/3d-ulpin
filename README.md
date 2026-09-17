@@ -42,6 +42,13 @@ against the agreed plan.
 
 ## Start the demo
 
+**Already cloned? Add the saved Uttam Nagar datasets after `git pull`:**
+follow [Uttam Nagar update and transfer](docs/UTTAM_NAGAR_SETUP.md).
+`pnpm data:uttam:install` adds the six saved reference/scenario areas, their
+actual recorded rooms, fictional party allocations, checks and retained source
+files without replacing Lake View, Bronx or local edits. The original 15 September
+`repo-data` snapshot is unchanged; Uttam Nagar is a separate additive bundle.
+
 **Use the complete saved dataset from this repository:** follow
 [repository-data setup](repo-data/README.md). Run `pnpm repo:init`, set
 `REPO_DATA=true` in `.env`, then build/start the app. The bundle includes the

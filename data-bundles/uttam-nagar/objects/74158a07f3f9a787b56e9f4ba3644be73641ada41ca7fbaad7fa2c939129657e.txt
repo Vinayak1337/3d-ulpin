@@ -1,0 +1,18 @@
+FICTIONAL ROOM AND OCCUPANT REGISTER
+Explicitly authored fictional Uttam Nagar scenario. No real resident, surveyed interior, approval, land title or public road reservation is asserted. Public source outlines are retained separately.
+Synthetic building UN-B; assumed 4 floors at 3 metres each.
+Google reference: gob-v3-391-34156430
+No genuine street address, owner identity, resident identity or registration number is supplied.
+All entries below are invented shared-use demo allocations, not ownership determinations.
+1. UN-B-0-R1 | DEMO Resident B01 (fictional occupant) | demo residential use | floor 0
+2. UN-B-0-R2 | DEMO Resident B02 (fictional occupant) | demo residential use | floor 0
+3. UN-B-0-COMMON | DEMO residents of UN-B floor 0 (fictional shared access) | common access | floor 0
+4. UN-B-1-R1 | DEMO Resident B11 (fictional occupant) | demo residential use | floor 1
+5. UN-B-1-R2 | DEMO Resident B12 (fictional occupant) | demo residential use | floor 1
+6. UN-B-1-COMMON | DEMO residents of UN-B floor 1 (fictional shared access) | common access | floor 1
+7. UN-B-2-R1 | DEMO Resident B21 (fictional occupant) | demo residential use | floor 2
+8. UN-B-2-R2 | DEMO Resident B22 (fictional occupant) | demo residential use | floor 2
+9. UN-B-2-COMMON | DEMO residents of UN-B floor 2 (fictional shared access) | common access | floor 2
+10. UN-B-3-R1 | DEMO Resident B31 (fictional occupant) | demo residential use | floor 3
+11. UN-B-3-R2 | DEMO Resident B32 (fictional occupant) | demo residential use | floor 3
+12. UN-B-3-COMMON | DEMO residents of UN-B floor 3 (fictional shared access) | common access | floor 3

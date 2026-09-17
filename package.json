@@ -4,6 +4,11 @@
   "type": "module",
   "packageManager": "pnpm@9.12.0",
   "scripts": {
+    "data:uttam:check": "node scripts/datasets/uttam-nagar.mjs check",
+    "data:uttam:install": "node scripts/datasets/uttam-nagar.mjs install",
+    "data:uttam:verify": "node scripts/datasets/uttam-nagar.mjs verify",
+    "test:uttam": "tsx --test tests/map-attribution.test.ts tests/neighbour-scenario-policy.test.ts tests/registry-reference-policy.test.ts tests/dataset-bundle.test.mjs",
+    "test:uttam:transfer": "node scripts/datasets/test-transfer.mjs",
     "dev": "concurrently -k -n web,dispatcher \"pnpm --filter @ulpin/web dev\" \"pnpm dispatcher\"",
     "build": "pnpm --filter @ulpin/web build",
     "start": "concurrently -k -n web,dispatcher \"pnpm --filter @ulpin/web start\" \"pnpm dispatcher\"",

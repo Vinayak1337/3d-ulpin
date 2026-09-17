@@ -36,11 +36,12 @@ export default function Floors({
         item.links.some(
           (link) => link.type === "floor" && link.targetId === floorId,
         )) &&
-      `${item.name} ${item.identifier}`
+      `${item.name} ${item.identifier} ${item.rights.map((right) => right.party).join(" ")}`
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
   const evidence = selected ? recordEvidence(dossier, selected) : [];
+  const hasParties = spaces.some((record) => record.rights.length > 0);
   return (
     <>
       <div className={styles.tabTitle}>
@@ -108,10 +109,17 @@ export default function Floors({
           </Panel>
           <div className={styles.stack}>
             <Panel title="Unit register">
+              {hasParties && (
+                <p className={styles.note}>
+                  {spaces.every((record) => record.synthetic)
+                    ? "Fictional resident / shared-use entries. These are not actual occupants, owners or registered deeds."
+                    : "Source-recorded party claims. Geometry alone does not establish occupancy or ownership."}
+                </p>
+              )}
               <div className={styles.filters}>
                 <input
                   aria-label="Search units"
-                  placeholder="Search unit name or identifier"
+                  placeholder="Search unit, identifier or recorded party"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                 />
@@ -124,6 +132,7 @@ export default function Floors({
                       <th>Area</th>
                       <th>Levels</th>
                       <th>Use</th>
+                      {hasParties && <th>Recorded party</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -147,6 +156,9 @@ export default function Floors({
                             : "Not supplied"}
                         </td>
                         <td>{words(record.use || "unspecified")}</td>
+                        {hasParties && (
+                          <td>{record.rights.map((right) => right.party).join("; ") || "Not recorded"}</td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -190,6 +202,23 @@ export default function Floors({
                     )}
                   </dl>
                   <ParcelIdentity identifiers={dossier.parcelIdentifiers} />
+                  {selected.rights.length > 0 && (
+                    <section aria-label="Recorded parties and source evidence">
+                      <h3>{selected.synthetic ? "Fictional residents / shared use" : "Recorded parties / claims"}</h3>
+                      {selected.rights.map((right, index) => (
+                        <div key={`${right.party}:${index}`}>
+                          <strong>{right.party}</strong>
+                          <p className={styles.note}>{words(right.type)} · {selected.synthetic ? "Fictional demonstration, not an actual resident or ownership right." : "A recorded claim, not an ownership determination."}</p>
+                          <p className={styles.note}>{right.evidence.locator}</p>
+                          {dossier.sources.some((source) => source.id === right.evidence.sourceId) && (
+                            <Button variant="ghost" icon="document" onClick={() => onEvidence(right.evidence.sourceId)}>
+                              View party source evidence
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </section>
+                  )}
                   <div className={styles.scopeDownloads}>
                     <a
                       className="ui-button"

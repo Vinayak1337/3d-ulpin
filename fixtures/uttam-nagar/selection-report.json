@@ -1,0 +1,28 @@
+{
+  "selection": "Road-centreline polygonization, chosen within 550m of OSM Uttam Nagar suburb node; not an official administrative block",
+  "source_locality": "Uttam Nagar, West, Delhi, West Delhi, Delhi, 110059, India",
+  "block_area_m2": 10459.942202083022,
+  "center_lonlat": [
+    77.06392442150816,
+    28.619745444581913
+  ],
+  "extent_lonlat": [
+    77.06237326705886,
+    28.61928237238351,
+    77.06541621597756,
+    28.62054653582876
+  ],
+  "buildings": 20,
+  "road_path_features": 9,
+  "road_names": [
+    "Gurudwara Kalgidhar Marg",
+    "School Road",
+    "Unnamed residential"
+  ],
+  "detailed_demo_buildings": 3,
+  "demo_floors": 9,
+  "demo_spaces": 27,
+  "fictional_resident_rooms": 18,
+  "excluded_source_objects": [],
+  "osm_timestamp": "2026-07-15T15:22:01Z"
+}

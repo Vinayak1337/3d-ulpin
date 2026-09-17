@@ -1,0 +1,83 @@
+[
+  {
+    "alias": "UN1-0-A",
+    "floor": 0,
+    "room": "Living / sleeping room A",
+    "party": "Fictional: Asha Verma",
+    "recordType": "shared_use",
+    "synthetic": true,
+    "note": "Invented demo resident/use entry. Not a real resident, owner or registered deed."
+  },
+  {
+    "alias": "UN1-0-B",
+    "floor": 0,
+    "room": "Living / sleeping room B",
+    "party": "Fictional: Rohan Mehta",
+    "recordType": "shared_use",
+    "synthetic": true,
+    "note": "Invented demo resident/use entry. Not a real resident, owner or registered deed."
+  },
+  {
+    "alias": "UN1-0-C",
+    "floor": 0,
+    "room": "Common stairs and passage",
+    "party": "Fictional shared household 1",
+    "recordType": "shared_use",
+    "synthetic": true,
+    "note": "Invented demo resident/use entry. Not a real resident, owner or registered deed."
+  },
+  {
+    "alias": "UN1-1-A",
+    "floor": 1,
+    "room": "Living / sleeping room A",
+    "party": "Fictional: Neha Saini",
+    "recordType": "shared_use",
+    "synthetic": true,
+    "note": "Invented demo resident/use entry. Not a real resident, owner or registered deed."
+  },
+  {
+    "alias": "UN1-1-B",
+    "floor": 1,
+    "room": "Living / sleeping room B",
+    "party": "Fictional: Kabir Batra",
+    "recordType": "shared_use",
+    "synthetic": true,
+    "note": "Invented demo resident/use entry. Not a real resident, owner or registered deed."
+  },
+  {
+    "alias": "UN1-1-C",
+    "floor": 1,
+    "room": "Common stairs and passage",
+    "party": "Fictional shared household 1",
+    "recordType": "shared_use",
+    "synthetic": true,
+    "note": "Invented demo resident/use entry. Not a real resident, owner or registered deed."
+  },
+  {
+    "alias": "UN1-2-A",
+    "floor": 2,
+    "room": "Living / sleeping room A",
+    "party": "Fictional: Meera Joshi",
+    "recordType": "shared_use",
+    "synthetic": true,
+    "note": "Invented demo resident/use entry. Not a real resident, owner or registered deed."
+  },
+  {
+    "alias": "UN1-2-B",
+    "floor": 2,
+    "room": "Living / sleeping room B",
+    "party": "Fictional: Arjun Malhotra",
+    "recordType": "shared_use",
+    "synthetic": true,
+    "note": "Invented demo resident/use entry. Not a real resident, owner or registered deed."
+  },
+  {
+    "alias": "UN1-2-C",
+    "floor": 2,
+    "room": "Common stairs and passage",
+    "party": "Fictional shared household 1",
+    "recordType": "shared_use",
+    "synthetic": true,
+    "note": "Invented demo resident/use entry. Not a real resident, owner or registered deed."
+  }
+]

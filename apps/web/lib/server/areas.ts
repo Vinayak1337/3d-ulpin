@@ -1,4 +1,5 @@
 import { areaSceneAssets } from "./scene-assets";
+import { usesGeographicNeighbours } from "./neighbour-scenario-policy";
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
 import type {
@@ -947,14 +948,19 @@ async function withNeighbours(
     Math.max(...xs),
     Math.max(...ys),
   ];
+  // Only source-observed/planned data participates in automatic geographic
+  // neighbourhoods. Synthetic copies must not contaminate reference checks.
+  // Explicit parcel associations and block memberships intentionally bypass
+  // the automatic-neighbour rule, preserving deliberate cross-block links.
   const sql = `SELECT body,area_id,ST_AsGeoJSON(ST_Translate(ST_Transform(geographic_geometry,$6::integer),-($7::double precision),-($8::double precision)),9,0) local_geometry FROM physical_features
-    WHERE area_id<>$1 AND id<>ALL($9::uuid[]) AND revision>0 AND (ST_Intersects(geographic_geometry,ST_MakeEnvelope($2,$3,$4,$5,4326)) OR id IN (SELECT to_id FROM property_associations WHERE from_id=ANY($9::uuid[]) AND relationship='occupies_parcel' AND status='confirmed') OR id IN (SELECT m.feature_id FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id WHERE g.area_id=$1)) ORDER BY id LIMIT 2001`;
+    WHERE area_id<>$1 AND id<>ALL($9::uuid[]) AND revision>0 AND (($10::boolean AND body->>'worldStatus' IN ('observed','planned') AND ST_Intersects(geographic_geometry,ST_MakeEnvelope($2,$3,$4,$5,4326))) OR id IN (SELECT to_id FROM property_associations WHERE from_id=ANY($9::uuid[]) AND relationship='occupies_parcel' AND status='confirmed') OR id IN (SELECT m.feature_id FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id WHERE g.area_id=$1)) ORDER BY id LIMIT 2001`;
   const values = [
     area.id,
     ...extent,
     Number(area.reference.analysisCrs.split(":")[1]),
     ...area.reference.origin,
     features.map((f) => f.id),
+    usesGeographicNeighbours(features),
   ];
   const rows = (await (client ? client.query(sql, values) : query(sql, values)))
     .rows;
