@@ -2,10 +2,10 @@
 
 Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 5/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
-## E01 ? Baseline and operating contract
+## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
 
-### T001 ? Repository branch and fresh preservation baseline
+### T001 — Repository branch and fresh preservation baseline
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
 **Dependencies:** None; environment and authorization requirements still apply.
@@ -20,9 +20,9 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 
 **Earlier references:** schema:U01, renderer:R03.
 
-**Detailed plan:** `tasks/T001_BASELINE_PLAN.md` ? authored; inspect its status before execution.
+**Detailed plan:** `tasks/T001_BASELINE_PLAN.md` — authored; inspect its status before execution.
 
-### T002 ? Reference, requirements and fixture acceptance contract
+### T002 — Reference, requirements and fixture acceptance contract
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Product/visual lead.
 
 **Dependencies:** T001.
@@ -37,9 +37,9 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 
 **Earlier references:** schema:U02, schema:U16, renderer:R01, renderer:R02, renderer:R04, renderer:R05.
 
-**Detailed plan:** `tasks/T002_PLAN.md` ? authored; inspect its status before execution.
+**Detailed plan:** `tasks/T002_PLAN.md` — authored; inspect its status before execution.
 
-### T003 ? Architecture decisions and smallest proving experiments
+### T003 — Architecture decisions and smallest proving experiments
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
 **Dependencies:** T002.
@@ -54,12 +54,12 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 
 **Earlier references:** schema:U15, schema:U21, renderer:R03, renderer:R06.
 
-**Detailed plan:** `tasks/T003_PLAN.md` ? authored; inspect its status before execution.
+**Detailed plan:** `tasks/T003_PLAN.md` — authored; inspect its status before execution.
 
-## E02 ? Thin unified model
+## E02 — Thin unified model
 Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
-### T004 ? Stable identity, vocabulary and typed relationships
+### T004 — Stable identity, vocabulary and typed relationships
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
 **Dependencies:** T003.
@@ -74,9 +74,9 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Earlier references:** schema:U03, schema:U04, schema:U09, renderer:D01.
 
-**Detailed plan:** `tasks/T004_PLAN.md` ? authored; inspect its status before execution.
+**Detailed plan:** `tasks/T004_PLAN.md` — authored; inspect its status before execution.
 
-### T005 ? Reusable sources, original assets and exact evidence links
+### T005 — Reusable sources, original assets and exact evidence links
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Data/backend.
 
 **Dependencies:** T004.
@@ -91,9 +91,9 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Earlier references:** schema:U05, schema:U11, schema:U12, renderer:D04.
 
-**Detailed plan:** `tasks/T005_PLAN.md` ? authored; inspect its status before execution.
+**Detailed plan:** `tasks/T005_PLAN.md` — authored; inspect its status before execution.
 
-### T006 ? Frames, transforms and vertical-reference semantics
+### T006 — Frames, transforms and vertical-reference semantics
 **Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Geometry lead.
 
 **Dependencies:** T004.
@@ -108,9 +108,9 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Earlier references:** schema:U06, renderer:D03.
 
-**Detailed plan:** `tasks/T006_PLAN.md` ? authored; inspect its status before execution.
+**Detailed plan:** `tasks/T006_PLAN.md` — authored; inspect its status before execution.
 
-### T007 ? Geometry representations, quantities and capability checks
+### T007 — Geometry representations, quantities and capability checks
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Geometry lead.
 
 **Dependencies:** T005, T006.
@@ -125,9 +125,9 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Earlier references:** schema:U03, schema:U07, schema:U09, schema:U10, schema:U11, renderer:D02, renderer:D07.
 
-**Detailed plan:** `tasks/T007_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T007_PLAN.md` — write just before execution.
 
-### T008 ? Observations, source composition and coherent snapshots
+### T008 — Observations, source composition and coherent snapshots
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
 **Dependencies:** T007.
@@ -142,12 +142,12 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Earlier references:** schema:U08, schema:U13, schema:U14, renderer:D05, renderer:C01.
 
-**Detailed plan:** `tasks/T008_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T008_PLAN.md` — write just before execution.
 
-## E03 ? Compatibility and first normalization
+## E03 — Compatibility and first normalization
 Exit: Existing records and named input profiles use the new boundary without loss.
 
-### T009 ? Read-only legacy compatibility adapter
+### T009 — Read-only legacy compatibility adapter
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/backend.
 
 **Dependencies:** T008.
@@ -162,9 +162,9 @@ Exit: Existing records and named input profiles use the new boundary without los
 
 **Earlier references:** schema:U01, schema:U04, schema:U15, renderer:D06.
 
-**Detailed plan:** `tasks/T009_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T009_PLAN.md` — write just before execution.
 
-### T010 ? Minimal additive storage and one-writer migration rehearsal
+### T010 — Minimal additive storage and one-writer migration rehearsal
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/backend.
 
 **Dependencies:** T009.
@@ -179,9 +179,9 @@ Exit: Existing records and named input profiles use the new boundary without los
 
 **Earlier references:** schema:U05, schema:U15.
 
-**Detailed plan:** `tasks/T010_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T010_PLAN.md` — write just before execution.
 
-### T011 ? First supported input profiles and retry-safe normalization
+### T011 — First supported input profiles and retry-safe normalization
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/geometry.
 
 **Dependencies:** T010.
@@ -196,12 +196,12 @@ Exit: Existing records and named input profiles use the new boundary without los
 
 **Earlier references:** schema:U02, schema:U08, schema:U17, schema:U19, renderer:D06.
 
-**Detailed plan:** `tasks/T011_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T011_PLAN.md` — write just before execution.
 
-## E04 ? Mixed-source proving slice
+## E04 — Mixed-source proving slice
 Exit: The persisted two-block demonstration and negative tests pass.
 
-### T012 ? Persisted two-block multi-source demonstration
+### T012 — Persisted two-block multi-source demonstration
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Full-stack/geometry.
 
 **Dependencies:** T011.
@@ -216,9 +216,9 @@ Exit: The persisted two-block demonstration and negative tests pass.
 
 **Earlier references:** schema:U09, schema:U13, schema:U16, renderer:R04, renderer:D08.
 
-**Detailed plan:** `tasks/T012_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T012_PLAN.md` — write just before execution.
 
-### T013 ? Foundation negatives, compatibility and acceptance gate
+### T013 — Foundation negatives, compatibility and acceptance gate
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Independent reviewer/QA.
 
 **Dependencies:** T012.
@@ -233,12 +233,12 @@ Exit: The persisted two-block demonstration and negative tests pass.
 
 **Earlier references:** schema:U16, schema:U20, schema:U21, renderer:D07, renderer:D08.
 
-**Detailed plan:** `tasks/T013_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T013_PLAN.md` — write just before execution.
 
-## E05 ? Shared data/session/viewport architecture
+## E05 — Shared data/session/viewport architecture
 Exit: One consistent selection/data boundary with independently releasable render resources.
 
-### T014 ? Shared revision-aware query and invalidation layer
+### T014 — Shared revision-aware query and invalidation layer
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Frontend/data.
 
 **Dependencies:** T013.
@@ -253,9 +253,9 @@ Exit: One consistent selection/data boundary with independently releasable rende
 
 **Earlier references:** New explicit user/architecture requirement.
 
-**Detailed plan:** `tasks/T014_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T014_PLAN.md` — write just before execution.
 
-### T015 ? One map and inspection session
+### T015 — One map and inspection session
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Frontend.
 
 **Dependencies:** T014.
@@ -270,9 +270,9 @@ Exit: One consistent selection/data boundary with independently releasable rende
 
 **Earlier references:** New explicit user/architecture requirement.
 
-**Detailed plan:** `tasks/T015_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T015_PLAN.md` — write just before execution.
 
-### T016 ? Reusable viewport/controller and resource lifecycle boundary
+### T016 — Reusable viewport/controller and resource lifecycle boundary
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering/frontend.
 
 **Dependencies:** T015.
@@ -287,12 +287,12 @@ Exit: One consistent selection/data boundary with independently releasable rende
 
 **Earlier references:** renderer:C06.
 
-**Detailed plan:** `tasks/T016_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T016_PLAN.md` — write just before execution.
 
-## E06 ? Scene compiler and first streamed renderer
+## E06 — Scene compiler and first streamed renderer
 Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the pinned engine.
 
-### T017 ? Snapshot-to-geometry scene compiler
+### T017 — Snapshot-to-geometry scene compiler
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Geometry/rendering.
 
 **Dependencies:** T016.
@@ -307,9 +307,9 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 
 **Earlier references:** renderer:C01, renderer:C02.
 
-**Detailed plan:** `tasks/T017_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T017_PLAN.md` — write just before execution.
 
-### T018 ? Road, ground and utility compiler profiles
+### T018 — Road, ground and utility compiler profiles
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Geometry/rendering.
 
 **Dependencies:** T017.
@@ -324,9 +324,9 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 
 **Earlier references:** schema:U10, renderer:C03.
 
-**Detailed plan:** `tasks/T018_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T018_PLAN.md` — write just before execution.
 
-### T019 ? Deterministic materials and reusable architectural recipes
+### T019 — Deterministic materials and reusable architectural recipes
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering/technical art.
 
 **Dependencies:** T018.
@@ -341,9 +341,9 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 
 **Earlier references:** renderer:C01, renderer:C04.
 
-**Detailed plan:** `tasks/T019_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T019_PLAN.md` — write just before execution.
 
-### T020 ? First multi-tile delivery and stable feature metadata
+### T020 — First multi-tile delivery and stable feature metadata
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Streaming/rendering.
 
 **Dependencies:** T019.
@@ -358,9 +358,9 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 
 **Earlier references:** schema:U14, renderer:C05.
 
-**Detailed plan:** `tasks/T020_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T020_PLAN.md` — write just before execution.
 
-### T021 ? Pinned renderer integration and compatibility qualification
+### T021 — Pinned renderer integration and compatibility qualification
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering lead.
 
 **Dependencies:** T020.
@@ -375,9 +375,9 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 
 **Earlier references:** renderer:C06, renderer:C08.
 
-**Detailed plan:** `tasks/T021_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T021_PLAN.md` — write just before execution.
 
-### T022 ? Measurement probes and render-foundation gate
+### T022 — Measurement probes and render-foundation gate
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Geometry/QA.
 
 **Dependencies:** T021.
@@ -392,12 +392,12 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 
 **Earlier references:** schema:U07, schema:U20, renderer:C07, renderer:C08.
 
-**Detailed plan:** `tasks/T022_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T022_PLAN.md` — write just before execution.
 
-## E07 ? Complete-neighbourhood visual quality
+## E07 — Complete-neighbourhood visual quality
 Exit: Full-map and diverse dataset views pass correctness and user visual acceptance.
 
-### T023 ? Complete reference-style neighbourhood through the pipeline
+### T023 — Complete reference-style neighbourhood through the pipeline
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering/technical art.
 
 **Dependencies:** T022.
@@ -412,9 +412,9 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 
 **Earlier references:** renderer:V01.
 
-**Detailed plan:** `tasks/T023_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T023_PLAN.md` — write just before execution.
 
-### T024 ? Architecture, facade and material fidelity refinement
+### T024 — Architecture, facade and material fidelity refinement
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering/technical art.
 
 **Dependencies:** T023.
@@ -429,9 +429,9 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 
 **Earlier references:** renderer:V02, renderer:V04.
 
-**Detailed plan:** `tasks/T024_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T024_PLAN.md` — write just before execution.
 
-### T025 ? Grounding, lighting and alternate-view fidelity
+### T025 — Grounding, lighting and alternate-view fidelity
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering/technical art.
 
 **Dependencies:** T024.
@@ -446,9 +446,9 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 
 **Earlier references:** renderer:V03, renderer:V04, renderer:V05.
 
-**Detailed plan:** `tasks/T025_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T025_PLAN.md` — write just before execution.
 
-### T026 ? Dense, sloped, sparse and held-out visual transfer
+### T026 — Dense, sloped, sparse and held-out visual transfer
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/QA.
 
 **Dependencies:** T025.
@@ -463,9 +463,9 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 
 **Earlier references:** renderer:R04, renderer:V06, renderer:S05.
 
-**Detailed plan:** `tasks/T026_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T026_PLAN.md` — write just before execution.
 
-### T027 ? Full-map visual acceptance checkpoint
+### T027 — Full-map visual acceptance checkpoint
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** User visual review + QA.
 
 **Dependencies:** T026.
@@ -480,12 +480,12 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 
 **Earlier references:** renderer:R02, renderer:V07, renderer:V08.
 
-**Detailed plan:** `tasks/T027_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T027_PLAN.md` — write just before execution.
 
-## E08 ? Cross-area reliability and bounded resources
+## E08 — Cross-area reliability and bounded resources
 Exit: R1: reusable renderer foundation with measured delivery and recovery.
 
-### T028 ? World coverage catalog and unloaded-entity resolution
+### T028 — World coverage catalog and unloaded-entity resolution
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Backend/streaming.
 
 **Dependencies:** T027.
@@ -500,9 +500,9 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 
 **Earlier references:** schema:U14, renderer:S01.
 
-**Detailed plan:** `tasks/T028_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T028_PLAN.md` — write just before execution.
 
-### T029 ? Bounded loading, cancellation and CPU/GPU release
+### T029 — Bounded loading, cancellation and CPU/GPU release
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Streaming/rendering.
 
 **Dependencies:** T028.
@@ -517,9 +517,9 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 
 **Earlier references:** renderer:S02.
 
-**Detailed plan:** `tasks/T029_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T029_PLAN.md` — write just before execution.
 
-### T030 ? Cross-area seam, topology and precision qualification
+### T030 — Cross-area seam, topology and precision qualification
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Geometry/QA.
 
 **Dependencies:** T029.
@@ -534,9 +534,9 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 
 **Earlier references:** schema:U20, renderer:S03.
 
-**Detailed plan:** `tasks/T030_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T030_PLAN.md` — write just before execution.
 
-### T031 ? Incremental rebuilds and atomic publication recovery
+### T031 — Incremental rebuilds and atomic publication recovery
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Backend/streaming.
 
 **Dependencies:** T030.
@@ -551,9 +551,9 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 
 **Earlier references:** schema:U14, schema:U19, renderer:S04.
 
-**Detailed plan:** `tasks/T031_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T031_PLAN.md` — write just before execution.
 
-### T032 ? Resource/failure benchmarks and renderer release gate
+### T032 — Resource/failure benchmarks and renderer release gate
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** QA/performance.
 
 **Dependencies:** T031.
@@ -568,12 +568,12 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 
 **Earlier references:** renderer:R05, renderer:S05, renderer:S06.
 
-**Detailed plan:** `tasks/T032_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T032_PLAN.md` — write just before execution.
 
-## E09 ? Map interface rebuild
+## E09 — Map interface rebuild
 Exit: Map workflows meet the shared visual and state contract.
 
-### T033 ? Shared design tokens and map shell
+### T033 — Shared design tokens and map shell
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend.
 
 **Dependencies:** T032.
@@ -588,9 +588,9 @@ Exit: Map workflows meet the shared visual and state contract.
 
 **Earlier references:** renderer:U01.
 
-**Detailed plan:** `tasks/T033_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T033_PLAN.md` — write just before execution.
 
-### T034 ? Camera, layers and global-search interface
+### T034 — Camera, layers and global-search interface
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend.
 
 **Dependencies:** T033.
@@ -605,9 +605,9 @@ Exit: Map workflows meet the shared visual and state contract.
 
 **Earlier references:** renderer:U02.
 
-**Detailed plan:** `tasks/T034_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T034_PLAN.md` — write just before execution.
 
-### T035 ? Property inspector, findings and utility inspection
+### T035 — Property inspector, findings and utility inspection
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/geometry.
 
 **Dependencies:** T034.
@@ -622,9 +622,9 @@ Exit: Map workflows meet the shared visual and state contract.
 
 **Earlier references:** renderer:U03, renderer:U04.
 
-**Detailed plan:** `tasks/T035_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T035_PLAN.md` — write just before execution.
 
-### T036 ? Map history, exports and responsive panels
+### T036 — Map history, exports and responsive panels
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend.
 
 **Dependencies:** T035.
@@ -639,9 +639,9 @@ Exit: Map workflows meet the shared visual and state contract.
 
 **Earlier references:** renderer:U05.
 
-**Detailed plan:** `tasks/T036_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T036_PLAN.md` — write just before execution.
 
-### T037 ? Map interface acceptance gate
+### T037 — Map interface acceptance gate
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** QA + user visual review.
 
 **Dependencies:** T036.
@@ -656,12 +656,12 @@ Exit: Map workflows meet the shared visual and state contract.
 
 **Earlier references:** renderer:U06.
 
-**Detailed plan:** `tasks/T037_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T037_PLAN.md` — write just before execution.
 
-## E10 ? Building, floor, unit and evidence interfaces
+## E10 — Building, floor, unit and evidence interfaces
 Exit: Plan/model/table/source views agree on the same records and quantities.
 
-### T038 ? Building/register composition on the shared model
+### T038 — Building/register composition on the shared model
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend.
 
 **Dependencies:** T037.
@@ -676,9 +676,9 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 
 **Earlier references:** renderer:I01.
 
-**Detailed plan:** `tasks/T038_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T038_PLAN.md` — write just before execution.
 
-### T039 ? Floor/unit plans, shared spaces and section interactions
+### T039 — Floor/unit plans, shared spaces and section interactions
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/geometry.
 
 **Dependencies:** T038.
@@ -693,9 +693,9 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 
 **Earlier references:** schema:U09, schema:U20, renderer:V05, renderer:I02, renderer:I03.
 
-**Detailed plan:** `tasks/T039_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T039_PLAN.md` — write just before execution.
 
-### T040 ? Optional evidence viewers and access scopes
+### T040 — Optional evidence viewers and access scopes
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/backend.
 
 **Dependencies:** T039.
@@ -710,9 +710,9 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 
 **Earlier references:** schema:U12, renderer:I04.
 
-**Detailed plan:** `tasks/T040_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T040_PLAN.md` — write just before execution.
 
-### T041 ? Record history, issues and investigations
+### T041 — Record history, issues and investigations
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/backend.
 
 **Dependencies:** T040.
@@ -727,9 +727,9 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 
 **Earlier references:** renderer:I05.
 
-**Detailed plan:** `tasks/T041_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T041_PLAN.md` — write just before execution.
 
-### T042 ? Inspection and zero-document acceptance gate
+### T042 — Inspection and zero-document acceptance gate
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** QA + user visual review.
 
 **Dependencies:** T041.
@@ -744,12 +744,12 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 
 **Earlier references:** renderer:I06.
 
-**Detailed plan:** `tasks/T042_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T042_PLAN.md` — write just before execution.
 
-## E11 ? Import, preparation, editing and review interfaces
+## E11 — Import, preparation, editing and review interfaces
 Exit: A live source-to-record-to-finding journey and correction workflow pass.
 
-### T043 ? Import mapping, preview and reconciliation interface
+### T043 — Import mapping, preview and reconciliation interface
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/backend.
 
 **Dependencies:** T042.
@@ -764,9 +764,9 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 
 **Earlier references:** renderer:E01.
 
-**Detailed plan:** `tasks/T043_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T043_PLAN.md` — write just before execution.
 
-### T044 ? Source workspace calibration and placement
+### T044 — Source workspace calibration and placement
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/geometry.
 
 **Dependencies:** T043.
@@ -781,9 +781,9 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 
 **Earlier references:** renderer:E02.
 
-**Detailed plan:** `tasks/T044_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T044_PLAN.md` — write just before execution.
 
-### T045 ? Versioned geometry edits, undo and conflict handling
+### T045 — Versioned geometry edits, undo and conflict handling
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Full-stack/geometry.
 
 **Dependencies:** T044.
@@ -798,9 +798,9 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 
 **Earlier references:** renderer:E03.
 
-**Detailed plan:** `tasks/T045_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T045_PLAN.md` — write just before execution.
 
-### T046 ? Compare, build, review and publish workflow
+### T046 — Compare, build, review and publish workflow
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Full-stack.
 
 **Dependencies:** T045.
@@ -815,9 +815,9 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 
 **Earlier references:** renderer:E04.
 
-**Detailed plan:** `tasks/T046_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T046_PLAN.md` — write just before execution.
 
-### T047 ? End-to-end import/edit/workflow acceptance
+### T047 — End-to-end import/edit/workflow acceptance
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** QA.
 
 **Dependencies:** T046.
@@ -832,12 +832,12 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 
 **Earlier references:** renderer:E06.
 
-**Detailed plan:** `tasks/T047_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T047_PLAN.md` — write just before execution.
 
-## E12 ? Integrated product qualification
+## E12 — Integrated product qualification
 Exit: R2: reproducible supported product, not universal data-format or national coverage.
 
-### T048 ? Integrated regression and current evidence baseline
+### T048 — Integrated regression and current evidence baseline
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** QA.
 
 **Dependencies:** T047.
@@ -852,9 +852,9 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 
 **Earlier references:** renderer:Q01.
 
-**Detailed plan:** `tasks/T048_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T048_PLAN.md` — write just before execution.
 
-### T049 ? Security, input safety and source-use qualification
+### T049 — Security, input safety and source-use qualification
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Backend/security.
 
 **Dependencies:** T048.
@@ -869,9 +869,9 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 
 **Earlier references:** schema:U12, renderer:Q03.
 
-**Detailed plan:** `tasks/T049_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T049_PLAN.md` — write just before execution.
 
-### T050 ? Real device, browser and accessibility qualification
+### T050 — Real device, browser and accessibility qualification
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** QA/accessibility.
 
 **Dependencies:** T049.
@@ -886,9 +886,9 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 
 **Earlier references:** renderer:Q02.
 
-**Detailed plan:** `tasks/T050_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T050_PLAN.md` — write just before execution.
 
-### T051 ? Reproducible startup, restore and additive transfer
+### T051 — Reproducible startup, restore and additive transfer
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Platform/QA.
 
 **Dependencies:** T050.
@@ -903,9 +903,9 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 
 **Earlier references:** renderer:Q04.
 
-**Detailed plan:** `tasks/T051_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T051_PLAN.md` — write just before execution.
 
-### T052 ? Integrated product release and next backlog
+### T052 — Integrated product release and next backlog
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Architecture lead + user.
 
 **Dependencies:** T051.
@@ -920,12 +920,12 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 
 **Earlier references:** renderer:Q06.
 
-**Detailed plan:** `tasks/T052_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T052_PLAN.md` — write just before execution.
 
-## E13 ? Optional expansion track
+## E13 — Optional expansion track
 Exit: R3 increments are elected later; they do not block R1/R2.
 
-### T053 ? Qualified BIM, city-model and CAD adapter increments
+### T053 — Qualified BIM, city-model and CAD adapter increments
 **Status:** Deferred. **Release:** R3-optional. **Suggested owner:** Data/geometry.
 
 **Dependencies:** T052.
@@ -940,9 +940,9 @@ Exit: R3 increments are elected later; they do not block R1/R2.
 
 **Earlier references:** schema:U07, schema:U18, renderer:E05, renderer:E06.
 
-**Detailed plan:** `tasks/T053_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T053_PLAN.md` — write just before execution.
 
-### T054 ? Terrain, point-cloud and survey/bulk increments
+### T054 — Terrain, point-cloud and survey/bulk increments
 **Status:** Deferred. **Release:** R3-optional. **Suggested owner:** Data/geometry.
 
 **Dependencies:** T052.
@@ -957,9 +957,9 @@ Exit: R3 increments are elected later; they do not block R1/R2.
 
 **Earlier references:** schema:U07, schema:U11, schema:U19, renderer:E05, renderer:E06.
 
-**Detailed plan:** `tasks/T054_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T054_PLAN.md` — write just before execution.
 
-### T055 ? Private parties, official integrations and multi-user expansion
+### T055 — Private parties, official integrations and multi-user expansion
 **Status:** Deferred. **Release:** R3-optional. **Suggested owner:** Architecture/security.
 
 **Dependencies:** T052.
@@ -974,9 +974,9 @@ Exit: R3 increments are elected later; they do not block R1/R2.
 
 **Earlier references:** schema:U12.
 
-**Detailed plan:** `tasks/T055_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T055_PLAN.md` — write just before execution.
 
-### T056 ? Measured capacity and large-catalog expansion
+### T056 — Measured capacity and large-catalog expansion
 **Status:** Deferred. **Release:** R3-optional. **Suggested owner:** Streaming/performance.
 
 **Dependencies:** T052.
@@ -991,11 +991,11 @@ Exit: R3 increments are elected later; they do not block R1/R2.
 
 **Earlier references:** renderer:S05, renderer:Q05, renderer:Q06.
 
-**Detailed plan:** `tasks/T056_PLAN.md` ? write just before execution.
+**Detailed plan:** `tasks/T056_PLAN.md` — write just before execution.
 
 ## Separate maintenance
 
-### M001 ? Delete previously authorized old proof directory
+### M001 — Delete previously authorized old proof directory
 Status: Accepted. Exact target: `E:\Projects\3d-ulpin-proof-20260917`.
 
 Only this exact resolved directory; reject reparse points/links and unexpected path resolution; preserve product repo, sources and other study directories.
