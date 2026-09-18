@@ -1,0 +1,471 @@
+{
+  "schemaVersion": "ulpin-authority-experiment/1",
+  "cases": [
+    {
+      "id": "known-zero-document",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": true
+    },
+    {
+      "id": "unknown-not-zero",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "unknown",
+          "reason": "Height not supplied"
+        },
+        "related": []
+      },
+      "valid": true
+    },
+    {
+      "id": "unicode-code-point-boundary",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": true
+    },
+    {
+      "id": "unicode-over-boundary",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "unicode-bmp",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "उत्तम नगर",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": true
+    },
+    {
+      "id": "null-must-be-explicit",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "invalid-source-zero",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": 0,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "string-revision",
+      "value": {
+        "id": "source-0001",
+        "revision": "1",
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "boolean-revision",
+      "value": {
+        "id": "source-0001",
+        "revision": true,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "fractional-revision",
+      "value": {
+        "id": "source-0001",
+        "revision": 1.5,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "unsafe-integer",
+      "value": {
+        "id": "source-0001",
+        "revision": 9007199254740992,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "safe-boundary",
+      "value": {
+        "id": "source-0001",
+        "revision": 9007199254740991,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": true
+    },
+    {
+      "id": "extra-field",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": [],
+        "owner": "not-a-core-field"
+      },
+      "valid": false
+    },
+    {
+      "id": "extra-variant-field",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm",
+          "inferred": true
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "future-variant",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "guessed",
+          "value": 1
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "invalid-unit",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "pixels"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "tuple-extra-dimension",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          1,
+          2
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "tuple-missing-dimension",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "array-bound",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": [
+          "a",
+          "b",
+          "c",
+          "d"
+        ]
+      },
+      "valid": false
+    },
+    {
+      "id": "related-identifier-not-label",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": [
+          "😀"
+        ]
+      },
+      "valid": false
+    },
+    {
+      "id": "control-character",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "line\nbreak",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "trailing-control-id",
+      "value": {
+        "id": "source\n",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 304.8,
+          "unit": "mm"
+        },
+        "related": []
+      },
+      "valid": false
+    },
+    {
+      "id": "known-zero",
+      "value": {
+        "id": "source-0001",
+        "revision": 0,
+        "label": "भवन A",
+        "sourceRevision": null,
+        "point": [
+          0,
+          -0.25
+        ],
+        "observation": {
+          "state": "known",
+          "value": 0,
+          "unit": "m"
+        },
+        "related": []
+      },
+      "valid": true
+    }
+  ]
+}

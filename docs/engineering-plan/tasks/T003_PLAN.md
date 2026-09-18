@@ -30,6 +30,10 @@ Use the currently resolved Zod version, not a broad dependency upgrade. Pin any
 new direct dependency deliberately. Pin Python's JSON Schema validator to a
 verified available release and qualify it in the hosted processing test image.
 Do not run a migration or modify the private PC environment for this experiment.
+An isolated Python virtual environment under the ignored `.runtime/engineering/`
+directory may install the exact test validator; no global Python packages or
+developer data settings are changed. Unicode supplementary-plane length and
+non-finite exponent parsing are explicit parity risks to test before deciding.
 
 ## Decisions to record
 

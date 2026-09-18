@@ -233,6 +233,10 @@ try {
     '--env','PYTHONPATH=/app','--env','PYTHONDONTWRITEBYTECODE=1',testImage,
     'python','-m','pytest','-q','tests','-p','no:cacheprovider'],{timeout:240000});
   pass('Pinned Python 3.12 geometry/processing tests pass with read-only sources and no network');
+  await command('schema-authority-parity','docker',['--context','default','run','--rm','--network','none',
+    '--mount',`type=bind,src=${root},dst=/workspace,readonly`,testImage,
+    'python','/workspace/scripts/contracts/authority-parity.py'],{timeout:60000});
+  pass('Generated schema corpus also passes the pinned Python processing runtime');
   report.result='PASS';
 }catch(error) {
   report.result='FAIL';report.error=redact(error.stack||String(error),process.env);
