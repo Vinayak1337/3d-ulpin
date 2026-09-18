@@ -1,0 +1,31 @@
+{
+  "scope": "Planning validator behavior only; no product tests",
+  "negative_cases": [
+    {
+      "case": "cycle",
+      "result": "expected_rejection",
+      "reason": "Dependency cycle at T001"
+    },
+    {
+      "case": "legacy_orphan",
+      "result": "expected_rejection",
+      "reason": "All legacy mapping targets resolve"
+    },
+    {
+      "case": "false_completion",
+      "result": "expected_rejection",
+      "reason": "Any accepted tasks have evidence references and accepted prerequisites"
+    },
+    {
+      "case": "legacy_bytes_changed",
+      "result": "expected_rejection",
+      "reason": "Preserved legacy records match their source hashes"
+    },
+    {
+      "case": "expansion_blocks_core",
+      "result": "expected_rejection",
+      "reason": "Dependency cycle at T002"
+    }
+  ],
+  "record_origin": "Historical version 1.0 validator checks; not rerun by this record. Current preparation checks are in CLOUD_PREPARATION_CHECKS.json."
+}

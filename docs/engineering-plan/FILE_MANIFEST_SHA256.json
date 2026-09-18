@@ -1,0 +1,226 @@
+{
+  "plan_version": "1.2",
+  "scope": "Adopted plan-folder bytes at the T001 baseline preparation checkpoint; recompute intentionally after edits.",
+  "files": [
+    {
+      "path": "00_START_HERE.md",
+      "bytes": 5967,
+      "sha256": "1e1ceb6a2e1fbc3d377a6a289804beb1df580597ba3c723740bb71da39009f81"
+    },
+    {
+      "path": "01_MASTER_EXECUTION_PLAN.md",
+      "bytes": 14052,
+      "sha256": "3c774360196b7d32fc068cd4ba090f80d5f53d27ea4997839b73ee2ebc46d984"
+    },
+    {
+      "path": "02_ENGINEERING_GUIDELINES.md",
+      "bytes": 14630,
+      "sha256": "62dd0033727ca05c76d6eb818b82eb388c2cae69140dac972ee5d44b67f0ccf8"
+    },
+    {
+      "path": "03_ARCHITECTURE_AND_DATA_CONTRACT.md",
+      "bytes": 13633,
+      "sha256": "ee5df039a11f18e9c1038a4cec631b84def2988937b05cfd5c2ee92915e4fa29"
+    },
+    {
+      "path": "04_TESTING_AND_EDGE_CASES.md",
+      "bytes": 28591,
+      "sha256": "6b55bb4e4f7d809e617fbeb151fee698806e51587744ed85c799f96236ad8a80"
+    },
+    {
+      "path": "05_TASK_BACKLOG.md",
+      "bytes": 47462,
+      "sha256": "dfc9434d5c3ed4d4042424a8990e92e1608c5a60c08e16e381e100ee0959aaad"
+    },
+    {
+      "path": "06_TASK_EXECUTION_PLAYBOOK.md",
+      "bytes": 6253,
+      "sha256": "b396b4775fc506d22de4d716ef1b61c39951269b1c467abdda13649625682f4e"
+    },
+    {
+      "path": "07_DECISIONS_RISKS_AND_SOURCES.md",
+      "bytes": 11743,
+      "sha256": "d11fb0b80625310fe864d2ea55d44b77fcc579537724c6e4adb64f6dc050c31f"
+    },
+    {
+      "path": "08_LEGACY_TRACEABILITY.md",
+      "bytes": 14903,
+      "sha256": "6ada7b5160fcce637fda733305684485dbc9ee33311675700c0b6cb6666c50a0"
+    },
+    {
+      "path": "09_INPUT_SUPPORT_PLAN.md",
+      "bytes": 10492,
+      "sha256": "d6adfe6b71eb10b41837dcbcfd75917f6491008b8e913d6ca0817eca72fdf057"
+    },
+    {
+      "path": "10_RESUME_HANDOFF.md",
+      "bytes": 5102,
+      "sha256": "53c780a8ee26c01f408c6549e2eeee09488113e7d081d7bbcb83cdf36a7709bd"
+    },
+    {
+      "path": "11_CLOUD_EXECUTION.md",
+      "bytes": 5290,
+      "sha256": "cf3771bf43cda1b6f9cdc28e53395b99d904310ba0f3951de760531bb49325f6"
+    },
+    {
+      "path": "acceptance_traceability.json",
+      "bytes": 20128,
+      "sha256": "9e9024ed459634d482829dc02ecaab718ab3e84fcdf1d651cae1cfa465fa467b"
+    },
+    {
+      "path": "backlog.json",
+      "bytes": 79778,
+      "sha256": "66dffbf2e0483076ff0235eadc84c6b2bce74f61eb7556f42eac00817ddabfff"
+    },
+    {
+      "path": "CLOUD_PREPARATION_CHECKS.json",
+      "bytes": 981,
+      "sha256": "9993ef351f2f455fa692ef832504bc9774b2833726e68d43df6bcc2cdfa5d867"
+    },
+    {
+      "path": "edge_cases.json",
+      "bytes": 32666,
+      "sha256": "6997b5344dd9c8455e8d96c1e33dce8723cadb4d325f0a6453567abebaa195dc"
+    },
+    {
+      "path": "input_support_plan.json",
+      "bytes": 16707,
+      "sha256": "fccc275b1775a96c7c11898945323dc19713421d7decef93356a3b235d21262a"
+    },
+    {
+      "path": "legacy/benchmarks.json",
+      "bytes": 3632,
+      "sha256": "8496d6a7100d694d0025714c27e1b9d5385cb9f1d24856e20e1ac904064409e2"
+    },
+    {
+      "path": "legacy/input_catalog.json",
+      "bytes": 17207,
+      "sha256": "d35854dc2815f3a7655a195a6b6b05f41034ee3019554b9909fa456ed584ebe8"
+    },
+    {
+      "path": "legacy/renderer_tasks.json",
+      "bytes": 38841,
+      "sha256": "c1b7cba9dbb05b3814878b8235b951e31945b583bee8e41a9ad9f614d86c285f"
+    },
+    {
+      "path": "legacy/schema_acceptance_tests.md",
+      "bytes": 6587,
+      "sha256": "ee29996ebabd5002ff061da50f6e693957becb3993eccace61e95078c83e2f34"
+    },
+    {
+      "path": "legacy/schema_tasks.json",
+      "bytes": 10401,
+      "sha256": "d71d0f13db90874323efc517b2252d0231257ffb2dd2a2c1a0f550c1d72e909e"
+    },
+    {
+      "path": "legacy/SOURCE_MANIFEST.json",
+      "bytes": 1483,
+      "sha256": "22aa874853327a3c7857bf773b7e24f648fab42fc180e5fc36eee134c663550d"
+    },
+    {
+      "path": "legacy/ui_gates.json",
+      "bytes": 4305,
+      "sha256": "67e4d45af214a4770ba3181e6d3681ab1d9c415f705dba63ccae2c8a40ef0a6c"
+    },
+    {
+      "path": "legacy_task_crosswalk.json",
+      "bytes": 42482,
+      "sha256": "6bae1e8b344b5c2671337adde334f51f8f8b4fd0d4a70fe211ebd8aa31e86350"
+    },
+    {
+      "path": "PLAN_STATUS.json",
+      "bytes": 919,
+      "sha256": "efe1bbb5efb026e65103ed5922f8cc908e5a2b03199a03edfd693c0376851bbe"
+    },
+    {
+      "path": "PLAN_TOOL_CHECKS.json",
+      "bytes": 965,
+      "sha256": "1f7a23de755bc4c0542e7400289e4d8add18d7757d92f0a40b1bdd7045187cb0"
+    },
+    {
+      "path": "PLAN_VALIDATION.json",
+      "bytes": 1744,
+      "sha256": "d11ef3874ea261288172b18d1b27042ca210eed8283042cab1e6a13b6485eea9"
+    },
+    {
+      "path": "tasks/M001_PROOF_CLEANUP_PLAN.md",
+      "bytes": 2226,
+      "sha256": "f05463db1cddb25203844ab77f946d568eb2ff1b95aaa51f02f8c2aa688430c1"
+    },
+    {
+      "path": "tasks/M001_RESULT.md",
+      "bytes": 1055,
+      "sha256": "eaf950ddc125214e3ace53162e703a9b30c3fc046e8f23b63f63eb4753af69f2"
+    },
+    {
+      "path": "tasks/T001_ADOPTION_AND_WINDOWS_PLAN.md",
+      "bytes": 3643,
+      "sha256": "222267abfb9896a06ffd8f2b62bf8f9fe3b3f87bbc80beddc19a8f8f26c6091b"
+    },
+    {
+      "path": "tasks/T001_BASELINE_PLAN.md",
+      "bytes": 11802,
+      "sha256": "e9815f89b1d924caf1d51c0b1e65594f8dd7d3c6710d1e710cde1605f93ecff5"
+    },
+    {
+      "path": "tasks/T001_BROWSER_BASELINE_REPAIR_PLAN.md",
+      "bytes": 2246,
+      "sha256": "c6baf3cb12def6da6379e56d319e5b99b1c72b48befb20b6dc97f934e3da9776"
+    },
+    {
+      "path": "tasks/T001_CLOUD_BOOTSTRAP_PLAN.md",
+      "bytes": 3540,
+      "sha256": "1fd60e9df72c186a3d57f2405a72d653a9f0e2947f10612eaec487cfc15e89f8"
+    },
+    {
+      "path": "tasks/T001_ISOLATED_BASELINE_PLAN.md",
+      "bytes": 4386,
+      "sha256": "62a72af18e1cccff2e3c05c7c21eee348caf9bba467c698c4bb07c256ccf5f3d"
+    },
+    {
+      "path": "tasks/T001_PROGRESS.md",
+      "bytes": 3098,
+      "sha256": "7fd470ad20025ee93e281b716dfded03a88efc57654674cf1a86b1d9bf6e53aa"
+    },
+    {
+      "path": "templates/ADR.md",
+      "bytes": 678,
+      "sha256": "9a6cf4f1a2b80c3c93d93dc0a0deb18ea50e0a681aec240f47886bf80cb7eed5"
+    },
+    {
+      "path": "templates/DEFECT.md",
+      "bytes": 557,
+      "sha256": "aa1b230b12a61aaaf936343ffdf08b4a6175341973b73623aff53b9e22008bfc"
+    },
+    {
+      "path": "templates/TASK_PLAN.md",
+      "bytes": 2837,
+      "sha256": "5d6756e6be0462bf6420db4dc602bda2abed747053b9e8fb8b4a32bcff5ac603"
+    },
+    {
+      "path": "templates/TASK_RESULT.md",
+      "bytes": 848,
+      "sha256": "59f754b59f00fd73d8f8bd7c15edabdbd8bf5aaa40f213e9cd567f297d6a7882"
+    },
+    {
+      "path": "tools/collect_source_baseline.py",
+      "bytes": 11578,
+      "sha256": "215a33c3d7d79e17267597921d52091a41abf372688e27c9d3fde215cbe93698"
+    },
+    {
+      "path": "tools/render_backlog.py",
+      "bytes": 1971,
+      "sha256": "d146cfe6e89f5c2e1c646fd9d20a3bbcab0ff771fa211d369dd5af5eac303588"
+    },
+    {
+      "path": "tools/tests/test_source_baseline.py",
+      "bytes": 9785,
+      "sha256": "ef27a9d91941c888527ebdeeb7b9d69fce752e9deee39aa0a16c24c8a145200b"
+    },
+    {
+      "path": "tools/validate_plan.py",
+      "bytes": 7338,
+      "sha256": "eac65420d100f3ebd8d7d28fbef35c706c82609829a9a4bb2f66a12cc771382e"
+    }
+  ]
+}

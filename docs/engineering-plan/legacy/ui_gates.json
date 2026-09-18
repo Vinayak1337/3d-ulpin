@@ -1,0 +1,130 @@
+[
+  [
+    "UI-01",
+    "G5",
+    "Map shell",
+    "Primary block-map anchor",
+    "Header, map dominance, rail widths, typography and overlays",
+    "Scene is live; no primary action clipped at reference viewports."
+  ],
+  [
+    "UI-02",
+    "G5",
+    "Camera and layers",
+    "Map anchor + 2D map state",
+    "Controls, north/scale, layer states and feedback",
+    "2D stays top-down; controls remain accessible; layer hiding changes display, not analysis scope."
+  ],
+  [
+    "UI-03",
+    "G5",
+    "Global search and area navigation",
+    "Map anchor; search details require approved derivative",
+    "Search hierarchy, disambiguation and unloaded-area navigation",
+    "Resolve IDs without downloading all geometry or silently selecting an ambiguous property."
+  ],
+  [
+    "UI-04",
+    "G5",
+    "Property inspector and list",
+    "Parcel-inspector reference",
+    "Selection, metrics, feature preview and panel hierarchy",
+    "Same entity after rapid clicks/unload/reload; partial geometry and missing records are explicit."
+  ],
+  [
+    "UI-05",
+    "G5",
+    "Utilities and findings",
+    "Utility/findings reference + map-findings concept",
+    "Measured annotation, section and exact result display",
+    "Correct endpoints/axes; missing depth remains unknown; no false area addition."
+  ],
+  [
+    "UI-06",
+    "G5",
+    "Map history and export",
+    "Map-history and export-dialog concepts",
+    "Read-only timeline, report scope and output preview",
+    "Snapshot stays consistent; export carries quantity definitions and provenance."
+  ],
+  [
+    "UI-07",
+    "G5",
+    "Responsive map",
+    "Approved derivative required; prior mobile QA is behavioral evidence only",
+    "Layers drawer, compact inspector and uncluttered map",
+    "390x844 and native touch tested; no fixed inspector covering map controls."
+  ],
+  [
+    "UI-08",
+    "G6",
+    "Building/register page",
+    "Primary register anchor",
+    "Live building model, metrics, floor table and side content",
+    "Exterior-only and zero-document buildings are first-class states."
+  ],
+  [
+    "UI-09",
+    "G6",
+    "Floors, flats and shared spaces",
+    "Register anchor + detailed floor variant",
+    "Selected unit, shared plan geometry and room hierarchy",
+    "Model, plan, table, areas and bedroom counts agree; duplex/shared-space cases pass."
+  ],
+  [
+    "UI-10",
+    "G6",
+    "Section and exploded model",
+    "Register anchor + utilities; full detailed section derivative required",
+    "Ground reference, elevations, caps and floor separation",
+    "Offsets are display-only; true coordinates and measurements stay unchanged."
+  ],
+  [
+    "UI-11",
+    "G6",
+    "Optional evidence and photos",
+    "Register-evidence concept + supporting boards",
+    "Document cards, exact source viewer and empty states",
+    "Attach at building/floor/flat level; distinguish inherited links and retain access checks."
+  ],
+  [
+    "UI-12",
+    "G6",
+    "Record history, issues and investigation",
+    "Record-history/issues concepts + investigation anchor",
+    "Revision comparison, issue scope and task history",
+    "Use actual lifecycle; missing evidence cannot become a false accepted result."
+  ],
+  [
+    "UI-13",
+    "G7",
+    "Import, mapping and reconciliation",
+    "Import dialog + add-building concept",
+    "Format mapping, preview, partial failures and existing-ID choices",
+    "Supported profiles only; duplicates/conflicts/errors explicit; reimport is idempotent."
+  ],
+  [
+    "UI-14",
+    "G7",
+    "Source workspace and calibration",
+    "Primary workspace + calibration/compare concepts",
+    "Document canvas, calibrated dimensions and linked 3D preview",
+    "Scale is separate from placement; known and missing reference fields are visible."
+  ],
+  [
+    "UI-15",
+    "G7",
+    "Geometry/attribute editing",
+    "Workspace anchor; detailed edit states require approved derivatives",
+    "Draft boundaries, manipulator handles, undo and review context",
+    "Draft edits preserve identity; no silent mutation of accepted/source geometry."
+  ],
+  [
+    "UI-16",
+    "G7",
+    "Build, review and publish",
+    "Build-details and review-result concepts",
+    "Candidate/current comparison and publication status",
+    "No half-built snapshot displayed as current; conflict/retry/rollback states work."
+  ]
+]

@@ -22,3 +22,7 @@ demo-data/synthetic-v2-workspace/*.csv -text whitespace=blank-at-eol,blank-at-eo
 # Preserve supplied Markdown hard breaks and verbatim terminal evidence.
 docs/v2-design/design.md -text whitespace=-blank-at-eol
 docs/evidence/v2/checks/*.txt -text whitespace=-blank-at-eol,-blank-at-eof
+
+# Engineering tooling is portable; preserved planning inputs retain exact bytes.
+docs/engineering-plan/** text eol=lf
+docs/engineering-plan/legacy/** -text

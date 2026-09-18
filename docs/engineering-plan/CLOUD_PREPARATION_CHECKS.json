@@ -1,0 +1,28 @@
+{
+  "kind": "T001_cloud_preparation_not_actual_repository_execution",
+  "authoring_environment": "assistant Linux container",
+  "collector_tests": {
+    "status": "PASS",
+    "count": 18,
+    "fixtures": "temporary synthetic Git repositories, not Vinayak1337/3d-ulpin"
+  },
+  "plan_validation": {
+    "status": "PASS",
+    "checks": 26
+  },
+  "candidate_workflow_static_checks": {
+    "status": "PASS",
+    "checks": 13,
+    "actual_hosted_execution": false
+  },
+  "actual_repository_fetched": false,
+  "target_branch_created": false,
+  "target_commit_created": false,
+  "pushed": false,
+  "application_tests_run": false,
+  "database_tests_run": false,
+  "proofs_deleted": false,
+  "T001_accepted": false,
+  "blocker": "No GitHub write tool exposed; remote git fetch failed DNS; web/API repository reads unsuccessful.",
+  "next": "Authenticated executor reviews current repository instructions and additive path compatibility, commits candidate, then runs actual T001 baseline."
+}

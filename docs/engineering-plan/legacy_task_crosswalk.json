@@ -1,0 +1,1184 @@
+{
+  "legacy_count": 81,
+  "new_execution_task_count": 56,
+  "mappings": [
+    {
+      "legacy_id": "schema:U01",
+      "legacy_title": "Inventory exact current records and ID linkage",
+      "original_status": "Planned",
+      "original_dependencies": [],
+      "new_tasks": [
+        "T001",
+        "T009"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U02",
+      "legacy_title": "Approve input taxonomy and capability stages",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U01"
+      ],
+      "new_tasks": [
+        "T002",
+        "T011"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U03",
+      "legacy_title": "Define common references, vocabulary and unknown states",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U02"
+      ],
+      "new_tasks": [
+        "T004",
+        "T007"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U04",
+      "legacy_title": "Define entity identity and split/merge lifecycle",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U03"
+      ],
+      "new_tasks": [
+        "T004",
+        "T009"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U05",
+      "legacy_title": "Define source catalog and original preservation",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U03"
+      ],
+      "new_tasks": [
+        "T005",
+        "T010"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U06",
+      "legacy_title": "Define coordinate-operation and vertical-reference contract",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U03"
+      ],
+      "new_tasks": [
+        "T006"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U07",
+      "legacy_title": "Define geometry representations and quantity profiles",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U04",
+        "schema:U06"
+      ],
+      "new_tasks": [
+        "T007",
+        "T022",
+        "T053",
+        "T054"
+      ],
+      "disposition": "split core/expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U08",
+      "legacy_title": "Define observations, identity matching and resolution",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U04",
+        "schema:U05",
+        "schema:U07"
+      ],
+      "new_tasks": [
+        "T008",
+        "T011"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U09",
+      "legacy_title": "Define building, storey, space and parcel profiles",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U07",
+        "schema:U08"
+      ],
+      "new_tasks": [
+        "T004",
+        "T007",
+        "T012",
+        "T039"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U10",
+      "legacy_title": "Define roads/rail and utility topology profiles",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U07",
+        "schema:U08"
+      ],
+      "new_tasks": [
+        "T007",
+        "T018"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U11",
+      "legacy_title": "Define raster/cloud/survey asset profiles",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U05",
+        "schema:U06",
+        "schema:U07"
+      ],
+      "new_tasks": [
+        "T005",
+        "T007",
+        "T054"
+      ],
+      "disposition": "split core/expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U12",
+      "legacy_title": "Define optional evidence and private party/registry profiles",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U04",
+        "schema:U05",
+        "schema:U08"
+      ],
+      "new_tasks": [
+        "T005",
+        "T040",
+        "T049",
+        "T055"
+      ],
+      "disposition": "split core/expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U13",
+      "legacy_title": "Define source composition and capability evaluation",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U08",
+        "schema:U09",
+        "schema:U10",
+        "schema:U11",
+        "schema:U12"
+      ],
+      "new_tasks": [
+        "T008",
+        "T012"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U14",
+      "legacy_title": "Define publication and world catalog manifests",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U04",
+        "schema:U07",
+        "schema:U13"
+      ],
+      "new_tasks": [
+        "T008",
+        "T020",
+        "T028",
+        "T031"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U15",
+      "legacy_title": "Plan backward-compatible migration and one-writer policy",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U05",
+        "schema:U06",
+        "schema:U09",
+        "schema:U14"
+      ],
+      "new_tasks": [
+        "T003",
+        "T009",
+        "T010"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U16",
+      "legacy_title": "Specify conformance fixtures and independent quantities",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U07",
+        "schema:U09",
+        "schema:U10",
+        "schema:U13"
+      ],
+      "new_tasks": [
+        "T002",
+        "T012",
+        "T013"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U17",
+      "legacy_title": "Specify first actual adapter profiles",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U02",
+        "schema:U13",
+        "schema:U15"
+      ],
+      "new_tasks": [
+        "T011"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U18",
+      "legacy_title": "Specify IFC/CityJSON and CAD extension profiles",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U06",
+        "schema:U07",
+        "schema:U09",
+        "schema:U17"
+      ],
+      "new_tasks": [
+        "T053"
+      ],
+      "disposition": "deferred expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U19",
+      "legacy_title": "Specify bulk ingestion and incremental derivation",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U13",
+        "schema:U14",
+        "schema:U15"
+      ],
+      "new_tasks": [
+        "T011",
+        "T031",
+        "T054"
+      ],
+      "disposition": "split core/expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U20",
+      "legacy_title": "Review schema against renderer/UI invariants",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U14",
+        "schema:U16",
+        "schema:U19"
+      ],
+      "new_tasks": [
+        "T013",
+        "T022",
+        "T030",
+        "T039"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "schema:U21",
+      "legacy_title": "Freeze draft core for implementation authorization",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "schema:U15",
+        "schema:U16",
+        "schema:U17",
+        "schema:U20"
+      ],
+      "new_tasks": [
+        "T003",
+        "T013"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:R01",
+      "legacy_title": "Approve reference manifest and screen mapping",
+      "original_status": "Planned",
+      "original_dependencies": [],
+      "new_tasks": [
+        "T002"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:R02",
+      "legacy_title": "Approve visual rubric and camera suite",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:R01"
+      ],
+      "new_tasks": [
+        "T002",
+        "T027"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:R03",
+      "legacy_title": "Inventory reusable product capabilities",
+      "original_status": "Planned",
+      "original_dependencies": [],
+      "new_tasks": [
+        "T001",
+        "T003"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:R04",
+      "legacy_title": "Define fixture and held-out dataset suite",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:R01"
+      ],
+      "new_tasks": [
+        "T002",
+        "T012",
+        "T026"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:R05",
+      "legacy_title": "Declare hardware and benchmark workload",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:R02",
+        "renderer:R04"
+      ],
+      "new_tasks": [
+        "T002",
+        "T032"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:R06",
+      "legacy_title": "Approve renderer-first architecture and scope",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:R01",
+        "renderer:R02",
+        "renderer:R03",
+        "renderer:R04",
+        "renderer:R05"
+      ],
+      "new_tasks": [
+        "T003"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:D01",
+      "legacy_title": "Define identities, features and spatial relationships",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:R06"
+      ],
+      "new_tasks": [
+        "T004"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:D02",
+      "legacy_title": "Define geometry roles and measurement capabilities",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:D01"
+      ],
+      "new_tasks": [
+        "T007"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:D03",
+      "legacy_title": "Define coordinate and vertical-reference rules",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:D02"
+      ],
+      "new_tasks": [
+        "T006"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:D04",
+      "legacy_title": "Define provenance and optional attachment links",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:D01"
+      ],
+      "new_tasks": [
+        "T005"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:D05",
+      "legacy_title": "Define revision, scenario and publication snapshots",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:D01",
+        "renderer:D02",
+        "renderer:D04"
+      ],
+      "new_tasks": [
+        "T008"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:D06",
+      "legacy_title": "Normalize existing records and first input adapters",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:D02",
+        "renderer:D03",
+        "renderer:D04",
+        "renderer:D05"
+      ],
+      "new_tasks": [
+        "T009",
+        "T011"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:D07",
+      "legacy_title": "Implement purpose-specific validation and readiness",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:D06"
+      ],
+      "new_tasks": [
+        "T007",
+        "T013"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:D08",
+      "legacy_title": "Publish canonical contract conformance fixtures",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:D07",
+        "renderer:R04"
+      ],
+      "new_tasks": [
+        "T012",
+        "T013"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:C01",
+      "legacy_title": "Define render recipe and asset derivation contract",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:D08"
+      ],
+      "new_tasks": [
+        "T008",
+        "T017",
+        "T019"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:C02",
+      "legacy_title": "Build polygon and part-aware massing",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:C01"
+      ],
+      "new_tasks": [
+        "T017"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:C03",
+      "legacy_title": "Build road, ground and network geometry",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:C01"
+      ],
+      "new_tasks": [
+        "T018"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:C04",
+      "legacy_title": "Build material and architecture recipe library",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:C01"
+      ],
+      "new_tasks": [
+        "T019"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:C05",
+      "legacy_title": "Define tile packing, feature metadata and LODs",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:C02",
+        "renderer:C03",
+        "renderer:C04"
+      ],
+      "new_tasks": [
+        "T020"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:C06",
+      "legacy_title": "Integrate minimal streamed viewport",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:C05",
+        "renderer:R03"
+      ],
+      "new_tasks": [
+        "T016",
+        "T021"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:C07",
+      "legacy_title": "Add measurement probes and inspection overlays",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:C06",
+        "renderer:D03"
+      ],
+      "new_tasks": [
+        "T022"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:C08",
+      "legacy_title": "Qualify renderer and metadata compatibility",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:C06",
+        "renderer:C07",
+        "renderer:R05"
+      ],
+      "new_tasks": [
+        "T021",
+        "T022"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:V01",
+      "legacy_title": "Compose the complete reference-style neighbourhood",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:C08",
+        "renderer:R02"
+      ],
+      "new_tasks": [
+        "T023"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:V02",
+      "legacy_title": "Tune architecture detail and silhouette variation",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:V01"
+      ],
+      "new_tasks": [
+        "T024"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:V03",
+      "legacy_title": "Tune street, terrain and vegetation appearance",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:V01"
+      ],
+      "new_tasks": [
+        "T025"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:V04",
+      "legacy_title": "Tune lighting, colour and temporal image quality",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:V02",
+        "renderer:V03"
+      ],
+      "new_tasks": [
+        "T024",
+        "T025"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:V05",
+      "legacy_title": "Validate 2D, section and underground render states",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:V04",
+        "renderer:C07"
+      ],
+      "new_tasks": [
+        "T025",
+        "T039"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:V06",
+      "legacy_title": "Test dense, slope and sparse-input transfer",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:V04",
+        "renderer:V05",
+        "renderer:R04"
+      ],
+      "new_tasks": [
+        "T026"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:V07",
+      "legacy_title": "Run matched visual comparison and correct failures",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:V06",
+        "renderer:R02"
+      ],
+      "new_tasks": [
+        "T027"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:V08",
+      "legacy_title": "Approve full-map fidelity milestone",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:V07"
+      ],
+      "new_tasks": [
+        "T027"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:S01",
+      "legacy_title": "Implement global scene catalog and coverage queries",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:C08",
+        "renderer:D05"
+      ],
+      "new_tasks": [
+        "T028"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:S02",
+      "legacy_title": "Implement bounded loading, caching and release",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:S01"
+      ],
+      "new_tasks": [
+        "T029"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:S03",
+      "legacy_title": "Test seams, shared objects and precision across areas",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:S02",
+        "renderer:V06"
+      ],
+      "new_tasks": [
+        "T030"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:S04",
+      "legacy_title": "Implement incremental compilation and atomic publication",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:S03",
+        "renderer:D05"
+      ],
+      "new_tasks": [
+        "T031"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:S05",
+      "legacy_title": "Run scale, failure and held-out stress suites",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:S04",
+        "renderer:R05"
+      ],
+      "new_tasks": [
+        "T026",
+        "T032",
+        "T056"
+      ],
+      "disposition": "split core/expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:S06",
+      "legacy_title": "Approve cross-area renderer milestone",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:S05",
+        "renderer:V08"
+      ],
+      "new_tasks": [
+        "T032"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:U01",
+      "legacy_title": "Build map shell and reusable UI tokens",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:S06"
+      ],
+      "new_tasks": [
+        "T033"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:U02",
+      "legacy_title": "Build camera, layer and global-search UI",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:U01"
+      ],
+      "new_tasks": [
+        "T034"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:U03",
+      "legacy_title": "Build property list and contextual inspector",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:U02"
+      ],
+      "new_tasks": [
+        "T035"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:U04",
+      "legacy_title": "Build map findings and utility inspection",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:U03",
+        "renderer:V05"
+      ],
+      "new_tasks": [
+        "T035"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:U05",
+      "legacy_title": "Build map history, exports and responsive panels",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:U03",
+        "renderer:U04"
+      ],
+      "new_tasks": [
+        "T036"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:U06",
+      "legacy_title": "Approve map UI visual and interaction suite",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:U05"
+      ],
+      "new_tasks": [
+        "T037"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:I01",
+      "legacy_title": "Build building detail and register composition",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:U06"
+      ],
+      "new_tasks": [
+        "T038"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:I02",
+      "legacy_title": "Build floor, flat and shared-space inspection",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:I01"
+      ],
+      "new_tasks": [
+        "T039"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:I03",
+      "legacy_title": "Build section and exploded inspection controls",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:I02"
+      ],
+      "new_tasks": [
+        "T039"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:I04",
+      "legacy_title": "Build optional source attachments and viewers",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:I02",
+        "renderer:D04"
+      ],
+      "new_tasks": [
+        "T040"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:I05",
+      "legacy_title": "Build record history and investigation surfaces",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:I04",
+        "renderer:U04"
+      ],
+      "new_tasks": [
+        "T041"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:I06",
+      "legacy_title": "Approve inspection and zero-document cases",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:I03",
+        "renderer:I04",
+        "renderer:I05"
+      ],
+      "new_tasks": [
+        "T042"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:E01",
+      "legacy_title": "Build import mapping, preview and reconciliation UI",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:I06",
+        "renderer:D06"
+      ],
+      "new_tasks": [
+        "T043"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:E02",
+      "legacy_title": "Build source workspace, calibration and placement",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:E01"
+      ],
+      "new_tasks": [
+        "T044"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:E03",
+      "legacy_title": "Build versioned geometry and attribute editing",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:E02"
+      ],
+      "new_tasks": [
+        "T045"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:E04",
+      "legacy_title": "Build compare, build, review and publish UI",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:E03",
+        "renderer:S04"
+      ],
+      "new_tasks": [
+        "T046"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:E05",
+      "legacy_title": "Expand tested adapters in bounded batches",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:E01"
+      ],
+      "new_tasks": [
+        "T053",
+        "T054"
+      ],
+      "disposition": "deferred expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:E06",
+      "legacy_title": "Approve edit and adapter conformance suite",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:E04",
+        "renderer:E05"
+      ],
+      "new_tasks": [
+        "T047",
+        "T053",
+        "T054"
+      ],
+      "disposition": "split core/expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:Q01",
+      "legacy_title": "Run all-state visual and interaction regression",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:E06"
+      ],
+      "new_tasks": [
+        "T048"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:Q02",
+      "legacy_title": "Qualify browser, accessibility and device tiers",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:Q01"
+      ],
+      "new_tasks": [
+        "T050"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:Q03",
+      "legacy_title": "Qualify permissions, source safety and attribution",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:Q01"
+      ],
+      "new_tasks": [
+        "T049"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:Q04",
+      "legacy_title": "Qualify operations, deployment and offline packs",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:Q02",
+        "renderer:Q03"
+      ],
+      "new_tasks": [
+        "T051"
+      ],
+      "disposition": "retained/consolidated",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:Q05",
+      "legacy_title": "Expand scale only against measured capacity",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:Q04"
+      ],
+      "new_tasks": [
+        "T056"
+      ],
+      "disposition": "deferred expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    },
+    {
+      "legacy_id": "renderer:Q06",
+      "legacy_title": "Approve release and ongoing regression baseline",
+      "original_status": "Planned",
+      "original_dependencies": [
+        "renderer:Q05"
+      ],
+      "new_tasks": [
+        "T052",
+        "T056"
+      ],
+      "disposition": "split core/expansion",
+      "completion_rule": "Mapping is not completion. Every retained applicable acceptance obligation needs current evidence; deferred profiles stay explicitly unsupported."
+    }
+  ],
+  "changes": [
+    "Namespace old schema:Uxx and renderer:Uxx; no identifier collision.",
+    "Core contract uses fixtures and an immediate legacy consumer, not an implementation of all 53 logical records.",
+    "Shared cache/session lifecycle tasks T014–T016 make the user consistency requirement explicit.",
+    "Basic tiling, ID mapping, failure-safe publication and navigation precede full-map visual tuning; advanced world/resource qualification follows it.",
+    "Advanced adapters and 1M capacity are R3 options, not prerequisites of R1/R2. This changes old E06/Q06 dependencies explicitly; all elected adapter promises still require tests.",
+    "Delete old proofs only under standalone M001; cleanup failure does not silently authorize broader deletion or block unrelated engineering."
+  ]
+}

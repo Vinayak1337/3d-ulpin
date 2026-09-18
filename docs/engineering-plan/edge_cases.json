@@ -1,0 +1,1008 @@
+{
+  "scope": "Risk-based planned checks, not exhaustive possible failures and not executed tests.",
+  "cases": [
+    {
+      "id": "EC001",
+      "category": "Sources",
+      "failure_case": "Original bytes replaced by derivative",
+      "expected_behavior": "Original bytes, hash and revision-specific locator remain retrievable.",
+      "test_layer": "API/asset integration",
+      "tasks": [
+        "T005",
+        "T011"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC002",
+      "category": "Sources",
+      "failure_case": "One source reused by multiple buildings or units",
+      "expected_behavior": "Share asset references and scoped links without duplicate storage or false attribution.",
+      "test_layer": "Unit/API",
+      "tasks": [
+        "T005",
+        "T040"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC003",
+      "category": "Sources",
+      "failure_case": "Remove one attachment link while other references exist",
+      "expected_behavior": "Only the requested link changes; geometry and referenced original remain intact.",
+      "test_layer": "API/storage",
+      "tasks": [
+        "T005",
+        "T040"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC004",
+      "category": "Safety",
+      "failure_case": "Traversal, symlink, archive bomb or excessive recursion",
+      "expected_behavior": "Reject unsafe extraction before side effects; account for declared and expanded limits.",
+      "test_layer": "Adversarial integration",
+      "tasks": [
+        "T011",
+        "T049"
+      ],
+      "required_when": "Every file profile",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC005",
+      "category": "Safety",
+      "failure_case": "XML/CAD/URL input tries an uncontrolled external fetch",
+      "expected_behavior": "No arbitrary file/network access; explicit safe-reference policy and structured failure.",
+      "test_layer": "Adversarial integration",
+      "tasks": [
+        "T011",
+        "T049",
+        "T053"
+      ],
+      "required_when": "Every implemented external-reference profile",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC006",
+      "category": "Adapters",
+      "failure_case": "Unknown version, XYZ/XYZM or unsupported geometry variant",
+      "expected_behavior": "Retain/reject with explicit profile/loss result; never silently drop a dimension.",
+      "test_layer": "Contract/property",
+      "tasks": [
+        "T007",
+        "T011",
+        "T053"
+      ],
+      "required_when": "First profiles; richer dimensional support only when elected",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC007",
+      "category": "Geometry",
+      "failure_case": "NaN, infinity, huge coordinates or malformed arrays",
+      "expected_behavior": "Reject finite/range/structure violations before geometry computation or allocation.",
+      "test_layer": "Unit/fuzz",
+      "tasks": [
+        "T007",
+        "T011"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC008",
+      "category": "Frames",
+      "failure_case": "Swapped longitude/latitude or reflected axes",
+      "expected_behavior": "Use declared axes and reject ambiguous placement; known negative fixtures cannot pass by relabeling.",
+      "test_layer": "Unit/property",
+      "tasks": [
+        "T006"
+      ],
+      "required_when": "First frames",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC009",
+      "category": "Frames",
+      "failure_case": "Metres, feet and millimetres across source fields",
+      "expected_behavior": "Convert once with defined units; quantity scaling and physical interpretation agree.",
+      "test_layer": "Unit/property",
+      "tasks": [
+        "T006",
+        "T007"
+      ],
+      "required_when": "First supported unit profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC010",
+      "category": "Frames",
+      "failure_case": "Already transformed coordinates are transformed again",
+      "expected_behavior": "Frame/revision references prevent double application; independent expected coordinates detect it.",
+      "test_layer": "Unit/integration",
+      "tasks": [
+        "T006",
+        "T009"
+      ],
+      "required_when": "First frames",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC011",
+      "category": "Frames",
+      "failure_case": "Unknown or incompatible vertical reference",
+      "expected_behavior": "Valid local/2D work remains usable; dependent world 3D/clearance result is unavailable, not zero offset.",
+      "test_layer": "Unit/API",
+      "tasks": [
+        "T006",
+        "T007"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC012",
+      "category": "Frames",
+      "failure_case": "Two SRID-0 local origins treated as one frame",
+      "expected_behavior": "Transform through declared distinct frames before spatial comparison.",
+      "test_layer": "Geometry integration",
+      "tasks": [
+        "T006",
+        "T012",
+        "T030"
+      ],
+      "required_when": "First multi-area slice",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC013",
+      "category": "Plans",
+      "failure_case": "Scale-only, distorted or underdetermined plan calibration",
+      "expected_behavior": "Scale, geographic placement and vertical placement have separate gates and independent residual checks.",
+      "test_layer": "Unit/browser",
+      "tasks": [
+        "T006",
+        "T044"
+      ],
+      "required_when": "Plan preparation",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC014",
+      "category": "Geometry",
+      "failure_case": "Concave footprint, courtyard or multipart building",
+      "expected_behavior": "Retain supported holes/parts and quantities; do not replace by bounding box.",
+      "test_layer": "Property/compiler",
+      "tasks": [
+        "T007",
+        "T017"
+      ],
+      "required_when": "First supported polygon profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC015",
+      "category": "Geometry",
+      "failure_case": "Tiny slivers, degeneracy, touching versus positive overlap",
+      "expected_behavior": "Use an explicit profile tolerance and contact/overlap definition; no silent repair or arbitrary deletion.",
+      "test_layer": "Unit/property",
+      "tasks": [
+        "T007",
+        "T013",
+        "T022"
+      ],
+      "required_when": "First analytical operations",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC016",
+      "category": "Geometry",
+      "failure_case": "Open mesh or visually closed but invalid solid",
+      "expected_behavior": "Rendering and valid-volume/intersection capability remain independent.",
+      "test_layer": "Unit/geometry",
+      "tasks": [
+        "T007",
+        "T022",
+        "T053"
+      ],
+      "required_when": "First asset boundary; actual solid profile when elected",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC017",
+      "category": "Semantics",
+      "failure_case": "Roof outline, ground occupation, approved envelope and parcel differ",
+      "expected_behavior": "Retain separate roles; compare only compatible meanings and purposes.",
+      "test_layer": "Contract/domain",
+      "tasks": [
+        "T007",
+        "T008"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC018",
+      "category": "Missing data",
+      "failure_case": "Absent height, floor count, depth or final vertical bound",
+      "expected_behavior": "Show unknown and purpose-specific limits; never fabricate floors, infinite extents or safe clearance.",
+      "test_layer": "Unit/API/browser",
+      "tasks": [
+        "T007",
+        "T013",
+        "T035"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC019",
+      "category": "Identity",
+      "failure_case": "Same source ID appears in two dataset namespaces",
+      "expected_behavior": "Namespaces are preserved; no false canonical collision.",
+      "test_layer": "Unit/DB",
+      "tasks": [
+        "T004",
+        "T009",
+        "T011"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC020",
+      "category": "Identity",
+      "failure_case": "Equal names or close/overlapping geometry describe different things",
+      "expected_behavior": "Association remains explicit/source-backed; do not merge by proximity or label alone.",
+      "test_layer": "Unit/property",
+      "tasks": [
+        "T004",
+        "T008"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC021",
+      "category": "Identity",
+      "failure_case": "External ID has leading zeros, aliases or ambiguity",
+      "expected_behavior": "Retain raw string, scheme/issuer and ambiguity; no numeric truncation or guessed official validity.",
+      "test_layer": "Contract/API",
+      "tasks": [
+        "T004",
+        "T034"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC022",
+      "category": "Identity",
+      "failure_case": "Parcel/flat split, merge or rename",
+      "expected_behavior": "Stable identity survives renames; genuine splits/merges preserve lineage and retired IDs.",
+      "test_layer": "Domain/history",
+      "tasks": [
+        "T004",
+        "T013"
+      ],
+      "required_when": "Core lifecycle; full edit workflows later",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC023",
+      "category": "Buildings",
+      "failure_case": "Duplex, split-level, shared stair or repeated floor label",
+      "expected_behavior": "Use typed relationships; avoid duplicate counts and strict one-floor-per-unit assumptions.",
+      "test_layer": "Domain/browser",
+      "tasks": [
+        "T004",
+        "T012",
+        "T039"
+      ],
+      "required_when": "First fixture plus inspection",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC024",
+      "category": "Evidence",
+      "failure_case": "One plan supports multiple units/revisions",
+      "expected_behavior": "Exact page/row/object links remain scoped; changing one unit does not overwrite another fact.",
+      "test_layer": "API/browser",
+      "tasks": [
+        "T005",
+        "T040"
+      ],
+      "required_when": "First sources plus inspection",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC025",
+      "category": "Ingestion",
+      "failure_case": "Identical input and operation are replayed",
+      "expected_behavior": "One persisted effect and stable returned identity, with duplicate delivery acknowledged.",
+      "test_layer": "API/DB",
+      "tasks": [
+        "T011",
+        "T012"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC026",
+      "category": "Ingestion",
+      "failure_case": "Same file hash but mapping, frame or profile changes",
+      "expected_behavior": "Create a tracked new interpretation; do not return a stale cached receipt.",
+      "test_layer": "Unit/API",
+      "tasks": [
+        "T008",
+        "T011"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC027",
+      "category": "Concurrency",
+      "failure_case": "Concurrent duplicate imports race",
+      "expected_behavior": "Unique operation/identity constraints and transaction rules prevent duplicate effects.",
+      "test_layer": "Real DB concurrency",
+      "tasks": [
+        "T010",
+        "T011"
+      ],
+      "required_when": "First write paths",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC028",
+      "category": "Concurrency",
+      "failure_case": "A stale review or edit overwrites a newer revision",
+      "expected_behavior": "Expected-revision check rejects it and returns a recoverable conflict.",
+      "test_layer": "Real DB/API",
+      "tasks": [
+        "T010",
+        "T031",
+        "T045"
+      ],
+      "required_when": "First write paths",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC029",
+      "category": "Time/world",
+      "failure_case": "Observed, synthetic, future design or backdated correction mixed",
+      "expected_behavior": "Separate world, valid time, source time, recorded time and publication revision.",
+      "test_layer": "Domain/API/history",
+      "tasks": [
+        "T008",
+        "T036",
+        "T041"
+      ],
+      "required_when": "First snapshots",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC030",
+      "category": "Partial results",
+      "failure_case": "One bad contribution or interrupted acquisition hides missing items",
+      "expected_behavior": "Keep valid independent output, explicit item counts/completeness and failed roles.",
+      "test_layer": "API/integration",
+      "tasks": [
+        "T011",
+        "T012",
+        "T031"
+      ],
+      "required_when": "First profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC031",
+      "category": "Environment",
+      "failure_case": "A test points to the populated operator database/volume",
+      "expected_behavior": "Preflight refuses destructive test execution; isolation verified by resource identity, not only port.",
+      "test_layer": "Safety preflight",
+      "tasks": [
+        "T001",
+        "T010"
+      ],
+      "required_when": "All database tests",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC032",
+      "category": "Migration",
+      "failure_case": "Interrupted/repeated backfill or upgrade of nonempty DB",
+      "expected_behavior": "Checkpoint/recover deterministically; retain IDs/hashes/history; compare counts and key mappings.",
+      "test_layer": "Migration/restore",
+      "tasks": [
+        "T010",
+        "T051"
+      ],
+      "required_when": "First migration",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC033",
+      "category": "Compatibility",
+      "failure_case": "Old client sees a new variant or revised meaning",
+      "expected_behavior": "Supported projection/version negotiation or explicit failure; no silent incorrect coercion.",
+      "test_layer": "Consumer contract",
+      "tasks": [
+        "T007",
+        "T009",
+        "T010"
+      ],
+      "required_when": "First contract rollout",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC034",
+      "category": "Cache",
+      "failure_case": "Two subscribers share a pending fetch and one cancels",
+      "expected_behavior": "Deduplication remains correct; independent consumer is not accidentally cancelled.",
+      "test_layer": "Unit/browser race",
+      "tasks": [
+        "T014"
+      ],
+      "required_when": "Shared resource layer",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC035",
+      "category": "Cache",
+      "failure_case": "Slow earlier response arrives after route or snapshot changes",
+      "expected_behavior": "Do not replace newer/current data; retain previous coherent snapshot during refresh where appropriate.",
+      "test_layer": "Unit/browser race",
+      "tasks": [
+        "T014",
+        "T015"
+      ],
+      "required_when": "Shared resource layer",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC036",
+      "category": "Privacy/cache",
+      "failure_case": "Access scope changes while requests/data are cached",
+      "expected_behavior": "Cancel/evict affected state and enforce access server-side; keying alone is insufficient.",
+      "test_layer": "API/browser",
+      "tasks": [
+        "T014",
+        "T049"
+      ],
+      "required_when": "Any actual access-scoped profile",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC037",
+      "category": "Selection",
+      "failure_case": "Selected mesh unloads or is replaced at another LOD",
+      "expected_behavior": "Retain canonical selection and lazy detail lookup; stale primitive picks are rejected.",
+      "test_layer": "Browser/streaming",
+      "tasks": [
+        "T015",
+        "T020",
+        "T029"
+      ],
+      "required_when": "First tiled viewer",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC038",
+      "category": "Selection",
+      "failure_case": "Map → register → unit → plan → back navigation",
+      "expected_behavior": "Entity, revision, selected level/unit and appropriate return camera remain coherent.",
+      "test_layer": "End-to-end browser",
+      "tasks": [
+        "T015",
+        "T039",
+        "T042"
+      ],
+      "required_when": "Shared session plus inspection",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC039",
+      "category": "Camera",
+      "failure_case": "Selecting a feature or fitting extent while in 2D",
+      "expected_behavior": "Camera remains top-down and visible mode matches actual projection.",
+      "test_layer": "Browser interaction",
+      "tasks": [
+        "T016",
+        "T034"
+      ],
+      "required_when": "Shared viewport",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC040",
+      "category": "Gestures",
+      "failure_case": "Held press then drag during React status updates",
+      "expected_behavior": "Movement/release listeners remain active; hold/drag/orbit and wheel-after-drag work.",
+      "test_layer": "Browser + device",
+      "tasks": [
+        "T016",
+        "T021",
+        "T050"
+      ],
+      "required_when": "Shared viewport",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC041",
+      "category": "Gestures",
+      "failure_case": "Pointer cancel, window blur or a drag interpreted as click",
+      "expected_behavior": "Recover control state and pointer capture; navigation does not trigger an unintended selection.",
+      "test_layer": "Browser + device",
+      "tasks": [
+        "T016",
+        "T050"
+      ],
+      "required_when": "Shared viewport",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC042",
+      "category": "Lifecycle",
+      "failure_case": "Hidden/remounted view retains buffers and event listeners",
+      "expected_behavior": "Pause/unmount/release correctly; no accumulating inactive full worlds.",
+      "test_layer": "Browser/resource",
+      "tasks": [
+        "T016",
+        "T029"
+      ],
+      "required_when": "Shared viewport",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC043",
+      "category": "Spatial identity",
+      "failure_case": "Building crosses two authoring blocks",
+      "expected_behavior": "One identity and full geometry with multiple memberships; no duplicated analytical quantities.",
+      "test_layer": "Geometry/API",
+      "tasks": [
+        "T012",
+        "T030"
+      ],
+      "required_when": "First two-block fixture",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC044",
+      "category": "Seams",
+      "failure_case": "Road/utility/terrain crosses tiles or tile packaging changes",
+      "expected_behavior": "Neighbour boundaries, continuity and physical width agree; fragments resolve to canonical objects.",
+      "test_layer": "Compiler/browser",
+      "tasks": [
+        "T018",
+        "T020",
+        "T030"
+      ],
+      "required_when": "First tiled delivery",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC045",
+      "category": "Topology",
+      "failure_case": "XY road crossing is grade separated or pipes are merely close",
+      "expected_behavior": "Do not invent connectivity; explicit system/network topology remains independent of projection.",
+      "test_layer": "Geometry/domain",
+      "tasks": [
+        "T018",
+        "T030"
+      ],
+      "required_when": "Supported network profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC046",
+      "category": "Utilities",
+      "failure_case": "Pipe centre/crown/invert or diameter confused with restriction corridor",
+      "expected_behavior": "Use correct quantity and level reference; depth binds to the relevant surface revision.",
+      "test_layer": "Unit/geometry",
+      "tasks": [
+        "T007",
+        "T018",
+        "T035"
+      ],
+      "required_when": "Supported utility profile",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC047",
+      "category": "Findings",
+      "failure_case": "Road overlap is a subset of total parcel overhang",
+      "expected_behavior": "Do not sum overlapping regions as disjoint area; show exact result geometry and metric definitions.",
+      "test_layer": "Unit/browser",
+      "tasks": [
+        "T022",
+        "T035"
+      ],
+      "required_when": "Supported finding operations",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC048",
+      "category": "Display invariance",
+      "failure_case": "LOD, clipping, explosion, style or camera changes",
+      "expected_behavior": "Fixed analytical revision retains identity and numerical results within its declared computational tolerance.",
+      "test_layer": "Metamorphic/browser",
+      "tasks": [
+        "T022",
+        "T039"
+      ],
+      "required_when": "All render modes",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC049",
+      "category": "Determinism",
+      "failure_case": "Source order, unrelated record or tile ID changes",
+      "expected_behavior": "Stable entity/component seeds and input signatures preserve unchanged appearance/geometry.",
+      "test_layer": "Property/compiler",
+      "tasks": [
+        "T019",
+        "T020"
+      ],
+      "required_when": "Scene compiler",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC050",
+      "category": "Streaming",
+      "failure_case": "Child tile fails or arrives after rapid navigation",
+      "expected_behavior": "Keep valid coarse fallback, cancel stale work and avoid duplicate parent/child display.",
+      "test_layer": "Browser/fault injection",
+      "tasks": [
+        "T020",
+        "T029"
+      ],
+      "required_when": "First tiled delivery",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC051",
+      "category": "Publication",
+      "failure_case": "Assets upload but DB commit fails, or vice versa",
+      "expected_behavior": "No half-publication becomes active; validate staged assets and keep prior coherent pointer.",
+      "test_layer": "Storage/DB fault injection",
+      "tasks": [
+        "T020",
+        "T031"
+      ],
+      "required_when": "First publication path",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC052",
+      "category": "Workers",
+      "failure_case": "Worker is killed or job delivered again",
+      "expected_behavior": "Bounded retries/checkpoints and idempotent effects; incomplete run status/counts recover honestly.",
+      "test_layer": "Worker fault injection",
+      "tasks": [
+        "T031"
+      ],
+      "required_when": "Durable build workers",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC053",
+      "category": "Invalidation",
+      "failure_case": "Geometry changes versus PDF/occupancy/style-only change",
+      "expected_behavior": "Rebuild actual dependent geometry/tiles; stale review and display invalidation remain distinct.",
+      "test_layer": "Unit/integration",
+      "tasks": [
+        "T008",
+        "T031"
+      ],
+      "required_when": "First revisioned derivatives",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC054",
+      "category": "Coverages",
+      "failure_case": "Raster no-data or cloud samples mistaken for ground/building records",
+      "expected_behavior": "Preserve surface meaning/resolution/time and assets; no row-per-sample or fabricated completeness.",
+      "test_layer": "Adapter/geometry",
+      "tasks": [
+        "T054"
+      ],
+      "required_when": "Only elected coverage/cloud profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC055",
+      "category": "Geography",
+      "failure_case": "Antimeridian, polar extent or unsupported analytical frame",
+      "expected_behavior": "Operate only within declared coverage; reject unsupported cases explicitly rather than distort.",
+      "test_layer": "Catalog/geometry",
+      "tasks": [
+        "T030",
+        "T056"
+      ],
+      "required_when": "Declared geographic profile",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC056",
+      "category": "Scale",
+      "failure_case": "Huge catalog mistaken for full visible workload",
+      "expected_behavior": "Bounded paging/coverage queries; separate catalog count, downloaded content and visible-frame capacity.",
+      "test_layer": "API/performance",
+      "tasks": [
+        "T028",
+        "T032",
+        "T056"
+      ],
+      "required_when": "First coverage catalog",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC057",
+      "category": "Renderer",
+      "failure_case": "Material/picking/clipping extension unsupported by pinned version",
+      "expected_behavior": "Qualified fixture fails the engine gate; choose supported profile or record a concrete alternative decision.",
+      "test_layer": "Actual browser/engine",
+      "tasks": [
+        "T021"
+      ],
+      "required_when": "Pinned renderer qualification",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC058",
+      "category": "Performance",
+      "failure_case": "Software GPU/headless results presented as physical-device performance",
+      "expected_behavior": "Record exact hardware/browser/DPR/workload; separate cold/warm and emulate/physical measurements.",
+      "test_layer": "Benchmark protocol",
+      "tasks": [
+        "T032",
+        "T050"
+      ],
+      "required_when": "Every performance claim",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC059",
+      "category": "Recovery",
+      "failure_case": "WebGL context loss, corrupt asset or expired source URL",
+      "expected_behavior": "Recover or expose a usable limited state; quarantine bad content without destroying canonical data.",
+      "test_layer": "Browser/fault injection",
+      "tasks": [
+        "T021",
+        "T029",
+        "T049"
+      ],
+      "required_when": "Implemented runtime profile",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC060",
+      "category": "Responsive UI",
+      "failure_case": "Small viewport, large text/zoom, keyboard or on-screen keyboard",
+      "expected_behavior": "Primary actions, panels and focus stay reachable; no trapped or hidden essential controls.",
+      "test_layer": "Browser + device",
+      "tasks": [
+        "T033",
+        "T036",
+        "T050"
+      ],
+      "required_when": "Promised UI profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC061",
+      "category": "Accessibility",
+      "failure_case": "Status relies on color, drag alone or uncontrolled motion",
+      "expected_behavior": "Provide text/shape state, keyboard alternatives and reduced-motion behavior for essential actions.",
+      "test_layer": "Accessibility/device",
+      "tasks": [
+        "T034",
+        "T039",
+        "T050"
+      ],
+      "required_when": "Promised UI profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC062",
+      "category": "Privacy/export",
+      "failure_case": "Tiles, logs, thumbnails or exports disclose private content",
+      "expected_behavior": "Use allowlisted geometry-safe fields and permissioned detail/source routes; no secrets in artifacts.",
+      "test_layer": "Security/API",
+      "tasks": [
+        "T005",
+        "T020",
+        "T036",
+        "T049"
+      ],
+      "required_when": "Every source/derived output",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC063",
+      "category": "History",
+      "failure_case": "Historical snapshot silently uses latest/private-unavailable source",
+      "expected_behavior": "Bind revision-specific evidence and permissions; unavailable or redacted content stays explicit.",
+      "test_layer": "API/history",
+      "tasks": [
+        "T036",
+        "T040",
+        "T041"
+      ],
+      "required_when": "History and source viewers",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC064",
+      "category": "Transfer",
+      "failure_case": "Installing a data bundle overwrites subsequent local edits",
+      "expected_behavior": "Preserve additive semantics and stop identity conflicts; installation is not continuous sync.",
+      "test_layer": "Upgrade/integration",
+      "tasks": [
+        "T010",
+        "T051"
+      ],
+      "required_when": "Supported transfer path",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC065",
+      "category": "Operations",
+      "failure_case": "Disk full, missing object or checksum mismatch",
+      "expected_behavior": "Fail safely with identifiable incomplete stage; do not fabricate replacement data or activate invalid content.",
+      "test_layer": "Storage fault injection",
+      "tasks": [
+        "T011",
+        "T031",
+        "T051"
+      ],
+      "required_when": "Every persisted build/import",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC066",
+      "category": "Resources",
+      "failure_case": "Multiple parsers/builds exhaust CPU/memory concurrently",
+      "expected_behavior": "Bounded concurrency, backpressure and cancellation with reconciled item/job status.",
+      "test_layer": "Worker/performance",
+      "tasks": [
+        "T011",
+        "T029",
+        "T031",
+        "T054"
+      ],
+      "required_when": "Implemented async/bulk profiles",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC067",
+      "category": "Editing",
+      "failure_case": "Undo/redo or reload modifies accepted/unrelated draft data",
+      "expected_behavior": "Undo is scoped to a known candidate revision; unsaved changes and recovery are explicit.",
+      "test_layer": "Unit/browser/API",
+      "tasks": [
+        "T045"
+      ],
+      "required_when": "Draft editing",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC068",
+      "category": "Visual QA",
+      "failure_case": "Blindly updating screenshots hides an actual regression",
+      "expected_behavior": "Require reasoned rebaseline and independent geometric/behavioral checks; preserve user visual decision.",
+      "test_layer": "Review protocol",
+      "tasks": [
+        "T027",
+        "T037",
+        "T048"
+      ],
+      "required_when": "All visual changes",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC069",
+      "category": "Source use",
+      "failure_case": "Service image is treated as geometry or redistribution rights are missing",
+      "expected_behavior": "Keep content type, acquisition scope and source-use restrictions explicit; no inferred legal/semantic capability.",
+      "test_layer": "Adapter/review",
+      "tasks": [
+        "T002",
+        "T011",
+        "T049",
+        "T053"
+      ],
+      "required_when": "Every external source profile",
+      "status": "Planned",
+      "evidence": []
+    },
+    {
+      "id": "EC070",
+      "category": "Maintenance",
+      "failure_case": "Proof directory resolves outside target or includes junctions",
+      "expected_behavior": "Stop exact-path cleanup before traversal; product/source/study folders remain protected.",
+      "test_layer": "Filesystem preflight",
+      "tasks": [
+        "M001"
+      ],
+      "required_when": "Only explicitly authorized proof cleanup",
+      "status": "Planned",
+      "evidence": []
+    }
+  ]
+}

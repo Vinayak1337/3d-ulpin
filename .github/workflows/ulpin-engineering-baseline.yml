@@ -1,0 +1,77 @@
+name: ULPIN engineering plan and source inventory
+
+# This validates plan/tooling and collects committed metadata. It is NOT an app CI suite.
+# Read the current AGENTS.md and reconcile existing workflows before applying this file.
+on:
+  push:
+    branches: ['feat/unified-spatial-foundation']
+    paths:
+      - 'docs/engineering-plan/**'
+      - '.github/workflows/ulpin-engineering-baseline.yml'
+  pull_request:
+    paths:
+      - 'docs/engineering-plan/**'
+      - '.github/workflows/ulpin-engineering-baseline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ulpin-engineering-baseline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan-and-source-inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout the triggering revision without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          clean: false
+          lfs: false
+          submodules: false
+      - name: Check tooling runtime
+        run: |
+          python3 -c 'import sys; assert sys.version_info >= (3, 10), "Python 3.10+ required"; print(sys.version)'
+          git --version
+      - name: Validate planning records
+        run: python3 docs/engineering-plan/tools/validate_plan.py
+      - name: Test source collector on disposable synthetic Git fixtures
+        run: python3 -m unittest discover -s docs/engineering-plan/tools/tests -p 'test_*.py' -v
+      - name: Verify readable backlog matches its JSON source
+        run: |
+          python3 docs/engineering-plan/tools/render_backlog.py
+          git diff --exit-code -- docs/engineering-plan/05_TASK_BACKLOG.md
+      - name: Collect committed-source metadata only
+        env:
+          EXPECTED_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 docs/engineering-plan/tools/collect_source_baseline.py \
+            --repo "$GITHUB_WORKSPACE" \
+            --expected-repository "$EXPECTED_REPOSITORY" \
+            --output "$RUNNER_TEMP/ulpin-source-baseline.json"
+      - name: Retain the small metadata report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ulpin-source-inventory-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ulpin-source-baseline.json
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: false
+      - name: State the verification boundary
+        if: always()
+        run: |
+          {
+            echo '## Verification scope'
+            echo 'This job checks the plan, tests the collector on synthetic fixtures, and attempts a committed-source inventory.'
+            echo 'Consult each step for its actual result. Application tests, database/object preservation, T001 acceptance, GPU/device quality and local proof deletion are not established by this job.'
+          } >> "$GITHUB_STEP_SUMMARY"

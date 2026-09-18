@@ -1,0 +1,247 @@
+{
+  "prepared_on": "2026-09-18",
+  "implementation_authorized": false,
+  "tasks": [
+    {
+      "id": "U01",
+      "title": "Inventory exact current records and ID linkage",
+      "depends_on": [],
+      "status": "Planned",
+      "definition_of_done": "Read-only table/contract inventory and sample crosswalk; do not merge physical and rights objects by name.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U02",
+      "title": "Approve input taxonomy and capability stages",
+      "depends_on": [
+        "U01"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Supported-source profile matrix distinguishes preserve/parse/normalize/use and tests actual versions.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U03",
+      "title": "Define common references, vocabulary and unknown states",
+      "depends_on": [
+        "U02"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Typed reference, value-state, measurement-definition and extension namespaces reviewed.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U04",
+      "title": "Define entity identity and split/merge lifecycle",
+      "depends_on": [
+        "U03"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Stable IDs, aliases, memberships and lineage survive block/tile changes.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U05",
+      "title": "Define source catalog and original preservation",
+      "depends_on": [
+        "U03"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Global dataset/source revisions linked to existing originals; locators and retention policies clear.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U06",
+      "title": "Define coordinate-operation and vertical-reference contract",
+      "depends_on": [
+        "U03"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Source/local/geographic/analysis/render frames, epochs/grids and unresolved behavior specified.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U07",
+      "title": "Define geometry representations and quantity profiles",
+      "depends_on": [
+        "U04",
+        "U06"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Holes, multiparts, XYZ, prisms, supported solids/sweeps and coverages have purpose-specific validators.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U08",
+      "title": "Define observations, identity matching and resolution",
+      "depends_on": [
+        "U04",
+        "U05",
+        "U07"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Conflicting claims preserved; comparable-purpose selections and provenance are explicit.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U09",
+      "title": "Define building, storey, space and parcel profiles",
+      "depends_on": [
+        "U07",
+        "U08"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Split levels, duplexes, shared spaces and independent parcel/building identity handled.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U10",
+      "title": "Define roads/rail and utility topology profiles",
+      "depends_on": [
+        "U07",
+        "U08"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Surfaces/centrelines/corridors and physical/logical connectivity kept distinct.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U11",
+      "title": "Define raster/cloud/survey asset profiles",
+      "depends_on": [
+        "U05",
+        "U06",
+        "U07"
+      ],
+      "status": "Planned",
+      "definition_of_done": "No-data, resolution, date, class and processing lineage preserved without row-per-sample requirement.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U12",
+      "title": "Define optional evidence and private party/registry profiles",
+      "depends_on": [
+        "U04",
+        "U05",
+        "U08"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Zero-document geometry works; occupants, owners and app accounts separated; no PII in public tiles.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U13",
+      "title": "Define source composition and capability evaluation",
+      "depends_on": [
+        "U08",
+        "U09",
+        "U10",
+        "U11",
+        "U12"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Source-role mapping can combine A/B/C/D/E with unit/reference/time/permission checks.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U14",
+      "title": "Define publication and world catalog manifests",
+      "depends_on": [
+        "U04",
+        "U07",
+        "U13"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Administrative/authoring/tiles separate; same entity across blocks; coherent immutable publications.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U15",
+      "title": "Plan backward-compatible migration and one-writer policy",
+      "depends_on": [
+        "U05",
+        "U06",
+        "U09",
+        "U14"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Adapter/backfill plan preserves all old IDs/source hashes/history and clearly assigns ownership of each field.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U16",
+      "title": "Specify conformance fixtures and independent quantities",
+      "depends_on": [
+        "U07",
+        "U09",
+        "U10",
+        "U13"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Equivalent sources, two blocks, unknown verticals, non-solid meshes, replay and privacy tests specified.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U17",
+      "title": "Specify first actual adapter profiles",
+      "depends_on": [
+        "U02",
+        "U13",
+        "U15"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Current bounded GIS/schedules plus canonical interchange; no universal file-support claim.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U18",
+      "title": "Specify IFC/CityJSON and CAD extension profiles",
+      "depends_on": [
+        "U06",
+        "U07",
+        "U09",
+        "U17"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Versions, placements, source object IDs, unsupported constructs and loss report defined.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U19",
+      "title": "Specify bulk ingestion and incremental derivation",
+      "depends_on": [
+        "U13",
+        "U14",
+        "U15"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Chunking, checkpointing, idempotency, constraints, adjacency dependencies and backpressure defined.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U20",
+      "title": "Review schema against renderer/UI invariants",
+      "depends_on": [
+        "U14",
+        "U16",
+        "U19"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Style/LOD/tile changes do not change identity or quantities; optional documents remain optional.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    },
+    {
+      "id": "U21",
+      "title": "Freeze draft core for implementation authorization",
+      "depends_on": [
+        "U15",
+        "U16",
+        "U17",
+        "U20"
+      ],
+      "status": "Planned",
+      "definition_of_done": "Review decisions documented; no source acceptance, migration or runtime tests marked complete prematurely.",
+      "relation_to_previous_plan": "Expands unified-data goals D01–D08 and their interfaces to the renderer/streaming goals; does not overwrite the prior task board."
+    }
+  ]
+}

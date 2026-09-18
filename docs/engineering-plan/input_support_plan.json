@@ -1,0 +1,335 @@
+{
+  "not_a_support_claim": true,
+  "families": [
+    {
+      "id": "I01",
+      "family": "Existing 3d-ulpin records",
+      "examples_from_original": "Current APIs, saved bundles and registry/area contracts",
+      "critical_boundary": "Reconcile physical IDs and registry IDs explicitly; preserve previous identifiers and references",
+      "planned_release": "R1",
+      "scope": "Legacy read adapter and parity; new model does not replace historical IDs.",
+      "tasks": [
+        "T009",
+        "T010"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I02",
+      "family": "Cadastral parcels and 2D ULPIN references",
+      "examples_from_original": "GeoPackage, Shapefile sets, GeoJSON, GML, feature APIs, CSV/XML registers",
+      "critical_boundary": "ULPIN alone supplies an identifier, not a boundary; preserve issuer, source validity and ambiguous matches",
+      "planned_release": "R1 subset",
+      "scope": "Existing bounded parcel GIS/identifier profiles; no national issuance or validity claim.",
+      "tasks": [
+        "T004",
+        "T011"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I03",
+      "family": "Building footprints and city GIS",
+      "examples_from_original": "GeoJSON, GeoPackage, Shapefile, ArcGIS feature JSON, OSM XML/PBF, database export",
+      "critical_boundary": "A roof outline is not automatically ground occupation; unknown height stays unknown",
+      "planned_release": "R1 subset",
+      "scope": "Qualified current GIS footprint profiles with unknown heights and roof/ground roles.",
+      "tasks": [
+        "T007",
+        "T011"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I04",
+      "family": "Administrative boundaries and work areas",
+      "examples_from_original": "GIS polygons, codes, boundary schedules, reviewed manual boundaries",
+      "critical_boundary": "Administrative hierarchy is not physical containment or ownership; coverage may overlap",
+      "planned_release": "R1 subset",
+      "scope": "Existing areas plus non-exclusive memberships; authoritative boundary integration deferred.",
+      "tasks": [
+        "T004",
+        "T028"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I05",
+      "family": "Roads, streets and paths",
+      "examples_from_original": "GIS line/surface layers, CAD, LandXML/IFC/OpenDRIVE profiles, survey schedules",
+      "critical_boundary": "Centreline, physical surface and recorded road land remain separate; crossing does not prove connectivity",
+      "planned_release": "R1 subset",
+      "scope": "Supported line/surface roads with explicit width/height; richer alignment formats are elected later.",
+      "tasks": [
+        "T011",
+        "T018",
+        "T053"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I06",
+      "family": "Rail, metro, bridges and tunnels",
+      "examples_from_original": "GIS, IFC infrastructure, CAD/alignment profiles and asset registers",
+      "critical_boundary": "Do not infer a junction at an overpass or derive track geometry from service schedules",
+      "planned_release": "R3",
+      "scope": "Extension boundary only initially; bridges/overpasses may be synthetic topology fixtures, not a full rail adapter.",
+      "tasks": [
+        "T018",
+        "T053"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I07",
+      "family": "Water, sewer, drainage, gas and telecom assets",
+      "examples_from_original": "GIS, CAD/as-built drawings, IFC MEP, CSV profiles and asset APIs",
+      "critical_boundary": "Depth needs a reference surface; diameter is not a restriction width; keep unknown alignment/depth distinct",
+      "planned_release": "R1 subset",
+      "scope": "Supported utility/declared profile fixtures; actual as-built formats and accurate depth require evidence.",
+      "tasks": [
+        "T007",
+        "T018"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I08",
+      "family": "Electricity networks and equipment",
+      "examples_from_original": "Utility GIS, IFC MEP, pole/cable schedules, CAD and asset registers",
+      "critical_boundary": "Electrical connectivity is not identical to geometric proximity; overhead shape may be unknown",
+      "planned_release": "R1 subset / R3 richer",
+      "scope": "Supported generic utility context only; full electrical connectivity/profile ingestion is later.",
+      "tasks": [
+        "T018",
+        "T053"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I09",
+      "family": "Structured BIM",
+      "examples_from_original": "IFC/IFCZIP and explicit vendor-export profiles",
+      "critical_boundary": "Interpret units, nested placements and map conversion; IfcSpace is not automatically a registered flat; preserve unsupported constructs",
+      "planned_release": "R3",
+      "scope": "One selected IFC version/export profile per task; no complete or lossless BIM claim.",
+      "tasks": [
+        "T053"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I10",
+      "family": "Semantic city models",
+      "examples_from_original": "CityGML/CityJSON and declared encodings/versions",
+      "critical_boundary": "Do not equate source LOD with evidence completeness or flatten multipart objects into boxes",
+      "planned_release": "R3",
+      "scope": "Selected CityJSON/CityGML profiles; semantic/placement and source LOD mappings tested.",
+      "tasks": [
+        "T053"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I11",
+      "family": "CAD plans, sections and alignments",
+      "examples_from_original": "DXF/DWG/DGN, PDF/vector exports; proprietary native files via supported exports",
+      "critical_boundary": "Units and layer meaning may be absent; a closed polyline need not mean a property boundary; SDK/dependency checks required",
+      "planned_release": "R3",
+      "scope": "CAD attachment preservation only if supported by a safe receipt path; semantic CAD extraction deferred.",
+      "tasks": [
+        "T005",
+        "T053"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I12",
+      "family": "Floor plans and building sections",
+      "examples_from_original": "PDF, PNG/JPEG/TIFF, SVG/CAD profiles and plan sets",
+      "critical_boundary": "Attachment works without extraction. Scale, geographic placement and vertical placement are separate readiness gates",
+      "planned_release": "R1 attachment / R2 workflow",
+      "scope": "Existing permitted plan attachments; calibration and editing follow later interface gates.",
+      "tasks": [
+        "T005",
+        "T040",
+        "T044"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I13",
+      "family": "Floor, flat and room schedules",
+      "examples_from_original": "CSV/XLSX/JSON, database/API export, tabular reports",
+      "critical_boundary": "A table does not imply room geometry; floor labels are not numeric heights; reported areas are not recomputed areas",
+      "planned_release": "R1 subset",
+      "scope": "Existing strict CSV level/space schedules and canonical interchange; arbitrary spreadsheets require a new mapping profile.",
+      "tasks": [
+        "T011",
+        "T012"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I14",
+      "family": "Survey control and measured features",
+      "examples_from_original": "GNSS processed solutions, total-station/levelling exports, CSV/LandXML/control files",
+      "critical_boundary": "Raw/processed data must be distinguished; a CRS name alone does not establish vertical comparability or survey quality",
+      "planned_release": "R1 existing controls / R3 expansion",
+      "scope": "Retain current named control/frame facts; new GNSS/total-station/LandXML profiles separately qualified.",
+      "tasks": [
+        "T006",
+        "T054"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I15",
+      "family": "Raw GNSS and correction products",
+      "examples_from_original": "RINEX and authorized station/correction products",
+      "critical_boundary": "Do not draw parcel boundaries directly from raw observations; specialized processing and quality review required",
+      "planned_release": "R3",
+      "scope": "Raw GNSS assets and specialized processing are deferred; raw observations do not define parcels.",
+      "tasks": [
+        "T054"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I16",
+      "family": "LiDAR and other point clouds",
+      "examples_from_original": "LAS/LAZ, supported point-cloud packages, E57/PLY/XYZ profiles",
+      "critical_boundary": "No point-per-row requirement; sensor sampling and occlusion do not prove interiors, ownership or complete watertight solids",
+      "planned_release": "R3",
+      "scope": "Typed cloud asset boundary now; real LAS/LAZ/E57 processing and segmentation deferred.",
+      "tasks": [
+        "T007",
+        "T054"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I17",
+      "family": "Terrain and surface elevation",
+      "examples_from_original": "DEM/DTM/DSM GeoTIFF and other declared raster/terrain/TIN profiles",
+      "critical_boundary": "Do not silently use top-of-roof DSM as bare ground; vertical datum, gaps and resolution are mandatory metadata",
+      "planned_release": "R1 declared ground fixture / R3 raster",
+      "scope": "First renderer can use explicit synthetic/base ground; true DEM/DTM/DSM ingest needs a qualified coverage profile.",
+      "tasks": [
+        "T018",
+        "T054"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I18",
+      "family": "Aerial imagery and photogrammetry",
+      "examples_from_original": "Orthophotos, georeferenced rasters, drone images, calibrated cameras, generated meshes",
+      "critical_boundary": "An ordinary screenshot is not a georeferenced survey; preserve acquisition date, resolution and processing lineage",
+      "planned_release": "R1 permitted context / R3 photogrammetry",
+      "scope": "Aerial context remains attributed evidence; georeferencing/reconstruction is not assumed from screenshots.",
+      "tasks": [
+        "T005",
+        "T054"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I19",
+      "family": "Existing visual 3D models",
+      "examples_from_original": "glTF/GLB, OBJ/FBX/export profiles, licensed 3D Tiles",
+      "critical_boundary": "A visually rich mesh may have no interiors, usable semantic IDs, watertight solid or measurement suitability",
+      "planned_release": "R1 supplied assets subset",
+      "scope": "Use existing revision-bound models and compiler outputs; qualify formats/metadata and distinguish display from analytical suitability.",
+      "tasks": [
+        "T017",
+        "T020",
+        "T021"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I20",
+      "family": "Land/building registration and property records",
+      "examples_from_original": "Authorized register/API/database exports, CSV/XML/JSON and deed/document scans",
+      "critical_boundary": "Record metadata without geometry remains searchable but unplaced; a document scan or importer is not legal adjudication",
+      "planned_release": "R1 existing registry / R3 external",
+      "scope": "Adapt existing records; authorized external registry connectors and legal validation are separate.",
+      "tasks": [
+        "T009",
+        "T055"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I21",
+      "family": "Residents, occupancies, leases and organizations",
+      "examples_from_original": "Authorized CSV/API/property-management export, reviewed forms and optional agreements",
+      "critical_boundary": "Living in a flat, owning it and logging into the app are distinct. Do not put PII or agreement URLs in public tiles",
+      "planned_release": "R3",
+      "scope": "Define private identity separation now; real resident/lease data and full access system are later authorized work.",
+      "tasks": [
+        "T005",
+        "T049",
+        "T055"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I22",
+      "family": "Water bodies, vegetation, terrain use and context",
+      "examples_from_original": "GIS, classified imagery, field inventories, ecological/asset datasets",
+      "critical_boundary": "A shoreline, bed, flood envelope and measured water level are different representations",
+      "planned_release": "R1 supported context / R3 richer",
+      "scope": "Render supplied/declared contextual shapes only; ecology, water level and land-cover ingestion need profiles.",
+      "tasks": [
+        "T018",
+        "T054"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I23",
+      "family": "Web services and continuously delivered datasets",
+      "examples_from_original": "OGC API Features/WFS, ArcGIS services, WMS/WMTS, authorized object catalogs and APIs",
+      "critical_boundary": "Protocol is not a domain type; WMS images are not raw features; handle paging, rate limits, rights and incomplete acquisitions",
+      "planned_release": "R1 existing service paths / R3 expansion",
+      "scope": "Retain existing bounded acquisition where available; every new service needs paging, rights and completeness checks.",
+      "tasks": [
+        "T011",
+        "T049",
+        "T053",
+        "T054"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I24",
+      "family": "Manual, AI-assisted and synthetic inputs",
+      "examples_from_original": "Forms, tracing, measured edits, model proposals and canonical fixtures",
+      "critical_boundary": "AI output cannot self-approve; preserve source locators and operator/model versions; synthetic alternatives must not contaminate observed world",
+      "planned_release": "R1 fixtures / R2 editing",
+      "scope": "Canonical synthetic fixtures and controlled existing/manual candidates; AI never bypasses review.",
+      "tasks": [
+        "T008",
+        "T012",
+        "T045",
+        "T046"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    },
+    {
+      "id": "I25",
+      "family": "Sensors and time-varying observations",
+      "examples_from_original": "Time-series APIs/files for asset state, level, status or monitoring",
+      "critical_boundary": "Not every observation revises the static building mesh; separate sampling quality from cadastral evidence",
+      "planned_release": "R3",
+      "scope": "Time-series/sensor asset boundary only initially; streaming observation integrations deferred.",
+      "tasks": [
+        "T054",
+        "T055"
+      ],
+      "actual_support_status": "Not newly verified; preserve/parse/normalize/use must be qualified per profile."
+    }
+  ]
+}
