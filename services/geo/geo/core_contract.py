@@ -68,7 +68,7 @@ def assert_core_json(value):
 @lru_cache(maxsize=8)
 def bundled_schema(name):
     # This finite allowlist grows through the same reviewed core export task.
-    if name not in ("identity-graph", "identity-command", "number-value"):
+    if name not in ("identity-graph", "identity-command", "number-value", "source-catalog"):
         fail("SCHEMA_PROFILE", "Unsupported bundled core schema")
     schema = json.loads((Path(__file__).parent / "contracts" / (name + ".schema.json")).read_text(encoding="utf-8"))
     pending = [schema]
@@ -96,3 +96,34 @@ def parse_core(name, value):
 
 def ref_key(ref):
     return ref["namespace"] + ":" + quote(ref["id"], safe="-_.!~*'()")
+
+
+def version_key(link):
+    return ref_key(link["ref"]), link["revision"]
+
+
+def index_records(records, kind):
+    result = {}
+    for record in records:
+        key = ref_key(record["ref"])
+        if key in result:
+            fail("DUPLICATE_RECORD", "Duplicate " + kind + " reference")
+        result[key] = record
+    return result
+
+
+def require_revision(records, link, kind):
+    record = records.get(ref_key(link["ref"]))
+    if record is None:
+        fail("MISSING_REFERENCE", "Missing " + kind + " reference")
+    if record["revision"] != link["revision"]:
+        fail("STALE_REFERENCE", "Stale " + kind + " reference")
+    return record
+
+
+def structural_key(value):
+    if isinstance(value, dict):
+        return tuple((key, structural_key(value[key])) for key in sorted(value))
+    if isinstance(value, list):
+        return tuple(structural_key(child) for child in value)
+    return value

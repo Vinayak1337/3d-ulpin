@@ -4,8 +4,9 @@ import {mkdir,readFile,writeFile} from "node:fs/promises";
 import {createRequire} from "node:module";
 import {fileURLToPath} from "node:url";
 import path from "node:path";
-import {CORE_RELATION_POLICY,CoreIdentityCommandSchema,CoreIdentityGraphSchema,CoreNumberValueSchema} from "../../packages/contracts/src/spatial/core";
+import {CORE_RELATION_POLICY,CORE_EVIDENCE_POLICY,CoreIdentityCommandSchema,CoreIdentityGraphSchema,CoreNumberValueSchema,CoreSourceCatalogSchema} from "../../packages/contracts/src/spatial/core";
 import {identityCases} from "../../tests/fixtures/core-identity";
+import {sourceCases} from "../../tests/fixtures/core-sources";
 const require=createRequire(new URL('../../packages/contracts/package.json',import.meta.url));
 const {z}=require('zod');
 const root=fileURLToPath(new URL('../../',import.meta.url));
@@ -15,8 +16,10 @@ const graph={...exportSchema(CoreIdentityGraphSchema),'x-ulpin-relation-policy':
 const artifacts:[string,unknown][]=[];
 for(const prefix of ['packages/contracts/schemas','services/geo/geo/contracts']) {
   artifacts.push([`${prefix}/identity-graph.schema.json`,graph],[`${prefix}/identity-command.schema.json`,exportSchema(CoreIdentityCommandSchema)],[`${prefix}/number-value.schema.json`,exportSchema(CoreNumberValueSchema)]);
+  artifacts.push([`${prefix}/source-catalog.schema.json`,{...exportSchema(CoreSourceCatalogSchema),'x-ulpin-evidence-policy':CORE_EVIDENCE_POLICY}]);
 }
 artifacts.push(['fixtures/contracts/identity.cases.json',{schemaVersion:'ulpin-identity-conformance/1',cases:identityCases()}]);
+artifacts.push(['fixtures/contracts/source.cases.json',{schemaVersion:'ulpin-source-conformance/1',cases:sourceCases()}]);
 for(const [name,value] of artifacts) {
   const file=path.join(root,name),text=JSON.stringify(value,null,2)+'\n';
   if(mode==='write'){await mkdir(path.dirname(file),{recursive:true});await writeFile(file,text);}

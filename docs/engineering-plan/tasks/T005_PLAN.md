@@ -38,6 +38,11 @@ JSON pointer escapes. Unparsed verbatim locators remain available without being
 misrepresented as machine-exact geometry evidence. Future IFC/cloud locator types
 do not imply that those parsers or analytical profiles are implemented.
 
+A part holds a bounded conjunction of locator variants, retaining combined legacy
+feature/pointer/page/row information instead of selecting one and discarding the
+rest. File parts identify their specific asset. MIME metadata retains safe
+parameters such as a charset, without treating them as a parser capability.
+
 ## Linking, inheritance and privacy
 
 Evidence links target stable identity references and a specific part revision.
@@ -61,6 +66,16 @@ a storage-delete action. Active inherited dependents block a parent-only unlink
 until a later explicitly scoped cascade is reviewed; do not quietly invalidate
 other evidence. Missing/stale/already-unlinked inputs are explicit outcomes.
 No database or object-store mutation occurs in this task.
+
+Review correction: child-unlink followed by parent-unlink reproduced a stale
+parent-reference failure. Keep previous link revisions in a bounded optional
+`linkHistory` collection. Current active inheritance must still resolve the
+current parent revision; archived or unlinked associations may resolve an exact
+preserved older parent revision. Never weaken that rule to accept an arbitrary
+older number without the referenced record. Historical links are not active
+associations, and unlink appends the previous version without changing siblings.
+Reject duplicate, orphan, future and same-revision history records. This remains
+a pure candidate; transactional storage/replay belongs to later writers.
 
 ## Tests and exit
 
