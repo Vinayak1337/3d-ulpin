@@ -1,5 +1,10 @@
 # 3D ULPIN hackathon implementation
 
+Latest user priority: finish T009's existing-data bridge, then implement the
+shared 3D renderer/interface milestone T057 before ML extraction. Keep supported
+current datasets usable now; do not defer visuals until every future importer is
+complete. ML and bulk expansion remain required later, not falsely completed.
+
 Execution policy (18 September 2026): `docs/engineering-plan/backlog.json` is the
 adopted task/status authority on `feat/unified-spatial-foundation`. Continue one
 bounded task at a time, with its detailed plan, tests, review and recorded result.

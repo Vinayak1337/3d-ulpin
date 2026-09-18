@@ -7608,6 +7608,1981 @@
       }
     },
     {
+      "id": "analysis-and-display-have-explicit-resolution-purposes",
+      "input": {
+        "schemaVersion": "ulpin-spatial/2",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "worlds": [
+          {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1,
+            "label": "Synthetic two-block composition",
+            "state": "synthetic"
+          }
+        ],
+        "identity": {
+          "entities": [
+            {
+              "ref": {
+                "namespace": "physical",
+                "id": "B1"
+              },
+              "revision": 1,
+              "kind": "building",
+              "label": "Object B1",
+              "identifiers": [],
+              "memberships": [],
+              "lifecycle": {
+                "state": "active"
+              }
+            },
+            {
+              "ref": {
+                "namespace": "physical",
+                "id": "U1"
+              },
+              "revision": 1,
+              "kind": "space",
+              "label": "Object U1",
+              "identifiers": [],
+              "memberships": [],
+              "lifecycle": {
+                "state": "active"
+              }
+            },
+            {
+              "ref": {
+                "namespace": "physical",
+                "id": "L1"
+              },
+              "revision": 1,
+              "kind": "level",
+              "label": "Object L1",
+              "identifiers": [],
+              "memberships": [],
+              "lifecycle": {
+                "state": "active"
+              }
+            }
+          ],
+          "relations": []
+        },
+        "frames": {
+          "frames": [
+            {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1,
+              "label": "Metre ENU",
+              "sourceCrs": null,
+              "kind": "engineering",
+              "horizontalUnit": "m",
+              "axes": [
+                "east",
+                "north"
+              ],
+              "verticalUnit": "m",
+              "verticalDirection": "up",
+              "vertical": {
+                "kind": "benchmark",
+                "reference": {
+                  "ref": {
+                    "namespace": "benchmark",
+                    "id": "target-zero"
+                  },
+                  "revision": 1
+                },
+                "label": "target-zero"
+              }
+            }
+          ],
+          "operations": []
+        },
+        "sources": {
+          "datasets": [
+            {
+              "ref": {
+                "namespace": "dataset",
+                "id": "dataset-1"
+              },
+              "revision": 1,
+              "label": "Authored test sources",
+              "classification": "synthetic",
+              "attribution": "Synthetic fixture",
+              "license": null,
+              "access": "operator"
+            }
+          ],
+          "assets": [
+            {
+              "ref": {
+                "namespace": "asset",
+                "id": "a1"
+              },
+              "revision": 1,
+              "kind": "original",
+              "mediaType": "application/geo+json",
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "bytes": 123,
+              "storage": {
+                "state": "registered",
+                "blobRef": {
+                  "namespace": "source_blob",
+                  "id": "source-original"
+                }
+              },
+              "integrity": "metadata_only",
+              "access": "operator",
+              "retention": {
+                "policy": "preserve_original",
+                "legalHold": false
+              },
+              "parentAssets": []
+            },
+            {
+              "ref": {
+                "namespace": "asset",
+                "id": "height-asset"
+              },
+              "revision": 1,
+              "kind": "original",
+              "mediaType": "text/csv",
+              "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "bytes": 123,
+              "storage": {
+                "state": "registered",
+                "blobRef": {
+                  "namespace": "source_blob",
+                  "id": "height-bytes"
+                }
+              },
+              "integrity": "metadata_only",
+              "access": "operator",
+              "retention": {
+                "policy": "preserve_original",
+                "legalHold": false
+              },
+              "parentAssets": []
+            },
+            {
+              "ref": {
+                "namespace": "asset",
+                "id": "unit-asset"
+              },
+              "revision": 1,
+              "kind": "original",
+              "mediaType": "application/geo+json",
+              "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "bytes": 123,
+              "storage": {
+                "state": "registered",
+                "blobRef": {
+                  "namespace": "source_blob",
+                  "id": "unit-bytes"
+                }
+              },
+              "integrity": "metadata_only",
+              "access": "operator",
+              "retention": {
+                "policy": "preserve_original",
+                "legalHold": false
+              },
+              "parentAssets": []
+            }
+          ],
+          "sources": [
+            {
+              "ref": {
+                "namespace": "source_revision",
+                "id": "s1"
+              },
+              "revision": 1,
+              "family": {
+                "namespace": "source_family",
+                "id": "family-1"
+              },
+              "familyOrdinal": 3,
+              "label": "Private filename",
+              "profile": "plan-pdf-v1",
+              "method": "synthetic",
+              "dataset": {
+                "ref": {
+                  "namespace": "dataset",
+                  "id": "dataset-1"
+                },
+                "revision": 1
+              },
+              "assets": [
+                {
+                  "ref": {
+                    "namespace": "asset",
+                    "id": "a1"
+                  },
+                  "revision": 1
+                }
+              ],
+              "workflows": [
+                {
+                  "namespace": "case",
+                  "id": "case-1"
+                }
+              ],
+              "access": "operator"
+            },
+            {
+              "ref": {
+                "namespace": "source_revision",
+                "id": "height-source"
+              },
+              "revision": 1,
+              "family": {
+                "namespace": "source_family",
+                "id": "height-family"
+              },
+              "familyOrdinal": 1,
+              "label": "Private filename",
+              "profile": "level-schedule",
+              "method": "synthetic",
+              "dataset": {
+                "ref": {
+                  "namespace": "dataset",
+                  "id": "dataset-1"
+                },
+                "revision": 1
+              },
+              "assets": [
+                {
+                  "ref": {
+                    "namespace": "asset",
+                    "id": "height-asset"
+                  },
+                  "revision": 1
+                }
+              ],
+              "workflows": [
+                {
+                  "namespace": "case",
+                  "id": "case-1"
+                }
+              ],
+              "access": "operator"
+            },
+            {
+              "ref": {
+                "namespace": "source_revision",
+                "id": "unit-source"
+              },
+              "revision": 1,
+              "family": {
+                "namespace": "source_family",
+                "id": "unit-family"
+              },
+              "familyOrdinal": 1,
+              "label": "Private filename",
+              "profile": "unit-plan",
+              "method": "synthetic",
+              "dataset": {
+                "ref": {
+                  "namespace": "dataset",
+                  "id": "dataset-1"
+                },
+                "revision": 1
+              },
+              "assets": [
+                {
+                  "ref": {
+                    "namespace": "asset",
+                    "id": "unit-asset"
+                  },
+                  "revision": 1
+                }
+              ],
+              "workflows": [
+                {
+                  "namespace": "case",
+                  "id": "case-1"
+                }
+              ],
+              "access": "operator"
+            }
+          ],
+          "parts": [
+            {
+              "ref": {
+                "namespace": "source_part",
+                "id": "p1"
+              },
+              "revision": 1,
+              "source": {
+                "ref": {
+                  "namespace": "source_revision",
+                  "id": "s1"
+                },
+                "revision": 1
+              },
+              "asset": {
+                "ref": {
+                  "namespace": "asset",
+                  "id": "a1"
+                },
+                "revision": 1
+              },
+              "locators": [
+                {
+                  "kind": "feature",
+                  "featureId": "B1"
+                }
+              ],
+              "access": "operator"
+            },
+            {
+              "ref": {
+                "namespace": "source_part",
+                "id": "height-part"
+              },
+              "revision": 1,
+              "source": {
+                "ref": {
+                  "namespace": "source_revision",
+                  "id": "height-source"
+                },
+                "revision": 1
+              },
+              "asset": {
+                "ref": {
+                  "namespace": "asset",
+                  "id": "height-asset"
+                },
+                "revision": 1
+              },
+              "locators": [
+                {
+                  "kind": "rows",
+                  "range": {
+                    "start": 1,
+                    "end": 2
+                  }
+                }
+              ],
+              "access": "operator"
+            },
+            {
+              "ref": {
+                "namespace": "source_part",
+                "id": "unit-part"
+              },
+              "revision": 1,
+              "source": {
+                "ref": {
+                  "namespace": "source_revision",
+                  "id": "unit-source"
+                },
+                "revision": 1
+              },
+              "asset": {
+                "ref": {
+                  "namespace": "asset",
+                  "id": "unit-asset"
+                },
+                "revision": 1
+              },
+              "locators": [
+                {
+                  "kind": "feature",
+                  "featureId": "U1"
+                }
+              ],
+              "access": "operator"
+            }
+          ],
+          "links": []
+        },
+        "geometry": {
+          "representations": [
+            {
+              "ref": {
+                "namespace": "representation",
+                "id": "footprint"
+              },
+              "revision": 1,
+              "entity": {
+                "namespace": "physical",
+                "id": "B1"
+              },
+              "frame": {
+                "ref": {
+                  "namespace": "frame",
+                  "id": "metric"
+                },
+                "revision": 1
+              },
+              "role": "ground_footprint",
+              "sourceParts": [
+                {
+                  "ref": {
+                    "namespace": "source_part",
+                    "id": "p1"
+                  },
+                  "revision": 1
+                }
+              ],
+              "geometry": {
+                "profile": "planar",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        0,
+                        0
+                      ],
+                      [
+                        10,
+                        0
+                      ],
+                      [
+                        10,
+                        8
+                      ],
+                      [
+                        0,
+                        8
+                      ],
+                      [
+                        0,
+                        0
+                      ]
+                    ]
+                  ]
+                }
+              }
+            },
+            {
+              "ref": {
+                "namespace": "representation",
+                "id": "unit-plan"
+              },
+              "revision": 1,
+              "entity": {
+                "namespace": "physical",
+                "id": "U1"
+              },
+              "frame": {
+                "ref": {
+                  "namespace": "frame",
+                  "id": "metric"
+                },
+                "revision": 1
+              },
+              "role": "unit_boundary",
+              "sourceParts": [
+                {
+                  "ref": {
+                    "namespace": "source_part",
+                    "id": "unit-part"
+                  },
+                  "revision": 1
+                }
+              ],
+              "geometry": {
+                "profile": "planar",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        0,
+                        0
+                      ],
+                      [
+                        10,
+                        0
+                      ],
+                      [
+                        10,
+                        4
+                      ],
+                      [
+                        0,
+                        4
+                      ],
+                      [
+                        0,
+                        0
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          ],
+          "reportedQuantities": []
+        },
+        "observations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "ground_footprint",
+            "sourceParts": [
+              {
+                "ref": {
+                  "namespace": "source_part",
+                  "id": "p1"
+                },
+                "revision": 1
+              }
+            ],
+            "payload": {
+              "kind": "geometry",
+              "representation": {
+                "ref": {
+                  "namespace": "representation",
+                  "id": "footprint"
+                },
+                "revision": 1
+              }
+            },
+            "method": "synthetic",
+            "access": "operator",
+            "validity": {
+              "fromMs": 0,
+              "toMs": 2000
+            }
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "vertical_interval",
+            "sourceParts": [
+              {
+                "ref": {
+                  "namespace": "source_part",
+                  "id": "height-part"
+                },
+                "revision": 1
+              }
+            ],
+            "payload": {
+              "kind": "vertical_interval",
+              "frame": {
+                "ref": {
+                  "namespace": "frame",
+                  "id": "metric"
+                },
+                "revision": 1
+              },
+              "interval": {
+                "lowerMetres": 0,
+                "upperMetres": 6,
+                "reference": {
+                  "ref": {
+                    "namespace": "benchmark",
+                    "id": "target-zero"
+                  },
+                  "revision": 1
+                }
+              }
+            },
+            "method": "synthetic",
+            "access": "operator",
+            "validity": {
+              "fromMs": 0,
+              "toMs": 2000
+            }
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "vertical_interval",
+            "sourceParts": [
+              {
+                "ref": {
+                  "namespace": "source_part",
+                  "id": "height-part"
+                },
+                "revision": 1
+              }
+            ],
+            "payload": {
+              "kind": "vertical_interval",
+              "frame": {
+                "ref": {
+                  "namespace": "frame",
+                  "id": "metric"
+                },
+                "revision": 1
+              },
+              "interval": {
+                "lowerMetres": 0,
+                "upperMetres": 9,
+                "reference": {
+                  "ref": {
+                    "namespace": "benchmark",
+                    "id": "target-zero"
+                  },
+                  "revision": 1
+                }
+              }
+            },
+            "method": "synthetic",
+            "access": "operator",
+            "validity": {
+              "fromMs": 0,
+              "toMs": 2000
+            }
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "unit_boundary",
+            "sourceParts": [
+              {
+                "ref": {
+                  "namespace": "source_part",
+                  "id": "unit-part"
+                },
+                "revision": 1
+              }
+            ],
+            "payload": {
+              "kind": "geometry",
+              "representation": {
+                "ref": {
+                  "namespace": "representation",
+                  "id": "unit-plan"
+                },
+                "revision": 1
+              }
+            },
+            "method": "synthetic",
+            "access": "operator",
+            "validity": {
+              "fromMs": 0,
+              "toMs": 2000
+            }
+          }
+        ],
+        "resolutions": [
+          {
+            "ref": {
+              "namespace": "resolution",
+              "id": "footprint"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "ground_footprint",
+            "candidates": [
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "footprint"
+                },
+                "revision": 1
+              }
+            ],
+            "selected": {
+              "ref": {
+                "namespace": "observation",
+                "id": "footprint"
+              },
+              "revision": 1
+            },
+            "reason": "Explicit authored fixture selection, not a latest-file rule"
+          },
+          {
+            "ref": {
+              "namespace": "resolution",
+              "id": "height"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "vertical_interval",
+            "candidates": [
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "height-six"
+                },
+                "revision": 1
+              },
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "height-nine"
+                },
+                "revision": 1
+              }
+            ],
+            "selected": {
+              "ref": {
+                "namespace": "observation",
+                "id": "height-six"
+              },
+              "revision": 1
+            },
+            "reason": "Explicit authored fixture selection, not a latest-file rule"
+          },
+          {
+            "ref": {
+              "namespace": "resolution",
+              "id": "unit"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "unit_boundary",
+            "candidates": [
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "unit"
+                },
+                "revision": 1
+              }
+            ],
+            "selected": {
+              "ref": {
+                "namespace": "observation",
+                "id": "unit"
+              },
+              "revision": 1
+            },
+            "reason": "Explicit authored fixture selection, not a latest-file rule"
+          },
+          {
+            "ref": {
+              "namespace": "resolution",
+              "id": "display-policy"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "ground_footprint",
+            "candidates": [
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "footprint"
+                },
+                "revision": 1
+              }
+            ],
+            "selected": {
+              "ref": {
+                "namespace": "observation",
+                "id": "footprint"
+              },
+              "revision": 1
+            },
+            "reason": "Explicit authored fixture selection, not a latest-file rule",
+            "purpose": "display"
+          }
+        ],
+        "compositions": [
+          {
+            "ref": {
+              "namespace": "composition",
+              "id": "keep-footprint"
+            },
+            "revision": 1,
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "kind": "passthrough",
+            "geometry": {
+              "ref": {
+                "namespace": "resolution",
+                "id": "footprint"
+              },
+              "revision": 1
+            }
+          },
+          {
+            "ref": {
+              "namespace": "composition",
+              "id": "build-exterior"
+            },
+            "revision": 1,
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "kind": "prism",
+            "footprint": {
+              "ref": {
+                "namespace": "resolution",
+                "id": "footprint"
+              },
+              "revision": 1
+            },
+            "vertical": {
+              "ref": {
+                "namespace": "resolution",
+                "id": "height"
+              },
+              "revision": 1
+            },
+            "output": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1,
+              "role": "exterior"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "composition",
+              "id": "keep-unit"
+            },
+            "revision": 1,
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "entity": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "kind": "passthrough",
+            "geometry": {
+              "ref": {
+                "namespace": "resolution",
+                "id": "unit"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": true,
+      "representationIds": [
+        "exterior",
+        "footprint",
+        "unit-plan"
+      ],
+      "volume": 480,
+      "expectedDigests": {
+        "input": "3896d945da9b3341ad8b3b1edff2f19c375950ba7b6313ba85cf4379bf31ab69",
+        "geometry": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559"
+      }
+    },
+    {
+      "id": "missing-purpose-and-analysis-are-the-same-slot",
+      "input": {
+        "schemaVersion": "ulpin-spatial/2",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "worlds": [
+          {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1,
+            "label": "Synthetic two-block composition",
+            "state": "synthetic"
+          }
+        ],
+        "identity": {
+          "entities": [
+            {
+              "ref": {
+                "namespace": "physical",
+                "id": "B1"
+              },
+              "revision": 1,
+              "kind": "building",
+              "label": "Object B1",
+              "identifiers": [],
+              "memberships": [],
+              "lifecycle": {
+                "state": "active"
+              }
+            },
+            {
+              "ref": {
+                "namespace": "physical",
+                "id": "U1"
+              },
+              "revision": 1,
+              "kind": "space",
+              "label": "Object U1",
+              "identifiers": [],
+              "memberships": [],
+              "lifecycle": {
+                "state": "active"
+              }
+            },
+            {
+              "ref": {
+                "namespace": "physical",
+                "id": "L1"
+              },
+              "revision": 1,
+              "kind": "level",
+              "label": "Object L1",
+              "identifiers": [],
+              "memberships": [],
+              "lifecycle": {
+                "state": "active"
+              }
+            }
+          ],
+          "relations": []
+        },
+        "frames": {
+          "frames": [
+            {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1,
+              "label": "Metre ENU",
+              "sourceCrs": null,
+              "kind": "engineering",
+              "horizontalUnit": "m",
+              "axes": [
+                "east",
+                "north"
+              ],
+              "verticalUnit": "m",
+              "verticalDirection": "up",
+              "vertical": {
+                "kind": "benchmark",
+                "reference": {
+                  "ref": {
+                    "namespace": "benchmark",
+                    "id": "target-zero"
+                  },
+                  "revision": 1
+                },
+                "label": "target-zero"
+              }
+            }
+          ],
+          "operations": []
+        },
+        "sources": {
+          "datasets": [
+            {
+              "ref": {
+                "namespace": "dataset",
+                "id": "dataset-1"
+              },
+              "revision": 1,
+              "label": "Authored test sources",
+              "classification": "synthetic",
+              "attribution": "Synthetic fixture",
+              "license": null,
+              "access": "operator"
+            }
+          ],
+          "assets": [
+            {
+              "ref": {
+                "namespace": "asset",
+                "id": "a1"
+              },
+              "revision": 1,
+              "kind": "original",
+              "mediaType": "application/geo+json",
+              "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "bytes": 123,
+              "storage": {
+                "state": "registered",
+                "blobRef": {
+                  "namespace": "source_blob",
+                  "id": "source-original"
+                }
+              },
+              "integrity": "metadata_only",
+              "access": "operator",
+              "retention": {
+                "policy": "preserve_original",
+                "legalHold": false
+              },
+              "parentAssets": []
+            },
+            {
+              "ref": {
+                "namespace": "asset",
+                "id": "height-asset"
+              },
+              "revision": 1,
+              "kind": "original",
+              "mediaType": "text/csv",
+              "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "bytes": 123,
+              "storage": {
+                "state": "registered",
+                "blobRef": {
+                  "namespace": "source_blob",
+                  "id": "height-bytes"
+                }
+              },
+              "integrity": "metadata_only",
+              "access": "operator",
+              "retention": {
+                "policy": "preserve_original",
+                "legalHold": false
+              },
+              "parentAssets": []
+            },
+            {
+              "ref": {
+                "namespace": "asset",
+                "id": "unit-asset"
+              },
+              "revision": 1,
+              "kind": "original",
+              "mediaType": "application/geo+json",
+              "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "bytes": 123,
+              "storage": {
+                "state": "registered",
+                "blobRef": {
+                  "namespace": "source_blob",
+                  "id": "unit-bytes"
+                }
+              },
+              "integrity": "metadata_only",
+              "access": "operator",
+              "retention": {
+                "policy": "preserve_original",
+                "legalHold": false
+              },
+              "parentAssets": []
+            }
+          ],
+          "sources": [
+            {
+              "ref": {
+                "namespace": "source_revision",
+                "id": "s1"
+              },
+              "revision": 1,
+              "family": {
+                "namespace": "source_family",
+                "id": "family-1"
+              },
+              "familyOrdinal": 3,
+              "label": "Private filename",
+              "profile": "plan-pdf-v1",
+              "method": "synthetic",
+              "dataset": {
+                "ref": {
+                  "namespace": "dataset",
+                  "id": "dataset-1"
+                },
+                "revision": 1
+              },
+              "assets": [
+                {
+                  "ref": {
+                    "namespace": "asset",
+                    "id": "a1"
+                  },
+                  "revision": 1
+                }
+              ],
+              "workflows": [
+                {
+                  "namespace": "case",
+                  "id": "case-1"
+                }
+              ],
+              "access": "operator"
+            },
+            {
+              "ref": {
+                "namespace": "source_revision",
+                "id": "height-source"
+              },
+              "revision": 1,
+              "family": {
+                "namespace": "source_family",
+                "id": "height-family"
+              },
+              "familyOrdinal": 1,
+              "label": "Private filename",
+              "profile": "level-schedule",
+              "method": "synthetic",
+              "dataset": {
+                "ref": {
+                  "namespace": "dataset",
+                  "id": "dataset-1"
+                },
+                "revision": 1
+              },
+              "assets": [
+                {
+                  "ref": {
+                    "namespace": "asset",
+                    "id": "height-asset"
+                  },
+                  "revision": 1
+                }
+              ],
+              "workflows": [
+                {
+                  "namespace": "case",
+                  "id": "case-1"
+                }
+              ],
+              "access": "operator"
+            },
+            {
+              "ref": {
+                "namespace": "source_revision",
+                "id": "unit-source"
+              },
+              "revision": 1,
+              "family": {
+                "namespace": "source_family",
+                "id": "unit-family"
+              },
+              "familyOrdinal": 1,
+              "label": "Private filename",
+              "profile": "unit-plan",
+              "method": "synthetic",
+              "dataset": {
+                "ref": {
+                  "namespace": "dataset",
+                  "id": "dataset-1"
+                },
+                "revision": 1
+              },
+              "assets": [
+                {
+                  "ref": {
+                    "namespace": "asset",
+                    "id": "unit-asset"
+                  },
+                  "revision": 1
+                }
+              ],
+              "workflows": [
+                {
+                  "namespace": "case",
+                  "id": "case-1"
+                }
+              ],
+              "access": "operator"
+            }
+          ],
+          "parts": [
+            {
+              "ref": {
+                "namespace": "source_part",
+                "id": "p1"
+              },
+              "revision": 1,
+              "source": {
+                "ref": {
+                  "namespace": "source_revision",
+                  "id": "s1"
+                },
+                "revision": 1
+              },
+              "asset": {
+                "ref": {
+                  "namespace": "asset",
+                  "id": "a1"
+                },
+                "revision": 1
+              },
+              "locators": [
+                {
+                  "kind": "feature",
+                  "featureId": "B1"
+                }
+              ],
+              "access": "operator"
+            },
+            {
+              "ref": {
+                "namespace": "source_part",
+                "id": "height-part"
+              },
+              "revision": 1,
+              "source": {
+                "ref": {
+                  "namespace": "source_revision",
+                  "id": "height-source"
+                },
+                "revision": 1
+              },
+              "asset": {
+                "ref": {
+                  "namespace": "asset",
+                  "id": "height-asset"
+                },
+                "revision": 1
+              },
+              "locators": [
+                {
+                  "kind": "rows",
+                  "range": {
+                    "start": 1,
+                    "end": 2
+                  }
+                }
+              ],
+              "access": "operator"
+            },
+            {
+              "ref": {
+                "namespace": "source_part",
+                "id": "unit-part"
+              },
+              "revision": 1,
+              "source": {
+                "ref": {
+                  "namespace": "source_revision",
+                  "id": "unit-source"
+                },
+                "revision": 1
+              },
+              "asset": {
+                "ref": {
+                  "namespace": "asset",
+                  "id": "unit-asset"
+                },
+                "revision": 1
+              },
+              "locators": [
+                {
+                  "kind": "feature",
+                  "featureId": "U1"
+                }
+              ],
+              "access": "operator"
+            }
+          ],
+          "links": []
+        },
+        "geometry": {
+          "representations": [
+            {
+              "ref": {
+                "namespace": "representation",
+                "id": "footprint"
+              },
+              "revision": 1,
+              "entity": {
+                "namespace": "physical",
+                "id": "B1"
+              },
+              "frame": {
+                "ref": {
+                  "namespace": "frame",
+                  "id": "metric"
+                },
+                "revision": 1
+              },
+              "role": "ground_footprint",
+              "sourceParts": [
+                {
+                  "ref": {
+                    "namespace": "source_part",
+                    "id": "p1"
+                  },
+                  "revision": 1
+                }
+              ],
+              "geometry": {
+                "profile": "planar",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        0,
+                        0
+                      ],
+                      [
+                        10,
+                        0
+                      ],
+                      [
+                        10,
+                        8
+                      ],
+                      [
+                        0,
+                        8
+                      ],
+                      [
+                        0,
+                        0
+                      ]
+                    ]
+                  ]
+                }
+              }
+            },
+            {
+              "ref": {
+                "namespace": "representation",
+                "id": "unit-plan"
+              },
+              "revision": 1,
+              "entity": {
+                "namespace": "physical",
+                "id": "U1"
+              },
+              "frame": {
+                "ref": {
+                  "namespace": "frame",
+                  "id": "metric"
+                },
+                "revision": 1
+              },
+              "role": "unit_boundary",
+              "sourceParts": [
+                {
+                  "ref": {
+                    "namespace": "source_part",
+                    "id": "unit-part"
+                  },
+                  "revision": 1
+                }
+              ],
+              "geometry": {
+                "profile": "planar",
+                "geometry": {
+                  "type": "Polygon",
+                  "coordinates": [
+                    [
+                      [
+                        0,
+                        0
+                      ],
+                      [
+                        10,
+                        0
+                      ],
+                      [
+                        10,
+                        4
+                      ],
+                      [
+                        0,
+                        4
+                      ],
+                      [
+                        0,
+                        0
+                      ]
+                    ]
+                  ]
+                }
+              }
+            }
+          ],
+          "reportedQuantities": []
+        },
+        "observations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "ground_footprint",
+            "sourceParts": [
+              {
+                "ref": {
+                  "namespace": "source_part",
+                  "id": "p1"
+                },
+                "revision": 1
+              }
+            ],
+            "payload": {
+              "kind": "geometry",
+              "representation": {
+                "ref": {
+                  "namespace": "representation",
+                  "id": "footprint"
+                },
+                "revision": 1
+              }
+            },
+            "method": "synthetic",
+            "access": "operator",
+            "validity": {
+              "fromMs": 0,
+              "toMs": 2000
+            }
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "vertical_interval",
+            "sourceParts": [
+              {
+                "ref": {
+                  "namespace": "source_part",
+                  "id": "height-part"
+                },
+                "revision": 1
+              }
+            ],
+            "payload": {
+              "kind": "vertical_interval",
+              "frame": {
+                "ref": {
+                  "namespace": "frame",
+                  "id": "metric"
+                },
+                "revision": 1
+              },
+              "interval": {
+                "lowerMetres": 0,
+                "upperMetres": 6,
+                "reference": {
+                  "ref": {
+                    "namespace": "benchmark",
+                    "id": "target-zero"
+                  },
+                  "revision": 1
+                }
+              }
+            },
+            "method": "synthetic",
+            "access": "operator",
+            "validity": {
+              "fromMs": 0,
+              "toMs": 2000
+            }
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "vertical_interval",
+            "sourceParts": [
+              {
+                "ref": {
+                  "namespace": "source_part",
+                  "id": "height-part"
+                },
+                "revision": 1
+              }
+            ],
+            "payload": {
+              "kind": "vertical_interval",
+              "frame": {
+                "ref": {
+                  "namespace": "frame",
+                  "id": "metric"
+                },
+                "revision": 1
+              },
+              "interval": {
+                "lowerMetres": 0,
+                "upperMetres": 9,
+                "reference": {
+                  "ref": {
+                    "namespace": "benchmark",
+                    "id": "target-zero"
+                  },
+                  "revision": 1
+                }
+              }
+            },
+            "method": "synthetic",
+            "access": "operator",
+            "validity": {
+              "fromMs": 0,
+              "toMs": 2000
+            }
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "unit_boundary",
+            "sourceParts": [
+              {
+                "ref": {
+                  "namespace": "source_part",
+                  "id": "unit-part"
+                },
+                "revision": 1
+              }
+            ],
+            "payload": {
+              "kind": "geometry",
+              "representation": {
+                "ref": {
+                  "namespace": "representation",
+                  "id": "unit-plan"
+                },
+                "revision": 1
+              }
+            },
+            "method": "synthetic",
+            "access": "operator",
+            "validity": {
+              "fromMs": 0,
+              "toMs": 2000
+            }
+          }
+        ],
+        "resolutions": [
+          {
+            "ref": {
+              "namespace": "resolution",
+              "id": "footprint"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "ground_footprint",
+            "candidates": [
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "footprint"
+                },
+                "revision": 1
+              }
+            ],
+            "selected": {
+              "ref": {
+                "namespace": "observation",
+                "id": "footprint"
+              },
+              "revision": 1
+            },
+            "reason": "Explicit authored fixture selection, not a latest-file rule"
+          },
+          {
+            "ref": {
+              "namespace": "resolution",
+              "id": "height"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "vertical_interval",
+            "candidates": [
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "height-six"
+                },
+                "revision": 1
+              },
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "height-nine"
+                },
+                "revision": 1
+              }
+            ],
+            "selected": {
+              "ref": {
+                "namespace": "observation",
+                "id": "height-six"
+              },
+              "revision": 1
+            },
+            "reason": "Explicit authored fixture selection, not a latest-file rule"
+          },
+          {
+            "ref": {
+              "namespace": "resolution",
+              "id": "unit"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "unit_boundary",
+            "candidates": [
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "unit"
+                },
+                "revision": 1
+              }
+            ],
+            "selected": {
+              "ref": {
+                "namespace": "observation",
+                "id": "unit"
+              },
+              "revision": 1
+            },
+            "reason": "Explicit authored fixture selection, not a latest-file rule"
+          },
+          {
+            "ref": {
+              "namespace": "resolution",
+              "id": "analysis-again"
+            },
+            "revision": 1,
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "role": "ground_footprint",
+            "candidates": [
+              {
+                "ref": {
+                  "namespace": "observation",
+                  "id": "footprint"
+                },
+                "revision": 1
+              }
+            ],
+            "selected": {
+              "ref": {
+                "namespace": "observation",
+                "id": "footprint"
+              },
+              "revision": 1
+            },
+            "reason": "Explicit authored fixture selection, not a latest-file rule",
+            "purpose": "analysis"
+          }
+        ],
+        "compositions": [
+          {
+            "ref": {
+              "namespace": "composition",
+              "id": "keep-footprint"
+            },
+            "revision": 1,
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "kind": "passthrough",
+            "geometry": {
+              "ref": {
+                "namespace": "resolution",
+                "id": "footprint"
+              },
+              "revision": 1
+            }
+          },
+          {
+            "ref": {
+              "namespace": "composition",
+              "id": "build-exterior"
+            },
+            "revision": 1,
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "entity": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "kind": "prism",
+            "footprint": {
+              "ref": {
+                "namespace": "resolution",
+                "id": "footprint"
+              },
+              "revision": 1
+            },
+            "vertical": {
+              "ref": {
+                "namespace": "resolution",
+                "id": "height"
+              },
+              "revision": 1
+            },
+            "output": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1,
+              "role": "exterior"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "composition",
+              "id": "keep-unit"
+            },
+            "revision": 1,
+            "world": {
+              "ref": {
+                "namespace": "world",
+                "id": "two-block-fixture"
+              },
+              "revision": 1
+            },
+            "entity": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "kind": "passthrough",
+            "geometry": {
+              "ref": {
+                "namespace": "resolution",
+                "id": "unit"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "code": "DUPLICATE_REFERENCE"
+    },
+    {
       "id": "zero-source-documents-still-compose",
       "input": {
         "schemaVersion": "ulpin-spatial/2",

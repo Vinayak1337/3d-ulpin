@@ -1,6 +1,6 @@
 # Ordered task backlog
 
-Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 8/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
+Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 9/57. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
 ## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
@@ -55,6 +55,26 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 **Earlier references:** schema:U15, schema:U21, renderer:R03, renderer:R06.
 
 **Detailed plan:** `tasks/T003_PLAN.md` — authored; inspect its status before execution.
+
+## E14 — User-prioritized 3D visual milestone
+Exit: Supported normalized neighbourhoods use an improved common visual/inspection system before ML expansion.
+
+### T057 — Normalized neighbourhood renderer and shared 3D interface
+**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Architecture and frontend lead.
+
+**Dependencies:** T009.
+
+**Scope:** User-prioritized complete-neighbourhood renderer/UI increment consuming existing normalized records.
+
+**Outputs:** Read-only core-to-display scene, bounded derived delivery, shared explorer, improved materials/camera/panels and real browser checks.
+
+**Acceptance:** Existing geometry, identity and quantities preserved; saved neighbourhood consumes common renderer; actual visual and interaction checks pass with user approval separate.
+
+**Excluded:** ML extraction, universal bulk import, production authorization, DB publication pointers and replacing every existing workflow.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T057_PLAN.md` — authored; inspect its status before execution.
 
 ## E02 — Thin unified model
 Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
@@ -148,7 +168,7 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 Exit: Existing records and named input profiles use the new boundary without loss.
 
 ### T009 — Read-only legacy compatibility adapter
-**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Data/backend.
+**Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Data/backend.
 
 **Dependencies:** T008.
 
