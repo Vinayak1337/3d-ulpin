@@ -1,0 +1,56 @@
+name: Spatial core
+on:
+  push:
+    branches: [feat/reusable-spatial-map-core]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: spatial-core-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Export reviewable source snapshot
+        run: |
+          python3 - <<'PY'
+          import pathlib, subprocess, zipfile
+          allowed = {'.ts', '.tsx', '.js', '.mjs', '.cjs', '.json', '.css', '.sql', '.py', '.md', '.yaml', '.yml', '.txt'}
+          with zipfile.ZipFile('/tmp/spatial-source.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
+              for name in subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0'):
+                  path = pathlib.Path(name)
+                  if name and path.is_file() and path.suffix in allowed and path.stat().st_size < 2000000 and not any(part.startswith('.env') for part in path.parts):
+                      archive.write(path, name)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spatial-source-${{ github.sha }}
+          path: /tmp/spatial-source.zip
+          retention-days: 3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned dependencies
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.12.0 --activate
+          pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Shared spatial-core tests
+        run: |
+          if test -f tests/spatial-core.test.ts; then
+            pnpm exec tsx --test tests/spatial-core.test.ts
+          fi
+      - name: Existing pure regressions
+        run: |
+          pnpm test:scene
+          pnpm test:repo-data
+          pnpm test:register-scope
+      - name: Production build
+        run: pnpm build
