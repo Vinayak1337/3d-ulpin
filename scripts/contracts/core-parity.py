@@ -10,6 +10,8 @@ from geo.core_identity import validate_core_identity_graph
 from geo.core_sources import validate_core_source_catalog
 from geo.core_frames import transform_core_point
 from geo.core_geometry import evaluate_core_geometry, measure_core_representation
+from geo.core_snapshot import build_core_snapshot, validate_core_publication_candidate
+from geo.core_signature import canonical_core_text, core_input_digest
 
 
 def run():
@@ -98,6 +100,48 @@ def run():
                     assert caps[key]["available"] == value, (case["id"], key)
         assert json.dumps(data, sort_keys=True) == before
     print(json.dumps({"kind":"core-geometry-quantity-parity","cases":len(geometry_cases),"result":"PASS","sharedSchemaAndPolicy":True}))
+    signature_cases = json.loads((root / "fixtures/contracts/signature.cases.json").read_text(encoding="utf-8"))["cases"]
+    for case in signature_cases:
+        assert canonical_core_text(case["value"]) == case["expectedEncoding"], case["id"]
+        assert core_input_digest(case["value"]) == case["expectedDigest"], case["id"]
+    print(json.dumps({"kind":"core-signature-oracle-parity","cases":len(signature_cases),"result":"PASS"}))
+    snapshot_cases = json.loads((root / "fixtures/contracts/snapshot.cases.json").read_text(encoding="utf-8"))["cases"]
+    for case in snapshot_cases:
+        data = case["input"]
+        before = json.dumps(data, sort_keys=True)
+        try:
+            result = build_core_snapshot(data)
+            actual = None
+        except CoreContractError as error:
+            actual = error.code
+        expected = None if case["valid"] else case["code"]
+        if actual != expected:
+            raise AssertionError(f"Snapshot semantic mismatch: {case['id']}; expected {expected}, got {actual}")
+        if case["valid"]:
+            assert [r["ref"]["id"] for r in result["geometry"]["representations"]] == case["representationIds"], case["id"]
+            if "reportedIds" in case:
+                assert sorted(q["ref"]["id"] for q in result["geometry"]["reportedQuantities"]) == case["reportedIds"], case["id"]
+            assert result["manifest"]["inputDigest"] == case["expectedDigests"]["input"], (case["id"], "input signature")
+            assert result["manifest"]["geometryDigest"] == case["expectedDigests"]["geometry"], (case["id"], "geometry signature")
+            if "volume" in case:
+                q = measure_core_representation(result["geometry"], data["identity"], data["sources"], data["frames"], {"representation":{"ref":{"namespace":"representation","id":"exterior"},"revision":1},"definition":"prism_volume"})
+                assert q["value"] == case["volume"], case["id"]
+            if "unavailable" in case:
+                assert any(r["reasonCode"] == case["unavailable"] for r in result["results"]), case["id"]
+            if "temporalCoverage" in case:
+                assert all(r["temporalCoverage"] == case["temporalCoverage"] for r in result["results"]), case["id"]
+        assert json.dumps(data, sort_keys=True) == before, case["id"]
+    print(json.dumps({"kind":"core-snapshot-composition-parity","cases":len(snapshot_cases),"result":"PASS"}))
+    publication_cases = json.loads((root / "fixtures/contracts/publication.cases.json").read_text(encoding="utf-8"))["cases"]
+    for case in publication_cases:
+        try:
+            validate_core_publication_candidate(case["snapshot"], case["candidate"])
+            actual = None
+        except CoreContractError as error:
+            actual = error.code
+        expected = None if case["valid"] else case["code"]
+        assert actual == expected, (case["id"], expected, actual)
+    print(json.dumps({"kind":"core-publication-metadata-parity","cases":len(publication_cases),"result":"PASS"}))
 
 
 if __name__ == "__main__":

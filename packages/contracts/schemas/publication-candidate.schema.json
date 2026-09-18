@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "readOnly": true,
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "ulpin-core-publication/1"
+    },
+    "state": {
+      "type": "string",
+      "const": "candidate"
+    },
+    "scope": {
+      "readOnly": true,
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "ceiling": {
+          "type": "string",
+          "enum": [
+            "public",
+            "operator",
+            "restricted"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "ceiling"
+      ],
+      "additionalProperties": false
+    },
+    "snapshotDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+    },
+    "geometryDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+    },
+    "compiler": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+    },
+    "assets": {
+      "readOnly": true,
+      "maxItems": 20000,
+      "type": "array",
+      "items": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "mediaType": {
+            "type": "string",
+            "pattern": "^[^\\u0000-\\u001f\\u007f]{1,256}(?![\\s\\S])"
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "bytes",
+          "mediaType"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "bindings": {
+      "readOnly": true,
+      "maxItems": 50000,
+      "type": "array",
+      "items": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+          },
+          "featureId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+          },
+          "representation": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "ref": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "namespace": {
+                    "type": "string",
+                    "const": "representation"
+                  },
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "namespace",
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "ref",
+              "revision"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "assetId",
+          "featureId",
+          "representation"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "state",
+    "scope",
+    "snapshotDigest",
+    "geometryDigest",
+    "compiler",
+    "assets",
+    "bindings"
+  ],
+  "additionalProperties": false
+}

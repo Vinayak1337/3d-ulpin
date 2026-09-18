@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "ulpin-signature-conformance/1",
+  "cases": [
+    {
+      "id": "null",
+      "value": null,
+      "expectedEncoding": "z",
+      "expectedDigest": "594e519ae499312b29433b7dd8a97ff068defcba9755b6d5d00e84c524d67b06"
+    },
+    {
+      "id": "one",
+      "value": 1,
+      "expectedEncoding": "n3ff0000000000000",
+      "expectedDigest": "73af61a19efb83c5922f1e2d07eceae40f55d2c60d0ffe1664f75e66f8f6c8da"
+    },
+    {
+      "id": "fraction",
+      "value": 1.5,
+      "expectedEncoding": "n3ff8000000000000",
+      "expectedDigest": "673d4b6d67133a213da9eb3a2f2b42b0fa66ddd94c03e59787a1e75b60d26ccf"
+    },
+    {
+      "id": "record",
+      "value": {
+        "b": true,
+        "a": 1
+      },
+      "expectedEncoding": "o2:s1:an3ff0000000000000s1:bt",
+      "expectedDigest": "064e0488881c8b4ec8f5ec135a8e51f71061cef522f6221458529ac9dab9ffca"
+    },
+    {
+      "id": "utf8",
+      "value": "é",
+      "expectedEncoding": "s2:é",
+      "expectedDigest": "0566c2f70ee0c7b722fdbd0dae5e0e79e0e84ab169d7956b688da7823e471650"
+    },
+    {
+      "id": "array",
+      "value": [
+        null,
+        true,
+        ""
+      ],
+      "expectedEncoding": "a3:zts0:",
+      "expectedDigest": "c84ab5a93be130801c54909ccd19f1c71d737315a1550cee0b4a115b6fd687a6"
+    },
+    {
+      "id": "unicode-keys",
+      "value": {
+        "𐀀": 1,
+        "": 0
+      },
+      "expectedEncoding": "o2:s3:n0000000000000000s4:𐀀n3ff0000000000000",
+      "expectedDigest": "ad0b977cdfbc27ee6f0972dd99acfdfb326659a0aabb0f592c0eac5bf68b6ce1"
+    }
+  ]
+}
