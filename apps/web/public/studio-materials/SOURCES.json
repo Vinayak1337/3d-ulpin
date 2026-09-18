@@ -1,0 +1,61 @@
+{
+  "purpose": "Lighting and surface materials only, never property evidence or imagery of this neighbourhood",
+  "provider": "Poly Haven",
+  "files": [
+    {
+      "asset": "kloppenheim_06_puresky",
+      "channel": "hdri",
+      "file": "daylight.hdr",
+      "bytes": 1173154,
+      "sha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
+      "source": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloppenheim_06_puresky_1k.hdr",
+      "page": "https://polyhaven.com/a/kloppenheim_06_puresky",
+      "license": "CC0-1.0",
+      "licenseSource": "https://polyhaven.com/license"
+    },
+    {
+      "asset": "leafy_grass",
+      "channel": "Diffuse",
+      "file": "grass-color.jpg",
+      "bytes": 1195394,
+      "sha256": "cfa40bc9d9417d1852db8753a8d5917f110c40101179f63543c382e39bc05e4a",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/leafy_grass/leafy_grass_diff_1k.jpg",
+      "page": "https://polyhaven.com/a/leafy_grass",
+      "license": "CC0-1.0",
+      "licenseSource": "https://polyhaven.com/license"
+    },
+    {
+      "asset": "leafy_grass",
+      "channel": "nor_gl",
+      "file": "grass-normal.jpg",
+      "bytes": 1466049,
+      "sha256": "832328216adc0a7e1f70a31d5ee48c9ab7f2152d83816122736cf42ac4b2ebd6",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/leafy_grass/leafy_grass_nor_gl_1k.jpg",
+      "page": "https://polyhaven.com/a/leafy_grass",
+      "license": "CC0-1.0",
+      "licenseSource": "https://polyhaven.com/license"
+    },
+    {
+      "asset": "asphalt_02",
+      "channel": "Diffuse",
+      "file": "asphalt-color.jpg",
+      "bytes": 731707,
+      "sha256": "1aa5ce99f58a625c71d48cfc3e68b65ca85ccb00f39e045c0a928608a0ea25ed",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_diff_1k.jpg",
+      "page": "https://polyhaven.com/a/asphalt_02",
+      "license": "CC0-1.0",
+      "licenseSource": "https://polyhaven.com/license"
+    },
+    {
+      "asset": "asphalt_02",
+      "channel": "nor_gl",
+      "file": "asphalt-normal.jpg",
+      "bytes": 1240122,
+      "sha256": "42a1c381b53204e83a982db2864479a30bc127bbdeebb1006f8ee51bff099df3",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_nor_gl_1k.jpg",
+      "page": "https://polyhaven.com/a/asphalt_02",
+      "license": "CC0-1.0",
+      "licenseSource": "https://polyhaven.com/license"
+    }
+  ]
+}

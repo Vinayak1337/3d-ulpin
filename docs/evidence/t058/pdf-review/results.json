@@ -1,0 +1,55 @@
+{
+  "result": "PASS",
+  "pages": [
+    {
+      "document": "land-BLD-0413",
+      "page": 1,
+      "sha256": "66c4cae0240bc6d5d1e2beccb16467d0fdbef071a514bf61b47c73f65eb6d53d",
+      "syntheticLabel": true,
+      "textWithinPage": true
+    },
+    {
+      "document": "register-BLD-0413",
+      "page": 1,
+      "sha256": "02511c60b4c14a9859eed6748e8465393dd45b8e3d3e00b66ebabc488962eb14",
+      "syntheticLabel": true,
+      "textWithinPage": true
+    },
+    {
+      "document": "register-BLD-0413",
+      "page": 2,
+      "sha256": "02511c60b4c14a9859eed6748e8465393dd45b8e3d3e00b66ebabc488962eb14",
+      "syntheticLabel": true,
+      "textWithinPage": true
+    },
+    {
+      "document": "plan-BLD-0413-F0",
+      "page": 1,
+      "sha256": "6963fc54c441cce6af5228e2658f8c6a45cfd048ecd9f2773e734dca04ead78b",
+      "syntheticLabel": true,
+      "textWithinPage": true
+    },
+    {
+      "document": "plan-BLD-0413-F0",
+      "page": 2,
+      "sha256": "6963fc54c441cce6af5228e2658f8c6a45cfd048ecd9f2773e734dca04ead78b",
+      "syntheticLabel": true,
+      "textWithinPage": true
+    },
+    {
+      "document": "lease-BLD-0413-F1-U1",
+      "page": 1,
+      "sha256": "056a19b6ee301ee872436063684063ac1fe06f078f41bdbe294db3c30c8eef54",
+      "syntheticLabel": true,
+      "textWithinPage": true
+    },
+    {
+      "document": "aerial-BLD-0413",
+      "page": 1,
+      "sha256": "6ffdc6f62f2065c70a54eb8d44d147a181a3d436b17363a495f0b2be419b237d",
+      "syntheticLabel": true,
+      "textWithinPage": true
+    }
+  ],
+  "scope": "Five representative prepared specimens; every PDF byte hash is separately verified by the full source tests"
+}

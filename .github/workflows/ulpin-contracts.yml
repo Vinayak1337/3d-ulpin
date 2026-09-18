@@ -1,9 +1,12 @@
 name: ULPIN contract conformance
 on:
   push:
-    branches: [feat/unified-spatial-foundation]
+    branches: [feat/unified-spatial-foundation, feat/studio-reference-rebuild]
     paths:
       - 'packages/contracts/**'
+      - 'apps/web/features/studio/**'
+      - 'fixtures/studio/**'
+      - 'tests/studio-*.test.ts'
       - 'apps/web/features/spatial/data/core-*.ts'
       - 'apps/web/lib/server/spatial-core-*.ts'
       - 'apps/web/app/api/v1/spatial/core/**'
@@ -67,5 +70,6 @@ jobs:
           python scripts/contracts/authority-parity.py
           pnpm exec tsx scripts/contracts/export-core.ts check
           pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-*.test.ts
+          pnpm test:studio
           python scripts/contracts/core-parity.py
           pnpm typecheck

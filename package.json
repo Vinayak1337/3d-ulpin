@@ -4,6 +4,10 @@
   "type": "module",
   "packageManager": "pnpm@9.12.0",
   "scripts": {
+    "studio:prepare": "tsx scripts/studio/prepare.ts",
+    "test:studio": "tsx --tsconfig apps/web/tsconfig.json --test tests/studio-*.test.ts",
+    "test:studio:browser": "node scripts/spatial/studio-verify.mjs",
+    "studio:capture": "node scripts/spatial/studio-capture.mjs",
     "data:uttam:check": "node scripts/datasets/uttam-nagar.mjs check",
     "data:uttam:install": "node scripts/datasets/uttam-nagar.mjs install",
     "data:uttam:verify": "node scripts/datasets/uttam-nagar.mjs verify",

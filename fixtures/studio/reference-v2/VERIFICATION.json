@@ -1,0 +1,75 @@
+{
+  "kind": "prepared-synthetic-asset-verification",
+  "datasetVersion": "reference-neighbourhood/2",
+  "coreSchema": "ulpin-spatial/2",
+  "schemaValidated": true,
+  "sourceHashesVerified": 909,
+  "counts": {
+    "buildings": 62,
+    "parcels": 62,
+    "floors": 239,
+    "units": 478,
+    "roads": 10,
+    "utilities": 20,
+    "findings": 3,
+    "documents": 903
+  },
+  "independentHeroExpected": {
+    "footprint": 288,
+    "volume": 4608,
+    "outsideParcel": 32,
+    "roadOverlap": 16,
+    "waterClearance": 1.8
+  },
+  "actualHero": {
+    "area": 288,
+    "volume": 4608,
+    "findings": [
+      {
+        "id": "BLD-0413-parcel",
+        "buildingId": "BLD-0413",
+        "type": "Parcel",
+        "title": "Outside parcel boundary",
+        "value": 32,
+        "unit": "m²",
+        "severity": "critical",
+        "description": "Footprint area minus its intersection with the recorded demo parcel. Geometry-derived; not a legal determination."
+      },
+      {
+        "id": "BLD-0413-R-H2",
+        "buildingId": "BLD-0413",
+        "type": "Road",
+        "title": "Road overlap · Lake View Road",
+        "value": 16,
+        "unit": "m²",
+        "severity": "critical",
+        "description": "The building footprint intersects the 12 m synthetic road corridor.",
+        "geometry": {
+          "x": 52,
+          "z": 5.5,
+          "width": 16,
+          "depth": 1
+        }
+      },
+      {
+        "id": "BLD-0413-utility",
+        "buildingId": "BLD-0413",
+        "type": "Utility",
+        "title": "Water pipeline clearance",
+        "value": 1.8,
+        "unit": "m",
+        "severity": "warning",
+        "description": "Horizontal footprint-to-pipe-surface distance is 1.8 m; below the 2 m DEMO threshold. Pipe centre depth 2.6 m. This threshold is not a municipal regulation."
+      }
+    ]
+  },
+  "bundleBytes": 2747008,
+  "bundleSha256": "56c981a295e6289e46e8bcd3a946a20c991f1d285340ce704e16bafd4bffc3cd",
+  "notClaimed": [
+    "Government identifiers",
+    "Real occupancy",
+    "Survey measurements",
+    "ML inference",
+    "Database publication"
+  ]
+}

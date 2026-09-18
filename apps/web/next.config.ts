@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   transpilePackages: ["@ulpin/contracts"],
   serverExternalPackages: ["pg", "playwright", "playwright-core"],
+  outputFileTracingIncludes:{'/api/v1/studio/sources/*':['../../fixtures/studio/reference-v2/manifest.json','../../fixtures/studio/reference-v2/source-bundle.zip','../../fixtures/studio/reference-v2/*.json','../../fixtures/studio/reference-v2/*.geojson','../../fixtures/studio/reference-v2/*.csv']},
   webpack(webpackConfig, { isServer }) {
     // The pinned production minifier corrupts Cesium's embedded WASM byte
     // strings into illegal octal template escapes. Preserve client source

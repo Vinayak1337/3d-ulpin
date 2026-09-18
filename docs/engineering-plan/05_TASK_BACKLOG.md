@@ -1,6 +1,6 @@
 # Ordered task backlog
 
-Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 9/57. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
+Generated from `backlog.json`, plan version 1.3. Accepted execution tasks: 10/58. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
 ## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
@@ -60,7 +60,7 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 Exit: Supported normalized neighbourhoods use an improved common visual/inspection system before ML expansion.
 
 ### T057 — Normalized neighbourhood renderer and shared 3D interface
-**Status:** Verify. **Release:** R1-renderer. **Suggested owner:** Architecture and frontend lead.
+**Status:** Blocked. **Release:** R1-renderer. **Suggested owner:** Architecture and frontend lead.
 
 **Dependencies:** T009.
 
@@ -75,6 +75,23 @@ Exit: Supported normalized neighbourhoods use an improved common visual/inspecti
 **Earlier references:** New explicit user/architecture requirement.
 
 **Detailed plan:** `tasks/T057_PLAN.md` — authored; inspect its status before execution.
+
+### T058 — Studio-based interface, prepared sources and reference-matched neighbourhood
+**Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture and visual lead.
+
+**Dependencies:** T009.
+
+**Scope:** Adopt original City Studio, preserve functioning routes, prepare consistent fictional records and refine against original mockups.
+
+**Outputs:** Studio route, shared viewport, prepared source bundle, working import and review interfaces, side-by-side evidence.
+
+**Acceptance:** Runtime functionality verified and major source-reference gaps corrected; no fabricated user approval.
+
+**Excluded:** ML, official identity issuance and replacing real source shapes with synthetic rectangles.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T058_PLAN.md` — authored; inspect its status before execution.
 
 ## E02 — Thin unified model
 Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
