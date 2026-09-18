@@ -3,10 +3,10 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.2",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T001_real_baseline_in_progress",
+  "current_action": "T002_reference_acceptance_contract",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T001",
+  "next_task": "T002",
   "epics": [
     {
       "id": "E01",
@@ -106,8 +106,8 @@
       "epic": "E01",
       "title": "Repository branch and fresh preservation baseline",
       "sequence": 1,
-      "status": "In progress",
-      "execution_state": "baseline_repairs_tested_integration_pending",
+      "status": "Accepted",
+      "execution_state": "completed",
       "plan_state": "detailed_plans_inspected_and_executing",
       "release": "R1-renderer",
       "suggested_owner": "Architecture lead",
@@ -129,9 +129,11 @@
         "diff and evidence review"
       ],
       "evidence": [
-        "tasks/T001_PROGRESS.md"
+        "tasks/T001_RESULT.md",
+        "evidence/T001-hosted-35354159342.json",
+        "evidence/T001-fixture-references.json"
       ],
-      "completed_at": null,
+      "completed_at": "2026-09-18T14:14:43.126Z",
       "blocker": null
     },
     {
@@ -139,9 +141,9 @@
       "epic": "E01",
       "title": "Reference, requirements and fixture acceptance contract",
       "sequence": 2,
-      "status": "Planned",
-      "execution_state": "not_started",
-      "plan_state": "brief_defined_detail_due_before_execution",
+      "status": "In progress",
+      "execution_state": "specification_in_progress",
+      "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Product/visual lead",
       "depends_on": [
@@ -152,7 +154,7 @@
       "acceptance": "Every primary screen has an anchor or an explicit design gap; dense and sparse inputs have honest targets; contradictory mockup numbers are not requirements.",
       "out_of_scope": "Recreating all UI screens or claiming original-chat completeness.",
       "detail_plan_path": "tasks/T002_PLAN.md",
-      "detail_plan_exists": false,
+      "detail_plan_exists": true,
       "legacy_refs": [
         "schema:U02",
         "schema:U16",

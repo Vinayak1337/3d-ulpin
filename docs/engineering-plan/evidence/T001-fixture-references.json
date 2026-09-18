@@ -1,0 +1,351 @@
+{
+  "schemaVersion": "ulpin-preservation-reference/1",
+  "basis": "Byte-verified committed Uttam Nagar bundle; exact database rows verified by the isolated hosted transfer. Not a sample of the private PC database.",
+  "bundleId": "uttam-nagar-2026-09-17-v1",
+  "bundlePayloadSha256": "d5b08aa68a86bae4e6b45c18cdf8c7f7f1f96087ee0d2d7b031d460c5efcfb07",
+  "areas": [
+    {
+      "id": "276dc595-97c4-4253-bf47-db4a12fd542b",
+      "siteId": "276dc595-97c4-4253-bf47-db4a12fd542b",
+      "revision": 2,
+      "reference": {
+        "anchor": [
+          77.06155997791171,
+          28.62030889270489
+        ],
+        "origin": [
+          701548.8995845089,
+          3167657.6112997644
+        ],
+        "sourceCrs": "EPSG:4326",
+        "analysisCrs": "EPSG:32643",
+        "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=pipeline step proj=unitconvert xy_in=deg xy_out=rad step proj=utm zone=43 ellps=WGS84",
+        "verticalReference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "id": "457bac4c-1c6c-4157-a12a-1d44ba3c1bcf",
+      "siteId": "457bac4c-1c6c-4157-a12a-1d44ba3c1bcf",
+      "revision": 3,
+      "reference": {
+        "anchor": [
+          77.06155997791171,
+          28.62030889270489
+        ],
+        "origin": [
+          701548.8995845089,
+          3167657.6112997644
+        ],
+        "sourceCrs": "EPSG:4326",
+        "analysisCrs": "EPSG:32643",
+        "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=pipeline step proj=unitconvert xy_in=deg xy_out=rad step proj=utm zone=43 ellps=WGS84",
+        "verticalReference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "id": "6a190c0f-3940-4dc4-b5b6-c2e8fbd26f16",
+      "siteId": "6a190c0f-3940-4dc4-b5b6-c2e8fbd26f16",
+      "revision": 5,
+      "reference": {
+        "anchor": [
+          77.06268833559449,
+          28.619488190224835
+        ],
+        "origin": [
+          701660.8088215708,
+          3167568.560569362
+        ],
+        "sourceCrs": "EPSG:4326",
+        "analysisCrs": "EPSG:32643",
+        "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=pipeline step proj=unitconvert xy_in=deg xy_out=rad step proj=utm zone=43 ellps=WGS84",
+        "verticalReference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "id": "9bb67cbc-9773-4cee-ad1a-df29fc6c23a5",
+      "siteId": "9bb67cbc-9773-4cee-ad1a-df29fc6c23a5",
+      "revision": 2,
+      "reference": {
+        "anchor": [
+          77.05939785497347,
+          28.62042701071096
+        ],
+        "origin": [
+          701337.2440098934,
+          3167667.0579543556
+        ],
+        "sourceCrs": "EPSG:4326",
+        "analysisCrs": "EPSG:32643",
+        "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=pipeline step proj=unitconvert xy_in=deg xy_out=rad step proj=utm zone=43 ellps=WGS84",
+        "verticalReference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "id": "d1b4ca2e-378e-4b43-8c34-04406dbb285b",
+      "siteId": "d1b4ca2e-378e-4b43-8c34-04406dbb285b",
+      "revision": 2,
+      "reference": {
+        "anchor": [
+          77.06268833559449,
+          28.619488190224835
+        ],
+        "origin": [
+          701660.8088215708,
+          3167568.560569362
+        ],
+        "sourceCrs": "EPSG:4326",
+        "analysisCrs": "EPSG:32643",
+        "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=pipeline step proj=unitconvert xy_in=deg xy_out=rad step proj=utm zone=43 ellps=WGS84",
+        "verticalReference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "id": "eb82b76d-84cc-4fd0-ae93-b4a229fc4837",
+      "siteId": "eb82b76d-84cc-4fd0-ae93-b4a229fc4837",
+      "revision": 3,
+      "reference": {
+        "anchor": [
+          77.05939785497347,
+          28.62042701071096
+        ],
+        "origin": [
+          701337.2440098934,
+          3167667.0579543556
+        ],
+        "sourceCrs": "EPSG:4326",
+        "analysisCrs": "EPSG:32643",
+        "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=pipeline step proj=unitconvert xy_in=deg xy_out=rad step proj=utm zone=43 ellps=WGS84",
+        "verticalReference": "building-relative; not aligned between features"
+      }
+    }
+  ],
+  "physicalSamples": [
+    {
+      "id": "007c02b4-41be-4d53-9858-35a38fa94204",
+      "recordId": "007c02b4-41be-4d53-9858-35a38fa94204",
+      "identifier": "3DU-17DQ2SB5Y4899VYHYV989FTN1B:B015",
+      "revision": 1,
+      "areaId": "276dc595-97c4-4253-bf47-db4a12fd542b",
+      "kind": "building",
+      "worldState": "observed",
+      "sourceRevisionId": "c1b546f7-86cf-4327-8afe-7fed4c7cd2c2",
+      "sourceKey": "gob-v3-391-71458153",
+      "geometryRole": "observed_roof_projection",
+      "height": {
+        "unit": "m",
+        "state": "unknown",
+        "value": null,
+        "method": "native_parse",
+        "meaning": "height above the building's own ground level",
+        "evidence": [
+          {
+            "featureId": "gob-v3-391-71458153",
+            "sourceRevisionId": "c1b546f7-86cf-4327-8afe-7fed4c7cd2c2"
+          }
+        ],
+        "reference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "id": "008905b7-8ee5-4e5e-8c06-c526601f24c3",
+      "recordId": "008905b7-8ee5-4e5e-8c06-c526601f24c3",
+      "identifier": "3DU-7BGAVPV16C9Z8AX4XMM8MZRJ1Q:B020",
+      "revision": 1,
+      "areaId": "eb82b76d-84cc-4fd0-ae93-b4a229fc4837",
+      "kind": "building",
+      "worldState": "synthetic",
+      "sourceRevisionId": "40eb8928-af83-46ee-9358-62a4eef673d9",
+      "sourceKey": "demo-way/350590397",
+      "geometryRole": "approved_building_outline",
+      "height": {
+        "unit": "m",
+        "state": "source_supported",
+        "value": 9.600000000000001,
+        "method": "native_parse",
+        "meaning": "Invented height in an explicitly fictional test copy",
+        "evidence": [
+          {
+            "featureId": "demo-way/350590397",
+            "sourceRevisionId": "40eb8928-af83-46ee-9358-62a4eef673d9"
+          }
+        ],
+        "reference": "building-relative; not aligned between features",
+        "originalUnit": "m",
+        "originalValue": 9.600000000000001
+      }
+    },
+    {
+      "id": "00d8b302-8cbf-451a-9ef6-1f71911363ad",
+      "recordId": null,
+      "identifier": "OBS-00d8b302-8cbf-451a-9ef6-1f71911363ad",
+      "revision": 1,
+      "areaId": "eb82b76d-84cc-4fd0-ae93-b4a229fc4837",
+      "kind": "road",
+      "worldState": "synthetic",
+      "sourceRevisionId": "85b146c7-689a-4845-8660-7c0a0de50059",
+      "sourceKey": "demo-road-way/1429146384",
+      "geometryRole": "public_road_land",
+      "height": {
+        "unit": "m",
+        "state": "unknown",
+        "value": null,
+        "method": "native_parse",
+        "meaning": "height above the building's own ground level",
+        "evidence": [
+          {
+            "featureId": "demo-road-way/1429146384",
+            "sourceRevisionId": "85b146c7-689a-4845-8660-7c0a0de50059"
+          }
+        ],
+        "reference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "id": "033e2a12-32a2-4101-8535-de54a9b034f5",
+      "recordId": null,
+      "identifier": "OBS-033e2a12-32a2-4101-8535-de54a9b034f5",
+      "revision": 1,
+      "areaId": "276dc595-97c4-4253-bf47-db4a12fd542b",
+      "kind": "road",
+      "worldState": "observed",
+      "sourceRevisionId": "2c0109e8-41c3-47e4-ba89-de1c159edd29",
+      "sourceKey": "osm-way-423591304-part-1",
+      "geometryRole": "unknown",
+      "height": {
+        "unit": "m",
+        "state": "unknown",
+        "value": null,
+        "method": "native_parse",
+        "meaning": "height above the building's own ground level",
+        "evidence": [
+          {
+            "featureId": "osm-way-423591304-part-1",
+            "sourceRevisionId": "2c0109e8-41c3-47e4-ba89-de1c159edd29"
+          }
+        ],
+        "reference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "id": "042cedc2-1834-4f5a-9ac1-84b39d2de1ab",
+      "recordId": "042cedc2-1834-4f5a-9ac1-84b39d2de1ab",
+      "identifier": "3DU-7BGAVPV16C9Z8AX4XMM8MZRJ1Q:P003",
+      "revision": 1,
+      "areaId": "eb82b76d-84cc-4fd0-ae93-b4a229fc4837",
+      "kind": "parcel",
+      "worldState": "synthetic",
+      "sourceRevisionId": "42e6b345-14a4-4cb6-832a-7ce5e9d4ff3b",
+      "sourceKey": "demo-parcel-C",
+      "geometryRole": "recorded_parcel",
+      "height": {
+        "unit": "m",
+        "state": "unknown",
+        "value": null,
+        "method": "native_parse",
+        "meaning": "height above the building's own ground level",
+        "evidence": [
+          {
+            "featureId": "demo-parcel-C",
+            "sourceRevisionId": "42e6b345-14a4-4cb6-832a-7ce5e9d4ff3b"
+          }
+        ],
+        "reference": "building-relative; not aligned between features"
+      }
+    }
+  ],
+  "registrySamples": [
+    {
+      "id": "005715b9-d33c-4a2f-9f40-9dd9dfdd59bb",
+      "siteId": "6a190c0f-3940-4dc4-b5b6-c2e8fbd26f16",
+      "kind": "space",
+      "identifier": "3DU-3A3460YEA09Q2BBDP2X3XX4VRP:S026",
+      "revision": 2
+    },
+    {
+      "id": "007c02b4-41be-4d53-9858-35a38fa94204",
+      "siteId": "276dc595-97c4-4253-bf47-db4a12fd542b",
+      "kind": "building",
+      "identifier": "3DU-17DQ2SB5Y4899VYHYV989FTN1B:B015",
+      "revision": 0
+    },
+    {
+      "id": "008905b7-8ee5-4e5e-8c06-c526601f24c3",
+      "siteId": "eb82b76d-84cc-4fd0-ae93-b4a229fc4837",
+      "kind": "building",
+      "identifier": "3DU-7BGAVPV16C9Z8AX4XMM8MZRJ1Q:B020",
+      "revision": 0
+    },
+    {
+      "id": "00dc2cc4-5f1a-4be4-a072-192135a403df",
+      "siteId": "9bb67cbc-9773-4cee-ad1a-df29fc6c23a5",
+      "kind": "building",
+      "identifier": "3DU-4VPSYBS5VK9KQAT6PZ57Y6R8X5:B028",
+      "revision": 0
+    },
+    {
+      "id": "012ac21c-425f-4512-a3e3-d03823c390af",
+      "siteId": "6a190c0f-3940-4dc4-b5b6-c2e8fbd26f16",
+      "kind": "space",
+      "identifier": "3DU-3A3460YEA09Q2BBDP2X3XX4VRP:S002",
+      "revision": 2
+    },
+    {
+      "id": "02139491-578a-458e-8d51-e6ff1415e71d",
+      "siteId": "eb82b76d-84cc-4fd0-ae93-b4a229fc4837",
+      "kind": "building",
+      "identifier": "3DU-7BGAVPV16C9Z8AX4XMM8MZRJ1Q:B049",
+      "revision": 0
+    },
+    {
+      "id": "023b42c6-fb1c-4451-8079-92346acbf226",
+      "siteId": "d1b4ca2e-378e-4b43-8c34-04406dbb285b",
+      "kind": "building",
+      "identifier": "3DU-6HPK52WDWE9D1RRD0481PVPA2V:B003",
+      "revision": 0
+    },
+    {
+      "id": "027f1c0a-2d8f-4bf0-acdb-36bcb1a7d288",
+      "siteId": "9bb67cbc-9773-4cee-ad1a-df29fc6c23a5",
+      "kind": "building",
+      "identifier": "3DU-4VPSYBS5VK9KQAT6PZ57Y6R8X5:B103",
+      "revision": 0
+    }
+  ],
+  "sourceSamples": [
+    {
+      "id": "2c0109e8-41c3-47e4-ba89-de1c159edd29",
+      "familyId": "2c0109e8-41c3-47e4-ba89-de1c159edd29",
+      "revision": 1,
+      "sha256": "1e708d7307c46c8e9bf8b5733b76755b5078279eae24b5467393e7baf983bfaf",
+      "bytes": 32171
+    },
+    {
+      "id": "40eb8928-af83-46ee-9358-62a4eef673d9",
+      "familyId": "40eb8928-af83-46ee-9358-62a4eef673d9",
+      "revision": 1,
+      "sha256": "a367264bbbd1425a26dbe124b15bd3bc7ad131552464f343af25f6f060dc874e",
+      "bytes": 136727
+    },
+    {
+      "id": "42e6b345-14a4-4cb6-832a-7ce5e9d4ff3b",
+      "familyId": "42e6b345-14a4-4cb6-832a-7ce5e9d4ff3b",
+      "revision": 1,
+      "sha256": "cbc811bd3c9382ad8ee1fe376fec55cb2b8055e85a405ce8b8be5c2e9b9a7b81",
+      "bytes": 3332
+    },
+    {
+      "id": "85b146c7-689a-4845-8660-7c0a0de50059",
+      "familyId": "85b146c7-689a-4845-8660-7c0a0de50059",
+      "revision": 1,
+      "sha256": "c6ac3c71d1103805b20c3c4713f37c5b7752e7aaa5883d46f8b9a70a42278256",
+      "bytes": 54045
+    },
+    {
+      "id": "c1b546f7-86cf-4327-8afe-7fed4c7cd2c2",
+      "familyId": "c1b546f7-86cf-4327-8afe-7fed4c7cd2c2",
+      "revision": 1,
+      "sha256": "fe34b52f0cf6706380527da4e659ca2a22624fd561e85d6bab5b8a22d32c2736",
+      "bytes": 21574
+    }
+  ]
+}
