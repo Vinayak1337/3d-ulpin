@@ -1,0 +1,6903 @@
+{
+  "schemaVersion": "ulpin-frame-conformance/1",
+  "cases": [
+    {
+      "id": "feet-permuted-axes-rotation-vertical-tie",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        6.952,
+        26.096,
+        98.476
+      ],
+      "tolerance": 1e-10
+    },
+    {
+      "id": "inverse-registration",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "point": [
+          6.952,
+          26.096,
+          98.476
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "inverse"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        10,
+        20,
+        5
+      ],
+      "tolerance": 1e-10
+    },
+    {
+      "id": "horizontal-only-needs-no-vertical-tie",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "unknown",
+              "reason": "Not provided"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "unavailable",
+              "reason": "No level tie"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        6.952,
+        26.096
+      ],
+      "tolerance": 1e-10
+    },
+    {
+      "id": "same-frame-no-op",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": []
+      },
+      "valid": true,
+      "expectedPoint": [
+        10,
+        20,
+        5
+      ],
+      "tolerance": 1e-10
+    },
+    {
+      "id": "millimetres-to-metres",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "mm",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "mm",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 0,
+            "translationMetres": [
+              0,
+              0
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "same_reference"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          1000,
+          2000,
+          3000
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        1,
+        2,
+        3
+      ],
+      "tolerance": 1e-10
+    },
+    {
+      "id": "legacy-survey-foot-is-not-international-foot",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "us_ft",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 0,
+            "translationMetres": [
+              0,
+              0
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        3.048006096012192,
+        6.096012192024384
+      ],
+      "tolerance": 1e-10
+    },
+    {
+      "id": "west-south-axis-signs",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "west",
+              "south"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 0,
+            "translationMetres": [
+              0,
+              0
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        -3.048,
+        -6.096
+      ],
+      "tolerance": 1e-10
+    },
+    {
+      "id": "negative-vertical-tie",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": -10
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        6.952,
+        26.096,
+        -11.524
+      ],
+      "tolerance": 1e-10
+    },
+    {
+      "id": "equatorial-wgs84-basis",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "ecef"
+          },
+          "revision": 1
+        },
+        "point": [
+          1,
+          2,
+          3
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "world"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        6378240,
+        1,
+        2
+      ],
+      "tolerance": 1e-8
+    },
+    {
+      "id": "equatorial-east-90-basis",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 90,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 0
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "ecef"
+          },
+          "revision": 1
+        },
+        "point": [
+          1,
+          2,
+          3
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "world"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        -1,
+        6378140,
+        2
+      ],
+      "tolerance": 1e-8
+    },
+    {
+      "id": "polar-wgs84-basis",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 90,
+              "ellipsoidHeightMetres": 0
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "ecef"
+          },
+          "revision": 1
+        },
+        "point": [
+          1,
+          2,
+          3
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "world"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        -2,
+        1,
+        6356755.314245179
+      ],
+      "tolerance": 1e-8
+    },
+    {
+      "id": "inverse-world-basis",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "ecef"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          6378240,
+          1,
+          2
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "world"
+              },
+              "revision": 1
+            },
+            "direction": "inverse"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        1,
+        2,
+        3
+      ],
+      "tolerance": 1e-8
+    },
+    {
+      "id": "two-step-independent-world-answer",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "ecef"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          },
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "world"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        6378335.476,
+        6.952,
+        26.096
+      ],
+      "tolerance": 1e-8
+    },
+    {
+      "id": "stale-source-frame",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 2
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "STALE_REFERENCE"
+    },
+    {
+      "id": "missing-target-frame",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "missing"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "MISSING_REFERENCE"
+    },
+    {
+      "id": "duplicate-operation",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "DUPLICATE_RECORD"
+    },
+    {
+      "id": "duplicate-frame",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "DUPLICATE_RECORD"
+    },
+    {
+      "id": "axes-are-not-two-horizontal-directions",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "east",
+              "west"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "FRAME_AXES"
+    },
+    {
+      "id": "reversed-source-domain",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": 101,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "FRAME_BOUNDS"
+    },
+    {
+      "id": "unknown-vertical-cannot-be-fixed-by-offset",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "unknown",
+              "reason": "Absent"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "VERTICAL_UNRESOLVED"
+    },
+    {
+      "id": "surface-depth-cannot-be-fixed-by-offset",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "surface_relative",
+              "surface": {
+                "ref": {
+                  "namespace": "surface",
+                  "id": "ground"
+                },
+                "revision": 1
+              },
+              "label": "Depth below terrain"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "VERTICAL_UNRESOLVED"
+    },
+    {
+      "id": "unavailable-vertical-blocks-3d",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "unavailable",
+              "reason": "No tie"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "VERTICAL_UNRESOLVED"
+    },
+    {
+      "id": "different-benchmarks-not-same-reference",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "same_reference"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "VERTICAL_MISMATCH"
+    },
+    {
+      "id": "one-benchmark-cannot-have-two-zeros",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "VERTICAL_MISMATCH"
+    },
+    {
+      "id": "ellipsoidal-origin-not-default-zero",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "INVALID_CONTRACT"
+    },
+    {
+      "id": "latitude-out-of-bounds",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 91,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "INVALID_CONTRACT"
+    },
+    {
+      "id": "world-tie-to-wrong-benchmark",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "source-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "VERTICAL_MISMATCH"
+    },
+    {
+      "id": "world-requires-explicit-z",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "ecef"
+          },
+          "revision": 1
+        },
+        "point": [
+          1,
+          2
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "world"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "POINT_DIMENSION"
+    },
+    {
+      "id": "stale-operation",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 2
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "STALE_REFERENCE"
+    },
+    {
+      "id": "disjoint-path",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "world"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "TRANSFORM_PATH"
+    },
+    {
+      "id": "cyclic-path",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          },
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "inverse"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "TRANSFORM_CYCLE"
+    },
+    {
+      "id": "empty-path-cannot-change-frame",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": []
+      },
+      "valid": false,
+      "code": "TRANSFORM_PATH"
+    },
+    {
+      "id": "outside-forward-domain",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          1000,
+          1000
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "OUTSIDE_DOMAIN"
+    },
+    {
+      "id": "outside-inverse-domain",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "point": [
+          1000,
+          1000
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "inverse"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "OUTSIDE_DOMAIN"
+    },
+    {
+      "id": "unqualified-geodetic-profile",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "unsupported",
+            "profile": "grid-shift",
+            "reason": "No qualified grid operation"
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20,
+          5
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "TRANSFORM_PROFILE"
+    },
+    {
+      "id": "source-precision-is-not-invented",
+      "catalog": {
+        "frames": [
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "feet"
+            },
+            "revision": 1,
+            "label": "North/east feet, positive down",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "ft",
+            "axes": [
+              "north",
+              "east"
+            ],
+            "verticalUnit": "ft",
+            "verticalDirection": "down",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "source-zero"
+                },
+                "revision": 1
+              },
+              "label": "source-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "metric"
+            },
+            "revision": 1,
+            "label": "Metre ENU",
+            "sourceCrs": null,
+            "kind": "engineering",
+            "horizontalUnit": "m",
+            "axes": [
+              "east",
+              "north"
+            ],
+            "verticalUnit": "m",
+            "verticalDirection": "up",
+            "vertical": {
+              "kind": "benchmark",
+              "reference": {
+                "ref": {
+                  "namespace": "benchmark",
+                  "id": "target-zero"
+                },
+                "revision": 1
+              },
+              "label": "target-zero"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "frame",
+              "id": "ecef"
+            },
+            "revision": 1,
+            "label": "WGS84 ECEF",
+            "sourceCrs": "EPSG:4978",
+            "kind": "geocentric",
+            "crs": "EPSG:4978",
+            "unit": "m",
+            "axes": "X-Y-Z"
+          }
+        ],
+        "operations": [
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "registration"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "feet"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored numeric fixture; not a survey",
+            "accuracyMetres": null,
+            "kind": "local_rigid",
+            "rotationDegrees": 90,
+            "translationMetres": [
+              10,
+              20
+            ],
+            "sourceDomain": {
+              "minEast": -100,
+              "minNorth": -100,
+              "maxEast": 100,
+              "maxNorth": 100
+            },
+            "verticalTie": {
+              "kind": "constant_offset",
+              "offsetMetres": 100
+            }
+          },
+          {
+            "ref": {
+              "namespace": "transform",
+              "id": "world"
+            },
+            "revision": 1,
+            "from": {
+              "ref": {
+                "namespace": "frame",
+                "id": "metric"
+              },
+              "revision": 1
+            },
+            "to": {
+              "ref": {
+                "namespace": "frame",
+                "id": "ecef"
+              },
+              "revision": 1
+            },
+            "provenance": "Authored equatorial benchmark",
+            "accuracyMetres": null,
+            "kind": "wgs84_enu",
+            "sourceDomain": null,
+            "benchmark": {
+              "ref": {
+                "namespace": "benchmark",
+                "id": "target-zero"
+              },
+              "revision": 1
+            },
+            "origin": {
+              "longitude": 0,
+              "latitude": 0,
+              "ellipsoidHeightMetres": 100
+            }
+          }
+        ]
+      },
+      "request": {
+        "from": {
+          "ref": {
+            "namespace": "frame",
+            "id": "feet"
+          },
+          "revision": 1
+        },
+        "to": {
+          "ref": {
+            "namespace": "frame",
+            "id": "metric"
+          },
+          "revision": 1
+        },
+        "point": [
+          10,
+          20
+        ],
+        "steps": [
+          {
+            "operation": {
+              "ref": {
+                "namespace": "transform",
+                "id": "registration"
+              },
+              "revision": 1
+            },
+            "direction": "forward"
+          }
+        ]
+      },
+      "valid": true,
+      "expectedPoint": [
+        6.952,
+        26.096
+      ],
+      "tolerance": 1e-10
+    }
+  ]
+}

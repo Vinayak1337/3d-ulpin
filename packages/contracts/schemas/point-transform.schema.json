@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "readOnly": true,
+  "type": "object",
+  "properties": {
+    "from": {
+      "readOnly": true,
+      "type": "object",
+      "properties": {
+        "ref": {
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "namespace": {
+              "type": "string",
+              "const": "frame"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+            }
+          },
+          "required": [
+            "namespace",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "ref",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "to": {
+      "readOnly": true,
+      "type": "object",
+      "properties": {
+        "ref": {
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "namespace": {
+              "type": "string",
+              "const": "frame"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+            }
+          },
+          "required": [
+            "namespace",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "ref",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "point": {
+      "anyOf": [
+        {
+          "readOnly": true,
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "readOnly": true,
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "steps": {
+      "readOnly": true,
+      "maxItems": 16,
+      "type": "array",
+      "items": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "operation": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "ref": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "namespace": {
+                    "type": "string",
+                    "const": "transform"
+                  },
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "namespace",
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "ref",
+              "revision"
+            ],
+            "additionalProperties": false
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "inverse"
+            ]
+          }
+        },
+        "required": [
+          "operation",
+          "direction"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "from",
+    "to",
+    "point",
+    "steps"
+  ],
+  "additionalProperties": false
+}
