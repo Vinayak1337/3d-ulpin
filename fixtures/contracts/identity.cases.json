@@ -7550,6 +7550,254 @@
       "code": "LINEAGE_CHANGE"
     },
     {
+      "id": "missing-successor-lineage",
+      "value": {
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "P0"
+            },
+            "revision": 2,
+            "kind": "parcel",
+            "label": "Object P0",
+            "identifiers": [],
+            "memberships": [],
+            "lifecycle": {
+              "state": "retired",
+              "mode": "split",
+              "changeId": "split-1",
+              "replacedBy": [
+                {
+                  "namespace": "physical",
+                  "id": "P1"
+                },
+                {
+                  "namespace": "physical",
+                  "id": "P2"
+                }
+              ],
+              "reason": "Explicit identity split, no geometry inferred"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "P1"
+            },
+            "revision": 1,
+            "kind": "parcel",
+            "label": "Object P1",
+            "identifiers": [],
+            "memberships": [],
+            "lifecycle": {
+              "state": "active"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "P2"
+            },
+            "revision": 1,
+            "kind": "parcel",
+            "label": "Object P2",
+            "identifiers": [],
+            "memberships": [],
+            "lifecycle": {
+              "state": "active"
+            }
+          }
+        ],
+        "relations": [
+          {
+            "id": "split-1:a",
+            "revision": 1,
+            "kind": "split_from",
+            "from": {
+              "namespace": "physical",
+              "id": "P1"
+            },
+            "to": {
+              "namespace": "physical",
+              "id": "P0"
+            },
+            "note": "Explicit authored fixture relationship",
+            "changeId": "split-1"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "LINEAGE_MISSING"
+    },
+    {
+      "id": "successor-allocated-by-two-changes",
+      "value": {
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "P0"
+            },
+            "revision": 2,
+            "kind": "parcel",
+            "label": "Object P0",
+            "identifiers": [],
+            "memberships": [],
+            "lifecycle": {
+              "state": "retired",
+              "mode": "split",
+              "changeId": "split-1",
+              "replacedBy": [
+                {
+                  "namespace": "physical",
+                  "id": "P1"
+                },
+                {
+                  "namespace": "physical",
+                  "id": "P2"
+                }
+              ],
+              "reason": "Explicit identity split, no geometry inferred"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "P1"
+            },
+            "revision": 1,
+            "kind": "parcel",
+            "label": "Object P1",
+            "identifiers": [],
+            "memberships": [],
+            "lifecycle": {
+              "state": "active"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "P2"
+            },
+            "revision": 1,
+            "kind": "parcel",
+            "label": "Object P2",
+            "identifiers": [],
+            "memberships": [],
+            "lifecycle": {
+              "state": "active"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "P4"
+            },
+            "revision": 2,
+            "kind": "parcel",
+            "label": "Object P4",
+            "identifiers": [],
+            "memberships": [],
+            "lifecycle": {
+              "state": "retired",
+              "mode": "split",
+              "changeId": "split-other",
+              "replacedBy": [
+                {
+                  "namespace": "physical",
+                  "id": "P1"
+                },
+                {
+                  "namespace": "physical",
+                  "id": "P5"
+                }
+              ],
+              "reason": "Different original cannot reuse P1"
+            }
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "P5"
+            },
+            "revision": 1,
+            "kind": "parcel",
+            "label": "Object P5",
+            "identifiers": [],
+            "memberships": [],
+            "lifecycle": {
+              "state": "active"
+            }
+          }
+        ],
+        "relations": [
+          {
+            "id": "split-1:a",
+            "revision": 1,
+            "kind": "split_from",
+            "from": {
+              "namespace": "physical",
+              "id": "P1"
+            },
+            "to": {
+              "namespace": "physical",
+              "id": "P0"
+            },
+            "note": "Explicit authored fixture relationship",
+            "changeId": "split-1"
+          },
+          {
+            "id": "split-1:b",
+            "revision": 1,
+            "kind": "split_from",
+            "from": {
+              "namespace": "physical",
+              "id": "P2"
+            },
+            "to": {
+              "namespace": "physical",
+              "id": "P0"
+            },
+            "note": "Explicit authored fixture relationship",
+            "changeId": "split-1"
+          },
+          {
+            "id": "other-1",
+            "revision": 1,
+            "kind": "split_from",
+            "from": {
+              "namespace": "physical",
+              "id": "P1"
+            },
+            "to": {
+              "namespace": "physical",
+              "id": "P4"
+            },
+            "note": "Explicit authored fixture relationship",
+            "changeId": "split-other"
+          },
+          {
+            "id": "other-2",
+            "revision": 1,
+            "kind": "split_from",
+            "from": {
+              "namespace": "physical",
+              "id": "P5"
+            },
+            "to": {
+              "namespace": "physical",
+              "id": "P4"
+            },
+            "note": "Explicit authored fixture relationship",
+            "changeId": "split-other"
+          }
+        ]
+      },
+      "valid": false,
+      "code": "SUCCESSOR_ALLOCATION"
+    },
+    {
       "id": "one-source-merge",
       "value": {
         "entities": [
