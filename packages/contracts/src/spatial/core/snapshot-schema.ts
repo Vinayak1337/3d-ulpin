@@ -33,6 +33,7 @@ export const CoreObservationSchema=z.strictObject({
 }).readonly();
 export const CoreResolutionSchema=z.strictObject({
   ref:ref("resolution"),revision:CorePositiveRevisionSchema,entity:CoreRefSchema,world:CoreWorldRevisionSchema,role:CoreObservationRoleSchema,
+  purpose:z.enum(["analysis","display","record"]).optional(),
   candidates:z.array(CoreObservationRevisionSchema).min(1).max(64).readonly(),selected:CoreObservationRevisionSchema.nullable(),reason:coreText(2048),
 }).readonly();
 const compositionBase={ref:ref("composition"),revision:CorePositiveRevisionSchema,entity:CoreRefSchema,world:CoreWorldRevisionSchema};

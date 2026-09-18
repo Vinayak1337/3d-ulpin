@@ -23,6 +23,11 @@ registry record/site and original source metadata directly. No DDL, migration,
 identifier synchronization, neighbour scenario generation, geo-service calls or
 source processing on the read path. SQL parameters remain bound.
 
+Live-row check: registry JSON payloads can omit id/site/revision/identifier because
+the current `recordFrom` reader overlays authoritative columns. The new reader
+does the same for missing envelope fields and still rejects explicit contradictory
+id/site/revision values. This is projection, not a DB rewrite or a new identifier.
+
 The new local single-operator GET is a separate versioned core endpoint, requires
 an explicit world, uses no-store, and checks an optional expected snapshot digest.
 The authorization scope is fixed by the server, never accepted from a query string.
@@ -31,8 +36,16 @@ limits reject excess instead of truncating it. Pagination belongs to a coherent
 catalog cursor contract, not a random LIMIT presented as the whole area. An optional
 feature focus may select an explicitly bounded neighbourhood later, not required now.
 
+Live-source inspection identified an actual T008 consumer gap: one physical feature
+already has both local analytical and geographic display representations with the
+same semantic role. Add a bounded optional resolution purpose (`analysis`, `display`,
+`record`; absent means the existing analysis behavior) to the resolution uniqueness
+key. This is not a second property model: both representations retain the same
+entity and source revision and enter one manifest. Re-run T008 Node/Python parity
+and add a purpose-disambiguation regression before using it in the adapter.
+
 Existing globally stable physical/source/registry IDs and revisions, including
-revision zero, are retained. Physical and registry entities have different namespaces;
+revision zero, are retained. Physical and registry entities use the already-qualified `physical` and `registry` namespaces;
 recorded geometry is not relabelled observed physical truth. Preserve confirmed
 physical-to-record links as typed relations. Registry kind maps to its recorded
 spatial kind (floor→level), with namespace recording its authority. Unqualified
@@ -86,3 +99,13 @@ Run all core/shared spatial/UI tests, installed-type checks, build, route tests,
 generated drift and hosted conformance/integration. The existing v1 route remains
 available and unchanged. No data migration is needed for this task. Rollback is
 removing/disabling the new read endpoint; no stored data needs reversal.
+
+## Current continuation and user priority
+
+Finish this existing-data bridge and one real read-only neighbourhood demonstration,
+then prioritize shared renderer/3D UI improvements. Broad bulk ingest and ML remain
+later work; this bridge does not need a schema rewrite. Self-review adds registry
+XYZ preservation (never slice away Z/M), height-evidence locators, owner-frame
+metadata, malformed Host and repeated query parameter rejection. Capture actual
+read-only database fingerprints before/after the live bridge and exercise its HTTP
+response against an owned loopback server before accepting the task.

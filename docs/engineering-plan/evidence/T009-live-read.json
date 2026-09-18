@@ -1,0 +1,117 @@
+{
+  "kind": "read-only-persisted-normalization",
+  "startedAt": "2026-09-18T19:02:12.857Z",
+  "tests": [
+    {
+      "areaId": "0ded05d3-b596-46a8-9918-ab1bc0a433be",
+      "world": "synthetic",
+      "physicalFeatures": 22,
+      "registryRecords": 75,
+      "sources": 10,
+      "representations": 119,
+      "diagnostics": [
+        "LEGACY_LINK_OUTSIDE_SLICE",
+        "HEIGHT_NOT_VERTICAL_PLACEMENT"
+      ],
+      "readDigest": "5a5eb26150019f771e8be305d64bce238cbab472c549eea3f282e78b02753942",
+      "durationMs": 5178,
+      "httpVerified": true
+    },
+    {
+      "areaId": "276dc595-97c4-4253-bf47-db4a12fd542b",
+      "world": "observed",
+      "physicalFeatures": 50,
+      "registryRecords": 0,
+      "sources": 2,
+      "representations": 100,
+      "diagnostics": [
+        "GEOMETRY_ROLE_UNRESOLVED",
+        "LEGACY_LINK_OUTSIDE_SLICE"
+      ],
+      "readDigest": "2ba8c6d4f4cc204c4ad6cd1a7092b054f31f1671a6e82692dd63702530a37d90",
+      "durationMs": 1973,
+      "httpVerified": true
+    },
+    {
+      "areaId": "457bac4c-1c6c-4157-a12a-1d44ba3c1bcf",
+      "world": "synthetic",
+      "physicalFeatures": 51,
+      "registryRecords": 39,
+      "sources": 6,
+      "representations": 141,
+      "diagnostics": [
+        "GEOMETRY_ROLE_UNRESOLVED",
+        "LEGACY_LINK_OUTSIDE_SLICE",
+        "HEIGHT_NOT_VERTICAL_PLACEMENT"
+      ],
+      "readDigest": "1f0b3b3f99b9a71cea5a4af0062e21d11ff147a1890d980900ee6474363ad6c7",
+      "durationMs": 5098,
+      "httpVerified": true
+    }
+  ],
+  "before": [
+    {
+      "table": "map_areas",
+      "rows": 13,
+      "digest": "59c800c0e2442646dbf0166d02bfa7ce"
+    },
+    {
+      "table": "physical_features",
+      "rows": 557,
+      "digest": "ef22448cdaec153dd3b155661b6f1319"
+    },
+    {
+      "table": "physical_feature_revisions",
+      "rows": 557,
+      "digest": "583595e8808a86e9b5933034ec2bad02"
+    },
+    {
+      "table": "registry_records",
+      "rows": 627,
+      "digest": "147d8d0fa54c3ea5a0af3bdc6897b426"
+    },
+    {
+      "table": "registry_revisions",
+      "rows": 319,
+      "digest": "ae3226fc06e71a53d62c96e4ff588701"
+    },
+    {
+      "table": "sources",
+      "rows": 541,
+      "digest": "d6d206c8f68817d75dcd6f780028724b"
+    }
+  ],
+  "after": [
+    {
+      "table": "map_areas",
+      "rows": 13,
+      "digest": "59c800c0e2442646dbf0166d02bfa7ce"
+    },
+    {
+      "table": "physical_features",
+      "rows": 557,
+      "digest": "ef22448cdaec153dd3b155661b6f1319"
+    },
+    {
+      "table": "physical_feature_revisions",
+      "rows": 557,
+      "digest": "583595e8808a86e9b5933034ec2bad02"
+    },
+    {
+      "table": "registry_records",
+      "rows": 627,
+      "digest": "147d8d0fa54c3ea5a0af3bdc6897b426"
+    },
+    {
+      "table": "registry_revisions",
+      "rows": 319,
+      "digest": "ae3226fc06e71a53d62c96e4ff588701"
+    },
+    {
+      "table": "sources",
+      "rows": 541,
+      "digest": "d6d206c8f68817d75dcd6f780028724b"
+    }
+  ],
+  "result": "PASS"
+}

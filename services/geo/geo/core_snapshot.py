@@ -128,7 +128,7 @@ def _prepare(value):
                 fail("RESOLUTION_SCOPE", "Candidates differ in entity, world or semantic role")
         if resolution["selected"] and _pin(resolution["selected"]) not in {_pin(link) for link in resolution["candidates"]}:
             fail("RESOLUTION_SELECTION", "Selected observation is not an exact candidate")
-        resolution_keys.append(canonical_core_text([resolution["entity"], resolution["world"], resolution["role"]]))
+        resolution_keys.append(canonical_core_text([resolution["entity"], resolution["world"], resolution["role"], resolution.get("purpose", "analysis")]))
     unique(resolution_keys, "entity/world/role resolution")
     generated = set()
     for composition in data["compositions"]:

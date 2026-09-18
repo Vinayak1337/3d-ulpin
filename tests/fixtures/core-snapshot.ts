@@ -51,6 +51,8 @@ export function snapshotCases():SnapshotCase[] {
   good("half-open-validity-rejects-end-bound",x=>x.observations[1].validity.toMs=1000,{representationIds:["footprint","unit-plan"],volume:undefined,unavailable:"OUTSIDE_VALIDITY"});
   good("unknown-validity-is-explicit",x=>x.observations.forEach((o:any)=>o.validity={fromMs:null,toMs:null}),{temporalCoverage:"unknown"});
   good("bounded-validity-is-explicit",()=>{},{temporalCoverage:"bounded"});
+  good("analysis-and-display-have-explicit-resolution-purposes",x=>{x.resolutions.push({...x.resolutions[0],ref:ref("display-policy","resolution"),purpose:"display"});});
+  bad("missing-purpose-and-analysis-are-the-same-slot","DUPLICATE_REFERENCE",x=>x.resolutions.push({...x.resolutions[0],ref:ref("analysis-again","resolution"),purpose:"analysis"}));
   good("zero-source-documents-still-compose",x=>{x.sources={datasets:[],assets:[],sources:[],parts:[],links:[]};x.geometry.representations.forEach((r:any)=>r.sourceParts=[]);x.observations.forEach((o:any)=>o.sourceParts=[]);});
   good("same-label-different-frame-does-not-compose",x=>{x.frames.frames.push({...x.frames.frames[0],ref:ref("other","frame")});x.observations[1].payload.frame=snapshotRef("frame","other");},{representationIds:["footprint","unit-plan"],volume:undefined,unavailable:"FRAME_MISMATCH"});
   good("unplaced-footprint-not-placed-by-height",x=>x.geometry.representations[0].frame=null,{representationIds:["footprint","unit-plan"],volume:undefined,unavailable:"FRAME_UNRESOLVED"});

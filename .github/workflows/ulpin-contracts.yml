@@ -4,6 +4,9 @@ on:
     branches: [feat/unified-spatial-foundation]
     paths:
       - 'packages/contracts/**'
+      - 'apps/web/features/spatial/data/core-*.ts'
+      - 'apps/web/lib/server/spatial-core-*.ts'
+      - 'apps/web/app/api/v1/spatial/core/**'
       - 'scripts/contracts/**'
       - 'fixtures/contracts/**'
       - 'tests/core-*.test.ts'
@@ -18,6 +21,9 @@ on:
   pull_request:
     paths:
       - 'packages/contracts/**'
+      - 'apps/web/features/spatial/data/core-*.ts'
+      - 'apps/web/lib/server/spatial-core-*.ts'
+      - 'apps/web/app/api/v1/spatial/core/**'
       - 'scripts/contracts/**'
       - 'fixtures/contracts/**'
       - 'tests/core-*.test.ts'

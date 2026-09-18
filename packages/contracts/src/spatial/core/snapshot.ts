@@ -82,7 +82,7 @@ function prepare(value:unknown) {
       if(!sameEntity(observation,resolution)||pin(observation.world)!==pin(resolution.world)||observation.role!==resolution.role)coreFail("RESOLUTION_SCOPE","Resolution candidates differ in entity, world or semantic role");
     }
     if(resolution.selected&&!resolution.candidates.some(p=>pin(p)===pin(resolution.selected!)))coreFail("RESOLUTION_SELECTION","Selected observation is not an exact candidate revision");
-    resolutionKeys.push(canonicalCoreText([resolution.entity,resolution.world,resolution.role]));
+    resolutionKeys.push(canonicalCoreText([resolution.entity,resolution.world,resolution.role,resolution.purpose??"analysis"]));
   }
   uniqueCoreKeys(resolutionKeys,"entity/world/role resolution");
   const generated=new Set<string>();
