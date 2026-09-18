@@ -242,3 +242,13 @@ Authentication, Android collection, offline sync, formal reviewer acceptance,
 official identity issuance, IFC/point clouds and automatic plan extraction are
 deferred. The original handoff and its 36-row acceptance gate remain preserved
 in [Astra_MVP_Handoff_Pack](Astra_MVP_Handoff_Pack/01_ASTRA_MASTER_HANDOFF.md).
+
+
+## Shared renderer development branch
+
+The reusable spatial-map foundation is developed on `feat/reusable-spatial-map-core`.
+On that branch, open `/map-lab` to inspect two explicitly synthetic neighbourhoods
+through the same canonical contract, compiler and streamed renderer. Panel changes
+retain the same canvas and selected object. This is a calibration surface, not an
+official registry or a claim that the visual reference benchmark is already passed.
+See [implementation boundaries and checks](docs/SHARED_MAP_IMPLEMENTATION.md).

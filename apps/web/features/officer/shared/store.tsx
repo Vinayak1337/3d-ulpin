@@ -8,6 +8,7 @@ import {
 } from "react";
 import { createStore, type StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
+import { SpatialDataProvider } from "@/features/spatial/data/Provider";
 import type { FeatureKind } from "@ulpin/contracts";
 
 export type RecentProperty = {
@@ -216,7 +217,7 @@ export function OfficerStoreProvider({ children }: { children: ReactNode }) {
       }
     });
   }, [store]);
-  return <Context.Provider value={store}>{children}</Context.Provider>;
+  return <Context.Provider value={store}><SpatialDataProvider>{children}</SpatialDataProvider></Context.Provider>;
 }
 export function useOfficerStore<T>(selector: (state: OfficerState) => T): T {
   const store = useContext(Context);
