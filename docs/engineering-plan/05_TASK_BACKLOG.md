@@ -1,6 +1,6 @@
 # Ordered task backlog
 
-Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 3/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
+Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 4/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
 ## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
@@ -60,7 +60,7 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 ### T004 — Stable identity, vocabulary and typed relationships
-**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
+**Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
 **Dependencies:** T003.
 
@@ -77,7 +77,7 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 **Detailed plan:** `tasks/T004_PLAN.md` — authored; inspect its status before execution.
 
 ### T005 — Reusable sources, original assets and exact evidence links
-**Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/backend.
+**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Data/backend.
 
 **Dependencies:** T004.
 
@@ -91,7 +91,7 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Earlier references:** schema:U05, schema:U11, schema:U12, renderer:D04.
 
-**Detailed plan:** `tasks/T005_PLAN.md` — write just before execution.
+**Detailed plan:** `tasks/T005_PLAN.md` — authored; inspect its status before execution.
 
 ### T006 — Frames, transforms and vertical-reference semantics
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Geometry lead.
