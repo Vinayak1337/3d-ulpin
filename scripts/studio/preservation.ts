@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {pool} from '../../apps/web/lib/server/db';
 const mode=process.argv[2];assert(['before','after'].includes(mode));assert.equal(process.env.REPO_DATA,'true');
-const file='.runtime/engineering/T058-preservation-before.json',out='docs/evidence/t058/verification/data-preservation.json';
+const continuation=process.env.STUDIO_CONTINUATION==='1';
+const file=continuation?'.runtime/engineering/T058-continuation-preservation-before.json':'.runtime/engineering/T058-preservation-before.json';
+const out=continuation?'docs/evidence/t058/continuation/verification/data-preservation.json':'docs/evidence/t058/verification/data-preservation.json';
 const tables=['map_areas','physical_features','physical_feature_revisions','registry_records','registry_revisions','sources','units','unit_revisions'];
 try{
  const client=await pool().connect();let values:Record<string,Record<string,number>>={};

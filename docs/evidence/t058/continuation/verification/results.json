@@ -1,0 +1,62 @@
+{
+  "startedAt": "2026-09-18T23:38:38.832Z",
+  "checks": [
+    {
+      "name": "Property changes never reuse the previous property thumbnail",
+      "passed": true
+    },
+    {
+      "name": "Close inspector is one atomic history entry and Back returns to the valid selected floor",
+      "passed": true
+    },
+    {
+      "name": "Register history restores both the route and its actual selected unit",
+      "passed": true
+    },
+    {
+      "name": "View in map executes the new focus command at the selected floor elevation",
+      "passed": true
+    },
+    {
+      "name": "Floor-local notes, measurements, unit association and revisions survive revisits and reload",
+      "passed": true
+    },
+    {
+      "name": "Crossed measurement cannot enter review; Control-Q clears only the drawing and retains notes",
+      "passed": true
+    },
+    {
+      "name": "Check source reads and validates the original bytes, reports failures and succeeds only after recovery",
+      "passed": true
+    },
+    {
+      "name": "Export is a nonempty actual rendered PNG and modal keyboard focus stays contained",
+      "passed": true
+    },
+    {
+      "name": "Browser-emulated held touch pan and cancellation recover on the real canvas",
+      "passed": true
+    },
+    {
+      "name": "Failed 3D resource exposes a recoverable error without inventing a map or changing property identity",
+      "passed": true
+    }
+  ],
+  "unexpectedErrors": [],
+  "expectedFailures": [
+    {
+      "kind": "source-unavailable",
+      "status": 503,
+      "handled": true
+    },
+    {
+      "kind": "render-resource-unavailable",
+      "status": 503,
+      "handled": true,
+      "propertyRetained": true
+    }
+  ],
+  "backendWrites": 0,
+  "result": "PASS",
+  "finishedAt": "2026-09-18T23:38:56.596Z"
+}

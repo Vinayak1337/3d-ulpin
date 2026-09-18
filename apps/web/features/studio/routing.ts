@@ -14,14 +14,18 @@ export function readStudioRoute(value:string,dataset:District):StudioRoute {
     if(path[0]!=='studio'||path.length>3)throw new Error('This Studio route does not exist.');
     const view=path[1]??'map';if(!studioViews.includes(view as StudioView))throw new Error('This Studio view does not exist.');route.view=view as StudioView;
     if(path[2])route.property=decodeURIComponent(path[2]);
-    if(url.searchParams.get('selection')==='none')route.property=null;
+    const selection=url.searchParams.get('selection');
+    if(selection!==null&&selection!=='none')throw new Error('Unknown selection state.');
+    if(selection==='none')route.property=null;
     const allowed=new Set(['tab','mode','floor','unit','doc','explode','selection']);
     for(const key of url.searchParams.keys())if(!allowed.has(key)||url.searchParams.getAll(key).length!==1)throw new Error('The Studio route has an unsupported or repeated parameter.');
     const tab=url.searchParams.get('tab');if(tab&&!['overview','parcel','floors','evidence','utilities'].includes(tab))throw new Error('This inspector tab does not exist.');if(tab)route.tab=tab as InspectorTab;
     const mode=url.searchParams.get('mode');if(mode&&mode!=='2d'&&mode!=='3d')throw new Error('Unknown map mode.');if(mode==='2d'||mode==='3d')route.mode=mode;
     const floor=url.searchParams.get('floor');if(floor!==null){if(!/^(0|[1-9][0-9]?)$/.test(floor))throw new Error('Invalid floor reference.');route.floor=Number(floor);}
     const doc=url.searchParams.get('doc');if(doc&&!['land','lease','plan','aerial','register'].includes(doc))throw new Error('Unknown document type.');if(doc)route.doc=doc as RecordContext['doc'];
-    route.exploded=url.searchParams.get('explode')==='1';route.unit=url.searchParams.get('unit');
+    const explode=url.searchParams.get('explode');if(explode!==null&&explode!=='0'&&explode!=='1')throw new Error('Unknown exploded-floor state.');
+    for(const key of ['mode','tab','doc','unit'])if(url.searchParams.has(key)&&!url.searchParams.get(key))throw new Error('The route contains an empty record parameter.');
+    route.exploded=explode==='1';route.unit=url.searchParams.get('unit');
     const building=route.property?dataset.buildings.find(b=>b.id===route.property||b.ulpin===route.property):null;
     if(route.property&&!building)throw new Error('The requested property is not in this dataset. No other property was substituted.');
     if(building)route.property=building.id;

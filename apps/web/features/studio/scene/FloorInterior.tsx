@@ -5,7 +5,7 @@ import type { ThreeEvent } from '@react-three/fiber';
 /** Shared metre-based interior, used by the map and the register workspace. */
 export default function FloorInterior({b,floor,active=true,selectedUnit,onFloor,onUnit}:{b:Building;floor:number;active?:boolean;selectedUnit?:string;onFloor?:(f:number)=>void;onUnit?:(id:string)=>void}) {
   const layout=getFloorLayout(b,floor);
-  const pick=(id:string)=>(e:ThreeEvent<MouseEvent>)=>{if(e.delta<5){e.stopPropagation();onFloor?.(floor);onUnit?.(id);}};
+  const pick=(id:string)=>(e:ThreeEvent<MouseEvent>)=>{if(e.delta<5){e.stopPropagation();if(onUnit)onUnit(id);else onFloor?.(floor);}};
   return <group>
     <mesh receiveShadow castShadow position={[0,.12,0]}><boxGeometry args={[b.width,.24,b.depth]}/><meshStandardMaterial color={active?'#e6e1d3':'#bac5bf'}/></mesh>
     <mesh position={[0,.255,0]}><boxGeometry args={[1.6,.035,layout.corridor.depth]}/><meshStandardMaterial color="#e4e3d8"/></mesh>

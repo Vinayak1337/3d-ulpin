@@ -4,7 +4,6 @@ import type { Building, Finding, InspectorTab, ModalKind, RecordContext } from '
 import { BuildingPreview, FloorPlan } from './Visuals';
 import UtilitySection, { nearestWater } from './UtilitySection';
 import {district} from '../data/district';
-import './inspection.css';
 import SourceReceipt from './SourceReceipt';
 type Props={building:Building;findings:Finding[];tab:InspectorTab;onTab:(t:InspectorTab)=>void;onClose:()=>void;onFocus:()=>void;onModal:(k:ModalKind,c?:RecordContext)=>void;onFloor:(f:number|null)=>void;onExplode:()=>void;exploded:boolean;floor:number|null;preview?:string;mobileExpanded?:boolean;onToggleMobile?:()=>void};
 

@@ -57,6 +57,6 @@ test('measurements have independent distance, area and perimeter expectations',(
 test('local drafts persist exact source and unit metadata and reject stale writes',()=>{
  const values=new Map<string,string>(),storage={getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>{values.set(key,value);}};
  const input:StudioDraft={schemaVersion:'studio-local-draft/1',buildingId:hero.id,revision:0,sourceHash:'a'.repeat(64),floor:0,unitId:hero.units[0].id,tool:'distance',points:[[0,0],[3,4]],calibration:1,notes:'Local fixture check',status:'draft',updatedAt:'2026-09-19T00:00:00Z'};
- const saved=saveStudioDraft(storage,input);assert.equal(saved.revision,1);assert.deepEqual(loadStudioDraft(storage,hero.id),saved);assert.throws(()=>saveStudioDraft(storage,input),/another tab/);
+ const saved=saveStudioDraft(storage,input);assert.equal(saved.revision,1);assert.deepEqual(loadStudioDraft(storage,hero.id,0),saved);assert.throws(()=>saveStudioDraft(storage,input),/another tab/);
  const review=saveStudioDraft(storage,{...saved,status:'ready_for_review'});assert.equal(review.revision,2);assert.equal(review.status,'ready_for_review');
 });

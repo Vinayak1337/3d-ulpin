@@ -1,5 +1,23 @@
 # City Studio — reference-led product entry
 
+## Continued refinement
+
+The continued T058 pass shares the actual building envelope across the district,
+exploded register, elevation and plan-workspace preview. Property thumbnails are
+identity-qualified, route changes are atomic, and source checking validates
+original bytes and linked records rather than displaying a fixed success message.
+Drafts now have independent floor-local storage and revision checks; legacy
+building drafts are retained. Control-Q clears only the current drawing.
+Invalid geometry and changed source revisions cannot silently enter the local
+review queue. Missing rendering resources expose an explicit recoverable error
+while retaining the selected property.
+
+`pnpm test:studio:continuation` runs the additional browser regressions, including
+intentional source/renderer failures, floor-draft reloads and touch cancellation.
+It uses isolated browser storage and performs no backend writes. Current final
+captures and verification are under `docs/evidence/t058/continuation`; the gallery
+also shows what changed from the previously committed Studio pass.
+
 ## Open it
 
 Run the project normally and open `/studio`. The plain `/` entry redirects here.
