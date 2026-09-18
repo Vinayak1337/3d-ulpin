@@ -3,10 +3,10 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.2",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T002_reference_acceptance_contract",
+  "current_action": "T003_schema_authority_experiment",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T002",
+  "next_task": "T003",
   "epics": [
     {
       "id": "E01",
@@ -141,8 +141,8 @@
       "epic": "E01",
       "title": "Reference, requirements and fixture acceptance contract",
       "sequence": 2,
-      "status": "In progress",
-      "execution_state": "specification_in_progress",
+      "status": "Accepted",
+      "execution_state": "completed",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Product/visual lead",
@@ -169,17 +169,21 @@
         "relevant legacy regression",
         "diff and evidence review"
       ],
-      "evidence": [],
-      "completed_at": null
+      "evidence": [
+        "tasks/T002_RESULT.md",
+        "references/catalog.json",
+        "references/acceptance-contract.json"
+      ],
+      "completed_at": "2026-09-18"
     },
     {
       "id": "T003",
       "epic": "E01",
       "title": "Architecture decisions and smallest proving experiments",
       "sequence": 3,
-      "status": "Planned",
-      "execution_state": "not_started",
-      "plan_state": "brief_defined_detail_due_before_execution",
+      "status": "In progress",
+      "execution_state": "experiment_in_progress",
+      "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Architecture lead",
       "depends_on": [
@@ -190,7 +194,7 @@
       "acceptance": "One contract authoring authority and one writer per record are nominated; exact unknowns have proving experiments and stop conditions.",
       "out_of_scope": "A new backend, mandatory microservices, a graph database, or committing to all future geometry kernels.",
       "detail_plan_path": "tasks/T003_PLAN.md",
-      "detail_plan_exists": false,
+      "detail_plan_exists": true,
       "legacy_refs": [
         "schema:U15",
         "schema:U21",

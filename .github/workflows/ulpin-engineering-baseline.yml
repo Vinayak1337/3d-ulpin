@@ -45,6 +45,8 @@ jobs:
           git --version
       - name: Validate planning records
         run: python3 docs/engineering-plan/tools/validate_plan.py
+      - name: Validate reference and fixture acceptance coverage
+        run: node --test tests/engineering-acceptance.test.mjs
       - name: Test source collector on disposable synthetic Git fixtures
         run: python3 -m unittest discover -s docs/engineering-plan/tools/tests -p 'test_*.py' -v
       - name: Verify readable backlog matches its JSON source

@@ -1,6 +1,6 @@
 # Ordered task backlog
 
-Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 1/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
+Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 2/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
 ## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
@@ -23,7 +23,7 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 **Detailed plan:** `tasks/T001_BASELINE_PLAN.md` — authored; inspect its status before execution.
 
 ### T002 — Reference, requirements and fixture acceptance contract
-**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Product/visual lead.
+**Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Product/visual lead.
 
 **Dependencies:** T001.
 
@@ -40,7 +40,7 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 **Detailed plan:** `tasks/T002_PLAN.md` — authored; inspect its status before execution.
 
 ### T003 — Architecture decisions and smallest proving experiments
-**Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
+**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
 **Dependencies:** T002.
 
@@ -54,7 +54,7 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 
 **Earlier references:** schema:U15, schema:U21, renderer:R03, renderer:R06.
 
-**Detailed plan:** `tasks/T003_PLAN.md` — write just before execution.
+**Detailed plan:** `tasks/T003_PLAN.md` — authored; inspect its status before execution.
 
 ## E02 — Thin unified model
 Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
