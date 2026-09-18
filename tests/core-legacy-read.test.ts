@@ -33,6 +33,8 @@ test("one read-only repeatable-read connection serves the whole bound area snaps
   const feature=f.calls.find(c=>c.sql.includes("FROM physical_features"))!;
   assert.deepEqual(feature.values,[LEGACY_IDS.area,"synthetic",513]);
   assert(feature.sql.includes("memberAreaIds"));assert(!feature.sql.includes("ST_Transform"));
+  assert(feature.sql.includes("f.body-'properties'-'sourceGeometry'"));
+  assert(feature.sql.includes("'attribution'")&&feature.sql.includes("'license'")&&feature.sql.includes("jsonb_strip_nulls"));
   const source=f.calls.find(c=>c.sql.includes("FROM sources"))!;
   assert(source.sql.includes('family_id AS "familyId"'));assert(!source.sql.includes("inspection"));assert(!source.sql.includes("object_key"));
   assert.equal(result.sources[0].sha256,"a".repeat(64));assert.equal(result.sources[0].revision,7);

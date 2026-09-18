@@ -66,6 +66,6 @@ jobs:
           node scripts/contracts/authority-experiment.mjs check
           python scripts/contracts/authority-parity.py
           pnpm exec tsx scripts/contracts/export-core.ts check
-          pnpm exec tsx --test tests/core-*.test.ts
+          pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-*.test.ts
           python scripts/contracts/core-parity.py
           pnpm typecheck

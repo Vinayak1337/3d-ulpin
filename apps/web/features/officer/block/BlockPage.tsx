@@ -75,6 +75,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
           <Badge>{context.features.length} features</Badge>
         </div>
         <div className="ui-context-actions">
+          <Link className="ui-button" href={`/map-lab?area=${encodeURIComponent(areaId)}&world=${encodeURIComponent(block.selected?.worldStatus??context.features[0]?.worldStatus??"synthetic")}`}><Icon name="cube"/>Enhanced 3D</Link>
           <Button
             icon="upload"
             onClick={() => {

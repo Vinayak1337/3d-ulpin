@@ -131,6 +131,15 @@ export function measureCoreRepresentation(value:unknown,identity:unknown,sources
   const base={definition:request.definition,unit:request.definition==="horizontal_area"?"m2":request.definition==="prism_volume"?"m3":"m",representation:request.representation,frame:rep.frame,method:CORE_GEOMETRY_POLICY.method,sourceParts:rep.sourceParts};
   return Object.freeze({...base,...computeQuantity(rep,frame,request.definition)});
 }
+/** Read-model batching shares the same validator/executor; display meshes never enter it. */
+export function measureCoreCatalog(value:unknown,identity:unknown,sources:unknown,frames:unknown) {
+  const p=prepare(value,identity,sources,frames);
+  return p.catalog.representations.map(rep=>{
+    const frame=rep.frame?requireCoreRevision(p.frameIndex,rep.frame,"measurement frame"):null;
+    return Object.freeze({representation:{ref:rep.ref,revision:rep.revision},entity:rep.entity,method:CORE_GEOMETRY_POLICY.method,
+      horizontalArea:computeQuantity(rep,frame,"horizontal_area"),prismVolume:computeQuantity(rep,frame,"prism_volume"),planarLength:computeQuantity(rep,frame,"planar_length")});
+  });
+}
 /** One numeric eligibility path serves both readiness and the actual quantity. */
 function computeQuantity(rep:CoreRepresentation,frame:CoreFrame|null,definition:CoreMeasureRequest["definition"]) {
   const g=inline(rep);

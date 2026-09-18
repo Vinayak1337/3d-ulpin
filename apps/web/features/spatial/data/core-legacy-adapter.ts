@@ -176,6 +176,9 @@ export async function normalizeLegacySpatialSlice(slice:LegacySpatialReadSlice,w
   const snapshot=await buildCoreSnapshot(input);
   const legacy={area:slice.area,sites:byId(slice.sites).map(s=>({id:s.id,revision:s.revision,frame:{id:s.frame.id,horizontalUnit:s.frame.horizontalUnit,verticalUnit:s.frame.verticalUnit,benchmark:s.frame.benchmark}})),
     features:features.map(f=>({ref:ref("physical",f.id),revision:f.revision,ownerAreaId:f.ownerAreaId,recordId:f.recordId,sourceRevisionId:f.body.sourceRevisionId,sourceKey:f.body.sourceKey,datasetNamespace:f.body.datasetNamespace,
+      floorCount:Number.isSafeInteger(f.body.semantics?.floorCount)&&f.body.semantics!.floorCount!>0?f.body.semantics!.floorCount!:null,
+      attribution:typeof f.body.properties?.attribution==="string"?f.body.properties.attribution.slice(0,2048):null,
+      license:typeof f.body.properties?.license==="string"?f.body.properties.license.slice(0,256):null,
       ownerReference:f.ownerReference?{sourceCrs:f.ownerReference.sourceCrs,analysisCrs:f.ownerReference.analysisCrs,origin:f.ownerReference.origin,anchor:f.ownerReference.anchor,transformVersion:f.ownerReference.transformVersion,verticalReference:f.ownerReference.verticalReference}:null,
       sourceReference:f.body.sourceReference?{sourceCrs:f.body.sourceReference.sourceCrs,analysisCrs:f.body.sourceReference.analysisCrs,origin:f.body.sourceReference.origin,anchor:f.body.sourceReference.anchor,transformVersion:f.body.sourceReference.transformVersion,verticalReference:f.body.sourceReference.verticalReference}:null,
       height:f.body.height?{state:f.body.height.state,value:f.body.height.value,unit:f.body.height.unit,meaning:f.body.height.meaning,reference:f.body.height.reference}:null,storedAreaM2:f.body.areaM2??null})),

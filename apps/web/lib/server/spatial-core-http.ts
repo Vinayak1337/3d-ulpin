@@ -4,7 +4,7 @@ import {CORE_LEGACY_LIMITS} from "../../features/spatial/data/core-legacy-types"
 import {LegacySpatialReadError,readLegacySpatialSlice,validateLegacyReadSelection} from "./spatial-core-read";
 
 const loopback=(host:string)=>["localhost","127.0.0.1","[::1]"].includes(host.toLowerCase());
-function localRequest(request:Request):void {
+export function localRequest(request:Request):void {
   const url=new URL(request.url),host=request.headers.get("host");
   let hostValid=!host;
   if(host)try{const declared=new URL(`http://${host}`);hostValid=loopback(declared.hostname)&&!declared.username&&!declared.password&&declared.pathname==="/"&&!declared.search&&!declared.hash;}catch{hostValid=false;}

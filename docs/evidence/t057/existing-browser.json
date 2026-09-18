@@ -1,0 +1,217 @@
+{
+  "testedAt": "2026-09-18T19:47:54.810Z",
+  "baseURL": "http://127.0.0.1:3000",
+  "device": "CI Chromium / software WebGL; not the user's desktop GPU",
+  "tests": [
+    {
+      "name": "Real compiled 3D Tiles and metadata loaded into exactly one live map runtime",
+      "passed": true,
+      "geometryRequests": 33,
+      "verifiedGlbBytes": 192328
+    },
+    {
+      "name": "Neighbourhood camera command loads the detailed representation",
+      "passed": true
+    },
+    {
+      "name": "Map, Building and Sources share the identical mounted canvas, cached snapshot and measured geometry",
+      "passed": true
+    },
+    {
+      "name": "A selected unit uses the same runtime and canonical quantity calculation with a geometric inspection overlay",
+      "passed": true
+    },
+    {
+      "name": "2D remains top-down through selection and Fit scene",
+      "passed": true,
+      "pitch": -1.570796112922999
+    },
+    {
+      "name": "Held drag survives UI updates, followed by held orbit and wheel input",
+      "passed": true,
+      "before": {
+        "longitude": 1.344776188661631,
+        "latitude": 0.49944330763474093,
+        "height": 493.24698670499384,
+        "heading": 6.283185307179586,
+        "pitch": -0.8378277463257637,
+        "roll": 6.283185307179586
+      },
+      "after": {
+        "longitude": 1.3447670338299962,
+        "latitude": 0.4994493411817347,
+        "height": 493.35498786351593,
+        "heading": 6.283185307179586,
+        "pitch": -0.837827724335368,
+        "roll": 6.283185307179586
+      }
+    },
+    {
+      "name": "A different 120-building dense dataset uses the same compiler and engine without duplicate canvases",
+      "passed": true
+    },
+    {
+      "name": "World-specific selection survives dataset unload and return",
+      "passed": true
+    },
+    {
+      "name": "1280px and 390px layouts retain one map and avoid horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "No uncaught page exceptions or failed local asset/API responses",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "console": [
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/fb41bb918745ec3e.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/09ecf5e7333267e1.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/f2c6e10a5b376eab.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/fb41bb918745ec3e.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/09ecf5e7333267e1.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/f2c6e10a5b376eab.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x1fa400425c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x1fa400425c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x1fa400425c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x1fa400425c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/fb41bb918745ec3e.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/09ecf5e7333267e1.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/f2c6e10a5b376eab.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/fb41bb918745ec3e.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/09ecf5e7333267e1.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3000/_next/static/css/f2c6e10a5b376eab.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    }
+  ],
+  "badResponses": [],
+  "calibrationRequests": [
+    "/api/v1/spatial/calibration/garden/snapshot.json",
+    "/api/v1/spatial/calibration/garden/manifest.json",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/context.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_0-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_0-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_0-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_0-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_0-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_0-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-2-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-2-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-2-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-2-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_0-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_0-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-2-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-2-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-2-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-2-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/dense/snapshot.json",
+    "/api/v1/spatial/calibration/dense/manifest.json",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/context.glb?v=85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/0_-1-coarse.glb?v=85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/0_-1-detail.glb?v=85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/0_0-coarse.glb?v=85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/0_0-detail.glb?v=85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/-1_0-coarse.glb?v=85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/-1_0-detail.glb?v=85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/-1_-1-coarse.glb?v=85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/-1_-1-detail.glb?v=85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9",
+    "/api/v1/spatial/calibration/garden/manifest.json",
+    "/api/v1/spatial/calibration/garden/snapshot.json",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/context.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-2-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-2-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_0-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_0-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-2-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-2-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_0-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_0-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-2-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-2-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_0-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_0-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-2-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-2-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_0-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_0-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_1-coarse.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_1-detail.glb?v=9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6"
+  ]
+}

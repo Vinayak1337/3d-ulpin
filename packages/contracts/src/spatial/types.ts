@@ -94,6 +94,8 @@ export interface SpatialRepresentation {
         facade: "plain" | "schematic";
         storeys?: number;
         roof?: "flat" | "terrace";
+        /** Suppress outward decorative balconies on source-preserving dense blocks. */
+        envelopeOnly?: boolean;
     };
 }
 export interface SpatialRelation {

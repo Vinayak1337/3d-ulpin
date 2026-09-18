@@ -16,7 +16,7 @@
   "benchmarks_preserved": 17,
   "input_families_preserved": 25,
   "next_task": "T057",
-  "next_task_execution_blocker": null,
+  "next_task_execution_blocker": "User visual review pending; local technical checks passed.",
   "candidate_overlay_prepared": true,
   "github_commit_created": true,
   "github_push_performed": true,
@@ -24,5 +24,6 @@
   "collector_tests_scope": "Windows temporary Git fixtures: 19 passed, 1 native symlink skip; not application preservation",
   "t001_tested_commit": "34e44fcd73c288e964a804bb3d8223a7d8702345",
   "t001_successful_run": 35354159342,
-  "t001_accepted": true
+  "t001_accepted": true,
+  "last_local_visual_checks": "docs/evidence/t057"
 }

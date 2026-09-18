@@ -3,7 +3,7 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.2",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T057_shared_3d_visual_milestone",
+  "current_action": "T057_visual_review_checkpoint",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
   "next_task": "T057",
@@ -445,8 +445,8 @@
       "epic": "E14",
       "title": "Normalized neighbourhood renderer and shared 3D interface",
       "sequence": 10,
-      "status": "In progress",
-      "execution_state": "implementation_started",
+      "status": "Verify",
+      "execution_state": "local_technical_checks_passed_visual_review_pending",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Architecture and frontend lead",
@@ -466,7 +466,10 @@
         "actual browser picking and shared canvas",
         "source-preserving visual comparison"
       ],
-      "evidence": [],
+      "evidence": [
+        "tasks/T057_RESULT.md",
+        "../evidence/t057/README.md"
+      ],
       "completed_at": null
     },
     {
