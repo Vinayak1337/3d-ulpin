@@ -50,7 +50,8 @@ export function validateCoreFrameCatalog(input:unknown):CoreFrameCatalog {
   return catalog;
 }
 
-function horizontal(frame:CoreEngineeringFrame,point:CoreCoordinate):[number,number] {
+/** Internal numeric helper: callers must first validate the frame and coordinates. */
+export function coreEngineeringHorizontalMetres(frame:CoreEngineeringFrame,point:CoreCoordinate):[number,number] {
   const factor=CORE_FRAME_POLICY.lengthMetres[frame.horizontalUnit];
   const first=point[0]*factor*sign(frame.axes[0]),second=point[1]*factor*sign(frame.axes[1]);
   return eastWest(frame.axes[0])?[first,second]:[second,first];
@@ -70,7 +71,7 @@ function checkDomain(operation:Exclude<CoreTransform,{kind:"unsupported"}>,east:
 }
 function applyLocal(operation:Extract<CoreTransform,{kind:"local_rigid"}>,from:CoreEngineeringFrame,to:CoreEngineeringFrame,point:CoreCoordinate,inverse:boolean):CoreCoordinate {
   const inputFrame=inverse?to:from,outputFrame=inverse?from:to;
-  const [east,north]=horizontal(inputFrame,point),[dx,dy]=operation.translationMetres;
+  const [east,north]=coreEngineeringHorizontalMetres(inputFrame,point),[dx,dy]=operation.translationMetres;
   const angle=operation.rotationDegrees*Math.PI/180,c=Math.cos(angle),s=Math.sin(angle);
   let outEast:number,outNorth:number;
   if(inverse){outEast=(east-dx)*c+(north-dy)*s;outNorth=-(east-dx)*s+(north-dy)*c;checkDomain(operation,outEast,outNorth);}
@@ -89,7 +90,7 @@ function applyEnu(operation:Extract<CoreTransform,{kind:"wgs84_enu"}>,from:CoreE
   const matrix=enuToEcef({id:from.ref.id,kind:"engineering",horizontalUnit:"m",verticalUnit:"m",axes:"east-north-up",verticalReference:coreRefKey(operation.benchmark.ref),
     anchor:{longitude:operation.origin.longitude,latitude:operation.origin.latitude,ellipsoidHeight:operation.origin.ellipsoidHeightMetres,provenance:operation.provenance}});
   if(!inverse) {
-    const [east,north]=horizontal(from,point);checkDomain(operation,east,north);
+    const [east,north]=coreEngineeringHorizontalMetres(from,point);checkDomain(operation,east,north);
     return transformPoint(matrix,[east,north,upMetres(from,point[2])]);
   }
   const dx=point[0]-matrix[12],dy=point[1]-matrix[13],dz=point[2]-matrix[14];

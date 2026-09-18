@@ -9,6 +9,7 @@ from geo.core_contract import CoreContractError, assert_core_json
 from geo.core_identity import validate_core_identity_graph
 from geo.core_sources import validate_core_source_catalog
 from geo.core_frames import transform_core_point
+from geo.core_geometry import evaluate_core_geometry, measure_core_representation
 
 
 def run():
@@ -73,6 +74,30 @@ def run():
                     raise AssertionError(f"Coordinate mismatch: {case['id']}: {value} != {expected_value}")
         assert json.dumps([case["catalog"], case["request"]], sort_keys=True) == before
     print(json.dumps({"kind":"core-frame-numeric-parity","cases":len(frame_cases),"result":"PASS","sharedSchemaAndPolicy":True}))
+    geometry_cases = json.loads((root / "fixtures/contracts/geometry.cases.json").read_text(encoding="utf-8"))["cases"]
+    for case in geometry_cases:
+        data = case["input"]
+        before = json.dumps(data, sort_keys=True)
+        try:
+            result = measure_core_representation(data["geometry"], data["identity"], data["sources"], data["frames"], data["request"])
+            actual = None
+        except CoreContractError as error:
+            actual = error.code
+        expected = None if case["valid"] else case["code"]
+        if actual != expected:
+            raise AssertionError(f"Geometry semantic mismatch: {case['id']}; expected {expected}, got {actual}")
+        if case["valid"]:
+            assert result["reasonCode"] == case["reasonCode"], case["id"]
+            if case["value"] is None:
+                assert result["value"] is None, case["id"]
+            elif result["value"] is None or not math.isclose(result["value"], case["value"], rel_tol=0, abs_tol=1e-8):
+                raise AssertionError(f"Geometry quantity mismatch: {case['id']}: {result['value']} != {case['value']}")
+            if case.get("capabilities"):
+                caps = evaluate_core_geometry(data["geometry"], data["identity"], data["sources"], data["frames"])[0]["capabilities"]
+                for key, value in case["capabilities"].items():
+                    assert caps[key]["available"] == value, (case["id"], key)
+        assert json.dumps(data, sort_keys=True) == before
+    print(json.dumps({"kind":"core-geometry-quantity-parity","cases":len(geometry_cases),"result":"PASS","sharedSchemaAndPolicy":True}))
 
 
 if __name__ == "__main__":

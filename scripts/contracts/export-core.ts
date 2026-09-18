@@ -9,6 +9,8 @@ import {identityCases} from "../../tests/fixtures/core-identity";
 import {sourceCases} from "../../tests/fixtures/core-sources";
 import {CORE_FRAME_POLICY,CoreFrameCatalogSchema,CorePointTransformSchema} from "../../packages/contracts/src/spatial/core/frame-schema";
 import {frameCases} from "../../tests/fixtures/core-frames";
+import {CORE_GEOMETRY_POLICY,CoreGeometryCatalogSchema,CoreMeasureRequestSchema} from "../../packages/contracts/src/spatial/core/geometry-schema";
+import {geometryCases} from "../../tests/fixtures/core-geometry";
 const require=createRequire(new URL('../../packages/contracts/package.json',import.meta.url));
 const {z}=require('zod');
 const root=fileURLToPath(new URL('../../',import.meta.url));
@@ -21,10 +23,13 @@ for(const prefix of ['packages/contracts/schemas','services/geo/geo/contracts'])
   artifacts.push([`${prefix}/source-catalog.schema.json`,{...exportSchema(CoreSourceCatalogSchema),'x-ulpin-evidence-policy':CORE_EVIDENCE_POLICY}]);
   artifacts.push([`${prefix}/frame-catalog.schema.json`,{...exportSchema(CoreFrameCatalogSchema),'x-ulpin-frame-policy':CORE_FRAME_POLICY}]);
   artifacts.push([`${prefix}/point-transform.schema.json`,exportSchema(CorePointTransformSchema)]);
+  artifacts.push([`${prefix}/geometry-catalog.schema.json`,{...exportSchema(CoreGeometryCatalogSchema),'x-ulpin-geometry-policy':CORE_GEOMETRY_POLICY}]);
+  artifacts.push([`${prefix}/measure-request.schema.json`,exportSchema(CoreMeasureRequestSchema)]);
 }
 artifacts.push(['fixtures/contracts/identity.cases.json',{schemaVersion:'ulpin-identity-conformance/1',cases:identityCases()}]);
 artifacts.push(['fixtures/contracts/source.cases.json',{schemaVersion:'ulpin-source-conformance/1',cases:sourceCases()}]);
 artifacts.push(['fixtures/contracts/frame.cases.json',{schemaVersion:'ulpin-frame-conformance/1',cases:frameCases()}]);
+artifacts.push(['fixtures/contracts/geometry.cases.json',{schemaVersion:'ulpin-geometry-conformance/1',cases:geometryCases()}]);
 for(const [name,value] of artifacts) {
   const file=path.join(root,name),text=JSON.stringify(value,null,2)+'\n';
   if(mode==='write'){await mkdir(path.dirname(file),{recursive:true});await writeFile(file,text);}
