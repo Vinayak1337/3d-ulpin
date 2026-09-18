@@ -11,6 +11,9 @@ import {CORE_FRAME_POLICY,CoreFrameCatalogSchema,CorePointTransformSchema} from 
 import {frameCases} from "../../tests/fixtures/core-frames";
 import {CORE_GEOMETRY_POLICY,CoreGeometryCatalogSchema,CoreMeasureRequestSchema} from "../../packages/contracts/src/spatial/core/geometry-schema";
 import {geometryCases} from "../../tests/fixtures/core-geometry";
+import {CORE_SNAPSHOT_POLICY,CoreSnapshotInputSchema,CoreSnapshotManifestSchema,CorePublicationCandidateSchema} from "../../packages/contracts/src/spatial/core/snapshot-schema";
+import {buildCoreSnapshot} from "../../packages/contracts/src/spatial/core/snapshot";
+import {publicationCases,signatureCases,snapshotCases} from "../../tests/fixtures/core-snapshot";
 const require=createRequire(new URL('../../packages/contracts/package.json',import.meta.url));
 const {z}=require('zod');
 const root=fileURLToPath(new URL('../../',import.meta.url));
@@ -25,11 +28,20 @@ for(const prefix of ['packages/contracts/schemas','services/geo/geo/contracts'])
   artifacts.push([`${prefix}/point-transform.schema.json`,exportSchema(CorePointTransformSchema)]);
   artifacts.push([`${prefix}/geometry-catalog.schema.json`,{...exportSchema(CoreGeometryCatalogSchema),'x-ulpin-geometry-policy':CORE_GEOMETRY_POLICY}]);
   artifacts.push([`${prefix}/measure-request.schema.json`,exportSchema(CoreMeasureRequestSchema)]);
+  artifacts.push([`${prefix}/snapshot-input.schema.json`,{...exportSchema(CoreSnapshotInputSchema),'x-ulpin-snapshot-policy':CORE_SNAPSHOT_POLICY}]);
+  artifacts.push([`${prefix}/snapshot-manifest.schema.json`,exportSchema(CoreSnapshotManifestSchema)]);
+  artifacts.push([`${prefix}/publication-candidate.schema.json`,exportSchema(CorePublicationCandidateSchema)]);
 }
 artifacts.push(['fixtures/contracts/identity.cases.json',{schemaVersion:'ulpin-identity-conformance/1',cases:identityCases()}]);
 artifacts.push(['fixtures/contracts/source.cases.json',{schemaVersion:'ulpin-source-conformance/1',cases:sourceCases()}]);
 artifacts.push(['fixtures/contracts/frame.cases.json',{schemaVersion:'ulpin-frame-conformance/1',cases:frameCases()}]);
 artifacts.push(['fixtures/contracts/geometry.cases.json',{schemaVersion:'ulpin-geometry-conformance/1',cases:geometryCases()}]);
+artifacts.push(['fixtures/contracts/snapshot.cases.json',{schemaVersion:'ulpin-snapshot-conformance/1',cases:await Promise.all(snapshotCases().map(async row=>{
+  if(!row.valid)return row;const result=await buildCoreSnapshot(row.input);
+  return {...row,expectedDigests:{input:result.manifest.inputDigest,geometry:result.manifest.geometryDigest}};
+}))}]);
+artifacts.push(['fixtures/contracts/signature.cases.json',{schemaVersion:'ulpin-signature-conformance/1',cases:signatureCases}]);
+artifacts.push(['fixtures/contracts/publication.cases.json',{schemaVersion:'ulpin-publication-conformance/1',cases:await publicationCases()}]);
 for(const [name,value] of artifacts) {
   const file=path.join(root,name),text=JSON.stringify(value,null,2)+'\n';
   if(mode==='write'){await mkdir(path.dirname(file),{recursive:true});await writeFile(file,text);}

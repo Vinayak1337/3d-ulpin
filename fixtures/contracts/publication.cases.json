@@ -1,0 +1,1175 @@
+{
+  "schemaVersion": "ulpin-publication-conformance/1",
+  "cases": [
+    {
+      "id": "candidate-not-activation",
+      "snapshot": {
+        "schemaVersion": "ulpin-core-snapshot/1",
+        "state": "candidate",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "signatureVersion": "ulpin-tagged-binary64/1",
+        "inputDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "representations": [
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "exterior"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "unit-plan"
+            },
+            "revision": 1
+          }
+        ],
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "revision": 1
+          }
+        ],
+        "retainedObservations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1
+          }
+        ]
+      },
+      "candidate": {
+        "schemaVersion": "ulpin-core-publication/1",
+        "state": "candidate",
+        "scope": {
+          "id": "local-operator",
+          "revision": 1,
+          "ceiling": "operator"
+        },
+        "snapshotDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "compiler": "qualified-test-compiler/1",
+        "assets": [
+          {
+            "id": "tile",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 100,
+            "mediaType": "model/gltf-binary"
+          }
+        ],
+        "bindings": [
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": true
+    },
+    {
+      "id": "cannot-self-publish",
+      "snapshot": {
+        "schemaVersion": "ulpin-core-snapshot/1",
+        "state": "candidate",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "signatureVersion": "ulpin-tagged-binary64/1",
+        "inputDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "representations": [
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "exterior"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "unit-plan"
+            },
+            "revision": 1
+          }
+        ],
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "revision": 1
+          }
+        ],
+        "retainedObservations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1
+          }
+        ]
+      },
+      "candidate": {
+        "schemaVersion": "ulpin-core-publication/1",
+        "state": "active",
+        "scope": {
+          "id": "local-operator",
+          "revision": 1,
+          "ceiling": "operator"
+        },
+        "snapshotDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "compiler": "qualified-test-compiler/1",
+        "assets": [
+          {
+            "id": "tile",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 100,
+            "mediaType": "model/gltf-binary"
+          }
+        ],
+        "bindings": [
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "code": "INVALID_CONTRACT"
+    },
+    {
+      "id": "wrong-snapshot-digest",
+      "snapshot": {
+        "schemaVersion": "ulpin-core-snapshot/1",
+        "state": "candidate",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "signatureVersion": "ulpin-tagged-binary64/1",
+        "inputDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "representations": [
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "exterior"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "unit-plan"
+            },
+            "revision": 1
+          }
+        ],
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "revision": 1
+          }
+        ],
+        "retainedObservations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1
+          }
+        ]
+      },
+      "candidate": {
+        "schemaVersion": "ulpin-core-publication/1",
+        "state": "candidate",
+        "scope": {
+          "id": "local-operator",
+          "revision": 1,
+          "ceiling": "operator"
+        },
+        "snapshotDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "compiler": "qualified-test-compiler/1",
+        "assets": [
+          {
+            "id": "tile",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 100,
+            "mediaType": "model/gltf-binary"
+          }
+        ],
+        "bindings": [
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "code": "PUBLICATION_SNAPSHOT"
+    },
+    {
+      "id": "wrong-geometry-digest",
+      "snapshot": {
+        "schemaVersion": "ulpin-core-snapshot/1",
+        "state": "candidate",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "signatureVersion": "ulpin-tagged-binary64/1",
+        "inputDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "representations": [
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "exterior"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "unit-plan"
+            },
+            "revision": 1
+          }
+        ],
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "revision": 1
+          }
+        ],
+        "retainedObservations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1
+          }
+        ]
+      },
+      "candidate": {
+        "schemaVersion": "ulpin-core-publication/1",
+        "state": "candidate",
+        "scope": {
+          "id": "local-operator",
+          "revision": 1,
+          "ceiling": "operator"
+        },
+        "snapshotDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "compiler": "qualified-test-compiler/1",
+        "assets": [
+          {
+            "id": "tile",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 100,
+            "mediaType": "model/gltf-binary"
+          }
+        ],
+        "bindings": [
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "code": "PUBLICATION_SNAPSHOT"
+    },
+    {
+      "id": "different-scope",
+      "snapshot": {
+        "schemaVersion": "ulpin-core-snapshot/1",
+        "state": "candidate",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "signatureVersion": "ulpin-tagged-binary64/1",
+        "inputDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "representations": [
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "exterior"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "unit-plan"
+            },
+            "revision": 1
+          }
+        ],
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "revision": 1
+          }
+        ],
+        "retainedObservations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1
+          }
+        ]
+      },
+      "candidate": {
+        "schemaVersion": "ulpin-core-publication/1",
+        "state": "candidate",
+        "scope": {
+          "id": "unrelated",
+          "revision": 1,
+          "ceiling": "operator"
+        },
+        "snapshotDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "compiler": "qualified-test-compiler/1",
+        "assets": [
+          {
+            "id": "tile",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 100,
+            "mediaType": "model/gltf-binary"
+          }
+        ],
+        "bindings": [
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "code": "ACCESS_SCOPE"
+    },
+    {
+      "id": "missing-asset",
+      "snapshot": {
+        "schemaVersion": "ulpin-core-snapshot/1",
+        "state": "candidate",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "signatureVersion": "ulpin-tagged-binary64/1",
+        "inputDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "representations": [
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "exterior"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "unit-plan"
+            },
+            "revision": 1
+          }
+        ],
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "revision": 1
+          }
+        ],
+        "retainedObservations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1
+          }
+        ]
+      },
+      "candidate": {
+        "schemaVersion": "ulpin-core-publication/1",
+        "state": "candidate",
+        "scope": {
+          "id": "local-operator",
+          "revision": 1,
+          "ceiling": "operator"
+        },
+        "snapshotDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "compiler": "qualified-test-compiler/1",
+        "assets": [],
+        "bindings": [
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "code": "MISSING_REFERENCE"
+    },
+    {
+      "id": "stale-feature-revision",
+      "snapshot": {
+        "schemaVersion": "ulpin-core-snapshot/1",
+        "state": "candidate",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "signatureVersion": "ulpin-tagged-binary64/1",
+        "inputDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "representations": [
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "exterior"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "unit-plan"
+            },
+            "revision": 1
+          }
+        ],
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "revision": 1
+          }
+        ],
+        "retainedObservations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1
+          }
+        ]
+      },
+      "candidate": {
+        "schemaVersion": "ulpin-core-publication/1",
+        "state": "candidate",
+        "scope": {
+          "id": "local-operator",
+          "revision": 1,
+          "ceiling": "operator"
+        },
+        "snapshotDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "compiler": "qualified-test-compiler/1",
+        "assets": [
+          {
+            "id": "tile",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 100,
+            "mediaType": "model/gltf-binary"
+          }
+        ],
+        "bindings": [
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 2
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "code": "STALE_REFERENCE"
+    },
+    {
+      "id": "duplicate-feature",
+      "snapshot": {
+        "schemaVersion": "ulpin-core-snapshot/1",
+        "state": "candidate",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "signatureVersion": "ulpin-tagged-binary64/1",
+        "inputDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "representations": [
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "exterior"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "unit-plan"
+            },
+            "revision": 1
+          }
+        ],
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "revision": 1
+          }
+        ],
+        "retainedObservations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1
+          }
+        ]
+      },
+      "candidate": {
+        "schemaVersion": "ulpin-core-publication/1",
+        "state": "candidate",
+        "scope": {
+          "id": "local-operator",
+          "revision": 1,
+          "ceiling": "operator"
+        },
+        "snapshotDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "compiler": "qualified-test-compiler/1",
+        "assets": [
+          {
+            "id": "tile",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 100,
+            "mediaType": "model/gltf-binary"
+          }
+        ],
+        "bindings": [
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1
+            }
+          },
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "code": "DUPLICATE_REFERENCE"
+    },
+    {
+      "id": "duplicate-asset",
+      "snapshot": {
+        "schemaVersion": "ulpin-core-snapshot/1",
+        "state": "candidate",
+        "context": {
+          "world": {
+            "ref": {
+              "namespace": "world",
+              "id": "two-block-fixture"
+            },
+            "revision": 1
+          },
+          "asOfMs": 1000,
+          "scope": {
+            "id": "local-operator",
+            "revision": 1,
+            "ceiling": "operator"
+          }
+        },
+        "signatureVersion": "ulpin-tagged-binary64/1",
+        "inputDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "representations": [
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "exterior"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "representation",
+              "id": "unit-plan"
+            },
+            "revision": 1
+          }
+        ],
+        "entities": [
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "B1"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "physical",
+              "id": "U1"
+            },
+            "revision": 1
+          }
+        ],
+        "retainedObservations": [
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "footprint"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-nine"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "height-six"
+            },
+            "revision": 1
+          },
+          {
+            "ref": {
+              "namespace": "observation",
+              "id": "unit"
+            },
+            "revision": 1
+          }
+        ]
+      },
+      "candidate": {
+        "schemaVersion": "ulpin-core-publication/1",
+        "state": "candidate",
+        "scope": {
+          "id": "local-operator",
+          "revision": 1,
+          "ceiling": "operator"
+        },
+        "snapshotDigest": "27ea1d8310f983c5fe90bc7a95dafb330915fd88101a11b05d613dc2aaafb101",
+        "geometryDigest": "074387859eef2c6aa0e527e98760ddb67cdc2516b7857d882d23531483c68559",
+        "compiler": "qualified-test-compiler/1",
+        "assets": [
+          {
+            "id": "tile",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 100,
+            "mediaType": "model/gltf-binary"
+          },
+          {
+            "id": "tile",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 100,
+            "mediaType": "model/gltf-binary"
+          }
+        ],
+        "bindings": [
+          {
+            "assetId": "tile",
+            "featureId": "building-1",
+            "representation": {
+              "ref": {
+                "namespace": "representation",
+                "id": "exterior"
+              },
+              "revision": 1
+            }
+          }
+        ]
+      },
+      "valid": false,
+      "code": "DUPLICATE_REFERENCE"
+    }
+  ]
+}

@@ -8,3 +8,6 @@ export * from "./frame-schema";
 export * from "./frames";
 export * from "./geometry-schema";
 export * from "./geometry";
+export * from "./snapshot-schema";
+export * from "./signature";
+export * from "./snapshot";

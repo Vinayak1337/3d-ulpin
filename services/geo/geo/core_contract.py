@@ -65,10 +65,10 @@ def assert_core_json(value):
             pending.extend((child, depth + 1, False) for child in item)
 
 
-@lru_cache(maxsize=8)
+@lru_cache(maxsize=16)
 def bundled_schema(name):
     # This finite allowlist grows through the same reviewed core export task.
-    if name not in ("identity-graph", "identity-command", "number-value", "source-catalog", "frame-catalog", "point-transform", "geometry-catalog", "measure-request"):
+    if name not in ("identity-graph", "identity-command", "number-value", "source-catalog", "frame-catalog", "point-transform", "geometry-catalog", "measure-request", "snapshot-input", "snapshot-manifest", "publication-candidate"):
         fail("SCHEMA_PROFILE", "Unsupported bundled core schema")
     schema = json.loads((Path(__file__).parent / "contracts" / (name + ".schema.json")).read_text(encoding="utf-8"))
     pending = [schema]
