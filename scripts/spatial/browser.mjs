@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { chromium } from "@playwright/test";
+import { isCalibrationGeometry } from "./network.mjs";
 const baseURL = process.env.SPATIAL_BASE_URL || "http://127.0.0.1:3000";
 const output = ".runtime/spatial-qa";
 await mkdir(output, { recursive: true });
@@ -27,7 +28,14 @@ try {
   page.on("pageerror", e => report.errors.push(e.message));
   page.on("console", message => { if (["error", "warning"].includes(message.type())) report.console.push({ type: message.type(), text: message.text().slice(0, 1000) }); });
   const requests = [];
+  // Keep bounded public calibration request paths to diagnose delivery assertions.
+  report.calibrationRequests = [];
   page.on("request", r => requests.push(r.url()));
+  context.on("request", r => {
+    const url = new URL(r.url());
+    if (url.origin === new URL(baseURL).origin && url.pathname.startsWith("/api/v1/spatial/calibration/") && report.calibrationRequests.length < 150)
+      report.calibrationRequests.push(url.pathname + url.search);
+  });
   page.on("response", r => { if (r.url().startsWith(baseURL) && r.status() >= 400) report.badResponses.push({ url: r.url(), status: r.status() }); });
   await page.goto(`${baseURL}/map-lab`, { waitUntil: "domcontentloaded", timeout: 60000 });
   await page.waitForSelector('[data-tile-canvas][data-scene-ready="true"]', { timeout: 90000 });
@@ -35,8 +43,15 @@ try {
   await page.waitForTimeout(2500);
   assert.equal(await page.locator("[data-map-runtime-id]").count(), 1);
   assert.equal(await page.locator("[data-tile-canvas] canvas").count(), 1);
-  assert(requests.some(url => url.endsWith(".glb")), "Geometry must be fetched as actual GLB tiles, not a reference screenshot");
-  record("Real compiled 3D Tiles and metadata loaded into exactly one live map runtime");
+  const geometryRequests = requests.filter(url => isCalibrationGeometry(url, baseURL));
+  assert(geometryRequests.length > 0, "Geometry must be fetched as actual GLB tiles, not a reference screenshot");
+  const geometryResponse = await page.request.get(geometryRequests[0]);
+  assert(geometryResponse.ok());
+  const binary = await geometryResponse.body();
+  assert.equal(binary.subarray(0, 4).toString("ascii"), "glTF");
+  assert.equal(binary.readUInt32LE(4), 2);
+  assert.equal(binary.readUInt32LE(8), binary.length);
+  record("Real compiled 3D Tiles and metadata loaded into exactly one live map runtime", { geometryRequests: geometryRequests.length, verifiedGlbBytes: binary.length });
   await shot("01-complete-map");
   await page.getByRole("button", { name: "Neighbourhood", exact: true }).click();
   await page.waitForTimeout(1800);
@@ -47,7 +62,7 @@ try {
   const initialMetric = await page.locator("[data-horizontal-area]").getAttribute("data-horizontal-area");
   const initialSnapshotCount = requests.filter(url => url.includes("/garden/snapshot.json")).length;
   await page.getByRole("tab", { name: "Sources", exact: true }).click();
-  await page.getByText("0 documents attached", { exact: true }).waitFor();
+  await page.getByText("0 attached PDFs", { exact: true }).waitFor();
   await page.getByRole("tab", { name: "Building", exact: true }).click();
   await page.getByRole("tab", { name: "Map", exact: true }).click();
   assert.equal(await page.evaluate(() => document.querySelector("[data-tile-canvas] canvas") === window.__originalCanvas), true);
