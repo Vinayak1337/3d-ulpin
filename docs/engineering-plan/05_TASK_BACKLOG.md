@@ -1,6 +1,6 @@
 # Ordered task backlog
 
-Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 7/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
+Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 8/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
 ## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
@@ -128,7 +128,7 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 **Detailed plan:** `tasks/T007_PLAN.md` — authored; inspect its status before execution.
 
 ### T008 — Observations, source composition and coherent snapshots
-**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
+**Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
 **Dependencies:** T007.
 
@@ -148,7 +148,7 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 Exit: Existing records and named input profiles use the new boundary without loss.
 
 ### T009 — Read-only legacy compatibility adapter
-**Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/backend.
+**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Data/backend.
 
 **Dependencies:** T008.
 
@@ -162,7 +162,7 @@ Exit: Existing records and named input profiles use the new boundary without los
 
 **Earlier references:** schema:U01, schema:U04, schema:U15, renderer:D06.
 
-**Detailed plan:** `tasks/T009_PLAN.md` — write just before execution.
+**Detailed plan:** `tasks/T009_PLAN.md` — authored; inspect its status before execution.
 
 ### T010 — Minimal additive storage and one-writer migration rehearsal
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/backend.
