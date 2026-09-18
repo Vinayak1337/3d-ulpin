@@ -42,7 +42,7 @@ export function createMapRuntime(host: HTMLElement, profile: RuntimeProfile, onE
             viewer.scene.globe.enableLighting = false;
         }
         viewer.scene.fog.enabled = false;
-        viewer.scene.msaaSamples = 4;
+        viewer.scene.msaaSamples = 2;
         viewer.scene.postProcessStages.fxaa.enabled = true;
         if (viewer.scene.sun)
             viewer.scene.sun.show = false;
@@ -50,8 +50,18 @@ export function createMapRuntime(host: HTMLElement, profile: RuntimeProfile, onE
             viewer.scene.moon.show = false;
         viewer.scene.shadowMap.softShadows = true;
         viewer.scene.shadowMap.size = 2048;
-        viewer.scene.shadowMap.darkness = 0.3;
+        viewer.scene.shadowMap.darkness = 0.62;
         viewer.scene.shadowMap.maximumDistance = profile === "local" ? 150 : 1600;
+        // Scene-wide neutral diffuse lighting is independent of the current date,
+        // geographic daylight, or a missing skybox. Tile layers share this policy.
+        cleanups.push(viewer.scene.primitives.primitiveAdded.addEventListener(primitive => {
+            if (!(primitive instanceof Cesium.Cesium3DTileset)) return;
+            primitive.environmentMapManager.enabled = false;
+            primitive.imageBasedLighting.sphericalHarmonicCoefficients = [
+                new Cesium.Cartesian3(.68, .70, .72),
+                ...Array.from({ length: 8 }, () => new Cesium.Cartesian3(0, 0, 0)),
+            ];
+        }));
         const controls = viewer.scene.screenSpaceCameraController;
         controls.minimumZoomDistance = profile === "local" ? 1.5 : 4;
         controls.maximumZoomDistance = profile === "local" ? 250 : 20000000;
