@@ -1,6 +1,6 @@
 # Ordered task backlog
 
-Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 6/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
+Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 7/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
 ## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
@@ -111,7 +111,7 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 **Detailed plan:** `tasks/T006_PLAN.md` — authored; inspect its status before execution.
 
 ### T007 — Geometry representations, quantities and capability checks
-**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Geometry lead.
+**Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Geometry lead.
 
 **Dependencies:** T005, T006.
 
@@ -128,7 +128,7 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 **Detailed plan:** `tasks/T007_PLAN.md` — authored; inspect its status before execution.
 
 ### T008 — Observations, source composition and coherent snapshots
-**Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
+**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
 **Dependencies:** T007.
 
@@ -142,7 +142,7 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Earlier references:** schema:U08, schema:U13, schema:U14, renderer:D05, renderer:C01.
 
-**Detailed plan:** `tasks/T008_PLAN.md` — write just before execution.
+**Detailed plan:** `tasks/T008_PLAN.md` — authored; inspect its status before execution.
 
 ## E03 — Compatibility and first normalization
 Exit: Existing records and named input profiles use the new boundary without loss.
