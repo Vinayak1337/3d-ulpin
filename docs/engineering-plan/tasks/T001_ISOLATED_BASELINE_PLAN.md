@@ -68,3 +68,14 @@ T001 acceptance requires actual successful restore/hash/API/unit/browser evidenc
 the initial source inventory and an honest list of skipped or deferred checks.
 Private-PC data reconciliation remains required before any future write to that
 environment; it is not fabricated from the committed fixture.
+
+## First hosted-run correction
+
+Run `35353264114` at `c4e6857` passed the real 44-table/497-object snapshot restore,
+the 4,440-row/53-object additive transfer, exact replay, migration and cleanup.
+The API suite reached 6 checks before the fixture download returned 503. The
+owned Next server is launched directly from the repo root, whereas the default
+fixture path assumes pnpm's app-directory working directory. Set an explicit
+checkout-relative `ULPIN_FIXTURE_ROOT` for all owned test child processes and
+test that environment projection. Do not change the original fixtures or weaken
+the failing download assertion. T001 remains unaccepted pending a complete run.

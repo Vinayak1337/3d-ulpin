@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {assertIsolation, generatedEnvironment, hostedScope, redact} from '../scripts/engineering/isolation.mjs';
+import {resolve} from 'node:path';
+import {assertIsolation, generatedEnvironment, hostedScope, redact, testProcessEnvironment} from '../scripts/engineering/isolation.mjs';
 
 const runner = () => ({
   GITHUB_ACTIONS:'true', RUNNER_ENVIRONMENT:'github-hosted', RUNNER_OS:'Linux',
@@ -46,4 +47,13 @@ test('reports redact complete credential-bearing URLs and individual secrets', (
 
 test('preparation refuses invalid random-secret providers instead of weakening validation', () => {
   assert.throws(()=>generatedEnvironment(runner(),()=> 'short'));
+});
+
+test('child processes resolve fixtures inside the explicit checkout instead of their working directory', () => {
+  const env=environment(), root=resolve('test-checkout');
+  const child=testProcessEnvironment({...env,ULPIN_FIXTURE_ROOT:'/unrelated/path'},root);
+  assert.equal(child.ULPIN_FIXTURE_ROOT,resolve(root,'fixtures'));
+  assert.equal(child.DATABASE_URL,env.DATABASE_URL);
+  assert.equal(env.ULPIN_FIXTURE_ROOT,undefined);
+  assert.throws(()=>testProcessEnvironment(env,'relative-root'));
 });
