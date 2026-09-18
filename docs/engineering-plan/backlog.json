@@ -3,10 +3,10 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.2",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T004_core_identity_relations",
+  "current_action": "T005_reusable_source_catalog",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T004",
+  "next_task": "T005",
   "epics": [
     {
       "id": "E01",
@@ -218,8 +218,8 @@
       "epic": "E02",
       "title": "Stable identity, vocabulary and typed relationships",
       "sequence": 4,
-      "status": "In progress",
-      "execution_state": "implementation_started",
+      "status": "Accepted",
+      "execution_state": "completed",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Architecture lead",
@@ -244,17 +244,19 @@
         "relevant legacy regression",
         "diff and evidence review"
       ],
-      "evidence": [],
-      "completed_at": null
+      "evidence": [
+        "tasks/T004_RESULT.md"
+      ],
+      "completed_at": "2026-09-18"
     },
     {
       "id": "T005",
       "epic": "E02",
       "title": "Reusable sources, original assets and exact evidence links",
       "sequence": 5,
-      "status": "Planned",
-      "execution_state": "not_started",
-      "plan_state": "brief_defined_detail_due_before_execution",
+      "status": "In progress",
+      "execution_state": "implementation_started",
+      "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Data/backend",
       "depends_on": [
@@ -265,7 +267,7 @@
       "acceptance": "One original can support multiple objects; zero documents is valid; removing one link cannot remove bytes still referenced elsewhere.",
       "out_of_scope": "Copying existing bytes per building, cloud migration or real personal-data ingestion.",
       "detail_plan_path": "tasks/T005_PLAN.md",
-      "detail_plan_exists": false,
+      "detail_plan_exists": true,
       "legacy_refs": [
         "schema:U05",
         "schema:U11",
