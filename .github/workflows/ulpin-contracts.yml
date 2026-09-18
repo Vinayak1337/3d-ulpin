@@ -8,6 +8,9 @@ on:
       - 'fixtures/contracts/**'
       - 'tests/core-*.test.ts'
       - 'services/geo/requirements-dev.txt'
+      - 'services/geo/requirements.txt'
+      - 'services/geo/geo/core_*.py'
+      - 'services/geo/geo/contracts/**'
       - 'pnpm-lock.yaml'
       - '.github/workflows/ulpin-contracts.yml'
   pull_request:
@@ -17,6 +20,9 @@ on:
       - 'fixtures/contracts/**'
       - 'tests/core-*.test.ts'
       - 'services/geo/requirements-dev.txt'
+      - 'services/geo/requirements.txt'
+      - 'services/geo/geo/core_*.py'
+      - 'services/geo/geo/contracts/**'
       - 'pnpm-lock.yaml'
       - '.github/workflows/ulpin-contracts.yml'
   workflow_dispatch:
@@ -49,4 +55,7 @@ jobs:
         run: |
           node scripts/contracts/authority-experiment.mjs check
           python scripts/contracts/authority-parity.py
+          pnpm exec tsx scripts/contracts/export-core.ts check
+          pnpm exec tsx --test tests/core-*.test.ts
+          python scripts/contracts/core-parity.py
           pnpm typecheck
