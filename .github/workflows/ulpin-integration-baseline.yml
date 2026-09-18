@@ -52,6 +52,8 @@ jobs:
           python3 -m unittest discover -s docs/engineering-plan/tools/tests -p 'test_*.py' -v
       - name: Existing pure and cross-view regressions
         run: |
+          pnpm exec tsx scripts/contracts/export-core.ts check
+          pnpm exec tsx --test tests/core-*.test.ts
           pnpm test:spatial
           pnpm test:scene
           pnpm test:repo-data

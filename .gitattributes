@@ -26,3 +26,5 @@ docs/evidence/v2/checks/*.txt -text whitespace=-blank-at-eol,-blank-at-eof
 # Engineering tooling is portable; preserved planning inputs retain exact bytes.
 docs/engineering-plan/** text eol=lf
 docs/engineering-plan/legacy/** -text
+packages/contracts/schemas/** -text
+services/geo/geo/contracts/** -text
