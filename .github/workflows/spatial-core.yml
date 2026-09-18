@@ -40,6 +40,16 @@ jobs:
           corepack enable
           corepack prepare pnpm@9.12.0 --activate
           pnpm install --frozen-lockfile
+      - name: One-time offline development bundle
+        if: github.run_number == 2
+        run: tar -czf /tmp/spatial-dev-dependencies.tar.gz node_modules apps/web/node_modules
+      - uses: actions/upload-artifact@v4
+        if: github.run_number == 2
+        with:
+          name: spatial-dev-dependencies
+          path: /tmp/spatial-dev-dependencies.tar.gz
+          compression-level: 0
+          retention-days: 1
       - name: Typecheck
         run: pnpm typecheck
       - name: Shared spatial-core tests
