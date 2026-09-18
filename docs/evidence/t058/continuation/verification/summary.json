@@ -1,0 +1,42 @@
+{
+  "kind": "T058 continuation production qualification",
+  "baseCommit": "6fe2d4f0f12bf29dfbe875f3c947f0ed17c20ddd",
+  "result": "PASS",
+  "nodeTests": {
+    "coreAndStudio": 328,
+    "studioSubset": 33,
+    "retainedProductSuites": 97,
+    "total": 425
+  },
+  "pythonSharedCases": 218,
+  "productionBrowserGroups": {
+    "originalStudio": 11,
+    "continuation": 10,
+    "retainedSharedMap": 10
+  },
+  "expectedFailureCases": [
+    {
+      "kind": "source-unavailable",
+      "status": 503,
+      "handled": true
+    },
+    {
+      "kind": "render-resource-unavailable",
+      "status": 503,
+      "handled": true,
+      "propertyRetained": true
+    }
+  ],
+  "unexpectedContinuationErrors": [],
+  "finalCaptures": 8,
+  "graphics": {
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "protectedDatabaseRows": "All unchanged; no rows added",
+  "preparedSourceBytes": "Unchanged",
+  "backendWritesThisContinuation": 0,
+  "visualReview": "Self-reviewed original/current comparisons; user approval not claimed",
+  "physicalMobileTesting": false,
+  "gallery": "/studio-review/index.html"
+}

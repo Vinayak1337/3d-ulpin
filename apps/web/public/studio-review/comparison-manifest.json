@@ -32,55 +32,69 @@
       "height": 941
     },
     "current-map": {
-      "source": "docs/evidence/t058/final/map.png",
-      "sha256": "cf8570b3452aac77311b31ea049dee9534796c8c2801f45975d882d2acabc194",
+      "source": "docs/evidence/t058/continuation/final/map.png",
+      "sha256": "9654be418ae8394dfea76a25cb02eb7278a3b1f9f46b4656ae705ab6ebaeaa95",
       "width": 1672,
       "height": 941
     },
     "current-register": {
-      "source": "docs/evidence/t058/final/register.png",
-      "sha256": "e55197aeb230fc2c1519f9dc594c39dc61f62dcc487f717564206fa37ff768ac",
+      "source": "docs/evidence/t058/continuation/final/register.png",
+      "sha256": "5adbf3378851dd41dd545059adcbb4a15b9d1b57f4cb6c43682d6e70bdfa7506",
       "width": 1672,
       "height": 941
     },
     "current-workspace": {
-      "source": "docs/evidence/t058/final/workspace.png",
-      "sha256": "6c595a020d3af48438eb6e423c5fa2e2464a2876456471f5e88ad341b50e66f5",
+      "source": "docs/evidence/t058/continuation/final/workspace.png",
+      "sha256": "cc63f6d055b6d6d2384f1b2f7de44989f9ee41a55f572e04afb98d3231a61e9d",
       "width": 1672,
       "height": 941
     },
     "current-close": {
-      "source": "docs/evidence/t058/final/building-close.png",
-      "sha256": "6f08ac58b867fd9a89a7a61488015a03a49de00023e270b455a9110d94fee2ab",
+      "source": "docs/evidence/t058/continuation/final/building-close.png",
+      "sha256": "9c2a92b3712f90ff1134107ca78d01643efeebb106b46713a596c4a3502e317e",
       "width": 1672,
       "height": 941
     },
     "current-utilities": {
-      "source": "docs/evidence/t058/final/utilities.png",
-      "sha256": "955731b2e8cbafaf4156261449c25657c63051e63ff91dba12bcd3888f81ac40",
+      "source": "docs/evidence/t058/continuation/final/utilities.png",
+      "sha256": "a52c6541f24907490f777323d4c0518bca34ac0e6cbb5d75f8382ba539162e17",
       "width": 1672,
       "height": 941
     },
     "current-plan": {
-      "source": "docs/evidence/t058/final/top-down.png",
-      "sha256": "aecf8d25a312c3b39c26b1ae2216891ff818a088f250b59c2a89c096970861ea",
+      "source": "docs/evidence/t058/continuation/final/top-down.png",
+      "sha256": "e708d947da890db5b1cbe5203492e21ea95669bdc3c1c286ca1d2ceee0c47c2b",
       "width": 1672,
       "height": 941
     },
     "current-mobile-map": {
-      "source": "docs/evidence/t058/final/mobile-map.png",
-      "sha256": "743d6cbe1948c3fef4d77c32d6cf76ec230faa0847d1c308c8d16fad8c94cfb6",
+      "source": "docs/evidence/t058/continuation/final/mobile-map.png",
+      "sha256": "2e7af7f26cf3d7b95d667b70cb184425f59bd4b193a3e20c870c3254605e58c0",
       "width": 390,
       "height": 844
     },
     "current-mobile-inspector": {
-      "source": "docs/evidence/t058/final/mobile-inspector.png",
-      "sha256": "8277eff0562a9ef9f184f6340e2f2354f6c309b8f7eb70f1cd53d54729d603b5",
+      "source": "docs/evidence/t058/continuation/final/mobile-inspector.png",
+      "sha256": "635f4c0b90a77cb16e70421bfa81c6f26229a1602f7dcfad24aed210f6ac9ab7",
       "width": 390,
       "height": 844
+    },
+    "previous-map": {
+      "source": "docs/evidence/t058/final/map.png",
+      "sha256": "cf8570b3452aac77311b31ea049dee9534796c8c2801f45975d882d2acabc194",
+      "width": 1672,
+      "height": 941
     }
   },
   "reviewNotes": [
+    [
+      "Continuation completed in the same implementation",
+      "The continued pass shares the actual building envelope across district, register and workspace, adds fuller foliage and road/utility labels, corrects north-side parcel overlays, and improves the building-preview camera fit without altering the source fixture."
+    ],
+    [
+      "Additional workflow verification",
+      "Property thumbnails and navigation are identity-qualified and atomic. Source checking validates original bytes and links. Floor-local drafts retain their notes, measurements, unit and revision; invalid geometry cannot enter review. Missing renderer assets have an explicit recoverable error state."
+    ],
     [
       "Original Studio first",
       "The original Studio composition was copied before scene changes. The old T057 map-lab composition was not reused as the design baseline."

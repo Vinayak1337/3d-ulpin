@@ -2,9 +2,27 @@ import {z} from 'zod';
 import {metricTopologyIssue} from '@ulpin/contracts';
 export const StudioDraftSchema=z.strictObject({schemaVersion:z.literal('studio-local-draft/1'),buildingId:z.string().regex(/^BLD-\d{4}$/),revision:z.number().int().nonnegative(),sourceHash:z.string().regex(/^[a-f0-9]{64}$/),floor:z.number().int().min(0).max(99),unitId:z.string().nullable(),tool:z.enum(['distance','area','perimeter']),points:z.array(z.tuple([z.number(),z.number()])).max(256),calibration:z.number().positive().max(100),notes:z.string().max(4000),status:z.enum(['draft','ready_for_review']),updatedAt:z.string()});
 export type StudioDraft=z.infer<typeof StudioDraftSchema>;
-const key=(id:string)=>'ulpin:studio-local-draft:v1:'+id;
-export function loadStudioDraft(storage:Pick<Storage,'getItem'>,id:string):StudioDraft|null {const raw=storage.getItem(key(id));if(!raw)return null;if(raw.length>64000)throw new Error('Stored draft exceeds its profile');const d=StudioDraftSchema.parse(JSON.parse(raw));if(d.buildingId!==id)throw new Error('Draft belongs to another property');return d;}
-export function saveStudioDraft(storage:Pick<Storage,'getItem'|'setItem'>,input:StudioDraft){const d=StudioDraftSchema.parse(input),old=loadStudioDraft(storage,d.buildingId);if((old?.revision??0)!==d.revision)throw new Error('This draft changed in another tab. Reload before saving.');const next=StudioDraftSchema.parse({...d,revision:d.revision+1,updatedAt:new Date().toISOString()});storage.setItem(key(d.buildingId),JSON.stringify(next));return next;}
+export const studioDraftKey=(id:string,floor:number)=>`ulpin:studio-local-draft:v2:${id}:F${floor}`;
+export function loadStudioDraft(storage:Pick<Storage,'getItem'>,id:string,floor:number):StudioDraft|null {
+ const current=storage.getItem(studioDraftKey(id,floor));
+ const raw=current??storage.getItem('ulpin:studio-local-draft:v1:'+id);
+ if(!raw)return null;
+ if(raw.length>64000)throw new Error('Stored draft exceeds its profile');
+ const d=StudioDraftSchema.parse(JSON.parse(raw));
+ if(d.buildingId!==id)throw new Error('Draft belongs to another property');
+ if(d.floor!==floor){if(current)throw new Error('Stored draft belongs to another floor');return null;}
+ return d;
+}
+export function saveStudioDraft(storage:Pick<Storage,'getItem'|'setItem'>,input:StudioDraft){
+ const d=StudioDraftSchema.parse(input),old=loadStudioDraft(storage,d.buildingId,d.floor);
+ if((old?.revision??0)!==d.revision)throw new Error('This draft changed in another tab. Reload before saving.');
+ if(old&&old.sourceHash!==d.sourceHash)throw new Error('This draft belongs to a different source revision. The saved original has not been overwritten.');
+ if(d.unitId&&!new RegExp(`^${d.buildingId}/F${d.floor}/U[1-9][0-9]*$`).test(d.unitId))throw new Error('The selected unit does not belong to this draft floor.');
+ if(d.status==='ready_for_review'&&d.points.length&&!studioMeasurement(d.points,d.tool,d.calibration))throw new Error('Complete or clear the unfinished measurement before review.');
+ const next=StudioDraftSchema.parse({...d,revision:d.revision+1,updatedAt:new Date().toISOString()});
+ storage.setItem(studioDraftKey(d.buildingId,d.floor),JSON.stringify(next));
+ return next;
+}
 /** Local source-coordinate measurements, independent of the canvas or renderer. */
 export function studioMeasurement(points:readonly (readonly [number,number])[],tool:StudioDraft['tool'],calibration=1){
  if(!Number.isFinite(calibration)||calibration<=0||points.some(p=>p.length!==2||!p.every(Number.isFinite)))throw new Error('Invalid measurement input');

@@ -1,9 +1,10 @@
 import type { Building } from '../types';
 export type SceneInstance={p:[number,number,number];s:[number,number,number];c:string;r?:[number,number,number];owner?:string};
 type Parts=Record<string,SceneInstance[]>;
+export interface ArchitectureOptions{cutaway?:boolean;spacing?:number;maxFloor?:number}
 
 /** Detailed envelopes retain the recorded footprint; added facade elements are decorative. */
-export function buildArchitecture(buildings:Building[]):Parts {
+export function buildArchitecture(buildings:Building[],options:ArchitectureOptions={}):Parts {
   const parts:Parts={body:[],frames:[],windows:[],trim:[],roof:[],tanks:[],solar:[],footings:[],accent:[]};
   const palettes=['#d8d0be','#c4cecc','#d6c4af','#dddccf'];
   const accents=['#b39780','#819b9b','#b4a086','#adb7ab'];
@@ -11,15 +12,19 @@ export function buildArchitecture(buildings:Building[]):Parts {
     const {x,z,width:w,depth:d,height:h,id,variant:v}=b;
     const featured=b.ulpin==='11007500003527';
     const body=featured?'#d5c7b9':b.color;
-    const add=(key:string,px:number,py:number,pz:number,ww:number,hh:number,dd:number,color:string,r?:[number,number,number])=>parts[key].push({p:[px,py,pz],s:[ww,hh,dd],c:color,owner:id,r});
+    let activeFloor:number|null=null;
+    const add=(key:string,px:number,py:number,pz:number,ww:number,hh:number,dd:number,color:string,r?:[number,number,number])=>parts[key].push({p:[px,py+(activeFloor===null?0:activeFloor*((options.spacing??b.floorHeight)-b.floorHeight)),pz],s:[ww,hh,dd],c:color,owner:id,r});
     // An inset structural core leaves genuinely recessed window bays in the envelope.
-    add('body',x,h/2+.4,z,w-.8,h,d-.8,body);
+    if(!options.cutaway)add('body',x,h/2+.4,z,w-.8,h,d-.8,body);
     add('footings',x,.26,z,w+.65,.26,d+.65,'#bdbcb0');
     const windowW=v===1?2.5:v===0?1.85:2.25,windowH=v===2?1.9:1.72;
     for(let f=0;f<b.floors;f++){
+      if(options.maxFloor!==undefined&&f>options.maxFloor)continue;
+      activeFloor=f;
       const base=.4+f*b.floorHeight,wy=base+1.78;
       // Facade walls are piers + spandrels, rather than a flat wall with painted windows.
       for(const side of [-1,1]){
+        if(options.cutaway&&side===1)continue;
         const faceZ=z+side*(d/2-.14),faceX=x+side*(w/2-.14);
         add('frames',x,base+.42,faceZ,w,.84,.3,body);
         add('frames',x,base+2.96,faceZ,w,.48,.3,body);
@@ -68,6 +73,8 @@ export function buildArchitecture(buildings:Building[]):Parts {
         if(v===1){add('trim',x-w/2-.46,base+.12,z+d*.16,.96,.2,d*.39,'#e2e6dd');add('windows',x-w/2-.89,base+.8,z+d*.16,.04,1.1,d*.37,'#8fa59f');}
       }
     }
+    activeFloor=null;
+    if(options.cutaway)continue;
     // Vertical accent bays create variation without changing floor/unit geometry.
     if(v===3||featured){add('accent',x-w*.39,h/2+.4,z+d/2+.045,1.1,h,.12,accents[v]);}
     if(v===1)add('accent',x-w/2-.06,h/2+.4,z-d*.35,.14,h,1.6,accents[v]);

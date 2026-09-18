@@ -1,6 +1,6 @@
 # Ordered task backlog
 
-Generated from `backlog.json`, plan version 1.3. Accepted execution tasks: 10/58. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
+Generated from `backlog.json`, plan version 1.3. Accepted execution tasks: 9/58. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
 ## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
@@ -77,7 +77,7 @@ Exit: Supported normalized neighbourhoods use an improved common visual/inspecti
 **Detailed plan:** `tasks/T057_PLAN.md` — authored; inspect its status before execution.
 
 ### T058 — Studio-based interface, prepared sources and reference-matched neighbourhood
-**Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture and visual lead.
+**Status:** Review. **Release:** R1-renderer. **Suggested owner:** Architecture and visual lead.
 
 **Dependencies:** T009.
 

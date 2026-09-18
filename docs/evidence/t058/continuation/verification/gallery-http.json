@@ -1,0 +1,90 @@
+{
+  "result": "PASS",
+  "checkedAt": "2026-09-18T23:43:31.123Z",
+  "files": [
+    {
+      "name": "index.html",
+      "status": 200
+    },
+    {
+      "name": "comparison-manifest.json",
+      "status": 200
+    },
+    {
+      "name": "map-comparison.png",
+      "status": 200
+    },
+    {
+      "name": "scene-comparison.png",
+      "status": 200
+    },
+    {
+      "name": "register-comparison.png",
+      "status": 200
+    },
+    {
+      "name": "workspace-comparison.png",
+      "status": 200
+    },
+    {
+      "name": "continuation-before-after.png",
+      "status": 200
+    },
+    {
+      "name": "mock-map.png",
+      "status": 200
+    },
+    {
+      "name": "mock-register.png",
+      "status": 200
+    },
+    {
+      "name": "mock-workspace.png",
+      "status": 200
+    },
+    {
+      "name": "original-map.png",
+      "status": 200
+    },
+    {
+      "name": "original-register.png",
+      "status": 200
+    },
+    {
+      "name": "current-map.png",
+      "status": 200
+    },
+    {
+      "name": "current-register.png",
+      "status": 200
+    },
+    {
+      "name": "current-workspace.png",
+      "status": 200
+    },
+    {
+      "name": "current-close.png",
+      "status": 200
+    },
+    {
+      "name": "current-utilities.png",
+      "status": 200
+    },
+    {
+      "name": "current-plan.png",
+      "status": 200
+    },
+    {
+      "name": "current-mobile-map.png",
+      "status": 200
+    },
+    {
+      "name": "current-mobile-inspector.png",
+      "status": 200
+    },
+    {
+      "name": "previous-map.png",
+      "status": 200
+    }
+  ]
+}

@@ -7,6 +7,7 @@
     "studio:prepare": "tsx scripts/studio/prepare.ts",
     "test:studio": "tsx --tsconfig apps/web/tsconfig.json --test tests/studio-*.test.ts",
     "test:studio:browser": "node scripts/spatial/studio-verify.mjs",
+    "test:studio:continuation": "node scripts/spatial/studio-continuation-verify.mjs",
     "studio:capture": "node scripts/spatial/studio-capture.mjs",
     "data:uttam:check": "node scripts/datasets/uttam-nagar.mjs check",
     "data:uttam:install": "node scripts/datasets/uttam-nagar.mjs install",

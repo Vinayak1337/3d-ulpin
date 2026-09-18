@@ -2,7 +2,6 @@ import {useEffect,useRef,useState} from 'react';
 import {ArrowUpRight,Check,Database,Download,FileText,FolderOpen,Upload,X} from 'lucide-react';
 import DialogSection from './DialogSection';
 import {useStudioSources,downloadPreparedAsset} from '../data/useSources';
-import './sources.css';
 
 type CaseSummary={id:string;name:string};
 type Receipt={caseId:string;sourceId:string;sha256:string;bytes:number;name:string};
