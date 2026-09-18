@@ -3,10 +3,10 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.2",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T008_observations_composition_snapshots",
+  "current_action": "T009_legacy_read_normalization",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T008",
+  "next_task": "T009",
   "epics": [
     {
       "id": "E01",
@@ -364,8 +364,8 @@
       "epic": "E02",
       "title": "Observations, source composition and coherent snapshots",
       "sequence": 8,
-      "status": "In progress",
-      "execution_state": "implementation_started",
+      "status": "Accepted",
+      "execution_state": "completed",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Architecture lead",
@@ -391,17 +391,19 @@
         "relevant legacy regression",
         "diff and evidence review"
       ],
-      "evidence": [],
-      "completed_at": null
+      "evidence": [
+        "tasks/T008_RESULT.md"
+      ],
+      "completed_at": "2026-09-18T17:49:57.167051+00:00"
     },
     {
       "id": "T009",
       "epic": "E03",
       "title": "Read-only legacy compatibility adapter",
       "sequence": 9,
-      "status": "Planned",
-      "execution_state": "not_started",
-      "plan_state": "brief_defined_detail_due_before_execution",
+      "status": "In progress",
+      "execution_state": "implementation_started",
+      "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Data/backend",
       "depends_on": [
@@ -412,7 +414,7 @@
       "acceptance": "Existing IDs, original hashes and historical frame references remain resolvable; old routes keep working; physical and legal records are not collapsed by coincidence.",
       "out_of_scope": "Dual canonical databases, destructive backfills or swallowing unsupported legacy records.",
       "detail_plan_path": "tasks/T009_PLAN.md",
-      "detail_plan_exists": false,
+      "detail_plan_exists": true,
       "legacy_refs": [
         "schema:U01",
         "schema:U04",
