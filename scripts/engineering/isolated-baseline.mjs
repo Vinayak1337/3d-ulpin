@@ -219,6 +219,10 @@ try {
     pass('Real API negative/closed-ring regressions preserve every unrelated baseline row, identity and original');
     await command('browser','node',['scripts/spatial/browser.mjs'],{timeout:360000,env:{...childEnv,SPATIAL_START_SERVER:'0'}});
     pass('Actual calibration browser suite passes against the same isolated production server');
+    await command('neighbourhood-browser','node',['scripts/spatial/browser-neighbourhood.mjs'],{timeout:600000,env:{...childEnv,SPATIAL_START_SERVER:'0',SPATIAL_TEST_SAVED:'1'}});
+    await assertPreserved(client,current);
+    await verifyObjects(manifest);
+    pass('Normalized saved-neighbourhood browser and unchanged baseline records pass together');
   }finally{client.release();}
 
   const testContext=resolve(temporary,scope.id+'-python');

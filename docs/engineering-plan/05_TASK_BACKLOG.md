@@ -60,7 +60,7 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 Exit: Supported normalized neighbourhoods use an improved common visual/inspection system before ML expansion.
 
 ### T057 — Normalized neighbourhood renderer and shared 3D interface
-**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Architecture and frontend lead.
+**Status:** Verify. **Release:** R1-renderer. **Suggested owner:** Architecture and frontend lead.
 
 **Dependencies:** T009.
 

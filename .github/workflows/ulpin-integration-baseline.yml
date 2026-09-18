@@ -53,7 +53,7 @@ jobs:
       - name: Existing pure and cross-view regressions
         run: |
           pnpm exec tsx scripts/contracts/export-core.ts check
-          pnpm exec tsx --test tests/core-*.test.ts
+          pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-*.test.ts
           pnpm test:spatial
           pnpm test:scene
           pnpm test:repo-data
@@ -79,6 +79,8 @@ jobs:
             .runtime/engineering/api-*.md
             .runtime/spatial-qa/*.json
             .runtime/spatial-qa/*.png
+            .runtime/neighbourhood-qa/*.json
+            .runtime/neighbourhood-qa/*.png
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 5

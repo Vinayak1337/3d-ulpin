@@ -1,0 +1,120 @@
+{
+  "kind": "actual-shared-neighbourhood-browser",
+  "startedAt": "2026-09-18T19:46:41.952Z",
+  "device": "Installed Chrome with its reported graphics backend; mobile remains viewport emulation",
+  "checks": [
+    {
+      "name": "Actual canvas feature picking resolves the canonical property, not just list selection",
+      "passed": true,
+      "selected": "calibration-garden:building-1"
+    },
+    {
+      "name": "2D and fit preserve the top-down state",
+      "passed": true
+    },
+    {
+      "name": "Dense input reuses the same scene compiler and one viewport",
+      "passed": true
+    },
+    {
+      "name": "Saved Uttam Nagar data uses the normalized bridge, analytical quantities and same mounted canvas",
+      "passed": true,
+      "readDigest": "b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799",
+      "features": 51,
+      "buildings": 15
+    },
+    {
+      "name": "A controlled refresh failure retains the prior scene and identity; retry recovers without replacing the canvas",
+      "passed": true
+    },
+    {
+      "name": "390px layout exposes both layers and property inspector without overflow or a second map",
+      "passed": true
+    },
+    {
+      "name": "Actual GLBs loaded with no uncaught browser errors or failed local assets",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "badResponses": [],
+  "geometryRequests": [
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/context.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-1-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-1-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_0-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_0-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_0-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_0-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-1-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-1-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_1-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_1-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_0-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_0-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-2-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_-2-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_1-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/0_1-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-2-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-1_-2-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-1-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-1-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_0-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_0-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-1-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-1-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_1-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_1-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_1-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_1-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-2-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/1_-2-detail.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-2-coarse.glb",
+    "/api/v1/spatial/calibration/garden/9e1f3dd6e2b9ee85c6c42285b4cdf1e2613ea0e8b4ad92edee5cd17fca78d2e6/-2_-2-detail.glb",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/context.glb",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/0_-1-coarse.glb",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/0_-1-detail.glb",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/0_0-coarse.glb",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/0_0-detail.glb",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/-1_0-coarse.glb",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/-1_0-detail.glb",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/-1_-1-coarse.glb",
+    "/api/v1/spatial/calibration/dense/85f6d397affdf3ac1993e7c48d2ff5bf1d24db340fae709f4e5bca4fd6762ae9/-1_-1-detail.glb",
+    "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799/5dcc1635d7eb9e2e3999858a92a3a5cdbe00981b8d4227d5442747f7d82aea24/context.glb",
+    "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799/5dcc1635d7eb9e2e3999858a92a3a5cdbe00981b8d4227d5442747f7d82aea24/0_-1-coarse.glb",
+    "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799/5dcc1635d7eb9e2e3999858a92a3a5cdbe00981b8d4227d5442747f7d82aea24/0_-1-detail.glb",
+    "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799/5dcc1635d7eb9e2e3999858a92a3a5cdbe00981b8d4227d5442747f7d82aea24/-1_-1-coarse.glb",
+    "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799/5dcc1635d7eb9e2e3999858a92a3a5cdbe00981b8d4227d5442747f7d82aea24/-1_-1-detail.glb",
+    "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799/5dcc1635d7eb9e2e3999858a92a3a5cdbe00981b8d4227d5442747f7d82aea24/-1_0-coarse.glb",
+    "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799/5dcc1635d7eb9e2e3999858a92a3a5cdbe00981b8d4227d5442747f7d82aea24/-1_0-detail.glb",
+    "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799/5dcc1635d7eb9e2e3999858a92a3a5cdbe00981b8d4227d5442747f7d82aea24/0_0-coarse.glb",
+    "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/b0b87d1b9f2f8ae31806089469da5e479232bbfdf1700937ba4010e7dd07c799/5dcc1635d7eb9e2e3999858a92a3a5cdbe00981b8d4227d5442747f7d82aea24/0_0-detail.glb"
+  ],
+  "injectedResponses": [
+    {
+      "url": "/api/v1/spatial/core/areas/457bac4c-1c6c-4157-a12a-1d44ba3c1bcf/scene/synthetic/descriptor.json",
+      "status": 503
+    }
+  ],
+  "graphics": {
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "vendor": "Google Inc. (NVIDIA)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "pickProbe": {
+    "expectedEntity": "calibration-garden:building-1",
+    "canvas": {
+      "x": 262,
+      "y": 131,
+      "width": 1092,
+      "height": 810
+    },
+    "projectedRoof": {
+      "x": 546.0023908671573,
+      "y": 341.77409162339364
+    }
+  },
+  "result": "PASS",
+  "finishedAt": "2026-09-18T19:47:01.825Z"
+}

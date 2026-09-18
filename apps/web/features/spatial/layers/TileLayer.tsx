@@ -5,11 +5,12 @@ import { createMapRuntime } from "../engine/runtime";
 import { useSpatialServices } from "../data/Provider";
 import type { MapCamera, MapSelection } from "../data/session";
 import "../viewport.css";
-import { enuToEcef, transformPoint, type SpatialRepresentation, type SpatialFrame } from "@ulpin/contracts";
+import { enuToEcef, transformPoint,geometryBounds, type SpatialRepresentation, type SpatialFrame } from "@ulpin/contracts";
 import { MeshBuilder } from "../compiler/mesh";
 export interface TileNavigation {
     sequence: number;
-    action: "fit" | "neighbourhood" | "focus" | "north" | "zoom_in" | "zoom_out";
+    targetRadius?:number;
+    action: "fit" | "neighbourhood" | "focus" | "north" | "zoom_in" | "zoom_out" | "reverse";
     /** Already transformed ECEF target; never reinterpret local coordinates as longitude/latitude. */
     target?: readonly [
         number,
@@ -31,6 +32,8 @@ export interface TileLayerProps {
     mode: "3d" | "2d";
     navigation: TileNavigation;
     visibleKinds?: readonly string[];
+    shadows?:boolean;
+    outline?:{representation:SpatialRepresentation;frame:SpatialFrame;label:string};
     inspection?: {
         representation: SpatialRepresentation;
         frame: SpatialFrame;
@@ -60,6 +63,7 @@ export default function TileLayer(props: TileLayerProps) {
     const [error, setError] = useState("");
     const [ready, setReady] = useState(false);
     const [retry, setRetry] = useState(0);
+    const [anchor,setAnchor]=useState<{x:number;y:number;label:string}|null>(null);
     const appliedMode = useRef(props.mode);
     useEffect(() => {
         if (!host.current)
@@ -73,7 +77,7 @@ export default function TileLayer(props: TileLayerProps) {
         let disposed = false;
         let runtime: ReturnType<typeof createMapRuntime> | undefined;
         try {
-            runtime = createMapRuntime(currentHost, "world", setError);
+            runtime = createMapRuntime(currentHost, "neighbourhood", setError);
         }
         catch (cause) {
             setError(cause instanceof Error ? cause.message : "Map engine failed to initialize");
@@ -155,13 +159,14 @@ export default function TileLayer(props: TileLayerProps) {
                 return;
             }
             viewer.scene.primitives.add(tileset);
-            tileset.imageBasedLighting.imageBasedLightingFactor = new Cesium.Cartesian2(.75, .5);
+            tileset.imageBasedLighting.imageBasedLightingFactor = new Cesium.Cartesian2(1, .35);
             active.current = { viewer, tileset };
             const center = tileset.boundingSphere.center;
             // A fixed illumination direction in the local frame keeps screenshots and material comparisons reproducible.
             const enu = Cesium.Transforms.eastNorthUpToFixedFrame(center);
             const direction = Cesium.Matrix4.multiplyByPointAsVector(enu, new Cesium.Cartesian3(.65, -.5, -1), new Cesium.Cartesian3());
-            viewer.scene.light = new Cesium.DirectionalLight({ direction: Cesium.Cartesian3.normalize(direction, direction), intensity: 2.4 });
+            viewer.scene.light = new Cesium.DirectionalLight({ direction: Cesium.Cartesian3.normalize(direction, direction), intensity: 1.2 });
+            viewer.scene.shadowMap.maximumDistance=Math.max(250,tileset.boundingSphere.radius*3.5);
             runtime!.onCleanup(tileset.tileLoad.addEventListener(tile => loaded.add(tile)));
             runtime!.onCleanup(tileset.tileUnload.addEventListener(tile => loaded.delete(tile)));
             runtime!.onCleanup(tileset.tileFailed.addEventListener(failure => {
@@ -173,7 +178,7 @@ export default function TileLayer(props: TileLayerProps) {
             if (saved)
                 viewer.camera.setView({ destination: Cesium.Cartesian3.fromRadians(saved.longitude, saved.latitude, saved.height), orientation: saved });
             else
-                viewer.camera.viewBoundingSphere(tileset.boundingSphere, new Cesium.HeadingPitchRange(Cesium.Math.toRadians(-22), latest.current.mode === "2d" ? -Math.PI / 2 : Cesium.Math.toRadians(-48), tileset.boundingSphere.radius * 2.55));
+                viewer.camera.viewBoundingSphere(tileset.boundingSphere, new Cesium.HeadingPitchRange(Cesium.Math.toRadians(-25), latest.current.mode === "2d" ? -Math.PI / 2 : Cesium.Math.toRadians(-48), tileset.boundingSphere.radius * 2.05));
             viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
             setReady(true);
             viewer.scene.requestRender();
@@ -200,12 +205,17 @@ export default function TileLayer(props: TileLayerProps) {
         const show = props.inspection?.parentId ? `(${kindVisibility}) && \${entityId} !== ${safeExpression(props.inspection.parentId)}` : kindVisibility;
         tileset.style = new Cesium.Cesium3DTileStyle({
             show,
-            color: selected ? { conditions: [[`\${entityId} === ${safeExpression(selected)}`, "color('#df9d89')"], ["true", "color('white')"]] } : "color('white')",
+            color: selected ? { conditions: [[`\${entityId} === ${safeExpression(selected)}`, "color('#b7d1ba')"], ["true", "color('white')"]] } : "color('white')",
         });
-        tileset.colorBlendMode = Cesium.Cesium3DTileColorBlendMode.MIX;
-        tileset.colorBlendAmount = .42;
+        tileset.colorBlendMode = Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT;
         viewer.scene.requestRender();
     }, [ready, props.selection?.entityId, props.visibleKinds, props.inspection?.parentId]);
+    useEffect(()=>{
+        const state=active.current;if(!state||!ready)return;
+        state.viewer.scene.shadowMap.enabled=props.shadows!==false;
+        state.tileset.shadows=props.shadows===false?Cesium.ShadowMode.DISABLED:Cesium.ShadowMode.ENABLED;
+        state.viewer.scene.requestRender();
+    },[ready,props.shadows]);
     useEffect(() => {
         const state = active.current;
         if (!state || !ready)
@@ -237,12 +247,16 @@ export default function TileLayer(props: TileLayerProps) {
             case "north":
                 viewer.camera.setView({ orientation: { heading: 0, pitch, roll: 0 } });
                 break;
+            case "reverse":
+                viewer.camera.viewBoundingSphere(tileset.boundingSphere,new Cesium.HeadingPitchRange(viewer.camera.heading+Math.PI,pitch,tileset.boundingSphere.radius*1.8));
+                break;
             case "focus":
                 if (command.target)
-                    viewer.camera.lookAt(new Cesium.Cartesian3(...command.target), new Cesium.HeadingPitchRange(viewer.camera.heading, pitch, 90));
+                    viewer.camera.lookAt(new Cesium.Cartesian3(...command.target), new Cesium.HeadingPitchRange(viewer.camera.heading, pitch, Math.max(28,Math.min(600,(command.targetRadius??25)*3.6))));
                 break;
             default:
-                viewer.camera.viewBoundingSphere(tileset.boundingSphere, new Cesium.HeadingPitchRange(Cesium.Math.toRadians(-22), pitch, tileset.boundingSphere.radius * (command.action === "fit" ? 2.55 : 1.18)));
+                // A zero range lets Cesium fit the sphere to the actual aspect ratio.
+                viewer.camera.viewBoundingSphere(tileset.boundingSphere, new Cesium.HeadingPitchRange(Cesium.Math.toRadians(-25), pitch, command.action === "fit" ? 0 : tileset.boundingSphere.radius*1.18));
         }
         viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
         viewer.scene.requestRender();
@@ -273,8 +287,32 @@ export default function TileLayer(props: TileLayerProps) {
             viewer.scene.requestRender();
         } };
     }, [ready, props.inspection]);
+    useEffect(()=>{
+        const state=active.current;if(!state||!ready||!props.outline){setAnchor(null);return;}
+        const {viewer}=state,{representation:rep,frame,label}=props.outline;
+        if(!rep.vertical)return;
+        const polygons=rep.geometry.type==="Polygon"?[rep.geometry.coordinates]:rep.geometry.type==="MultiPolygon"?rep.geometry.coordinates:[];
+        const entities:Cesium.Entity[]=[],matrix=enuToEcef(frame),top=rep.vertical.upper+.09;
+        for(const polygon of polygons)for(const ring of polygon)entities.push(viewer.entities.add({
+            polyline:{positions:ring.map(([x,y])=>new Cesium.Cartesian3(...transformPoint(matrix,[x,y,top]))),width:2.5,material:Cesium.Color.fromCssColorString("#386a55"),arcType:Cesium.ArcType.NONE},
+            properties:{entityId:rep.entityId,representationId:rep.id},
+        }));
+        const b=geometryBounds(rep.geometry),point=new Cesium.Cartesian3(...transformPoint(matrix,[(b[0]+b[2])/2,(b[1]+b[3])/2,top]));
+        // Request-render mode may produce only one frame after a camera command.
+        // A time throttle can skip that frame and leave the label at its old pixel.
+        const update=()=>{
+            if(viewer.isDestroyed())return;
+            const screen=Cesium.SceneTransforms.worldToWindowCoordinates(viewer.scene,point);
+            const visible=screen&&screen.x>0&&screen.y>55&&screen.x<viewer.canvas.clientWidth&&screen.y<viewer.canvas.clientHeight-40;
+            const next=visible?{x:screen.x,y:screen.y,label}:null;
+            setAnchor(previous=>previous&&next&&previous.label===next.label&&Math.abs(previous.x-next.x)<.1&&Math.abs(previous.y-next.y)<.1?previous:next);
+        };
+        const remove=viewer.scene.postRender.addEventListener(update);viewer.scene.requestRender();
+        return ()=>{remove();if(!viewer.isDestroyed()){entities.forEach(e=>viewer.entities.remove(e));viewer.scene.requestRender();}setAnchor(null);};
+    },[ready,props.outline]);
     return <div className="spatial-viewport" data-spatial-viewport>
     <div ref={host} className="spatial-canvas" data-tile-canvas data-tile-source={props.manifestUrl}/>
+    {anchor&&<div className="spatial-selection-label" style={{left:anchor.x,top:anchor.y}} data-selection-screen-x={anchor.x} data-selection-screen-y={anchor.y}><span/>{anchor.label}</div>}
     {!ready && !error && <div className="spatial-loading" role="status">Preparing the shared map…</div>}
     {error && <div className="spatial-error" role="alert"><strong>Map needs attention</strong><span>{error}</span><button type="button" onClick={() => setRetry(n => n + 1)}>Reload map</button></div>}
   </div>;

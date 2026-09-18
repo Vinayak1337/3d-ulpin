@@ -4,14 +4,19 @@ export interface RenderInput {
     entity: SpatialEntity;
     representation: SpatialRepresentation;
 }
-export function buildMeshes(inputs: readonly RenderInput[], detail: boolean): Map<number, MeshData> {
+export function buildMeshes(inputs: readonly RenderInput[], detail: boolean,synthetic=false): Map<number, MeshData> {
     const builders = new Map<number, MeshBuilder>();
     const material = (m: number) => { let b = builders.get(m); if (!b) {
         b = new MeshBuilder();
         builders.set(m, b);
     } return b; };
+    const roadBounds=inputs.filter(i=>i.entity.kind==="road"&&i.representation.role==="road_surface"&&i.representation.geometry.type==="Polygon").map(i=>geometryBounds(i.representation.geometry));
     inputs.forEach(({ entity: e, representation: r }, feature) => {
         const seed = appearanceSeed(e.id), g = r.geometry, lower = r.vertical?.lower ?? 0, upper = r.vertical?.upper ?? lower;
+        if(g.type==="LineString"&&r.role==="display_only"){
+            material(e.kind==="utility"?15:7).stroke(g.coordinates,lower,.3,feature);
+            return;
+        }
         if (e.kind === "vegetation" && g.type === "Point") {
             const [x, y] = g.coordinates, h = upper - lower;
             material(13).box(x - .16, y - .16, lower, .32, .32, h * .64, feature);
@@ -28,14 +33,33 @@ export function buildMeshes(inputs: readonly RenderInput[], detail: boolean): Ma
             return;
         const polygons = g.type === "Polygon" ? [g.coordinates] : g.coordinates;
         if (e.kind !== "building" && e.kind !== "building_part") {
-            const m = e.kind === "road" ? 7 : e.kind === "parcel" ? 8 : e.kind === "public_land" ? 10 : 9;
+            const m = e.kind === "utility" ? 15 : e.kind === "road" || e.kind === "rail" ? 7 : e.kind === "parcel" ? 8 : e.kind === "public_land" ? 10 : 9;
             for (const p of polygons)
                 material(m).prism(p, lower, upper, feature);
+            // Authored markings stay inside supplied synthetic road surfaces.
+            // Gaps at perpendicular intersections prevent stripes crossing junctions.
+            if(synthetic&&e.kind==="road"&&r.role==="road_surface"&&g.type==="Polygon"&&g.coordinates.length===1&&g.coordinates[0].length===5){
+                const ring=g.coordinates[0],b=geometryBounds(g),vertical=b[3]-b[1]>b[2]-b[0],width=vertical?b[2]-b[0]:b[3]-b[1];
+                if(width>=6&&ring.slice(0,-1).every((p,i)=>p[0]===ring[i+1][0]||p[1]===ring[i+1][1])){
+                    const from=vertical?b[1]:b[0],to=vertical?b[3]:b[2],cross=vertical?(b[0]+b[2])/2:(b[1]+b[3])/2;
+                    const cuts=roadBounds.filter(other=>(other[3]-other[1]>other[2]-other[0])!==vertical&&(vertical?other[0]<b[2]&&other[2]>b[0]:other[1]<b[3]&&other[3]>b[1])).map(other=>vertical?[other[1]-.2,other[3]+.2]:[other[0]-.2,other[2]+.2]).sort((a,b)=>a[0]-b[0]);
+                    const segments:number[][]=[];let current=from;
+                    for(const cut of cuts){if(cut[1]<=current||cut[0]>=to)continue;if(cut[0]>current)segments.push([current,Math.min(cut[0],to)]);current=Math.max(current,cut[1]);}
+                    if(current<to)segments.push([current,to]);
+                    const point=(long:number,side:number):XY=>vertical?[side,long]:[long,side];
+                    for(const [start,end] of segments){
+                        for(const side of [cross-width/2+.18,cross+width/2-.18])material(8).stroke([point(start,side),point(end,side)],upper+.025,.28,feature);
+                        for(let offset=Math.ceil(start/8)*8;offset+3.2<end;offset+=8)material(3).stroke([point(offset,cross),point(offset+3.2,cross)],upper+.02,.14,feature);
+                    }
+                }
+            }
             return;
         }
         const color = seed % 3, h = upper - lower;
-        if (h <= 0)
+        if (h <= 0) {
+            for(const p of polygons){material(8).prism(p,lower,lower,feature);for(const ring of p)material(6).stroke(ring,lower+.015,.16,feature);}
             return;
+        }
         for (const p of polygons) {
             const roofDepth=Math.min(.08,h*.1);
             material(color).prism(p, lower, upper - roofDepth, feature);
@@ -60,7 +84,8 @@ export function buildMeshes(inputs: readonly RenderInput[], detail: boolean): Ma
                         bar(0, len, -.04, .09, z + .02, .14, 3);
                         const bays = Math.max(1, Math.floor(len / 3.15)), pitch = len / bays;
                         for (let bay = 0; bay < bays; bay++) {
-                            const start = bay * pitch + pitch * .23, end = (bay + 1) * pitch - pitch * .23, base = z + .72, top = z + Math.min(step - .45, 2.65);
+                            const entry=floor===0&&ringIndex===0&&edge===seed%(ring.length-1)&&bay===Math.floor(bays/2);
+                            const start = bay * pitch + pitch * .23, end = (bay + 1) * pitch - pitch * .23, base = z + (entry?.12:.72), top = z + Math.min(step - .45, 2.65);
                             if (end - start < .35 || top <= base)
                                 continue;
                             bar(start - .09, end + .09, .015, .13, base - .09, .09, 3);
@@ -70,14 +95,17 @@ export function buildMeshes(inputs: readonly RenderInput[], detail: boolean): Ma
                             const v = (s: number, z: number): XYZ => [...point(s, .045), z];
                             material(5).face([v(start, base), v(end, base), v(end, top), v(start, top)], [nx, ny, 0], feature);
                             bar((start + end) / 2 - .025, (start + end) / 2 + .025, .045, .10, base, top - base, 6);
-                            if (floor > 0 && bay % 3 === 1 && ringIndex === 0) {
+                            if (floor > 0 && bay % 3 === 1 && ringIndex === 0&&!r.appearance?.envelopeOnly) {
                                 // Explicit synthetic decorative projection, never the analytical footprint.
                                 bar(start - .24, end + .24, .0, .52, z + .12, .12, 3);
-                                bar(start - .24, end + .24, .44, .50, z + .24, .72, 6);
+                                bar(start - .24, end + .24, .44, .50, z + .86, .07, 6);
+                                bar(start-.24,start-.18,.04,.50,z+.24,.66,6);
+                                bar(end+.18,end+.24,.04,.50,z+.24,.66,6);
+                                bar((start+end)/2-.025,(start+end)/2+.025,.44,.50,z+.24,.66,6);
                             }
                         }
                     }
-                    bar(0, len, -.18, 0, upper - .42, .42, 3);
+                    bar(0, len, -.18, 0, upper, .36, 3);
                 }
             });
             // Roof props are only authored visual treatment and remain inside each polygon's simple rectangular envelope where supported.

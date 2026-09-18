@@ -1,6 +1,6 @@
 "use client";
 import * as Cesium from "cesium";
-export type RuntimeProfile = "world" | "local";
+export type RuntimeProfile = "world" | "local" | "neighbourhood";
 export interface MapRuntime {
     viewer: Cesium.Viewer;
     destroy: () => void;
@@ -20,7 +20,7 @@ export function createMapRuntime(host: HTMLElement, profile: RuntimeProfile, onE
     }).setBaseUrl("/cesium/");
     const viewer = new Cesium.Viewer(host, {
         animation: false, timeline: false, baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false, navigationHelpButton: false, fullscreenButton: false, infoBox: false, selectionIndicator: false,
-        ...(profile === "local" ? { globe: false as const } : {}), baseLayer: false, skyBox: false, skyAtmosphere: false, scene3DOnly: true, requestRenderMode: true, maximumRenderTimeChange: Infinity,
+        ...(profile !== "world" ? { globe: false as const } : {}), baseLayer: false, skyBox: false, skyAtmosphere: false, scene3DOnly: true, requestRenderMode: true, maximumRenderTimeChange: Infinity,
         shadows: true, contextOptions: { webgl: { alpha: profile === "local", antialias: true } },
     });
     const cleanups: Array<() => void> = [];
@@ -36,7 +36,7 @@ export function createMapRuntime(host: HTMLElement, profile: RuntimeProfile, onE
     owners.set(host, runtime);
     host.dataset.mapRuntimeId = String(++serial);
     try {
-        viewer.scene.backgroundColor = Cesium.Color.fromCssColorString("#eceee7");
+        viewer.scene.backgroundColor = Cesium.Color.fromCssColorString("#eef0e9");
         if (viewer.scene.globe) {
             viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString("#e5e6dd");
             viewer.scene.globe.enableLighting = false;
@@ -49,8 +49,18 @@ export function createMapRuntime(host: HTMLElement, profile: RuntimeProfile, onE
         if (viewer.scene.moon)
             viewer.scene.moon.show = false;
         viewer.scene.shadowMap.softShadows = true;
-        viewer.scene.shadowMap.size = 2048;
-        viewer.scene.shadowMap.darkness = 0.62;
+        viewer.scene.shadowMap.size = profile==="neighbourhood"?4096:2048;
+        viewer.scene.shadowMap.darkness = profile==="neighbourhood"?.64:.38;
+        viewer.scene.shadowMap.normalOffset = true;
+        if(profile==="neighbourhood"){
+            // Isolated adapter qualified against the pinned Cesium engine 26.3.0:
+            // its globe-oriented default bias stripes these metre-scale surfaces.
+            const map=viewer.scene.shadowMap as unknown as {_primitiveBias?:{normalOffsetScale:number;depthBias:number};dirty?:boolean};
+            if(map._primitiveBias&&typeof map._primitiveBias.normalOffsetScale==="number"&&typeof map._primitiveBias.depthBias==="number"){
+                map._primitiveBias.normalOffsetScale=.8;map._primitiveBias.depthBias=.00012;map.dirty=true;
+                host.dataset.shadowProfile="metre-neighbourhood-bias-v1";
+            }
+        }
         viewer.scene.shadowMap.maximumDistance = profile === "local" ? 150 : 1600;
         // Scene-wide neutral diffuse lighting is independent of the current date,
         // geographic daylight, or a missing skybox. Tile layers share this policy.
@@ -58,7 +68,7 @@ export function createMapRuntime(host: HTMLElement, profile: RuntimeProfile, onE
             if (!(primitive instanceof Cesium.Cesium3DTileset)) return;
             primitive.environmentMapManager.enabled = false;
             primitive.imageBasedLighting.sphericalHarmonicCoefficients = [
-                new Cesium.Cartesian3(.68, .70, .72),
+                new Cesium.Cartesian3(1.05, 1.035, 1.0),
                 ...Array.from({ length: 8 }, () => new Cesium.Cartesian3(0, 0, 0)),
             ];
         }));

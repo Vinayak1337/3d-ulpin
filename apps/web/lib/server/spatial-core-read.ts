@@ -37,7 +37,10 @@ export async function readLegacySpatialSlice(areaId:string,world:WorldState,conn
       FROM map_areas WHERE id=$1 AND archived_at IS NULL`,[areaId],1);
     const area=areaRows[0];if(!area)throw new LegacySpatialReadError(404,"AREA_NOT_FOUND","Area was not found");
     const featureRows=await bounded<LegacyReadFeature>(`SELECT f.id,f.revision,f.area_id AS "ownerAreaId",f.record_id AS "recordId",
-      a.reference AS "ownerReference",f.body-'properties'-'sourceGeometry' AS body,
+      a.reference AS "ownerReference",(f.body-'properties'-'sourceGeometry') || jsonb_build_object('properties',jsonb_strip_nulls(jsonb_build_object(
+        'attribution',CASE WHEN jsonb_typeof(f.body->'properties'->'attribution')='string' THEN left(f.body->'properties'->>'attribution',2048) END,
+        'license',CASE WHEN jsonb_typeof(f.body->'properties'->'license')='string' THEN left(f.body->'properties'->>'license',256) END
+      ))) AS body,
       ARRAY(SELECT DISTINCT g.area_id::text FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id
         WHERE m.feature_id=f.id ORDER BY g.area_id::text) AS "memberAreaIds"
       FROM physical_features f JOIN map_areas a ON a.id=f.area_id

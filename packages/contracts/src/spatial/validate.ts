@@ -144,6 +144,7 @@ export function validateSpatialSnapshot(value: unknown): asserts value is Spatia
                 requireValue(value.worldState === "synthetic", "schematic architecture requires an explicit synthetic world");
             if (r.appearance.storeys !== undefined)
                 requireValue(Number.isSafeInteger(r.appearance.storeys) && (r.appearance.storeys as number) > 0 && (r.appearance.storeys as number) <= 100, "invalid storey count");
+            if(r.appearance.envelopeOnly!==undefined)requireValue(typeof r.appearance.envelopeOnly==="boolean","invalid envelope appearance flag");
         }
     }
     for (const relation of value.relations as Record<string, unknown>[]) {

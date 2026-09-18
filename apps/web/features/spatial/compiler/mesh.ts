@@ -47,6 +47,14 @@ export class MeshBuilder {
         } });
     }
     box(x: number, y: number, z: number, w: number, d: number, h: number, feature: number) { const ring: XY[] = [[x, y], [x + w, y], [x + w, y + d], [x, y + d], [x, y]]; this.prism([ring], z, z + h, feature); }
+    /** Diagram stroke only. Its width must not be used as a physical measurement. */
+    stroke(points:readonly XY[],z:number,width:number,feature:number) {
+        for(let i=1;i<points.length;i++){
+            const a=points[i-1],b=points[i],length=Math.hypot(b[0]-a[0],b[1]-a[1]);if(length<1e-6)continue;
+            const nx=-(b[1]-a[1])/length*width/2,ny=(b[0]-a[0])/length*width/2;
+            this.face([[a[0]+nx,a[1]+ny,z],[b[0]+nx,b[1]+ny,z],[b[0]-nx,b[1]-ny,z],[a[0]-nx,a[1]-ny,z]],[0,0,1],feature);
+        }
+    }
     ellipsoid(center: XYZ, radius: XYZ, feature: number, segments = 9, rings = 6) {
         const vertex = (i: number, j: number): XYZ => { const a = i * 2 * Math.PI / segments, p = -Math.PI / 2 + j * Math.PI / rings; return [center[0] + radius[0] * Math.cos(p) * Math.cos(a), center[1] + radius[1] * Math.cos(p) * Math.sin(a), center[2] + radius[2] * Math.sin(p)]; };
         for (let j = 0; j < rings; j++)
