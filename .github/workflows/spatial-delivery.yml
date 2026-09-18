@@ -26,6 +26,7 @@ jobs:
           assert decoder.eof and not decoder.unused_data, 'Invalid source package size'
           package = json.loads(raw)
           assert package['version'] == 1
+          empty_sources = {'apps/web/app/api/v1/spatial/areas/[areaId]/route.ts', 'apps/web/app/api/v1/spatial/calibration/[kind]/[...asset]/route.ts'}
           def checked(name):
               path = pathlib.PurePosixPath(name)
               assert not path.is_absolute() and '..' not in path.parts
@@ -34,15 +35,21 @@ jobs:
               target = root / path
               assert target.resolve().is_relative_to(root) and not target.is_symlink()
               return target
+          def original_bytes(name):
+              path = root / name
+              if name in empty_sources:
+                  assert not path.exists(), f'Unexpected new-route collision: {name}'
+                  return b''
+              return path.read_bytes()
           for name, expected in package['baseHashes'].items():
               path = checked(name)
               if expected is None:
                   assert not path.exists(), f'Unexpected pre-existing file: {name}'
               else:
-                  assert hashlib.sha256(path.read_bytes()).hexdigest() == expected, f'Concurrent source change: {name}'
+                  assert hashlib.sha256(original_bytes(name)).hexdigest() == expected, f'Concurrent source change: {name}'
           outputs = dict(package['files'])
           for copy in package['copies']:
-              original = (root / copy['source']).read_bytes()
+              original = original_bytes(copy['source'])
               assert hashlib.sha256(original).hexdigest() == copy['sourceSha256'], f'Changed copy source: {copy["source"]}'
               text = original.decode('utf-8')
               outputs[copy['path']] = ''.join(text[part[0]:part[1]] if isinstance(part, list) else part for part in copy['parts'])
