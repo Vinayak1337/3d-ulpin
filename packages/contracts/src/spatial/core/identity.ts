@@ -24,6 +24,7 @@ export function validateCoreIdentityGraph(input: unknown): CoreIdentityGraph {
     if(entity.identifiers.some(i=>i.scheme==="official_ulpin")&&entity.kind!=="parcel")coreFail("IDENTIFIER_SCOPE", "A reported parcel identifier cannot become a building identifier");
   }
   const replacementEdges: [string,string][]=[];
+  const allocationChanges=new Map<string,string>();
   for(const entity of graph.entities)if(entity.lifecycle.state==="retired") {
     const source=coreRefKey(entity.ref), targets=entity.lifecycle.replacedBy.map(coreRefKey);
     unique(targets,"DUPLICATE_SUCCESSOR");
@@ -32,6 +33,8 @@ export function validateCoreIdentityGraph(input: unknown): CoreIdentityGraph {
       const target=byRef.get(key);
       if(!target)coreFail("MISSING_SUCCESSOR", "A retired identity's successor is missing");
       if(key===source||target.kind!==entity.kind||target.ref.namespace!==entity.ref.namespace)coreFail("INVALID_SUCCESSOR", "Identity successors must be distinct objects of the same kind and namespace");
+      if(allocationChanges.has(key)&&allocationChanges.get(key)!==entity.lifecycle.changeId)coreFail("SUCCESSOR_ALLOCATION", "A successor cannot be allocated by unrelated identity changes");
+      allocationChanges.set(key,entity.lifecycle.changeId);
       replacementEdges.push([source,key]);
     }
   }
@@ -47,6 +50,7 @@ export function validateCoreIdentityGraph(input: unknown): CoreIdentityGraph {
   }
   unique(graph.relations.map(r=>r.id),"DUPLICATE_RELATION_ID");
   const edgeKeys: string[]=[], groups=new Map<string,[string,string][]>();
+  const lineageKeys=new Set<string>();
   for(const relation of graph.relations) {
     const fromKey=coreRefKey(relation.from), toKey=coreRefKey(relation.to), from=byRef.get(fromKey), to=byRef.get(toKey);
     if(!from||!to)coreFail("MISSING_ENDPOINT", "A relationship endpoint is missing from the identity graph");
@@ -57,6 +61,7 @@ export function validateCoreIdentityGraph(input: unknown): CoreIdentityGraph {
     if(relation.kind==="split_from"||relation.kind==="merged_from") {
       if(from.ref.namespace!==to.ref.namespace)coreFail("LINEAGE_NAMESPACE", "Identity lineage cannot silently change namespace");
       if(to.lifecycle.state!=="retired"||to.lifecycle.changeId!==relation.changeId||to.lifecycle.mode!==(relation.kind==="split_from"?"split":"merge")||!to.lifecycle.replacedBy.some(ref=>coreRefKey(ref)===fromKey))coreFail("LINEAGE_CHANGE", "Lineage must agree with the recorded retirement and successors");
+      lineageKeys.add(JSON.stringify([relation.kind,fromKey,toKey,relation.changeId]));
     } else if(relation.changeId!==undefined)coreFail("LINEAGE_CHANGE", "Only lineage relationships carry an identity change ID");
     const pair=policy.symmetric?[fromKey,toKey].sort():[fromKey,toKey];
     edgeKeys.push(JSON.stringify([relation.kind,...pair]));
@@ -64,6 +69,10 @@ export function validateCoreIdentityGraph(input: unknown): CoreIdentityGraph {
   }
   unique(edgeKeys,"DUPLICATE_RELATION");
   for(const [group,edges] of groups)acyclic(edges,group);
+  for(const entity of graph.entities)if(entity.lifecycle.state==="retired")for(const successor of entity.lifecycle.replacedBy) {
+    const key=JSON.stringify([entity.lifecycle.mode==="split"?"split_from":"merged_from",coreRefKey(successor),coreRefKey(entity.ref),entity.lifecycle.changeId]);
+    if(!lineageKeys.has(key))coreFail("LINEAGE_MISSING", "Every recorded successor requires its explicit lineage relationship");
+  }
   return graph;
 }
 

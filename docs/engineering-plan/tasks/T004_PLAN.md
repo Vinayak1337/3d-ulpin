@@ -76,3 +76,11 @@ Core schema and identity operations pass their tests, corpus parity and generate
 drift checks; existing spatial/UI tests and type checking remain intact. The code
 has no storage side effects. Rollback removes only the new modules/dependency and
 their tests. T005 may then attach reusable sources without changing identity.
+
+## Self-review additions
+
+The complete graph must preserve both directions of the explicit retirement and
+lineage representation. A successor cannot be allocated by two unrelated change
+IDs. Add independent negative fixtures for missing lineage and competing successor
+allocation before tightening both runtime validators; keep the command writer's
+existing successful split/merge cases unchanged.

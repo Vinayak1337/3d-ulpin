@@ -59,6 +59,11 @@ export function identityCases():IdentityConformanceCase[] {
   change("single-child-split","SUCCESSOR_COUNT",g=>g.entities[0].lifecycle.replacedBy.pop(),splitFixture);
   change("successor-kind-change","INVALID_SUCCESSOR",g=>g.entities[1].kind="building",splitFixture);
   change("lineage-change-mismatch","LINEAGE_CHANGE",g=>g.relations[0].changeId="wrong",splitFixture);
+  change("missing-successor-lineage","LINEAGE_MISSING",g=>g.relations.pop(),splitFixture);
+  change("successor-allocated-by-two-changes","SUCCESSOR_ALLOCATION",g=>{
+    g.entities.push({...entity("P4","parcel"),revision:2,lifecycle:{state:"retired",mode:"split",changeId:"split-other",replacedBy:[ref("P1"),ref("P5")],reason:"Different original cannot reuse P1"}},entity("P5","parcel"));
+    g.relations.push({...relation("other-1","split_from",ref("P1"),ref("P4")),changeId:"split-other"},{...relation("other-2","split_from",ref("P5"),ref("P4")),changeId:"split-other"});
+  },splitFixture);
   change("one-source-merge","RETIREMENT_GROUP",g=>{g.entities.splice(1,1);g.relations.splice(1,1);},mergeFixture);
   change("multiple-target-merge","SUCCESSOR_COUNT",g=>g.entities[0].lifecycle.replacedBy.push(ref("P2")),mergeFixture);
   change("reserved-prototype-key","UNSAFE_KEY",g=>Object.defineProperty(g,"__proto__",{value:{polluted:true},enumerable:true}));
