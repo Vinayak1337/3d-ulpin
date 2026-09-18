@@ -51,7 +51,9 @@
     "test:complete:browser": "tsx scripts/reference/complete-browser.ts",
     "test:register-scope": "tsx --test tests/register-scope.test.ts",
     "test:register-exports": "tsx scripts/reference/register-export-verify.ts",
-    "test:register-controls": "tsx scripts/reference/register-controls-browser.ts"
+    "test:register-controls": "tsx scripts/reference/register-controls-browser.ts",
+    "test:spatial": "tsx --test tests/spatial-core.test.ts",
+    "test:spatial:browser": "node scripts/spatial/browser.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",

@@ -3,86 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 export { registryRequest as request } from "@/lib/registry-client";
 
-/** A response may only populate the route that requested it. Refresh retains the current snapshot. */
-export function useResource<T>(path: string | null) {
-  const [state, setState] = useState<{
-    path: string | null;
-    data: T | null;
-    loading: boolean;
-    error: string;
-  }>({ path, data: null, loading: !!path, error: "" });
-  const controller = useRef<AbortController | null>(null);
-  const mounted = useRef(false);
-  const latestPath = useRef(path);
-  latestPath.current = path;
-  const reload = useCallback(async () => {
-    if (!mounted.current || latestPath.current !== path) return;
-    controller.current?.abort();
-    if (!path) {
-      setState({ path, data: null, loading: false, error: "" });
-      return;
-    }
-    const pending = new AbortController();
-    controller.current = pending;
-    setState((old) => ({
-      path,
-      data: old.path === path ? old.data : null,
-      loading: true,
-      error: "",
-    }));
-    try {
-      const response = await fetch(`/api/v1${path}`, {
-        cache: "no-store",
-        signal: pending.signal,
-      });
-      const body = await response.json();
-      if (!response.ok)
-        throw new Error(
-          body.error?.message ||
-            body.detail ||
-            `Request failed (${response.status})`,
-        );
-      if (!pending.signal.aborted && latestPath.current === path)
-        setState({ path, data: body, loading: false, error: "" });
-    } catch (cause) {
-      if (!pending.signal.aborted && latestPath.current === path)
-        setState((old) => ({
-          ...old,
-          loading: false,
-          error:
-            cause instanceof Error
-              ? cause.message
-              : "Unable to load this record.",
-        }));
-    }
-  }, [path]);
-  useEffect(() => {
-    mounted.current = true;
-    void reload();
-    return () => {
-      mounted.current = false;
-      controller.current?.abort();
-    };
-  }, [reload]);
-  const setData = useCallback(
-    (data: T | null) => {
-      if (!mounted.current || latestPath.current !== path) return;
-      // A mutation response is newer than any already-running snapshot request.
-      controller.current?.abort();
-      controller.current = null;
-      setState({ path, data, loading: false, error: "" });
-    },
-    [path],
-  );
-  return {
-    data: state.path === path ? state.data : null,
-    loading: state.path !== path ? !!path : state.loading,
-    error: state.path === path ? state.error : "",
-    reload,
-    setData,
-  };
-}
+export { useSharedResource as useResource } from "@/features/spatial/data/useResource";
+import { useSpatialServices } from "@/features/spatial/data/Provider";
+
 export function useMutation() {
+  const { resources } = useSpatialServices();
   const lock = useRef(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -94,7 +19,9 @@ export function useMutation() {
     setBusy(true);
     setError("");
     try {
-      return await operation();
+      const result = await operation();
+      resources.invalidate();
+      return result;
     } catch (cause) {
       setError(
         cause instanceof Error

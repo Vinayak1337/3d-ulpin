@@ -1,5 +1,8 @@
 # 3D ULPIN hackathon implementation
 
+Current branch implementation scope (18 September 2026): build the authorized reusable renderer-first and unified-schema foundation on a separate branch. All pages delegate to the shared MapViewport/runtime; source-specific adapters may remain during compatibility migration. Use one layout-scoped resource cache and view-session service rather than page-specific copies. Canonical data remains in existing services. Establish and test the shared contract, compiler and streamed calibration maps before claiming visual acceptance or expanding all later UIs. See docs/SHARED_MAP_IMPLEMENTATION.md. Earlier dated presentation scopes below are historical and do not override this instruction.
+
+
 Current scope (15 September 2026): replace the previous presentation with the reference-led officer interface on unversioned Block Map, Property Register and Plan Workspace routes. Match the supplied reference header and panels. Main navigation always opens directories; contextual property actions preserve canonical identity and the surrounding block. Build a clearly labeled persisted fictional demonstration neighborhood through real ingestion, processing and review, alongside separately selectable real datasets. Extract required capabilities before deleting obsolete screens; retain historical URL resolution, all originals and revision history. Use reusable feature modules, focused hooks and transient Zustand state. No version branding in the interface. The T00–T10 evidence and unresolved real Indian data/free-route Nous gates remain historical acceptance obligations.
 
 
