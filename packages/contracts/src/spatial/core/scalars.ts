@@ -6,6 +6,7 @@ export const CoreIdSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255
 export const CoreOperationIdSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}(?![\s\S])/);
 export const CoreNamespaceSchema = z.string().regex(/^[a-z][a-z0-9_.-]{0,63}(?![\s\S])/);
 export const CoreRevisionSchema = z.number().int().min(0).max(CORE_SAFE_INTEGER);
+export const CoreSafeIntegerSchema = CoreRevisionSchema;
 export const CorePositiveRevisionSchema = z.number().int().min(1).max(CORE_SAFE_INTEGER);
 export const CoreFiniteSchema = z.number();
 export const CoreSha256Schema = z.string().regex(/^[a-f0-9]{64}(?![\s\S])/);

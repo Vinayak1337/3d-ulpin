@@ -6,6 +6,7 @@ root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(root / "services/geo"))
 from geo.core_contract import CoreContractError, assert_core_json
 from geo.core_identity import validate_core_identity_graph
+from geo.core_sources import validate_core_source_catalog
 
 
 def run():
@@ -39,6 +40,19 @@ def run():
     else:
         raise AssertionError("Cycle accepted")
     print(json.dumps({"kind":"core-identity-semantic-parity","cases":len(cases),"result":"PASS","sharedSchemaAndPolicy":True}))
+    source_cases = json.loads((root / "fixtures/contracts/source.cases.json").read_text(encoding="utf-8"))["cases"]
+    for case in source_cases:
+        before = json.dumps(case["catalog"], sort_keys=True)
+        try:
+            validate_core_source_catalog(case["catalog"], case["identity"])
+            actual = None
+        except CoreContractError as error:
+            actual = error.code
+        expected = None if case["valid"] else case["code"]
+        if actual != expected:
+            raise AssertionError(f"Source semantic mismatch: {case['id']}; expected {expected}, got {actual}")
+        assert json.dumps(case["catalog"], sort_keys=True) == before
+    print(json.dumps({"kind":"core-source-semantic-parity","cases":len(source_cases),"result":"PASS","sharedSchemaAndPolicy":True}))
 
 
 if __name__ == "__main__":
