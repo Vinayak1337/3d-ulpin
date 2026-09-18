@@ -19,7 +19,7 @@ function validateLocators(locators:readonly CoreLocator[]) {
     if(region&&(region.x+region.width>1+CORE_EVIDENCE_POLICY.normalizedTolerance||region.y+region.height>1+CORE_EVIDENCE_POLICY.normalizedTolerance))coreFail("LOCATOR_REGION","Source region lies outside the original image or page");
   }
 }
-const precise=(locator:CoreLocator)=>CORE_EVIDENCE_POLICY.preciseLocators.some(kind=>kind===locator.kind)&&(locator.kind!=="json_pointer"||locator.pointer!=="");
+export const isPreciseCoreLocator=(locator:CoreLocator)=>CORE_EVIDENCE_POLICY.preciseLocators.some(kind=>kind===locator.kind)&&(locator.kind!=="json_pointer"||locator.pointer!=="");
 
 export function validateCoreSourceCatalog(input:unknown,identityInput:unknown):CoreSourceCatalog {
   const catalog=parseCore(CoreSourceCatalogSchema,input),identity=validateCoreIdentityGraph(identityInput);
@@ -69,7 +69,7 @@ export function validateCoreSourceCatalog(input:unknown,identityInput:unknown):C
     const isCurrent=links.get(coreRefKey(link.ref))===link;
     if(!entities.has(coreRefKey(link.target)))coreFail("MISSING_TARGET","Evidence target is missing from the identity graph");
     const part=requireCoreRevision(parts,link.part,"evidence part");
-    if(CORE_EVIDENCE_POLICY.exactPurposes.some(p=>p===link.purpose)&&!part.locators.some(precise))coreFail("LOCATOR_NOT_QUALIFIED","This locator does not identify a qualified geometry or level source part");
+    if(CORE_EVIDENCE_POLICY.exactPurposes.some(p=>p===link.purpose)&&!part.locators.some(isPreciseCoreLocator))coreFail("LOCATOR_NOT_QUALIFIED","This locator does not identify a qualified geometry or level source part");
     if(link.inheritance.kind==="inherited") {
       if(!CORE_EVIDENCE_POLICY.inheritedPurposes.some(p=>p===link.purpose))coreFail("INHERITANCE_PURPOSE","Inherited documents do not establish exact unit geometry or levels");
       const pinned=link.inheritance.parentLink;

@@ -6,3 +6,5 @@ export * from "./source-schema";
 export * from "./sources";
 export * from "./frame-schema";
 export * from "./frames";
+export * from "./geometry-schema";
+export * from "./geometry";

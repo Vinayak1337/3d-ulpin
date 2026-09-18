@@ -8,6 +8,11 @@ def unique(values, kind):
         fail("DUPLICATE_REFERENCE", "Duplicate " + kind + " association")
 
 
+def is_precise_core_locator(locator):
+    policy = bundled_schema("source-catalog")[0]["x-ulpin-evidence-policy"]
+    return locator["kind"] in policy["preciseLocators"] and (locator["kind"] != "json_pointer" or locator["pointer"] != "")
+
+
 def validate_core_source_catalog(value, identity_value):
     catalog = parse_core("source-catalog", value)
     identity = validate_core_identity_graph(identity_value)
@@ -92,7 +97,7 @@ def validate_core_source_catalog(value, identity_value):
         if ref_key(link["target"]) not in entities:
             fail("MISSING_TARGET", "Evidence target is missing")
         part = require_revision(parts, link["part"], "evidence part")
-        precise = any(locator["kind"] in policy["preciseLocators"] and (locator["kind"] != "json_pointer" or locator["pointer"] != "") for locator in part["locators"])
+        precise = any(is_precise_core_locator(locator) for locator in part["locators"])
         if link["purpose"] in policy["exactPurposes"] and not precise:
             fail("LOCATOR_NOT_QUALIFIED", "Locator does not identify a qualified geometry/level part")
         inherited = link["inheritance"]
