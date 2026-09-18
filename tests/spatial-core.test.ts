@@ -202,7 +202,8 @@ test("legacy adapter filters worlds and never guesses unknown geometry meaning",
 });
 test("only the shared runtime constructs Cesium viewers; compatibility components delegate",async()=>{
   const root=path.resolve("apps/web");const found:string[]=[];
-  async function scan(dir:string){for(const item of await readdir(dir,{withFileTypes:true})){if(["node_modules",".next","public"].includes(item.name))continue;const file=path.join(dir,item.name);if(item.isDirectory())await scan(file);else if(/\.(tsx?|m?js)$/.test(file)&&/new Cesium\.Viewer\s*\(/.test(await readFile(file,"utf8")))found.push(path.relative(root,file));}}
+  // Compare portable repository paths without weakening the single-engine rule.
+  async function scan(dir:string){for(const item of await readdir(dir,{withFileTypes:true})){if(["node_modules",".next","public"].includes(item.name))continue;const file=path.join(dir,item.name);if(item.isDirectory())await scan(file);else if(/\.(tsx?|m?js)$/.test(file)&&/new Cesium\.Viewer\s*\(/.test(await readFile(file,"utf8")))found.push(path.relative(root,file).split(path.sep).join("/"));}}
   await scan(root);assert.deepEqual(found,["features/spatial/engine/runtime.ts"]);
   for(const file of ["AreaViewer.tsx","SpatialViewer.tsx"]){assert.match(await readFile(path.join(root,"components",file),"utf8"),/MapViewport/);}
   assert.match(await readFile(path.join(root,"features/officer/shared/hooks.ts"),"utf8"),/useSharedResource as useResource/);

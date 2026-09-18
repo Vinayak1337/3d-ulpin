@@ -65,6 +65,9 @@ export default function TileLayer(props: TileLayerProps) {
         if (!host.current)
             return;
         const currentHost = host.current;
+        currentHost.dataset.sceneReady = "false";
+        currentHost.dataset.loadedTiles = "0";
+        delete currentHost.dataset.camera;
         setError("");
         setReady(false);
         let disposed = false;
@@ -181,6 +184,7 @@ export default function TileLayer(props: TileLayerProps) {
         return () => {
             retainCamera();
             disposed = true;
+            currentHost.dataset.sceneReady = "false";
             if (active.current?.viewer === viewer)
                 active.current = null;
             runtime?.destroy();
@@ -270,7 +274,7 @@ export default function TileLayer(props: TileLayerProps) {
         } };
     }, [ready, props.inspection]);
     return <div className="spatial-viewport" data-spatial-viewport>
-    <div ref={host} className="spatial-canvas"/>
+    <div ref={host} className="spatial-canvas" data-tile-canvas data-tile-source={props.manifestUrl}/>
     {!ready && !error && <div className="spatial-loading" role="status">Preparing the shared map…</div>}
     {error && <div className="spatial-error" role="alert"><strong>Map needs attention</strong><span>{error}</span><button type="button" onClick={() => setRetry(n => n + 1)}>Reload map</button></div>}
   </div>;
