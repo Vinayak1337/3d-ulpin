@@ -1,0 +1,368 @@
+{
+  "startedAt": "2026-09-18T14:07:59.485Z",
+  "scope": {
+    "id": "t001-35354159342-1",
+    "project": "ulpin-t001-35354159342-1",
+    "database": "ulpin_t001_35354159342_1",
+    "bucket": "ulpin-t001-35354159342-1"
+  },
+  "result": "PASS",
+  "checks": [
+    {
+      "name": "Committed database, original-file and presentation-asset checksums verified",
+      "passed": true,
+      "tables": 44,
+      "objects": 497
+    },
+    {
+      "name": "Actual PostGIS restore and stored original bytes match the committed snapshot",
+      "passed": true
+    },
+    {
+      "name": "Uttam Nagar transfers additively and an identical replay leaves rows and originals unchanged",
+      "passed": true,
+      "insertedRows": 4440,
+      "uploadedObjects": 53,
+      "areas": 6
+    },
+    {
+      "name": "Real API negative/closed-ring regressions preserve every unrelated baseline row, identity and original",
+      "passed": true
+    },
+    {
+      "name": "Actual calibration browser suite passes against the same isolated production server",
+      "passed": true
+    },
+    {
+      "name": "Pinned Python 3.12 geometry/processing tests pass with read-only sources and no network",
+      "passed": true
+    },
+    {
+      "name": "Only this attempt’s newly owned Compose project was removed",
+      "passed": true
+    }
+  ],
+  "commands": [
+    {
+      "name": "source-commit",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 7
+    },
+    {
+      "name": "docker-context",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 1543
+    },
+    {
+      "name": "existing-project",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 64
+    },
+    {
+      "name": "existing-volumes",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 15
+    },
+    {
+      "name": "services-start",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 44979
+    },
+    {
+      "name": "snapshot-restore",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 1028
+    },
+    {
+      "name": "migration",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 571
+    },
+    {
+      "name": "repeat-migration",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 434
+    },
+    {
+      "name": "api-negative",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 10927
+    },
+    {
+      "name": "api-closed-ring",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 1340
+    },
+    {
+      "name": "browser",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 274685
+    },
+    {
+      "name": "python-test-image",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 4604
+    },
+    {
+      "name": "python-tests",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 8086
+    },
+    {
+      "name": "owned-project-cleanup",
+      "exitCode": 0,
+      "timedOut": false,
+      "durationMs": 3347
+    }
+  ],
+  "limitations": [
+    "Committed snapshot and synthetic API cases on isolated hosted services; not the private PC database.",
+    "Browser uses software WebGL; no claim of target-GPU fidelity/performance or physical touch validation.",
+    "The destructive named-demo registry and global-project worker-pause scripts are not run here."
+  ],
+  "sourceCommit": "34e44fcd73c288e964a804bb3d8223a7d8702345",
+  "originalsBefore": {
+    "count": 541,
+    "fingerprint": "a1a71d6c66bdc9723566523f6ffe8d78842525923985639b6b48fdbbe21fc766"
+  },
+  "protectedTables": [
+    {
+      "name": "administrative_relationships",
+      "rows": 0,
+      "fingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "name": "administrative_units",
+      "rows": 3,
+      "fingerprint": "c12ced76f6b56c0f069f6422cc785304b258a3fb61d2727ab9a985004d956a76"
+    },
+    {
+      "name": "area_acquisitions",
+      "rows": 1,
+      "fingerprint": "d05ff05f47b3b8fea5c4f6cd6a1883c57287ab5f820bcd7130aff0b9c414e1ec"
+    },
+    {
+      "name": "area_check_runs",
+      "rows": 30,
+      "fingerprint": "1c4a9657f4ed05bc41baf62fdd1b958c464a50eaae650234c9b71f3be89cd7c5"
+    },
+    {
+      "name": "area_memberships",
+      "rows": 3,
+      "fingerprint": "0775579ea85f6ccb84c938b2a4eee3ca33c73e9850d06ab2ef3fa783e4dbcd7f"
+    },
+    {
+      "name": "block_group_memberships",
+      "rows": 0,
+      "fingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "name": "block_group_revisions",
+      "rows": 0,
+      "fingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "name": "block_groups",
+      "rows": 0,
+      "fingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "name": "building_preparation_revisions",
+      "rows": 34,
+      "fingerprint": "9fffe5b1c485f47c298c623c17f56585b220e9cc624f1608f097638eb04bd081"
+    },
+    {
+      "name": "building_preparations",
+      "rows": 19,
+      "fingerprint": "83afecdff75e202acf7a4476c1538f8abb9be53bc0fcfb5c2f2d87affd38aa14"
+    },
+    {
+      "name": "cases",
+      "rows": 215,
+      "fingerprint": "fcba523557cf7280ebc5ad768010273edf0e87e6c6468249a2b62d4fe3593a9a"
+    },
+    {
+      "name": "events",
+      "rows": 1352,
+      "fingerprint": "ef01d6e2f5887be0809f16d4e4336d2fc184350a03213de89892d41e9fc9219c"
+    },
+    {
+      "name": "external_identifiers",
+      "rows": 633,
+      "fingerprint": "70054506c25e95be6ce1f528aa7d449c4b40871c6cf7867a1f5244d0f437098a"
+    },
+    {
+      "name": "identity_floors",
+      "rows": 281,
+      "fingerprint": "35bfdf00830d022f2fc85dd4299da01c38eb5c53a2b455b7cbb1184f9ec69158"
+    },
+    {
+      "name": "identity_spaces",
+      "rows": 673,
+      "fingerprint": "85548075bb735000a4617ecc416e6eef985e40c7b8377d7d39937a4345b4c628"
+    },
+    {
+      "name": "import_package_revisions",
+      "rows": 1119,
+      "fingerprint": "0da53a1c66b90e9227164a8b239e1dcbac5bd33fb75cb622e2ebe62a42323769"
+    },
+    {
+      "name": "import_packages",
+      "rows": 48,
+      "fingerprint": "f6137e5f496e6cbffe5782b8a3caa0928871ee3960f642b239995d6dd7e33229"
+    },
+    {
+      "name": "jobs",
+      "rows": 578,
+      "fingerprint": "77a73096a8af2a91d209209ec778442e0609fa8206095d3205f9ba0a41cd694a"
+    },
+    {
+      "name": "map_areas",
+      "rows": 13,
+      "fingerprint": "a996793e46fd55701d2d4d86d82f1fcfd8fec116881bf9b9ed0bbbcb68b0b977"
+    },
+    {
+      "name": "officer_ai_derivatives",
+      "rows": 0,
+      "fingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "name": "officer_ai_runs",
+      "rows": 0,
+      "fingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "name": "officer_investigation_revisions",
+      "rows": 24,
+      "fingerprint": "948cafe1425944f140541763533127cb480f1a8caa5dec680017996120a15afd"
+    },
+    {
+      "name": "officer_investigations",
+      "rows": 7,
+      "fingerprint": "2e9b86634ee666c80edfe6dd735d84dd442a771f7e480b481f90b8141e1efa00"
+    },
+    {
+      "name": "operations",
+      "rows": 384,
+      "fingerprint": "982738a76aa389b0dd1e1d061012b4d3af860a8f6fc5c28f59be774abf584d5c"
+    },
+    {
+      "name": "physical_feature_revisions",
+      "rows": 557,
+      "fingerprint": "cd823724d79fb21b75998c69a2487b6bc5fa2ec64d39216d6f65bdd79e9cfbb5"
+    },
+    {
+      "name": "physical_features",
+      "rows": 557,
+      "fingerprint": "de62022fca749c23f002631a981f6fe3e797b298a5594aa4ee8ba3f7319a0869"
+    },
+    {
+      "name": "property_association_revisions",
+      "rows": 15,
+      "fingerprint": "c47e545dee4e01a74f34dabbc094f535d57fd4f3f4afd45c2c498d2bcd1acbbd"
+    },
+    {
+      "name": "property_associations",
+      "rows": 15,
+      "fingerprint": "44afbf4ddf1e7e74d20ddf49ca2727805be81a93b03062d41d656e561a6add58"
+    },
+    {
+      "name": "registry_aliases",
+      "rows": 253,
+      "fingerprint": "3ce8238b8a543a38aed9e05c2cf9b37317c0981ca4d164a5e99ba8131e151432"
+    },
+    {
+      "name": "registry_case_feature_mappings",
+      "rows": 210,
+      "fingerprint": "1523786e99f5f2024df873b1ce2edd72d0ec3084408b0c0797e3e96176fa6662"
+    },
+    {
+      "name": "registry_case_import_operations",
+      "rows": 25,
+      "fingerprint": "d2cba9e4df6f5b2ce110e0480a13d815c294d3834120b982832cd3fe9aa23770"
+    },
+    {
+      "name": "registry_drafts",
+      "rows": 103,
+      "fingerprint": "5e73747c483d029417a847e6003d90bd389d920aa59099e20b13701024ba9e7a"
+    },
+    {
+      "name": "registry_links",
+      "rows": 382,
+      "fingerprint": "68d234823d74f21df802cad32d7be7943c53abda1d77f138754b942b7693493f"
+    },
+    {
+      "name": "registry_records",
+      "rows": 627,
+      "fingerprint": "72e10da46603b867e9a0f9badf86342b323ee4feb1d817c42299c60aefc7a84d"
+    },
+    {
+      "name": "registry_reviews",
+      "rows": 123,
+      "fingerprint": "43ae5d423d67c2fb7ad108eb94558b203c5cb36b07dbd83fdcd05adea05b01c3"
+    },
+    {
+      "name": "registry_revisions",
+      "rows": 319,
+      "fingerprint": "4b1ad3f61ad6fd548384e06ba7047555b89f6cf7c4c271f870333abd63c8d179"
+    },
+    {
+      "name": "registry_rights",
+      "rows": 104,
+      "fingerprint": "587555392ad15c89b5eb1176e60bf978899e208db5f80d3e7d1b2d4fde214572"
+    },
+    {
+      "name": "registry_sites",
+      "rows": 13,
+      "fingerprint": "5c3ac452d76b8047818e502c66b4cc703d6539da765052f4a6ee58bfe15de9b8"
+    },
+    {
+      "name": "scene_asset_bindings",
+      "rows": 10,
+      "fingerprint": "8a31f3031250989153ea04fe6b3aecd7d019e69ee9afa2e8fbe731f497cad8df"
+    },
+    {
+      "name": "snapshots",
+      "rows": 150,
+      "fingerprint": "2d27d93880fd3eeacd7149240b0ef1f08f493590110a2f8dee1968440d02958d"
+    },
+    {
+      "name": "source_feature_links",
+      "rows": 557,
+      "fingerprint": "34067c05e0b4c34ad5f73389b11e015769553978f4f869a216d3f53bdad5e340"
+    },
+    {
+      "name": "sources",
+      "rows": 541,
+      "fingerprint": "e38a39b653dbac93921aa3eb93c252cd18129e024d83b5414b07da5768d2d295"
+    },
+    {
+      "name": "unit_revisions",
+      "rows": 1000,
+      "fingerprint": "98044bcbf86b56683a4cac39617b06eff8490c9f3178a64705794315c6c1fde3"
+    },
+    {
+      "name": "units",
+      "rows": 673,
+      "fingerprint": "01f7628d6c7070eaf642c7fecedc814d13445d160391d01a704d34bb31ae6e98"
+    }
+  ],
+  "originalsAfter": {
+    "count": 550,
+    "fingerprint": "aa3cbbb8060d472cc59def1533f1c0726045fe25f11708e507771960a8a6085c"
+  },
+  "finishedAt": "2026-09-18T14:14:43.126Z"
+}

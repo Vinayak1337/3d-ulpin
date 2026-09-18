@@ -1,0 +1,764 @@
+{
+  "schema_version": "ulpin-source-baseline/1",
+  "kind": "committed_source_inventory_only",
+  "repository": "Vinayak1337/3d-ulpin",
+  "origin_identity_verified": true,
+  "remote_freshness_verified": false,
+  "head": "c4e68573b110a0aa90d6586fc6b9d2b3d1175315",
+  "branch": "feat/unified-spatial-foundation",
+  "detached_head": false,
+  "checkout_clean": true,
+  "basis": "committed HEAD blobs, not uncommitted working files",
+  "git_tree_listing_sha256": "372c56936aef082917ce32f3f7c4aa30f2be71867dd23e73ce182fbb9e5f7e8f",
+  "tracked_entry_count": 1102,
+  "collector_runtime": {
+    "python": "3.13.7",
+    "platform": "Windows"
+  },
+  "source_files": [
+    {
+      "path": "AGENTS.md",
+      "git_blob": "9f01e8d350b4ac38a31282f2525ec61e1660bccf",
+      "bytes": 4383,
+      "sha256": "d99000cc70bd4d1b94c33aec31dd5191cbf160e5bc36918e22f2e971a96a6d28"
+    },
+    {
+      "path": "apps/web/components/AreaViewer.tsx",
+      "git_blob": "7073d1526485d3a2692358e1fb99f216d740830f",
+      "bytes": 392,
+      "sha256": "b51816819b57d981b7eac7ad9cb093d7a616fc05672747c5462131d615ba2ff3"
+    },
+    {
+      "path": "apps/web/features/officer/scene/BuildingPreview.tsx",
+      "git_blob": "2290085c64087e31dfc1b2cce5d396a85fbdf948",
+      "bytes": 3183,
+      "sha256": "7e82e0fd7204a977ecaf0fd8578ea3a5fb31769f04c8c9e319a6cca8fb4c798a"
+    },
+    {
+      "path": "apps/web/features/officer/scene/OrbitControl.tsx",
+      "git_blob": "24665e1e1a5d6d9cc057077e7a50214cc8f388f2",
+      "bytes": 1533,
+      "sha256": "6e9c782015547420a6cd9691d0109bfa1097becd19ec22d82f80e103baac2960"
+    },
+    {
+      "path": "apps/web/features/officer/scene/PropertyScene.tsx",
+      "git_blob": "4ca2eaf88e58a84ee2dc317da5ae9fd240445e23",
+      "bytes": 5569,
+      "sha256": "33e4f0f6fa2313483df7dcf487ca07b50e1fdbba5562dd72935de9cfd1809e1b"
+    },
+    {
+      "path": "apps/web/features/officer/shared/ParcelIdentity.tsx",
+      "git_blob": "d520630e1e06af1211cab25ab51781fed7d747f7",
+      "bytes": 783,
+      "sha256": "6a7734e68a5e3d3822764733d4d119040215f973949c9b41ee466ee536a59661"
+    },
+    {
+      "path": "apps/web/features/officer/shared/SearchDialog.tsx",
+      "git_blob": "b5ff3eb437c807d3ce33103bc5603fa7faff1be5",
+      "bytes": 5338,
+      "sha256": "bb93ff066382fcc18989484c86520ae5a5ebed45d53716ac972dbbed2a102493"
+    },
+    {
+      "path": "apps/web/features/officer/shared/Shell.tsx",
+      "git_blob": "b3c0ecbbf9efb0c5e0fea2049631a421720596ca",
+      "bytes": 4822,
+      "sha256": "fcbfd1bb99ef58d2281da9aaa88885af8bc15ea71667733638433485d56c160b"
+    },
+    {
+      "path": "apps/web/features/officer/shared/hooks.ts",
+      "git_blob": "925bb08c88dfeeffa8739585bea437a0ad6a9414",
+      "bytes": 2038,
+      "sha256": "8da115dc08b05ef8c4af2f534fb2d40b63d9ee8e60041ff4f29c6e5cd992e9dc"
+    },
+    {
+      "path": "apps/web/features/officer/shared/navigation.ts",
+      "git_blob": "f0f6c89f994fba9fb155fffbc10e30870875edc6",
+      "bytes": 409,
+      "sha256": "9ff7feecfe324a8524dbe294717901e5babc8ebce8a03359fda6d0c9f342039e"
+    },
+    {
+      "path": "apps/web/features/officer/shared/routes.ts",
+      "git_blob": "75d10a6001e0c4c53e4d41ff3c207e3c5f9110f0",
+      "bytes": 1189,
+      "sha256": "7d15be24c6bbf9612964efc4944522d30cb295b50bdda43b627967dfb3c21157"
+    },
+    {
+      "path": "apps/web/features/officer/shared/search-targets.ts",
+      "git_blob": "2ba8e44984ea59c39da4508015fe604ee13aadfe",
+      "bytes": 3890,
+      "sha256": "012de71dee3419d1d48b099d1affe29d8f4f742f15e74929581d282ea12de5a7"
+    },
+    {
+      "path": "apps/web/features/officer/shared/store.tsx",
+      "git_blob": "71a38c9c2408ac23e60766621b469db5a7a01b02",
+      "bytes": 7156,
+      "sha256": "0be65262aa66668a49c557914e1dda9a8b2d607cee21d7001cd9acbfe13ad322"
+    },
+    {
+      "path": "apps/web/features/officer/shared/ui.tsx",
+      "git_blob": "af3f7bc9c6704f0fca3e5e891e7112cf17f9a673",
+      "bytes": 7517,
+      "sha256": "f4a97f0444c6b5dad778f3244bd40bcae4e82dfcc1b0534ff238302252eb13d1"
+    },
+    {
+      "path": "apps/web/features/officer/shared/useActiveRecents.ts",
+      "git_blob": "723c665f75bd3a6be55b54159bc006a6fae33396",
+      "bytes": 524,
+      "sha256": "502d3d521c1494c1b15a5748b3e691190374e3d47123c9977bef140df4bfc274"
+    },
+    {
+      "path": "apps/web/features/spatial/MapViewport.tsx",
+      "git_blob": "d4174d0351c430465e7cf57eb5df325647391d1d",
+      "bytes": 768,
+      "sha256": "2de5a501d0716c156098bc162000dd9a4a5e16d1756d1b960e31dd774536e3f5"
+    },
+    {
+      "path": "apps/web/features/spatial/compiler/architecture.ts",
+      "git_blob": "1d54249aa15f7cb40c20f8227a3bde94c97adddb",
+      "bytes": 6255,
+      "sha256": "82a987794846501174d3a80d4088a04aac4a633a1105feef11a40326a3885512"
+    },
+    {
+      "path": "apps/web/features/spatial/compiler/compile.ts",
+      "git_blob": "4008f4006e3fae802d51e727c89c07d3e74129d4",
+      "bytes": 7493,
+      "sha256": "57ee907e355bafcef539ec9eb76543dd5721ca6a65fcc28eaab9b062fe493bf8"
+    },
+    {
+      "path": "apps/web/features/spatial/compiler/glb.ts",
+      "git_blob": "ec5b29a1761eb19a1f454f46cfb48541a5523381",
+      "bytes": 4787,
+      "sha256": "8a58af167ef12cd527db7e77603804df8e36512cf98014688d9f44d2e35b09ab"
+    },
+    {
+      "path": "apps/web/features/spatial/compiler/materials.ts",
+      "git_blob": "469e5f8ac26ba6d96861819905cb8d095c512369",
+      "bytes": 1418,
+      "sha256": "167a611288cb8f83cdbad8bc7204c55990c4a8f664c2fd3e50865673672a1cf1"
+    },
+    {
+      "path": "apps/web/features/spatial/compiler/mesh.ts",
+      "git_blob": "cb0c4ccad3bde474a401e878a5aa719bffaa0275",
+      "bytes": 3693,
+      "sha256": "56498a5e3f771e01cd91be1817a1b3f38afb4af2f011597be832737273cb772d"
+    },
+    {
+      "path": "apps/web/features/spatial/data/Provider.tsx",
+      "git_blob": "f33cd6d23c116dc68a2e01783342700ee314af19",
+      "bytes": 845,
+      "sha256": "bd2d498814e53cf22697392590462de20318aed301e11eba41fe12c23e741da5"
+    },
+    {
+      "path": "apps/web/features/spatial/data/calibration.ts",
+      "git_blob": "70b9487a5b0701bd6080fa58da03f2148ca9ab5c",
+      "bytes": 7181,
+      "sha256": "ba29aa967366771ca16f5ec4defc0f61064e2e6b4e53e67fbd6bd9d491da5e59"
+    },
+    {
+      "path": "apps/web/features/spatial/data/legacy-adapter.ts",
+      "git_blob": "6d355ddcee19e73adb53099a77b68df84f52cd4e",
+      "bytes": 5256,
+      "sha256": "a7dc0807468ec4f27af219c28c697c4501350c2dc0c8249b332a24e57fa6da92"
+    },
+    {
+      "path": "apps/web/features/spatial/data/publications.ts",
+      "git_blob": "ae48f6d9668eefd84464ec29e5ab1ce0a8712fe7",
+      "bytes": 869,
+      "sha256": "5ff66ae3de3aecd4aaf090d2f0729940c3ccaab2af3e49940b63d8820a16299b"
+    },
+    {
+      "path": "apps/web/features/spatial/data/resource-cache.ts",
+      "git_blob": "5bce928e26f5c1a86bb68d86b2eb3f69535d3999",
+      "bytes": 5066,
+      "sha256": "6304a42bc903e40e44266c5e8de1b172f86f1d460c4826fc85e7da3191c3a622"
+    },
+    {
+      "path": "apps/web/features/spatial/data/session.ts",
+      "git_blob": "17b0590e466f5456ec9696757be5c1aecdc816e5",
+      "bytes": 2362,
+      "sha256": "f3013772d89f05e5dfd06e2bf1c9b3660f5dd20e46dd33bf68a08b4d0f395df5"
+    },
+    {
+      "path": "apps/web/features/spatial/data/useMapSession.ts",
+      "git_blob": "5195cf1963337f3546724055a65f2177f0c0bcaa",
+      "bytes": 640,
+      "sha256": "8cc5c3c1c35eb625d06a1b7882cb100f45c21df68db3e9ff06ad05936147f6df"
+    },
+    {
+      "path": "apps/web/features/spatial/data/useResource.ts",
+      "git_blob": "0342ed1c3cda9326f8493e94bec096c567a6298f",
+      "bytes": 1921,
+      "sha256": "d09004838b5b7712d0f5355501e4b644fd0e19488cd233fb0e7263333a1c9b3f"
+    },
+    {
+      "path": "apps/web/features/spatial/engine/runtime.ts",
+      "git_blob": "d5f0c72b18e97dea326e0cbe5c9c6c9602f50817",
+      "bytes": 5342,
+      "sha256": "39f1e609114506e8c42112ffb85f63803d28a4bca122f66dae67d2aeceb680b7"
+    },
+    {
+      "path": "apps/web/features/spatial/lab/MapLab.tsx",
+      "git_blob": "874813e7be888be39ac7f952643e91b48631fc51",
+      "bytes": 12732,
+      "sha256": "d1f995f460821c8a12b45e75923ed54ab93d53ef18c4212f66110b09d62ae43b"
+    },
+    {
+      "path": "apps/web/features/spatial/layers/AreaLayer.tsx",
+      "git_blob": "03fe9be046bc7af8b5ad5b0b86b66813d55522ea",
+      "bytes": 33786,
+      "sha256": "f3638be8ddf1ad7372de09f3a455f0eca99f7d1d5d7710dc58ea260eb6f44c21"
+    },
+    {
+      "path": "apps/web/features/spatial/layers/LocalModelLayer.tsx",
+      "git_blob": "c808e6affc6f73e989dd01c8a3f43e919356f44f",
+      "bytes": 17480,
+      "sha256": "dd3af1991108fb11203c591b5567020667eca55be6a862e9221e6fd8443172b7"
+    },
+    {
+      "path": "apps/web/features/spatial/layers/TileLayer.tsx",
+      "git_blob": "71aaf905762db9f138a5f7f7c11798e6c3125799",
+      "bytes": 15371,
+      "sha256": "ec115d9c96c1f943b08d87bc8d9360b393f9b670b0cc49634fd8ca94085810ee"
+    },
+    {
+      "path": "apps/web/lib/server/area-acquisitions.ts",
+      "git_blob": "ae4ed55b1c5fdc26cbfec69680e1e0276f51a4f7",
+      "bytes": 10492,
+      "sha256": "f674c2a5ebe9df967509e2175050f31b4317ce646bda998eb68ce7ca03c14e3a"
+    },
+    {
+      "path": "apps/web/lib/server/area-db.ts",
+      "git_blob": "d730a494b12dacd12cd79c53b0ad3171a902c1fc",
+      "bytes": 4988,
+      "sha256": "6811cb26143caf93bbacf78a3453d3f1046b28d72d92dcdd864647f61cff363c"
+    },
+    {
+      "path": "apps/web/lib/server/area-resolver.ts",
+      "git_blob": "a5ec83b6f0d02e10fc2ec836484809868950de00",
+      "bytes": 12433,
+      "sha256": "6d95236654406a3eec0c0e7faae0ff2057c02b446e435026060c37afd1cf75a2"
+    },
+    {
+      "path": "apps/web/lib/server/area-routes.ts",
+      "git_blob": "3fb56dc4615b2f7cdccd8cdceb8730cfcaa9fc79",
+      "bytes": 14935,
+      "sha256": "258a74f658f107f367c11e3c938e08cd5463a2fb4b844ab64e923be6053cad5b"
+    },
+    {
+      "path": "apps/web/lib/server/area-scenario.ts",
+      "git_blob": "a3a4f58694807052e5f1549849d4c8b256da7bdf",
+      "bytes": 5311,
+      "sha256": "a2db1ed18a1db2a093f4184fd5208e896c7f3c97e0d8a1fc50b53546f49a35ae"
+    },
+    {
+      "path": "apps/web/lib/server/areas.ts",
+      "git_blob": "ba5c37d4de95db8b4e5e7f2e5bb9a544be772841",
+      "bytes": 70297,
+      "sha256": "f31cbb46c44edb1ab625abb9c830dd9f050c397ceec88267c7925a77a483c1db"
+    },
+    {
+      "path": "apps/web/lib/server/block-export.ts",
+      "git_blob": "e05a4616109495dd9af4dd7352a3799d43a444ea",
+      "bytes": 7686,
+      "sha256": "da4fd4950edad0be75c7cf35ea69450081c45680122b0035a8d223ca7a3e38ee"
+    },
+    {
+      "path": "apps/web/lib/server/config.ts",
+      "git_blob": "b1a1c7eaf898c2282b1d39b12b51f54b86035e31",
+      "bytes": 1468,
+      "sha256": "739b5fbcefa94f761bef2a53b643d2dfec5b7cd7d69d3b8fb266793060725eb6"
+    },
+    {
+      "path": "apps/web/lib/server/db.ts",
+      "git_blob": "0e05339cfdf15379ac5129d135e05ba1f9aa53ab",
+      "bytes": 7052,
+      "sha256": "afb61f5685f28734c25e9dbdac29ef462f17c61e6b81696faebcd79acc7e1893"
+    },
+    {
+      "path": "apps/web/lib/server/domain.ts",
+      "git_blob": "b21dfb9de2d2bb6163a968bf8b6f30e308e53133",
+      "bytes": 30511,
+      "sha256": "80052a0f944e2bff44cf6fa78f8ee62b28fe02bd1df9185f133869ab36b2b8fd"
+    },
+    {
+      "path": "apps/web/lib/server/errors.ts",
+      "git_blob": "312237af3c8b09fe2b47fa038fbb3c643fa3e483",
+      "bytes": 498,
+      "sha256": "3a5f06509e139a7ab0dd6bcdab78d00f94b598fbbfdc1aaf3401969f2334cdcc"
+    },
+    {
+      "path": "apps/web/lib/server/identities.ts",
+      "git_blob": "df65a6f985e9222a559d22373c22cef227178541",
+      "bytes": 2436,
+      "sha256": "e27ed1b31855f08eb7f9c327a97edcd1da18fb2d8e954ec44b221ff0b0926da8"
+    },
+    {
+      "path": "apps/web/lib/server/neighbour-scenario-policy.ts",
+      "git_blob": "c679c0e1fcc248ade2ee30be25a4914082aa83d2",
+      "bytes": 723,
+      "sha256": "538ff6f31c9a80f9f4e895c7f5e56f01c836e0f8d71baf29f6ceafb4aad812c9"
+    },
+    {
+      "path": "apps/web/lib/server/officer-ai-images.ts",
+      "git_blob": "60dd5b495592ebe662ead440290806efb53ee2f9",
+      "bytes": 3225,
+      "sha256": "4b21ca46bea809a925b7a1c3687d4aa8fda6e7514945d2d9604e15273b9af62b"
+    },
+    {
+      "path": "apps/web/lib/server/officer-ai-provider.ts",
+      "git_blob": "ef51263f7625624f7c61e2fbc24a46cea46aa273",
+      "bytes": 7354,
+      "sha256": "a8b4effd748e4d6ea9ddf78cb81c0beba7cc338c708b53f392213073f12877f1"
+    },
+    {
+      "path": "apps/web/lib/server/officer-ai-validation.ts",
+      "git_blob": "5c0bb6cd97474c068f51ea5bde416b230192d02e",
+      "bytes": 15326,
+      "sha256": "f2a5db5553b0ef7efb3be855a7f7988ce0a2e095c158dd94479c5b05931a27a2"
+    },
+    {
+      "path": "apps/web/lib/server/officer-ai.ts",
+      "git_blob": "076ab4f579317d965d808f9090328f59e1e3efed",
+      "bytes": 18817,
+      "sha256": "ce7f91bb72a5f9f48f3708e008c23c57f36f872e7f39970cbbc9a1ed7a151b43"
+    },
+    {
+      "path": "apps/web/lib/server/officer-db.ts",
+      "git_blob": "44446acaee46a7352208cfabd0c3258f8780b25c",
+      "bytes": 2434,
+      "sha256": "3a69140a6bfb11cc2174da86240b04a1351f22b2752a28951572ba60fa098736"
+    },
+    {
+      "path": "apps/web/lib/server/officer-investigations.ts",
+      "git_blob": "b410e869b64e76f6b8e881fc40e2cfd334d02606",
+      "bytes": 26192,
+      "sha256": "3c84d1421d5d3be243e5a84d110443a7d5f244003318d5eafa3254bf75e970a8"
+    },
+    {
+      "path": "apps/web/lib/server/officer-preparation.ts",
+      "git_blob": "cc647d83eb0066b7038127361e5168a61eaad4f0",
+      "bytes": 24919,
+      "sha256": "0273c5658cd773e67e138145aba0727340b6217dae4acd26c8e59bed003d0091"
+    },
+    {
+      "path": "apps/web/lib/server/officer-routes.ts",
+      "git_blob": "a2ba930048c5eda9f167665a5e08a5df84aaaf88",
+      "bytes": 12935,
+      "sha256": "b35e422e01de1667de1f3a40b2c47a6a8f91fc6d9940b8cb41f6d9e7b1391f87"
+    },
+    {
+      "path": "apps/web/lib/server/officer.ts",
+      "git_blob": "03897bcf500fa39c2423211bf9e29b54c1fe4b5c",
+      "bytes": 25358,
+      "sha256": "72a1f961997782f0fa0d1bff5988ef8d3d3847db57bd9aea77b3f44cf8987922"
+    },
+    {
+      "path": "apps/web/lib/server/original-attempt.ts",
+      "git_blob": "0fde7cc6b204c257b1787bcc225c583d02c443f3",
+      "bytes": 952,
+      "sha256": "b6a70af2412f631f17e5bca82f378d9a5696503a978f8438d00ecb87722a046b"
+    },
+    {
+      "path": "apps/web/lib/server/processing.ts",
+      "git_blob": "f329260deaaf165d06a6d043e8af75ae7284b1bd",
+      "bytes": 7969,
+      "sha256": "75cde1e111029c1aac80a318bb6fdbc64c5680ee585b0d32321ab25cc16f665d"
+    },
+    {
+      "path": "apps/web/lib/server/register-pdf.ts",
+      "git_blob": "b94d4633af025a3a0f5a087329a23364681bef88",
+      "bytes": 2320,
+      "sha256": "b4c2201147db84396c68721878b8e798a8cc426e74ef384c57db31bdfcce37dd"
+    },
+    {
+      "path": "apps/web/lib/server/registry-db.ts",
+      "git_blob": "56698b04860a12db9cc3cb20265e6ee46653b53a",
+      "bytes": 3823,
+      "sha256": "56c9d9f944e59bf312cceb3aaa119c6085406aedbe40389070278add5cb6c1c0"
+    },
+    {
+      "path": "apps/web/lib/server/registry-import-evidence.ts",
+      "git_blob": "6ea121f9788105a68910bcf479b3726d353d514f",
+      "bytes": 2530,
+      "sha256": "d2fbe2a3383a4db6abf4cc9bbe84eefaf485c3001254ffc2270ef183342d7a98"
+    },
+    {
+      "path": "apps/web/lib/server/registry-reference-policy.ts",
+      "git_blob": "276f4d9b437fba6a2a850a961d34e5c4598d6a97",
+      "bytes": 735,
+      "sha256": "56ad060b5d05509fb0c3341d621873035302c9d615ff37b95c487ac0b95f62b6"
+    },
+    {
+      "path": "apps/web/lib/server/registry-routes.ts",
+      "git_blob": "d858b2f3da05e5728de4409a0c31fa7092271f80",
+      "bytes": 8662,
+      "sha256": "bb3efcfd1b1522facb9c1c68af5c51c21466c948642d8efbe2ca2676c24f39fc"
+    },
+    {
+      "path": "apps/web/lib/server/registry-seed.ts",
+      "git_blob": "1197fefc6886df6b156467f65002bc295aaa8731",
+      "bytes": 20629,
+      "sha256": "df4f1cdcec45124297b58cc2359f9605af3af8d07bd8737b76fb8e26a706ccd8"
+    },
+    {
+      "path": "apps/web/lib/server/registry.ts",
+      "git_blob": "d90eef76813e6e9963689913ab8f6abd59f6b450",
+      "bytes": 28904,
+      "sha256": "f88222911a490ef31175815736360ea02dd515088c457bbec049b814fe7289aa"
+    },
+    {
+      "path": "apps/web/lib/server/scene-assets.ts",
+      "git_blob": "b3fdb36c826301d93c1d74a7d5f4ce6aa0727b62",
+      "bytes": 669,
+      "sha256": "41f3b337d51b776f119dda6a647448f5647ac2ab1f255aed3e621f0b2cde3516"
+    },
+    {
+      "path": "apps/web/lib/server/source-bundle.ts",
+      "git_blob": "8f1b8c1006f176ef4576995d92580f38c83cafad",
+      "bytes": 3518,
+      "sha256": "4168c1f0e2cb94580d0ad45e7127b31773336ec869349a7e583f8ab11d2ff6fc"
+    },
+    {
+      "path": "apps/web/lib/server/storage.ts",
+      "git_blob": "200106c740bb4c9f25908b5548983c91dd788f53",
+      "bytes": 2206,
+      "sha256": "22f21a3f5eedb5511b93dfe52e2f4469133cbf6ab7b6e9b9e12cb5240303cb8c"
+    },
+    {
+      "path": "apps/web/lib/server/validation.ts",
+      "git_blob": "2aa1fe47f264b0d247ab317c4c677edec0304043",
+      "bytes": 5500,
+      "sha256": "63a8eb630872a39958405041c26af3d5586f1393c03b84ce3a150944d234777e"
+    },
+    {
+      "path": "apps/web/package.json",
+      "git_blob": "7dfc04c88d9bf54aa1bcf8b05114436a2a72b94b",
+      "bytes": 1127,
+      "sha256": "b796fa5085e4a87503dc1c16a7132ecef5936d4aa28d459f0e50f7f8c6e2b8fa"
+    },
+    {
+      "path": "compose.yaml",
+      "git_blob": "d93cee9efcbceb253f6c6f7f5df195be7d3b12d8",
+      "bytes": 4730,
+      "sha256": "0841a50a58c8b45f318307468dfdb9cae6d4f74a936a4ecc3bd1e5358201badf"
+    },
+    {
+      "path": "package.json",
+      "git_blob": "d9053885ced343d875131f57b096a140dbffc6b1",
+      "bytes": 3775,
+      "sha256": "a44530c3c7d26139be91a0c88b17518ec44873f22c9acb49a239dfc0510f99be"
+    },
+    {
+      "path": "packages/contracts/package.json",
+      "git_blob": "9d98b07c1fddff0c2541571131d79f648e28ff7e",
+      "bytes": 151,
+      "sha256": "db587997c418fe5d9833671384271c4b49613ddd738380b3a4f3f3d945bf075e"
+    },
+    {
+      "path": "packages/contracts/src/area.ts",
+      "git_blob": "da1cf24f0a8f365782d712efb4810313ffcb8ab1",
+      "bytes": 6669,
+      "sha256": "719a456ed674a1b3001401bb8649bfb5b30635b15a529f7dacb3c3e15940d056"
+    },
+    {
+      "path": "packages/contracts/src/index.ts",
+      "git_blob": "0786c90646c70089ff849fc9eed0612ccf7e235f",
+      "bytes": 4825,
+      "sha256": "26ddeef093a38273dfef5106a4220ebdba802b9b592c1c435dca9f30b280bf24"
+    },
+    {
+      "path": "packages/contracts/src/officer.ts",
+      "git_blob": "8adf42a8ced2750c12cc71bb09ddade8c2791f98",
+      "bytes": 5165,
+      "sha256": "b12df8f9b8f0b6baf9db88556832264e9b5a87f6c42b2da1c1d51b414225f9e6"
+    },
+    {
+      "path": "packages/contracts/src/registry.ts",
+      "git_blob": "5b7f32c523146f2f0765436580370bdf26105256",
+      "bytes": 2320,
+      "sha256": "d11d76ee8b3c75cd62e0bcd4e92da0b19e68b5aaf1fde5d31f815212a7b54d43"
+    },
+    {
+      "path": "packages/contracts/src/spatial/frames.ts",
+      "git_blob": "a85747582f7cdb92fca50e641f242ab4b2dd4774",
+      "bytes": 1754,
+      "sha256": "8fe6ccaa491c055ad41af20b954455e6c69c000d38553cb3f111480bff0cf9d5"
+    },
+    {
+      "path": "packages/contracts/src/spatial/geometry.ts",
+      "git_blob": "c671f4ac98c30f3c63c0666bb968c3c695b52178",
+      "bytes": 4315,
+      "sha256": "5b6af366b8ba0c4bcc2894c18b491464c65ef56413fd66bd261007e0b34fd948"
+    },
+    {
+      "path": "packages/contracts/src/spatial/index.ts",
+      "git_blob": "542ed014164f4cbcc36166ca85f73362067b301e",
+      "bytes": 135,
+      "sha256": "d6fa742f246f155aa6815dbb4d1cfc10f84e232cf7e2e08620e736b5ab2e71b5"
+    },
+    {
+      "path": "packages/contracts/src/spatial/topology.ts",
+      "git_blob": "25768dd5ec75e16096a17f70f9f7586575b59820",
+      "bytes": 4867,
+      "sha256": "7b2dbccba8f89cc3174854b8246bfd4d9eaebd2b6f75ea90d1080303ad95cd5d"
+    },
+    {
+      "path": "packages/contracts/src/spatial/types.ts",
+      "git_blob": "72bdbeccf2344426d1a5c32c3accd711a5398399",
+      "bytes": 4252,
+      "sha256": "18cde0e9942f2822b122de57c21a9ba3617550630270c79f610c31c1c6125423"
+    },
+    {
+      "path": "packages/contracts/src/spatial/validate.ts",
+      "git_blob": "41e1c8ceb9292806f9cc8a61d214b98864cf838c",
+      "bytes": 10859,
+      "sha256": "a02735d1ae0c223123f180e7a1169747f1e562f91dacbf3f6a6b10be4325b804"
+    },
+    {
+      "path": "playwright.config.ts",
+      "git_blob": "dc00d96b20c93f3ef69243383f311ffa4b718243",
+      "bytes": 898,
+      "sha256": "125b8c57b4e7bf3f408e8447f1cc918a33b3301ad970138b8fe3ed4c7e5c8af8"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "git_blob": "a1933cbcbc539ae977953e9473a282b0753ee2a7",
+      "bytes": 63434,
+      "sha256": "1dfbda68d4647f8a53f196611d0cfa35dff7f9ba3683aa7d0f52550e8c0d8664"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "git_blob": "e9b0dad63bacd2aa6865fcb9b7e86ad630964730",
+      "bytes": 40,
+      "sha256": "60ce4d1dbf137701a4683d171391c51662700c2f3e32a7caab8b2efc22540e65"
+    },
+    {
+      "path": "services/geo/geo/__init__.py",
+      "git_blob": "6d752049d5f533bd1d34a671e6383cd08282cbfd",
+      "bytes": 74,
+      "sha256": "d10feb73a0713f7c1f57fd7982c1f2916448a1b634984a48646ff4e460b6ad09"
+    },
+    {
+      "path": "services/geo/geo/api.py",
+      "git_blob": "c42739ac4bbbb351ffbdc5c0287e98c3984b1765",
+      "bytes": 4929,
+      "sha256": "b5baf0efbdb835d4de50c0afb9fd6fd39adff01e2e4b6af39d58ad4662236e00"
+    },
+    {
+      "path": "services/geo/geo/area.py",
+      "git_blob": "32d5e1e69117829f0075e7251e40fe94833782eb",
+      "bytes": 37152,
+      "sha256": "1f2c01933fbca7a5d8fa840f36010fe91318395599c4ad324fc3a527cee599e1"
+    },
+    {
+      "path": "services/geo/geo/area_semantics.py",
+      "git_blob": "1d1edbbcc96ce643ee86777b49a0b0e3fa5899cf",
+      "bytes": 9422,
+      "sha256": "3d4caab2d7807a00fd4685ebd2c779522a436c4d1b516d2e83e55493261543ee"
+    },
+    {
+      "path": "services/geo/geo/geometry.py",
+      "git_blob": "f4a0b34fe18df5d617a9738fe01fb45181ef144b",
+      "bytes": 10154,
+      "sha256": "6cb9e533e29fbfc0578ae73604e3af3779d4e5ee0b6b0ff4ccea66d0f15dbb27"
+    },
+    {
+      "path": "services/geo/geo/image_derivative.py",
+      "git_blob": "11e033865d6317186039ca07fd9c0f6cf3a1c2bb",
+      "bytes": 4248,
+      "sha256": "2d39821605a594da9a3e9b7214d4f5d0c1986b29c6508c5a7d0ce5499984ac73"
+    },
+    {
+      "path": "services/geo/geo/inspection.py",
+      "git_blob": "0154ff59cffb484b54cf866906f436dcd548433c",
+      "bytes": 11284,
+      "sha256": "d23ad883a430fa403faf87fc889b97baebb999b0c21616bb338c8b6b8d504487"
+    },
+    {
+      "path": "services/geo/geo/native_gis.py",
+      "git_blob": "068b34778e76ef33b78d4980b8eda51f520ff80a",
+      "bytes": 13423,
+      "sha256": "a41275518e427a78d0cc72add58ed4e74c3097d4fa9533dd7ec053c315453f48"
+    },
+    {
+      "path": "services/geo/geo/native_schedule.py",
+      "git_blob": "1a6d66f056168286b9337ae421136262d48206f7",
+      "bytes": 5885,
+      "sha256": "88a65c1639817eab923a0b1753db4c1eb7f3131f562274aae974200e50d926bd"
+    },
+    {
+      "path": "services/geo/geo/officer.py",
+      "git_blob": "bf711da115d146bd13c0a616ab394e24d293c22c",
+      "bytes": 27442,
+      "sha256": "d1802373833b066873ee4d4de05c0c8ea56d5a448c7453b0028763dc4f15f2b0"
+    },
+    {
+      "path": "services/geo/geo/registry.py",
+      "git_blob": "92ca9b4151f8b8a1345d35b00a941f18033cec02",
+      "bytes": 6267,
+      "sha256": "f750132e54976c3dfc46f96587dfaa2fa46152aa1a9b18019cb79f603a86448a"
+    },
+    {
+      "path": "services/geo/geo/settings.py",
+      "git_blob": "8991df0fc2a309725ede6c2e9c95e6b0f1a73232",
+      "bytes": 467,
+      "sha256": "3e96e19e905a8c8263e63afe779505b754fe085fedf6d7edbdb11cb04e2d8679"
+    },
+    {
+      "path": "services/geo/geo/store.py",
+      "git_blob": "02e957e9561e4eda1ede628488f181300284d439",
+      "bytes": 3509,
+      "sha256": "6eac81179390f266b87f7e131ff244225976d03ab446674d1814eb070163b284"
+    },
+    {
+      "path": "services/geo/geo/tasks.py",
+      "git_blob": "4ca045ef090b6cc209f5789ae3ac7d5db01ef450",
+      "bytes": 4498,
+      "sha256": "1d9c33b3706e45ff12a22c18276ac759fb8160b5ad3131cbfb6fbd8ffb410bd2"
+    },
+    {
+      "path": "services/geo/geo/validation.py",
+      "git_blob": "0ff7fc84f43cad9f17ddd44b8c16048f6277d92d",
+      "bytes": 3058,
+      "sha256": "de30a5e9dede357f526f5d67e61acf34a6a1fdd700a9482646a26df852c14356"
+    },
+    {
+      "path": "services/geo/requirements.txt",
+      "git_blob": "538403ff63b50e4eb51a7951c13ff54e642914da",
+      "bytes": 176,
+      "sha256": "4c68c42def9efdbf616481beb666b75c7747a1c18fea9556759c7fe40b163b3e"
+    }
+  ],
+  "package_script_inventory": [
+    {
+      "path": "apps/web/package.json",
+      "script_names": [
+        "build",
+        "dev",
+        "prebuild",
+        "predev",
+        "start",
+        "typecheck"
+      ],
+      "other_script_names_omitted": 0,
+      "commands_included": false,
+      "commands_executed": false
+    },
+    {
+      "path": "package.json",
+      "script_names": [
+        "build",
+        "data:uttam:check",
+        "data:uttam:install",
+        "data:uttam:verify",
+        "db:migrate",
+        "demo",
+        "demo:complete",
+        "demo:seed",
+        "dev",
+        "dispatcher",
+        "guide",
+        "platform:health",
+        "platform:start",
+        "platform:stop",
+        "repo:check",
+        "repo:export",
+        "repo:init",
+        "repo:verify",
+        "start",
+        "test:ai",
+        "test:ai-integration",
+        "test:api",
+        "test:area",
+        "test:block-membership",
+        "test:case-document-copy",
+        "test:complete",
+        "test:complete:browser",
+        "test:demo",
+        "test:e2e",
+        "test:fresh-install",
+        "test:horizontal-performance",
+        "test:officer",
+        "test:reference",
+        "test:reference:browser",
+        "test:reference:investigation",
+        "test:register-controls",
+        "test:register-exports",
+        "test:register-scope",
+        "test:registry",
+        "test:registry-allocation",
+        "test:registry-reimport",
+        "test:repo-data",
+        "test:scene",
+        "test:spatial",
+        "test:spatial:browser",
+        "test:ui",
+        "test:uttam",
+        "test:uttam:transfer",
+        "test:v2",
+        "typecheck"
+      ],
+      "other_script_names_omitted": 0,
+      "commands_included": false,
+      "commands_executed": false
+    },
+    {
+      "path": "packages/contracts/package.json",
+      "script_names": [],
+      "other_script_names_omitted": 0,
+      "commands_included": false,
+      "commands_executed": false
+    }
+  ],
+  "test_paths": [
+    "apps/web/features/officer/workspace/measurement.test.ts",
+    "apps/web/lib/legacy-url.test.ts",
+    "docs/engineering-plan/tools/tests/test_source_baseline.py",
+    "services/geo/tests/conftest.py",
+    "services/geo/tests/test_area.py",
+    "services/geo/tests/test_geometry.py",
+    "services/geo/tests/test_inspection.py",
+    "services/geo/tests/test_jobs.py",
+    "services/geo/tests/test_native_adapters.py",
+    "services/geo/tests/test_officer.py",
+    "services/geo/tests/test_registry.py",
+    "tests/ai-extraction/grounding.test.ts",
+    "tests/ai-extraction/integration.ts",
+    "tests/build-server.test.mjs",
+    "tests/building-scene.test.ts",
+    "tests/dataset-bundle.test.mjs",
+    "tests/e2e/presentation.spec.ts",
+    "tests/e2e/workbench.spec.ts",
+    "tests/engineering-isolation.test.mjs",
+    "tests/identifiers.test.ts",
+    "tests/map-attribution.test.ts",
+    "tests/neighbour-scenario-policy.test.ts",
+    "tests/register-scope.test.ts",
+    "tests/registry-import-evidence.test.ts",
+    "tests/registry-reference-policy.test.ts",
+    "tests/registry-validation.test.ts",
+    "tests/repo-data-mode.test.mjs",
+    "tests/spatial-core.test.ts",
+    "tests/spatial-network.test.mjs",
+    "tests/v2-geometry.test.ts",
+    "tests/v2-state.test.ts"
+  ],
+  "workflow_paths": [
+    ".github/workflows/spatial-core.yml",
+    ".github/workflows/ulpin-engineering-baseline.yml",
+    ".github/workflows/ulpin-integration-baseline.yml"
+  ],
+  "notices": [],
+  "application_tests_run": false,
+  "database_verified": false,
+  "original_objects_verified": false,
+  "t001_accepted": false,
+  "not_verified": [
+    "Application code semantics and behavior",
+    "Installed application dependencies",
+    "Live or isolated database contents",
+    "Original object bytes",
+    "Source/identity/frame preservation",
+    "Renderer or physical-device performance"
+  ]
+}

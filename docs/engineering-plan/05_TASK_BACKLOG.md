@@ -1,12 +1,12 @@
 # Ordered task backlog
 
-Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 0/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
+Generated from `backlog.json`, plan version 1.2. Accepted execution tasks: 1/56. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
 ## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
 
 ### T001 — Repository branch and fresh preservation baseline
-**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
+**Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
 **Dependencies:** None; environment and authorization requirements still apply.
 
@@ -23,7 +23,7 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 **Detailed plan:** `tasks/T001_BASELINE_PLAN.md` — authored; inspect its status before execution.
 
 ### T002 — Reference, requirements and fixture acceptance contract
-**Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Product/visual lead.
+**Status:** In progress. **Release:** R1-renderer. **Suggested owner:** Product/visual lead.
 
 **Dependencies:** T001.
 
@@ -37,7 +37,7 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 
 **Earlier references:** schema:U02, schema:U16, renderer:R01, renderer:R02, renderer:R04, renderer:R05.
 
-**Detailed plan:** `tasks/T002_PLAN.md` — write just before execution.
+**Detailed plan:** `tasks/T002_PLAN.md` — authored; inspect its status before execution.
 
 ### T003 — Architecture decisions and smallest proving experiments
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
