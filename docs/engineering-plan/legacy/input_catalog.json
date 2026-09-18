@@ -1,0 +1,281 @@
+{
+  "status": "proposed support taxonomy; not an implemented-format guarantee",
+  "prepared_on": "2026-09-18",
+  "categories": [
+    {
+      "id": "I01",
+      "family": "Existing 3d-ulpin records",
+      "example_inputs": "Current APIs, saved bundles and registry/area contracts",
+      "usable_information": "Existing IDs, original sources, geometry, candidate facts and revisions",
+      "normalized_targets": "Legacy adapter to entity/representation/revision/source links",
+      "critical_limits": "Reconcile physical IDs and registry IDs explicitly; preserve previous identifiers and references",
+      "delivery_phase": "First",
+      "current_evidence": "Existing bounded paths inspected",
+      "sources": "R01 R02 R03 R06 R07"
+    },
+    {
+      "id": "I02",
+      "family": "Cadastral parcels and 2D ULPIN references",
+      "example_inputs": "GeoPackage, Shapefile sets, GeoJSON, GML, feature APIs, CSV/XML registers",
+      "usable_information": "Parcel boundaries, administrative context, identifiers, area assertions",
+      "normalized_targets": "Parcel entity; recorded-boundary representation; external identifier; register assertion",
+      "critical_limits": "ULPIN alone supplies an identifier, not a boundary; preserve issuer, source validity and ambiguous matches",
+      "delivery_phase": "First",
+      "current_evidence": "Identifier and 2D GIS foundations inspected",
+      "sources": "R01 R06 S01 S16"
+    },
+    {
+      "id": "I03",
+      "family": "Building footprints and city GIS",
+      "example_inputs": "GeoJSON, GeoPackage, Shapefile, ArcGIS feature JSON, OSM XML/PBF, database export",
+      "usable_information": "Outlines, names, source IDs, height attributes when meaningful",
+      "normalized_targets": "Building/building-part entity; observation; ground/roof/design geometry role",
+      "critical_limits": "A roof outline is not automatically ground occupation; unknown height stays unknown",
+      "delivery_phase": "First",
+      "current_evidence": "Several bounded 2D paths inspected; other formats are roadmap",
+      "sources": "R01 R09 R10 S01"
+    },
+    {
+      "id": "I04",
+      "family": "Administrative boundaries and work areas",
+      "example_inputs": "GIS polygons, codes, boundary schedules, reviewed manual boundaries",
+      "usable_information": "Ward/locality/block coverage, names, authority and dates",
+      "normalized_targets": "AdministrativeArea plus typed memberships; separate AuthoringArea",
+      "critical_limits": "Administrative hierarchy is not physical containment or ownership; coverage may overlap",
+      "delivery_phase": "First",
+      "current_evidence": "Administrative/group tables inspected",
+      "sources": "R04 R06 R08"
+    },
+    {
+      "id": "I05",
+      "family": "Roads, streets and paths",
+      "example_inputs": "GIS line/surface layers, CAD, LandXML/IFC/OpenDRIVE profiles, survey schedules",
+      "usable_information": "Alignment, road surface, lanes, widths/profiles, carriageways, structures",
+      "normalized_targets": "TransportAsset, Alignment, Surface, NetworkNode/Edge, corridor relationship",
+      "critical_limits": "Centreline, physical surface and recorded road land remain separate; crossing does not prove connectivity",
+      "delivery_phase": "First core; specialized profiles later",
+      "current_evidence": "Generic road features exist; richer transport schema proposed",
+      "sources": "R01 R04 S01 S02"
+    },
+    {
+      "id": "I06",
+      "family": "Rail, metro, bridges and tunnels",
+      "example_inputs": "GIS, IFC infrastructure, CAD/alignment profiles and asset registers",
+      "usable_information": "Tracks, station/structure parts, elevations, sections and network connections",
+      "normalized_targets": "TransportAsset subtypes; alignment; supported profile geometry; topology",
+      "critical_limits": "Do not infer a junction at an overpass or derive track geometry from service schedules",
+      "delivery_phase": "Next",
+      "current_evidence": "Proposed dedicated domain profiles",
+      "sources": "S01 S02 S04"
+    },
+    {
+      "id": "I07",
+      "family": "Water, sewer, drainage, gas and telecom assets",
+      "example_inputs": "GIS, CAD/as-built drawings, IFC MEP, CSV profiles and asset APIs",
+      "usable_information": "Pipes/ducts, nodes, dimensions, invert/crown/centre levels, material and asset IDs",
+      "normalized_targets": "UtilityAsset, profile/sweep representation, network connectivity and restrictions",
+      "critical_limits": "Depth needs a reference surface; diameter is not a restriction width; keep unknown alignment/depth distinct",
+      "delivery_phase": "First bounded; richer profiles next",
+      "current_evidence": "Generic utility/profile fields inspected; network model is proposed",
+      "sources": "R01 R04 S06"
+    },
+    {
+      "id": "I08",
+      "family": "Electricity networks and equipment",
+      "example_inputs": "Utility GIS, IFC MEP, pole/cable schedules, CAD and asset registers",
+      "usable_information": "Cables, ducts, poles, transformer parts, circuits, ports and ratings",
+      "normalized_targets": "UtilityAsset subtypes; physical route vs logical circuit relations",
+      "critical_limits": "Electrical connectivity is not identical to geometric proximity; overhead shape may be unknown",
+      "delivery_phase": "Next",
+      "current_evidence": "Proposed dedicated domain profiles",
+      "sources": "S02 S06"
+    },
+    {
+      "id": "I09",
+      "family": "Structured BIM",
+      "example_inputs": "IFC/IFCZIP and explicit vendor-export profiles",
+      "usable_information": "Project/site/building/storey/space/component hierarchy, property sets, materials and geometry",
+      "normalized_targets": "Entity graph, source-object crosswalk, representations and typed domain extensions",
+      "critical_limits": "Interpret units, nested placements and map conversion; IfcSpace is not automatically a registered flat; preserve unsupported constructs",
+      "delivery_phase": "Next priority",
+      "current_evidence": "No IFC ingestion verified in this inspection",
+      "sources": "S02 S03"
+    },
+    {
+      "id": "I10",
+      "family": "Semantic city models",
+      "example_inputs": "CityGML/CityJSON and declared encodings/versions",
+      "usable_information": "City objects, semantic surfaces, parts, relationships, appearances and source LOD",
+      "normalized_targets": "Urban entities, components, semantic representations and source-LOD metadata",
+      "critical_limits": "Do not equate source LOD with evidence completeness or flatten multipart objects into boxes",
+      "delivery_phase": "Next",
+      "current_evidence": "Proposed adapter profiles",
+      "sources": "S04"
+    },
+    {
+      "id": "I11",
+      "family": "CAD plans, sections and alignments",
+      "example_inputs": "DXF/DWG/DGN, PDF/vector exports; proprietary native files via supported exports",
+      "usable_information": "Drawing entities, layers, dimensions, blocks, sections and linework",
+      "normalized_targets": "Drawing asset and candidates, later reviewed geometry/quantities",
+      "critical_limits": "Units and layer meaning may be absent; a closed polyline need not mean a property boundary; SDK/dependency checks required",
+      "delivery_phase": "Next",
+      "current_evidence": "No broad CAD conversion verified",
+      "sources": "S01"
+    },
+    {
+      "id": "I12",
+      "family": "Floor plans and building sections",
+      "example_inputs": "PDF, PNG/JPEG/TIFF, SVG/CAD profiles and plan sets",
+      "usable_information": "Room outlines, openings, floor labels, dimensions and level references",
+      "normalized_targets": "Optional SourceAsset; calibrated candidates; storey/space/boundary representations",
+      "critical_limits": "Attachment works without extraction. Scale, geographic placement and vertical placement are separate readiness gates",
+      "delivery_phase": "First attachments; calibrated extraction next",
+      "current_evidence": "Plan/source and bounded extraction foundations inspected",
+      "sources": "R03 R04 R11"
+    },
+    {
+      "id": "I13",
+      "family": "Floor, flat and room schedules",
+      "example_inputs": "CSV/XLSX/JSON, database/API export, tabular reports",
+      "usable_information": "Unit labels, level bounds, areas, usage and cross-references",
+      "normalized_targets": "BuildingLevel/Space/SpaceGroup; observations; membership and quantity assertions",
+      "critical_limits": "A table does not imply room geometry; floor labels are not numeric heights; reported areas are not recomputed areas",
+      "delivery_phase": "First",
+      "current_evidence": "Strict level CSV inspected; arbitrary sheets need mapping",
+      "sources": "R02 R11 S01"
+    },
+    {
+      "id": "I14",
+      "family": "Survey control and measured features",
+      "example_inputs": "GNSS processed solutions, total-station/levelling exports, CSV/LandXML/control files",
+      "usable_information": "Coordinates, benchmark ties, residuals, uncertainty, epoch and measurement method",
+      "normalized_targets": "SurveyObservation, ControlPoint, ReferenceFrame and TransformOperation",
+      "critical_limits": "Raw/processed data must be distinguished; a CRS name alone does not establish vertical comparability or survey quality",
+      "delivery_phase": "First processed; raw later",
+      "current_evidence": "Basic control/placement contracts exist, richer survey metadata proposed",
+      "sources": "R03 R04 S10 S12"
+    },
+    {
+      "id": "I15",
+      "family": "Raw GNSS and correction products",
+      "example_inputs": "RINEX and authorized station/correction products",
+      "usable_information": "Observation/navigation time series, station and antenna metadata",
+      "normalized_targets": "Immutable raw assets plus later processed survey solutions and derivation record",
+      "critical_limits": "Do not draw parcel boundaries directly from raw observations; specialized processing and quality review required",
+      "delivery_phase": "Later specialized",
+      "current_evidence": "Not verified as implemented",
+      "sources": "S10"
+    },
+    {
+      "id": "I16",
+      "family": "LiDAR and other point clouds",
+      "example_inputs": "LAS/LAZ, supported point-cloud packages, E57/PLY/XYZ profiles",
+      "usable_information": "Point positions, classification, intensity, returns, time and optional colour",
+      "normalized_targets": "PointCloud asset, spatial index/metadata; separately derived terrain/building candidates",
+      "critical_limits": "No point-per-row requirement; sensor sampling and occlusion do not prove interiors, ownership or complete watertight solids",
+      "delivery_phase": "Next assets; extraction later",
+      "current_evidence": "Not verified as implemented",
+      "sources": "S07"
+    },
+    {
+      "id": "I17",
+      "family": "Terrain and surface elevation",
+      "example_inputs": "DEM/DTM/DSM GeoTIFF and other declared raster/terrain/TIN profiles",
+      "usable_information": "Ground/top-surface/bathymetric elevations, resolution, grid, no-data and dates",
+      "normalized_targets": "CoverageAsset and SurfaceModel with explicit surface meaning and reference",
+      "critical_limits": "Do not silently use top-of-roof DSM as bare ground; vertical datum, gaps and resolution are mandatory metadata",
+      "delivery_phase": "First/Next terrain profiles",
+      "current_evidence": "Not verified as implemented",
+      "sources": "S14 S12"
+    },
+    {
+      "id": "I18",
+      "family": "Aerial imagery and photogrammetry",
+      "example_inputs": "Orthophotos, georeferenced rasters, drone images, calibrated cameras, generated meshes",
+      "usable_information": "Image context; measurement-ready products only after supported alignment/reconstruction",
+      "normalized_targets": "Raster/Photo/Mesh assets; camera model; control ties; extraction derivations",
+      "critical_limits": "An ordinary screenshot is not a georeferenced survey; preserve acquisition date, resolution and processing lineage",
+      "delivery_phase": "Next",
+      "current_evidence": "Simple photo attachments exist; photogrammetry not verified",
+      "sources": "S14 S04"
+    },
+    {
+      "id": "I19",
+      "family": "Existing visual 3D models",
+      "example_inputs": "glTF/GLB, OBJ/FBX/export profiles, licensed 3D Tiles",
+      "usable_information": "Appearance meshes, textures, placement, sometimes feature metadata",
+      "normalized_targets": "VisualRepresentation/SceneAsset and explicit canonical-ID mapping",
+      "critical_limits": "A visually rich mesh may have no interiors, usable semantic IDs, watertight solid or measurement suitability",
+      "delivery_phase": "First GLB binding; other profiles later",
+      "current_evidence": "GLB presentation bindings inspected",
+      "sources": "R01 R06 S15"
+    },
+    {
+      "id": "I20",
+      "family": "Land/building registration and property records",
+      "example_inputs": "Authorized register/API/database exports, CSV/XML/JSON and deed/document scans",
+      "usable_information": "External identifiers, recorded parties, rights/restrictions, dates, shares and textual extents",
+      "normalized_targets": "RegisterRecord, LegalSpatialUnit, RRR assertion, external IDs and optional source links",
+      "critical_limits": "Record metadata without geometry remains searchable but unplaced; a document scan or importer is not legal adjudication",
+      "delivery_phase": "First metadata; richer domain next",
+      "current_evidence": "Registry/identifier scaffolding inspected; full legal model proposed",
+      "sources": "R02 R06 R07 S05 S16"
+    },
+    {
+      "id": "I21",
+      "family": "Residents, occupancies, leases and organizations",
+      "example_inputs": "Authorized CSV/API/property-management export, reviewed forms and optional agreements",
+      "usable_information": "Party identities, time-bounded occupancy/tenancy and organization roles",
+      "normalized_targets": "Restricted Party/Occupancy/RRR relationships, separate from AppAccount",
+      "critical_limits": "Living in a flat, owning it and logging into the app are distinct. Do not put PII or agreement URLs in public tiles",
+      "delivery_phase": "Next optional",
+      "current_evidence": "Current rights use party strings; normalized private model proposed",
+      "sources": "R02 S05"
+    },
+    {
+      "id": "I22",
+      "family": "Water bodies, vegetation, terrain use and context",
+      "example_inputs": "GIS, classified imagery, field inventories, ecological/asset datasets",
+      "usable_information": "Surface extents, vegetation/land cover and time-specific water levels",
+      "normalized_targets": "WaterBody/Vegetation/LandCover entities; appropriate surface representations",
+      "critical_limits": "A shoreline, bed, flood envelope and measured water level are different representations",
+      "delivery_phase": "Next",
+      "current_evidence": "Generic public-land kind insufficient for full semantics",
+      "sources": "R01 S04 S14"
+    },
+    {
+      "id": "I23",
+      "family": "Web services and continuously delivered datasets",
+      "example_inputs": "OGC API Features/WFS, ArcGIS services, WMS/WMTS, authorized object catalogs and APIs",
+      "usable_information": "Feature pages, raster images, coverage descriptions, provenance and update tokens",
+      "normalized_targets": "DatasetRevision/SourceAsset snapshots or permitted external references, then domain adapters",
+      "critical_limits": "Protocol is not a domain type; WMS images are not raw features; handle paging, rate limits, rights and incomplete acquisitions",
+      "delivery_phase": "First bounded; general bulk next",
+      "current_evidence": "Curated/bounded acquisition only established",
+      "sources": "R12 S08 S09 S14"
+    },
+    {
+      "id": "I24",
+      "family": "Manual, AI-assisted and synthetic inputs",
+      "example_inputs": "Forms, tracing, measured edits, model proposals and canonical fixtures",
+      "usable_information": "Explicit user-authored or inferred candidates and scenario parameters",
+      "normalized_targets": "Observation, CandidateRevision, Decision, Derivation and scenario-scoped entities",
+      "critical_limits": "AI output cannot self-approve; preserve source locators and operator/model versions; synthetic alternatives must not contaminate observed world",
+      "delivery_phase": "First",
+      "current_evidence": "Candidate fact and world-status concepts inspected",
+      "sources": "R01 R04 S13"
+    },
+    {
+      "id": "I25",
+      "family": "Sensors and time-varying observations",
+      "example_inputs": "Time-series APIs/files for asset state, level, status or monitoring",
+      "usable_information": "Timestamped observed-property values tied to features or locations",
+      "normalized_targets": "ObservationSeries asset plus indexed metadata and current-value view",
+      "critical_limits": "Not every observation revises the static building mesh; separate sampling quality from cadastral evidence",
+      "delivery_phase": "Later optional",
+      "current_evidence": "Not verified as implemented",
+      "sources": "S04 S14"
+    }
+  ]
+}

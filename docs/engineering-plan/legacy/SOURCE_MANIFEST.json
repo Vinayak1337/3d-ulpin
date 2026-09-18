@@ -1,0 +1,38 @@
+[
+  {
+    "source_archive": "3D_ULPIN_Unified_Schema_Plan_Pack.zip",
+    "source_member": "06_SCHEMA_TASKS.json",
+    "preserved_copy": "legacy/schema_tasks.json",
+    "sha256": "d71d0f13db90874323efc517b2252d0231257ffb2dd2a2c1a0f550c1d72e909e"
+  },
+  {
+    "source_archive": "3D_ULPIN_Renderer_First_Plan_Pack.zip",
+    "source_member": "task_board.json",
+    "preserved_copy": "legacy/renderer_tasks.json",
+    "sha256": "c1b7cba9dbb05b3814878b8235b951e31945b583bee8e41a9ad9f614d86c285f"
+  },
+  {
+    "source_archive": "3D_ULPIN_Unified_Schema_Plan_Pack.zip",
+    "source_member": "07_ACCEPTANCE_TESTS.md",
+    "preserved_copy": "legacy/schema_acceptance_tests.md",
+    "sha256": "ee29996ebabd5002ff061da50f6e693957becb3993eccace61e95078c83e2f34"
+  },
+  {
+    "source_archive": "3D_ULPIN_Unified_Schema_Plan_Pack.zip",
+    "source_member": "02_INPUT_CATALOG.json",
+    "preserved_copy": "legacy/input_catalog.json",
+    "sha256": "d35854dc2815f3a7655a195a6b6b05f41034ee3019554b9909fa456ed584ebe8"
+  },
+  {
+    "source_archive": "3D_ULPIN_Renderer_First_Plan_Pack.zip",
+    "source_member": "ui_gates.json",
+    "preserved_copy": "legacy/ui_gates.json",
+    "sha256": "67e4d45af214a4770ba3181e6d3681ab1d9c415f705dba63ccae2c8a40ef0a6c"
+  },
+  {
+    "source_archive": "3D_ULPIN_Renderer_First_Plan_Pack.zip",
+    "source_member": "benchmarks.json",
+    "preserved_copy": "legacy/benchmarks.json",
+    "sha256": "8496d6a7100d694d0025714c27e1b9d5385cb9f1d24856e20e1ac904064409e2"
+  }
+]

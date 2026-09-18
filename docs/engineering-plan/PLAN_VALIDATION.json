@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "kind": "planning_record_consistency_only",
+  "checks_passed": 26,
+  "checks": [
+    "Execution and maintenance IDs are unique",
+    "Edge-case IDs are unique",
+    "Task statuses use the declared workflow",
+    "Active implementation WIP does not exceed its declared limit",
+    "All dependencies resolve",
+    "Dependency graph is acyclic",
+    "Preferred execution order respects dependencies",
+    "Any accepted tasks have evidence references and accepted prerequisites",
+    "Detailed plans claimed as authored actually exist",
+    "Every old schema/renderer task has one unambiguous crosswalk record",
+    "All legacy mapping targets resolve",
+    "Task-to-legacy and legacy-to-task mappings agree",
+    "All 28 original schema tests remain traceable",
+    "Schema test-to-edge-case references resolve",
+    "All edge-case task references resolve",
+    "Every original ui_gates record is retained",
+    "All ui_gates task references resolve",
+    "Every original benchmarks record is retained",
+    "All benchmarks task references resolve",
+    "Product requirement-to-task references resolve",
+    "All 25 input families are retained",
+    "All input profile task references resolve",
+    "Preserved legacy records match their source hashes",
+    "Next task exists",
+    "No core-release task depends on optional expansion",
+    "Proof cleanup is not a hidden product dependency"
+  ],
+  "not_verified": [
+    "Application code or behavior",
+    "Database migrations or integrity",
+    "Desktop access or deletion",
+    "Source-format parsing",
+    "Geodetic/geometry correctness",
+    "Actual renderer images or performance",
+    "Physical device accessibility",
+    "Complete prior conversation retrieval"
+  ]
+}

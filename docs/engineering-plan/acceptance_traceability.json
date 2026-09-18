@@ -1,0 +1,818 @@
+{
+  "requirements": [
+    {
+      "id": "RQ01",
+      "requirement": "One reusable visual system across supported neighbourhoods",
+      "tasks": [
+        "T017",
+        "T023",
+        "T026",
+        "T032"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ02",
+      "requirement": "Originals, stable IDs and history survive evolution",
+      "tasks": [
+        "T004",
+        "T005",
+        "T009",
+        "T010",
+        "T013"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ03",
+      "requirement": "Multi-source composition with explicit partial/unsupported results",
+      "tasks": [
+        "T007",
+        "T008",
+        "T011",
+        "T012"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ04",
+      "requirement": "Frame-aware geometry and independently defined quantities",
+      "tasks": [
+        "T006",
+        "T007",
+        "T022",
+        "T030"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ05",
+      "requirement": "Map, register and plans share identity/state, not duplicate truth",
+      "tasks": [
+        "T014",
+        "T015",
+        "T016",
+        "T039",
+        "T042"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ06",
+      "requirement": "Actual interactive full-map fidelity, not static mockup substitution",
+      "tasks": [
+        "T021",
+        "T023",
+        "T027"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ07",
+      "requirement": "Bounded discovery/loading and coherent cross-area publication",
+      "tasks": [
+        "T020",
+        "T028",
+        "T029",
+        "T031",
+        "T032"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ08",
+      "requirement": "Multi-level/shared spaces and optional documents",
+      "tasks": [
+        "T004",
+        "T012",
+        "T039",
+        "T040",
+        "T042"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ09",
+      "requirement": "Safe drafts, reviews, revisions and history",
+      "tasks": [
+        "T008",
+        "T010",
+        "T041",
+        "T045",
+        "T046"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ10",
+      "requirement": "Source safety, privacy and truthful access scope",
+      "tasks": [
+        "T005",
+        "T011",
+        "T049",
+        "T055"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ11",
+      "requirement": "One verified live original-upload-to-computed-finding journey",
+      "tasks": [
+        "T011",
+        "T012",
+        "T043",
+        "T047"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ12",
+      "requirement": "Backward-compatible incremental migration, not a rewrite",
+      "tasks": [
+        "T009",
+        "T010",
+        "T013",
+        "T051"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ13",
+      "requirement": "One active task, JIT plan and evidence-based completion",
+      "tasks": [
+        "T001",
+        "T003",
+        "T013",
+        "T048",
+        "T052"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ14",
+      "requirement": "Explicit extension points without universal-format scope creep",
+      "tasks": [
+        "T003",
+        "T007",
+        "T053",
+        "T054",
+        "T056"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ15",
+      "requirement": "Proof cleanup never deletes product or original source data",
+      "tasks": [
+        "M001"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "RQ16",
+      "requirement": "Reproducible setup, isolated tests, restore and additive transfer",
+      "tasks": [
+        "T001",
+        "T010",
+        "T051"
+      ],
+      "status": "Planned"
+    }
+  ],
+  "schema_tests": [
+    {
+      "legacy_id": "schema-test:T01",
+      "title": "Original preservation",
+      "edge_cases": [
+        "EC001",
+        "EC002",
+        "EC024"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T02",
+      "title": "Normalization equivalence",
+      "edge_cases": [
+        "EC008",
+        "EC009",
+        "EC014"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T03",
+      "title": "Z and M semantics",
+      "edge_cases": [
+        "EC006"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T04",
+      "title": "Coordinate axes and units",
+      "edge_cases": [
+        "EC008",
+        "EC009",
+        "EC010"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T05",
+      "title": "Vertical reference",
+      "edge_cases": [
+        "EC011",
+        "EC012"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T06",
+      "title": "Plan calibration",
+      "edge_cases": [
+        "EC013"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T07",
+      "title": "Semantic mismatch",
+      "edge_cases": [
+        "EC017"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T08",
+      "title": "Identity resolution",
+      "edge_cases": [
+        "EC019",
+        "EC020",
+        "EC021"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T09",
+      "title": "Replay and changed mapping",
+      "edge_cases": [
+        "EC025",
+        "EC026",
+        "EC027"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T10",
+      "title": "Split and merge",
+      "edge_cases": [
+        "EC022"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T11",
+      "title": "Multi-source composition",
+      "edge_cases": [
+        "EC018",
+        "EC030",
+        "EC043"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T12",
+      "title": "Conflicting observations",
+      "edge_cases": [
+        "EC017",
+        "EC029"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T13",
+      "title": "Cross-block identity",
+      "edge_cases": [
+        "EC012",
+        "EC043"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T14",
+      "title": "Cross-tile semantics",
+      "edge_cases": [
+        "EC037",
+        "EC044",
+        "EC048"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T15",
+      "title": "Topology",
+      "edge_cases": [
+        "EC045",
+        "EC046"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T16",
+      "title": "Level and shared-space model",
+      "edge_cases": [
+        "EC023",
+        "EC038"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T17",
+      "title": "Geometry capability",
+      "edge_cases": [
+        "EC007",
+        "EC014",
+        "EC015",
+        "EC016"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T18",
+      "title": "Optional documents",
+      "edge_cases": [
+        "EC002",
+        "EC003",
+        "EC018"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T19",
+      "title": "Evidence specificity",
+      "edge_cases": [
+        "EC024",
+        "EC063"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T20",
+      "title": "Private parties and source permissions",
+      "edge_cases": [
+        "EC036",
+        "EC062",
+        "EC063"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T21",
+      "title": "Temporal correctness",
+      "edge_cases": [
+        "EC029",
+        "EC063"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T22",
+      "title": "Render/measurement independence",
+      "edge_cases": [
+        "EC048",
+        "EC049"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T23",
+      "title": "Incremental invalidation",
+      "edge_cases": [
+        "EC053"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T24",
+      "title": "Bulk recovery",
+      "edge_cases": [
+        "EC030",
+        "EC052",
+        "EC065",
+        "EC066"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T25",
+      "title": "Publication consistency",
+      "edge_cases": [
+        "EC035",
+        "EC051"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T26",
+      "title": "Scale and boundary geography",
+      "edge_cases": [
+        "EC055",
+        "EC056",
+        "EC058"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T27",
+      "title": "Backward compatibility",
+      "edge_cases": [
+        "EC031",
+        "EC032",
+        "EC033",
+        "EC064"
+      ],
+      "status": "Planned"
+    },
+    {
+      "legacy_id": "schema-test:T28",
+      "title": "Input safety and counts",
+      "edge_cases": [
+        "EC004",
+        "EC005",
+        "EC006",
+        "EC030",
+        "EC065",
+        "EC066"
+      ],
+      "status": "Planned"
+    }
+  ],
+  "ui_gates": [
+    {
+      "id": "UI-01",
+      "title": "Map shell",
+      "original_acceptance": "Scene is live; no primary action clipped at reference viewports.",
+      "tasks": [
+        "T033",
+        "T037"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-02",
+      "title": "Camera and layers",
+      "original_acceptance": "2D stays top-down; controls remain accessible; layer hiding changes display, not analysis scope.",
+      "tasks": [
+        "T034",
+        "T037"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-03",
+      "title": "Global search and area navigation",
+      "original_acceptance": "Resolve IDs without downloading all geometry or silently selecting an ambiguous property.",
+      "tasks": [
+        "T028",
+        "T034",
+        "T037"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-04",
+      "title": "Property inspector and list",
+      "original_acceptance": "Same entity after rapid clicks/unload/reload; partial geometry and missing records are explicit.",
+      "tasks": [
+        "T035",
+        "T037"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-05",
+      "title": "Utilities and findings",
+      "original_acceptance": "Correct endpoints/axes; missing depth remains unknown; no false area addition.",
+      "tasks": [
+        "T035",
+        "T037"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-06",
+      "title": "Map history and export",
+      "original_acceptance": "Snapshot stays consistent; export carries quantity definitions and provenance.",
+      "tasks": [
+        "T036",
+        "T037"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-07",
+      "title": "Responsive map",
+      "original_acceptance": "390x844 and native touch tested; no fixed inspector covering map controls.",
+      "tasks": [
+        "T036",
+        "T050"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-08",
+      "title": "Building/register page",
+      "original_acceptance": "Exterior-only and zero-document buildings are first-class states.",
+      "tasks": [
+        "T038",
+        "T042"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-09",
+      "title": "Floors, flats and shared spaces",
+      "original_acceptance": "Model, plan, table, areas and bedroom counts agree; duplex/shared-space cases pass.",
+      "tasks": [
+        "T039",
+        "T042"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-10",
+      "title": "Section and exploded model",
+      "original_acceptance": "Offsets are display-only; true coordinates and measurements stay unchanged.",
+      "tasks": [
+        "T039",
+        "T042"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-11",
+      "title": "Optional evidence and photos",
+      "original_acceptance": "Attach at building/floor/flat level; distinguish inherited links and retain access checks.",
+      "tasks": [
+        "T040",
+        "T042"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-12",
+      "title": "Record history, issues and investigation",
+      "original_acceptance": "Use actual lifecycle; missing evidence cannot become a false accepted result.",
+      "tasks": [
+        "T041",
+        "T042"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-13",
+      "title": "Import, mapping and reconciliation",
+      "original_acceptance": "Supported profiles only; duplicates/conflicts/errors explicit; reimport is idempotent.",
+      "tasks": [
+        "T043",
+        "T047"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-14",
+      "title": "Source workspace and calibration",
+      "original_acceptance": "Scale is separate from placement; known and missing reference fields are visible.",
+      "tasks": [
+        "T044",
+        "T047"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-15",
+      "title": "Geometry/attribute editing",
+      "original_acceptance": "Draft edits preserve identity; no silent mutation of accepted/source geometry.",
+      "tasks": [
+        "T045",
+        "T047"
+      ],
+      "status": "Planned"
+    },
+    {
+      "id": "UI-16",
+      "title": "Build, review and publish",
+      "original_acceptance": "No half-built snapshot displayed as current; conflict/retry/rollback states work.",
+      "tasks": [
+        "T046",
+        "T047"
+      ],
+      "status": "Planned"
+    }
+  ],
+  "benchmarks": [
+    {
+      "id": "B01",
+      "category": "Visual",
+      "criterion": "Architecture and massing",
+      "initial_proposed_target": "At least 4/5 on every applicable scene dimension",
+      "original_method": "Fixed camera suite, paired reference/candidate views",
+      "tasks": [
+        "T024",
+        "T027"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B02",
+      "category": "Visual",
+      "criterion": "Materials, lighting and grounding",
+      "initial_proposed_target": "At least 4/5; no critical artifact",
+      "original_method": "Reference crops plus moving-camera capture",
+      "tasks": [
+        "T025",
+        "T027"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B03",
+      "category": "Visual",
+      "criterion": "Cross-dataset consistency",
+      "initial_proposed_target": "All supported fixture families pass their capability-specific target",
+      "original_method": "Same compiler/profile, no locality-specific code",
+      "tasks": [
+        "T026",
+        "T032"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B04",
+      "category": "Visual",
+      "criterion": "UI fidelity",
+      "initial_proposed_target": "At least 4/5 in each applicable UI dimension",
+      "original_method": "1672x941 and 1920x1080; independent responsive/zoom review",
+      "tasks": [
+        "T037",
+        "T042",
+        "T048"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B05",
+      "category": "Geometry",
+      "criterion": "Analytical transform round-trip",
+      "initial_proposed_target": "<=1 mm for declared exact local synthetic fixtures",
+      "original_method": "Independent numeric expected coordinates; actual source uncertainty separate",
+      "tasks": [
+        "T006",
+        "T013"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B06",
+      "category": "Geometry",
+      "criterion": "Near-inspection display placement",
+      "initial_proposed_target": "<=1 cm on declared exact synthetic profile",
+      "original_method": "Compare rendered/high-detail vertices to canonical geometry",
+      "tasks": [
+        "T022",
+        "T030"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B07",
+      "category": "Geometry",
+      "criterion": "Measurement invariance",
+      "initial_proposed_target": "No semantic/numeric change beyond declared computational tolerance",
+      "original_method": "Same canonical revision through LOD, retiling, camera movement and reload",
+      "tasks": [
+        "T022",
+        "T039"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B08",
+      "category": "Geometry",
+      "criterion": "Missing-data behavior",
+      "initial_proposed_target": "Zero silent invented measurements or properties",
+      "original_method": "Footprint-only, unknown-height/depth and unplaced-frame cases",
+      "tasks": [
+        "T013",
+        "T035"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B09",
+      "category": "Identity",
+      "criterion": "Streaming identity",
+      "initial_proposed_target": "Zero duplicate or changed canonical identities",
+      "original_method": "Select, leave, unload, return, refine, repack and history-switch",
+      "tasks": [
+        "T020",
+        "T030"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B10",
+      "category": "Performance",
+      "criterion": "Warm desktop frame time",
+      "initial_proposed_target": "Target median <=16.7 ms; p95 <=33.3 ms",
+      "original_method": "Fixed 60-second camera path, declared device/DPR/profile",
+      "tasks": [
+        "T032"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B11",
+      "category": "Performance",
+      "criterion": "First useful geometry",
+      "initial_proposed_target": "Target <=5 seconds under named test conditions",
+      "original_method": "Cold/warm measured separately; high-detail completion recorded separately",
+      "tasks": [
+        "T032"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B12",
+      "category": "Resources",
+      "criterion": "Bounded caching",
+      "initial_proposed_target": "Start 512 MiB tile target + 256 MiB permitted overflow; calibrate",
+      "original_method": "Combined active tile estimates plus separate other resources; repeated-route plateau",
+      "tasks": [
+        "T029",
+        "T032"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B13",
+      "category": "Streaming",
+      "criterion": "Coverage and replacement",
+      "initial_proposed_target": "No avoidable blank holes/double rendering when refining",
+      "original_method": "Coarse fallback; failed child; rapid travel; seam and context-loss test",
+      "tasks": [
+        "T029",
+        "T032"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B14",
+      "category": "Data",
+      "criterion": "Equivalent adapter output",
+      "initial_proposed_target": "Supported equivalent inputs produce equivalent quantities/roles",
+      "original_method": "Cross-adapter fixtures plus retained source/unsupported fields",
+      "tasks": [
+        "T011",
+        "T013"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B15",
+      "category": "Evidence",
+      "criterion": "Optional source documents",
+      "initial_proposed_target": "Building/floor/flat flow passes with zero attachments",
+      "original_method": "Then attach and unlink scoped sources without altering geometry",
+      "tasks": [
+        "T012",
+        "T042"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B16",
+      "category": "Publication",
+      "criterion": "Atomic scene update",
+      "initial_proposed_target": "Never combine incompatible current geometry and metadata",
+      "original_method": "Interrupted build, stale response, cache reuse and rollback fixtures",
+      "tasks": [
+        "T031",
+        "T047"
+      ],
+      "status": "Proposed; not measured"
+    },
+    {
+      "id": "B17",
+      "category": "Security",
+      "criterion": "Public/private separation",
+      "initial_proposed_target": "No restricted personal data or document URLs in public tiles",
+      "original_method": "Inspect tile metadata, caches, thumbnails and authorization boundaries",
+      "tasks": [
+        "T049"
+      ],
+      "status": "Proposed; not measured"
+    }
+  ]
+}

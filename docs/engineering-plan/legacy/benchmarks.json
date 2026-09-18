@@ -1,0 +1,138 @@
+[
+  [
+    "B01",
+    "Visual",
+    "Architecture and massing",
+    "At least 4/5 on every applicable scene dimension",
+    "Fixed camera suite, paired reference/candidate views",
+    "Proposed"
+  ],
+  [
+    "B02",
+    "Visual",
+    "Materials, lighting and grounding",
+    "At least 4/5; no critical artifact",
+    "Reference crops plus moving-camera capture",
+    "Proposed"
+  ],
+  [
+    "B03",
+    "Visual",
+    "Cross-dataset consistency",
+    "All supported fixture families pass their capability-specific target",
+    "Same compiler/profile, no locality-specific code",
+    "Proposed"
+  ],
+  [
+    "B04",
+    "Visual",
+    "UI fidelity",
+    "At least 4/5 in each applicable UI dimension",
+    "1672x941 and 1920x1080; independent responsive/zoom review",
+    "Proposed"
+  ],
+  [
+    "B05",
+    "Geometry",
+    "Analytical transform round-trip",
+    "<=1 mm for declared exact local synthetic fixtures",
+    "Independent numeric expected coordinates; actual source uncertainty separate",
+    "Proposed"
+  ],
+  [
+    "B06",
+    "Geometry",
+    "Near-inspection display placement",
+    "<=1 cm on declared exact synthetic profile",
+    "Compare rendered/high-detail vertices to canonical geometry",
+    "Proposed"
+  ],
+  [
+    "B07",
+    "Geometry",
+    "Measurement invariance",
+    "No semantic/numeric change beyond declared computational tolerance",
+    "Same canonical revision through LOD, retiling, camera movement and reload",
+    "Proposed"
+  ],
+  [
+    "B08",
+    "Geometry",
+    "Missing-data behavior",
+    "Zero silent invented measurements or properties",
+    "Footprint-only, unknown-height/depth and unplaced-frame cases",
+    "Proposed"
+  ],
+  [
+    "B09",
+    "Identity",
+    "Streaming identity",
+    "Zero duplicate or changed canonical identities",
+    "Select, leave, unload, return, refine, repack and history-switch",
+    "Proposed"
+  ],
+  [
+    "B10",
+    "Performance",
+    "Warm desktop frame time",
+    "Target median <=16.7 ms; p95 <=33.3 ms",
+    "Fixed 60-second camera path, declared device/DPR/profile",
+    "Proposed"
+  ],
+  [
+    "B11",
+    "Performance",
+    "First useful geometry",
+    "Target <=5 seconds under named test conditions",
+    "Cold/warm measured separately; high-detail completion recorded separately",
+    "Proposed"
+  ],
+  [
+    "B12",
+    "Resources",
+    "Bounded caching",
+    "Start 512 MiB tile target + 256 MiB permitted overflow; calibrate",
+    "Combined active tile estimates plus separate other resources; repeated-route plateau",
+    "Proposed"
+  ],
+  [
+    "B13",
+    "Streaming",
+    "Coverage and replacement",
+    "No avoidable blank holes/double rendering when refining",
+    "Coarse fallback; failed child; rapid travel; seam and context-loss test",
+    "Proposed"
+  ],
+  [
+    "B14",
+    "Data",
+    "Equivalent adapter output",
+    "Supported equivalent inputs produce equivalent quantities/roles",
+    "Cross-adapter fixtures plus retained source/unsupported fields",
+    "Proposed"
+  ],
+  [
+    "B15",
+    "Evidence",
+    "Optional source documents",
+    "Building/floor/flat flow passes with zero attachments",
+    "Then attach and unlink scoped sources without altering geometry",
+    "Proposed"
+  ],
+  [
+    "B16",
+    "Publication",
+    "Atomic scene update",
+    "Never combine incompatible current geometry and metadata",
+    "Interrupted build, stale response, cache reuse and rollback fixtures",
+    "Proposed"
+  ],
+  [
+    "B17",
+    "Security",
+    "Public/private separation",
+    "No restricted personal data or document URLs in public tiles",
+    "Inspect tile metadata, caches, thumbnails and authorization boundaries",
+    "Proposed"
+  ]
+]

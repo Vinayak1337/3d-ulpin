@@ -1,5 +1,13 @@
 # 3D ULPIN hackathon implementation
 
+Execution policy (18 September 2026): `docs/engineering-plan/backlog.json` is the
+adopted task/status authority on `feat/unified-spatial-foundation`. Continue one
+bounded task at a time, with its detailed plan, tests, review and recorded result.
+The branch preserves the inherited `feat/reusable-spatial-map-core` implementation;
+assess its coverage rather than rebuilding it. A task is not accepted merely
+because its types compile or an earlier branch contains related code. Keep
+private-PC data and isolated hosted-fixture verification explicitly distinct.
+
 Current branch implementation scope (18 September 2026): build the authorized reusable renderer-first and unified-schema foundation on a separate branch. All pages delegate to the shared MapViewport/runtime; source-specific adapters may remain during compatibility migration. Use one layout-scoped resource cache and view-session service rather than page-specific copies. Canonical data remains in existing services. Establish and test the shared contract, compiler and streamed calibration maps before claiming visual acceptance or expanding all later UIs. See docs/SHARED_MAP_IMPLEMENTATION.md. Earlier dated presentation scopes below are historical and do not override this instruction.
 
 

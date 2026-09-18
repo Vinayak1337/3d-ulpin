@@ -1,0 +1,1107 @@
+{
+  "date": "2026-09-18",
+  "status": "Planning only; implementation not authorized",
+  "goals": [
+    {
+      "id": "G0",
+      "name": "Lock references and acceptance",
+      "exit": "Approve the visual target, evidence rules and test workloads before authorizing implementation."
+    },
+    {
+      "id": "G1",
+      "name": "Unified spatial data foundation",
+      "exit": "One versioned contract preserves identity, geometry meaning, coordinates and optional attachments across sources."
+    },
+    {
+      "id": "G2",
+      "name": "Scene compiler and streamed foundation",
+      "exit": "The same contract creates reusable, identifiable render assets and a minimal tiled viewport."
+    },
+    {
+      "id": "G3",
+      "name": "Complete-map visual fidelity",
+      "exit": "An actual full neighbourhood meets the primary mockup quality across several camera angles."
+    },
+    {
+      "id": "G4",
+      "name": "Cross-area consistency and scale",
+      "exit": "Different datasets stream together without identity, measurement, style or memory regressions."
+    },
+    {
+      "id": "G5",
+      "name": "Map workspace UI",
+      "exit": "Add the benchmarked map shell and navigation after the scene-quality gates pass."
+    },
+    {
+      "id": "G6",
+      "name": "Building, floor, unit and optional evidence UI",
+      "exit": "Linked inspections reuse one model and work with no documents attached."
+    },
+    {
+      "id": "G7",
+      "name": "Multi-source import and editing UI",
+      "exit": "Operators normalize, reconcile, edit and publish revisioned changes without a second data model."
+    },
+    {
+      "id": "G8",
+      "name": "Release hardening and expansion",
+      "exit": "Regression, accessibility, privacy, operational recovery and held-out datasets qualify a reproducible release."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "R01",
+      "goal": "G0",
+      "title": "Approve reference manifest and screen mapping",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Visual lead",
+      "size": "S",
+      "depends_on": [],
+      "deliverable": "Hash-addressed reference map and canonical screen names",
+      "acceptance": "Review the three anchors and supporting states; resolve misleading filenames and image data contradictions.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "R02",
+      "goal": "G0",
+      "title": "Approve visual rubric and camera suite",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Visual lead",
+      "size": "S",
+      "depends_on": [
+        "R01"
+      ],
+      "deliverable": "Scored rubric, crop masks and fixed camera/viewport profiles",
+      "acceptance": "Separate scene and UI scores; require every critical dimension to pass and user sign-off for each primary state.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "R03",
+      "goal": "G0",
+      "title": "Inventory reusable product capabilities",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Architecture lead",
+      "size": "M",
+      "depends_on": [],
+      "deliverable": "Keep/adapt/replace map and compatibility baseline",
+      "acceptance": "List existing APIs, entities, IDs, scene assets, tests and legacy routes; record actual base commit and uncommitted changes.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "R04",
+      "goal": "G0",
+      "title": "Define fixture and held-out dataset suite",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Data and QA",
+      "size": "M",
+      "depends_on": [
+        "R01"
+      ],
+      "deliverable": "F01-F09 fixture specifications with expected properties",
+      "acceptance": "Include dense, sloped, sparse, courtyard, cross-boundary and partial-data scenes; keep one external hold-out unseen by generator authors.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "R05",
+      "goal": "G0",
+      "title": "Declare hardware and benchmark workload",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "QA/performance",
+      "size": "S",
+      "depends_on": [
+        "R02",
+        "R04"
+      ],
+      "deliverable": "Device, browser, DPR, network and camera-path profiles",
+      "acceptance": "Separate warm/cold loading and rendering profiles; numerical budgets are proposed targets, never historical results.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "R06",
+      "goal": "G0",
+      "title": "Approve renderer-first architecture and scope",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Architecture lead",
+      "size": "S",
+      "depends_on": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05"
+      ],
+      "deliverable": "Decision record and implementation authorization checkpoint",
+      "acceptance": "Agree one globe renderer, canonical storage boundary, map-first milestone, optional documents and explicit non-goals.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "D01",
+      "goal": "G1",
+      "title": "Define identities, features and spatial relationships",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Architecture lead",
+      "size": "M",
+      "depends_on": [
+        "R06"
+      ],
+      "deliverable": "Versioned entity/relationship contract",
+      "acceptance": "Buildings cross areas/parcels; duplex units span levels; IDs survive movement, renaming, tile splits and reimports.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "D02",
+      "goal": "G1",
+      "title": "Define geometry roles and measurement capabilities",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Geometry engineer",
+      "size": "M",
+      "depends_on": [
+        "D01"
+      ],
+      "deliverable": "Typed footprint/surface/solid/network/asset representations",
+      "acceptance": "Distinguish ground footprint, roof projection, rights boundary, exterior and display mesh; unsupported quantities return unavailable.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "D03",
+      "goal": "G1",
+      "title": "Define coordinate and vertical-reference rules",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Geometry engineer",
+      "size": "M",
+      "depends_on": [
+        "D02"
+      ],
+      "deliverable": "Frame/transform registry and numerical test vectors",
+      "acceptance": "Explicit units/axes/height reference; known synthetic transforms round-trip within budget; unknown placement is not placed at origin.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "D04",
+      "goal": "G1",
+      "title": "Define provenance and optional attachment links",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Data/backend",
+      "size": "M",
+      "depends_on": [
+        "D01"
+      ],
+      "deliverable": "SourceObservation and zero-to-many EvidenceLink contracts",
+      "acceptance": "A building, floor and unit work with zero PDFs; direct and inherited links are distinct; no documents are required merely to view geometry.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "D05",
+      "goal": "G1",
+      "title": "Define revision, scenario and publication snapshots",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Architecture lead",
+      "size": "M",
+      "depends_on": [
+        "D01",
+        "D02",
+        "D04"
+      ],
+      "deliverable": "Revision/branch/snapshot contract",
+      "acceptance": "Synthetic and observed scenarios cannot silently mix; a scene manifest binds compatible geometry and metadata revisions.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "D06",
+      "goal": "G1",
+      "title": "Normalize existing records and first input adapters",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Data/backend",
+      "size": "L",
+      "depends_on": [
+        "D02",
+        "D03",
+        "D04",
+        "D05"
+      ],
+      "deliverable": "Adapters for current records, canonical JSON, GeoJSON and CSV schedules",
+      "acceptance": "Equivalent supported inputs normalize to equivalent quantities; original bytes, unmapped attributes and item-level failures are preserved.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "D07",
+      "goal": "G1",
+      "title": "Implement purpose-specific validation and readiness",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Geometry and QA",
+      "size": "M",
+      "depends_on": [
+        "D06"
+      ],
+      "deliverable": "View-ready, inspection-ready and measurement-capable checks",
+      "acceptance": "Partial valid features are not blocked by unrelated missing PDFs; unknown height stays unknown; no repair is silently accepted.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "D08",
+      "goal": "G1",
+      "title": "Publish canonical contract conformance fixtures",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "QA",
+      "size": "M",
+      "depends_on": [
+        "D07",
+        "R04"
+      ],
+      "deliverable": "Versioned examples and negative tests",
+      "acceptance": "Zero-document case, holes, invalid polygons, missing datum, conflicting sources and repeated imports all produce expected outcomes.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "C01",
+      "goal": "G2",
+      "title": "Define render recipe and asset derivation contract",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Rendering lead",
+      "size": "M",
+      "depends_on": [
+        "D08"
+      ],
+      "deliverable": "Scene compiler specification and cache keys",
+      "acceptance": "The same geometry/style/compiler revisions produce stable geometry and appearance; seeds use entity/component IDs, not tile position.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "C02",
+      "goal": "G2",
+      "title": "Build polygon and part-aware massing",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Geometry/rendering",
+      "size": "L",
+      "depends_on": [
+        "C01"
+      ],
+      "deliverable": "Footprint/part to exterior compiler",
+      "acceptance": "Concave outlines, courtyards, multipart buildings and supported height profiles preserve their modeled extents; no bounding-box substitution.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "C03",
+      "goal": "G2",
+      "title": "Build road, ground and network geometry",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Geometry/rendering",
+      "size": "L",
+      "depends_on": [
+        "C01"
+      ],
+      "deliverable": "Surface/network compiler with neighbour context",
+      "acceptance": "Variable widths, junctions, terrain, bridges and supported utility profiles are represented without inventing missing dimensions.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "C04",
+      "goal": "G2",
+      "title": "Build material and architecture recipe library",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Technical artist",
+      "size": "L",
+      "depends_on": [
+        "C01"
+      ],
+      "deliverable": "Versioned PBR materials, facade rules and reusable parts",
+      "acceptance": "Material scale is metric; party walls do not receive arbitrary balconies; optional inferred detail is labelled and excluded from analytical geometry.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "C05",
+      "goal": "G2",
+      "title": "Define tile packing, feature metadata and LODs",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Streaming engineer",
+      "size": "L",
+      "depends_on": [
+        "C02",
+        "C03",
+        "C04"
+      ],
+      "deliverable": "3D Tiles/glTF package profile and feature-ID map",
+      "acceptance": "Several spatial tiles retain canonical IDs; coarser LODs preserve intended silhouettes and declared error; interiors are separate on-demand content.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "C06",
+      "goal": "G2",
+      "title": "Integrate minimal streamed viewport",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Rendering lead",
+      "size": "L",
+      "depends_on": [
+        "C05",
+        "R03"
+      ],
+      "deliverable": "Cesium-based render harness in the existing app boundary",
+      "acceptance": "Load a small tileset, pan/orbit/zoom and pick IDs; no full-area all-feature array is required for world rendering.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "C07",
+      "goal": "G2",
+      "title": "Add measurement probes and inspection overlays",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Geometry and QA",
+      "size": "M",
+      "depends_on": [
+        "C06",
+        "D03"
+      ],
+      "deliverable": "Exact-geometry probe, ground scale and test overlays",
+      "acceptance": "Numbers come from named canonical revisions; display offsets/LOD changes cannot change values; ambiguous or unloaded exact geometry is explicit.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "C08",
+      "goal": "G2",
+      "title": "Qualify renderer and metadata compatibility",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Rendering and QA",
+      "size": "M",
+      "depends_on": [
+        "C06",
+        "C07",
+        "R05"
+      ],
+      "deliverable": "Engine/version decision with repeatable evidence",
+      "acceptance": "Confirm materials, picking, clipping, tiling and recovery on the pinned stack; switch engines only on a documented unmet gate, not preference.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "V01",
+      "goal": "G3",
+      "title": "Compose the complete reference-style neighbourhood",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Technical artist",
+      "size": "L",
+      "depends_on": [
+        "C08",
+        "R02"
+      ],
+      "deliverable": "F01 generated full-map candidate",
+      "acceptance": "Neighbourhood content spans multiple tiles, not only one hero building; every asset passes through the common pipeline.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "V02",
+      "goal": "G3",
+      "title": "Tune architecture detail and silhouette variation",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Technical artist",
+      "size": "M",
+      "depends_on": [
+        "V01"
+      ],
+      "deliverable": "Building/roof/facade refinement pass",
+      "acceptance": "Street and reverse angles show coherent proportions, meaningful variation and no repeated inappropriate details or structural inventions.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "V03",
+      "goal": "G3",
+      "title": "Tune street, terrain and vegetation appearance",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Technical artist",
+      "size": "M",
+      "depends_on": [
+        "V01"
+      ],
+      "deliverable": "Grounding and street composition pass",
+      "acceptance": "Road junctions and terrain contacts are clean; contextual objects respect known boundaries and do not fill unknown land with decorative parks.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "V04",
+      "goal": "G3",
+      "title": "Tune lighting, colour and temporal image quality",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Rendering lead",
+      "size": "M",
+      "depends_on": [
+        "V02",
+        "V03"
+      ],
+      "deliverable": "Lighting/material profile and quality tiers",
+      "acceptance": "No washed-out white geometry, excessive bloom, unreadable shadows, texture shimmer or unstable exposure through the benchmark camera path.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "V05",
+      "goal": "G3",
+      "title": "Validate 2D, section and underground render states",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Rendering/geometry",
+      "size": "M",
+      "depends_on": [
+        "V04",
+        "C07"
+      ],
+      "deliverable": "Alternate map-view visual baselines",
+      "acceptance": "All views reference the same geometry; sections are geometric intersections, not guessed thumbnails; unknown utility depth is not buried.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "V06",
+      "goal": "G3",
+      "title": "Test dense, slope and sparse-input transfer",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Data and QA",
+      "size": "M",
+      "depends_on": [
+        "V04",
+        "V05",
+        "R04"
+      ],
+      "deliverable": "F02-F06 visual conformance results",
+      "acceptance": "No locality-specific code edits; incomplete data has a polished honest fallback; dense lanes retain original modeled width.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "V07",
+      "goal": "G3",
+      "title": "Run matched visual comparison and correct failures",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Visual lead and QA",
+      "size": "M",
+      "depends_on": [
+        "V06",
+        "R02"
+      ],
+      "deliverable": "Per-view scorecards, unmodified screenshots and camera video",
+      "acceptance": "Meet the proposed scene rubric on every required view; prevent one attractive angle from hiding failed reverse/close-up views.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "V08",
+      "goal": "G3",
+      "title": "Approve full-map fidelity milestone",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "User/visual reviewer",
+      "size": "S",
+      "depends_on": [
+        "V07"
+      ],
+      "deliverable": "Signed visual gate with known limitations",
+      "acceptance": "Approve actual browser geometry and replay, not a generated replacement image; no new administrative UI work before this gate.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "S01",
+      "goal": "G4",
+      "title": "Implement global scene catalog and coverage queries",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Backend/streaming",
+      "size": "L",
+      "depends_on": [
+        "C08",
+        "D05"
+      ],
+      "deliverable": "Spatial coverage index and versioned manifests",
+      "acceptance": "Several areas are discoverable without downloading their feature bodies; overlapping datasets require a deliberate representation policy.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "S02",
+      "goal": "G4",
+      "title": "Implement bounded loading, caching and release",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Streaming engineer",
+      "size": "L",
+      "depends_on": [
+        "S01"
+      ],
+      "deliverable": "Priority loading and bounded CPU/GPU/cache lifecycle",
+      "acceptance": "Cancel obsolete requests, retain coarse fallback until replacements load, budget all active tilesets and release unused resources.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "S03",
+      "goal": "G4",
+      "title": "Test seams, shared objects and precision across areas",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Geometry and QA",
+      "size": "M",
+      "depends_on": [
+        "S02",
+        "V06"
+      ],
+      "deliverable": "F07 boundary and transform regression suite",
+      "acceptance": "No duplicate pick identities, cracks, double roads or changing measurements across tile/area/CRS boundaries; building interiors replace their exterior coherently.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "S04",
+      "goal": "G4",
+      "title": "Implement incremental compilation and atomic publication",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Backend/streaming",
+      "size": "L",
+      "depends_on": [
+        "S03",
+        "D05"
+      ],
+      "deliverable": "Dirty-feature/tile dependency graph and rollback manifest",
+      "acceptance": "Editing one building rebuilds affected content and neighbour dependencies only; clients never combine half-published incompatible snapshots.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "S05",
+      "goal": "G4",
+      "title": "Run scale, failure and held-out stress suites",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "QA/performance",
+      "size": "L",
+      "depends_on": [
+        "S04",
+        "R05"
+      ],
+      "deliverable": "F08-F09 results with resource and timing traces",
+      "acceptance": "10k/100k synthetic catalogs first; test 1M later without claiming universal scale. Include rapid travel, failures, memory plateau and context loss.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "S06",
+      "goal": "G4",
+      "title": "Approve cross-area renderer milestone",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Architecture and user reviewer",
+      "size": "S",
+      "depends_on": [
+        "S05",
+        "V08"
+      ],
+      "deliverable": "Renderer release candidate and conformance profile",
+      "acceptance": "Map passes fidelity, quantity, identity, streamed-loading and unseen-input gates simultaneously; exceptions remain explicit.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "U01",
+      "goal": "G5",
+      "title": "Build map shell and reusable UI tokens",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend",
+      "size": "M",
+      "depends_on": [
+        "S06"
+      ],
+      "deliverable": "UI-01 shell and accessible primitives",
+      "acceptance": "Match primary map composition at 1672x941 and 1920x1080 while keeping the real scene dominant; do not embed reference images.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "U02",
+      "goal": "G5",
+      "title": "Build camera, layer and global-search UI",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend",
+      "size": "M",
+      "depends_on": [
+        "U01"
+      ],
+      "deliverable": "UI-02 controls and UI-03 search",
+      "acceptance": "Search resolves unloaded areas without loading the world; mode and camera agree; basic gestures remain stable through state updates.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "U03",
+      "goal": "G5",
+      "title": "Build property list and contextual inspector",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend",
+      "size": "M",
+      "depends_on": [
+        "U02"
+      ],
+      "deliverable": "UI-04 selection/inspector",
+      "acceptance": "Rapid selection and tile unload preserve the correct entity; displayed metrics identify their definitions and revisions.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "U04",
+      "goal": "G5",
+      "title": "Build map findings and utility inspection",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend/geometry",
+      "size": "M",
+      "depends_on": [
+        "U03",
+        "V05"
+      ],
+      "deliverable": "UI-05 finding/section states",
+      "acceptance": "Highlight exact analytical results, not whole-building substitutes; partial visibility never means complete check coverage.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "U05",
+      "goal": "G5",
+      "title": "Build map history, exports and responsive panels",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend",
+      "size": "M",
+      "depends_on": [
+        "U03",
+        "U04"
+      ],
+      "deliverable": "UI-06 history/export and UI-07 mobile shell",
+      "acceptance": "Read-only history preserves snapshot identity; exports preserve scenario/provenance; panels and dialogs leave controls reachable.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "U06",
+      "goal": "G5",
+      "title": "Approve map UI visual and interaction suite",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "QA and user reviewer",
+      "size": "M",
+      "depends_on": [
+        "U05"
+      ],
+      "deliverable": "Map screenshot/video/accessibility evidence",
+      "acceptance": "Every map state has a pinned reference or approved derivative; missing/error/loading states pass usability and correctness checks.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "I01",
+      "goal": "G6",
+      "title": "Build building detail and register composition",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend",
+      "size": "M",
+      "depends_on": [
+        "U06"
+      ],
+      "deliverable": "UI-08 building/register page",
+      "acceptance": "Match reference layout with a live preview; exterior-only buildings work and missing interior records are not fabricated.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "I02",
+      "goal": "G6",
+      "title": "Build floor, flat and shared-space inspection",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend/rendering",
+      "size": "L",
+      "depends_on": [
+        "I01"
+      ],
+      "deliverable": "UI-09 linked plan/model/table",
+      "acceptance": "Unit selection agrees across map, floor, table and plan; multi-level units and shared spaces are represented without double counting.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "I03",
+      "goal": "G6",
+      "title": "Build section and exploded inspection controls",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Rendering/geometry",
+      "size": "M",
+      "depends_on": [
+        "I02"
+      ],
+      "deliverable": "UI-10 inspection modes",
+      "acceptance": "Exploded offsets never alter stored geometry or quantities; section station, cut direction and vertical reference are explicit.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "I04",
+      "goal": "G6",
+      "title": "Build optional source attachments and viewers",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend/backend",
+      "size": "M",
+      "depends_on": [
+        "I02",
+        "D04"
+      ],
+      "deliverable": "UI-11 attachment workflow",
+      "acceptance": "Attach zero, one or many sources at building/floor/unit level; show direct/inherited scope; deleting a link does not delete geometry or another link.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "I05",
+      "goal": "G6",
+      "title": "Build record history and investigation surfaces",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend/backend",
+      "size": "M",
+      "depends_on": [
+        "I04",
+        "U04"
+      ],
+      "deliverable": "UI-12 history/issues/investigation",
+      "acceptance": "Use existing authoritative workflows; unknown or missing evidence is not silently resolved; history remains navigable by stable IDs.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "I06",
+      "goal": "G6",
+      "title": "Approve inspection and zero-document cases",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "QA and user reviewer",
+      "size": "M",
+      "depends_on": [
+        "I03",
+        "I04",
+        "I05"
+      ],
+      "deliverable": "Inspection visual and semantic evidence",
+      "acceptance": "All inspection views match one canonical snapshot and pass with no PDFs, partial evidence and restricted attachments.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "E01",
+      "goal": "G7",
+      "title": "Build import mapping, preview and reconciliation UI",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend/backend",
+      "size": "L",
+      "depends_on": [
+        "I06",
+        "D06"
+      ],
+      "deliverable": "UI-13 import wizard",
+      "acceptance": "Supported formats show mapping and item-level errors; repeated inputs are idempotent and competing observations are not silently merged.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "E02",
+      "goal": "G7",
+      "title": "Build source workspace, calibration and placement",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Frontend/geometry",
+      "size": "L",
+      "depends_on": [
+        "E01"
+      ],
+      "deliverable": "UI-14 plan workspace",
+      "acceptance": "Scale, orientation and geographic/vertical placement are distinct; source viewing does not require valid spatial placement.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "E03",
+      "goal": "G7",
+      "title": "Build versioned geometry and attribute editing",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Full-stack/geometry",
+      "size": "L",
+      "depends_on": [
+        "E02"
+      ],
+      "deliverable": "UI-15 edit workflow and shared boundaries",
+      "acceptance": "Save explicit drafts with revision checks; undo/redo and concurrent edits are safe; editing imported measured geometry requires a deliberate revision.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "E04",
+      "goal": "G7",
+      "title": "Build compare, build, review and publish UI",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "Full-stack",
+      "size": "L",
+      "depends_on": [
+        "E03",
+        "S04"
+      ],
+      "deliverable": "UI-16 review/publish workflow",
+      "acceptance": "Current data stays visible until a new accepted snapshot and derivatives are ready; stale proposals cannot overwrite newer work.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "E05",
+      "goal": "G7",
+      "title": "Expand tested adapters in bounded batches",
+      "status": "Planned",
+      "priority": "P1",
+      "suggested_role": "Data/geometry",
+      "size": "L",
+      "depends_on": [
+        "E01"
+      ],
+      "deliverable": "Additional supported IFC/CityJSON/raster/point-cloud profiles",
+      "acceptance": "Each adapter declares version, capabilities, unsupported fields, transformations and test fixtures; unsupported imports are retained/rejected honestly.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "E06",
+      "goal": "G7",
+      "title": "Approve edit and adapter conformance suite",
+      "status": "Planned",
+      "priority": "P0",
+      "suggested_role": "QA and user reviewer",
+      "size": "M",
+      "depends_on": [
+        "E04",
+        "E05"
+      ],
+      "deliverable": "Editing/UI/semantic regression pack",
+      "acceptance": "Equivalent supported inputs yield consistent representations and quantities; attachment, style and geometry revisions invalidate only their dependencies.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "Q01",
+      "goal": "G8",
+      "title": "Run all-state visual and interaction regression",
+      "status": "Planned",
+      "priority": "P1",
+      "suggested_role": "QA",
+      "size": "L",
+      "depends_on": [
+        "E06"
+      ],
+      "deliverable": "All UI state/renderer conformance report",
+      "acceptance": "Re-run every gate after final changes; old passing reports are not relabelled as current verification.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "Q02",
+      "goal": "G8",
+      "title": "Qualify browser, accessibility and device tiers",
+      "status": "Planned",
+      "priority": "P1",
+      "suggested_role": "QA/accessibility",
+      "size": "M",
+      "depends_on": [
+        "Q01"
+      ],
+      "deliverable": "Declared browser/device capability matrix",
+      "acceptance": "Keyboard and reduced motion work; test real touch hardware; unsupported visual features degrade explicitly without changing geometry.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "Q03",
+      "goal": "G8",
+      "title": "Qualify permissions, source safety and attribution",
+      "status": "Planned",
+      "priority": "P1",
+      "suggested_role": "Backend/security",
+      "size": "M",
+      "depends_on": [
+        "Q01"
+      ],
+      "deliverable": "Asset/document access and safe-input checks",
+      "acceptance": "Restricted names/PDFs never leak through tile metadata or public caches; hostile imports cannot invoke commands or unrestricted network access.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "Q04",
+      "goal": "G8",
+      "title": "Qualify operations, deployment and offline packs",
+      "status": "Planned",
+      "priority": "P1",
+      "suggested_role": "Platform",
+      "size": "L",
+      "depends_on": [
+        "Q02",
+        "Q03"
+      ],
+      "deliverable": "Reproducible build, recovery and offline package protocol",
+      "acceptance": "Restore DB and assets coherently; retain attribution; network failures, expired URLs and interrupted publication have tested recovery.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "Q05",
+      "goal": "G8",
+      "title": "Expand scale only against measured capacity",
+      "status": "Planned",
+      "priority": "P2",
+      "suggested_role": "Streaming/performance",
+      "size": "L",
+      "depends_on": [
+        "Q04"
+      ],
+      "deliverable": "Capacity report and cost/resource model",
+      "acceptance": "Publish exact hardware/dataset/network evidence; large catalog size alone is not proof of large visible-scene performance.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    },
+    {
+      "id": "Q06",
+      "goal": "G8",
+      "title": "Approve release and ongoing regression baseline",
+      "status": "Planned",
+      "priority": "P1",
+      "suggested_role": "User/architecture reviewer",
+      "size": "S",
+      "depends_on": [
+        "Q05"
+      ],
+      "deliverable": "Versioned release checklist and deferred-work ledger",
+      "acceptance": "No P0 blocker, silent synthetic geometry, data-loss path or unmatched primary screen is waived by an average score.",
+      "verification": "Not run",
+      "evidence": "",
+      "authorization": "Implementation not authorized"
+    }
+  ]
+}
