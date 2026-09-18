@@ -3,10 +3,10 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.2",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T007_representations_quantities_capabilities",
+  "current_action": "T008_observations_composition_snapshots",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T007",
+  "next_task": "T008",
   "epics": [
     {
       "id": "E01",
@@ -324,8 +324,8 @@
       "epic": "E02",
       "title": "Geometry representations, quantities and capability checks",
       "sequence": 7,
-      "status": "In progress",
-      "execution_state": "implementation_started",
+      "status": "Accepted",
+      "execution_state": "completed",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Geometry lead",
@@ -354,17 +354,19 @@
         "relevant legacy regression",
         "diff and evidence review"
       ],
-      "evidence": [],
-      "completed_at": null
+      "evidence": [
+        "tasks/T007_RESULT.md"
+      ],
+      "completed_at": "2026-09-18T17:19:46.996706+00:00"
     },
     {
       "id": "T008",
       "epic": "E02",
       "title": "Observations, source composition and coherent snapshots",
       "sequence": 8,
-      "status": "Planned",
-      "execution_state": "not_started",
-      "plan_state": "brief_defined_detail_due_before_execution",
+      "status": "In progress",
+      "execution_state": "implementation_started",
+      "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Architecture lead",
       "depends_on": [
@@ -375,7 +377,7 @@
       "acceptance": "A footprint, level schedule and unit source combine without invented evidence; a failed unrelated contribution does not erase valid output; worlds and revisions do not mix.",
       "out_of_scope": "A universal rule language, arbitrary uploaded code or a full publication service before its first consumer.",
       "detail_plan_path": "tasks/T008_PLAN.md",
-      "detail_plan_exists": false,
+      "detail_plan_exists": true,
       "legacy_refs": [
         "schema:U08",
         "schema:U13",
