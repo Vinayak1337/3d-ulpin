@@ -1,9 +1,13 @@
 # 3D ULPIN hackathon implementation
 
-Latest user priority: finish T009's existing-data bridge, then implement the
-shared 3D renderer/interface milestone T057 before ML extraction. Keep supported
-current datasets usable now; do not defer visuals until every future importer is
-complete. ML and bulk expansion remain required later, not falsely completed.
+Latest user priority (T058): T057 was rejected visually. First copy the actual
+`E:/Projects/ulpin-city-studio` design and interactions into the product with
+working routes; then improve that Studio against the original image mockups.
+Prepare consistent synthetic records/documents first where needed. Compare actual
+browser captures side by side before claiming completion. See T058_PLAN.md.
+This authorizes the Studio's shared Three/R3F viewport; retain existing Cesium
+and backend workflows as compatibility paths, not discarded implementations.
+ML follows this visual milestone. Do not replace real source shapes with boxes.
 
 Execution policy (18 September 2026): `docs/engineering-plan/backlog.json` is the
 adopted task/status authority on `feat/unified-spatial-foundation`. Continue one

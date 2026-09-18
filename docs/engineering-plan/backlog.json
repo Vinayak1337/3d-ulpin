@@ -1,12 +1,12 @@
 {
   "schema_version": "ulpin-execution-plan/1",
   "prepared_on": "2026-09-18",
-  "plan_version": "1.2",
+  "plan_version": "1.3",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T057_visual_review_checkpoint",
+  "current_action": "T058_completed_studio_reference_task",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T057",
+  "next_task": "T010",
   "epics": [
     {
       "id": "E01",
@@ -445,8 +445,8 @@
       "epic": "E14",
       "title": "Normalized neighbourhood renderer and shared 3D interface",
       "sequence": 10,
-      "status": "Verify",
-      "execution_state": "local_technical_checks_passed_visual_review_pending",
+      "status": "Blocked",
+      "execution_state": "superseded_by_user_rejected_visuals",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Architecture and frontend lead",
@@ -470,7 +470,8 @@
         "tasks/T057_RESULT.md",
         "../evidence/t057/README.md"
       ],
-      "completed_at": null
+      "completed_at": null,
+      "blocker": "User rejected T057 visuals; T058 adopts the actual City Studio and original mock references."
     },
     {
       "id": "T010",
@@ -1974,6 +1975,40 @@
       ],
       "evidence": [],
       "completed_at": null
+    },
+    {
+      "id": "T058",
+      "epic": "E14",
+      "title": "Studio-based interface, prepared sources and reference-matched neighbourhood",
+      "sequence": 58,
+      "status": "Accepted",
+      "execution_state": "completed_studio_scope",
+      "plan_state": "detailed_plan_authored",
+      "release": "R1-renderer",
+      "suggested_owner": "Architecture and visual lead",
+      "depends_on": [
+        "T009"
+      ],
+      "scope": "Adopt original City Studio, preserve functioning routes, prepare consistent fictional records and refine against original mockups.",
+      "outputs": "Studio route, shared viewport, prepared source bundle, working import and review interfaces, side-by-side evidence.",
+      "acceptance": "Runtime functionality verified and major source-reference gaps corrected; no fabricated user approval.",
+      "out_of_scope": "ML, official identity issuance and replacing real source shapes with synthetic rectangles.",
+      "detail_plan_path": "tasks/T058_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Original Studio comparison",
+        "Mockup side-by-side inspection",
+        "Functional browser checks",
+        "Existing regressions",
+        "Prepared byte integrity"
+      ],
+      "evidence": [
+        "tasks/T058_RESULT.md",
+        "../evidence/t058/REVIEW.md",
+        "../evidence/t058/verification/results.json"
+      ],
+      "completed_at": "2026-09-19"
     }
   ],
   "maintenance": [

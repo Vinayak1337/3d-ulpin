@@ -1,0 +1,16 @@
+.studio-root {height:100dvh;width:100%;isolation:isolate;font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:13px;line-height:normal;}
+.studio-root a {color:inherit;text-decoration:none;}
+.studio-root .studio-route-error {min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:#f5f8f5;color:#315f53;padding:32px;text-align:center;}
+.studio-root .studio-route-error h1 {margin:0;font-size:26px;}
+.studio-root .studio-route-error p {max-width:550px;line-height:1.7;color:#657e76;}
+.studio-root .studio-route-error button {padding:12px 20px;border:1px solid #315f53;background:#315f53;color:white;border-radius:6px;}
+.studio-root .studio-source-receipts{padding:14px;border:1px solid #dce8e0;background:#f8fbf7;border-radius:7px;margin:16px 0;color:#5e806b}
+.studio-root .studio-source-receipts>div{display:flex;align-items:center;gap:7px;font-size:11px}.studio-root .studio-source-receipts p{font-size:10px;line-height:1.7;color:#8a9b8d}.studio-root .studio-source-receipts code{font-size:8px;display:block;overflow-wrap:anywhere;margin:10px 0}.studio-root .studio-source-receipts button{display:flex;align-items:center;gap:8px;background:white;border:1px solid #dce6dd;border-radius:4px;padding:10px 8px;font-size:10px;color:#4b6b58;width:100%;margin-top:7px}.studio-root .studio-source-receipts button span{flex:1;text-align:left}.studio-root .studio-source-receipts small{display:block;font-size:8px;color:#95a190;margin-top:4px}
+.studio-root .rec-backdrop.register-workspace{inset:70px 0 0;padding:0;background:#f6f9f8}
+.studio-root .register-workspace .rec-modal{width:100%;height:100%;max-height:100%;max-width:none;border:0;border-radius:0;box-shadow:none}
+@media(max-width:620px){.studio-root .rec-backdrop.register-workspace{top:60px}}
+.studio-root .studio-utility-disclosure{display:flex;align-items:center;gap:8px;font-size:10px;color:#7c9286;border:0;background:none;padding:9px 11px;margin-top:3px;width:100%;justify-content:space-between}
+.studio-root .studio-utility-disclosure[aria-expanded=true] svg{transform:rotate(180deg)}
+.studio-root .layer-row{font-size:12px}.studio-root .property-row strong{font-size:12px}.studio-root .property-row small{font-size:10px}
+.studio-root .dock-cards strong{font-size:10px}.studio-root .dock-cards b{font-size:21px}.studio-root .dock-cards p{font-size:9px;line-height:1.6}.studio-root .dock-cards>button{padding:13px 9px}.studio-root .dock-heading>strong{font-size:12px}
+@media(max-width:620px){.studio-root .zoom-controls>button,.studio-root .fullscreen-control{width:42px;height:42px}.studio-root .view-switch>button{height:36px}.studio-root .ins-actions>button{min-height:44px}.studio-root .toast{max-width:calc(100vw - 30px);font-size:11px;padding:12px}.studio-root .layer-row{min-height:43px}}

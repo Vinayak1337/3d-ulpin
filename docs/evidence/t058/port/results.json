@@ -1,0 +1,12 @@
+{
+  "errors": [],
+  "checks": [
+    "Copied Studio composition with one header and original default property",
+    "Inspector routing and browser Back preserve the canvas",
+    "Exact unit/lease deep link survives full reload",
+    "Unknown property does not silently display the showcase building"
+  ],
+  "source": "Copied City Studio inside 3d-ulpin",
+  "testedAt": "2026-09-18T21:41:32.077Z",
+  "result": "PASS"
+}

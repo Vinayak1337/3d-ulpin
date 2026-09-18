@@ -1,0 +1,49 @@
+import {useEffect,useRef,useState} from 'react';
+import {ArrowUpRight,Check,Database,Download,FileText,FolderOpen,Upload,X} from 'lucide-react';
+import DialogSection from './DialogSection';
+import {useStudioSources,downloadPreparedAsset} from '../data/useSources';
+import './sources.css';
+
+type CaseSummary={id:string;name:string};
+type Receipt={caseId:string;sourceId:string;sha256:string;bytes:number;name:string};
+const profiles=[['plan-pdf-v1','PDF floor plan'],['plan-png-v1','PNG floor plan'],['levels-csv-v1','Floor-level CSV'],['control-csv-v1','Control-point CSV'],['parcel-local-json-v1','Local parcel JSON']] as const;
+async function responseBody(r:Response){const body=await r.json();if(!r.ok)throw new Error(body.error?.message??body.error??`Request failed (${r.status})`);return body;}
+export default function StudioImport({onClose}:{onClose:()=>void}){
+ const manifest=useStudioSources(),[cases,setCases]=useState<CaseSummary[]>([]),[caseId,setCaseId]=useState(''),[name,setName]=useState('Studio source review'),[profile,setProfile]=useState<string>('plan-pdf-v1'),[file,setFile]=useState<File|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[receipt,setReceipt]=useState<Receipt|null>(null),[tab,setTab]=useState<'upload'|'prepared'|'saved'>('upload');
+ const operation=useRef(crypto.randomUUID()),created=useRef<string|null>(null);
+ useEffect(()=>{const abort=new AbortController();fetch('/api/v1/cases',{signal:abort.signal,cache:'no-store'}).then(responseBody).then(data=>{if(!Array.isArray(data))throw new Error('Unexpected workspace directory');setCases(data);try{const last=sessionStorage.getItem('ulpin:studio-import-target');if(last&&data.some((c:CaseSummary)=>c.id===last))setCaseId(last);}catch{}},e=>{if(!abort.signal.aborted)setError(e.message);});return()=>abort.abort();},[]);
+ const selectFile=(next:File|null)=>{if(next&&next.size>16*1024*1024){setError('Choose a source of 16 MB or less. The bulk pipeline is a separate workflow.');return;}setFile(next);setReceipt(null);setError('');operation.current=crypto.randomUUID();};
+ const usePrepared=async()=>{try{const d=manifest.data?.documents.find(d=>d.kind==='plan'&&d.buildingId==='BLD-0413'&&d.floor===0);if(!d)throw new Error('The prepared plan is unavailable');const r=await fetch('/api/v1/studio/sources/documents/'+encodeURIComponent(d.id));if(!r.ok)throw new Error('The prepared plan could not be read');selectFile(new File([await r.arrayBuffer()],d.filename,{type:'application/pdf'}));setProfile('plan-pdf-v1');setTab('upload');}catch(e){setError(e instanceof Error?e.message:'Source unavailable');}};
+ const upload=async()=>{
+  if(!file||busy)return;setBusy(true);setError('');
+  try{
+   let target=caseId||created.current;
+   if(!target){const result=await responseBody(await fetch('/api/v1/cases',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description:'Source review opened from City Studio. Uploads are preserved; this operation does not publish property geometry or change an existing register.'})}));target=result.id;if(!target)throw new Error('Workspace creation returned no identifier');created.current=target;setCaseId(target!);setCases(old=>[...old,{id:target!,name}]);}
+   try{sessionStorage.setItem('ulpin:studio-import-target',target!);}catch{}
+   const buffer=await file.arrayBuffer(),fingerprint=await crypto.subtle.digest('SHA-256',new Uint8Array(buffer));
+   const contentHash=Array.from(new Uint8Array(fingerprint)).map(b=>b.toString(16).padStart(2,'0')).join('');
+   const keyBytes=new TextEncoder().encode(JSON.stringify([target,profile,file.name,contentHash]));
+   operation.current='studio:'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',keyBytes))).map(b=>b.toString(16).padStart(2,'0')).join('');
+   const form=new FormData();form.set('file',file);form.set('profile',profile);
+   const result=await responseBody(await fetch(`/api/v1/cases/${encodeURIComponent(target!)}/sources`,{method:'POST',headers:{'Idempotency-Key':operation.current},body:form}));
+   const source=result.source??result;
+   if(!source.id||!source.sha256)throw new Error('Upload returned no verifiable source receipt');
+   setReceipt({caseId:target!,sourceId:source.id,sha256:source.sha256,bytes:Number(source.bytes),name:source.name??file.name});
+  }catch(e){setError(e instanceof Error?e.message:'Upload failed. Retry uses the same operation key.');}finally{setBusy(false);}
+ };
+ return <div className="rec-backdrop" onClick={e=>{if(e.target===e.currentTarget&&!busy)onClose();}}><DialogSection onClose={()=>{if(!busy)onClose();}} labelledBy="studio-import-title" className="studio-import-dialog">
+  <header><span className="sti-icon"><Database size={25}/></span><div><p>SOURCE MANAGEMENT</p><h2 id="studio-import-title">Import & prepared data</h2></div><button onClick={onClose} disabled={busy} aria-label="Close import"><X size={20}/></button></header>
+  <nav>{([['upload','Upload original'],['prepared','Prepared demo'],['saved','Saved datasets']] as const).map(([value,label])=><button key={value} className={tab===value?'active':''} onClick={()=>setTab(value)}>{label}</button>)}</nav>
+  <div className="sti-body">{error&&<p role="alert" className="sti-error">{error}</p>}
+   {tab==='upload'&&<>{receipt?<div className="sti-receipt"><Check size={32}/><h3>Original source received</h3><strong>{receipt.name}</strong><p>{(receipt.bytes/1024).toFixed(1)} KB · stored by the existing source service</p><dl><dt>Source ID</dt><dd>{receipt.sourceId}</dd><dt>SHA-256</dt><dd>{receipt.sha256}</dd></dl><p>This receipt confirms the source upload. It does not claim automatic floor extraction, approved geometry or a published ownership record.</p><a className="sti-primary" href={`/workspace/${encodeURIComponent(receipt.caseId)}`}>Continue in processing workspace <ArrowUpRight size={16}/></a><button onClick={()=>{setReceipt(null);selectFile(null);}}>Upload another source</button></div>:<>
+    <label className="sti-drop" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();selectFile(e.dataTransfer.files[0]??null);}}><Upload size={32}/><strong>{file?file.name:'Choose or drop an original file'}</strong><span>{file?`${(file.size/1024).toFixed(1)} KB selected`:'PDF, PNG or a supported JSON/CSV profile · up to 16 MB'}</span><input type="file" aria-label="Original source file" onChange={e=>selectFile(e.target.files?.[0]??null)}/></label>
+    <div className="sti-fields"><label>Input profile<select value={profile} onChange={e=>setProfile(e.target.value)}>{profiles.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label><label>Destination workspace<select aria-label="Destination workspace" value={caseId} onChange={e=>{setCaseId(e.target.value);created.current=null;operation.current=crypto.randomUUID();}}><option value="">Create a new review workspace</option>{cases.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label></div>
+    {!caseId&&<label className="sti-name">New workspace name<input value={name} onChange={e=>setName(e.target.value)} maxLength={100}/></label>}
+    <div className="sti-info"><FileText size={18}/><span>The original bytes are stored before inspection. Field mapping, calibration and publication continue through the existing processing workflow.</span></div>
+    <footer><button disabled={!manifest.data} onClick={()=>void usePrepared()}>Use prepared ground-floor plan</button><button className="sti-primary" disabled={busy||!file||(!caseId&&!name.trim())} onClick={()=>void upload()}><Upload size={16}/>{busy?'Storing original…':'Upload original'}</button></footer>
+   </>}</>}
+   {tab==='prepared'&&<><h3>One connected, fictional dataset</h3><p className="sti-caption">Geometry, floor plans, occupancy specimens and computed findings were prepared together. The source bundle also contains the normalized <code>ulpin-spatial/2</code> snapshot.</p><div className="sti-counts">{manifest.data&&[['Buildings',manifest.data.counts.buildings],['Floor plans',manifest.data.counts.floors],['Units',manifest.data.counts.units],['PDF specimens',manifest.data.counts.documents]].map(([label,value])=><div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div>{manifest.data?.assets.map(a=><button key={a.id} className="sti-file" onClick={()=>void downloadPreparedAsset('/api/v1/studio/sources/assets/'+a.id,a.file,a.sha256)}><span><FileText size={18}/></span><div><strong>{a.file}</strong><small>{(a.bytes/1024).toFixed(1)} KB · SHA-256 {a.sha256.slice(0,12)}…</small></div><Download size={16}/></button>)}<p className="sti-caption">No real cadastral identity, ownership or tenancy is asserted by these specimens.</p></>}
+   {tab==='saved'&&<><h3>Existing records remain available</h3><p className="sti-caption">The Studio reference scene does not replace or reshape the imported Uttam Nagar datasets. Their original geometry and processing workflows are preserved.</p><a className="sti-file" href="/blocks"><FolderOpen size={23}/><div><strong>Saved neighbourhoods</strong><small>Existing imports, maps, registers and checks</small></div><ArrowUpRight size={16}/></a><a className="sti-file" href="/workspace"><FileText size={23}/><div><strong>Source processing workspaces</strong><small>Upload, inspect, calibrate and build</small></div><ArrowUpRight size={16}/></a><a className="sti-file" href="/register"><Database size={23}/><div><strong>Existing property registers</strong><small>Persisted identities and source history</small></div><ArrowUpRight size={16}/></a></>}
+  </div>
+ </DialogSection></div>;
+}

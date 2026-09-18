@@ -1,0 +1,113 @@
+{
+  "kind": "labelled-original-and-runtime-comparison",
+  "images": {
+    "mock-map": {
+      "source": "docs/evidence/reference/references/block.png",
+      "sha256": "648c967166d8f8d95f4ffd059c333c0aab5d0e03a9702cb3bf50071eb64f5ff1",
+      "width": 1672,
+      "height": 941
+    },
+    "mock-register": {
+      "source": "docs/evidence/reference/references/register.png",
+      "sha256": "a85692b4e5ec94ac49933506974515f5ac3c57171c3302d842c36e11c924989e",
+      "width": 1672,
+      "height": 941
+    },
+    "mock-workspace": {
+      "source": "docs/evidence/reference/references/workspace.png",
+      "sha256": "46dd50441cb39e02ff94cf0a5511e2ce72b33bc4b52169fac029179220737ac0",
+      "width": 1672,
+      "height": 941
+    },
+    "original-map": {
+      "source": "docs/evidence/t058/baseline/studio-map.png",
+      "sha256": "167290e155c776be5243c3a8902777f09c1bfc61243e2a124b1f8e798739c8a0",
+      "width": 1672,
+      "height": 941
+    },
+    "original-register": {
+      "source": "docs/evidence/t058/baseline/studio-register.png",
+      "sha256": "3c05f17fbf6d6282b6de8012a3e885f9fcea9da4c2734bba13ce8ea8f5840066",
+      "width": 1672,
+      "height": 941
+    },
+    "current-map": {
+      "source": "docs/evidence/t058/final/map.png",
+      "sha256": "cf8570b3452aac77311b31ea049dee9534796c8c2801f45975d882d2acabc194",
+      "width": 1672,
+      "height": 941
+    },
+    "current-register": {
+      "source": "docs/evidence/t058/final/register.png",
+      "sha256": "e55197aeb230fc2c1519f9dc594c39dc61f62dcc487f717564206fa37ff768ac",
+      "width": 1672,
+      "height": 941
+    },
+    "current-workspace": {
+      "source": "docs/evidence/t058/final/workspace.png",
+      "sha256": "6c595a020d3af48438eb6e423c5fa2e2464a2876456471f5e88ad341b50e66f5",
+      "width": 1672,
+      "height": 941
+    },
+    "current-close": {
+      "source": "docs/evidence/t058/final/building-close.png",
+      "sha256": "6f08ac58b867fd9a89a7a61488015a03a49de00023e270b455a9110d94fee2ab",
+      "width": 1672,
+      "height": 941
+    },
+    "current-utilities": {
+      "source": "docs/evidence/t058/final/utilities.png",
+      "sha256": "955731b2e8cbafaf4156261449c25657c63051e63ff91dba12bcd3888f81ac40",
+      "width": 1672,
+      "height": 941
+    },
+    "current-plan": {
+      "source": "docs/evidence/t058/final/top-down.png",
+      "sha256": "aecf8d25a312c3b39c26b1ae2216891ff818a088f250b59c2a89c096970861ea",
+      "width": 1672,
+      "height": 941
+    },
+    "current-mobile-map": {
+      "source": "docs/evidence/t058/final/mobile-map.png",
+      "sha256": "743d6cbe1948c3fef4d77c32d6cf76ec230faa0847d1c308c8d16fad8c94cfb6",
+      "width": 390,
+      "height": 844
+    },
+    "current-mobile-inspector": {
+      "source": "docs/evidence/t058/final/mobile-inspector.png",
+      "sha256": "8277eff0562a9ef9f184f6340e2f2354f6c309b8f7eb70f1cd53d54729d603b5",
+      "width": 390,
+      "height": 844
+    }
+  },
+  "reviewNotes": [
+    [
+      "Original Studio first",
+      "The original Studio composition was copied before scene changes. The old T057 map-lab composition was not reused as the design baseline."
+    ],
+    [
+      "Scene and visual hierarchy",
+      "The map keeps the Studio header, rails, inspector, minimap and findings dock. The scene now uses a deliberately authored reference neighbourhood, foreground park, varied facades, roof structures, local materials and contact lighting."
+    ],
+    [
+      "Real geometry, not image substitution",
+      "All building, tree, road and interior views are rendered. Source mockups are used only in this comparison gallery, never as the map background. The gallery labels actual implementation captures separately."
+    ],
+    [
+      "Numbers follow the prepared data",
+      "The selected source footprint is 288 m\u00b2, its volume 4,608 m\u00b3 and its parcel 506.25 m\u00b2. The 32 m\u00b2 outside-parcel region and 16 m\u00b2 road-overlap region overlap and are not summed. Mockup numbers are not source truth."
+    ],
+    [
+      "Document and record consistency",
+      "903 prepared synthetic PDFs, 239 floor plans and 478 unit records are linked to a validated ulpin-spatial/2 snapshot. The same room layout is used by the SVG plan, 3D cutaway, register and PDFs."
+    ],
+    [
+      "Known visual differences",
+      "The original target is a photorealistic generated illustration. This product uses explicit geometry and reusable procedural architecture: tree silhouettes, facade weathering, pavement details and exact neighbourhood arrangement are not pixel-identical. No user approval or perceptual score is invented."
+    ],
+    [
+      "Workflow boundaries",
+      "Source uploads use the existing backend. Workspace measurements and revisioned review drafts are explicitly local drafts, not official or registry publication. Imported real neighbourhoods remain accessible through the original saved-data routes; this authored quarter is not a replacement for them."
+    ]
+  ]
+}

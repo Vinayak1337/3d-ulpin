@@ -13,17 +13,22 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.900.0",
     "@phosphor-icons/react": "^2.1.10",
+    "@react-three/drei": "10.7.8",
+    "@react-three/fiber": "9.7.0",
     "@ulpin/contracts": "workspace:*",
     "cesium": "1.145.0",
     "earcut": "^3.0.2",
-    "fflate": "0.8.3",
+    "fflate": "0.8.2",
+    "jspdf": "4.2.1",
+    "lucide-react": "1.47.0",
     "next": "16.3.5",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "^5.4.296",
     "pg": "^8.16.0",
     "playwright": "1.63.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "0.186.0",
     "zod": "^4.1.0",
     "zustand": "^5"
   },
@@ -34,6 +39,7 @@
     "@types/pg": "^8.15.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/three": "0.186.0",
     "typescript": "^5.9.0"
   }
 }

@@ -1,0 +1,35 @@
+{
+  "capturedAt": "2026-09-18T21:16:37.630Z",
+  "source": "E:/Projects/ulpin-city-studio",
+  "viewport": {
+    "width": 1672,
+    "height": 941
+  },
+  "errors": [],
+  "files": [
+    {
+      "path": "App.tsx",
+      "sha256": "3824191cfd2b02513a346e28ebc6c95615903da07fd39bdad56bf463b8019558"
+    },
+    {
+      "path": "styles.css",
+      "sha256": "f485bd9bf3fc318e519c745bdcb9954edcc0b47e9c5f325f1e45d86ec887ac8f"
+    },
+    {
+      "path": "refinements.css",
+      "sha256": "a9faaf3ed081bb9e19de4814d888cdec245c3fc3babd8d4c0e7171caefba8130"
+    },
+    {
+      "path": "scene/CityScene.tsx",
+      "sha256": "9673508fe8d7dbdbbb24011154118aab2ab7e047beb00bf91b7dd9b3ed16a1fb"
+    },
+    {
+      "path": "scene/architecture.ts",
+      "sha256": "16dd2a3ac8ff5e012cb4a1286b94f19a3f2eeafcdbe7f4ae9e208046099b657e"
+    },
+    {
+      "path": "data/district.ts",
+      "sha256": "dcda11a86dc6e22be0d1d29ec7b6b3b0effb97e18495a15b0de9bc8d30934111"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "kind": "Studio and retained product validation",
+  "studioBrowserGroups": 11,
+  "studioBrowser": "PASS",
+  "legacyBrowserGroups": 10,
+  "legacyBrowser": "PASS",
+  "nodeTests": {
+    "coreAndStudio": 315,
+    "studioSubset": 20,
+    "spatial": 29,
+    "ui": 20,
+    "scene": 7,
+    "repoData": 2,
+    "registerScope": 3,
+    "uttamNagar": 14,
+    "aiValidation": 22
+  },
+  "pythonSharedCases": 218,
+  "typecheck": "PASS",
+  "productionBuild": "PASS",
+  "unverified": [
+    "Physical mobile device",
+    "Official issuance",
+    "ML inference",
+    "General geospatial migration into Studio renderer"
+  ],
+  "reviewGallery": "/studio-review/index.html",
+  "realUploadBrowserRun": "upload-run.json",
+  "pdfRepresentativePages": 7,
+  "pdfByteHashesVerified": 903
+}

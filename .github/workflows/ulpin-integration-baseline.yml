@@ -2,7 +2,7 @@ name: ULPIN isolated integration baseline
 
 on:
   push:
-    branches: [feat/unified-spatial-foundation]
+    branches: [feat/unified-spatial-foundation, feat/studio-reference-rebuild]
   pull_request:
     paths:
       - 'apps/web/**'
@@ -55,6 +55,7 @@ jobs:
           pnpm exec tsx scripts/contracts/export-core.ts check
           pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-*.test.ts
           pnpm test:spatial
+          pnpm test:studio
           pnpm test:scene
           pnpm test:repo-data
           pnpm test:register-scope

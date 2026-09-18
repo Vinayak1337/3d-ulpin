@@ -4,7 +4,7 @@ name: ULPIN engineering plan and source inventory
 # Read the current AGENTS.md and reconcile existing workflows before applying this file.
 on:
   push:
-    branches: ['feat/unified-spatial-foundation']
+    branches: ['feat/unified-spatial-foundation', 'feat/studio-reference-rebuild']
     paths:
       - 'docs/engineering-plan/**'
       - '.github/workflows/ulpin-engineering-baseline.yml'
