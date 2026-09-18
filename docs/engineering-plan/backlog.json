@@ -3,10 +3,10 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.2",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T006_frames_and_vertical_semantics",
+  "current_action": "T007_representations_quantities_capabilities",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T006",
+  "next_task": "T007",
   "epics": [
     {
       "id": "E01",
@@ -290,8 +290,8 @@
       "epic": "E02",
       "title": "Frames, transforms and vertical-reference semantics",
       "sequence": 6,
-      "status": "In progress",
-      "execution_state": "implementation_started",
+      "status": "Accepted",
+      "execution_state": "completed",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Geometry lead",
@@ -314,17 +314,19 @@
         "relevant legacy regression",
         "diff and evidence review"
       ],
-      "evidence": [],
-      "completed_at": null
+      "evidence": [
+        "tasks/T006_RESULT.md"
+      ],
+      "completed_at": "2026-09-18T16:55:11.471315+00:00"
     },
     {
       "id": "T007",
       "epic": "E02",
       "title": "Geometry representations, quantities and capability checks",
       "sequence": 7,
-      "status": "Planned",
-      "execution_state": "not_started",
-      "plan_state": "brief_defined_detail_due_before_execution",
+      "status": "In progress",
+      "execution_state": "implementation_started",
+      "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Geometry lead",
       "depends_on": [
@@ -336,7 +338,7 @@
       "acceptance": "Holes and multipart geometry survive; unknown is not zero; renderability does not imply volume readiness; unsupported geometry is explicit.",
       "out_of_scope": "Arbitrary-solid Boolean operations or treating an external mesh parser as complete support.",
       "detail_plan_path": "tasks/T007_PLAN.md",
-      "detail_plan_exists": false,
+      "detail_plan_exists": true,
       "legacy_refs": [
         "schema:U03",
         "schema:U07",
