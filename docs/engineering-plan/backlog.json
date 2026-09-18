@@ -3,10 +3,10 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.2",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T003_schema_authority_experiment",
+  "current_action": "T004_core_identity_relations",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T003",
+  "next_task": "T004",
   "epics": [
     {
       "id": "E01",
@@ -181,8 +181,8 @@
       "epic": "E01",
       "title": "Architecture decisions and smallest proving experiments",
       "sequence": 3,
-      "status": "In progress",
-      "execution_state": "experiment_in_progress",
+      "status": "Accepted",
+      "execution_state": "completed",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Architecture lead",
@@ -207,17 +207,20 @@
         "relevant legacy regression",
         "diff and evidence review"
       ],
-      "evidence": [],
-      "completed_at": null
+      "evidence": [
+        "tasks/T003_RESULT.md",
+        "decisions/ADR-001-schema-authority.md"
+      ],
+      "completed_at": "2026-09-18"
     },
     {
       "id": "T004",
       "epic": "E02",
       "title": "Stable identity, vocabulary and typed relationships",
       "sequence": 4,
-      "status": "Planned",
-      "execution_state": "not_started",
-      "plan_state": "brief_defined_detail_due_before_execution",
+      "status": "In progress",
+      "execution_state": "implementation_started",
+      "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
       "suggested_owner": "Architecture lead",
       "depends_on": [
@@ -228,7 +231,7 @@
       "acceptance": "Rename and retile do not change IDs; a duplex can reference two levels; equal labels are not automatic matches; ambiguous legal/physical links remain unresolved.",
       "out_of_scope": "Automatic fuzzy deduplication or a complete legal registry workflow.",
       "detail_plan_path": "tasks/T004_PLAN.md",
-      "detail_plan_exists": false,
+      "detail_plan_exists": true,
       "legacy_refs": [
         "schema:U03",
         "schema:U04",
