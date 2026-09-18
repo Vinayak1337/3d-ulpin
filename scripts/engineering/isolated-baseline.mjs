@@ -6,11 +6,12 @@ import { spawn } from 'node:child_process';
 import { mkdir, readFile, writeFile, lstat, realpath, copyFile } from 'node:fs/promises';
 import { resolve, relative, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertIsolation, redact } from './isolation.mjs';
+import { assertIsolation, redact, testProcessEnvironment } from './isolation.mjs';
 import { canonical, identifier, schema, loadBundle, installBundle, verifyBundle } from '../datasets/bundle.mjs';
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const scope = assertIsolation(process.env); // Deliberately before clients/imports with configuration.
+const childEnv = testProcessEnvironment(process.env, root);
 assert.equal(process.platform, 'linux', 'Actual hosted execution must be Linux');
 await assert.rejects(lstat(resolve(root, '.env')), {code:'ENOENT'}, 'Never load a private root environment');
 const temporary = await realpath(process.env.RUNNER_TEMP);
@@ -35,7 +36,7 @@ let ownsProject=false;
 const services=[];
 const composeArgs=['--context','default','compose','--project-directory',root,'--env-file',envFile,'-p',scope.project,'-f',resolve(root,'compose.yaml')];
 
-async function command(label, executable, args, {input,timeout=180000,env=process.env}={}) {
+async function command(label, executable, args, {input,timeout=180000,env=childEnv}={}) {
   assert.match(label,/^[a-z0-9-]+$/);
   const start=Date.now(), chunks=[];
   let size=0, timedOut=false;
@@ -60,7 +61,7 @@ async function command(label, executable, args, {input,timeout=180000,env=proces
 const compose=(label,args,options)=>command(label,'docker',[...composeArgs,...args],options);
 
 function launch(label,args) {
-  const child=spawn(process.execPath,args,{cwd:root,env:{...process.env},detached:true,stdio:['ignore','pipe','pipe']});
+  const child=spawn(process.execPath,args,{cwd:root,env:childEnv,detached:true,stdio:['ignore','pipe','pipe']});
   const state={label,child,chunks:[],bytes:0,error:null};
   child.on('error',error=>{state.error=error;});
   const receive=chunk=>{if(state.bytes<8*1024*1024){state.chunks.push(chunk);state.bytes+=chunk.length;}};
@@ -209,14 +210,14 @@ try {
     launch('dispatcher',['--import','tsx','scripts/dispatcher.ts']);
     await waitReady();
     await command('api-negative','node',['--import','tsx','scripts/api-regression.ts'],{timeout:420000,
-      env:{...process.env,ULPIN_API_EVIDENCE_FILE:'../.runtime/engineering/api-negative.md'}});
+      env:{...childEnv,ULPIN_API_EVIDENCE_FILE:'../.runtime/engineering/api-negative.md'}});
     await command('api-closed-ring','node',['--import','tsx','scripts/api-regression.ts','--closed-ring-only'],{timeout:180000,
-      env:{...process.env,ULPIN_API_EVIDENCE_FILE:'../.runtime/engineering/api-closed-ring.md'}});
+      env:{...childEnv,ULPIN_API_EVIDENCE_FILE:'../.runtime/engineering/api-closed-ring.md'}});
     await assertPreserved(client,current);
     await verifyObjects(manifest);await verifyBundle(client,s3,sdk,process.env,bundle,true);
     report.originalsAfter=await verifyOriginalLinks(client);
     pass('Real API negative/closed-ring regressions preserve every unrelated baseline row, identity and original');
-    await command('browser','node',['scripts/spatial/browser.mjs'],{timeout:360000,env:{...process.env,SPATIAL_START_SERVER:'0'}});
+    await command('browser','node',['scripts/spatial/browser.mjs'],{timeout:360000,env:{...childEnv,SPATIAL_START_SERVER:'0'}});
     pass('Actual calibration browser suite passes against the same isolated production server');
   }finally{client.release();}
 

@@ -83,6 +83,13 @@ export function redact(text, env) {
   return result;
 }
 
+/** The test server is launched from the repo root, not pnpm's app-directory cwd. */
+export function testProcessEnvironment(env, repositoryRoot) {
+  assertIsolation(env);
+  assert(isAbsolute(repositoryRoot), 'Test fixture root requires an absolute checkout path');
+  return {...env, ULPIN_FIXTURE_ROOT: resolve(repositoryRoot, 'fixtures')};
+}
+
 async function prepare() {
   const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
   await assert.rejects(lstat(resolve(root, '.env')), {code:'ENOENT'}, 'A private root .env must not be present on the hosted runner');
