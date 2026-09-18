@@ -1,0 +1,78 @@
+{
+  "schemaVersion":"ulpin-visual-acceptance/1",
+  "status":"specification-only",
+  "requiredRequirementIds":["RQ01","RQ02","RQ03","RQ04","RQ05","RQ06","RQ07","RQ08","RQ09","RQ10","RQ11","RQ12","RQ13","RQ14","RQ15","RQ16"],
+  "primaryAnchors":{"map":"REF-15","register":"REF-16","workspace":"REF-17"},
+  "sourceImageAsRuntimeBackground":false,
+  "userImplementationApproval":false,
+  "screenFamilies":[
+    {"id":"map-shell","gates":["UI-01"],"refs":["REF-15"],"gap":null},
+    {"id":"map-camera-layers","gates":["UI-02"],"refs":["REF-15","REF-28"],"gap":null},
+    {"id":"search-and-directories","gates":["UI-03"],"refs":["REF-15","REF-32"],"gap":"Search ambiguity/loading and cross-area travel states derive from the shared shell; no full-size dedicated anchor was recovered."},
+    {"id":"property-parcel-inspector","gates":["UI-04"],"refs":["REF-15","REF-29"],"gap":null},
+    {"id":"utilities-findings-section","gates":["UI-05"],"refs":["REF-27","REF-03"],"gap":null},
+    {"id":"map-history-export","gates":["UI-06"],"refs":["REF-02","REF-01"],"gap":null},
+    {"id":"responsive-map","gates":["UI-07"],"refs":["REF-15"],"gap":"Mobile drawers, keyboard and zoom states are derived designs, not recovered phone screenshots. Physical touch remains separately unverified."},
+    {"id":"register-landing","gates":["UI-08"],"refs":["REF-32","REF-11"],"gap":null},
+    {"id":"register-building","gates":["UI-08"],"refs":["REF-16","REF-31"],"gap":null},
+    {"id":"floors-units-plan","gates":["UI-09"],"refs":["REF-16","REF-31"],"gap":"Duplex/shared-circulation and missing-interior variants require a derived state, not fabricated flats."},
+    {"id":"exploded-section","gates":["UI-10"],"refs":["REF-16","REF-27"],"gap":"Reverse section and arbitrary supported floor counts must be coherent derivatives of the same geometry."},
+    {"id":"evidence-photos","gates":["UI-11"],"refs":["REF-04","REF-19"],"gap":"Photo gallery has supporting board coverage only; empty/withheld evidence states are derived."},
+    {"id":"record-history-issues","gates":["UI-12"],"refs":["REF-05","REF-06"],"gap":null},
+    {"id":"investigation","gates":["UI-12"],"refs":["REF-30"],"gap":null},
+    {"id":"import-reconcile","gates":["UI-13"],"refs":["REF-25","REF-11"],"gap":"Per-item failure, duplicate replay and conflicting source selection require explicit derived states."},
+    {"id":"workspace-landing","gates":["UI-14"],"refs":["REF-26","REF-12"],"gap":null},
+    {"id":"workspace-source-calibration","gates":["UI-14"],"refs":["REF-17","REF-24","REF-07"],"gap":null},
+    {"id":"draft-edit-compare","gates":["UI-15"],"refs":["REF-08","REF-17"],"gap":"Undo, stale-edit conflict and unsaved recovery states derive from the shared workspace language."},
+    {"id":"build-review-publish","gates":["UI-16"],"refs":["REF-09","REF-10"],"gap":"Interrupted/failed publication must retain the previous coherent view; no completed screenshot is evidence for that failure path."}
+  ],
+  "fixtures":[
+    {"id":"F01","name":"Complete reference-style synthetic neighbourhood","classification":"synthetic","tasks":["T023","T024","T025","T027"],"geometryOracle":"Explicit generated inputs; retained footprints, heights, road/ground surfaces, selected interior and independently checked quantities.","visualProfile":"synthetic-detailed","mustNot":"Use a single hero building or a static reference image as the complete map."},
+    {"id":"F02","name":"Dense irregular Uttam Nagar regression","classification":"mixed-explicit","tasks":["T026","T030"],"geometryOracle":"Byte-retained public/source reference footprints and streets; synthetic heights/units/utilities separately labelled and never reclassified as survey.","visualProfile":"source-preserving","mustNot":"Widen lanes, move buildings, erase courtyards or add a park to match the open reference."},
+    {"id":"F03","name":"Slope and split levels","classification":"synthetic","tasks":["T018","T025","T026"],"geometryOracle":"Declared ground surface and storey/utility elevation profiles; independent level and clearance checks.","visualProfile":"analytical-prism","mustNot":"Flatten declared elevations or convert unknown depth into a safe interval."},
+    {"id":"F04","name":"Holes, multiparts, high rise and sparse geometry","classification":"synthetic","tasks":["T007","T017","T026"],"geometryOracle":"Concave exterior, interior ring, multipart islands and sparse unknown-height cases; compute area from supplied polygons only.","visualProfile":"source-preserving","mustNot":"Substitute bounding boxes, fill holes, infer interiors or hide missing data."},
+    {"id":"F05","name":"Road, bridge and utility crossings","classification":"synthetic","tasks":["T018","T022","T030","T035"],"geometryOracle":"Explicit topology plus XY and vertical profiles; touching/overlap and centre/crown/invert/depth use distinct definitions.","visualProfile":"analytical-prism","mustNot":"Create a network junction from projected crossing or add overlapping finding regions twice."},
+    {"id":"F06","name":"Equivalent source contributions","classification":"synthetic","tasks":["T006","T007","T011","T012"],"geometryOracle":"Equivalent qualified GIS/interchange/schedule fixtures with declared unit/frame conversions; retain every original and exact locator.","visualProfile":"analytical-prism","mustNot":"Call roof outline and ground occupation semantically equivalent just because the coordinates match."},
+    {"id":"F07","name":"Two-block, frame and tile seams","classification":"synthetic","tasks":["T006","T012","T020","T030"],"geometryOracle":"One 10 by 8 metre building spanning two 20 by 20 authoring blocks; height 6 metres; expected area 80 m2 and prism volume 480 m3 after independent transforms.","visualProfile":"analytical-prism","mustNot":"Create a second entity for a block/tile fragment or compare unrelated SRID-0 origins directly."},
+    {"id":"F08","name":"Generated catalog with bounded visible workload","classification":"synthetic","tasks":["T028","T029","T032","T056"],"geometryOracle":"Deterministic catalog IDs and fixed visible-route profile; catalog count, loaded objects, triangles and bytes measured separately.","visualProfile":"source-preserving","mustNot":"Claim all catalog objects are simultaneously rendered or make a million-entry catalog a hidden core-release dependency."},
+    {"id":"F09","name":"Held-out external shape family","classification":"held-out-pending","tasks":["T026","T032"],"geometryOracle":"Select a permitted, hashed unfamiliar source before its first transfer test; keep source/version/selection date and contamination history.","visualProfile":"source-preserving","mustNot":"Call a repeatedly tuned fixture held out; retain failures as regression and select another holdout after tuning."}
+  ],
+  "capabilityProfiles":[
+    {"id":"source-preserving","required":"Source geometry and role are explicit; incomplete vertical/interior information is visibly limited.","appearance":"Neutral, coherent materials and edges without fabricated factual detail."},
+    {"id":"analytical-prism","required":"Qualified polygon/height bounds and compatible analytical frames.","appearance":"Correct massing, holes, ground contact and defined quantities; no inferred legal rooms."},
+    {"id":"supplied-interior","required":"Qualified source-linked levels and spaces with explicit relationships.","appearance":"The same floor/unit geometry drives plan, section, model and table."},
+    {"id":"synthetic-detailed","required":"Explicitly synthetic authored geometry and seeded appearance recipe.","appearance":"Complete reference-quality neighbourhood; illustrative details excluded from observed analytical quantities."}
+  ],
+  "viewports":[
+    {"id":"anchor","width":1672,"height":941,"dpr":1,"evidenceClass":"desktop-browser"},
+    {"id":"desktop-wide","width":1920,"height":1080,"dpr":1,"evidenceClass":"desktop-browser"},
+    {"id":"desktop-small","width":1280,"height":800,"dpr":1,"evidenceClass":"desktop-browser"},
+    {"id":"mobile-emulated","width":390,"height":844,"dpr":1,"evidenceClass":"emulated-not-physical"}
+  ],
+  "cameraCases":[
+    {"id":"oblique","purpose":"Full neighbourhood composition and selected building"},
+    {"id":"reverse-oblique","purpose":"Back/sides and silhouette completeness"},
+    {"id":"top-down","purpose":"Same geometry, parcel and street layout without accidental camera tilt"},
+    {"id":"building-close","purpose":"Facade, roofs and exact selected geometry"},
+    {"id":"narrow-alley","purpose":"Dense-space legibility without altering dimensions"},
+    {"id":"wide-district","purpose":"Coverage, loading and meaningful LOD"},
+    {"id":"section-underground","purpose":"Surface/elevation semantics and supported clipping"},
+    {"id":"boundary-travel","purpose":"Stable identity and no cracks/double rendering at seams"}
+  ],
+  "universalStates":["loading","empty","partial","error-retry","unknown-height","zero-documents","withheld-evidence","keyboard-focus","zoom-200-percent","reduced-motion"],
+  "visualGate":{
+    "taskIds":["T027","T037","T042"],
+    "reviewer":"user",
+    "scoreRange":[0,5],
+    "criticalMinimum":4,
+    "requiresIndependentCorrectness":true,
+    "dimensions":["massing-silhouette","architectural-depth","material-scale","lighting-contrast","ground-contact","street-continuity","context-density","composition-hierarchy","interaction-motion"],
+    "rule":"Every applicable critical dimension meets its target; no average can hide failed geometry, identity, legibility or interaction. A neutral sparse profile is judged as sparse, not as a fabricated detailed building."
+  },
+  "knownContradictions":[
+    {"refs":["REF-15","REF-03"],"issue":"20 m2 outside parcel and 12 m2 road portion may overlap; 32 m2 total cannot be assumed.","resolution":"Use exact union/difference result geometry and explicit quantity definitions."},
+    {"refs":["REF-15","REF-27"],"issue":"The illustrative 1.8 metre utility label mixes proximity, horizontal clearance and below-ground language.","resolution":"Use separate distance, depth, reference-surface and vertical-availability fields; no implicit safety finding."},
+    {"refs":["REF-16","REF-17","REF-24"],"issue":"Floor/footprint/total-area labels vary across concepts without a consistent underlying model.","resolution":"Recompute from the selected canonical fixture; mockup numbers and room counts are not seed truth."},
+    {"refs":["REF-26","REF-31","REF-32"],"issue":"Source filenames identify different pages than the visible content.","resolution":"Use this inspected content mapping; preserve original filenames and hashes."}
+  ]
+}

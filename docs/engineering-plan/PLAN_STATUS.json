@@ -15,7 +15,7 @@
   "ui_gates_preserved": 16,
   "benchmarks_preserved": 17,
   "input_families_preserved": 25,
-  "next_task": "T002",
+  "next_task": "T003",
   "next_task_execution_blocker": null,
   "candidate_overlay_prepared": true,
   "github_commit_created": true,
