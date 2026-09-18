@@ -2,6 +2,15 @@ name: Spatial core
 on:
   push:
     branches: [feat/reusable-spatial-map-core]
+  pull_request:
+    paths:
+      - 'packages/contracts/**'
+      - 'apps/web/**'
+      - 'scripts/spatial/**'
+      - 'tests/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - '.github/workflows/spatial-core.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -11,56 +20,55 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Export reviewable source snapshot
+      - name: Record exact tested source
         run: |
-          python3 - <<'PY'
-          import pathlib, subprocess, zipfile
-          allowed = {'.ts', '.tsx', '.js', '.mjs', '.cjs', '.json', '.css', '.sql', '.py', '.md', '.yaml', '.yml', '.txt'}
-          with zipfile.ZipFile('/tmp/spatial-source.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
-              for name in subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0'):
-                  path = pathlib.Path(name)
-                  if name and path.is_file() and path.suffix in allowed and path.stat().st_size < 2000000 and not any(part.startswith('.env') for part in path.parts):
-                      archive.write(path, name)
-          PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: spatial-source-${{ github.sha }}
-          path: /tmp/spatial-source.zip
-          retention-days: 3
+          mkdir -p .runtime/spatial-qa
+          git rev-parse HEAD | tee .runtime/spatial-qa/tested-commit.txt
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Install pinned dependencies
+      - name: Install locked dependencies and browser
         run: |
           corepack enable
           corepack prepare pnpm@9.12.0 --activate
           pnpm install --frozen-lockfile
-      - name: One-time offline development bundle
-        if: github.run_number == 2
-        run: tar -czf /tmp/spatial-dev-dependencies.tar.gz node_modules apps/web/node_modules
-      - uses: actions/upload-artifact@v4
-        if: github.run_number == 2
-        with:
-          name: spatial-dev-dependencies
-          path: /tmp/spatial-dev-dependencies.tar.gz
-          compression-level: 0
-          retention-days: 1
+          pnpm exec playwright install --with-deps chromium
       - name: Typecheck
-        run: pnpm typecheck
+        run: |
+          set -o pipefail
+          pnpm typecheck 2>&1 | tee .runtime/spatial-qa/typecheck.log
       - name: Shared spatial-core tests
+        timeout-minutes: 3
         run: |
-          if test -f tests/spatial-core.test.ts; then
-            pnpm exec tsx --test tests/spatial-core.test.ts
-          fi
-      - name: Existing pure regressions
+          set -o pipefail
+          pnpm test:spatial 2>&1 | tee .runtime/spatial-qa/spatial-tests.log
+      - name: Existing pure and React regressions
+        timeout-minutes: 3
         run: |
-          pnpm test:scene
-          pnpm test:repo-data
-          pnpm test:register-scope
+          set -o pipefail
+          pnpm test:scene 2>&1 | tee .runtime/spatial-qa/scene-tests.log
+          pnpm test:repo-data 2>&1 | tee .runtime/spatial-qa/repo-tests.log
+          pnpm test:register-scope 2>&1 | tee .runtime/spatial-qa/register-tests.log
+          pnpm test:ui 2>&1 | tee .runtime/spatial-qa/ui-tests.log
       - name: Production build
-        run: pnpm build
+        run: |
+          set -o pipefail
+          pnpm build 2>&1 | tee .runtime/spatial-qa/build.log
+      - name: Actual browser rendering and state regression
+        timeout-minutes: 5
+        run: |
+          set -o pipefail
+          SPATIAL_START_SERVER=1 pnpm test:spatial:browser 2>&1 | tee .runtime/spatial-qa/browser.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spatial-map-verification-${{ github.run_id }}
+          path: .runtime/spatial-qa
+          retention-days: 5
