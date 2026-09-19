@@ -15,19 +15,7 @@ import { request, useMutation, useResource } from "../shared/hooks";
 import { routes } from "../shared/routes";
 import ImportForm from "./ImportForm";
 import ImportReview from "./ImportReview";
-export function downloadFile(
-  name: string,
-  content: string,
-  type = "application/json",
-) {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
+import ScopedExport from "../shared/ScopedExport";
 export default function DataTools({
   open,
   initialMode = "import",
@@ -47,9 +35,7 @@ export default function DataTools({
 }) {
   const [mode, setMode] = useState(initialMode),
     [source, setSource] = useState<"file" | "catalog">("file"),
-    [pkg, setPackage] = useState<ImportPackage | null>(null),
-    [exportType, setExportType] = useState("all"),
-    [notice, setNotice] = useState("");
+    [pkg, setPackage] = useState<ImportPackage | null>(null);
   const mutation = useMutation();
   const router = useRouter();
   const catalog = useResource<SourceCatalogEntry[]>(
@@ -61,7 +47,6 @@ export default function DataTools({
   useEffect(() => {
     if (open) {
       setMode(initialMode);
-      setNotice("");
     }
   }, [open, initialMode]);
   useEffect(() => {
@@ -79,80 +64,6 @@ export default function DataTools({
     router.push(routes.block(next.areaId));
     onChanged?.();
   };
-  const exportData = () => {
-    if (!context) return;
-    setNotice("");
-    void mutation.run(async () => {
-      const features =
-        exportType === "selected"
-          ? context.features.filter((f) => f.id === selectedId)
-          : context.features;
-      if (exportType === "selected" && !features.length)
-        throw new Error("Select a feature before exporting selected data.");
-      if (exportType === "view") {
-        const svg = document.querySelector<SVGSVGElement>(
-          ".ui-map-stage .ui-renderer[aria-hidden='false'] .ui-plan-svg",
-        );
-        if (!svg)
-          throw new Error(
-            "Switch to 2D Map to export the current vector view.",
-          );
-        downloadFile(
-          `block-${context.area.id}-view.svg`,
-          new XMLSerializer().serializeToString(svg),
-          "image/svg+xml",
-        );
-      } else if (exportType === "report") {
-        downloadFile(
-          `block-${context.area.id}-report.json`,
-          JSON.stringify(
-            {
-              schema: "ulpin-officer-report/2",
-              exportedAt: new Date().toISOString(),
-              area: context.area,
-              check: context.latestCheck,
-              sourceRevisions: [
-                ...new Set(features.map((f) => f.sourceRevisionId)),
-              ].map((id) => ({ id, url: routes.source(id) })),
-              note: "Individual findings are not summed; overlapping areas may exist.",
-            },
-            null,
-            2,
-          ),
-        );
-      } else {
-        downloadFile(
-          `block-${context.area.id}.geojson`,
-          JSON.stringify(
-            {
-              type: "FeatureCollection",
-              features: features.map((f) => ({
-                type: "Feature",
-                id: f.id,
-                geometry: f.geographicGeometry,
-                properties: {
-                  name: f.name,
-                  identifier: f.identifier,
-                  kind: f.kind,
-                  geometryRole: f.geometryRole,
-                  worldStatus: f.worldStatus,
-                  sourceRevisionId: f.sourceRevisionId,
-                  revision: f.revision,
-                  height: f.height,
-                  areaM2: f.areaM2,
-                  analysisReference: context.area.reference,
-                },
-              })),
-            },
-            null,
-            2,
-          ),
-          "application/geo+json",
-        );
-      }
-      setNotice("Export downloaded.");
-    });
-  };
   return (
     <Dialog open={open} onClose={onClose} title="Data tools">
       <nav className="ui-data-tabs" aria-label="Data tools mode">
@@ -167,6 +78,7 @@ export default function DataTools({
           </button>
         ))}
       </nav>
+      {mode==='import'&&<ol className="import-progress" aria-label="Import progress">{['Original source','Map fields','Inspect geometry','Review','Record'].map((label,index)=>{const step=!pkg?1:pkg.state==='COMMITTED'?4:pkg.state==='REVIEWED'?3:2;return <li key={label} aria-current={index===step?'step':undefined} data-done={index<step}><span>{index+1}</span>{label}</li>;})}</ol>}
       {mutation.error && <ErrorState message={mutation.error} />}{" "}
       {existing.error && (
         <ErrorState message={existing.error} retry={existing.reload} />
@@ -300,85 +212,8 @@ export default function DataTools({
             icon="download"
           />
         ) : (
-          <div className="ui-export-options">
-            <h3>{context.area.name}</h3>
-            <p>
-              {context.features.length} recorded features · revision{" "}
-              {context.area.revision}
-            </p>
-            <div className="ui-block-report-downloads">
-              <h4>Block register & sources</h4>
-              <p>
-                Includes every building, floor and unit 3D ULPIN, linked parcel
-                2D ULPINs, measurements and evidence.
-              </p>
-              <a
-                className="ui-button"
-                href={`/api/v1/areas/${context.area.id}/register?format=pdf`}
-              >
-                Download block PDF
-              </a>
-              <a
-                className="ui-button"
-                href={`/api/v1/areas/${context.area.id}/register?format=zip`}
-              >
-                Block report + original sources
-              </a>
-              <a
-                className="ui-button"
-                href={`/api/v1/areas/${context.area.id}/register?format=json`}
-              >
-                Block register JSON
-              </a>
-            </div>
-            {[
-              {
-                id: "all",
-                name: "Block geometry",
-                description:
-                  "Geographic GeoJSON with identifiers and source references",
-              },
-              {
-                id: "selected",
-                name: "Selected feature",
-                description: "Only the currently selected record",
-              },
-              {
-                id: "view",
-                name: "Current 2D view",
-                description: "Vector SVG of the visible plan",
-              },
-              {
-                id: "report",
-                name: "Check & evidence report",
-                description:
-                  "Latest check, exact findings and original-source links",
-              },
-            ].map((option) => (
-              <label key={option.id}>
-                <input
-                  type="radio"
-                  name="export-type"
-                  value={option.id}
-                  checked={exportType === option.id}
-                  onChange={() => setExportType(option.id)}
-                />
-                <span>
-                  <strong>{option.name}</strong>
-                  <small>{option.description}</small>
-                </span>
-              </label>
-            ))}
-            <Button
-              icon="download"
-              variant="primary"
-              onClick={exportData}
-              disabled={mutation.busy}
-            >
-              Download export
-            </Button>
-            {notice && <p role="status">{notice}</p>}
-          </div>
+          <ScopedExport context={context} selectedId={selectedId}/>
+
         ))}
     </Dialog>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { AreaGeometry, PhysicalFeature } from "@ulpin/contracts";
 import type { AreaNavigation, SceneDetail } from "@/components/AreaViewer";
 import { hasGoogleAttribution, hasOsmAttribution } from "@/lib/map-attribution";
@@ -23,6 +23,7 @@ export default function MapPlan({
   details = [],
   labels = false,
   interactive = true,
+  selectedDetailId,onSelectDetail,opacityByKind,
 }: {
   features: PhysicalFeature[];
   extent?: [number, number, number, number] | null;
@@ -35,7 +36,11 @@ export default function MapPlan({
   details?: SceneDetail[];
   labels?: boolean;
   interactive?: boolean;
+  selectedDetailId?:string|null;
+  onSelectDetail?:(id:string)=>void;
+  opacityByKind?:Readonly<Record<string,number>>;
 }) {
+  const gridId=useId().replaceAll(':','');
   const [view, setView] = useState<ViewBox>(() =>
     featureBounds(features, extent),
   );
@@ -107,6 +112,7 @@ export default function MapPlan({
           dy = e.clientY - d.y;
         if (Math.abs(dx) + Math.abs(dy) > 5) d.moved = true;
         if (d.moved) {
+          if(!e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.setPointerCapture(e.pointerId);
           const scale = d.view[2] / ref.current.clientWidth;
           setView([
             d.view[0] - dx * scale,
@@ -121,9 +127,10 @@ export default function MapPlan({
           drag.current = null;
         }, 0);
       }}
-      onPointerLeave={() => {
-        drag.current = null;
+      onPointerLeave={(e) => {
+        if(!e.currentTarget.hasPointerCapture(e.pointerId))drag.current = null;
       }}
+      onPointerCancel={()=>{drag.current=null;}}
       onWheel={(e) => {
         if (!interactive) return;
         const scale = e.deltaY > 0 ? 1.12 : 0.89;
@@ -137,7 +144,7 @@ export default function MapPlan({
     >
       <defs>
         <pattern
-          id="ui-map-grid"
+          id={gridId}
           width={view[2] / 30}
           height={view[2] / 30}
           patternUnits="userSpaceOnUse"
@@ -163,7 +170,7 @@ export default function MapPlan({
         y={view[1]}
         width={view[2]}
         height={view[3]}
-        fill="url(#ui-map-grid)"
+        fill={`url(#${gridId})`}
       />
       {[...features]
         .sort(
@@ -207,7 +214,7 @@ export default function MapPlan({
                     key={i}
                     d={primitive.path}
                     fill={primitive.kind === "line" ? "none" : color}
-                    fillOpacity={feature.kind === "parcel" ? 0.15 : 0.78}
+                    fillOpacity={(feature.kind === "parcel" ? 0.15 : 0.9)*(opacityByKind?.[feature.kind]??1)}
                     fillRule="evenodd"
                     stroke={
                       hit
@@ -249,10 +256,15 @@ export default function MapPlan({
           <path
             key={d.id}
             d={geometryPath(d.localGeometry!)}
-            fill="#568e8580"
+            fill={selectedDetailId===d.id?'#dab767a0':'#568e8580'}
             stroke="#285c53"
             strokeWidth={1.5}
             vectorEffect="non-scaling-stroke"
+            role={interactive?'button':undefined}
+            tabIndex={interactive?0:undefined}
+            aria-label={d.name}
+            onClick={()=>{if(!drag.current?.moved)onSelectDetail?.(d.id);}}
+            onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onSelectDetail?.(d.id);}}}
           >
             <title>{d.name}</title>
           </path>

@@ -4,6 +4,7 @@ import { Badge, Button, EmptyState, Icon, Panel } from "../shared/ui";
 import styles from "./register.module.css";
 import type { BuildingDossier } from "@ulpin/contracts";
 import { dateTime, historyEntries } from "./model";
+import RevisionCompare from './RevisionCompare';
 
 export default function History({
   dossier,
@@ -18,6 +19,7 @@ export default function History({
   );
   return (
     <>
+      <RevisionCompare feature={dossier.building}/>
       <div className={styles.tabTitle}>
         <div>
           <h2>Property history</h2>

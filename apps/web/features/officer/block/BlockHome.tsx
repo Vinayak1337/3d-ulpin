@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect,useState } from "react";
+import {useSearchParams,useRouter} from "next/navigation";
 import type { MapArea, AreaContext } from "@ulpin/contracts";
 import { useResource } from "../shared/hooks";
 import { routes } from "../shared/routes";
@@ -56,9 +57,10 @@ function BlockCard({ area }: { area: MapArea }) {
 }
 export default function BlockHome() {
   const areas = useResource<MapArea[]>("/areas");
+  const search=useSearchParams(),router=useRouter();
   const [query, setQuery] = useState(""),
     [kind, setKind] = useState("all"),
-    [importOpen, setImportOpen] = useState(false);
+    [importOpen, setImportOpen] = useState(search.get('import')==='1');
   const saved = (areas.data || []).filter((a) => a.featureCount && a.reference);
   const filtered = saved.filter(
     (a) =>
@@ -78,7 +80,7 @@ export default function BlockHome() {
           <span className="directory-kicker">SPATIAL RECORDS</span>
           <h1>Block Map</h1>
           <p>Choose a neighborhood to explore its properties.</p>
-          <Link href="/delhi" className="ui-button" style={{ marginTop: 12 }}>
+          <Link href="/studio/source-study" className="ui-button" style={{ marginTop: 12 }}>
             Delhi / Uttam Nagar study & downloads <Icon name="arrow" />
           </Link>
         </div>
@@ -162,7 +164,7 @@ export default function BlockHome() {
       )}
       <DataTools
         open={importOpen}
-        onClose={() => setImportOpen(false)}
+        onClose={() => {setImportOpen(false);if(search.has('import'))router.replace('/studio/datasets');}}
         initialMode="import"
         onChanged={() => void areas.reload()}
       />

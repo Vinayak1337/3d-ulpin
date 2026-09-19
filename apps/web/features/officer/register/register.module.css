@@ -1632,7 +1632,7 @@
 .content {
   padding: 18px;
   overflow: auto;
-  gap: 14px;
+  display: block;
 }
 .metricGrid {
   gap: 10px;

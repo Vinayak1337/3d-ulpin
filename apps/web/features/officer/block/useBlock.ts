@@ -20,6 +20,7 @@ export function useBlock(areaId: string) {
     router = useRouter(),
     pathname = usePathname();
   const selectedId = query.get("feature");
+  const requestedRecord=query.get('record');
   const findingId = query.get("findingId");
   const finding = context.data?.latestCheck?.stale
     ? null
@@ -77,6 +78,8 @@ export function useBlock(areaId: string) {
     return [...list, ...extra.values()];
   }, [context.data, shownFindings]);
   const selected = features.find((f) => f.id === selectedId) || null;
+  const worlds=[...new Set(features.map(f=>f.worldStatus))];
+  const world=worlds.find(w=>w===query.get('world'))??selected?.worldStatus??worlds[0]??'observed';
   const dossier = useResource<BuildingDossier>(
     selected?.kind === "building" ? `/buildings/${selected.id}/dossier` : null,
   );
@@ -130,8 +133,9 @@ export function useBlock(areaId: string) {
     });
   };
   const select = (id: string) => {
-    updateQuery({ feature: id });
     const feature = features.find((f) => f.id === id);
+    if(!feature)return;
+    updateQuery({feature:id,record:null,world:feature.worldStatus});
     if (feature?.kind === "utility")
       setPreferences(areaId, { inspector: "utility" });
     else if (feature?.kind === "parcel")
@@ -172,12 +176,18 @@ export function useBlock(areaId: string) {
   );
   const visibleFeatures = features.filter(
     (f) =>
-      !preferences.hiddenLayers.includes(f.kind) ||
+      f.worldStatus===world&&(!preferences.hiddenLayers.includes(f.kind) ||
       f.id === selectedId ||
-      highlightedIds.includes(f.id),
+      highlightedIds.includes(f.id)),
   );
   return {
     context,
+    worlds,world,
+    setWorld:(value:string)=>{if(worlds.includes(value as typeof world))updateQuery({world:value,feature:null,record:null,findingId:null});},
+    recordId:requestedRecord&&dossier.data?.records.some(r=>r.id===requestedRecord)?requestedRecord:null,
+    recordUnavailable:!!requestedRecord&&!!dossier.data&&!dossier.data.records.some(r=>r.id===requestedRecord),
+    selectedRecord:dossier.data?.records.find(r=>r.id===requestedRecord),
+    selectRecord:(id:string|null)=>{if(id&&!dossier.data?.records.some(r=>r.id===id))return;updateQuery({record:id});if(id){setPreferences(areaId,{inspector:'floors'});navigate('focus');}},
     featureLabels,
     showConflicts,
     conflictCount: conflictFindings.length,

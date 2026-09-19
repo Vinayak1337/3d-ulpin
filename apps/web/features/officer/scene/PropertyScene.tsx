@@ -10,6 +10,10 @@ import { LoadingState, ErrorState } from "../shared/ui";
 import "./scene.css";
 import OrbitControl from "./OrbitControl";
 import BuildingPreview from "./BuildingPreview";
+import SectionView from "../../spatial/SectionView";
+import {recordGeometry} from "../register/model";
+import type {SectionBody} from "../../spatial/data/section";
+import {useQueryState} from "../shared/hooks";
 const AreaViewer = dynamic(() => import("@/components/AreaViewer"), {
   ssr: false,
   loading: () => <LoadingState label="Opening building" />,
@@ -31,6 +35,8 @@ function InteractivePropertyScene({
     !compact && dossier.detailedScene.some((d) => d.record.kind === "space"),
   );
   const [explode, setExplode] = useState(1.8);
+  const [sceneMode,setSceneMode]=useQueryState("scene",["model","section"] as const,"model");
+  const sectionBodies=useMemo<SectionBody[]>(()=>{const spaces=dossier.detailedScene.filter(d=>d.record.kind==='space');return (spaces.length?spaces:dossier.detailedScene.filter(d=>d.record.kind==='floor')).filter(d=>Number.isFinite(d.lower)&&Number.isFinite(d.upper)&&!!d.verticalReference).map(d=>({id:d.record.id,label:d.record.name,geometry:recordGeometry(dossier,d.record),lower:d.lower!,upper:d.upper!,reference:d.verticalReference!}));},[dossier]);
   const [navigation, setNavigation] = useState<AreaNavigation>({
     action: "focus",
     sequence: 0,
@@ -80,16 +86,17 @@ function InteractivePropertyScene({
       {!compact && (
         <div className="property-scene-tools">
           <div className="property-scene-switch">
-            <button aria-pressed={!interior} onClick={() => setInterior(false)}>
+            <button aria-pressed={sceneMode==='model'&&!interior} onClick={() => {setSceneMode('model');setInterior(false);}}>
               Building
             </button>
             <button
-              aria-pressed={interior}
+              aria-pressed={sceneMode==='model'&&interior}
               disabled={!details.length}
-              onClick={() => setInterior(true)}
+              onClick={() => {setSceneMode('model');setInterior(true);}}
             >
               Floors & spaces
             </button>
+            <button aria-pressed={sceneMode==='section'} onClick={()=>setSceneMode('section')}>Section</button>
           </div>
           <OrbitControl
             onNavigate={(action) =>
@@ -98,6 +105,8 @@ function InteractivePropertyScene({
           />
         </div>
       )}
+      {sceneMode==='section'&&<SectionView bodies={sectionBodies} selectedId={selectedId} onSelect={onSelect}/>}
+      <div className="property-scene-runtime" style={{height:'100%',minHeight:250,display:sceneMode==='section'?'none':'block'}}>
       {context.error ? (
         <ErrorState message={context.error} retry={context.reload} />
       ) : context.data ? (
@@ -130,7 +139,8 @@ function InteractivePropertyScene({
       ) : (
         <LoadingState label="Loading block context" />
       )}
-      {!compact && (
+      </div>
+      {!compact && sceneMode!=='section' && (
         <div className="property-scene-footer">
           {interior ? (
             <>

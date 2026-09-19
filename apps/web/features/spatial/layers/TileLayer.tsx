@@ -33,6 +33,11 @@ export interface TileLayerProps {
     navigation: TileNavigation;
     visibleKinds?: readonly string[];
     shadows?:boolean;
+    opacityByKind?:Readonly<Record<string,number>>;
+    highlightedIds?:readonly string[];
+    hiddenEntityIds?:readonly string[];
+    overlays?:readonly TileOverlay[];
+    section?:{frame:SpatialFrame;axis:'east'|'north';position:number;reverse:boolean};
     outline?:{representation:SpatialRepresentation;frame:SpatialFrame;label:string};
     inspection?: {
         representation: SpatialRepresentation;
@@ -40,6 +45,10 @@ export interface TileLayerProps {
         parentId?: string;
     };
     onTelemetry?: (state: TileTelemetry) => void;
+}
+export interface TileOverlay {
+    representation:SpatialRepresentation;frame:SpatialFrame;color:string;
+    opacity?:number;outlineOnly?:boolean;selectable?:boolean;
 }
 const snapshotCamera = (viewer: Cesium.Viewer): MapCamera => ({
     longitude: viewer.camera.positionCartographic.longitude,
@@ -141,8 +150,11 @@ export default function TileLayer(props: TileLayerProps) {
                 if (typeof entityId === "string" && typeof representationId === "string")
                     latest.current.onSelect({ entityId, representationId });
             }
-            else if (picked?.id?.entityId) {
-                latest.current.onSelect({ entityId: picked.id.entityId, representationId: picked.id.representationId });
+            else if (picked?.id) {
+                const time=Cesium.JulianDate.now();
+                const entityId=picked.id.entityId??picked.id.properties?.entityId?.getValue(time);
+                const representationId=picked.id.representationId??picked.id.properties?.representationId?.getValue(time);
+                if(typeof entityId==='string')latest.current.onSelect({entityId,representationId:typeof representationId==='string'?representationId:undefined});
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         void Cesium.Cesium3DTileset.fromUrl(props.manifestUrl, {
@@ -202,14 +214,60 @@ export default function TileLayer(props: TileLayerProps) {
         const { viewer, tileset } = state;
         const selected = props.selection?.entityId;
         const kindVisibility = props.visibleKinds ? props.visibleKinds.map(kind => `\${kind} === ${safeExpression(kind)}`).join(" || ") || "false" : "true";
-        const show = props.inspection?.parentId ? `(${kindVisibility}) && \${entityId} !== ${safeExpression(props.inspection.parentId)}` : kindVisibility;
+        const hidden=[...(props.hiddenEntityIds??[]),...(props.inspection?.parentId?[props.inspection.parentId]:[])];
+        const show = hidden.length?`(${kindVisibility}) && ${hidden.map(id=>`\${entityId} !== ${safeExpression(id)}`).join(' && ')}`:kindVisibility;
+        const opacity=(kind:string)=>Math.max(.05,Math.min(1,props.opacityByKind?.[kind]??1));
+        const colors:(readonly [string,string])[]=[];
+        if(selected)colors.push([`\${entityId} === ${safeExpression(selected)}`,"color('#b4d2b7', 0.98)"]);
+        for(const id of props.highlightedIds??[])colors.push([`\${entityId} === ${safeExpression(id)}`,"color('#eaa67e', 0.95)"]);
+        for(const kind of Object.keys(props.opacityByKind??{}))colors.push([`\${kind} === ${safeExpression(kind)}`,`color('white', ${opacity(kind)})`]);
+        colors.push(['true',"color('white')"]);
         tileset.style = new Cesium.Cesium3DTileStyle({
             show,
-            color: selected ? { conditions: [[`\${entityId} === ${safeExpression(selected)}`, "color('#b7d1ba')"], ["true", "color('white')"]] } : "color('white')",
+            color: {conditions:colors},
         });
         tileset.colorBlendMode = Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT;
         viewer.scene.requestRender();
-    }, [ready, props.selection?.entityId, props.visibleKinds, props.inspection?.parentId]);
+    }, [ready, props.selection?.entityId, props.visibleKinds, props.inspection?.parentId,props.hiddenEntityIds,props.highlightedIds,props.opacityByKind]);
+    useEffect(()=>{
+        const state=active.current;if(!state||!ready)return;
+        const {viewer,tileset}=state;
+        if(!props.section){if(tileset.clippingPlanes)tileset.clippingPlanes.enabled=false;viewer.scene.requestRender();return;}
+        const {frame,axis,position,reverse}=props.section;
+        const root=tileset.root.computedTransform;
+        const local=Cesium.Matrix4.fromArray([...enuToEcef(frame)]);
+        const inverse=Cesium.Matrix4.inverse(root,new Cesium.Matrix4());
+        const matrix=Cesium.Matrix4.multiply(inverse,local,new Cesium.Matrix4());
+        const direction=reverse?-1:1;
+        const planes=new Cesium.ClippingPlaneCollection({planes:[new Cesium.ClippingPlane(new Cesium.Cartesian3(axis==='east'?direction:0,axis==='north'?direction:0,0),-position*direction)],modelMatrix:matrix,edgeWidth:1.4,edgeColor:Cesium.Color.fromCssColorString('#638373'),enabled:true});
+        tileset.clippingPlanes=planes;viewer.scene.requestRender();
+        return()=>{if(!viewer.isDestroyed()&&!planes.isDestroyed()){planes.enabled=false;viewer.scene.requestRender();}};
+    },[ready,props.section]);
+    useEffect(()=>{
+        const state=active.current;if(!state||!ready||!props.overlays?.length)return;
+        const {viewer}=state,entities:Cesium.Entity[]=[];
+        for(const overlay of props.overlays){
+            const {representation:rep,frame}=overlay,matrix=enuToEcef(frame),lower=rep.vertical?.lower??.14,upper=rep.vertical?.upper??lower;
+            const color=Cesium.Color.fromCssColorString(overlay.color),material=color.withAlpha(overlay.opacity??.5);
+            const point=(p:readonly number[],z=upper)=>new Cesium.Cartesian3(...transformPoint(matrix,[p[0],p[1],z]));
+            const properties=overlay.selectable===false?{}:{entityId:rep.entityId,representationId:rep.id};
+            const geometry=rep.geometry;
+            if(geometry.type==='Point')entities.push(viewer.entities.add({position:point(geometry.coordinates),point:{pixelSize:9,color,outlineWidth:2,outlineColor:Cesium.Color.WHITE},properties}));
+            else if(geometry.type==='LineString')entities.push(viewer.entities.add({polyline:{positions:geometry.coordinates.map(p=>point(p)),width:4,material:color,arcType:Cesium.ArcType.NONE},properties}));
+            else{
+                const polygons=geometry.type==='Polygon'?[geometry.coordinates]:geometry.coordinates;
+                for(const polygon of polygons){
+                    if(!overlay.outlineOnly){
+                        const hierarchy=new Cesium.PolygonHierarchy(polygon[0].map(p=>point(p,lower)),polygon.slice(1).map(r=>new Cesium.PolygonHierarchy(r.map(p=>point(p,lower)))));
+                        entities.push(viewer.entities.add({polygon:{hierarchy,perPositionHeight:true,material,outline:false,...(upper>lower?{extrudedHeight:Cesium.Cartographic.fromCartesian(point(polygon[0][0],upper)).height}:{}),closeTop:true,closeBottom:true},properties}));
+                    }
+                    for(const ring of polygon)entities.push(viewer.entities.add({polyline:{positions:ring.map(p=>point(p,upper+.04)),width:2,material:color,arcType:Cesium.ArcType.NONE},properties}));
+                }
+            }
+        }
+        viewer.scene.requestRender();
+        return()=>{if(!viewer.isDestroyed()){entities.forEach(e=>viewer.entities.remove(e));viewer.scene.requestRender();}};
+    },[ready,props.overlays]);
     useEffect(()=>{
         const state=active.current;if(!state||!ready)return;
         state.viewer.scene.shadowMap.enabled=props.shadows!==false;

@@ -10,6 +10,8 @@ import { SearchDialog } from "./SearchDialog";
 import { useResource } from "./hooks";
 import "./ui.css";
 import "./shell.css";
+import ProductHeader from "../../studio/product/ProductHeader";
+import "../../studio/product/operations.css";
 function Navigation({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false),
@@ -30,11 +32,11 @@ function Navigation({ children }: { children: ReactNode }) {
         setSearchOpen(true);
       }
     };
-    window.addEventListener("keydown", key);
+
     return () => {
       window.removeEventListener("online", update);
       window.removeEventListener("offline", update);
-      window.removeEventListener("keydown", key);
+
     };
   }, []);
   const family = pathname.includes("workspace")
@@ -43,64 +45,12 @@ function Navigation({ children }: { children: ReactNode }) {
       ? "register"
       : "block";
   return (
-    <div className="ulpin-app" data-ui-shell>
+    <div className="ulpin-app studio-operations" data-ui-shell>
       <a className="ui-skip" href="#ui-content">
         Skip to content
       </a>
-      <header className="ui-topbar">
-        <Link
-          href={routes.home}
-          className="ui-brand"
-          aria-label="3D ULPIN home"
-        >
-          <span className="ui-brandmark">
-            <Icon name="layers" size={26} />
-          </span>
-          <span>
-            <strong>3D ULPIN</strong>
-            <small>Property intelligence</small>
-          </span>
-        </Link>
-        <Button
-          variant="secondary"
-          className="ui-global-search"
-          icon="search"
-          onClick={() => setSearchOpen(true)}
-          aria-label="Search properties (Command K)"
-        >
-          <span className="ui-search-label">Search property or address</span>
-          <kbd>⌘ K</kbd>
-        </Button>
-        <nav className="ui-mainnav" aria-label="Main navigation">
-          {mainNavigation.map((item) => (
-            <Link
-              key={item.key}
-              href={item.href}
-              aria-current={family === item.key ? "page" : undefined}
-            >
-              <Icon name={item.icon} />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="ui-header-actions">
-          <button
-            className="ui-local"
-            onClick={() => setStatusOpen(true)}
-            aria-label="Local workspace status"
-          >
-            <span className={online ? "ui-dot" : "ui-dot ui-dot--offline"} />
-            <span>Local workspace</span>
-          </button>
-          <button
-            className="ui-avatar"
-            onClick={() => setStatusOpen(true)}
-            aria-label="Workspace settings"
-          >
-            LO
-          </button>
-        </div>
-      </header>
+      <ProductHeader actions={<button onClick={()=>setStatusOpen(true)} aria-label="Local workspace status"><span className={online?'ui-dot':'ui-dot ui-dot--offline'}/><span>Local workspace</span></button>}/>
+
       <div id="ui-content" className="ui-content">
         {children}
       </div>
@@ -129,8 +79,8 @@ function Navigation({ children }: { children: ReactNode }) {
           ))}
         </div>
         <div className="ui-status-links">
-          <Link href="/register">Browse registers</Link>
-          <Link href="/workspace">Browse workspaces</Link>
+          <Link href="/studio/registry">Browse registers</Link>
+          <Link href="/studio/workspaces">Browse workspaces</Link>
         </div>
       </Dialog>
     </div>

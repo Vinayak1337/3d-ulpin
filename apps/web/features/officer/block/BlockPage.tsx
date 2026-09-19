@@ -2,6 +2,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
+import SavedSceneViewport from "../../studio/product/SavedSceneViewport";
 import { useBlock } from "./useBlock";
 import { BlockLeftRail, BlockInspector } from "./BlockRails";
 import MapPlan from "./MapPlan";
@@ -28,7 +29,8 @@ export default function BlockPage({ areaId }: { areaId: string }) {
   const [tools, setTools] = useState<"import" | "export" | null>(null),
     [packageId, setPackageId] = useState<string>(),
     [leftOpen, setLeftOpen] = useState(false),
-    [inspectorOpen, setInspectorOpen] = useState(true);
+    [inspectorOpen, setInspectorOpen] = useState(true),
+    [explode,setExplode]=useState(0);
   const check = useMutation();
   const context = block.context.data;
   const runCheck = () => {
@@ -75,7 +77,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
           <Badge>{context.features.length} features</Badge>
         </div>
         <div className="ui-context-actions">
-          <Link className="ui-button" href={`/map-lab?area=${encodeURIComponent(areaId)}&world=${encodeURIComponent(block.selected?.worldStatus??context.features[0]?.worldStatus??"synthetic")}`}><Icon name="cube"/>Enhanced 3D</Link>
+
           <Button
             icon="upload"
             onClick={() => {
@@ -195,26 +197,8 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                   }}
                   aria-hidden={block.preferences.mode !== "3d"}
                 >
-                  <AreaViewer
-                    frameScale={2.0}
-                    sceneAssets={context.sceneAssets}
-                    features={block.visibleFeatures}
-                    geographicExtent={context.area.geographicExtent}
-                    selectedId={block.selectedId}
-                    onSelect={(id) => {
-                      block.select(id);
-                      setInspectorOpen(true);
-                    }}
-                    navigation={block.navigation}
-                    sceneKey={`block:${areaId}`}
-                    highlightedIds={block.highlightedIds}
-                    featureLabels={block.featureLabels}
-                    issueGeometry={block.geographicIssueGeometry}
-                    details={block.preferences.underground ? block.details : []}
-                    boundaries={block.boundaries}
-                    labels={block.preferences.labels}
-                    underground={block.preferences.underground}
-                  />
+                  <SavedSceneViewport block={block} world={block.world} recordId={block.recordId} onRecord={block.selectRecord} explode={explode} opacityByKind={block.preferences.opacity}/>
+
                 </div>
                 <div
                   className="ui-renderer"
@@ -236,12 +220,16 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                     issueGeometry={block.issueGeometry}
                     highlightedIds={block.highlightedIds}
                     featureLabels={block.featureLabels}
-                    details={block.preferences.underground ? block.details : []}
+                    details={block.recordId?block.details.filter(d=>d.id===block.recordId||block.dossier.data?.records.find(r=>r.id===d.id)?.links.some(l=>l.type==='floor'&&l.targetId===block.recordId)):block.preferences.underground?block.details:[]}
+                    selectedDetailId={block.recordId}
+                    onSelectDetail={block.selectRecord}
+                    opacityByKind={block.preferences.opacity}
                     labels={block.preferences.labels}
                   />
                 </div>
               </>
             )}
+            <div className="ui-map-world"><label>Source world <select aria-label="Source world" value={block.world} onChange={e=>block.setWorld(e.target.value)}>{block.worlds.map(w=><option key={w} value={w}>{w==='synthetic'?'Fictional scenario':w==='observed'?'Observed sources':w}</option>)}</select></label>{block.selected?.kind==='building'&&block.details.length>0&&<button className="ui-button" aria-pressed={explode>0} onClick={()=>setExplode(v=>v?0:1.8)}>{explode?'Stack floors':'Separate floors'}</button>}</div>
             <div className="ui-map-compass">
               <Button
                 aria-label="Orient north"

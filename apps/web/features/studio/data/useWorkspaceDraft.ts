@@ -25,5 +25,5 @@ export function useWorkspaceDraft(buildingId:string,floor:number,sourceHash:stri
   const result=saveStudioDraft(localStorage,{schemaVersion:'studio-local-draft/1',buildingId,sourceHash,floor,unitId,tool:current.tool,points:current.points,calibration:current.calibration,notes:current.notes,revision:current.revision,status:nextStatus,updatedAt:new Date().toISOString()});
   patch(old=>({...old,...result,loaded:true,dirty:false,error:''}));return result;
  },[buildingId,floor,sourceHash,current,patch]);
- return {...current,setTool:set('tool'),setPoints:set('points'),setCalibration:set('calibration'),setNotes:set('notes'),save};
+ return {...current,anyDirty:Object.values(buffers).some(b=>b.dirty),setTool:set('tool'),setPoints:set('points'),setCalibration:set('calibration'),setNotes:set('notes'),save};
 }

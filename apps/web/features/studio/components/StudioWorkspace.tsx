@@ -8,6 +8,7 @@ import {preparedDocumentId} from '../data/source-types';
 import {useStudioSources,downloadPreparedAsset} from '../data/useSources';
 import {loadStudioDraft,studioMeasurement,type StudioDraft} from '../data/workspace-draft';
 import {useWorkspaceDraft} from '../data/useWorkspaceDraft';
+import {useUnsavedNavigation} from '../data/navigation-guard';
 import {verifyPreparedProperty,type SourceVerification} from '../data/verify-property-source';
 
 type Props={b:Building;context:RecordContext;onContext:(context:RecordContext)=>void;onClose:()=>void;onRegister:()=>void};
@@ -43,7 +44,8 @@ export default function StudioWorkspace({b,context,onContext,onClose,onRegister}
   }catch(error){setMessage(error instanceof Error?error.message:'Draft storage failed.');}finally{setBusy(false);}
  };
  const chooseFloor=(f:number)=>{let next=b.units.find(u=>u.floor===f)!;try{const stored=loadStudioDraft(localStorage,b.id,f);if(stored&&stored.sourceHash===sources.data?.datasetSha256){next=b.units.find(u=>u.id===stored.unitId&&u.floor===f)??next;}}catch{}onContext({doc:'plan',floor:f,unitId:next.id});setMeasure(false);};
- const leave=()=>{if(draft.dirty&&!window.confirm('You have unsaved workspace changes. Leave without saving them?'))return;onClose();};
+ useUnsavedNavigation(draft.anyDirty);
+ const leave=onClose;
  useEffect(()=>{const clear=(event:KeyboardEvent)=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='q'){event.preventDefault();setPoints([]);setMeasure(false);}};window.addEventListener('keydown',clear);return()=>window.removeEventListener('keydown',clear);},[setPoints]);
 
  return <section className="studio-plan-workspace" aria-label="Plan workspace">

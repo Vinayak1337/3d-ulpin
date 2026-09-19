@@ -44,7 +44,7 @@ export default function DelhiStudy() {
   const roadReference = areas.find(a => a.name === "Uttam Nagar - real OSM block");
   const roadDemo = areas.find(a => a.name === "Uttam Nagar - FICTIONAL registry and conflicts");
   return <main className="delhi-study">
-    <Link href="/blocks" className="delhi-back">← All saved blocks</Link>
+    <Link href="/studio/datasets" className="delhi-back">← All saved blocks</Link>
     <header><span className="delhi-kicker">DELHI / LOCAL DATA STUDY</span><h1>From a city boundary<br />to a linked property block.</h1>
       <p>Open map geometry for Uttam Nagar, kept separate from an explicitly invented registry and conflict scenario.</p></header>
     {error && <p role="alert" className="delhi-warning">{error}</p>}
@@ -52,14 +52,14 @@ export default function DelhiStudy() {
       <article><span className="delhi-tag">GOOGLE OPEN BUILDINGS + OSM</span><h2>The Google-derived study</h2>
         <p>15 selected Google footprint predictions and 35 OpenStreetMap road segments. Reference heights and interiors remain unknown. The separate fictional copy contains nine floors, 27 spaces, 18 invented occupants and nine common-access groups.</p>
         <p className="delhi-small">These are distinct datasets from the larger OSM window below. Source files and source attribution are retained in the repository.</p>
-        {googleReference && <p><Link href={`/blocks/${googleReference.id}`}>Open Google source reference →</Link></p>}
-        {googleDemo && <Link className="delhi-primary" href={`/blocks/${googleDemo.id}`}>Open Google-derived fictional registry →</Link>}
+        {googleReference && <p><Link href={`/studio/areas/${googleReference.id}`}>Open Google source reference →</Link></p>}
+        {googleDemo && <Link className="delhi-primary" href={`/studio/areas/${googleDemo.id}`}>Open Google-derived fictional registry →</Link>}
         {!googleReference && !googleDemo && <p>Run <code>pnpm data:uttam:install</code> to load the saved datasets.</p>}
       </article>
       <article><span className="delhi-tag">SMALL ROAD-BOUNDED OSM STUDY</span><h2>A second street block</h2>
         <p>20 mapped building outlines and nine road/path segments. Its separately labelled fictional scenario adds three demo parcels, nine floors and 27 spaces with invented residents.</p>
-        {roadReference && <p><Link href={`/blocks/${roadReference.id}`}>Open small OSM reference →</Link></p>}
-        {roadDemo && <Link className="delhi-primary" href={`/blocks/${roadDemo.id}`}>Open small fictional scenario →</Link>}
+        {roadReference && <p><Link href={`/studio/areas/${roadReference.id}`}>Open small OSM reference →</Link></p>}
+        {roadDemo && <Link className="delhi-primary" href={`/studio/areas/${roadDemo.id}`}>Open small fictional scenario →</Link>}
       </article>
     </section>
     <section className="delhi-top">
@@ -73,10 +73,10 @@ export default function DelhiStudy() {
     <section className="delhi-options" aria-label="Separate reference and fictional datasets">
       <article><span className="delhi-tag">REFERENCE DATA</span><h2>What the map actually supplies</h2><p>Downloaded building outlines and road centrelines. Unknown height, interiors, road-land width and ownership remain unknown. No residents or parcel ownership have been inferred.</p>
         <strong>{reference?.featureCount ?? "—"} loaded features</strong><p className="delhi-small">This reference dataset is not altered to manufacture an overlap.</p>
-        {reference ? <Link className="delhi-primary" href={`/blocks/${reference.id}`}>Open OSM reference block →</Link> : <p>Reference area not installed in the selected data mode.</p>}</article>
+        {reference ? <Link className="delhi-primary" href={`/studio/areas/${reference.id}`}>Open OSM reference block →</Link> : <p>Reference area not installed in the selected data mode.</p>}</article>
       <article className="delhi-demo"><span className="delhi-tag">FICTIONAL DEMONSTRATION</span><h2>Rooms, people and conflict review</h2><p>A separate copy with invented heights, road widths, three demo parcels, nine floors and 36 spaces. It includes 27 fictional occupants and shared-use corridor groups—not the real people at these coordinates.</p>
         <strong>{demo?.featureCount ?? "—"} scenario features</strong><p className="delhi-small">The widening corridor and overlapping kiosk are deliberately invented test inputs.</p>
-        {demo ? <Link className="delhi-primary" href={`/blocks/${demo.id}`}>Open fictional 3D scenario →</Link> : <p>Scenario not installed in the selected data mode.</p>}</article>
+        {demo ? <Link className="delhi-primary" href={`/studio/areas/${demo.id}`}>Open fictional 3D scenario →</Link> : <p>Scenario not installed in the selected data mode.</p>}</article>
     </section>
     <section className="delhi-downloads"><div><span className="delhi-kicker">RETAINED INPUTS</span><h2>Download the geographic data</h2><p>Delhi-wide coverage here is the NCT boundary. Detailed building and road data are the selected Uttam Nagar window, not all buildings in Delhi.</p></div>
       <div><a href={DATA + "delhi-nct-boundary.geojson"} download>Delhi boundary · GeoJSON ↓</a><a href={DATA + "uttam-nagar-buildings.geojson"} download>Uttam Nagar buildings · GeoJSON ↓</a><a href={DATA + "uttam-nagar-roads.geojson"} download>Uttam Nagar roads · GeoJSON ↓</a><a href={DATA + "SOURCE_NOTES.md"} download>Sources, limitations and official-record research ↓</a></div>

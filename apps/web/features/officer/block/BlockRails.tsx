@@ -1,6 +1,10 @@
 "use client";
 import ParcelIdentity from "../shared/ParcelIdentity";
 import PropertyScene from "../scene/PropertyScene";
+import QuickRecords from "../../studio/product/QuickRecords";
+import {sourceKind} from "../register/model";
+import {SourcePreview} from "../register/Evidence";
+import {Dialog} from "../shared/ui";
 import Link from "next/link";
 import { useState } from "react";
 import type { FeatureKind, PhysicalFeature } from "@ulpin/contracts";
@@ -33,11 +37,11 @@ export function BlockLeftRail({
   onClose?: () => void;
 }) {
   const [filter, setFilter] = useState(""),
-    [listing, setListing] = useState<"building" | "parcel">("building");
+    [listing, setListing] = useState<"building" | "parcel" | "utility">("building");
   const { preferences, features } = block;
   const properties = features.filter(
     (f) =>
-      (f.kind === listing || !!filter.trim()) &&
+      f.worldStatus===block.world && (f.kind === listing || !!filter.trim()) &&
       `${f.name} ${f.identifier} ${f.sourceKey} ${block.featureLabels[f.id] || ""}`
         .toLowerCase()
         .includes(filter.toLowerCase()),
@@ -103,6 +107,7 @@ export function BlockLeftRail({
             );
           })}
 
+          <details className="saved-layer-opacity"><summary>Layer appearance</summary>{kinds.filter(k=>features.some(f=>f.kind===k.kind&&f.worldStatus===block.world)).map(k=><label key={k.kind}>{k.label}<span>{Math.round((preferences.opacity?.[k.kind]??1)*100)}%</span><input type="range" aria-label={`${k.label} opacity`} min="5" max="100" value={(preferences.opacity?.[k.kind]??1)*100} onChange={e=>block.setPreferences({opacity:{...preferences.opacity,[k.kind]:Number(e.target.value)/100}})}/></label>)}</details>
           <label className="ui-layer">
             <Icon name="eye" />
             <span>Labels</span>
@@ -136,6 +141,7 @@ export function BlockLeftRail({
             [
               ["building", "Buildings"],
               ["parcel", "Parcels"],
+              ["utility", "Utilities"],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -260,12 +266,13 @@ export function BlockInspector({
 }) {
   const { selected, preferences, dossier } = block;
   const mode = preferences.inspector;
+  const [sourceDialog,setSourceDialog]=useState<string|null>(null);
   const properties = block.features.filter((f) => f.kind === "building");
   const utils = block.features.filter((f) => f.kind === "utility");
   const utility = selected?.kind === "utility" ? selected : null;
   const profile = utility ? utilityScene(utility) : null;
   const sources = dossier.data?.sources || [];
-  const photos = sources.filter((s) => /\.(png|jpg|jpeg|webp)$/i.test(s.name));
+  const photos = sources.filter((s) => sourceKind(s)==='Photos');
   const parcels =
     selected?.kind === "parcel"
       ? [{ feature: selected, status: "selected" }]
@@ -275,7 +282,7 @@ export function BlockInspector({
       <header className="ui-inspector-heading">
         <h2>
           {mode === "property"
-            ? "Property"
+            ? "Quick register"
             : mode.charAt(0).toUpperCase() + mode.slice(1)}
         </h2>
         <span>
@@ -296,7 +303,7 @@ export function BlockInspector({
         </span>
       </header>
       <nav className="ui-inspector-tabs" aria-label="Inspector sections">
-        {(["property", "parcel", "utility", "photos", "history"] as const).map(
+        {((selected?.kind==='building'?["property","floors","evidence","parcel","history"]:selected?.kind==='utility'?["utility","history"]:selected?.kind==='parcel'?["parcel","history"]:["property","parcel","utility","photos","history"]) as (typeof preferences.inspector)[]).map(
           (item) => (
             <button
               key={item}
@@ -384,6 +391,7 @@ export function BlockInspector({
               {dossier.error && (
                 <ErrorState message={dossier.error} retry={dossier.reload} />
               )}
+              {selected.kind==='building'&&<div className="quick-shortcuts"><Button icon="layers" onClick={()=>block.setPreferences({inspector:'floors'})}>Inspect floors & units</Button><Button icon="document" onClick={()=>block.setPreferences({inspector:'evidence'})}>Open documents ({sources.length})</Button></div>}
               <section className="ui-inspector-section">
                 <h3>Evidence coverage</h3>
                 {dossier.data?.missing.length ? (
@@ -405,6 +413,8 @@ export function BlockInspector({
               </section>
             </>
           ))}
+        {mode==='floors'&&<QuickRecords block={block} onSource={setSourceDialog}/>}
+        {mode==='evidence'&&<section className="quick-evidence"><h3>Original documents</h3><p>Open retained bytes without leaving the map.</p>{sources.length?sources.map(source=><button key={source.id} className="quick-source" onClick={()=>setSourceDialog(source.id)}><Icon name="document"/><span><strong>{source.name}</strong><small>{sourceKind(source)} ? revision {source.revision}</small></span><Icon name="chevron"/></button>):<EmptyState title="No linked originals" description="Add source evidence in the property workspace."/>}<Button onClick={()=>block.setPreferences({inspector:'photos'})} icon="photo">Site photographs ({photos.length})</Button></section>}
         {mode === "parcel" && (
           <>
             {!parcels.length ? (
@@ -586,10 +596,10 @@ export function BlockInspector({
         <footer className="ui-inspector-actions">
           <Link
             className="ui-button ui-button--primary"
-            href={routes.register(selected.id, block.context.data?.area.id)}
+            href={routes.register(selected.id, block.context.data?.area.id)+(block.recordId?`&record=${encodeURIComponent(block.recordId)}`:'')}
           >
             <Icon name="register" />
-            Open register
+            Full register
           </Link>
           <Link
             className="ui-button"
@@ -607,6 +617,7 @@ export function BlockInspector({
           </Button>
         </footer>
       )}
+      <Dialog open={!!sourceDialog} title="Original property evidence" onClose={()=>setSourceDialog(null)}>{dossier.data&&sources.find(s=>s.id===sourceDialog)?<SourcePreview source={sources.find(s=>s.id===sourceDialog)!} dossier={dossier.data}/>:<EmptyState title="This source is no longer in the current dossier"/>}</Dialog>
     </aside>
   );
 }
