@@ -7,6 +7,7 @@ import {buildArchitecture} from '../apps/web/features/studio/scene/architecture'
 import {loadStudioDraft,saveStudioDraft,studioDraftKey,type StudioDraft} from '../apps/web/features/studio/data/workspace-draft';
 import {validatePreparedProperty,verifyPreparedProperty} from '../apps/web/features/studio/data/verify-property-source';
 import {readStudioRoute} from '../apps/web/features/studio/routing';
+import {sourceKind} from '../apps/web/features/officer/register/model';
 import type {StudioSourceManifest} from '../apps/web/features/studio/data/source-types';
 
 const b=getBuilding(district.defaultBuildingId);
@@ -66,3 +67,8 @@ test('source validation tests real property/plan/occupancy links and rejects alt
  const incomplete={...manifest,documents:manifest.documents.filter(d=>d.id!=='plan-BLD-0413-F1')};assert.throws(()=>validatePreparedProperty(b,JSON.parse(raw.toString()),incomplete),/unique prepared plan/);
 });
 for(const query of ['selection=all','selection=','explode=yes','unit=','mode=','doc=','tab='])test(`malformed state ${query} is unavailable rather than silently normalized`,()=>assert(readStudioRoute('/studio/map/BLD-0413?'+query,district).error));
+test('image floor plans are drawings before generic image-photo classification',()=>{
+ const plan={name:'A-floor-2.png',profile:'plan-png-v1'} as Parameters<typeof sourceKind>[0];
+ const photo={name:'site-inspection-east.jpg',profile:'photo-jpeg-v1'} as Parameters<typeof sourceKind>[0];
+ assert.equal(sourceKind(plan),'Plans & drawings');assert.equal(sourceKind(photo),'Photos');
+});
