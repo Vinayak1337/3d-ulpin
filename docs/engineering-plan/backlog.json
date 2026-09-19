@@ -3,10 +3,10 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.3",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T058_continuation_review_not_new_feature_phase",
+  "current_action": "T059_frontend_completion_review",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T058",
+  "next_task": "T059",
   "epics": [
     {
       "id": "E01",
@@ -2012,6 +2012,43 @@
         "../evidence/t058/continuation/REVIEW.md"
       ],
       "blocker": null
+    },
+    {
+      "id": "T059",
+      "epic": "E14",
+      "title": "Unified Studio frontend completion and acceptance evidence",
+      "sequence": 59,
+      "status": "Review",
+      "execution_state": "implemented_current_browser_verified",
+      "plan_state": "detailed_plan_authored",
+      "release": "R1-renderer",
+      "suggested_owner": "Frontend / visual / QA",
+      "depends_on": [
+        "T058"
+      ],
+      "scope": "Finish FE-A01?14: one Studio shell for prepared and saved data, same-page quick register, complete register/workspace/export paths, responsive behavior and current evidence.",
+      "outputs": "Unified routes and components; FE coverage ledger; current fixture and saved-data browser evidence; responsive captures.",
+      "acceptance": "FE-A01?14 implemented and current browser/build checks pass; source geometry remains honest; physical-device verification and user visual approval are recorded separately.",
+      "out_of_scope": "ML, official identity issuance, production multi-user rollout and reshaping imported real geometry to imitate the synthetic reference.",
+      "detail_plan_path": "tasks/T059_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Current affected-file inspection",
+        "Studio and saved-data browser journeys",
+        "Production build",
+        "Reference-family captures",
+        "Responsive/accessibility baseline",
+        "No fabricated user approval"
+      ],
+      "evidence": [
+        "tasks/T059_RESULT.md",
+        "../frontend-completion/coverage.json",
+        "../evidence/t059/final/results.json",
+        "../evidence/t059/final/saved-data-results.json",
+        "../evidence/t059/final/capture.json"
+      ],
+      "blocker": null
     }
   ],
   "maintenance": [
@@ -2033,5 +2070,5 @@
     }
   ],
   "execution_environment": "Windows source/browser verification plus owned GitHub-hosted integration resources",
-  "user_priority": "Existing-data bridge, then shared 3D scene/UI; ML follows. Original bulk and later release gates remain unaccepted."
+  "user_priority": "Finish and verify the unified Studio frontend against the complete reference set before starting ML or a new feature phase."
 }
