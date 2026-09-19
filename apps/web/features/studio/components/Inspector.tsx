@@ -13,7 +13,7 @@ export default function Inspector({building:b,findings,tab,onTab,onClose,onFocus
   const closest=nearestWater(b),parcelFinding=findings.find(f=>f.type==='Parcel');
   const vacant=b.units.filter(u=>u.tenure==='Vacant').length;
   return <aside className={`inspector ${mobileExpanded?'mobile-expanded':'mobile-peek'}`} aria-label="Property inspector">
-    <div className="ins-heading"><strong><Building2 size={17}/>Building</strong><div><button className="icon-button" title="Focus selected building" onClick={onFocus}><Expand size={16}/></button><button className="icon-button" title="Close inspector" onClick={onClose}><X size={18}/></button></div></div>
+    <div className="ins-heading"><strong><Building2 size={17}/>Quick register</strong><div><button className="icon-button" title="Focus selected building" onClick={onFocus}><Expand size={16}/></button><button className="icon-button" title="Close inspector" onClick={onClose}><X size={18}/></button></div></div>
     <div className="mobile-property-handle"><button onClick={onToggleMobile} aria-expanded={mobileExpanded} aria-label={mobileExpanded?'Collapse property details':'Expand property details'}><Building2 size={20}/><span><strong>{b.name}</strong><small>{b.ulpin} · {b.floors} floors</small></span>{mobileExpanded?<ChevronDown size={20}/>:<ChevronUp size={20}/>}</button><button onClick={onClose} aria-label="Close mobile property details"><X size={18}/></button></div>
     <div ref={scroll} className="ins-scroll">
       <div className="ins-preview">{preview?<img className="building-preview" src={preview} alt={`Scene view of ${b.name}`}/>:<BuildingPreview b={b}/>}<span className={`ins-preview-status ${findings.length?'alert':''}`}>{findings.length?<TriangleAlert size={13}/>:<Check size={13}/>} {findings.length?`${findings.length} inspection findings`:'No geometry findings'}</span><button onClick={onFocus} className="ins-preview-focus" title="Focus building on map"><Expand size={16}/></button></div>
@@ -61,6 +61,6 @@ export default function Inspector({building:b,findings,tab,onTab,onClose,onFocus
         </>}
       </div>
     </div>
-    <div className="ins-footer"><button onClick={()=>onModal('register',{floor:floor??undefined})}><FileText size={16}/>Open register</button><button onClick={()=>onModal('workspace',{doc:'plan',floor:floor??0})}><Box size={16}/>Open workspace</button><p>All people, identifiers and records are synthetic.</p></div>
+    <div className="ins-footer"><button onClick={()=>onModal('register',{floor:floor??undefined})}><FileText size={16}/>Full register</button><button onClick={()=>onModal('workspace',{doc:'plan',floor:floor??0})}><Box size={16}/>Open workspace</button><p>Quick inspection stays on the map. Full register opens the complete property dossier.</p></div>
   </aside>;
 }
