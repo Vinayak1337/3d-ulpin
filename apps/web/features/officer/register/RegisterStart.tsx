@@ -63,7 +63,7 @@ export default function RegisterStart() {
         onSubmit={(e) => {
           e.preventDefault();
           router.push(
-            withQuery("/register", { q: query.trim(), area: areaId }),
+            withQuery("/studio/registry", { q: query.trim(), area: areaId }),
           );
         }}
       >
@@ -120,7 +120,7 @@ export default function RegisterStart() {
                     </Link>
                   ))}
                   {!targets.length && match.record && (
-                    <Link href={`/register/records/${match.record.id}`}>
+                    <Link href={`/studio/registry/records/${match.record.id}`}>
                       Open retained local record ·{" "}
                       {match.record.name || match.record.identifier}
                     </Link>
@@ -147,7 +147,7 @@ export default function RegisterStart() {
               value={areaId || ""}
               onChange={(e) =>
                 router.push(
-                  withQuery("/register", {
+                  withQuery("/studio/registry", {
                     area: e.target.value,
                     q: submitted,
                   }),

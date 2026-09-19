@@ -279,7 +279,7 @@ test("navigation preserves encoded physical and record identities without rewrit
     routes.source("source/1?x=y"),
     "/api/v1/sources/source%2F1%3Fx%3Dy/file",
   );
-  assert.equal(routes.block(null, building), "/blocks");
+  assert.equal(routes.block(null, building), "/studio/datasets");
 });
 
 test("shared basement lookup offers each physical parent and never pairs first parent with another parent's area", () => {
@@ -380,11 +380,11 @@ test("parcel intersections and legacy registry IDs do not become canonical build
 test("main navigation always opens directories independently of contextual property routes", () => {
   assert.deepEqual(
     mainNavigation.map((item) => item.href),
-    ["/blocks", "/register", "/workspace"],
+    ["/studio/datasets", "/studio/registry", "/studio/workspaces"],
   );
   assert.equal(
     routes.register("building-B", "block-A"),
-    "/properties/building-B/register?area=block-A",
+    "/studio/properties/building-B/register?area=block-A",
   );
   assert.deepEqual(
     mainNavigation.map((item) => item.label),

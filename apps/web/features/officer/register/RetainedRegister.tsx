@@ -94,7 +94,7 @@ export default function RetainedRegister({
     <main className={styles.startPage}>
       <header className={styles.startHeading}>
         <div>
-          <Link href="/register">← Property Register</Link>
+          <Link href="/studio/registry">← Property Register</Link>
           <h1>{detail.site.name}</h1>
           <p>Local-frame register · {detail.site.frame.id}</p>
         </div>

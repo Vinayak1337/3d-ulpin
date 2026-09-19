@@ -10,23 +10,23 @@ export function withQuery(
   return `${path}${query.size ? `?${query}` : ""}`;
 }
 export const routes = {
-  home: "/blocks",
+  home: "/studio/datasets",
   block: (areaId?: string | null, buildingId?: string | null) =>
     areaId
-      ? withQuery(`/blocks/${segment(areaId)}`, { feature: buildingId })
-      : "/blocks",
+      ? withQuery(`/studio/areas/${segment(areaId)}`, { feature: buildingId })
+      : "/studio/datasets",
   register: (buildingId?: string | null, areaId?: string | null) =>
     buildingId
-      ? withQuery(`/properties/${segment(buildingId)}/register`, {
+      ? withQuery(`/studio/properties/${segment(buildingId)}/register`, {
           area: areaId,
         })
-      : "/register",
+      : "/studio/registry",
   workspace: (buildingId?: string | null, areaId?: string | null) =>
     buildingId
-      ? withQuery(`/properties/${segment(buildingId)}/workspace`, {
+      ? withQuery(`/studio/properties/${segment(buildingId)}/workspace`, {
           area: areaId,
         })
-      : "/workspace",
+      : "/studio/workspaces",
   source: (sourceId: string) => `/api/v1/sources/${segment(sourceId)}/file`,
-  case: (caseId: string) => `/workspace/${segment(caseId)}`,
+  case: (caseId: string) => `/studio/cases/${segment(caseId)}`,
 };

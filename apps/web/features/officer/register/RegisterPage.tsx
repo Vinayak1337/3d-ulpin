@@ -31,6 +31,7 @@ import Floors from "./Floors";
 import Issues from "./Issues";
 import History from "./History";
 import styles from "./register.module.css";
+import ScopedExport from "../shared/ScopedExport";
 
 const tabs = [
   "overview",
@@ -157,7 +158,7 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
     }
     if (openFloors) query.set("tab", "floors");
     router.replace(
-      `/properties/${encodeURIComponent(buildingId)}/register?${query}`,
+      `/studio/properties/${encodeURIComponent(buildingId)}/register?${query}`,
       { scroll: false },
     );
   };
@@ -359,69 +360,7 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
         title="Export property register"
         onClose={() => setExportOpen(false)}
       >
-        <p className={styles.note}>
-          {dossier.building.name} · current recorded revision
-        </p>
-        <label className={styles.exportScope}>
-          Download scope
-          <select
-            value={exportRecord}
-            onChange={(e) => setExportRecord(e.target.value)}
-            aria-label="Download scope"
-          >
-            <option value="">Whole building</option>
-            {dossier.records
-              .filter((r) => r.kind === "floor")
-              .map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name} · {r.identifier.split(":").at(-1)}
-                </option>
-              ))}
-            {selected?.kind === "space" && (
-              <option value={selected.id}>
-                Selected unit · {selected.name}
-              </option>
-            )}
-          </select>
-        </label>
-        <p className={styles.note}>
-          3D ULPIN:{" "}
-          {dossier.records.find((r) => r.id === exportRecord)?.identifier ||
-            dossier.building.identifier}
-          . Linked parcel 2D ULPIN and source revisions are included. Original
-          files may span several floors.
-        </p>
-        <div className={styles.exportOptions}>
-          {["zip", "pdf", "json", "csv", "html"].map((format) => (
-            <a
-              key={format}
-              href={`/api/v1/buildings/${buildingId}/register?format=${format}${exportRecord ? `&record=${encodeURIComponent(exportRecord)}` : ""}`}
-              target={format === "html" ? "_blank" : undefined}
-              rel="noreferrer"
-            >
-              <Icon
-                name={format === "html" ? "document" : "download"}
-                size={25}
-              />
-              <strong>
-                {format === "zip"
-                  ? "Report + sources"
-                  : format === "html"
-                    ? "Print / save PDF"
-                    : format.toUpperCase()}
-              </strong>
-              <span>
-                {format === "zip"
-                  ? "ZIP with PDF, data and original attachments"
-                  : format === "html" || format === "pdf"
-                    ? "Plan, section and register report"
-                    : format === "json"
-                      ? "Structured register and evidence"
-                      : "Tabular records and source references"}
-              </span>
-            </a>
-          ))}
-        </div>
+        <ScopedExport dossier={dossier} selectedId={selected?.id}/>
       </Dialog>
       <Dialog
         open={!!sourceDialog}

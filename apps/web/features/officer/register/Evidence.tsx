@@ -1,10 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { BuildingDossier, DossierSource } from "@ulpin/contracts";
 import { Badge, Button, EmptyState, Panel } from "../shared/ui";
 import { routes } from "../shared/routes";
 import { date, locator, sourceKind } from "./model";
 import styles from "./register.module.css";
+import OriginalDocument from "../documents/OriginalDocument";
+import DocumentThumbnail from "../documents/DocumentThumbnail";
+import type {CanvasSource} from "../workspace/types";
 
 export function SourcePreview({
   source,
@@ -23,7 +26,7 @@ export function SourcePreview({
     ...new Map(parts.map((part) => [part.id, part])).values(),
   ];
   const isImage = /\.(png|jpe?g|webp)$/i.test(source.name);
-  const isPdf = /\.pdf$/i.test(source.name) || source.profile === "pdf";
+  const isPdf = /\.pdf$/i.test(source.name) || /pdf/i.test(source.profile);
   const isText =
     /\.(txt|csv|json|geojson|dxf)$/i.test(source.name) ||
     /geojson|canonical|text|csv/i.test(source.profile);
@@ -102,22 +105,8 @@ export function SourcePreview({
         </a>
       </div>
       <div className={styles.previewBody}>
-        {isImage ? (
-          <img
-            src={routes.source(source.id)}
-            alt={`Original evidence: ${source.name}`}
-            onError={() =>
-              setError("Image preview unavailable. Open the retained original.")
-            }
-          />
-        ) : isPdf ? (
-          <iframe
-            src={routes.source(source.id)}
-            title={source.name}
-            onError={() =>
-              setError("PDF preview unavailable. Open the retained original.")
-            }
-          />
+        {isImage||isPdf ? (
+          <OriginalDocument source={{id:source.id,name:source.name,hash:source.sha256,url:routes.source(source.id),kind:isPdf?'pdf':'image',parts:distinctParts}} locators={source.evidence} initialPage={source.evidence.find(l=>l.page)?.page??1}/>
         ) : distinctParts.length ? (
           <div className={styles.partList}>
             {distinctParts.map((part) => (
@@ -190,7 +179,7 @@ export default function Evidence({
         .toLowerCase()
         .includes(search.toLowerCase()),
   );
-  const source = dossier.sources.find((item) => item.id === selected);
+  const source = sources.find((item) => item.id === selected);
   return (
     <div className={styles.evidenceGrid}>
       <Panel title="Evidence & documents" className={styles.documentRail}>

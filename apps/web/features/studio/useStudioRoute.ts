@@ -2,6 +2,7 @@
 import {useCallback,useMemo,useSyncExternalStore} from 'react';
 import {district} from './data/district';
 import {readStudioRoute,studioUrl,type StudioRoute} from './routing';
+import {confirmStudioNavigation} from './data/navigation-guard';
 const event='ulpin-studio-navigation';
 const read=()=>window.location.pathname+window.location.search;
 const server=()=>'/studio';
@@ -12,7 +13,7 @@ export function useStudioRoute(){
  const route=useMemo(()=>readStudioRoute(url,district),[url]);
  const navigate=useCallback((patch:Partial<StudioRoute>,replace=false)=>{
    const current=readStudioRoute(read(),district),next=studioUrl({...current,...patch,error:null});
-   if(next===read())return;
+   if(next===read()||!confirmStudioNavigation(next))return;
    window.history[replace?'replaceState':'pushState'](null,'',next);
    window.dispatchEvent(new Event(event));
  },[]);

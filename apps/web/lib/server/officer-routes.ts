@@ -80,6 +80,14 @@ export async function officerRoutes(
   p: string[],
 ): Promise<Response | null> {
   const method = r.method;
+  if(p[0]==='physical-features'&&p.length===3&&p[2]==='revisions'&&method==='GET'){
+    const id=uuid.parse(p[1]),url=new URL(r.url);
+    const before=url.searchParams.has('before')?z.coerce.number().int().positive().parse(url.searchParams.get('before')):2147483647;
+    const current=(await query("SELECT f.revision FROM physical_features f JOIN map_areas a ON a.id=f.area_id WHERE f.id=$1 AND f.revision>0 AND a.archived_at IS NULL",[id])).rows[0]??notFound();
+    const rows=await query('SELECT revision,created_at AS "createdAt",area_revision AS "areaRevision",package_id AS "packageId",body FROM physical_feature_revisions WHERE feature_id=$1 AND revision<$2 ORDER BY revision DESC LIMIT 51',[id,before]);
+    const values=rows.rows.slice(0,50);
+    return json({featureId:id,currentRevision:current.revision,revisions:values,nextBefore:rows.rows.length>50?values.at(-1)?.revision:null,scope:'Retained physical-feature revisions only; registry and neighbours are not reconstructed at an invented historical date.'});
+  }
   if (
     p[0] === "areas" &&
     p.length === 3 &&

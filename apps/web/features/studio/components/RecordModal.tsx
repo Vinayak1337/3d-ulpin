@@ -3,6 +3,7 @@ import { X, FileText, Download, Layers3, Users, Map, ArrowUpRight, Landmark, Inf
 import type { Building, Finding, ModalKind, Unit, RecordContext } from '../types';
 import { useDialog } from './useDialog';
 import RegisterOverview from './RegisterOverview';
+import PreparedDocumentViewer from './PreparedDocumentViewer';
 import { district } from '../data/district';
 import { documentFields, documentTitles, downloadDocument, money } from '../data/documents';
 import type { DocumentType } from '../data/documents';
@@ -37,7 +38,8 @@ export default function RecordModal({kind,building:b,findings,onClose,onFloor,co
           <div className="rec-section-heading"><div><span className="ins-eyebrow">INSPECTION SPECIMEN</span><h2>{documentTitles[docType]}</h2></div><button className="primary-button" onClick={()=>downloadDocument(docType,b,unit,floor)}><Download size={15}/>PDF</button></div>
           {docType==='plan'&&<div className="rec-doc-control"><label>Floor<select aria-label="Floor" value={floor} onChange={e=>{const f=Number(e.target.value),u=b.units.find(u=>u.floor===f)!;setFloor(f);setUnit(u);onContext?.({doc:docType,unitId:u.id,floor:f});}}>{Array.from({length:b.floors},(_,f)=><option key={f} value={f}>{f===0?'Ground floor':`Floor ${f}`}</option>)}</select></label></div>}
           {docType==='lease'&&<div className="rec-doc-control"><label>Unit / occupant<select aria-label="Unit and occupant" value={unit.id} onChange={e=>{const u=b.units.find(u=>u.id===e.target.value)!;setUnit(u);setFloor(u.floor);onContext?.({doc:docType,unitId:u.id,floor:u.floor});}}>{b.units.map(u=><option key={u.id} value={u.id}>Unit {u.number} · {u.occupant}</option>)}</select></label></div>}
-          <div className="rec-document"><div className="rec-paper-brand">3D ULPIN <span>INSPECTION COPY</span></div><h3>{documentTitles[docType]}</h3><div className="rec-paper-warning">SYNTHETIC DEMO · NOT A LEGAL OR GOVERNMENT RECORD</div>{docType==='plan'&&<FloorPlan b={b} floor={floor} selectedUnit={unit.id} onUnit={id=>{const found=b.units.find(u=>u.id===id);if(found){openDocument('lease',found);}}}/>}<dl className="rec-doc-fields">{documentFields(docType,b,unit,floor).map(([l,v])=><div key={l}><dt>{l}</dt><dd>{v}</dd></div>)}</dl><p className="rec-paper-note">This specimen demonstrates linked property information only. It contains no real personal records, signatures, issued ULPINs, sanctioned drawings or legally valid agreements.</p></div>
+          <div className="rec-document original-not-facsimile"><PreparedDocumentViewer buildingId={b.id} kind={docType} unitId={unit.id} floor={floor}/><details className="record-linked-fields"><summary>Linked record fields</summary><dl className="rec-doc-fields">{documentFields(docType,b,unit,floor).map(([l,v])=><div key={l}><dt>{l}</dt><dd>{v}</dd></div>)}</dl></details></div>
+
         </>}
       </main>{kind==='register'&&!showDoc&&<aside className="register-evidence">
         <section><header><h3>Evidence & documents</h3><span>Demo records</span></header>

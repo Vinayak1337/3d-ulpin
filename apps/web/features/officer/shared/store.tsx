@@ -23,9 +23,10 @@ export type MapPreferences = {
   labels: boolean;
   underground: boolean;
   hiddenLayers: FeatureKind[];
-  inspector: "property" | "parcel" | "utility" | "photos" | "history";
+  inspector: "property" | "floors" | "evidence" | "parcel" | "utility" | "photos" | "history";
   rail: "layers" | "properties";
   findingsOpen: boolean;
+  opacity?:Partial<Record<FeatureKind,number>>;
 };
 export const defaultMapPreferences: MapPreferences = {
   mode: "3d",
@@ -93,6 +94,18 @@ export function createOfficerStore() {
   }));
 }
 const Context = createContext<StoreApi<OfficerState> | null>(null);
+export const mapSettingsStorageKey='ulpin:studio:saved-map-settings:1';
+export function parseSavedMapSettings(raw:string|null):Record<string,MapPreferences>{
+ const out:Record<string,MapPreferences>={};if(!raw||raw.length>150000)return out;
+ try{const value=JSON.parse(raw);if(value?.version!==1||!Array.isArray(value.areas))return out;
+  for(const entry of value.areas.slice(0,64)){
+   if(!entry||typeof entry.id!=='string'||!/^[a-zA-Z0-9][a-zA-Z0-9:._-]{0,150}$/.test(entry.id)||['constructor','prototype','__proto__'].includes(entry.id)||!entry.preferences)continue;
+   const p=entry.preferences,kinds=['building','parcel','road','utility','public_land'];
+   const opacity=Object.fromEntries(Object.entries(p.opacity??{}).filter(([k,v])=>kinds.includes(k)&&typeof v==='number'&&Number.isFinite(v)&&v>=.05&&v<=1));
+   out[entry.id]={...defaultMapPreferences,mode:p.mode==='2d'?'2d':'3d',labels:p.labels===true,underground:p.underground===true,hiddenLayers:Array.isArray(p.hiddenLayers)?p.hiddenLayers.filter((x:unknown)=>typeof x==='string'&&kinds.includes(x)):[],inspector:['property','floors','evidence','parcel','utility','photos','history'].includes(p.inspector)?p.inspector:'property',rail:p.rail==='layers'?'layers':'properties',findingsOpen:p.findingsOpen===true,opacity};
+  }
+ }catch{}return out;
+}
 export const navigationStorageKey = "ulpin:v2:navigation:1";
 type SavedNavigation = Pick<
   OfficerState,
@@ -198,6 +211,7 @@ export function OfficerStoreProvider({ children }: { children: ReactNode }) {
     // Deliberately retain only navigation in this browser tab, never dossier or evidence data.
     try {
       hydrateOfficerStore(store, sessionStorage.getItem(navigationStorageKey));
+      store.setState(s=>({mapPreferences:{...parseSavedMapSettings(localStorage.getItem(mapSettingsStorageKey)),...s.mapPreferences}}));
     } catch {
       hydrateOfficerStore(store, null);
     }
@@ -212,6 +226,7 @@ export function OfficerStoreProvider({ children }: { children: ReactNode }) {
             selectedBuildingId: state.selectedBuildingId,
           }),
         );
+        localStorage.setItem(mapSettingsStorageKey,JSON.stringify({version:1,areas:Object.entries(state.mapPreferences).slice(-64).map(([id,preferences])=>({id,preferences}))}));
       } catch {
         /* Navigation works without storage. */
       }
