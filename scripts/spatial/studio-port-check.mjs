@@ -17,7 +17,7 @@ try{
  await page.goBack();assert.equal(await page.locator('.ins-tabs button.active').textContent(),'Overview');
  assert.equal(await page.locator('.map-viewport canvas').getAttribute('data-studio-identity'),'original');
  report.checks.push('Inspector routing and browser Back preserve the canvas');
- await page.getByRole('button',{name:'Open register',exact:true}).click();await page.waitForSelector('.register-overview');await page.waitForTimeout(1800);
+ await page.getByRole('button',{name:'Full register',exact:true}).click();await page.waitForSelector('.register-overview');await page.waitForTimeout(1800);
  assert.match(page.url(),/\/studio\/register\//);await page.screenshot({path:out+'/register.png'});
  await page.locator('[data-unit-id="BLD-0413/F1/U1"]').click();assert.match(page.url(),/unit=BLD-0413%2FF1%2FU1/);
  await page.getByRole('button',{name:'Inspect record',exact:true}).click();assert.match(page.url(),/doc=lease/);

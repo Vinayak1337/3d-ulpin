@@ -40,7 +40,7 @@ try{
  await page.getByRole('button',{name:'Labels',exact:true}).click();await page.getByRole('button',{name:'Labels',exact:true}).click();
  pass('Inspector URL history, orthographic mode, underground and label controls operate on the same scene');
  const cameraBeforeRegister=await page.evaluate(()=>window.__CITY_DEBUG__);
- await page.getByRole('button',{name:'Open register',exact:true}).click();await page.waitForSelector('.register-overview');await page.waitForTimeout(700);
+ await page.getByRole('button',{name:'Full register',exact:true}).click();await page.waitForSelector('.register-overview');await page.waitForTimeout(700);
  assert.equal(await page.locator('canvas[data-studio-canvas]').count(),1);assert(await page.evaluate(()=>document.querySelector('canvas[data-studio-canvas]')===window.__STUDIO_ORIGINAL_CANVAS));
  await page.locator('[data-unit-id="BLD-0413/F1/U1"]').click();await page.getByRole('button',{name:'Inspect record',exact:true}).click();assert.match(page.url(),/doc=lease/);assert.match(page.url(),/unit=BLD-0413%2FF1%2FU1/);
  const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'PDF',exact:true}).click();const download=await downloadPromise;const file=out+'/'+download.suggestedFilename();await download.saveAs(file);

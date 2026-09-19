@@ -11,7 +11,7 @@ try{
  await page.goto('http://127.0.0.1:3000/studio/map/BLD-0413',{waitUntil:'domcontentloaded',timeout:120000});
  await page.waitForFunction(()=>window.__CITY_DEBUG__?.controlConnected,{},{timeout:120000});await shot('map');
  result.graphics=await page.locator('canvas[data-studio-canvas]').evaluate(c=>{const gl=c.getContext('webgl2'),ext=gl.getExtension('WEBGL_debug_renderer_info');return {renderer:gl.getParameter(ext.UNMASKED_RENDERER_WEBGL),version:gl.getParameter(gl.VERSION)};});
- await page.getByRole('button',{name:'Open register',exact:true}).click();await page.waitForSelector('.register-overview');await shot('register');
+ await page.getByRole('button',{name:'Full register',exact:true}).click();await page.waitForSelector('.register-overview');await shot('register');
  await page.getByRole('button',{name:'Back to map',exact:false}).click();await page.waitForSelector('.map-viewport canvas');
  await page.getByRole('button',{name:'Open workspace',exact:true}).click();await page.waitForSelector('.studio-plan-workspace');await page.getByText('Source integrity',{exact:true}).waitFor();await shot('workspace');
  await page.getByRole('button',{name:'Back to map',exact:true}).click();await page.getByRole('button',{name:'Utilities',exact:true}).click();await shot('utilities');
