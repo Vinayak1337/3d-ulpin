@@ -46,7 +46,6 @@ export function locator(value: SourceLocator) {
 export function sourceKind(
   source: DossierSource,
 ): "Photos" | "Plans & drawings" | "Documents" | "Data" {
-  if (/\.(png|jpe?g|webp)$/i.test(source.name)) return "Photos";
   if (
     /plan|section|drawing|dxf|elevation/i.test(
       `${source.name} ${source.profile}`,
@@ -58,6 +57,7 @@ export function sourceKind(
     /geojson|gis|canonical/i.test(source.profile)
   )
     return "Data";
+  if (/\.(png|jpe?g|webp)$/i.test(source.name)) return "Photos";
   return "Documents";
 }
 export function polygons(geometry: AreaGeometry): number[][][][] {
