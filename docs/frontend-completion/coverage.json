@@ -1,0 +1,48 @@
+{
+  "schema": "ulpin-frontend-completion/1",
+  "branch": "feat/studio-reference-rebuild",
+  "commit_under_review": "01fefd9690de37cd2f98d50b5dc90eaf71773c8e",
+  "reviewed_on": "2026-09-19",
+  "status": "review",
+  "summary": {
+    "implemented": 14,
+    "browser_verified": 14,
+    "physical_device_verified": 0,
+    "user_visual_approval": false
+  },
+  "items": [
+    {"id":"FE-A01","title":"Unified Studio shell and navigation","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/map.png","docs/evidence/t059/final/saved-datasets.png"]},
+    {"id":"FE-A02","title":"Stable property, dataset and route identity","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/results.json","docs/evidence/t059/final/saved-data-results.json"]},
+    {"id":"FE-A03","title":"Saved normalized data in the shared map runtime","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/saved-dataset-map.png","docs/evidence/t059/final/saved-data-results.json"]},
+    {"id":"FE-A04","title":"Same-page quick register","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/studio-map.png","docs/evidence/t059/final/quick-evidence.png"]},
+    {"id":"FE-A05","title":"Floor, unit and original evidence inspection","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/register.png","docs/evidence/t059/final/prepared-sources.png","docs/evidence/t059/final/results.json"]},
+    {"id":"FE-A06","title":"Complete saved-property register","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/saved-register.png","docs/evidence/t059/final/saved-register-evidence.png"]},
+    {"id":"FE-A07","title":"Findings, section and independent spatial selection","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/utilities.png","docs/evidence/t059/final/top-down.png"]},
+    {"id":"FE-A08","title":"Retained history and investigation without fabricated geometry","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/saved-register-history.png","docs/evidence/t059/final/saved-register-investigation.png"]},
+    {"id":"FE-A09","title":"Source-aware plan measurement and calibration","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/workspace.png","docs/evidence/t059/final/results.json"]},
+    {"id":"FE-A10","title":"Source comparison, draft review and recovery","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/results.json"]},
+    {"id":"FE-A11","title":"Property-aware workspace/import handoff","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/saved-workspaces.png","docs/evidence/t059/final/prepared-sources.png"]},
+    {"id":"FE-A12","title":"Scoped exports with source-aware preview","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/results.json"]},
+    {"id":"FE-A13","title":"Reference-family desktop and responsive visual coverage","implementation":"implemented","verification":"browser_verified","evidence":["docs/evidence/t059/final/map.png","docs/evidence/t059/final/register.png","docs/evidence/t059/final/workspace.png","docs/evidence/t059/final/mobile-map.png","docs/evidence/t059/final/mobile-inspector.png","docs/evidence/t059/final/mobile-workspace.png"]},
+    {"id":"FE-A14","title":"Navigation protection, responsive behavior and accessibility baseline","implementation":"implemented","verification":"browser_verified_physical_device_pending","evidence":["docs/evidence/t059/final/results.json","docs/evidence/t059/final/mobile-inspector.png","docs/evidence/t059/final/mobile-workspace.png"]}
+  ],
+  "qualification": {
+    "node_suites": {
+      "typecheck": "pass",
+      "studio": "34/34 pass",
+      "ui": "20/20 pass",
+      "register_scope": "3/3 pass",
+      "spatial": "29/29 pass"
+    },
+    "production_build": "pass",
+    "studio_browser": "11 groups pass",
+    "studio_continuation_browser": "10 groups pass",
+    "saved_data_browser": "7 groups pass",
+    "desktop_capture": "8 views pass on RTX 3070 / Direct3D11",
+    "limitations": [
+      "Mobile checks are browser emulation, not a physical phone.",
+      "The supplied map reference is more photorealistic than the procedural live geometry; source geometry is not reshaped to imitate the illustration.",
+      "User visual approval is not inferred from automated or self-review evidence."
+    ]
+  }
+}

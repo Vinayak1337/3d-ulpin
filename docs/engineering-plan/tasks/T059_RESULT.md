@@ -1,6 +1,6 @@
 # T059 ? Unified Studio frontend completion
 
-Status: implemented and production-build verified on `feat/studio-reference-rebuild`.
+Status: implemented and current production/browser verification completed on `feat/studio-reference-rebuild`; user visual approval and physical-device verification remain separate review gates.
 
 This pass finishes the frontend integration identified by the 32-reference audit without changing the normalized source schema or prepared fixture bytes. The Studio is now the product shell for saved datasets, saved registers and saved workspaces as well as the authored reference neighbourhood. Old URLs remain compatibility entry points.
 
@@ -19,6 +19,8 @@ This pass finishes the frontend integration identified by the 32-reference audit
 
 ## Qualification
 
-`pnpm typecheck`, `pnpm test:studio`, `pnpm test:ui`, `pnpm test:register-scope`, `pnpm test:spatial`, and `pnpm build` pass. Fresh browser captures under `docs/evidence/t059/final` cover the Studio map, same-page original evidence, fixture register, saved dataset map, full saved register/evidence/history/investigation, directories and responsive routes.
+`pnpm typecheck`, `pnpm test:studio` (34/34), `pnpm test:ui` (20/20), `pnpm test:register-scope` (3/3), `pnpm test:spatial` (29/29), and `pnpm build` pass on the current branch. The production build was run after stopping the local server and the production server was restarted afterwards.
+
+Current browser verification passes the 11-group Studio journey, the 10-group continuation regression and a seven-group saved-data journey. Fresh captures under `docs/evidence/t059/final` now actually include the Studio map/register/workspace/mobile family plus saved dataset directory/map, saved register evidence/history/investigation and saved workspace directory. `docs/frontend-completion/coverage.json` records FE-A01–14 individually and does not mark physical-device testing or user visual approval as complete.
 
 The reference screenshots remain art-direction targets rather than a claim of pixel identity. Saved/imported geometry is not reshaped to imitate the synthetic Studio quarter. Historical geometry is not fabricated where a retained scene revision does not exist.

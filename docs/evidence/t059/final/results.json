@@ -1,0 +1,124 @@
+{
+  "startedAt": "2026-09-19T12:42:14.046Z",
+  "kind": "actual-studio-browser-verification",
+  "base": "http://127.0.0.1:3000",
+  "checks": [
+    {
+      "name": "Plain product entry opens the copied Studio, with one persistent GPU canvas",
+      "passed": true
+    },
+    {
+      "name": "Held native pan, right-drag orbit and wheel zoom remain connected during UI updates",
+      "passed": true
+    },
+    {
+      "name": "Actual canvas raycasting selects the prepared property, not a list-only simulation",
+      "passed": true
+    },
+    {
+      "name": "Inspector URL history, orthographic mode, underground and label controls operate on the same scene",
+      "passed": true
+    },
+    {
+      "name": "Register reuses the canvas and downloads the exact prepared unit PDF with matching SHA-256",
+      "passed": true,
+      "document": "lease-BLD-0413-F1-U1",
+      "sha256": "056a19b6ee301ee872436063684063ac1fe06f078f41bdbe294db3c30c8eef54"
+    },
+    {
+      "name": "Returning from the register preserves the actual map camera and GPU canvas",
+      "passed": true
+    },
+    {
+      "name": "Property, floor, unit and document deep links survive a full reload",
+      "passed": true
+    },
+    {
+      "name": "Workspace measures source coordinates, scales only the draft, persists a revision and clears measurements across floors",
+      "passed": true,
+      "expectedDistanceMetres": 5,
+      "pointerMeasurementMetres": 4.99,
+      "pointerToleranceMetres": 0.03,
+      "localReviewOnly": true
+    },
+    {
+      "name": "Prepared source browser verified; mutating upload deliberately disabled in this run",
+      "passed": true
+    },
+    {
+      "name": "Mobile property and workspace routes remain usable without horizontal page overflow or a second canvas",
+      "passed": true
+    },
+    {
+      "name": "Unknown routed records are unavailable, not silently replaced with the showcase property",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "badResponses": [],
+  "sourceUpload": null,
+  "graphics": {
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "pick": {
+    "boxBefore": {
+      "x": 300,
+      "y": 72,
+      "width": 1017,
+      "height": 869
+    },
+    "boxNow": {
+      "x": 300,
+      "y": 72,
+      "width": 1017,
+      "height": 869
+    },
+    "projectedBefore": {
+      "x": 856.2365171078093,
+      "y": 435.4275778255359
+    },
+    "projectedNow": {
+      "x": 856.2365171078093,
+      "y": 435.4275778255359
+    },
+    "cameraBefore": {
+      "position": [
+        222.9431473310524,
+        319.9880153342634,
+        450.0100850642452
+      ],
+      "target": [
+        47.99820878320662,
+        0,
+        19.997719295048224
+      ],
+      "zoom": 8.000127789822919,
+      "polar": 0.9673035359127332,
+      "azimuth": 0.3863864074144096,
+      "mode": "3d",
+      "selected": "BLD-0413",
+      "controlConnected": true
+    },
+    "cameraAfter": {
+      "position": [
+        222.9431473310524,
+        319.9880153342634,
+        450.0100850642452
+      ],
+      "target": [
+        47.99820878320662,
+        0,
+        19.997719295048224
+      ],
+      "zoom": 8.000127789822919,
+      "polar": 0.9673035359127332,
+      "azimuth": 0.3863864074144096,
+      "mode": "3d",
+      "selected": "BLD-0026",
+      "controlConnected": true
+    }
+  },
+  "result": "PASS",
+  "finishedAt": "2026-09-19T12:42:38.382Z"
+}
