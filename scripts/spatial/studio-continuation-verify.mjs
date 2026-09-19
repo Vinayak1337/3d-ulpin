@@ -23,7 +23,7 @@ try{
  await page.goBack();await page.waitForSelector('.ins-floor.active');assert.match(page.url(),/floor=1/);assert.equal(await page.getByRole('heading',{name:'That record is unavailable'}).count(),0);
  pass('Close inspector is one atomic history entry and Back returns to the valid selected floor');
 
- await page.getByRole('button',{name:'Open register',exact:true}).click();await page.waitForSelector('.register-selection');
+ await page.getByRole('button',{name:'Full register',exact:true}).click();await page.waitForSelector('.register-selection');
  const defaultUnit=await page.locator('.register-selection').getAttribute('data-selected-unit');
  await page.locator('.register-unit-row[data-unit-id="BLD-0413/F3/U2"]').click();assert.equal(await page.locator('.register-selection').getAttribute('data-selected-unit'),'BLD-0413/F3/U2');
  await page.goBack();await page.waitForFunction(expected=>document.querySelector('.register-selection')?.getAttribute('data-selected-unit')===expected,defaultUnit);
