@@ -15,5 +15,6 @@ export function ensureSpatialDatasets(){
  source_bindings jsonb NOT NULL, diagnostics jsonb NOT NULL,
  created_at timestamptz NOT NULL DEFAULT now()
  )`);
+ await client.query('ALTER TABLE spatial_datasets ADD COLUMN IF NOT EXISTS archived_at timestamptz');
  }).catch(error=>{ready=undefined;throw error;});
 }
