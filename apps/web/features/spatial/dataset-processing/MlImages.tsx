@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import type {SpatialMlResult} from '@ulpin/contracts';
+import {decodeMaskLabels} from './mask-pixels';
 import {pathFor} from './geometry';
 import styles from './visual-story.module.css';
 
@@ -12,34 +13,25 @@ export function PixelMask({result}:{result:SpatialMlResult}){
  const canvas=useRef<HTMLCanvasElement>(null);
  const [state,setState]=useState<'loading'|'ready'|'error'>('loading');
  useEffect(()=>{
-  let disposed=false;
-  const image=new Image();
-  image.onload=()=>{
-   if(disposed)return;
-   try{
-    const target=canvas.current,context=target?.getContext('2d');
-    if(!target||!context)throw new Error('Canvas unavailable');
-    if(image.naturalWidth!==result.mask.width||image.naturalHeight!==result.mask.height)throw new Error('Mask dimensions differ');
-    target.width=image.naturalWidth;target.height=image.naturalHeight;
-    context.drawImage(image,0,0);
-    const pixels=context.getImageData(0,0,target.width,target.height);
-    const palette=result.receipt.maskPalette as Record<string,string>|undefined;
-    if(!palette)throw new Error('Mask palette missing');
-    for(let i=0;i<pixels.data.length;i+=4){
-     const label=palette[String(pixels.data[i])];
-     if(!label)throw new Error('Unknown mask label');
-     const color=classColors[label]??'#b7b3ad';
-     pixels.data[i]=parseInt(color.slice(1,3),16);
-     pixels.data[i+1]=parseInt(color.slice(3,5),16);
-     pixels.data[i+2]=parseInt(color.slice(5,7),16);
-     pixels.data[i+3]=255;
-    }
-    context.putImageData(pixels,0,0);setState('ready');
-   }catch{setState('error');}
-  };
-  image.onerror=()=>{if(!disposed)setState('error');};
-  image.src=result.mask.url;
-  return()=>{disposed=true;image.onload=null;image.onerror=null;};
+  const controller=new AbortController();setState('loading');
+  void (async()=>{
+   const response=await fetch(result.mask.url,{signal:controller.signal});
+   if(!response.ok)throw new Error('Mask unavailable');
+   const labels=decodeMaskLabels(new Uint8Array(await response.arrayBuffer()),result.mask.width,result.mask.height);
+   const target=canvas.current,context=target?.getContext('2d');
+   if(!target||!context)throw new Error('Canvas unavailable');
+   target.width=result.mask.width;target.height=result.mask.height;
+   const pixels=context.createImageData(target.width,target.height);
+   const palette=result.receipt.maskPalette as Record<string,string>|undefined;
+   if(!palette)throw new Error('Mask palette missing');
+   for(let index=0;index<labels.length;index++){
+    const label=palette[String(labels[index])];if(!label)throw new Error('Unknown mask label');
+    const color=classColors[label]??'#b7b3ad',i=index*4;
+    pixels.data[i]=parseInt(color.slice(1,3),16);pixels.data[i+1]=parseInt(color.slice(3,5),16);pixels.data[i+2]=parseInt(color.slice(5,7),16);pixels.data[i+3]=255;
+   }
+   if(!controller.signal.aborted){context.putImageData(pixels,0,0);setState('ready');}
+  })().catch(()=>{if(!controller.signal.aborted)setState('error');});
+  return()=>controller.abort();
  },[result]);
  return <div className={styles.imageStage}>
   <canvas ref={canvas} className={styles.mask} style={{aspectRatio:`${result.mask.width}/${result.mask.height}`,visibility:state==='ready'?'visible':'hidden'}} role="img" aria-label="Actual model pixel mask, colored by predicted class"/>
