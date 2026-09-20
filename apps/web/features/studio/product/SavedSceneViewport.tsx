@@ -40,10 +40,16 @@ export default function SavedSceneViewport({block,world,recordId,onRecord,explod
  const floor=block.dossier.data?.records.find(r=>r.id===recordId&&r.kind==='floor');
  const spaces=block.dossier.data?.records.filter(r=>r.kind==='space'&&(r.id===recordId||floor&&r.links.some(l=>l.type==='floor'&&l.targetId===floor.id)))??[];
  const showInterior=!!recordId||explode>0;
+ const roadCenterlines=useMemo<TileOverlay[]>(()=>{
+  if(!scene||!frame||block.preferences.hiddenLayers.includes('road'))return [];
+  const roads=new Set(scene.entities.filter(entity=>entity.kind==='road').map(entity=>entity.id));
+  // Reuse the exact recorded alignment. Only its screen-space stroke is enlarged for legibility.
+  return scene.representations.filter(rep=>roads.has(rep.entityId)&&rep.geometry.type==='LineString').map(representation=>({representation,frame,color:'#263d3d',strokeWidth:2,opacity:Math.max(.05,Math.min(1,opacityByKind?.road??1))}));
+ },[scene,frame,block.preferences.hiddenLayers,opacityByKind?.road]);
  const overlays=useMemo<TileOverlay[]>(()=>{
   if(!frame?.anchor||!frame.verticalReference)return [];
   const reference=frame.verticalReference;
-  const project=displayProjector(frame.anchor.longitude,frame.anchor.latitude),result:TileOverlay[]=[];
+  const project=displayProjector(frame.anchor.longitude,frame.anchor.latitude),result:TileOverlay[]=[...roadCenterlines];
   const add=(id:string,geometry:AreaGeometry,lower:number,upper:number,color:string,options:Partial<TileOverlay>={})=>{
    for(const [i,g]of geometryParts(geometry).entries()){
     const representation:SpatialRepresentation={id:`overlay:${id}:${i}`,entityId:id,revision:1,frameId:frame.id,role:'display_only',geometry:projectGeometry(g,project),vertical:{lower,upper,reference},evidence:[]};
@@ -64,7 +70,7 @@ export default function SavedSceneViewport({block,world,recordId,onRecord,explod
   if(block.geographicIssueGeometry)add('finding:'+(block.finding?.id??'all'),block.geographicIssueGeometry,.21,.22,'#df6e3e',{opacity:.72,selectable:false});
   for(const boundary of block.boundaries)if(boundary.geographicGeometry)add('boundary:'+boundary.id,boundary.geographicGeometry,.25,.25,'#987743',{opacity:.1,outlineOnly:true,selectable:false});
   return result;
- },[frame,details,showInterior,recordId,explode,spaces.map(r=>r.id).join('|'),block.geographicIssueGeometry,block.boundaries,block.finding?.id]);
+ },[frame,roadCenterlines,details,showInterior,recordId,explode,spaces.map(r=>r.id).join('|'),block.geographicIssueGeometry,block.boundaries,block.finding?.id]);
  const onSelect=useCallback((selection:MapSelection|null)=>{
   if(!selection)return;
   if(selection.entityId.startsWith('record:')){const id=selection.entityId.slice(7);if(block.dossier.data?.records.some(r=>r.id===id))onRecord(id);return;}
@@ -79,9 +85,11 @@ export default function SavedSceneViewport({block,world,recordId,onRecord,explod
  },[block.navigation,baseRep,frame,recordId,overlays]);
  const visibleKinds=useMemo(()=>['building','building_part','parcel','road','rail','public_land','vegetation','utility','terrain'].filter(k=>!block.preferences.hiddenLayers.includes(k as never)),[block.preferences.hiddenLayers]);
  if(!view||!scene||!frame)return <div className="spatial-loading" role={resource.error||validated.error?'alert':'status'}><span>{resource.error||validated.error||'Preparing source-linked 3D neighbourhood…'}</span>{(resource.error||validated.error)&&<button className="ui-button" onClick={()=>void resource.reload()}>Retry scene</button>}</div>;
+ const buildings=view.items.filter(item=>item.kind==='building'),unknownHeights=buildings.filter(item=>item.height===null).length;
+ const sceneSummary=unknownHeights===buildings.length&&buildings.length?`${buildings.length} source outlines · heights unavailable`:unknownHeights?`${buildings.length} buildings · ${unknownHeights} heights unavailable`:`${buildings.length} buildings`;
  return <div style={{height:'100%',position:'relative'}} data-normalized-scene={view.readDigest} data-world={world}>
   <MapViewport source={{kind:'tiles',props:{manifestUrl:view.manifestUrl,sessionKey:`product:${areaId}:${world}`,selection:selected?{entityId:selected.id}:null,onSelect,mode:'3d',navigation,visibleKinds,shadows:true,opacityByKind,highlightedIds:block.highlightedIds.map(id=>view.items.find(i=>i.canonicalRef.id===id)?.id??'').filter(Boolean),hiddenEntityIds:showInterior&&overlays.some(o=>o.representation.entityId.startsWith('record:'))&&selected?[selected.id]:[],overlays,outline:baseRep&&selected&&block.preferences.labels?{representation:baseRep,frame,label:selected.label}:undefined,onTelemetry:setTelemetry}}}/>
   {resource.error&&<div className="normalized-map-notice" role="alert">Scene refresh failed. Previous records remain visible.<button onClick={()=>void resource.reload()}>Retry</button></div>}
-  <div className="saved-scene-proof"><i/>{telemetry?.ready?'Source-linked 3D':'Loading geometry'} · {view.items.filter(i=>i.kind==='building').length} buildings <span>Revision {scene.revision} · {world}</span></div>
+  <div className="saved-scene-proof"><i/>{telemetry?.ready?sceneSummary:'Loading geometry'}{roadCenterlines.length>0&&<span title="Recorded road centerlines. The screen stroke does not establish physical road width."> · Road centerlines</span>} <span>Revision {scene.revision} · {world}</span></div>
  </div>;
 }

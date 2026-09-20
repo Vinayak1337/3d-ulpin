@@ -1,0 +1,309 @@
+[
+  {
+    "id": "REF-01",
+    "paths": [
+      "anchors/01-block-map-anchor.png",
+      "raw-root-exports/3d_ulpin_urban_inspection_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "648c967166d8f8d95f4ffd059c333c0aab5d0e03a9702cb3bf50071eb64f5ff1",
+    "title": "Block Map \u00b7 3D anchor",
+    "family": "Map",
+    "observed": "Three-region layout: persistent layer/property rail, detailed labelled city scene, tabbed building inspector and bottom findings tray.",
+    "gap": "Current map has working geometry but a different two-row shell, popovers, simplified inspector, repeating materials and no minimap or scene thumbnail.",
+    "build": "Reproduce anchor proportions and controls; use one shared viewport with canonical selection, richer display assets, road labels, metric scale, render-derived thumbnails and real contextual routes.",
+    "data": "Objects, geometry revisions, parcels, issues, utility evidence, source assets, session context.",
+    "image": "images/REF-01.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-02",
+    "paths": [
+      "anchors/02-property-register-anchor.png",
+      "raw-root-exports/3d_ulpin_building_register_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "a85692b4e5ec94ac49933506974515f5ac3c57171c3302d842c36e11c924989e",
+    "title": "Building Register \u00b7 anchor",
+    "family": "Register",
+    "observed": "Property-focused register with a dominant exploded building/floor view and supporting record, unit and evidence information.",
+    "gap": "Standalone uses a record modal; it does not reproduce the register route or its inspection composition.",
+    "build": "Bind the anchor layout to the same selected building, floor and space IDs; show genuine interior geometry where present and retain contextual return to the block.",
+    "data": "Building/floor/space representations, relations, source-linked evidence and record state.",
+    "image": "images/REF-02.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-03",
+    "paths": [
+      "anchors/03-plan-workspace-anchor.png",
+      "raw-root-exports/3d_ulpin_plan_workspace_interface.png",
+      "workspace/02-measure-workspace-page.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "46dd50441cb39e02ff94cf0a5511e2ce72b33bc4b52169fac029179220737ac0",
+    "title": "Plan Workspace \u00b7 measure anchor",
+    "family": "Workspace",
+    "observed": "Plan document workspace with drawing tools, visible dimensions, selected document context and measurement results.",
+    "gap": "No calibrated document workspace exists in the standalone; a horizontal building cut is not document measurement.",
+    "build": "Reuse product document/calibration services; match the anchor viewer/toolbars and persist measurements against source revision and calibration transform.",
+    "data": "Original document revision, page, scale/alignment, frame, measured geometry and reviewer actions.",
+    "image": "images/REF-03.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-04",
+    "paths": [
+      "block-map/01-layers-2d-map.png",
+      "raw-root-exports/municipal_gis_dashboard_map.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "0a47cac16463ad150881d105b67a0b1a2253f3261af22d95afe4c37ef7ee7b82",
+    "title": "Block Map \u00b7 2D layers",
+    "family": "Map",
+    "observed": "Cartographic 2D cadastral view with layers, property context, road/parcel labels, compass and scale.",
+    "gap": "Current 2D mode is an orthographic view of the same 3D assets; it lacks this dedicated cartographic style and reference panel arrangement.",
+    "build": "Compile the same canonical objects into 2D fills, boundaries and collision-managed labels; share visibility and selection with 3D.",
+    "data": "Exact parcel/road/building rings, named features, render frame, layer visibility and scale.",
+    "image": "images/REF-04.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-05",
+    "paths": [
+      "block-map/02-import-export-data-tools-modal.png",
+      "raw-root-exports/data_tools_import_gis_layers.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "7fc89a7ee158bd78625164e426ed18e7a813e74d98be3e7dfca9ef7a137a5b3d",
+    "title": "Data Tools \u00b7 import/export",
+    "family": "Map",
+    "observed": "Source/format-oriented data tools over the map, with upload/export scopes and source handling.",
+    "gap": "Current ZIP reader opens normalized.json; it does not run all illustrated format adapters or a full mapping/review workflow.",
+    "build": "Connect existing intake to detect \u2192 map \u2192 validate \u2192 preview \u2192 review; enable only tested formats, preserve original bytes and reimport exports.",
+    "data": "Source revisions, field mapping, frames/CRS, observations, normalized geometry and export selection.",
+    "image": "images/REF-05.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-06",
+    "paths": [
+      "block-map/03-properties-parcel-inspector.png",
+      "raw-root-exports/3d_parcel_inspector_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "d338add3ab1bf5ae75d1b7427f43be7f04f3a21eeafb8daf741d1a3362fcbd3b",
+    "title": "Block Map \u00b7 parcel inspector",
+    "family": "Map",
+    "observed": "Property/parcel directory and a parcel-specific inspector with associated buildings and boundary context.",
+    "gap": "Current picking is building-focused; the linked parcel opens text instead of a first-class selectable parcel view.",
+    "build": "Give parcels independent picking/search and exact boundaries/holes; support multiple associated buildings and disputed links without guessing ownership.",
+    "data": "Parcel identities, identifier assertions, polygon revisions, many-to-many relations and source claims.",
+    "image": "images/REF-06.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-07",
+    "paths": [
+      "block-map/04-utility-and-findings.png",
+      "raw-root-exports/3d_utility_conflict_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "072abae217d4ad5d4b656d3642b3ed2092645cf1eded3ec6b2df5faf47725a5a",
+    "title": "Block Map \u00b7 utilities/findings",
+    "family": "Map",
+    "observed": "Utility-type layers, pipeline callouts, A\u2013A\u2032 section, categorized findings tray and detailed utility/clearance inspector.",
+    "gap": "Current tubes are display alignments; there is no real utility inspector, section-plane workflow or qualified clearance rule.",
+    "build": "Use exact authored network geometry and depth semantics; calculate sections/clearance from qualified inputs, link all panels to the same evidence.",
+    "data": "Utility diameter/depth convention, benchmark, ground/foundation geometry, section plane, rule and input revisions.",
+    "image": "images/REF-07.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-08",
+    "paths": [
+      "block-map/05-photos-and-history-sidebar.png",
+      "raw-root-exports/3d_ulpin_municipal_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "65bf6bb5e63da9fb5d7a0eb5c9339f3774b08307c639deccba10176ba2b38827",
+    "title": "Home \u00b7 municipal workflow",
+    "family": "Home",
+    "observed": "Welcome/entry page with workflow steps, five start actions, recent workspaces and recent plan cards.",
+    "gap": "Filename says photos/history but the actual image is a dashboard. Current reference opens straight onto the map.",
+    "build": "Reproduce the entry layout using real saved drafts/source previews; implement useful empty states and working contextual actions.",
+    "data": "Workspace/session records, progress, timestamps, property refs and actual document thumbnails.",
+    "image": "images/REF-08.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-09",
+    "paths": [
+      "raw-root-exports/3d_property_register_dashboard_ui.png",
+      "register/01-register-start-page.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "b82d3cc8e32fc6e63d853dee1d6a158ea221292d9c9a258223010098a27bdcc7",
+    "title": "Register \u00b7 scoped building view",
+    "family": "Register",
+    "observed": "A building-specific register state with its own identity, floor/unit inspection and evidence context.",
+    "gap": "Filename says start page, but this image is already scoped to a property; the current modal cannot replace it.",
+    "build": "Keep a single register route with anchor-led structure and supported alternate inspection states, preserving object/floor selection.",
+    "data": "Stable entity references, floors/spaces, geometry availability and linked source revisions.",
+    "image": "images/REF-09.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-10",
+    "paths": [
+      "raw-root-exports/3d_ulpin_property_register_dashboard.png",
+      "register/02-floors-and-units-page.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "5c15f2cd71be752d6bee26650b9648a1d1cbd3445c0e0eb86f78d5557691f920",
+    "title": "Register \u00b7 directory/start",
+    "family": "Register",
+    "observed": "A directory/entry state for finding and opening registered properties, rather than only an in-building floor view.",
+    "gap": "Filename says floors-and-units, but visible content is the register directory/start experience.",
+    "build": "Make main Register navigation open this directory; property actions open the selected record while retaining the block context.",
+    "data": "Searchable record summaries, dataset scope, status, pagination and contextual identifiers.",
+    "image": "images/REF-10.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-11",
+    "paths": [
+      "raw-root-exports/a_large_clean_ui_ux_concept_board_image_with_mult.png",
+      "workspace/01-workspace-start-page.png"
+    ],
+    "width": 1536,
+    "height": 1024,
+    "sha256": "cc1d44aae4c0986fcfde748fdcc7de2d4ab4592c786c30b3dbeb2a0366c61b80",
+    "title": "Workspace \u00b7 state/component board",
+    "family": "Workspace",
+    "observed": "Seventeen component/state panels covering workspace creation, documents, calibration, comparison, evidence, findings, history and related map data.",
+    "gap": "This is a state board, not a single start screen. Most corresponding workflows are absent from the isolated prototype.",
+    "build": "Implement these as states of existing workspace/map/register routes; avoid creating one disconnected page per panel.",
+    "data": "Document/workspace identity, calibration, measurements, comparison inputs, processing outputs and revision history.",
+    "image": "images/REF-11.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-12",
+    "paths": [
+      "raw-root-exports/a_large_composite_ui_design_mockup_image_flat_cle.png",
+      "reference-boards/board-01-multi-panel-storyboard.png"
+    ],
+    "width": 1536,
+    "height": 1024,
+    "sha256": "1a380f9e84ae3b61310137ab8c9b7e317ff7e72ba4db9e77ffcc03af489b0a63",
+    "title": "Board 01 \u00b7 workflow details",
+    "family": "Boards",
+    "observed": "Fourteen panels: map layers, import/export, parcel/utility details, photos/history, properties/findings, floors/evidence/issues, measurement and calibration.",
+    "gap": "Adds requirements not visible in the anchors, including utility profiles and multiple buildings per parcel.",
+    "build": "Use anchor layouts as the stable shell; use the board to specify panel contents and missing interaction states.",
+    "data": "Source-backed profiles, media, history, issue lifecycle, parcel relations and calibration.",
+    "image": "images/REF-12.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-13",
+    "paths": [
+      "raw-root-exports/a_large_composite_ui_design_presentation_image_li.png",
+      "reference-boards/board-04-21-panel-board.png"
+    ],
+    "width": 1536,
+    "height": 1024,
+    "sha256": "4cf13b0b07c36ca8f999a89e1d45e27351c2540de23ea1ea3da18291ca85faf7",
+    "title": "Board 04 \u00b7 21-panel sequence",
+    "family": "Boards",
+    "observed": "Map, register and document-workspace progression, including upload organization, area/angle tools, calibration, comparison and build/review.",
+    "gap": "Shows broad import/export and generation affordances that have not been proven by the current standalone.",
+    "build": "Expose real processing state and reviewed output; align plan/model before comparison and test each enabled export by reimport.",
+    "data": "Workflow state, source transforms, measured/derived geometry and validated exports.",
+    "image": "images/REF-13.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-14",
+    "paths": [
+      "raw-root-exports/a_large_composite_ui_design_presentation_image_mu.png",
+      "reference-boards/board-02-16-panel-storyboard.png"
+    ],
+    "width": 1536,
+    "height": 1024,
+    "sha256": "566822625f43f0bb95e00da8102fd42840812b0ae88601feae9bad0c90216faf",
+    "title": "Board 02 \u00b7 16-panel storyboard",
+    "family": "Boards",
+    "observed": "Basemap variants, layer opacity, staged source mapping, filtered property tables, utility/photos/history, floor tables and investigations.",
+    "gap": "Alternative layouts conflict with the anchors; opacity/basemaps, searchable stateful tables and investigations are not unified.",
+    "build": "Use these as alternate states within anchor-led routes; preserve schema/state across modes and provide offline basemap fallback.",
+    "data": "Layer opacity, georeferenced assets, tables tied to live records, review status and investigation evidence.",
+    "image": "images/REF-14.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-15",
+    "paths": [
+      "raw-root-exports/a_large_multi_panel_ui_design_mockup_collage_on_a.png",
+      "reference-boards/board-05-detailed-grid-board.png"
+    ],
+    "width": 1312,
+    "height": 1199,
+    "sha256": "d52384b8e0de06297e0d0a85cb42d7d53bcce237927dc9c31b1b55c7ffb94f08",
+    "title": "Board 05 \u00b7 detailed grid",
+    "family": "Boards",
+    "observed": "Dense aerial/cartographic map, file detection, multi-network utilities, street/site imagery, source evidence, measurement and AI-assisted comparison/build.",
+    "gap": "Satellite-like appearance cannot come from plain extrusions alone; confidence bars and processing states cannot be copied as facts.",
+    "build": "Separate display imagery/assets from analytical geometry; use only real inference outputs and qualify source placement/availability.",
+    "data": "Raster transforms, source media, utility semantics, extraction candidates and reviewed geometry.",
+    "image": "images/REF-15.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-16",
+    "paths": [
+      "raw-root-exports/a_large_tiled_ui_design_mockup_collage_clean_mode.png",
+      "reference-boards/board-03-a1-a4-b-c-board.png"
+    ],
+    "width": 1312,
+    "height": 1199,
+    "sha256": "ee5172af67d1ac065c712b236fcce0110bb004df07569463fde9a28cdff6a6f3",
+    "title": "Board 03 \u00b7 A/B/C states",
+    "family": "Boards",
+    "observed": "Map panels, nested utility layers, exploded register, PDF evidence, investigations, calibrated plan/model overlay and build-review checklist.",
+    "gap": "Requires a common session and frame across screens; current map controls do not implement document calibration or general sections.",
+    "build": "Share selection/session/geometry catalogs; make checklist and overlay results reflect actual validation and source revisions.",
+    "data": "Versioned frames, document calibration, model/plan geometry, evidence and review state.",
+    "image": "images/REF-16.png",
+    "status": "Inspected"
+  },
+  {
+    "id": "REF-17",
+    "paths": [
+      "raw-root-exports/property_registry_investigation_dashboard.png",
+      "register/03-investigation-page.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "7a4b3a5f26af5ff5965f1677c922f9b41ab70001b1ec830a7784caa9096e3033",
+    "title": "Investigation \u00b7 property evidence",
+    "family": "Register",
+    "observed": "A dedicated property investigation view combining mapped evidence, source context, review history and case actions.",
+    "gap": "Current conflict modal reports geometry but is not a persistent investigation workflow.",
+    "build": "Create/open cases from real findings, bind input geometry revisions, retain evidence and decisions, and return to the same map selection.",
+    "data": "Investigation/case records, issue refs, source artifacts, revision-bound evidence and audit events.",
+    "image": "images/REF-17.png",
+    "status": "Inspected"
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "startedAt": "2026-09-19T22:46:48.878Z",
+  "scope": "Actual local retained results; no mocked API or additional writes.",
+  "checks": [
+    {
+      "name": "Retained batch shows separate success and unsupported-page failure with retry affordance",
+      "passed": true
+    },
+    {
+      "name": "Actual empty result remains visible with its limits and no invented regions",
+      "passed": true
+    },
+    {
+      "name": "floor result displays exact retained raster, pixel contours, receipt and overlay controls",
+      "passed": true,
+      "itemId": "105d69bc-e749-463c-87b7-07e4b9ed66d8",
+      "regions": 75
+    },
+    {
+      "name": "building result displays exact retained raster, pixel contours, receipt and overlay controls",
+      "passed": true,
+      "itemId": "083be233-cc08-4a16-bae5-094621fe4dc3",
+      "regions": 8
+    }
+  ],
+  "errors": [],
+  "badResponses": [],
+  "blockedWrites": [],
+  "passed": false,
+  "failure": "locator.waitFor: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Spatial extraction', exact: true }) to be visible\u001b[22m\n\n    at /Users/vinayak/Desktop/3D Ulpin/scripts/ml/browser-workflow.mjs:73:15",
+  "completedAt": "2026-09-19T22:47:37.570Z"
+}

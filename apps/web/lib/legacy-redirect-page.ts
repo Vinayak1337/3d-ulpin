@@ -11,7 +11,7 @@ export type LegacyRedirectProps = {
 };
 
 export async function redirectLegacyFamily(
-  family: "areas" | "properties" | "registry" | "workbench" | "sites",
+  family: "areas" | "properties" | "registry" | "workbench" | "sites" | "blocks" | "register" | "workspace" | "delhi",
   props: LegacyRedirectProps,
 ) {
   const [{ path = [] }, query] = await Promise.all([

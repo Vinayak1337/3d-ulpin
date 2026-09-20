@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "Root starts with saved blocks and no unfinished location controls",
+    "Block search filters results without changing saved records",
+    "Saved workspaces can be found by name",
+    "Workspace assignment filter is available",
+    "Old directory and historical aliases terminate in Studio and preserve repeated context",
+    "Workspace directory fits tablet width"
+  ],
+  "errors": [],
+  "writes": [],
+  "result": "PASS"
+}

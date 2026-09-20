@@ -29,7 +29,7 @@ def main() -> int:
         indexed={x['id']:x for x in tasks + maintenance}
         check(len(indexed)==len(tasks)+len(maintenance),'Execution and maintenance IDs are unique')
         check(len({x['id'] for x in edge})==len(edge),'Edge-case IDs are unique')
-        allowed={'Planned','Ready','In progress','Review','Verify','Accepted','Blocked','Deferred'}
+        allowed={'Planned','Ready','In progress','Review','Verify','Accepted','Implemented','Blocked','Deferred'}
         check(all(x['status'] in allowed for x in indexed.values()),'Task statuses use the declared workflow')
         check(sum(x['status'] in {'In progress','Review','Verify'} for x in indexed.values()) <= board['wip_limit'], 'Active implementation WIP does not exceed its declared limit')
         check(all(d in indexed for x in indexed.values() for d in x.get('depends_on',[])),'All dependencies resolve')

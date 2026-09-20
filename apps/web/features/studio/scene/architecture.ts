@@ -6,7 +6,6 @@ export interface ArchitectureOptions{cutaway?:boolean;spacing?:number;maxFloor?:
 /** Detailed envelopes retain the recorded footprint; added facade elements are decorative. */
 export function buildArchitecture(buildings:Building[],options:ArchitectureOptions={}):Parts {
   const parts:Parts={body:[],frames:[],windows:[],trim:[],roof:[],tanks:[],solar:[],footings:[],accent:[]};
-  const palettes=['#d8d0be','#c4cecc','#d6c4af','#dddccf'];
   const accents=['#b39780','#819b9b','#b4a086','#adb7ab'];
   for(const b of buildings){
     const {x,z,width:w,depth:d,height:h,id,variant:v}=b;
@@ -59,6 +58,12 @@ export function buildArchitecture(buildings:Building[],options:ArchitectureOptio
         }
       }
       if(v===1||featured)add('trim',x,base+.06,z,w+.06,.10,d+.06,'#dddcd2');
+      // Shallow render bands give each authored variant a readable facade rhythm.
+      // They are envelope decoration, never additional measured floor area.
+      if(v===0||v===2)for(const side of [-1,1]){
+        add('accent',x+side*(w/2+.025),base+.46,z,.045,.3,d-.5,accents[v]);
+        add('accent',x,base+.46,z+side*(d/2+.025),w-.5,.3,.045,accents[v]);
+      }
       if(f>0&&(v!==0||f===b.floors-1)){
         const bw=w*(v===1?.36:.49),bx=x+(v%2===0?-w*.15:w*.17),bz=z+d/2+.7;
         add('trim',bx,base+.16,bz,bw,.26,1.82,'#e6e1d5');
@@ -83,6 +88,9 @@ export function buildArchitecture(buildings:Building[],options:ArchitectureOptio
     add('trim',x,.15,z+d/2+1.02,2.9,.14,1.1,'#d4d4c8');
     add('trim',x,3.08,z+d/2+.72,2.65,.16,1.62,'#e6e3d6');
     add('roof',x,h+.53,z,w+.14,.26,d+.14,b.roofColor);
+    // Fine joints catch light on broad terrace surfaces without changing the slab.
+    for(let seam=-w/2+4;seam<w/2-1;seam+=4)add('accent',x+seam,h+.666,z,.028,.012,d-.7,'#aab0a5');
+    for(let seam=-d/2+4;seam<d/2-1;seam+=4)add('accent',x,h+.667,z+seam,w-.7,.012,.028,'#aab0a5');
     for(const side of [-1,1]){
       add('frames',x+side*(w/2-.18),h+.98,z,.32,.69,d,body);
       add('frames',x,h+.98,z+side*(d/2-.18),w,.69,.32,body);
@@ -105,4 +113,11 @@ export function buildArchitecture(buildings:Building[],options:ArchitectureOptio
     }
   }
   return parts;
+}
+
+/** The very same exterior terrace, separated only for an exploded display. */
+export function buildTerrace(building:Building):Parts {
+  return Object.fromEntries(Object.entries(buildArchitecture([building])).map(([name,items])=>[
+    name,items.filter(item=>item.p[1]-item.s[1]/2>=building.height),
+  ]));
 }

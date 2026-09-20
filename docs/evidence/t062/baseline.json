@@ -1,0 +1,85 @@
+[
+  {
+    "name": "start",
+    "route": "/studio",
+    "title": "3D ULPIN · City Studio",
+    "headings": [
+      "Map layers",
+      "Properties in district (62)",
+      "11007500003527"
+    ]
+  },
+  {
+    "name": "blocks",
+    "route": "/studio/datasets",
+    "title": "3D ULPIN · City Studio",
+    "headings": [
+      "Block Map",
+      "Lake View · demonstration",
+      "T061 synthetic ML verification 99741d82",
+      "Google Uttam Nagar | FICTIONAL 3D registry",
+      "Google Uttam Nagar | public footprints and roads",
+      "Uttam Nagar | FICTIONAL rooms and conflicts | OSM-derived",
+      "Uttam Nagar - FICTIONAL registry and conflicts",
+      "Uttam Nagar - real OSM block",
+      "Uttam Nagar | OSM reference | no ownership data",
+      "Bronx building context around OTI 353927",
+      "Data tools",
+      "Find a property",
+      "Local workspace"
+    ]
+  },
+  {
+    "name": "workspaces",
+    "route": "/studio/workspaces",
+    "title": "3D ULPIN · City Studio",
+    "headings": [
+      "Plan Workspace",
+      "Start with a plan",
+      "Open a property",
+      "Saved workspaces",
+      "Create a plan workspace",
+      "Open a property workspace",
+      "Find a property",
+      "Local workspace"
+    ]
+  },
+  {
+    "name": "preparation",
+    "route": "/studio/cases/b5b9b4e8-c06a-4aca-afec-c8d443b708e1?area=4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "title": "3D ULPIN · City Studio",
+    "headings": [
+      "T061 synthetic ML verification 99741d82",
+      "Sources",
+      "Build details",
+      "Spatial extraction",
+      "Data tools",
+      "Review source value",
+      "Add a supported source fact",
+      "Retain the calibrated boundary",
+      "Source documents",
+      "Sources",
+      "Build details",
+      "Add source documents",
+      "Assign these sources to a property",
+      "Find a property",
+      "Local workspace"
+    ]
+  },
+  {
+    "name": "register",
+    "route": "/studio/properties/1e6c6e44-15ee-4c41-b6bd-067e59151b47/register?area=4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "title": "3D ULPIN · City Studio",
+    "headings": [
+      "T061 synthetic ML verification 99741d82",
+      "Building & floors",
+      "Evidence & documents",
+      "Issues & discrepancies",
+      "Recent activity",
+      "Export property register",
+      "Source evidence",
+      "Find a property",
+      "Local workspace"
+    ]
+  }
+]

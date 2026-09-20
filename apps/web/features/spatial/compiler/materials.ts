@@ -1,4 +1,4 @@
-export const STYLE_VERSION = "municipal-architecture/2";
+export const STYLE_VERSION = "municipal-architecture/3";
 export const materials = [
     { name: "warm concrete", color: [0.60, 0.56, 0.47, 1], roughness: 0.92, metallic: 0 },
     { name: "cool plaster", color: [0.58, 0.63, 0.61, 1], roughness: 0.92, metallic: 0 },
@@ -16,4 +16,6 @@ export const materials = [
     { name: "trunk", color: [0.31, 0.28, 0.21, 1], roughness: 1, metallic: 0 },
     { name: "solar panel", color: [0.15, 0.27, 0.33, 1], roughness: 0.32, metallic: 0.4 },
     { name: "utility alignment", color: [0.12, 0.39, 0.56, 1], roughness: 0.8, metallic: 0 },
+    { name: "unknown-height footprint fill", color: [0.30, 0.39, 0.39, 1], roughness: 1, metallic: 0 },
+    { name: "unknown-height footprint boundary", color: [0.07, 0.12, 0.13, 1], roughness: 1, metallic: 0 },
 ] as const;

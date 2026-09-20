@@ -1,0 +1,56 @@
+{
+  "schema": "canonical.imagery-assets.v1",
+  "records": [
+    {
+      "assetId": "imagery/lake-view-orthomosaic.tif",
+      "sourceFile": "imagery/lake-view-orthomosaic.tif",
+      "format": "GeoTIFF",
+      "width": 220,
+      "height": 230,
+      "coverage": [
+        -26,
+        -26,
+        194,
+        204
+      ],
+      "coordinateFrame": "LOCAL-LAKE-VIEW-DEMO-M",
+      "affineTransform": [
+        1.0,
+        0.0,
+        -26.0,
+        0.0,
+        -1.0,
+        204.0
+      ],
+      "sourceRevision": "lake-view-complete-1",
+      "qualityStatus": "unreviewed_synthetic",
+      "type": "synthetic_orthomosaic",
+      "resolution": {
+        "x": 1,
+        "y": 1,
+        "unit": "metre"
+      },
+      "acquisitionDateTime": null,
+      "processingHistory": [
+        "deterministic source render"
+      ]
+    },
+    {
+      "assetId": "imagery/lake-view-orthomosaic-preview.jpg",
+      "sourceFile": "imagery/lake-view-orthomosaic-preview.jpg",
+      "format": "JPEG",
+      "coverage": null,
+      "coordinateFrame": null,
+      "sourceRevision": "lake-view-complete-1",
+      "qualityStatus": "non_authoritative_preview",
+      "type": "preview",
+      "width": 220,
+      "height": 230,
+      "resolution": null,
+      "acquisitionDateTime": null,
+      "processingHistory": [
+        "deterministic source render"
+      ]
+    }
+  ]
+}

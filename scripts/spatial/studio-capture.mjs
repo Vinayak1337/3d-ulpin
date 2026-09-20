@@ -1,7 +1,7 @@
-import {chromium} from '@playwright/test';
+import {launchBrowser} from './browser-launch.mjs';
 import {mkdir,writeFile} from 'node:fs/promises';
 const output=process.env.STUDIO_CAPTURE_DIR||'.runtime/studio-qa/current';await mkdir(output,{recursive:true});
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await launchBrowser();
 const result={capturedAt:new Date().toISOString(),viewport:{width:1672,height:941},errors:[],failed:[],images:[]};
 try{
  const page=await browser.newPage({viewport:result.viewport,deviceScaleFactor:1});page.setDefaultTimeout(60000);

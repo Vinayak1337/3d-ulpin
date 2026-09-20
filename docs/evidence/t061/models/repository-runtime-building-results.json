@@ -1,0 +1,206 @@
+{
+  "modelId": "rfdetr-satellite-buildings-onnx-v1",
+  "modelSha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+  "profileVersion": "rfdetr-rgb432-imagenet-threshold050-mask000-v1",
+  "actualInferenceCount": 12,
+  "aggregate": {
+    "iou": 0.28737676135596274,
+    "precision": 0.34180841380048904,
+    "recall": 0.6434439311213775
+  },
+  "scope": "Same fixed12tiles, actual repository runtime with pinned ONNX and Pillow preprocessing, no tuning. Targets are independent original OSM vectors, original OAM imagery. Small downstream feasibility evaluation only.",
+  "samples": [
+    {
+      "sample": "0",
+      "actualInference": true,
+      "seconds": 4.8919365,
+      "components": 1,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 1.0,
+      "iou": 0.8333333333333334,
+      "precision": 0.9497206703910615,
+      "recall": 0.8717948717948718
+    },
+    {
+      "sample": "1",
+      "actualInference": true,
+      "seconds": 4.237550832999999,
+      "components": 0,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 1.0,
+      "iou": null,
+      "precision": null,
+      "recall": null
+    },
+    {
+      "sample": "2",
+      "actualInference": true,
+      "seconds": 3.1561264579999992,
+      "components": 1,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.987548828125,
+      "iou": 0.0,
+      "precision": 0.0,
+      "recall": null
+    },
+    {
+      "sample": "100",
+      "actualInference": true,
+      "seconds": 4.794432542000001,
+      "components": 1,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.9986114501953125,
+      "iou": 0.0,
+      "precision": 0.0,
+      "recall": null
+    },
+    {
+      "sample": "300",
+      "actualInference": true,
+      "seconds": 3.3004724580000016,
+      "components": 8,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.9511260986328125,
+      "iou": 0.6013460533193936,
+      "precision": 0.7351226136272865,
+      "recall": 0.7676843510176844
+    },
+    {
+      "sample": "1200",
+      "actualInference": true,
+      "seconds": 3.7606477500000004,
+      "components": 8,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.9997100830078125,
+      "iou": 0.8442622950819673,
+      "precision": 0.9634685880419669,
+      "recall": 0.872182171873212
+    },
+    {
+      "sample": "2000",
+      "actualInference": true,
+      "seconds": 2.2672517919999997,
+      "components": 1,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.999786376953125,
+      "iou": 0.0,
+      "precision": 0.0,
+      "recall": null
+    },
+    {
+      "sample": "2405",
+      "actualInference": true,
+      "seconds": 2.3730288329999993,
+      "components": 1,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.999969482421875,
+      "iou": 0.5705939629990263,
+      "precision": 0.9436392914653784,
+      "recall": 0.5907258064516129
+    },
+    {
+      "sample": "3604",
+      "actualInference": true,
+      "seconds": 5.189340291000004,
+      "components": 3,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.9963836669921875,
+      "iou": 0.8565055762081785,
+      "precision": 0.8871775125144398,
+      "recall": 0.9612015018773467
+    },
+    {
+      "sample": "4801",
+      "actualInference": true,
+      "seconds": 5.2500488339999976,
+      "components": 3,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.9999847412109375,
+      "iou": 0.6625874125874126,
+      "precision": 0.9243902439024391,
+      "recall": 0.7005545286506469
+    },
+    {
+      "sample": "6000",
+      "actualInference": true,
+      "seconds": 4.469777958999998,
+      "components": 4,
+      "omissions": {
+        "small": 3,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.9845733642578125,
+      "iou": 0.3437268199639716,
+      "precision": 0.4118786108818488,
+      "recall": 0.6750429218042766
+    },
+    {
+      "sample": "6901",
+      "actualInference": true,
+      "seconds": 3.4615235839999983,
+      "components": 12,
+      "omissions": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      },
+      "foregroundAgreementWithOriginalProcessor": 0.98681640625,
+      "iou": 0.10355182768975872,
+      "precision": 0.21410983834707203,
+      "recall": 0.16704251231938527
+    }
+  ]
+}

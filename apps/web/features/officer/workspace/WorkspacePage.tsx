@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { Point2 } from "@ulpin/contracts";
@@ -20,10 +20,7 @@ import { currentCalibration, makeMeasurement } from "./measurement";
 import type { MeasureTool, WorkspaceMode } from "./types";
 import { useClearDrawing } from "./useClearDrawing";
 import SourceCanvas from "./SourceCanvas";
-import DocumentThumbnail, {
-  documentLabel,
-} from "../documents/DocumentThumbnail";
-import BuildingPreview from "../scene/BuildingPreview";
+import { documentLabel } from "../documents/DocumentThumbnail";
 import MeasurePanel from "./MeasurePanel";
 import CalibratePanel from "./CalibratePanel";
 import ComparePanel from "./ComparePanel";
@@ -32,7 +29,7 @@ import AssignDialog from "./AssignDialog";
 import styles from "./Workspace.module.css";
 const SpatialViewer = dynamic(() => import("@/components/SpatialViewer"), {
   ssr: false,
-  loading: () => <LoadingState label="Opening actual 3D draft" />,
+  loading: () => <LoadingState label="Opening computed 3D model" />,
 });
 const modes: WorkspaceMode[] = ["measure", "calibrate", "compare", "build"];
 const tools: MeasureTool[] = [
@@ -54,7 +51,7 @@ export default function WorkspacePage({
 }) {
   const workspace = useWorkspace(buildingId, caseId);
   const notes = useMeasurements(buildingId || caseId || "new");
-  const [mode, setMode] = useQueryState("mode", modes, "measure");
+  const [mode, setMode] = useQueryState("mode", modes, "build");
   const {
     sourceId,
     page,
@@ -73,8 +70,7 @@ export default function WorkspacePage({
     [swipe, setSwipe] = useState(50);
   const [documentsOpen, setDocumentsOpen] = useState(false),
     [inspectorOpen, setInspectorOpen] = useState(false),
-    [assign, setAssign] = useState(false),
-    [uploadOpen, setUploadOpen] = useState(false);
+    [assign, setAssign] = useState(false);
   const [compact, setCompact] = useState(false);
   useEffect(() => {
     const query = window.matchMedia("(max-width: 800px)");
@@ -92,9 +88,8 @@ export default function WorkspacePage({
   }, []);
   useClearDrawing(
     clearDrawing,
-    !assign && !uploadOpen && !documentsOpen && !inspectorOpen,
+    !assign && !documentsOpen && !inspectorOpen,
   );
-  const fileRef = useRef<HTMLInputElement>(null);
   const source =
     workspace.sources.find((s) => s.id === sourceId) ||
     workspace.sources.find((s) => ["image", "pdf"].includes(s.kind)) ||
@@ -158,9 +153,9 @@ export default function WorkspacePage({
         <h2>Sources</h2>
         <Badge>{workspace.sources.filter((s) => s.url).length}</Badge>
       </div>
-      <Button icon="upload" onClick={() => setUploadOpen(true)} disabled={busy}>
-        Add documents
-      </Button>
+      <Link className="ui-button" href={routes.addFiles(workspace.backArea?.id || workspace.intakeAreaId, buildingId, workspace.caseId || caseId)}>
+        <Icon name="upload" /> Add files
+      </Link>
       <div className={styles.documents}>
         {[...workspace.sources]
           .sort(
@@ -177,20 +172,12 @@ export default function WorkspacePage({
                 setDocumentsOpen(false);
               }}
             >
-              <DocumentThumbnail source={item} />
+              <Icon name="document" className={styles.sourceIcon} />
               <span>
                 <strong title={item.name}>{documentLabel(item.name)}</strong>
                 <small>
-                  {{
-                    needs_input: "Needs review",
-                    received: "Retained",
-                    inspected: "Inspected",
-                    suitable: "Source ready",
-                    unsupported: "Review format",
-                  }[item.status || ""] ||
-                    item.status ||
-                    "Retained"}
-                  {item.kind === "geometry" ? " · geometry" : ""}
+                  {item.status === "needs_input" ? "Needs review" : item.status === "failed" ? "Processing failed" :
+                    item.kind === "geometry" ? "Geometry" : item.kind === "pdf" ? "PDF" : item.kind === "image" ? "Image" : "Document"}
                 </small>
               </span>
               {source?.id === item.id && <Icon name="check" />}
@@ -283,6 +270,7 @@ export default function WorkspacePage({
       />
     ) : (
       <BuildPanel
+        onSource={(id, sourcePage) => { setSourceId(id, sourcePage || 1); setShowModel(false); }}
         workspace={workspace}
         source={source}
         measurements={notes.measurements}
@@ -324,7 +312,7 @@ export default function WorkspacePage({
             </h1>
           </div>
           <Badge tone={property ? "info" : "neutral"}>
-            {property ? "Property workspace" : "Unassigned"}
+            {property ? "Property workspace" : workspace.pkg?.sourceWorkspace ? "Source review" : "Unassigned sources"}
           </Badge>
         </div>
         <div className={styles.inline}>
@@ -335,15 +323,7 @@ export default function WorkspacePage({
             >
               Property register <Icon name="arrow" />
             </Link>
-          ) : (
-            <Button
-              icon="building"
-              disabled={!workspace.detail?.sources.length || busy}
-              onClick={() => setAssign(true)}
-            >
-              Assign property
-            </Button>
-          )}
+          ) : null}
           <span className={styles.saved}>
             <Icon name="check" />{" "}
             {notes.loaded ? "Notes saved locally" : "Opening notes"}
@@ -368,42 +348,23 @@ export default function WorkspacePage({
         />
       )}
       <div className={styles.workspaceToolbar}>
-        <div
-          className={styles.modes}
-          role="tablist"
-          aria-label="Workspace mode"
-        >
-          {modes.map((value) => (
-            <button
-              key={value}
-              role="tab"
-              aria-selected={mode === value}
-              onClick={() => changeMode(value)}
-            >
-              <Icon
-                name={
-                  value === "measure"
-                    ? "measure"
-                    : value === "calibrate"
-                      ? "target"
-                      : value === "compare"
-                        ? "layers"
-                        : "cube"
-                }
-              />
-              {value === "build" ? "Build details" : title(value)}
-            </button>
-          ))}
+        <div className={styles.reviewNavigation}>
+          <Button icon="document" aria-pressed={mode === "build"} onClick={() => changeMode("build")}>Review details</Button>
+          <label className={styles.toolsMenu}>
+            <Icon name="settings" />
+            <select aria-label="Workspace tools" value={mode === "build" ? "" : mode} onChange={event => { if (event.target.value) changeMode(event.target.value as WorkspaceMode); }}>
+              <option value="">Tools</option>
+              <option value="measure">Measure</option>
+              <option value="calibrate">Calibrate</option>
+              <option value="compare">Compare</option>
+            </select>
+          </label>
         </div>
-        <div className={styles.mobileTools}>
-          <Button icon="document" onClick={() => setDocumentsOpen(true)}>
-            Sources
-          </Button>
-          <Button icon="settings" onClick={() => setInspectorOpen(true)}>
-            Controls
-          </Button>
+        <div className={styles.documentControls}>
+          <Button icon="document" aria-expanded={documentsOpen} onClick={() => setDocumentsOpen(true)}>Documents ({workspace.sources.length})</Button>
+          {compact && <Button icon="settings" onClick={() => setInspectorOpen(true)}>{mode === "build" ? "Review panel" : "Tool controls"}</Button>}
         </div>
-        <Button
+        {mode !== "build" && <Button
           icon="close"
           onClick={clearDrawing}
           disabled={!points.length && !error}
@@ -411,7 +372,7 @@ export default function WorkspacePage({
           title="Clear current drawing (Ctrl+Q)"
         >
           Clear drawing <kbd>Ctrl Q</kbd>
-        </Button>
+        </Button>}
         <span className={styles.toolbarStatus}>
           {childBusy ||
             (workspace.preparation
@@ -420,7 +381,6 @@ export default function WorkspacePage({
         </span>
       </div>
       <div className={styles.workspaceGrid}>
-        <aside className={styles.documentRail}>{documentList}</aside>
         <main className={styles.canvasColumn}>
           {mode === "measure" && (
             <div className={styles.measureTools} aria-label="Measurement tools">
@@ -452,7 +412,7 @@ export default function WorkspacePage({
                 variant={showModel ? "primary" : "secondary"}
                 onClick={() => setShowModel(true)}
               >
-                3D draft
+                3D model
               </Button>
               <span>{workspace.detail.model.units.length} computed spaces</span>
             </div>
@@ -501,38 +461,6 @@ export default function WorkspacePage({
               </div>
             </div>
           )}
-          {workspace.dossier && (
-            <div className={styles.floorStrip}>
-              <div className={styles.floorPreview}>
-                <BuildingPreview feature={workspace.dossier.building} />
-              </div>
-              <div className={styles.floorSelector}>
-                <strong>Building floors</strong>
-                <div>
-                  {workspace.sources
-                    .filter((s) => /-floor-\d+\.png$/i.test(s.name))
-                    .map((item) => (
-                      <button
-                        key={item.id}
-                        aria-pressed={source?.id === item.id}
-                        onClick={() => {
-                          setSourceId(item.id);
-                        }}
-                      >
-                        {documentLabel(item.name)}
-                      </button>
-                    ))}
-                </div>
-                <small>
-                  {
-                    workspace.dossier.records.filter((r) => r.kind === "space")
-                      .length
-                  }{" "}
-                  recorded spaces · select a floor to open its plan
-                </small>
-              </div>
-            </div>
-          )}
           {workspace.loading && !source && (
             <LoadingState label="Opening retained documents" />
           )}
@@ -548,80 +476,10 @@ export default function WorkspacePage({
       </Dialog>
       <Dialog
         open={compact && inspectorOpen}
-        title={mode === "build" ? "Build details" : title(mode)}
+        title={mode === "build" ? "Review details" : title(mode)}
         onClose={() => setInspectorOpen(false)}
       >
         {compact && inspectorOpen && panel}
-      </Dialog>
-      <Dialog
-        open={uploadOpen}
-        title="Add source documents"
-        onClose={() => setUploadOpen(false)}
-      >
-        <div className={styles.form}>
-          {buildingId && !workspace.pkg ? (
-            <>
-              <p>
-                Create a preparation draft for this property before adding
-                documents.
-              </p>
-              <Button
-                variant="primary"
-                disabled={busy}
-                onClick={() => void workspace.open()}
-              >
-                Create workspace
-              </Button>
-            </>
-          ) : (
-            <>
-              <p>
-                {buildingId
-                  ? "PDF, images, CSV, text or DOCX"
-                  : "PDF, PNG or level CSV"}
-                . The original file is retained before suitability is assessed.
-              </p>
-              <input
-                ref={fileRef}
-                aria-label="Source documents"
-                type="file"
-                multiple
-                accept={
-                  buildingId
-                    ? ".pdf,.png,.jpg,.jpeg,.csv,.txt,.docx"
-                    : ".pdf,.png,.csv"
-                }
-              />
-              <Button
-                variant="primary"
-                icon="upload"
-                disabled={busy}
-                onClick={() => {
-                  const files = Array.from(fileRef.current?.files || []);
-                  if (!files.length) return;
-                  void workspace.upload(files).then((uploaded) => {
-                    if (!uploaded || !fileRef.current) return;
-                    fileRef.current.value = "";
-                  });
-                }}
-              >
-                Retain documents
-              </Button>
-              {workspace.sources.some((s) => s.url) && (
-                <p role="status">
-                  {workspace.sources.filter((s) => s.url).length} retained
-                  source
-                  {workspace.sources.filter((s) => s.url).length === 1
-                    ? ""
-                    : "s"}{" "}
-                  in this workspace.
-                </p>
-              )}
-            </>
-          )}
-          {workspace.error && <ErrorState message={workspace.error} />}
-          <Button onClick={() => setUploadOpen(false)}>Done</Button>
-        </div>
       </Dialog>
       <AssignDialog
         open={assign}

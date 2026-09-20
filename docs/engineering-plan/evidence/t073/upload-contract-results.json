@@ -1,0 +1,60 @@
+[
+  {
+    "name": "baseline",
+    "result": "accepted"
+  },
+  {
+    "name": "missing_metadata_title",
+    "result": "rejected",
+    "message": "The scene needs a title."
+  },
+  {
+    "name": "unbounded_floorCount_100_million",
+    "result": "rejected",
+    "message": "A building floor count must be an integer from 0 to 100."
+  },
+  {
+    "name": "unknown_utility_elevation",
+    "result": "rejected",
+    "message": "Utility depth is unknown. Supply authored elevations or leave geometry unavailable."
+  },
+  {
+    "name": "different_untransformed_local_frame",
+    "result": "rejected",
+    "message": "Normalize every geometry into one local east/north/up metre frame before preview."
+  },
+  {
+    "name": "geographic_axis_order_declared_as_local",
+    "result": "rejected",
+    "message": "Normalize every geometry into one local east/north/up metre frame before preview."
+  },
+  {
+    "name": "missing_road_geometry",
+    "result": "accepted"
+  },
+  {
+    "name": "malformed_tree_decoration",
+    "result": "rejected",
+    "message": "Decoration trees must be an array of at most 500 items."
+  },
+  {
+    "name": "self_intersecting_polygon",
+    "result": "rejected",
+    "message": "A polygon ring crosses itself."
+  },
+  {
+    "name": "false_computed_area",
+    "result": "rejected",
+    "message": "A stored polygon area does not match its coordinates."
+  },
+  {
+    "name": "huge_edge_length_with_small_declared_extent",
+    "result": "rejected",
+    "message": "Geometry must lie inside the declared local extent."
+  },
+  {
+    "name": "baseline_zip",
+    "result": "accepted",
+    "verifiedFiles": 14
+  }
+]

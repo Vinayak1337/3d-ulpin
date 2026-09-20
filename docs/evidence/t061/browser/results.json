@@ -1,0 +1,48 @@
+{
+  "startedAt": "2026-09-19T22:48:27.384Z",
+  "scope": "Actual local retained results; no mocked API or additional writes.",
+  "checks": [
+    {
+      "name": "Retained batch shows separate success and unsupported-page failure with retry affordance",
+      "passed": true
+    },
+    {
+      "name": "Actual empty result remains visible with its limits and no invented regions",
+      "passed": true
+    },
+    {
+      "name": "floor result displays exact retained raster, pixel contours, receipt and overlay controls",
+      "passed": true,
+      "itemId": "105d69bc-e749-463c-87b7-07e4b9ed66d8",
+      "regions": 75
+    },
+    {
+      "name": "building result displays exact retained raster, pixel contours, receipt and overlay controls",
+      "passed": true,
+      "itemId": "083be233-cc08-4a16-bae5-094621fe4dc3",
+      "regions": 8
+    },
+    {
+      "name": "Retained result review fits a narrow viewport",
+      "passed": true,
+      "layout": {
+        "width": 374.390625,
+        "viewport": 390,
+        "scrollWidth": 372,
+        "clientWidth": 372,
+        "bodyScrollWidth": 372,
+        "bodyClientWidth": 372
+      }
+    },
+    {
+      "name": "Reload preserves retained inference/application and leaves generated facts unreviewed",
+      "passed": true,
+      "apiWrites": 0
+    }
+  ],
+  "errors": [],
+  "badResponses": [],
+  "blockedWrites": [],
+  "passed": true,
+  "completedAt": "2026-09-19T22:48:31.092Z"
+}

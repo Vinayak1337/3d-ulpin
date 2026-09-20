@@ -1,0 +1,417 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-NEEM-REFERENCE-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "R01",
+      "properties": {
+        "widthM": 8,
+        "centerline": [
+          [
+            60,
+            0
+          ],
+          [
+            60,
+            115
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "collector",
+        "road_id": "R01",
+        "name": "Collector street",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R01-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              56,
+              0
+            ],
+            [
+              64,
+              0
+            ],
+            [
+              64,
+              115
+            ],
+            [
+              56,
+              115
+            ],
+            [
+              56,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R02",
+      "properties": {
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            17.5
+          ],
+          [
+            120,
+            17.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali",
+        "road_id": "R02",
+        "name": "Gali 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R02-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              16
+            ],
+            [
+              120,
+              16
+            ],
+            [
+              120,
+              19
+            ],
+            [
+              0,
+              19
+            ],
+            [
+              0,
+              16
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R03",
+      "properties": {
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            36.5
+          ],
+          [
+            120,
+            36.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali",
+        "road_id": "R03",
+        "name": "Gali 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R03-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              35
+            ],
+            [
+              120,
+              35
+            ],
+            [
+              120,
+              38
+            ],
+            [
+              0,
+              38
+            ],
+            [
+              0,
+              35
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R04",
+      "properties": {
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            55.5
+          ],
+          [
+            120,
+            55.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali",
+        "road_id": "R04",
+        "name": "Gali 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R04-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              54
+            ],
+            [
+              120,
+              54
+            ],
+            [
+              120,
+              57
+            ],
+            [
+              0,
+              57
+            ],
+            [
+              0,
+              54
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R05",
+      "properties": {
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            74.5
+          ],
+          [
+            120,
+            74.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali",
+        "road_id": "R05",
+        "name": "Gali 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R05-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              73
+            ],
+            [
+              120,
+              73
+            ],
+            [
+              120,
+              76
+            ],
+            [
+              0,
+              76
+            ],
+            [
+              0,
+              73
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R06",
+      "properties": {
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            93.5
+          ],
+          [
+            120,
+            93.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali",
+        "road_id": "R06",
+        "name": "Gali 5",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R06-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              92
+            ],
+            [
+              120,
+              92
+            ],
+            [
+              120,
+              95
+            ],
+            [
+              0,
+              95
+            ],
+            [
+              0,
+              92
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R07",
+      "properties": {
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            113.5
+          ],
+          [
+            120,
+            113.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali",
+        "road_id": "R07",
+        "name": "Gali 6",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R07-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              112
+            ],
+            [
+              120,
+              112
+            ],
+            [
+              120,
+              115
+            ],
+            [
+              0,
+              115
+            ],
+            [
+              0,
+              112
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

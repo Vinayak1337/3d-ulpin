@@ -1,19 +1,10 @@
 # 3D ULPIN — local area and property registry
 
-Import a bounded area and keep its shared 3D block in view while searching a
-property, opening its own register and evidence, preparing source-linked floors
-and spaces, and reviewing discrepancies. The centered navigator connects the
-block, property register and selected property's preparation workspace.
-The saved NYC snapshot contains 62 actual footprints and reported roof heights.
-The redesigned interface starts at **[/v2](http://127.0.0.1:3000/v2)**. The previous
-interface, synthetic neighbourhood and rights-volume workbench remain available
-at **[/legacy](http://127.0.0.1:3000/legacy)**; former page links redirect there.
+Studio is the single officer interface. Open **[the Work queue](http://127.0.0.1:3000/studio/work)** and follow **Add files → Review details → Check & record**. Documents can be retained before choosing a property; supported GIS details are inspected before asking for missing information. Saved work resumes from the queue.
 
-Read the **[V2 delivery and demo guide](docs/V2_DELIVERY.md)** for exact routes,
-actual UI captures, test results and remaining limits, and **[V2 architecture](docs/V2_ARCHITECTURE.md)**
-for the component, state and route conventions. The white/green/gray design uses
-a centered floating navigator, contextual map rails, register tabs and a single
-document canvas with Measure, Calibrate, Compare and Build Details modes.
+Read the current **[Studio source-to-record guide](docs/STUDIO_DEMO_GUIDE.md)** for exact actions, input limits, review and export. **[Saved blocks](http://127.0.0.1:3000/studio/datasets)** keeps real datasets and fictional demonstrations separately selectable. Map, Property Register and contextual plan review share Studio navigation. Historical URLs redirect into Studio; they do not open another interface.
+
+The **[revised references and comparisons](design/officer-studio-v3/index.html)** and **[implementation comparison](design/officer-studio-v3/implementation.html)** document this UX pass. Earlier [V2 delivery](docs/V2_DELIVERY.md) and [architecture](docs/V2_ARCHITECTURE.md) documents retain historical implementation evidence.
 
 This is a **local, single-operator demonstration** with separately labeled real
 observations, estimates, and synthetic scenarios. It does not issue
@@ -24,7 +15,9 @@ Start with **[local startup and officer demonstration](docs/OFFICER_STARTUP.md)*
 the **[implementation ledger](docs/REAL_BLOCK_EXECUTION.md)** and
 **[current verification](docs/OFFICER_DELIVERY.md)**. Native related-document
 preparation, exact parcel/public-context checks, evidenced utility profiles and
-persisted investigations run locally. Optional [Nous assistance](docs/OFFICER_AI.md)
+persisted investigations run locally. [Local spatial extraction](docs/local-spatial-extraction.md)
+adds pinned floor-plan and building models, persisted batches, exact raster inspection
+and calibrated proposals through the existing review process. Optional [Nous assistance](docs/OFFICER_AI.md)
 requires an authorized, verified free route; no live inference was available in
 the recorded run. Permitted coherent Indian sources, building-specific plans
 and surveyed utility evidence remain external acceptance gates.
@@ -57,14 +50,7 @@ saved database, plans, PDFs, source revisions and presentation-asset bindings.
 The two modes use separate persistent services; restart the app and dispatcher
 after switching. No reseeding or overwriting of existing data is required.
 
-For the illustrated user guide, run `pnpm guide` from the repository root and
-open [the visual guide](http://127.0.0.1:3011) in your browser or Codex's in-app
-browser. It serves the 13 annotated tutorials independently of the application;
-The launcher uses Node.js on Windows, macOS and Linux; Python, Bash and the
-database/processing services are not required for the guide. Use `pnpm guide --port 3012`
-for another port, or `node scripts/guide.mjs` without pnpm. Keep
-the terminal open; **Ctrl+C** stops the guide. You can also open
-`docs/tutorial-images/index.html` directly for offline viewing.
+For the current officer walkthrough, use [STUDIO_DEMO_GUIDE.md](docs/STUDIO_DEMO_GUIDE.md). The older annotated tutorials remain historical references in `docs/tutorial-images/`; `pnpm guide --port 3012` serves those without starting the app.
 
 On this configured Mac, double-click **Start Demo.command** in the project
 folder, or run this from the repository root:
@@ -81,17 +67,7 @@ that terminal with **Ctrl+C** before requesting a fresh production build.
 If the workbench is reachable but a processing service is unhealthy, `pnpm demo`
 recovers the platform and migrations before returning to the existing server.
 
-On a fresh database, open **Data sources → Open saved snapshot**, review the
-62 building observations, and record them with an acknowledgement of the source
-limitations. Use **Refresh source** only when a new bounded download is wanted.
-
-For the older demonstration, open [Legacy registry](http://127.0.0.1:3000/registry)
-and choose **Load synthetic neighbourhood**. The seed runs
-actual inspection, preparation, Python building and registry review. Subsequent
-loads preserve operator revisions. The default property-volume view displays
-both adjoining buildings, one shared basement and one cross-parcel corridor.
-The old [C-001 showcase](http://127.0.0.1:3000/workbench?case=d34cacf3-f4fc-4ac2-a282-9058fc4ea0e5)
-and **Preparation workspaces** remain available.
+Use **Add files** for new sources and **Browse saved blocks** for the persisted Lake View demonstration or separately labelled real data. Resume existing cases instead of reseeding a rehearsal. Historical record, workspace and geometry bookmarks preserve their identifiers when opening Studio.
 
 On a new Apple Silicon Mac, install Node.js, pnpm and the container runtime first:
 
@@ -118,50 +94,9 @@ baseline measured about 17.8 MB uncompressed client JavaScript. Current local
 interaction measurements are in the [officer verification](docs/OFFICER_DELIVERY.md);
 public distribution would need a separate delivery/performance assessment.
 
-## Legacy workbench story
+## Historical fixtures and contracts
 
-**New: visible prototype 3D ULPINs and a real-data example.** The parent ID is
-above the viewer; **View identifiers** opens the floor/space register. These
-are prototype workspace IDs, not government-issued ULPINs. See
-[the identifier format](docs/PROTOTYPE_IDENTIFIERS.md).
-
-For downloadable demo files and public data, open **Sources → Demo files &
-public data** or [DEMO_DATA.md](DEMO_DATA.md). A new workspace can load
-**NYC · Public building footprint**, a real public footprint/roof-height sample
-converted into an exterior envelope. Interior floors remain unknown. C-001 and
-C-002 remain synthetic examples for the interior-space correction workflow.
-
-1. Click the **+** next to the workspace selector, name a new workspace, and
-   choose **Create workspace**.
-2. Select **C-001 · Reference building** and **Load sample inputs**. Wait for
-   inspection, then choose **Prepare geometry** and **Prepare draft spaces**.
-3. Choose **Build model**. Inspect seven spaces and the U01/U03 **6.4 m³** overlap.
-4. Under **Sources**, choose **Load revised demo levels**. Inspect
-   `levels-r2.csv`, then **Apply this level evidence**.
-5. Choose **Rebuild model**. The positive overlap becomes **0 m³**. Refresh to
-   reopen the persisted model and its source/revision history.
-
-The complete narration, exact expected values and recovery steps are in
-[DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md). Use a new workspace for each rehearsal;
-this leaves earlier cases intact. The second sample, C-002, uses different
-geometry and has an initial **14.4 m³** overlap.
-
-For the legacy workbench walkthrough, open the [UI demo guide](3D_ULPIN_UI_Demo_Guide.docx) at the repository root. A copy is also available in `docs/`.
-It includes current screenshots, exact clicks, expected results and a five-minute
-presenter script, from a fresh C-001 workspace through correction and refresh.
-
-For your own inputs, choose **Import files** and the matching profile. Supported
-inputs are local metric JSON, level CSV, control CSV, PNG and PDF, up to 16 MiB
-per file. PNG/PDF references require manual two-point calibration and tracing.
-Choose **Preview** beside a source or **Preview file** next to its download
-action to read the original inside the workbench. Evidence bindings and
-contributing sources in findings open the same viewer. CSV files appear as
-tables with an original-text toggle, JSON is formatted for reading, and PNG/PDF
-plans support zoom (and page selection for PDFs). Previews are read only;
-downloads and explicit evidence application remain available. Large text/table
-previews show their display limits; the download always contains the full file.
-[INPUT_GUIDE.md](docs/INPUT_GUIDE.md) explains formats, blank measurements,
-calibration and the supplied [synthetic fixtures](fixtures/README.md).
+C-001/C-002 correction fixtures, original documents and revision history remain available to the shared backend and contextual geometry tools. Their earlier [demo script](docs/DEMO_SCRIPT.md), [input contract](docs/INPUT_GUIDE.md), [identifier explanation](docs/PROTOTYPE_IDENTIFIERS.md) and [source catalogue](DEMO_DATA.md) are retained for traceability. Their old button-by-button walkthroughs are superseded by the [Studio guide](docs/STUDIO_DEMO_GUIDE.md).
 
 ## Understand and change it
 
@@ -171,7 +106,7 @@ The key learning path is:
 
 | Area | Start here |
 | --- | --- |
-| Workbench, linked views and editing | `apps/web/components/Workbench.tsx`, `SpatialViewer.tsx`, `PlanView.tsx`, `SourcePreview.tsx` |
+| Studio navigation and officer workflows | `apps/web/features/studio/product/`, `apps/web/features/officer/` |
 | Cases, sources, evidence and saved revisions | `apps/web/lib/server/domain.ts` |
 | Durable jobs and stale-result protection | `apps/web/lib/server/processing.ts`, `scripts/dispatcher.ts` |
 | Input inspection and prism calculations | `services/geo/geo/inspection.py`, `geometry.py` |

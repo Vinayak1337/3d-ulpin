@@ -1,0 +1,40 @@
+{
+  "startedAt": "2026-09-19T22:36:36.006Z",
+  "checks": [
+    {
+      "name": "Map unit click opens the exact quick-unit card and canonical unit/floor URL",
+      "passed": true
+    },
+    {
+      "name": "Quick original uses one map canvas and reload restores its exact prepared PDF",
+      "passed": true,
+      "documentId": "lease-BLD-0413-F3-U2",
+      "sha256": "9980548e881e1f1ea2d9966c7d09c523f8ac0976a7065bc8ed125c3fe5c0572d"
+    },
+    {
+      "name": "Close, Back, Forward and full-register handoff preserve the selected unit and original",
+      "passed": true
+    },
+    {
+      "name": "Inspecting a building original retains the surrounding selected unit and floor",
+      "passed": true
+    },
+    {
+      "name": "Shared Studio header separates saved-search responses from synthetic records and links to directories",
+      "passed": true
+    },
+    {
+      "name": "Cancelling dirty workspace navigation preserves notes; accepting returns to the same property",
+      "passed": true
+    },
+    {
+      "name": "Tablet Layers closes with Escape and restores keyboard focus to its opener",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "backendWrites": [],
+  "resolverCoverage": "Explicit synthetic resolver response verifies shared search integration; no persisted search match is fabricated.",
+  "result": "PASS",
+  "finishedAt": "2026-09-19T22:36:49.618Z"
+}

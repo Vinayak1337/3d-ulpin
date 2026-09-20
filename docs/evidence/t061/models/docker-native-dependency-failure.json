@@ -1,0 +1,51 @@
+{
+  "observedAt": "2026-09-19T22:45:10.978306+00:00",
+  "environment": "Linux ARM64 Python3.12 private Celery worker; python:3.12-slim-bookworm",
+  "affectedJobs": {
+    "floor": "406af89b-c4fe-4a1c-88ad-73f53aa2fbcd",
+    "buildingPositive": "07423fda-82ea-4fea-ab36-2d94612b3474",
+    "buildingEmpty": "c353b76c-471a-49a2-8997-b02315bb8e82"
+  },
+  "initialResult": "INFERENCE_FAILED for all three actual jobs; no spatial facts applied",
+  "diagnostic": "Read existing building job input and call infer_spatial directly inside worker, without updating job/store; inspect chained exception type/message and module frames only. ORT sessions for both models loaded successfully and a synthetic building inference completed.",
+  "rootCause": {
+    "exceptionType": "ImportError",
+    "message": "libexpat.so.1: cannot open shared object file: No such file or directory",
+    "location": "rasterio import in spatial_ml._components"
+  },
+  "fix": {
+    "container": "Install minimal native runtime package libexpat1; no compiler/GDAL build toolchain",
+    "readiness": "Actually import ONNX Runtime and rasterio, not only locate installed package metadata",
+    "failureCode": "DEPENDENCY_UNAVAILABLE",
+    "diagnostics": "Bounded exception type and module-basename/line/function frames only; no input payload, source bytes, exception text or environment values"
+  },
+  "regression": "test_missing_native_library_blocks_readiness_and_inference_before_storage",
+  "recoveryReceipt": "../workflow/ (same-item retry owned by end-to-end verification)",
+  "recoveryReadiness": {
+    "observedAt": "2026-09-19T22:46:03.608949+00:00",
+    "insideActualWorker": true,
+    "imports": {
+      "onnxruntime": "1.19.2",
+      "rasterio": "1.4.4"
+    },
+    "floorModelReady": true,
+    "buildingModelReady": true,
+    "scope": "Native import and installed/hash-pinned model readiness only; actual job retry outcome is retained separately in workflow evidence."
+  },
+  "sameItemRecovery": {
+    "result": "PASS",
+    "reportedBy": "Independent end-to-end workflow verifier",
+    "positiveFloor": "succeeded",
+    "positiveBuilding": "succeeded",
+    "genuineEmptyBuilding": "empty",
+    "initialFailedAttemptsPreserved": true,
+    "oneNewAttemptPerRetryKey": true,
+    "rasterAndMaskChecksumsAndDimensionsVerified": true,
+    "modelHashAndProfileVerified": true,
+    "allEightOriginalsUnchanged": true,
+    "receipts": [
+      "../workflow/batch-before-runtime-recovery-1.json",
+      "../workflow/batch.json"
+    ]
+  }
+}

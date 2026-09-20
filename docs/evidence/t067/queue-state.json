@@ -1,0 +1,50 @@
+{
+  "result": "PASS",
+  "total": 74,
+  "checks": 8,
+  "recorded": {
+    "id": "b5b9b4e8-c06a-4aca-afec-c8d443b708e1",
+    "kind": "case",
+    "name": "T061 synthetic ML verification 99741d82 · details",
+    "state": null,
+    "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "areaName": "T061 synthetic ML verification 99741d82",
+    "dataKind": "demonstration",
+    "jobStatus": "succeeded",
+    "updatedAt": "2026-09-19T22:48:57.663926+00:00",
+    "buildingId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+    "sourceCount": 9,
+    "recordedHistory": true,
+    "currentRecorded": true
+  },
+  "source": {
+    "id": "e0caa46d-5df6-4d86-853a-6097fec87b58",
+    "kind": "case",
+    "name": "T066 fictional source-led review 865304e3",
+    "state": null,
+    "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "areaName": "T061 synthetic ML verification 99741d82",
+    "dataKind": "demonstration",
+    "jobStatus": "succeeded",
+    "updatedAt": "2026-09-20T14:18:51.296993+00:00",
+    "buildingId": null,
+    "sourceCount": 2,
+    "recordedHistory": false,
+    "currentRecorded": false
+  },
+  "draft": {
+    "id": "b8a94f15-0875-4109-b3f3-b7c8b620ad6d",
+    "kind": "import",
+    "name": "T064 fictional projected",
+    "state": "NEEDS_INPUT",
+    "areaId": "914c0ca4-6d38-4de1-a60f-178e91b111a1",
+    "areaName": "T064 fictional projected",
+    "dataKind": "demonstration",
+    "jobStatus": null,
+    "updatedAt": "2026-09-20T14:00:35.871059+00:00",
+    "buildingId": null,
+    "sourceCount": 1,
+    "recordedHistory": false,
+    "currentRecorded": false
+  }
+}

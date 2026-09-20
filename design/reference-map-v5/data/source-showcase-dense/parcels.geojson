@@ -1,0 +1,3865 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-NEEM-REFERENCE-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "P01",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B01",
+        "parcel_id": "P01",
+        "name": "Plot 01",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P01-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              38
+            ],
+            [
+              56,
+              38
+            ],
+            [
+              56,
+              54
+            ],
+            [
+              40,
+              54
+            ],
+            [
+              40,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P02",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B02",
+        "parcel_id": "P02",
+        "name": "Plot 02",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P02-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P02"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              8,
+              16
+            ],
+            [
+              0,
+              16
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P03",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B03",
+        "parcel_id": "P03",
+        "name": "Plot 03",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P03-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P03"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              0
+            ],
+            [
+              16,
+              0
+            ],
+            [
+              16,
+              16
+            ],
+            [
+              8,
+              16
+            ],
+            [
+              8,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P04",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B04",
+        "parcel_id": "P04",
+        "name": "Plot 04",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P04-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P04"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              0
+            ],
+            [
+              24,
+              0
+            ],
+            [
+              24,
+              16
+            ],
+            [
+              16,
+              16
+            ],
+            [
+              16,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P05",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B05",
+        "parcel_id": "P05",
+        "name": "Plot 05",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P05-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P05"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              0
+            ],
+            [
+              32,
+              0
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              24,
+              16
+            ],
+            [
+              24,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P06",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B06",
+        "parcel_id": "P06",
+        "name": "Plot 06",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P06-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P06"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              0
+            ],
+            [
+              40,
+              0
+            ],
+            [
+              40,
+              16
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              32,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P07",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B07",
+        "parcel_id": "P07",
+        "name": "Plot 07",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P07-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P07"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              0
+            ],
+            [
+              48,
+              0
+            ],
+            [
+              48,
+              16
+            ],
+            [
+              40,
+              16
+            ],
+            [
+              40,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P08",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B08",
+        "parcel_id": "P08",
+        "name": "Plot 08",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P08-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P08"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              0
+            ],
+            [
+              56,
+              0
+            ],
+            [
+              56,
+              16
+            ],
+            [
+              48,
+              16
+            ],
+            [
+              48,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P09",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B09",
+        "parcel_id": "P09",
+        "name": "Plot 09",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P09-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P09"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              0
+            ],
+            [
+              72,
+              0
+            ],
+            [
+              72,
+              16
+            ],
+            [
+              64,
+              16
+            ],
+            [
+              64,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P10",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B10",
+        "parcel_id": "P10",
+        "name": "Plot 10",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P10-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P10"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              0
+            ],
+            [
+              80,
+              0
+            ],
+            [
+              80,
+              16
+            ],
+            [
+              72,
+              16
+            ],
+            [
+              72,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P11",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B11",
+        "parcel_id": "P11",
+        "name": "Plot 11",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P11-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P11"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              0
+            ],
+            [
+              88,
+              0
+            ],
+            [
+              88,
+              16
+            ],
+            [
+              80,
+              16
+            ],
+            [
+              80,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P12",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B12",
+        "parcel_id": "P12",
+        "name": "Plot 12",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P12-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P12"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              0
+            ],
+            [
+              96,
+              0
+            ],
+            [
+              96,
+              16
+            ],
+            [
+              88,
+              16
+            ],
+            [
+              88,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P13",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B13",
+        "parcel_id": "P13",
+        "name": "Plot 13",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P13-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P13"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              0
+            ],
+            [
+              104,
+              0
+            ],
+            [
+              104,
+              16
+            ],
+            [
+              96,
+              16
+            ],
+            [
+              96,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P14",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B14",
+        "parcel_id": "P14",
+        "name": "Plot 14",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P14-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P14"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              0
+            ],
+            [
+              112,
+              0
+            ],
+            [
+              112,
+              16
+            ],
+            [
+              104,
+              16
+            ],
+            [
+              104,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P15",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B15",
+        "parcel_id": "P15",
+        "name": "Plot 15",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P15-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P15"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              0
+            ],
+            [
+              120,
+              0
+            ],
+            [
+              120,
+              16
+            ],
+            [
+              112,
+              16
+            ],
+            [
+              112,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P16",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B16",
+        "parcel_id": "P16",
+        "name": "Plot 16",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P16-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P16"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              19
+            ],
+            [
+              8,
+              19
+            ],
+            [
+              8,
+              35
+            ],
+            [
+              0,
+              35
+            ],
+            [
+              0,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P17",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B17",
+        "parcel_id": "P17",
+        "name": "Plot 17",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P17-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P17"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              19
+            ],
+            [
+              16,
+              19
+            ],
+            [
+              16,
+              35
+            ],
+            [
+              8,
+              35
+            ],
+            [
+              8,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P18",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B18",
+        "parcel_id": "P18",
+        "name": "Plot 18",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P18-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P18"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              19
+            ],
+            [
+              24,
+              19
+            ],
+            [
+              24,
+              35
+            ],
+            [
+              16,
+              35
+            ],
+            [
+              16,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P19",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B19",
+        "parcel_id": "P19",
+        "name": "Plot 19",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P19-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P19"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              19
+            ],
+            [
+              32,
+              19
+            ],
+            [
+              32,
+              35
+            ],
+            [
+              24,
+              35
+            ],
+            [
+              24,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P20",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B20",
+        "parcel_id": "P20",
+        "name": "Plot 20",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P20-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P20"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              19
+            ],
+            [
+              40,
+              19
+            ],
+            [
+              40,
+              35
+            ],
+            [
+              32,
+              35
+            ],
+            [
+              32,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P21",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B21",
+        "parcel_id": "P21",
+        "name": "Plot 21",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P21-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P21"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              19
+            ],
+            [
+              48,
+              19
+            ],
+            [
+              48,
+              35
+            ],
+            [
+              40,
+              35
+            ],
+            [
+              40,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P22",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B22",
+        "parcel_id": "P22",
+        "name": "Plot 22",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P22-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P22"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              19
+            ],
+            [
+              56,
+              19
+            ],
+            [
+              56,
+              35
+            ],
+            [
+              48,
+              35
+            ],
+            [
+              48,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P23",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B23",
+        "parcel_id": "P23",
+        "name": "Plot 23",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P23-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P23"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              19
+            ],
+            [
+              72,
+              19
+            ],
+            [
+              72,
+              35
+            ],
+            [
+              64,
+              35
+            ],
+            [
+              64,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P24",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B24",
+        "parcel_id": "P24",
+        "name": "Plot 24",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P24-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P24"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              19
+            ],
+            [
+              80,
+              19
+            ],
+            [
+              80,
+              35
+            ],
+            [
+              72,
+              35
+            ],
+            [
+              72,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P25",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B25",
+        "parcel_id": "P25",
+        "name": "Plot 25",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P25-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P25"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              19
+            ],
+            [
+              88,
+              19
+            ],
+            [
+              88,
+              35
+            ],
+            [
+              80,
+              35
+            ],
+            [
+              80,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P26",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B26",
+        "parcel_id": "P26",
+        "name": "Plot 26",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P26-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P26"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              19
+            ],
+            [
+              96,
+              19
+            ],
+            [
+              96,
+              35
+            ],
+            [
+              88,
+              35
+            ],
+            [
+              88,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P27",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B27",
+        "parcel_id": "P27",
+        "name": "Plot 27",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P27-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P27"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              19
+            ],
+            [
+              104,
+              19
+            ],
+            [
+              104,
+              35
+            ],
+            [
+              96,
+              35
+            ],
+            [
+              96,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P28",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B28",
+        "parcel_id": "P28",
+        "name": "Plot 28",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P28-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P28"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              19
+            ],
+            [
+              112,
+              19
+            ],
+            [
+              112,
+              35
+            ],
+            [
+              104,
+              35
+            ],
+            [
+              104,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P29",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B29",
+        "parcel_id": "P29",
+        "name": "Plot 29",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P29-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P29"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              19
+            ],
+            [
+              120,
+              19
+            ],
+            [
+              120,
+              35
+            ],
+            [
+              112,
+              35
+            ],
+            [
+              112,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P30",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B30",
+        "parcel_id": "P30",
+        "name": "Plot 30",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P30-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P30"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              38
+            ],
+            [
+              8,
+              38
+            ],
+            [
+              8,
+              54
+            ],
+            [
+              0,
+              54
+            ],
+            [
+              0,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P31",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B31",
+        "parcel_id": "P31",
+        "name": "Plot 31",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P31-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P31"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              38
+            ],
+            [
+              16,
+              38
+            ],
+            [
+              16,
+              54
+            ],
+            [
+              8,
+              54
+            ],
+            [
+              8,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P32",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B32",
+        "parcel_id": "P32",
+        "name": "Plot 32",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P32-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P32"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              38
+            ],
+            [
+              24,
+              38
+            ],
+            [
+              24,
+              54
+            ],
+            [
+              16,
+              54
+            ],
+            [
+              16,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P33",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B33",
+        "parcel_id": "P33",
+        "name": "Plot 33",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P33-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P33"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              38
+            ],
+            [
+              32,
+              38
+            ],
+            [
+              32,
+              54
+            ],
+            [
+              24,
+              54
+            ],
+            [
+              24,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P34",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B34",
+        "parcel_id": "P34",
+        "name": "Plot 34",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P34-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P34"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              38
+            ],
+            [
+              40,
+              38
+            ],
+            [
+              40,
+              54
+            ],
+            [
+              32,
+              54
+            ],
+            [
+              32,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P35",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B35",
+        "parcel_id": "P35",
+        "name": "Plot 35",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P35-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P35"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              38
+            ],
+            [
+              80,
+              38
+            ],
+            [
+              80,
+              54
+            ],
+            [
+              72,
+              54
+            ],
+            [
+              72,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P36",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B36",
+        "parcel_id": "P36",
+        "name": "Plot 36",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P36-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P36"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              38
+            ],
+            [
+              88,
+              38
+            ],
+            [
+              88,
+              54
+            ],
+            [
+              80,
+              54
+            ],
+            [
+              80,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P37",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B37",
+        "parcel_id": "P37",
+        "name": "Plot 37",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P37-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P37"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              38
+            ],
+            [
+              96,
+              38
+            ],
+            [
+              96,
+              54
+            ],
+            [
+              88,
+              54
+            ],
+            [
+              88,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P38",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B38",
+        "parcel_id": "P38",
+        "name": "Plot 38",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P38-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P38"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              38
+            ],
+            [
+              104,
+              38
+            ],
+            [
+              104,
+              54
+            ],
+            [
+              96,
+              54
+            ],
+            [
+              96,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P39",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B39",
+        "parcel_id": "P39",
+        "name": "Plot 39",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P39-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P39"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              38
+            ],
+            [
+              112,
+              38
+            ],
+            [
+              112,
+              54
+            ],
+            [
+              104,
+              54
+            ],
+            [
+              104,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P40",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B40",
+        "parcel_id": "P40",
+        "name": "Plot 40",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P40-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P40"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              38
+            ],
+            [
+              120,
+              38
+            ],
+            [
+              120,
+              54
+            ],
+            [
+              112,
+              54
+            ],
+            [
+              112,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P41",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B41",
+        "parcel_id": "P41",
+        "name": "Plot 41",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P41-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P41"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              57
+            ],
+            [
+              8,
+              57
+            ],
+            [
+              8,
+              73
+            ],
+            [
+              0,
+              73
+            ],
+            [
+              0,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P42",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B42",
+        "parcel_id": "P42",
+        "name": "Plot 42",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P42-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P42"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              57
+            ],
+            [
+              16,
+              57
+            ],
+            [
+              16,
+              73
+            ],
+            [
+              8,
+              73
+            ],
+            [
+              8,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P43",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B43",
+        "parcel_id": "P43",
+        "name": "Plot 43",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P43-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P43"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              57
+            ],
+            [
+              24,
+              57
+            ],
+            [
+              24,
+              73
+            ],
+            [
+              16,
+              73
+            ],
+            [
+              16,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P44",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B44",
+        "parcel_id": "P44",
+        "name": "Plot 44",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P44-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P44"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              57
+            ],
+            [
+              32,
+              57
+            ],
+            [
+              32,
+              73
+            ],
+            [
+              24,
+              73
+            ],
+            [
+              24,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P45",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B45",
+        "parcel_id": "P45",
+        "name": "Plot 45",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P45-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P45"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              57
+            ],
+            [
+              40,
+              57
+            ],
+            [
+              40,
+              73
+            ],
+            [
+              32,
+              73
+            ],
+            [
+              32,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P46",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B46",
+        "parcel_id": "P46",
+        "name": "Plot 46",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P46-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P46"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              57
+            ],
+            [
+              48,
+              57
+            ],
+            [
+              48,
+              73
+            ],
+            [
+              40,
+              73
+            ],
+            [
+              40,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P47",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B47",
+        "parcel_id": "P47",
+        "name": "Plot 47",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P47-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P47"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              57
+            ],
+            [
+              56,
+              57
+            ],
+            [
+              56,
+              73
+            ],
+            [
+              48,
+              73
+            ],
+            [
+              48,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P48",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B48",
+        "parcel_id": "P48",
+        "name": "Plot 48",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P48-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P48"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              57
+            ],
+            [
+              72,
+              57
+            ],
+            [
+              72,
+              73
+            ],
+            [
+              64,
+              73
+            ],
+            [
+              64,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P49",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B49",
+        "parcel_id": "P49",
+        "name": "Plot 49",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P49-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P49"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              57
+            ],
+            [
+              80,
+              57
+            ],
+            [
+              80,
+              73
+            ],
+            [
+              72,
+              73
+            ],
+            [
+              72,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P50",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B50",
+        "parcel_id": "P50",
+        "name": "Plot 50",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P50-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P50"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              57
+            ],
+            [
+              88,
+              57
+            ],
+            [
+              88,
+              73
+            ],
+            [
+              80,
+              73
+            ],
+            [
+              80,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P51",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B51",
+        "parcel_id": "P51",
+        "name": "Plot 51",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P51-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P51"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              57
+            ],
+            [
+              96,
+              57
+            ],
+            [
+              96,
+              73
+            ],
+            [
+              88,
+              73
+            ],
+            [
+              88,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P52",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B52",
+        "parcel_id": "P52",
+        "name": "Plot 52",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P52-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P52"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              57
+            ],
+            [
+              104,
+              57
+            ],
+            [
+              104,
+              73
+            ],
+            [
+              96,
+              73
+            ],
+            [
+              96,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P53",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B53",
+        "parcel_id": "P53",
+        "name": "Plot 53",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P53-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P53"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              57
+            ],
+            [
+              112,
+              57
+            ],
+            [
+              112,
+              73
+            ],
+            [
+              104,
+              73
+            ],
+            [
+              104,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P54",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B54",
+        "parcel_id": "P54",
+        "name": "Plot 54",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P54-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P54"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              57
+            ],
+            [
+              120,
+              57
+            ],
+            [
+              120,
+              73
+            ],
+            [
+              112,
+              73
+            ],
+            [
+              112,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P55",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B55",
+        "parcel_id": "P55",
+        "name": "Plot 55",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P55-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P55"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              76
+            ],
+            [
+              8,
+              76
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              0,
+              92
+            ],
+            [
+              0,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P56",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B56",
+        "parcel_id": "P56",
+        "name": "Plot 56",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P56-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P56"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              76
+            ],
+            [
+              16,
+              76
+            ],
+            [
+              16,
+              92
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              8,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P57",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B57",
+        "parcel_id": "P57",
+        "name": "Plot 57",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P57-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P57"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              76
+            ],
+            [
+              24,
+              76
+            ],
+            [
+              24,
+              92
+            ],
+            [
+              16,
+              92
+            ],
+            [
+              16,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P58",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B58",
+        "parcel_id": "P58",
+        "name": "Plot 58",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P58-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P58"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              76
+            ],
+            [
+              32,
+              76
+            ],
+            [
+              32,
+              92
+            ],
+            [
+              24,
+              92
+            ],
+            [
+              24,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P59",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B59",
+        "parcel_id": "P59",
+        "name": "Plot 59",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P59-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P59"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              76
+            ],
+            [
+              40,
+              76
+            ],
+            [
+              40,
+              92
+            ],
+            [
+              32,
+              92
+            ],
+            [
+              32,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P60",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B60",
+        "parcel_id": "P60",
+        "name": "Plot 60",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P60-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P60"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              76
+            ],
+            [
+              48,
+              76
+            ],
+            [
+              48,
+              92
+            ],
+            [
+              40,
+              92
+            ],
+            [
+              40,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P61",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B61",
+        "parcel_id": "P61",
+        "name": "Plot 61",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P61-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P61"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              76
+            ],
+            [
+              56,
+              76
+            ],
+            [
+              56,
+              92
+            ],
+            [
+              48,
+              92
+            ],
+            [
+              48,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P62",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B62",
+        "parcel_id": "P62",
+        "name": "Plot 62",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P62-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P62"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              76
+            ],
+            [
+              72,
+              76
+            ],
+            [
+              72,
+              92
+            ],
+            [
+              64,
+              92
+            ],
+            [
+              64,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P63",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B63",
+        "parcel_id": "P63",
+        "name": "Plot 63",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P63-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P63"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              76
+            ],
+            [
+              80,
+              76
+            ],
+            [
+              80,
+              92
+            ],
+            [
+              72,
+              92
+            ],
+            [
+              72,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P64",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B64",
+        "parcel_id": "P64",
+        "name": "Plot 64",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P64-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P64"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              76
+            ],
+            [
+              88,
+              76
+            ],
+            [
+              88,
+              92
+            ],
+            [
+              80,
+              92
+            ],
+            [
+              80,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P65",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B65",
+        "parcel_id": "P65",
+        "name": "Plot 65",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P65-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P65"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              76
+            ],
+            [
+              96,
+              76
+            ],
+            [
+              96,
+              92
+            ],
+            [
+              88,
+              92
+            ],
+            [
+              88,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P66",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B66",
+        "parcel_id": "P66",
+        "name": "Plot 66",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P66-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P66"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              76
+            ],
+            [
+              104,
+              76
+            ],
+            [
+              104,
+              92
+            ],
+            [
+              96,
+              92
+            ],
+            [
+              96,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P67",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B67",
+        "parcel_id": "P67",
+        "name": "Plot 67",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P67-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P67"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              76
+            ],
+            [
+              112,
+              76
+            ],
+            [
+              112,
+              92
+            ],
+            [
+              104,
+              92
+            ],
+            [
+              104,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P68",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B68",
+        "parcel_id": "P68",
+        "name": "Plot 68",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P68-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P68"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              76
+            ],
+            [
+              120,
+              76
+            ],
+            [
+              120,
+              92
+            ],
+            [
+              112,
+              92
+            ],
+            [
+              112,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P69",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B69",
+        "parcel_id": "P69",
+        "name": "Plot 69",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P69-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P69"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              95
+            ],
+            [
+              8,
+              95
+            ],
+            [
+              8,
+              111
+            ],
+            [
+              0,
+              111
+            ],
+            [
+              0,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P70",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B70",
+        "parcel_id": "P70",
+        "name": "Plot 70",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P70-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P70"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              95
+            ],
+            [
+              16,
+              95
+            ],
+            [
+              16,
+              111
+            ],
+            [
+              8,
+              111
+            ],
+            [
+              8,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P71",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B71",
+        "parcel_id": "P71",
+        "name": "Plot 71",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P71-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P71"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              95
+            ],
+            [
+              24,
+              95
+            ],
+            [
+              24,
+              111
+            ],
+            [
+              16,
+              111
+            ],
+            [
+              16,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P72",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B72",
+        "parcel_id": "P72",
+        "name": "Plot 72",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P72-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P72"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              95
+            ],
+            [
+              32,
+              95
+            ],
+            [
+              32,
+              111
+            ],
+            [
+              24,
+              111
+            ],
+            [
+              24,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P73",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B73",
+        "parcel_id": "P73",
+        "name": "Plot 73",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P73-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P73"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              95
+            ],
+            [
+              40,
+              95
+            ],
+            [
+              40,
+              111
+            ],
+            [
+              32,
+              111
+            ],
+            [
+              32,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P74",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B74",
+        "parcel_id": "P74",
+        "name": "Plot 74",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P74-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P74"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              95
+            ],
+            [
+              48,
+              95
+            ],
+            [
+              48,
+              111
+            ],
+            [
+              40,
+              111
+            ],
+            [
+              40,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P75",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B75",
+        "parcel_id": "P75",
+        "name": "Plot 75",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P75-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P75"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              95
+            ],
+            [
+              56,
+              95
+            ],
+            [
+              56,
+              111
+            ],
+            [
+              48,
+              111
+            ],
+            [
+              48,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P76",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B76",
+        "parcel_id": "P76",
+        "name": "Plot 76",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P76-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P76"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              95
+            ],
+            [
+              72,
+              95
+            ],
+            [
+              72,
+              111
+            ],
+            [
+              64,
+              111
+            ],
+            [
+              64,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P77",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B77",
+        "parcel_id": "P77",
+        "name": "Plot 77",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P77-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P77"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              95
+            ],
+            [
+              80,
+              95
+            ],
+            [
+              80,
+              111
+            ],
+            [
+              72,
+              111
+            ],
+            [
+              72,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P78",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B78",
+        "parcel_id": "P78",
+        "name": "Plot 78",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P78-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P78"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              95
+            ],
+            [
+              88,
+              95
+            ],
+            [
+              88,
+              111
+            ],
+            [
+              80,
+              111
+            ],
+            [
+              80,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P79",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B79",
+        "parcel_id": "P79",
+        "name": "Plot 79",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P79-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P79"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              95
+            ],
+            [
+              96,
+              95
+            ],
+            [
+              96,
+              111
+            ],
+            [
+              88,
+              111
+            ],
+            [
+              88,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P80",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B80",
+        "parcel_id": "P80",
+        "name": "Plot 80",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P80-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P80"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              95
+            ],
+            [
+              104,
+              95
+            ],
+            [
+              104,
+              111
+            ],
+            [
+              96,
+              111
+            ],
+            [
+              96,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P81",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B81",
+        "parcel_id": "P81",
+        "name": "Plot 81",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P81-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P81"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              95
+            ],
+            [
+              112,
+              95
+            ],
+            [
+              112,
+              111
+            ],
+            [
+              104,
+              111
+            ],
+            [
+              104,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P82",
+      "properties": {
+        "landUse": "residential",
+        "building_ids": "B82",
+        "parcel_id": "P82",
+        "name": "Plot 82",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-P82-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P82"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              95
+            ],
+            [
+              120,
+              95
+            ],
+            [
+              120,
+              111
+            ],
+            [
+              112,
+              111
+            ],
+            [
+              112,
+              95
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

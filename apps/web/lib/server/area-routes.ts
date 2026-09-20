@@ -1,5 +1,9 @@
+import { createSourceCase, receiveCaseDocument } from "./source-cases";
+import { createSourceWorkspace, sourceWorkspaceForCase } from "./source-workspaces";
 import { z } from "zod";
 import { query } from "./db";
+import { inspectGisUpload, validateUnmappedGisIdentity } from "./gis-inspection";
+import { areaGeo } from "./areas";
 import { AppError, notFound } from "./errors";
 import {
   SOURCE_CATALOG,
@@ -42,7 +46,7 @@ const geometryRole = z.enum([
 ]);
 const mapping = z
   .object({
-    idField: field,
+    idField: field.optional(),
     nameField: field.optional(),
     kind: z.enum(["building", "parcel", "road", "public_land", "utility"]),
     heightField: field.optional(),
@@ -137,6 +141,16 @@ export async function areaRoutes(
   p: string[],
 ): Promise<Response | null> {
   const method = request.method;
+  if (p[0] === "source-cases" && p.length === 1 && method === "POST") return json(await createSourceCase(await body(request)), 201);
+  if (p[0] === "cases" && p.length === 3 && p[2] === "reference-documents" && method === "POST") {
+    const input = await form(request), file = input.get("file");
+    if (!(file instanceof File)) throw new AppError(400, "MISSING_FILE", "Choose a supporting document.");
+    return json(await receiveCaseDocument(uuid.parse(p[1]), {bytes: new Uint8Array(await file.arrayBuffer()),name:file.name,format:z.enum(["pdf","png","jpeg","csv","text","docx"]).parse(input.get("format")),entityIds:[],requestKey:uuid.parse(input.get("requestKey"))}),201);
+  }
+  if (p[0] === "source-workspaces" && p.length === 1) {
+    if (method === "POST") return json(await createSourceWorkspace(await body(request)), 201);
+    if (method === "GET") return json(await sourceWorkspaceForCase(uuid.parse(new URL(request.url).searchParams.get("caseId"))));
+  }
   if (p[0] === "source-catalog" && p.length === 1 && method === "GET")
     return json(SOURCE_CATALOG);
   if (p[0] === "areas" && p.length === 1 && method === "GET")
@@ -235,6 +249,8 @@ export async function areaRoutes(
       );
   }
   if (p[0] === "import-packages") {
+    if (p.length === 2 && p[1] === "inspect" && method === "POST")
+      return json(await inspectGisUpload(request, (input) => areaGeo("inspect-gis", input)));
     if (p.length === 1 && method === "POST") {
       if (
         request.headers.get("content-type")?.includes("multipart/form-data")
@@ -246,7 +262,7 @@ export async function areaRoutes(
         const metadata = z
           .object({
             format: z.enum(["geojson", "arcgis", "gpkg", "shapefile_zip"]),
-            layer: field.optional(),
+            layer: z.string().min(1).max(256).optional(),
             namespace: str,
             name: str,
             mapping,
@@ -274,11 +290,14 @@ export async function areaRoutes(
               : undefined,
             worldStatus: input.get("worldStatus") || undefined,
           });
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        if (!metadata.mapping.idField)
+          await validateUnmappedGisIdentity(metadata.format, bytes, (input) => areaGeo("inspect-gis", input));
         return json(
           await ingestArea({
             ...metadata,
             filename: file.name,
-            bytes: new Uint8Array(await file.arrayBuffer()),
+            bytes,
           }),
           201,
         );
@@ -390,7 +409,9 @@ export async function areaRoutes(
           .parse(await body(request));
         return json(await copyCaseDocuments(id, input));
       }
-      if (p[2] === "documents") {
+      if (p[2] === "documents" || p[2] === "source-documents") {
+        const sourceOnly = p[2] === "source-documents";
+        if (sourceOnly && !(await getPackage(id)).sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Source-only documents require an explicit source workspace.");
         const input = await form(request),
           file = input.get("file");
         if (!(file instanceof File))
@@ -406,10 +427,11 @@ export async function areaRoutes(
             {
               bytes: new Uint8Array(await file.arrayBuffer()),
               name: file.name,
+              requestKey: sourceOnly && input.get("requestKey") ? uuid.parse(input.get("requestKey")) : undefined,
               format: z
                 .enum(["pdf", "docx", "text", "csv", "png", "jpeg"])
                 .parse(input.get("format")),
-              entityIds: z
+              entityIds: sourceOnly ? [] : z
                 .array(uuid)
                 .min(1)
                 .max(100)

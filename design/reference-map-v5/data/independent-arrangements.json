@@ -1,0 +1,1317 @@
+{
+  "schemaVersion": "1.0.0",
+  "metadata": {
+    "id": "ORCHARD-INDEPENDENT-ARRANGEMENTS",
+    "title": "Orchard Arrangements · independent fictional import",
+    "classification": "synthetic",
+    "description": "Wholly authored fixture for multipart, courtyard, rotated concave, elevated-base, shared-wall and overlap handling. The uploaded JSON is the original authored receipt; no survey evidence, official identifiers or real properties.",
+    "focalObjectId": "orchard-atrium",
+    "extent": [
+      -10,
+      -15,
+      110,
+      90
+    ],
+    "officialIssuance": false
+  },
+  "frames": [
+    {
+      "id": "FRAME-ORCHARD-ARRANGEMENTS",
+      "name": "ORCHARD-LOCAL-METRES",
+      "kind": "local_cartesian",
+      "horizontalUnit": "metre",
+      "verticalUnit": "metre",
+      "axisOrder": [
+        "east",
+        "north",
+        "up"
+      ],
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL"
+    }
+  ],
+  "objects": [
+    {
+      "id": "orchard-atrium",
+      "type": "building",
+      "label": "Orchard Atrium · courtyard and annex",
+      "geometryId": "shape/orchard-atrium/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "floorCount": 4,
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "angled-court",
+      "type": "building",
+      "label": "Angled Court · rotated concave footprint",
+      "geometryId": "shape/angled-court/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "floorCount": 3,
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "upper-benchmark-house",
+      "type": "building",
+      "label": "Upper Benchmark House · base +100 m",
+      "geometryId": "shape/upper-benchmark-house/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "floorCount": 4,
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "unresolved-height-house",
+      "type": "building",
+      "label": "Unresolved Height House · footprint only",
+      "geometryId": "shape/unresolved-height-house/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "party-wall-west",
+      "type": "building",
+      "label": "Party Wall West · valid shared boundary",
+      "geometryId": "shape/party-wall-west/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "floorCount": 3,
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "party-wall-east",
+      "type": "building",
+      "label": "Party Wall East · valid shared boundary",
+      "geometryId": "shape/party-wall-east/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "floorCount": 4,
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "overlap-garden-north",
+      "type": "building",
+      "label": "Garden North · overlapping source footprints",
+      "geometryId": "shape/overlap-garden-north/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "floorCount": 3,
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "overlap-garden-south",
+      "type": "building",
+      "label": "Garden South · overlapping source footprints",
+      "geometryId": "shape/overlap-garden-south/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "floorCount": 4,
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "orchard-plaza",
+      "type": "open_area",
+      "label": "Orchard Plaza · fictional public land",
+      "geometryId": "shape/orchard-plaza/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "diagonal-street",
+      "type": "road",
+      "label": "Diagonal Street · rotated exact road polygon",
+      "geometryId": "shape/diagonal-street/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "crooked-lane",
+      "type": "road",
+      "label": "Crooked Lane · concave exact road polygon",
+      "geometryId": "shape/crooked-lane/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "survey-alignment-water",
+      "type": "utility",
+      "label": "Fictional water alignment · known diameter",
+      "geometryId": "shape/survey-alignment-water/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "diameterM": 0.45,
+        "utilityType": "water",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "alignment-unsized",
+      "type": "utility",
+      "label": "Fictional alignment · diameter unavailable",
+      "geometryId": "shape/alignment-unsized/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "utilityType": "unclassified",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "site-orchard-atrium",
+      "type": "parcel",
+      "label": "Fictional site for Orchard Atrium",
+      "geometryId": "shape/site-orchard-atrium/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "landUse": "synthetic_residential",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "site-angled-court",
+      "type": "parcel",
+      "label": "Fictional site for Angled Court",
+      "geometryId": "shape/site-angled-court/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "landUse": "synthetic_residential",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "site-upper-benchmark-house",
+      "type": "parcel",
+      "label": "Fictional site for Upper Benchmark House",
+      "geometryId": "shape/site-upper-benchmark-house/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "landUse": "synthetic_residential",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "site-unresolved-height-house",
+      "type": "parcel",
+      "label": "Fictional site for Unresolved Height House",
+      "geometryId": "shape/site-unresolved-height-house/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "landUse": "synthetic_residential",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "site-party-wall-west",
+      "type": "parcel",
+      "label": "Fictional site for Party Wall West",
+      "geometryId": "shape/site-party-wall-west/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "landUse": "synthetic_residential",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "site-party-wall-east",
+      "type": "parcel",
+      "label": "Fictional site for Party Wall East",
+      "geometryId": "shape/site-party-wall-east/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "landUse": "synthetic_residential",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "site-overlap-garden-north",
+      "type": "parcel",
+      "label": "Fictional site for Garden North",
+      "geometryId": "shape/site-overlap-garden-north/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "landUse": "synthetic_residential",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    },
+    {
+      "id": "site-overlap-garden-south",
+      "type": "parcel",
+      "label": "Fictional site for Garden South",
+      "geometryId": "shape/site-overlap-garden-south/r1",
+      "status": "draft",
+      "sourceRecordIds": [],
+      "attributes": {
+        "landUse": "synthetic_residential",
+        "classification": "synthetic",
+        "evidenceNote": "Authored original upload geometry; not observed or surveyed."
+      }
+    }
+  ],
+  "geometries": [
+    {
+      "id": "shape/orchard-atrium/r1",
+      "objectId": "orchard-atrium",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              22,
+              0
+            ],
+            [
+              22,
+              22
+            ],
+            [
+              0,
+              22
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          [
+            [
+              6,
+              6
+            ],
+            [
+              16,
+              6
+            ],
+            [
+              16,
+              16
+            ],
+            [
+              6,
+              16
+            ],
+            [
+              6,
+              6
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              0,
+              28
+            ],
+            [
+              9,
+              28
+            ],
+            [
+              9,
+              35
+            ],
+            [
+              0,
+              35
+            ],
+            [
+              0,
+              28
+            ]
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 12,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/angled-court/r1",
+      "objectId": "angled-court",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            38,
+            7
+          ],
+          [
+            52.60942304,
+            13.52416725
+          ],
+          [
+            50.16286033,
+            19.00270089
+          ],
+          [
+            41.94505986,
+            15.33285681
+          ],
+          [
+            37.45969488,
+            25.37683516
+          ],
+          [
+            31.0680723,
+            22.52251199
+          ],
+          [
+            38,
+            7
+          ]
+        ]
+      ],
+      "baseElevationM": 2,
+      "heightM": 9,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/upper-benchmark-house/r1",
+      "objectId": "upper-benchmark-house",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            78,
+            0
+          ],
+          [
+            90,
+            0
+          ],
+          [
+            90,
+            14
+          ],
+          [
+            78,
+            14
+          ],
+          [
+            78,
+            0
+          ]
+        ]
+      ],
+      "baseElevationM": 100,
+      "heightM": 12,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/unresolved-height-house/r1",
+      "objectId": "unresolved-height-house",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            78,
+            24
+          ],
+          [
+            90,
+            24
+          ],
+          [
+            90,
+            37
+          ],
+          [
+            78,
+            37
+          ],
+          [
+            78,
+            24
+          ]
+        ]
+      ],
+      "baseElevationM": 8,
+      "heightM": null,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/party-wall-west/r1",
+      "objectId": "party-wall-west",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0,
+            58
+          ],
+          [
+            10,
+            58
+          ],
+          [
+            10,
+            71
+          ],
+          [
+            0,
+            71
+          ],
+          [
+            0,
+            58
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 9,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/party-wall-east/r1",
+      "objectId": "party-wall-east",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            10,
+            58
+          ],
+          [
+            20,
+            58
+          ],
+          [
+            20,
+            71
+          ],
+          [
+            10,
+            71
+          ],
+          [
+            10,
+            58
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 12,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/overlap-garden-north/r1",
+      "objectId": "overlap-garden-north",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            38,
+            58
+          ],
+          [
+            51,
+            58
+          ],
+          [
+            51,
+            72
+          ],
+          [
+            38,
+            72
+          ],
+          [
+            38,
+            58
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 9,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/overlap-garden-south/r1",
+      "objectId": "overlap-garden-south",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            49,
+            62
+          ],
+          [
+            61,
+            62
+          ],
+          [
+            61,
+            75
+          ],
+          [
+            49,
+            75
+          ],
+          [
+            49,
+            62
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 12,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/orchard-plaza/r1",
+      "objectId": "orchard-plaza",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            68,
+            60
+          ],
+          [
+            88,
+            60
+          ],
+          [
+            88,
+            80
+          ],
+          [
+            68,
+            80
+          ],
+          [
+            68,
+            60
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/diagonal-street/r1",
+      "objectId": "diagonal-street",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            37.82235225,
+            -7.31671894
+          ],
+          [
+            95.34695549,
+            18.3721896
+          ],
+          [
+            92.49263232,
+            24.76381218
+          ],
+          [
+            34.96802908,
+            -0.92509636
+          ],
+          [
+            37.82235225,
+            -7.31671894
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/crooked-lane/r1",
+      "objectId": "crooked-lane",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            -8,
+            42
+          ],
+          [
+            97,
+            42
+          ],
+          [
+            97,
+            84
+          ],
+          [
+            91,
+            84
+          ],
+          [
+            91,
+            48
+          ],
+          [
+            -8,
+            48
+          ],
+          [
+            -8,
+            42
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/survey-alignment-water/r1",
+      "objectId": "survey-alignment-water",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "LineString",
+      "coordinates": [
+        [
+          -5,
+          45,
+          -2
+        ],
+        [
+          54,
+          45,
+          -2
+        ],
+        [
+          92,
+          45,
+          -3
+        ],
+        [
+          92,
+          82,
+          -3
+        ]
+      ],
+      "baseElevationM": null,
+      "heightM": null,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/alignment-unsized/r1",
+      "objectId": "alignment-unsized",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "LineString",
+      "coordinates": [
+        [
+          69,
+          0,
+          1
+        ],
+        [
+          69,
+          39,
+          1
+        ],
+        [
+          90,
+          39,
+          -1
+        ]
+      ],
+      "baseElevationM": null,
+      "heightM": null,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/site-orchard-atrium/r1",
+      "objectId": "site-orchard-atrium",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              22,
+              0
+            ],
+            [
+              22,
+              22
+            ],
+            [
+              0,
+              22
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          [
+            [
+              6,
+              6
+            ],
+            [
+              16,
+              6
+            ],
+            [
+              16,
+              16
+            ],
+            [
+              6,
+              16
+            ],
+            [
+              6,
+              6
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              0,
+              28
+            ],
+            [
+              9,
+              28
+            ],
+            [
+              9,
+              35
+            ],
+            [
+              0,
+              35
+            ],
+            [
+              0,
+              28
+            ]
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/site-angled-court/r1",
+      "objectId": "site-angled-court",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            38,
+            7
+          ],
+          [
+            52.60942304,
+            13.52416725
+          ],
+          [
+            50.16286033,
+            19.00270089
+          ],
+          [
+            41.94505986,
+            15.33285681
+          ],
+          [
+            37.45969488,
+            25.37683516
+          ],
+          [
+            31.0680723,
+            22.52251199
+          ],
+          [
+            38,
+            7
+          ]
+        ]
+      ],
+      "baseElevationM": 2,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/site-upper-benchmark-house/r1",
+      "objectId": "site-upper-benchmark-house",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            78,
+            0
+          ],
+          [
+            90,
+            0
+          ],
+          [
+            90,
+            14
+          ],
+          [
+            78,
+            14
+          ],
+          [
+            78,
+            0
+          ]
+        ]
+      ],
+      "baseElevationM": 100,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/site-unresolved-height-house/r1",
+      "objectId": "site-unresolved-height-house",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            78,
+            24
+          ],
+          [
+            90,
+            24
+          ],
+          [
+            90,
+            37
+          ],
+          [
+            78,
+            37
+          ],
+          [
+            78,
+            24
+          ]
+        ]
+      ],
+      "baseElevationM": 8,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/site-party-wall-west/r1",
+      "objectId": "site-party-wall-west",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0,
+            58
+          ],
+          [
+            10,
+            58
+          ],
+          [
+            10,
+            71
+          ],
+          [
+            0,
+            71
+          ],
+          [
+            0,
+            58
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/site-party-wall-east/r1",
+      "objectId": "site-party-wall-east",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            10,
+            58
+          ],
+          [
+            20,
+            58
+          ],
+          [
+            20,
+            71
+          ],
+          [
+            10,
+            71
+          ],
+          [
+            10,
+            58
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/site-overlap-garden-north/r1",
+      "objectId": "site-overlap-garden-north",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            38,
+            58
+          ],
+          [
+            51,
+            58
+          ],
+          [
+            51,
+            72
+          ],
+          [
+            38,
+            72
+          ],
+          [
+            38,
+            58
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "shape/site-overlap-garden-south/r1",
+      "objectId": "site-overlap-garden-south",
+      "version": 1,
+      "frameId": "FRAME-ORCHARD-ARRANGEMENTS",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            49,
+            62
+          ],
+          [
+            61,
+            62
+          ],
+          [
+            61,
+            75
+          ],
+          [
+            49,
+            75
+          ],
+          [
+            49,
+            62
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "verticalDatum": "ORCHARD-AUTHORED-ZERO: fictional local benchmark, not MSL",
+      "classification": "synthetic",
+      "status": "draft",
+      "sourceRecordIds": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "site-link/orchard-atrium",
+      "fromId": "site-orchard-atrium",
+      "toId": "orchard-atrium",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "site-link/angled-court",
+      "fromId": "site-angled-court",
+      "toId": "angled-court",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "site-link/upper-benchmark-house",
+      "fromId": "site-upper-benchmark-house",
+      "toId": "upper-benchmark-house",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "site-link/unresolved-height-house",
+      "fromId": "site-unresolved-height-house",
+      "toId": "unresolved-height-house",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "site-link/party-wall-west",
+      "fromId": "site-party-wall-west",
+      "toId": "party-wall-west",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "site-link/party-wall-east",
+      "fromId": "site-party-wall-east",
+      "toId": "party-wall-east",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "site-link/overlap-garden-north",
+      "fromId": "site-overlap-garden-north",
+      "toId": "overlap-garden-north",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": []
+    },
+    {
+      "id": "site-link/overlap-garden-south",
+      "fromId": "site-overlap-garden-south",
+      "toId": "overlap-garden-south",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": []
+    }
+  ],
+  "sources": [],
+  "sourceRecords": [],
+  "observations": [],
+  "lineage": [],
+  "identifierAssertions": [],
+  "batches": [],
+  "issues": [],
+  "rights": [],
+  "sceneDecoration": {
+    "classification": "synthetic_visual_decoration",
+    "urbanForm": "open_block",
+    "ground": "paved",
+    "plotWalls": false,
+    "architecture": {
+      "roofEquipment": {
+        "maxHeightAboveRoofM": 1.4
+      }
+    },
+    "trees": [
+      {
+        "position": [
+          75,
+          67
+        ],
+        "heightM": 6,
+        "radiusM": 2.5
+      },
+      {
+        "position": [
+          82,
+          74
+        ],
+        "heightM": 5,
+        "radiusM": 2
+      }
+    ],
+    "cars": [],
+    "parkPaths": [],
+    "buildingStyles": {
+      "orchard-atrium": {
+        "palette": 1,
+        "roofCore": false
+      },
+      "angled-court": {
+        "palette": 3
+      },
+      "upper-benchmark-house": {
+        "palette": 2
+      },
+      "party-wall-west": {
+        "palette": 0
+      },
+      "party-wall-east": {
+        "palette": 4
+      }
+    }
+  }
+}

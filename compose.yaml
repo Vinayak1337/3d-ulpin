@@ -8,6 +8,7 @@ x-geo-environment: &geo-environment
   S3_SECRET_KEY: ${S3_SECRET_KEY:?Run scripts/platform-env.sh first}
   S3_BUCKET: ${S3_BUCKET:-ulpin}
   S3_REGION: ${S3_REGION:-us-east-1}
+  ML_MODEL_DIR: /models
 
 services:
   postgres:
@@ -86,6 +87,8 @@ services:
       context: ./services/geo
     image: ulpin-geo:local
     environment: *geo-environment
+    volumes:
+      - ./.runtime/ml-models:/models:ro
     ports:
       - "127.0.0.1:${GEO_PORT:-18000}:8000"
     depends_on:
@@ -106,6 +109,8 @@ services:
     pull_policy: never
     command: celery -A geo.tasks:celery_app worker --loglevel=INFO --concurrency=2
     environment: *geo-environment
+    volumes:
+      - ./.runtime/ml-models:/models:ro
     depends_on:
       geo:
         condition: service_healthy

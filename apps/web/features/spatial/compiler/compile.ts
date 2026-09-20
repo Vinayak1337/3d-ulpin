@@ -76,7 +76,7 @@ export function compileSpatialSnapshot(snapshot: SpatialSnapshot, baseUrl: strin
     for (const { entity, representation: r } of inputs) {
         if (r.geometry.type === "Point" && entity.kind !== "vegetation")
             throw new Error("This compiler point profile supports authored vegetation only");
-        if (r.geometry.type !== "Point") {
+        if (r.geometry.type === "Polygon" || r.geometry.type === "MultiPolygon") {
             const issue = metricTopologyIssue(r.geometry);
             if (issue)
                 throw new Error(`${r.id}: ${issue}`);

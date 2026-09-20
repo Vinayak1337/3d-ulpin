@@ -1,0 +1,10 @@
+{
+  "modelBytes": 69471289,
+  "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+  "opset": 17,
+  "output": "CubiCasa room head: original channels 21:33",
+  "exportValidationInput": "256x256 zero tensor; actual plan evaluation follows separately",
+  "maximumLogitDifference": 0.0005139410495758057,
+  "meanLogitDifference": 9.221749496646225e-05,
+  "labelAgreement": 1.0
+}

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Badge, Button, EmptyState, Icon, formatNumber } from "../shared/ui";
 import type { BlockController } from "./useBlock";
-export default function FindingsTray({ block }: { block: BlockController }) {
+export default function FindingsTray({ block, onClose }: { block: BlockController; onClose?: () => void }) {
   const [filter, setFilter] = useState("all");
   const check = block.context.data?.latestCheck;
   const findings = check?.findings || [];
@@ -26,7 +26,7 @@ export default function FindingsTray({ block }: { block: BlockController }) {
       <header>
         <div>
           <Icon name="warning" />
-          <h2>Findings</h2>
+          <h2>Checks</h2>
           <Badge tone={findings.length ? "warning" : "neutral"}>
             {findings.length}
           </Badge>
@@ -51,7 +51,7 @@ export default function FindingsTray({ block }: { block: BlockController }) {
           variant="ghost"
           icon="close"
           aria-label="Close findings"
-          onClick={() => block.setPreferences({ findingsOpen: false })}
+          onClick={onClose || (() => block.setPreferences({ findingsOpen: false }))}
         />
       </header>
       {check?.stale && (

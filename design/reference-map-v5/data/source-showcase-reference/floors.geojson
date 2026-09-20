@@ -1,0 +1,6875 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-NEEM-REFERENCE-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "B01-FB",
+      "properties": {
+        "level": -1,
+        "buildingId": "B01",
+        "floor_id": "B01-FB",
+        "name": "Basement",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B01-FB-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": -3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B01",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B01:-1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78,
+              78
+            ],
+            [
+              94,
+              78
+            ],
+            [
+              94,
+              96
+            ],
+            [
+              88,
+              96
+            ],
+            [
+              88,
+              94
+            ],
+            [
+              78,
+              94
+            ],
+            [
+              78,
+              78
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B01",
+        "floor_id": "B01-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B01-F0-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B01",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B01:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78,
+              78
+            ],
+            [
+              94,
+              78
+            ],
+            [
+              94,
+              96
+            ],
+            [
+              88,
+              96
+            ],
+            [
+              88,
+              94
+            ],
+            [
+              78,
+              94
+            ],
+            [
+              78,
+              78
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B01",
+        "floor_id": "B01-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B01-F1-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B01",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B01:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78,
+              78
+            ],
+            [
+              94,
+              78
+            ],
+            [
+              94,
+              96
+            ],
+            [
+              88,
+              96
+            ],
+            [
+              88,
+              94
+            ],
+            [
+              78,
+              94
+            ],
+            [
+              78,
+              78
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B01",
+        "floor_id": "B01-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B01-F2-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B01",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B01:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78,
+              78
+            ],
+            [
+              94,
+              78
+            ],
+            [
+              94,
+              96
+            ],
+            [
+              88,
+              96
+            ],
+            [
+              88,
+              94
+            ],
+            [
+              78,
+              94
+            ],
+            [
+              78,
+              78
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B01",
+        "floor_id": "B01-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B01-F3-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B01",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B01:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78,
+              78
+            ],
+            [
+              94,
+              78
+            ],
+            [
+              94,
+              96
+            ],
+            [
+              88,
+              96
+            ],
+            [
+              88,
+              94
+            ],
+            [
+              78,
+              94
+            ],
+            [
+              78,
+              78
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B01",
+        "floor_id": "B01-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B01-F4-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B01",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B01:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78,
+              78
+            ],
+            [
+              94,
+              78
+            ],
+            [
+              94,
+              96
+            ],
+            [
+              88,
+              96
+            ],
+            [
+              88,
+              94
+            ],
+            [
+              78,
+              94
+            ],
+            [
+              78,
+              78
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B02-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B02",
+        "floor_id": "B02-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B02-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B02",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B02:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              8
+            ],
+            [
+              21,
+              8
+            ],
+            [
+              21,
+              20
+            ],
+            [
+              18,
+              20
+            ],
+            [
+              18,
+              23
+            ],
+            [
+              8,
+              23
+            ],
+            [
+              8,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B02-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B02",
+        "floor_id": "B02-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B02-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B02",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B02:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              8
+            ],
+            [
+              21,
+              8
+            ],
+            [
+              21,
+              20
+            ],
+            [
+              18,
+              20
+            ],
+            [
+              18,
+              23
+            ],
+            [
+              8,
+              23
+            ],
+            [
+              8,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B02-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B02",
+        "floor_id": "B02-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B02-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B02",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B02:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              8
+            ],
+            [
+              21,
+              8
+            ],
+            [
+              21,
+              20
+            ],
+            [
+              18,
+              20
+            ],
+            [
+              18,
+              23
+            ],
+            [
+              8,
+              23
+            ],
+            [
+              8,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B02-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B02",
+        "floor_id": "B02-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B02-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B02",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B02:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              8
+            ],
+            [
+              21,
+              8
+            ],
+            [
+              21,
+              20
+            ],
+            [
+              18,
+              20
+            ],
+            [
+              18,
+              23
+            ],
+            [
+              8,
+              23
+            ],
+            [
+              8,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B02-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B02",
+        "floor_id": "B02-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B02-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B02",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B02:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              8
+            ],
+            [
+              21,
+              8
+            ],
+            [
+              21,
+              20
+            ],
+            [
+              18,
+              20
+            ],
+            [
+              18,
+              23
+            ],
+            [
+              8,
+              23
+            ],
+            [
+              8,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B03-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B03",
+        "floor_id": "B03-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B03-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B03",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B03:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              8
+            ],
+            [
+              45,
+              8
+            ],
+            [
+              47,
+              10
+            ],
+            [
+              47,
+              26
+            ],
+            [
+              35,
+              26
+            ],
+            [
+              35,
+              23
+            ],
+            [
+              32,
+              23
+            ],
+            [
+              32,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B03-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B03",
+        "floor_id": "B03-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B03-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B03",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B03:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              8
+            ],
+            [
+              45,
+              8
+            ],
+            [
+              47,
+              10
+            ],
+            [
+              47,
+              26
+            ],
+            [
+              35,
+              26
+            ],
+            [
+              35,
+              23
+            ],
+            [
+              32,
+              23
+            ],
+            [
+              32,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B03-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B03",
+        "floor_id": "B03-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B03-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B03",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B03:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              8
+            ],
+            [
+              45,
+              8
+            ],
+            [
+              47,
+              10
+            ],
+            [
+              47,
+              26
+            ],
+            [
+              35,
+              26
+            ],
+            [
+              35,
+              23
+            ],
+            [
+              32,
+              23
+            ],
+            [
+              32,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B03-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B03",
+        "floor_id": "B03-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B03-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B03",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B03:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              8
+            ],
+            [
+              45,
+              8
+            ],
+            [
+              47,
+              10
+            ],
+            [
+              47,
+              26
+            ],
+            [
+              35,
+              26
+            ],
+            [
+              35,
+              23
+            ],
+            [
+              32,
+              23
+            ],
+            [
+              32,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B04-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B04",
+        "floor_id": "B04-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B04-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B04",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B04:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              8
+            ],
+            [
+              87,
+              8
+            ],
+            [
+              87,
+              21
+            ],
+            [
+              84,
+              21
+            ],
+            [
+              84,
+              24
+            ],
+            [
+              73,
+              24
+            ],
+            [
+              73,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B04-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B04",
+        "floor_id": "B04-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B04-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B04",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B04:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              8
+            ],
+            [
+              87,
+              8
+            ],
+            [
+              87,
+              21
+            ],
+            [
+              84,
+              21
+            ],
+            [
+              84,
+              24
+            ],
+            [
+              73,
+              24
+            ],
+            [
+              73,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B04-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B04",
+        "floor_id": "B04-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B04-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B04",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B04:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              8
+            ],
+            [
+              87,
+              8
+            ],
+            [
+              87,
+              21
+            ],
+            [
+              84,
+              21
+            ],
+            [
+              84,
+              24
+            ],
+            [
+              73,
+              24
+            ],
+            [
+              73,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B04-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B04",
+        "floor_id": "B04-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B04-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B04",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B04:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              8
+            ],
+            [
+              87,
+              8
+            ],
+            [
+              87,
+              21
+            ],
+            [
+              84,
+              21
+            ],
+            [
+              84,
+              24
+            ],
+            [
+              73,
+              24
+            ],
+            [
+              73,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B04-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B04",
+        "floor_id": "B04-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B04-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B04",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B04:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              8
+            ],
+            [
+              87,
+              8
+            ],
+            [
+              87,
+              21
+            ],
+            [
+              84,
+              21
+            ],
+            [
+              84,
+              24
+            ],
+            [
+              73,
+              24
+            ],
+            [
+              73,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B04-SHOWCASE-F5",
+      "properties": {
+        "level": 5,
+        "buildingId": "B04",
+        "floor_id": "B04-SHOWCASE-F5",
+        "name": "Floor 5",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B04-SHOWCASE-F5-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 15.5,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B04",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B04:5"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              8
+            ],
+            [
+              87,
+              8
+            ],
+            [
+              87,
+              21
+            ],
+            [
+              84,
+              21
+            ],
+            [
+              84,
+              24
+            ],
+            [
+              73,
+              24
+            ],
+            [
+              73,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B05-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B05",
+        "floor_id": "B05-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B05-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B05",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B05:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              97,
+              8
+            ],
+            [
+              109,
+              8
+            ],
+            [
+              109,
+              21
+            ],
+            [
+              106,
+              21
+            ],
+            [
+              106,
+              24
+            ],
+            [
+              97,
+              24
+            ],
+            [
+              97,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B05-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B05",
+        "floor_id": "B05-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B05-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B05",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B05:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              97,
+              8
+            ],
+            [
+              109,
+              8
+            ],
+            [
+              109,
+              21
+            ],
+            [
+              106,
+              21
+            ],
+            [
+              106,
+              24
+            ],
+            [
+              97,
+              24
+            ],
+            [
+              97,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B05-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B05",
+        "floor_id": "B05-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B05-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B05",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B05:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              97,
+              8
+            ],
+            [
+              109,
+              8
+            ],
+            [
+              109,
+              21
+            ],
+            [
+              106,
+              21
+            ],
+            [
+              106,
+              24
+            ],
+            [
+              97,
+              24
+            ],
+            [
+              97,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B06-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B06",
+        "floor_id": "B06-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B06-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B06",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B06:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              8
+            ],
+            [
+              149,
+              8
+            ],
+            [
+              151,
+              10
+            ],
+            [
+              151,
+              25
+            ],
+            [
+              140,
+              25
+            ],
+            [
+              140,
+              22
+            ],
+            [
+              137,
+              22
+            ],
+            [
+              137,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B06-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B06",
+        "floor_id": "B06-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B06-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B06",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B06:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              8
+            ],
+            [
+              149,
+              8
+            ],
+            [
+              151,
+              10
+            ],
+            [
+              151,
+              25
+            ],
+            [
+              140,
+              25
+            ],
+            [
+              140,
+              22
+            ],
+            [
+              137,
+              22
+            ],
+            [
+              137,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B06-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B06",
+        "floor_id": "B06-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B06-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B06",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B06:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              8
+            ],
+            [
+              149,
+              8
+            ],
+            [
+              151,
+              10
+            ],
+            [
+              151,
+              25
+            ],
+            [
+              140,
+              25
+            ],
+            [
+              140,
+              22
+            ],
+            [
+              137,
+              22
+            ],
+            [
+              137,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B06-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B06",
+        "floor_id": "B06-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B06-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B06",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B06:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              8
+            ],
+            [
+              149,
+              8
+            ],
+            [
+              151,
+              10
+            ],
+            [
+              151,
+              25
+            ],
+            [
+              140,
+              25
+            ],
+            [
+              140,
+              22
+            ],
+            [
+              137,
+              22
+            ],
+            [
+              137,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B07-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B07",
+        "floor_id": "B07-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B07-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B07",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B07:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              8
+            ],
+            [
+              174,
+              8
+            ],
+            [
+              174,
+              20
+            ],
+            [
+              171,
+              20
+            ],
+            [
+              171,
+              23
+            ],
+            [
+              158,
+              23
+            ],
+            [
+              158,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B07-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B07",
+        "floor_id": "B07-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B07-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B07",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B07:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              8
+            ],
+            [
+              174,
+              8
+            ],
+            [
+              174,
+              20
+            ],
+            [
+              171,
+              20
+            ],
+            [
+              171,
+              23
+            ],
+            [
+              158,
+              23
+            ],
+            [
+              158,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B07-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B07",
+        "floor_id": "B07-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B07-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B07",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B07:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              8
+            ],
+            [
+              174,
+              8
+            ],
+            [
+              174,
+              20
+            ],
+            [
+              171,
+              20
+            ],
+            [
+              171,
+              23
+            ],
+            [
+              158,
+              23
+            ],
+            [
+              158,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B07-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B07",
+        "floor_id": "B07-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B07-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B07",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B07:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              8
+            ],
+            [
+              174,
+              8
+            ],
+            [
+              174,
+              20
+            ],
+            [
+              171,
+              20
+            ],
+            [
+              171,
+              23
+            ],
+            [
+              158,
+              23
+            ],
+            [
+              158,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B07-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B07",
+        "floor_id": "B07-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B07-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B07",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B07:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              8
+            ],
+            [
+              174,
+              8
+            ],
+            [
+              174,
+              20
+            ],
+            [
+              171,
+              20
+            ],
+            [
+              171,
+              23
+            ],
+            [
+              158,
+              23
+            ],
+            [
+              158,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B08-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B08",
+        "floor_id": "B08-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B08-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B08",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B08:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              33
+            ],
+            [
+              21,
+              33
+            ],
+            [
+              21,
+              48
+            ],
+            [
+              18,
+              48
+            ],
+            [
+              18,
+              51
+            ],
+            [
+              8,
+              51
+            ],
+            [
+              8,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B08-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B08",
+        "floor_id": "B08-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B08-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B08",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B08:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              33
+            ],
+            [
+              21,
+              33
+            ],
+            [
+              21,
+              48
+            ],
+            [
+              18,
+              48
+            ],
+            [
+              18,
+              51
+            ],
+            [
+              8,
+              51
+            ],
+            [
+              8,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B08-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B08",
+        "floor_id": "B08-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B08-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B08",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B08:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              33
+            ],
+            [
+              21,
+              33
+            ],
+            [
+              21,
+              48
+            ],
+            [
+              18,
+              48
+            ],
+            [
+              18,
+              51
+            ],
+            [
+              8,
+              51
+            ],
+            [
+              8,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B08-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B08",
+        "floor_id": "B08-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B08-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B08",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B08:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              33
+            ],
+            [
+              21,
+              33
+            ],
+            [
+              21,
+              48
+            ],
+            [
+              18,
+              48
+            ],
+            [
+              18,
+              51
+            ],
+            [
+              8,
+              51
+            ],
+            [
+              8,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B09-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B09",
+        "floor_id": "B09-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B09-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B09",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B09:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              33
+            ],
+            [
+              45,
+              33
+            ],
+            [
+              47,
+              35
+            ],
+            [
+              47,
+              49
+            ],
+            [
+              35,
+              49
+            ],
+            [
+              35,
+              46
+            ],
+            [
+              32,
+              46
+            ],
+            [
+              32,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B09-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B09",
+        "floor_id": "B09-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B09-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B09",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B09:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              33
+            ],
+            [
+              45,
+              33
+            ],
+            [
+              47,
+              35
+            ],
+            [
+              47,
+              49
+            ],
+            [
+              35,
+              49
+            ],
+            [
+              35,
+              46
+            ],
+            [
+              32,
+              46
+            ],
+            [
+              32,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B09-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B09",
+        "floor_id": "B09-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B09-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B09",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B09:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              33
+            ],
+            [
+              45,
+              33
+            ],
+            [
+              47,
+              35
+            ],
+            [
+              47,
+              49
+            ],
+            [
+              35,
+              49
+            ],
+            [
+              35,
+              46
+            ],
+            [
+              32,
+              46
+            ],
+            [
+              32,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B09-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B09",
+        "floor_id": "B09-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B09-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B09",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B09:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              33
+            ],
+            [
+              45,
+              33
+            ],
+            [
+              47,
+              35
+            ],
+            [
+              47,
+              49
+            ],
+            [
+              35,
+              49
+            ],
+            [
+              35,
+              46
+            ],
+            [
+              32,
+              46
+            ],
+            [
+              32,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B09-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B09",
+        "floor_id": "B09-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B09-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B09",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B09:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              33
+            ],
+            [
+              45,
+              33
+            ],
+            [
+              47,
+              35
+            ],
+            [
+              47,
+              49
+            ],
+            [
+              35,
+              49
+            ],
+            [
+              35,
+              46
+            ],
+            [
+              32,
+              46
+            ],
+            [
+              32,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B09-SHOWCASE-F5",
+      "properties": {
+        "level": 5,
+        "buildingId": "B09",
+        "floor_id": "B09-SHOWCASE-F5",
+        "name": "Floor 5",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B09-SHOWCASE-F5-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 15.5,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B09",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B09:5"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              33
+            ],
+            [
+              45,
+              33
+            ],
+            [
+              47,
+              35
+            ],
+            [
+              47,
+              49
+            ],
+            [
+              35,
+              49
+            ],
+            [
+              35,
+              46
+            ],
+            [
+              32,
+              46
+            ],
+            [
+              32,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B10-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B10",
+        "floor_id": "B10-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B10-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B10",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B10:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              33
+            ],
+            [
+              87,
+              33
+            ],
+            [
+              87,
+              46
+            ],
+            [
+              84,
+              46
+            ],
+            [
+              84,
+              49
+            ],
+            [
+              73,
+              49
+            ],
+            [
+              73,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B10-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B10",
+        "floor_id": "B10-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B10-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B10",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B10:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              33
+            ],
+            [
+              87,
+              33
+            ],
+            [
+              87,
+              46
+            ],
+            [
+              84,
+              46
+            ],
+            [
+              84,
+              49
+            ],
+            [
+              73,
+              49
+            ],
+            [
+              73,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B10-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B10",
+        "floor_id": "B10-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B10-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B10",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B10:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              33
+            ],
+            [
+              87,
+              33
+            ],
+            [
+              87,
+              46
+            ],
+            [
+              84,
+              46
+            ],
+            [
+              84,
+              49
+            ],
+            [
+              73,
+              49
+            ],
+            [
+              73,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B11-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B11",
+        "floor_id": "B11-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B11-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B11",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B11:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              97,
+              33
+            ],
+            [
+              109,
+              33
+            ],
+            [
+              109,
+              47
+            ],
+            [
+              106,
+              47
+            ],
+            [
+              106,
+              50
+            ],
+            [
+              97,
+              50
+            ],
+            [
+              97,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B11-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B11",
+        "floor_id": "B11-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B11-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B11",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B11:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              97,
+              33
+            ],
+            [
+              109,
+              33
+            ],
+            [
+              109,
+              47
+            ],
+            [
+              106,
+              47
+            ],
+            [
+              106,
+              50
+            ],
+            [
+              97,
+              50
+            ],
+            [
+              97,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B11-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B11",
+        "floor_id": "B11-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B11-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B11",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B11:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              97,
+              33
+            ],
+            [
+              109,
+              33
+            ],
+            [
+              109,
+              47
+            ],
+            [
+              106,
+              47
+            ],
+            [
+              106,
+              50
+            ],
+            [
+              97,
+              50
+            ],
+            [
+              97,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B11-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B11",
+        "floor_id": "B11-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B11-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B11",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B11:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              97,
+              33
+            ],
+            [
+              109,
+              33
+            ],
+            [
+              109,
+              47
+            ],
+            [
+              106,
+              47
+            ],
+            [
+              106,
+              50
+            ],
+            [
+              97,
+              50
+            ],
+            [
+              97,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B13-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B13",
+        "floor_id": "B13-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B13-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B13",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B13:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              33
+            ],
+            [
+              174,
+              33
+            ],
+            [
+              174,
+              48
+            ],
+            [
+              171,
+              48
+            ],
+            [
+              171,
+              51
+            ],
+            [
+              158,
+              51
+            ],
+            [
+              158,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B13-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B13",
+        "floor_id": "B13-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B13-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B13",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B13:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              33
+            ],
+            [
+              174,
+              33
+            ],
+            [
+              174,
+              48
+            ],
+            [
+              171,
+              48
+            ],
+            [
+              171,
+              51
+            ],
+            [
+              158,
+              51
+            ],
+            [
+              158,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B13-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B13",
+        "floor_id": "B13-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B13-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B13",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B13:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              33
+            ],
+            [
+              174,
+              33
+            ],
+            [
+              174,
+              48
+            ],
+            [
+              171,
+              48
+            ],
+            [
+              171,
+              51
+            ],
+            [
+              158,
+              51
+            ],
+            [
+              158,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B13-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B13",
+        "floor_id": "B13-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B13-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B13",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B13:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              33
+            ],
+            [
+              174,
+              33
+            ],
+            [
+              174,
+              48
+            ],
+            [
+              171,
+              48
+            ],
+            [
+              171,
+              51
+            ],
+            [
+              158,
+              51
+            ],
+            [
+              158,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B14-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B14",
+        "floor_id": "B14-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B14-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B14",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B14:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              76
+            ],
+            [
+              21,
+              76
+            ],
+            [
+              21,
+              89
+            ],
+            [
+              18,
+              89
+            ],
+            [
+              18,
+              92
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              8,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B14-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B14",
+        "floor_id": "B14-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B14-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B14",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B14:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              76
+            ],
+            [
+              21,
+              76
+            ],
+            [
+              21,
+              89
+            ],
+            [
+              18,
+              89
+            ],
+            [
+              18,
+              92
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              8,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B14-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B14",
+        "floor_id": "B14-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B14-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B14",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B14:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              76
+            ],
+            [
+              21,
+              76
+            ],
+            [
+              21,
+              89
+            ],
+            [
+              18,
+              89
+            ],
+            [
+              18,
+              92
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              8,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B14-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B14",
+        "floor_id": "B14-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B14-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B14",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B14:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              76
+            ],
+            [
+              21,
+              76
+            ],
+            [
+              21,
+              89
+            ],
+            [
+              18,
+              89
+            ],
+            [
+              18,
+              92
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              8,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B14-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B14",
+        "floor_id": "B14-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B14-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B14",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B14:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              76
+            ],
+            [
+              21,
+              76
+            ],
+            [
+              21,
+              89
+            ],
+            [
+              18,
+              89
+            ],
+            [
+              18,
+              92
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              8,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B14-SHOWCASE-F5",
+      "properties": {
+        "level": 5,
+        "buildingId": "B14",
+        "floor_id": "B14-SHOWCASE-F5",
+        "name": "Floor 5",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B14-SHOWCASE-F5-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 15.5,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B14",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B14:5"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              76
+            ],
+            [
+              21,
+              76
+            ],
+            [
+              21,
+              89
+            ],
+            [
+              18,
+              89
+            ],
+            [
+              18,
+              92
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              8,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B15-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B15",
+        "floor_id": "B15-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B15-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B15",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B15:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              76
+            ],
+            [
+              45,
+              76
+            ],
+            [
+              47,
+              78
+            ],
+            [
+              47,
+              92
+            ],
+            [
+              35,
+              92
+            ],
+            [
+              35,
+              89
+            ],
+            [
+              32,
+              89
+            ],
+            [
+              32,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B15-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B15",
+        "floor_id": "B15-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B15-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B15",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B15:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              76
+            ],
+            [
+              45,
+              76
+            ],
+            [
+              47,
+              78
+            ],
+            [
+              47,
+              92
+            ],
+            [
+              35,
+              92
+            ],
+            [
+              35,
+              89
+            ],
+            [
+              32,
+              89
+            ],
+            [
+              32,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B15-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B15",
+        "floor_id": "B15-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B15-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B15",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B15:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              76
+            ],
+            [
+              45,
+              76
+            ],
+            [
+              47,
+              78
+            ],
+            [
+              47,
+              92
+            ],
+            [
+              35,
+              92
+            ],
+            [
+              35,
+              89
+            ],
+            [
+              32,
+              89
+            ],
+            [
+              32,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B16-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B16",
+        "floor_id": "B16-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B16-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B16",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B16:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              76
+            ],
+            [
+              151,
+              76
+            ],
+            [
+              151,
+              90
+            ],
+            [
+              148,
+              90
+            ],
+            [
+              148,
+              93
+            ],
+            [
+              137,
+              93
+            ],
+            [
+              137,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B16-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B16",
+        "floor_id": "B16-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B16-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B16",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B16:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              76
+            ],
+            [
+              151,
+              76
+            ],
+            [
+              151,
+              90
+            ],
+            [
+              148,
+              90
+            ],
+            [
+              148,
+              93
+            ],
+            [
+              137,
+              93
+            ],
+            [
+              137,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B16-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B16",
+        "floor_id": "B16-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B16-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B16",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B16:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              76
+            ],
+            [
+              151,
+              76
+            ],
+            [
+              151,
+              90
+            ],
+            [
+              148,
+              90
+            ],
+            [
+              148,
+              93
+            ],
+            [
+              137,
+              93
+            ],
+            [
+              137,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B16-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B16",
+        "floor_id": "B16-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B16-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B16",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B16:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              76
+            ],
+            [
+              151,
+              76
+            ],
+            [
+              151,
+              90
+            ],
+            [
+              148,
+              90
+            ],
+            [
+              148,
+              93
+            ],
+            [
+              137,
+              93
+            ],
+            [
+              137,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B17-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B17",
+        "floor_id": "B17-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B17-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B17",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B17:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              76
+            ],
+            [
+              170,
+              76
+            ],
+            [
+              170,
+              88
+            ],
+            [
+              167,
+              88
+            ],
+            [
+              167,
+              91
+            ],
+            [
+              158,
+              91
+            ],
+            [
+              158,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B17-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B17",
+        "floor_id": "B17-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B17-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B17",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B17:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              76
+            ],
+            [
+              170,
+              76
+            ],
+            [
+              170,
+              88
+            ],
+            [
+              167,
+              88
+            ],
+            [
+              167,
+              91
+            ],
+            [
+              158,
+              91
+            ],
+            [
+              158,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B17-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B17",
+        "floor_id": "B17-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B17-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B17",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B17:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              76
+            ],
+            [
+              170,
+              76
+            ],
+            [
+              170,
+              88
+            ],
+            [
+              167,
+              88
+            ],
+            [
+              167,
+              91
+            ],
+            [
+              158,
+              91
+            ],
+            [
+              158,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B17-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B17",
+        "floor_id": "B17-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B17-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B17",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B17:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              76
+            ],
+            [
+              170,
+              76
+            ],
+            [
+              170,
+              88
+            ],
+            [
+              167,
+              88
+            ],
+            [
+              167,
+              91
+            ],
+            [
+              158,
+              91
+            ],
+            [
+              158,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B17-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B17",
+        "floor_id": "B17-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B17-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B17",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B17:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              76
+            ],
+            [
+              170,
+              76
+            ],
+            [
+              170,
+              88
+            ],
+            [
+              167,
+              88
+            ],
+            [
+              167,
+              91
+            ],
+            [
+              158,
+              91
+            ],
+            [
+              158,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B18-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B18",
+        "floor_id": "B18-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B18-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B18",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B18:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              101
+            ],
+            [
+              20,
+              101
+            ],
+            [
+              22,
+              103
+            ],
+            [
+              22,
+              119
+            ],
+            [
+              11,
+              119
+            ],
+            [
+              11,
+              116
+            ],
+            [
+              8,
+              116
+            ],
+            [
+              8,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B18-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B18",
+        "floor_id": "B18-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B18-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B18",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B18:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              101
+            ],
+            [
+              20,
+              101
+            ],
+            [
+              22,
+              103
+            ],
+            [
+              22,
+              119
+            ],
+            [
+              11,
+              119
+            ],
+            [
+              11,
+              116
+            ],
+            [
+              8,
+              116
+            ],
+            [
+              8,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B18-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B18",
+        "floor_id": "B18-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B18-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B18",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B18:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              101
+            ],
+            [
+              20,
+              101
+            ],
+            [
+              22,
+              103
+            ],
+            [
+              22,
+              119
+            ],
+            [
+              11,
+              119
+            ],
+            [
+              11,
+              116
+            ],
+            [
+              8,
+              116
+            ],
+            [
+              8,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B18-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B18",
+        "floor_id": "B18-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B18-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B18",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B18:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              101
+            ],
+            [
+              20,
+              101
+            ],
+            [
+              22,
+              103
+            ],
+            [
+              22,
+              119
+            ],
+            [
+              11,
+              119
+            ],
+            [
+              11,
+              116
+            ],
+            [
+              8,
+              116
+            ],
+            [
+              8,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B19-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B19",
+        "floor_id": "B19-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B19-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B19",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B19:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              101
+            ],
+            [
+              48,
+              101
+            ],
+            [
+              48,
+              114
+            ],
+            [
+              45,
+              114
+            ],
+            [
+              45,
+              117
+            ],
+            [
+              32,
+              117
+            ],
+            [
+              32,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B19-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B19",
+        "floor_id": "B19-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B19-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B19",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B19:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              101
+            ],
+            [
+              48,
+              101
+            ],
+            [
+              48,
+              114
+            ],
+            [
+              45,
+              114
+            ],
+            [
+              45,
+              117
+            ],
+            [
+              32,
+              117
+            ],
+            [
+              32,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B19-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B19",
+        "floor_id": "B19-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B19-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B19",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B19:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              101
+            ],
+            [
+              48,
+              101
+            ],
+            [
+              48,
+              114
+            ],
+            [
+              45,
+              114
+            ],
+            [
+              45,
+              117
+            ],
+            [
+              32,
+              117
+            ],
+            [
+              32,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B19-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B19",
+        "floor_id": "B19-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B19-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B19",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B19:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              101
+            ],
+            [
+              48,
+              101
+            ],
+            [
+              48,
+              114
+            ],
+            [
+              45,
+              114
+            ],
+            [
+              45,
+              117
+            ],
+            [
+              32,
+              117
+            ],
+            [
+              32,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B19-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B19",
+        "floor_id": "B19-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B19-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B19",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B19:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              101
+            ],
+            [
+              48,
+              101
+            ],
+            [
+              48,
+              114
+            ],
+            [
+              45,
+              114
+            ],
+            [
+              45,
+              117
+            ],
+            [
+              32,
+              117
+            ],
+            [
+              32,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B19-SHOWCASE-F5",
+      "properties": {
+        "level": 5,
+        "buildingId": "B19",
+        "floor_id": "B19-SHOWCASE-F5",
+        "name": "Floor 5",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B19-SHOWCASE-F5-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 15.5,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B19",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B19:5"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              101
+            ],
+            [
+              48,
+              101
+            ],
+            [
+              48,
+              114
+            ],
+            [
+              45,
+              114
+            ],
+            [
+              45,
+              117
+            ],
+            [
+              32,
+              117
+            ],
+            [
+              32,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B20-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B20",
+        "floor_id": "B20-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B20-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B20",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B20:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              101
+            ],
+            [
+              150,
+              101
+            ],
+            [
+              150,
+              114
+            ],
+            [
+              147,
+              114
+            ],
+            [
+              147,
+              117
+            ],
+            [
+              137,
+              117
+            ],
+            [
+              137,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B20-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B20",
+        "floor_id": "B20-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B20-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B20",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B20:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              101
+            ],
+            [
+              150,
+              101
+            ],
+            [
+              150,
+              114
+            ],
+            [
+              147,
+              114
+            ],
+            [
+              147,
+              117
+            ],
+            [
+              137,
+              117
+            ],
+            [
+              137,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B20-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B20",
+        "floor_id": "B20-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B20-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B20",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B20:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              101
+            ],
+            [
+              150,
+              101
+            ],
+            [
+              150,
+              114
+            ],
+            [
+              147,
+              114
+            ],
+            [
+              147,
+              117
+            ],
+            [
+              137,
+              117
+            ],
+            [
+              137,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B21-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B21",
+        "floor_id": "B21-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B21-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B21",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B21:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              101
+            ],
+            [
+              171,
+              101
+            ],
+            [
+              173,
+              103
+            ],
+            [
+              173,
+              118
+            ],
+            [
+              161,
+              118
+            ],
+            [
+              161,
+              115
+            ],
+            [
+              158,
+              115
+            ],
+            [
+              158,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B21-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B21",
+        "floor_id": "B21-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B21-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B21",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B21:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              101
+            ],
+            [
+              171,
+              101
+            ],
+            [
+              173,
+              103
+            ],
+            [
+              173,
+              118
+            ],
+            [
+              161,
+              118
+            ],
+            [
+              161,
+              115
+            ],
+            [
+              158,
+              115
+            ],
+            [
+              158,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B21-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B21",
+        "floor_id": "B21-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B21-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B21",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B21:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              101
+            ],
+            [
+              171,
+              101
+            ],
+            [
+              173,
+              103
+            ],
+            [
+              173,
+              118
+            ],
+            [
+              161,
+              118
+            ],
+            [
+              161,
+              115
+            ],
+            [
+              158,
+              115
+            ],
+            [
+              158,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B21-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B21",
+        "floor_id": "B21-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B21-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B21",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B21:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              101
+            ],
+            [
+              171,
+              101
+            ],
+            [
+              173,
+              103
+            ],
+            [
+              173,
+              118
+            ],
+            [
+              161,
+              118
+            ],
+            [
+              161,
+              115
+            ],
+            [
+              158,
+              115
+            ],
+            [
+              158,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B22-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B22",
+        "floor_id": "B22-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B22-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B22",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B22:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              138
+            ],
+            [
+              22,
+              138
+            ],
+            [
+              22,
+              150
+            ],
+            [
+              19,
+              150
+            ],
+            [
+              19,
+              153
+            ],
+            [
+              8,
+              153
+            ],
+            [
+              8,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B22-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B22",
+        "floor_id": "B22-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B22-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B22",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B22:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              138
+            ],
+            [
+              22,
+              138
+            ],
+            [
+              22,
+              150
+            ],
+            [
+              19,
+              150
+            ],
+            [
+              19,
+              153
+            ],
+            [
+              8,
+              153
+            ],
+            [
+              8,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B22-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B22",
+        "floor_id": "B22-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B22-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B22",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B22:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              138
+            ],
+            [
+              22,
+              138
+            ],
+            [
+              22,
+              150
+            ],
+            [
+              19,
+              150
+            ],
+            [
+              19,
+              153
+            ],
+            [
+              8,
+              153
+            ],
+            [
+              8,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B22-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B22",
+        "floor_id": "B22-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B22-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B22",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B22:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              138
+            ],
+            [
+              22,
+              138
+            ],
+            [
+              22,
+              150
+            ],
+            [
+              19,
+              150
+            ],
+            [
+              19,
+              153
+            ],
+            [
+              8,
+              153
+            ],
+            [
+              8,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B22-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B22",
+        "floor_id": "B22-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B22-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B22",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B22:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              138
+            ],
+            [
+              22,
+              138
+            ],
+            [
+              22,
+              150
+            ],
+            [
+              19,
+              150
+            ],
+            [
+              19,
+              153
+            ],
+            [
+              8,
+              153
+            ],
+            [
+              8,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B23-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B23",
+        "floor_id": "B23-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B23-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B23",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B23:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              138
+            ],
+            [
+              44,
+              138
+            ],
+            [
+              44,
+              153
+            ],
+            [
+              41,
+              153
+            ],
+            [
+              41,
+              156
+            ],
+            [
+              32,
+              156
+            ],
+            [
+              32,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B23-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B23",
+        "floor_id": "B23-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B23-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B23",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B23:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              138
+            ],
+            [
+              44,
+              138
+            ],
+            [
+              44,
+              153
+            ],
+            [
+              41,
+              153
+            ],
+            [
+              41,
+              156
+            ],
+            [
+              32,
+              156
+            ],
+            [
+              32,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B23-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B23",
+        "floor_id": "B23-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B23-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B23",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B23:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              138
+            ],
+            [
+              44,
+              138
+            ],
+            [
+              44,
+              153
+            ],
+            [
+              41,
+              153
+            ],
+            [
+              41,
+              156
+            ],
+            [
+              32,
+              156
+            ],
+            [
+              32,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B23-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B23",
+        "floor_id": "B23-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B23-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B23",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B23:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              138
+            ],
+            [
+              44,
+              138
+            ],
+            [
+              44,
+              153
+            ],
+            [
+              41,
+              153
+            ],
+            [
+              41,
+              156
+            ],
+            [
+              32,
+              156
+            ],
+            [
+              32,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B24-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B24",
+        "floor_id": "B24-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B24-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B24",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B24:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              138
+            ],
+            [
+              86,
+              138
+            ],
+            [
+              88,
+              140
+            ],
+            [
+              88,
+              154
+            ],
+            [
+              77,
+              154
+            ],
+            [
+              77,
+              151
+            ],
+            [
+              74,
+              151
+            ],
+            [
+              74,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B24-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B24",
+        "floor_id": "B24-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B24-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B24",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B24:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              138
+            ],
+            [
+              86,
+              138
+            ],
+            [
+              88,
+              140
+            ],
+            [
+              88,
+              154
+            ],
+            [
+              77,
+              154
+            ],
+            [
+              77,
+              151
+            ],
+            [
+              74,
+              151
+            ],
+            [
+              74,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B24-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B24",
+        "floor_id": "B24-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B24-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B24",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B24:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              138
+            ],
+            [
+              86,
+              138
+            ],
+            [
+              88,
+              140
+            ],
+            [
+              88,
+              154
+            ],
+            [
+              77,
+              154
+            ],
+            [
+              77,
+              151
+            ],
+            [
+              74,
+              151
+            ],
+            [
+              74,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B24-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B24",
+        "floor_id": "B24-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B24-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B24",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B24:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              138
+            ],
+            [
+              86,
+              138
+            ],
+            [
+              88,
+              140
+            ],
+            [
+              88,
+              154
+            ],
+            [
+              77,
+              154
+            ],
+            [
+              77,
+              151
+            ],
+            [
+              74,
+              151
+            ],
+            [
+              74,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B24-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B24",
+        "floor_id": "B24-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B24-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B24",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B24:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              138
+            ],
+            [
+              86,
+              138
+            ],
+            [
+              88,
+              140
+            ],
+            [
+              88,
+              154
+            ],
+            [
+              77,
+              154
+            ],
+            [
+              77,
+              151
+            ],
+            [
+              74,
+              151
+            ],
+            [
+              74,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B24-SHOWCASE-F5",
+      "properties": {
+        "level": 5,
+        "buildingId": "B24",
+        "floor_id": "B24-SHOWCASE-F5",
+        "name": "Floor 5",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B24-SHOWCASE-F5-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 15.5,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B24",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B24:5"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              138
+            ],
+            [
+              86,
+              138
+            ],
+            [
+              88,
+              140
+            ],
+            [
+              88,
+              154
+            ],
+            [
+              77,
+              154
+            ],
+            [
+              77,
+              151
+            ],
+            [
+              74,
+              151
+            ],
+            [
+              74,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B25-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B25",
+        "floor_id": "B25-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B25-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B25",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B25:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              158
+            ],
+            [
+              24,
+              158
+            ],
+            [
+              24,
+              171
+            ],
+            [
+              21,
+              171
+            ],
+            [
+              21,
+              174
+            ],
+            [
+              8,
+              174
+            ],
+            [
+              8,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B25-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B25",
+        "floor_id": "B25-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B25-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B25",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B25:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              158
+            ],
+            [
+              24,
+              158
+            ],
+            [
+              24,
+              171
+            ],
+            [
+              21,
+              171
+            ],
+            [
+              21,
+              174
+            ],
+            [
+              8,
+              174
+            ],
+            [
+              8,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B25-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B25",
+        "floor_id": "B25-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B25-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B25",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B25:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              158
+            ],
+            [
+              24,
+              158
+            ],
+            [
+              24,
+              171
+            ],
+            [
+              21,
+              171
+            ],
+            [
+              21,
+              174
+            ],
+            [
+              8,
+              174
+            ],
+            [
+              8,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B26-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B26",
+        "floor_id": "B26-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B26-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B26",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B26:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              158
+            ],
+            [
+              45,
+              158
+            ],
+            [
+              45,
+              172
+            ],
+            [
+              42,
+              172
+            ],
+            [
+              42,
+              175
+            ],
+            [
+              32,
+              175
+            ],
+            [
+              32,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B26-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B26",
+        "floor_id": "B26-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B26-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B26",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B26:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              158
+            ],
+            [
+              45,
+              158
+            ],
+            [
+              45,
+              172
+            ],
+            [
+              42,
+              172
+            ],
+            [
+              42,
+              175
+            ],
+            [
+              32,
+              175
+            ],
+            [
+              32,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B26-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B26",
+        "floor_id": "B26-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B26-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B26",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B26:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              158
+            ],
+            [
+              45,
+              158
+            ],
+            [
+              45,
+              172
+            ],
+            [
+              42,
+              172
+            ],
+            [
+              42,
+              175
+            ],
+            [
+              32,
+              175
+            ],
+            [
+              32,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B26-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B26",
+        "floor_id": "B26-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B26-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B26",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B26:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              158
+            ],
+            [
+              45,
+              158
+            ],
+            [
+              45,
+              172
+            ],
+            [
+              42,
+              172
+            ],
+            [
+              42,
+              175
+            ],
+            [
+              32,
+              175
+            ],
+            [
+              32,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B27-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B27",
+        "floor_id": "B27-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B27-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B27",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B27:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              158
+            ],
+            [
+              87,
+              158
+            ],
+            [
+              89,
+              160
+            ],
+            [
+              89,
+              173
+            ],
+            [
+              77,
+              173
+            ],
+            [
+              77,
+              170
+            ],
+            [
+              74,
+              170
+            ],
+            [
+              74,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B27-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B27",
+        "floor_id": "B27-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B27-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B27",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B27:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              158
+            ],
+            [
+              87,
+              158
+            ],
+            [
+              89,
+              160
+            ],
+            [
+              89,
+              173
+            ],
+            [
+              77,
+              173
+            ],
+            [
+              77,
+              170
+            ],
+            [
+              74,
+              170
+            ],
+            [
+              74,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B27-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B27",
+        "floor_id": "B27-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B27-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B27",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B27:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              158
+            ],
+            [
+              87,
+              158
+            ],
+            [
+              89,
+              160
+            ],
+            [
+              89,
+              173
+            ],
+            [
+              77,
+              173
+            ],
+            [
+              77,
+              170
+            ],
+            [
+              74,
+              170
+            ],
+            [
+              74,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B27-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B27",
+        "floor_id": "B27-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B27-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B27",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B27:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              158
+            ],
+            [
+              87,
+              158
+            ],
+            [
+              89,
+              160
+            ],
+            [
+              89,
+              173
+            ],
+            [
+              77,
+              173
+            ],
+            [
+              77,
+              170
+            ],
+            [
+              74,
+              170
+            ],
+            [
+              74,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B27-SHOWCASE-F4",
+      "properties": {
+        "level": 4,
+        "buildingId": "B27",
+        "floor_id": "B27-SHOWCASE-F4",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B27-SHOWCASE-F4-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B27",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B27:4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              158
+            ],
+            [
+              87,
+              158
+            ],
+            [
+              89,
+              160
+            ],
+            [
+              89,
+              173
+            ],
+            [
+              77,
+              173
+            ],
+            [
+              77,
+              170
+            ],
+            [
+              74,
+              170
+            ],
+            [
+              74,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B28-SHOWCASE-F0",
+      "properties": {
+        "level": 0,
+        "buildingId": "B28",
+        "floor_id": "B28-SHOWCASE-F0",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B28-SHOWCASE-F0-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B28",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B28:0"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              98,
+              138
+            ],
+            [
+              112,
+              138
+            ],
+            [
+              112,
+              153
+            ],
+            [
+              109,
+              153
+            ],
+            [
+              109,
+              156
+            ],
+            [
+              98,
+              156
+            ],
+            [
+              98,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B28-SHOWCASE-F1",
+      "properties": {
+        "level": 1,
+        "buildingId": "B28",
+        "floor_id": "B28-SHOWCASE-F1",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B28-SHOWCASE-F1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B28",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B28:1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              98,
+              138
+            ],
+            [
+              112,
+              138
+            ],
+            [
+              112,
+              153
+            ],
+            [
+              109,
+              153
+            ],
+            [
+              109,
+              156
+            ],
+            [
+              98,
+              156
+            ],
+            [
+              98,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B28-SHOWCASE-F2",
+      "properties": {
+        "level": 2,
+        "buildingId": "B28",
+        "floor_id": "B28-SHOWCASE-F2",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B28-SHOWCASE-F2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B28",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B28:2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              98,
+              138
+            ],
+            [
+              112,
+              138
+            ],
+            [
+              112,
+              153
+            ],
+            [
+              109,
+              153
+            ],
+            [
+              109,
+              156
+            ],
+            [
+              98,
+              156
+            ],
+            [
+              98,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B28-SHOWCASE-F3",
+      "properties": {
+        "level": 3,
+        "buildingId": "B28",
+        "floor_id": "B28-SHOWCASE-F3",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B28-SHOWCASE-F3-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 3.1,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "building_id": "B28",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B28:3"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              98,
+              138
+            ],
+            [
+              112,
+              138
+            ],
+            [
+              112,
+              153
+            ],
+            [
+              109,
+              153
+            ],
+            [
+              109,
+              156
+            ],
+            [
+              98,
+              156
+            ],
+            [
+              98,
+              138
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

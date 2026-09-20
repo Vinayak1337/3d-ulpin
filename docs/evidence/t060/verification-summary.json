@@ -1,0 +1,117 @@
+{
+  "schema": "ulpin-task-verification/1",
+  "task": "T060",
+  "implementation": "implemented",
+  "base_commit": "da00fc1",
+  "branch": "feat/visual-ml-completion",
+  "tested_environment": "Current local repository services on macOS; full bundled Chromium with Apple M3 Metal rendering",
+  "checks": [
+    {
+      "name": "focused_studio_correctness",
+      "status": "passed",
+      "groups": 7,
+      "evidence": "correctness-final/results.json"
+    },
+    {
+      "name": "studio_original_journey",
+      "status": "passed",
+      "groups": 11,
+      "evidence": "studio-original/results.json"
+    },
+    {
+      "name": "studio_continuation",
+      "status": "passed",
+      "groups": 10,
+      "evidence": "studio-continuation/results.json"
+    },
+    {
+      "name": "real_saved_data_journey",
+      "status": "passed",
+      "groups": 6,
+      "evidence": "saved-final/results.json"
+    },
+    {
+      "name": "reference_family_capture",
+      "status": "passed",
+      "views": 8,
+      "evidence": "visual-metal/capture.json"
+    },
+    {
+      "name": "studio_node_suite",
+      "status": "passed",
+      "tests": 36,
+      "command": "pnpm test:studio"
+    },
+    {
+      "name": "saved_uttam_render_roads_layers_and_caption",
+      "status": "passed",
+      "groups": 4,
+      "evidence": "uttam-final/results.json"
+    },
+    {
+      "name": "spatial_and_core_display_tests",
+      "status": "passed",
+      "tests": 41,
+      "command": "pnpm exec tsx --test tests/spatial-core.test.ts tests/core-display.test.ts"
+    },
+    {
+      "name": "scoped_svg_tests",
+      "status": "passed",
+      "tests": 4,
+      "command": "pnpm exec tsx --test tests/scoped-svg-export.test.ts"
+    },
+    {
+      "name": "final_production_build",
+      "status": "passed",
+      "evidence": "../t061/production-build.log"
+    }
+  ],
+  "preservation": {
+    "saved_journey_api_writes": 0,
+    "saved_context_dossier_source_fingerprints": "unchanged",
+    "authorized_upload": "One new timestamped synthetic verification workspace/source only; exact bytes verified in studio-original/results.json",
+    "repository_snapshot_refreshed": false,
+    "private_pc_equivalence_claimed": false
+  },
+  "final_follow_up": {
+    "status": "passed_final_production_targeted_rerun",
+    "changes": [
+      "Preserve background unit/floor when inspecting a building original",
+      "Restore focus to Layers after Escape",
+      "Keep saved-workspace status dot visible in compact header",
+      "Preserve and render all35 recorded road centerlines",
+      "Improve flat unknown-height footprint contrast without inventing geometry",
+      "Keep saved scene caption above existing legend"
+    ],
+    "evidence": [
+      "correctness-final/results.json",
+      "saved-final/results.json",
+      "uttam-final/results.json"
+    ],
+    "verified_at": "2026-09-19T22:57:28.096898+00:00"
+  },
+  "exceptions": [
+    {
+      "kind": "transient_service_failure",
+      "path": "/api/v1/areas",
+      "status": 503,
+      "evidence": "saved/transient-areas-503.json",
+      "subsequent_full_saved_run": "passed"
+    },
+    {
+      "kind": "software_renderer_limit",
+      "detail": "Initial headless-shell 3D checks timed out on SwiftShader; full bundled Chromium GPU checks passed."
+    },
+    {
+      "kind": "acceptance_not_claimed",
+      "items": [
+        "Physical-phone qualification",
+        "Formal screen-reader qualification",
+        "Complete current true-200%-browser-zoom matrix",
+        "User visual approval",
+        "Entire live multi-source import-to-publication matrix",
+        "Clean-machine release recovery"
+      ]
+    }
+  ]
+}

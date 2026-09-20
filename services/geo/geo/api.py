@@ -26,7 +26,7 @@ def authorize(authorization: Annotated[Optional[str], Header()] = None) -> None:
 class JobRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     jobId: uuid.UUID
-    operation: Literal["inspect", "build"]
+    operation: Literal["inspect", "build", "spatial-inference"]
     input: dict[str, Any] = Field(min_length=1)
 
 
@@ -83,6 +83,12 @@ def read_job(job_id: uuid.UUID) -> dict:
     return public_job(entry)
 
 
+@app.get("/internal/spatial-ml/status", dependencies=[Depends(authorize)])
+def spatial_ml_status() -> dict:
+    from .spatial_ml import spatial_ml_readiness
+    return spatial_ml_readiness()
+
+
 @app.post('/internal/registry/{operation}', dependencies=[Depends(authorize)])
 def registry_operation(operation: str, data: dict[str, Any]) -> dict:
     from .registry import check_registry, query_registry
@@ -98,10 +104,11 @@ def registry_operation(operation: str, data: dict[str, Any]) -> dict:
 @app.post('/internal/area/{operation}', dependencies=[Depends(authorize)])
 def area_operation(operation: str, data: dict[str, Any]) -> dict:
     from .area import check_area, extract_document, normalize_area
+    from .gis_inspection import inspect_gis
     from .image_derivative import crop_image
     from .officer import resolve_profile_request
     from .validation import InputError
-    operations = {'normalize': normalize_area, 'check': check_area, 'extract': extract_document, 'crop': crop_image, 'profile': resolve_profile_request}
+    operations = {'inspect-gis': inspect_gis, 'normalize': normalize_area, 'check': check_area, 'extract': extract_document, 'crop': crop_image, 'profile': resolve_profile_request}
     if operation not in operations:
         raise HTTPException(status_code=404, detail='Unknown area operation.')
     try:

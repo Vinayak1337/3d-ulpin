@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "Runtime computes the four expected spatial findings",
+    "All findings are discoverable from the map header",
+    "A building hidden in a dense overlap is independently selectable",
+    "Inspector shows the computed overlap area",
+    "Changing the footprint removes the old building overlap automatically",
+    "New geometry position and previous revision are preserved exactly",
+    "Checks follow the changed geometry revision rather than demo IDs",
+    "No browser errors during arrangement replacement"
+  ],
+  "errors": []
+}

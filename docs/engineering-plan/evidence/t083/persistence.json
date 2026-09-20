@@ -1,0 +1,37 @@
+{
+  "invalidInputNoWrites": true,
+  "datasets": [
+    {
+      "id": "22b196c2-b467-4f38-9252-5b4c5e3a2f14",
+      "name": "Lake View · complete fictional source dataset",
+      "originalName": "lake-view-complete.zip",
+      "sha256": "94d6cd80cd0b2ac4c0d7b5abf6b01dc93a70e373e6e607aae3d746579beea087",
+      "digest": "5475e2943de69732563c9ff5fc9c821dd93a336a70f36e2381166ce6e20a0877",
+      "revision": 1,
+      "classification": "synthetic",
+      "buildingCount": 49,
+      "floorCount": 184,
+      "sourceCount": 50,
+      "createdAt": "2026-09-20T19:49:27.293Z",
+      "verifiedOriginals": 53,
+      "concurrentReplaySameId": true,
+      "canonicalSnapshotEqual": true
+    },
+    {
+      "id": "160028fd-b3a4-42e9-b6da-daff641ddd3c",
+      "name": "Shiv Vihar Extension — Block A · supplied synthetic master",
+      "originalName": "provided-master.zip",
+      "sha256": "2a1668dfe509b828ef8696f96eff3d024ef3eff61d8c3b5249b6911a433fdd39",
+      "digest": "c735e2010edf848933553d3bc6caf3977ab57ca2d8412948dcfb3e12ed54343c",
+      "revision": 1,
+      "classification": "synthetic",
+      "buildingCount": 32,
+      "floorCount": 5,
+      "sourceCount": 5,
+      "createdAt": "2026-09-20T19:49:28.724Z",
+      "verifiedOriginals": 8,
+      "concurrentReplaySameId": true,
+      "canonicalSnapshotEqual": true
+    }
+  ]
+}

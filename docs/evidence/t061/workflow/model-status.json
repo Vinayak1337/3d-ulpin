@@ -1,0 +1,25 @@
+{
+  "maxBatchItems": 12,
+  "models": [
+    {
+      "id": "cubicasa5k-rooms-onnx-v1",
+      "task": "floor-plan",
+      "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+      "profileVersion": "cubicasa-rooms-768-bilinear-pad64-v1",
+      "ready": true,
+      "name": "CubiCasa5K · floor-plan regions",
+      "license": "CC-BY-NC-4.0; retain CubiCasa5K attribution; noncommercial scope",
+      "evaluation": "Reviewed assistance only. Two original published test plans: pixel accuracy 0.87195, mean class IoU 0.65622; room class errors remain. Rectangular ONNX/PyTorch label agreement >99.9995%. This is a small feasibility evaluation, not cadastral or Indian pilot accuracy."
+    },
+    {
+      "id": "rfdetr-satellite-buildings-onnx-v1",
+      "task": "building",
+      "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+      "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2",
+      "ready": true,
+      "name": "RF-DETR · building outlines",
+      "license": "Apache-2.0 model card; retain RF-DETR and checkpoint attribution",
+      "evaluation": "Reviewed assistance only. Fixed 12 published OAM/OSM test tiles using this runtime: aggregate IoU 0.2874, precision 0.3418, recall 0.6434. Clear occupied tiles reach IoU 0.57–0.86; empty and blurred scenes show false positives. No threshold tuning. Single-tile feasibility results do not establish tiled boundary accuracy; overlap union may merge touching roofs and retain edge false positives. No cadastral or Indian pilot accuracy claim."
+    }
+  ]
+}

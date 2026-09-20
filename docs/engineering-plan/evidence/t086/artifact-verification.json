@@ -1,0 +1,18 @@
+{
+  "building": {
+    "rasterMatchesReceipt": true,
+    "maskMatchesReceipt": true,
+    "componentsAndReceiptUnchanged": true,
+    "regions": 8,
+    "actualInference": true,
+    "inferenceMs": 1329.158
+  },
+  "floor-plan": {
+    "rasterMatchesReceipt": true,
+    "maskMatchesReceipt": true,
+    "componentsAndReceiptUnchanged": true,
+    "regions": 75,
+    "actualInference": true,
+    "inferenceMs": 1761.629
+  }
+}

@@ -1,0 +1,1249 @@
+{
+  "package": {
+    "id": "5fd5efff-4f12-4173-a60f-eb2e852fd9a5",
+    "name": "Imagery footprint review 5722878a",
+    "parts": [
+      {
+        "id": "f726ea4f-4169-4654-b6e7-377ba0ac5404",
+        "text": "Image reference: manual calibration and interpretation required.",
+        "locator": "image",
+        "entityIds": [
+          "3395d7e2-897a-4001-b408-aeb998093f13"
+        ],
+        "sourceRevisionId": "8a8d91d9-fdd2-4609-b912-5e9377eec39d"
+      }
+    ],
+    "state": "NEEDS_INPUT",
+    "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "extent": [
+      106.71875,
+      82.34375,
+      116.71875,
+      92.03125
+    ],
+    "features": [
+      {
+        "id": "3395d7e2-897a-4001-b408-aeb998093f13",
+        "kind": "building",
+        "name": "T066 fictional imagery building",
+        "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+        "areaM2": 71.142578125,
+        "height": {
+          "unit": "m",
+          "state": "unknown",
+          "value": null,
+          "method": "native_parse",
+          "meaning": "height above the building's own ground level",
+          "evidence": [
+            {
+              "featureId": "93e8187d-da63-5a6e-addc-4e6556f9ac97",
+              "sourceRevisionId": "60f27565-4d64-4651-b6c1-3330b0b35f43"
+            }
+          ],
+          "reference": "building-relative; not aligned between features"
+        },
+        "evidence": [
+          {
+            "featureId": "93e8187d-da63-5a6e-addc-4e6556f9ac97",
+            "sourceRevisionId": "60f27565-4d64-4651-b6c1-3330b0b35f43"
+          },
+          {
+            "page": 1,
+            "partId": "f726ea4f-4169-4654-b6e7-377ba0ac5404",
+            "sourceRevisionId": "8a8d91d9-fdd2-4609-b912-5e9377eec39d"
+          }
+        ],
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                107.34375,
+                92.03125
+              ],
+              [
+                107.34375,
+                91.71875
+              ],
+              [
+                107.1875,
+                91.71875
+              ],
+              [
+                107.1875,
+                90
+              ],
+              [
+                107.03125,
+                90
+              ],
+              [
+                107.03125,
+                86.71875
+              ],
+              [
+                106.875,
+                86.71875
+              ],
+              [
+                106.875,
+                85.78125
+              ],
+              [
+                106.71875,
+                85.78125
+              ],
+              [
+                106.71875,
+                85.625
+              ],
+              [
+                106.875,
+                85.625
+              ],
+              [
+                106.875,
+                85.46875
+              ],
+              [
+                107.1875,
+                85.46875
+              ],
+              [
+                107.1875,
+                85.3125
+              ],
+              [
+                107.96875,
+                85.3125
+              ],
+              [
+                107.96875,
+                85.15625
+              ],
+              [
+                111.875,
+                85.15625
+              ],
+              [
+                111.875,
+                85
+              ],
+              [
+                112.1875,
+                85
+              ],
+              [
+                112.1875,
+                84.84375
+              ],
+              [
+                112.34375,
+                84.84375
+              ],
+              [
+                112.34375,
+                84.53125
+              ],
+              [
+                112.5,
+                84.53125
+              ],
+              [
+                112.5,
+                82.65625
+              ],
+              [
+                112.65625,
+                82.65625
+              ],
+              [
+                112.65625,
+                82.34375
+              ],
+              [
+                113.90625,
+                82.34375
+              ],
+              [
+                113.90625,
+                82.5
+              ],
+              [
+                114.53125,
+                82.5
+              ],
+              [
+                114.53125,
+                82.65625
+              ],
+              [
+                115.46875,
+                82.65625
+              ],
+              [
+                115.46875,
+                83.4375
+              ],
+              [
+                115.625,
+                83.4375
+              ],
+              [
+                115.625,
+                85.625
+              ],
+              [
+                115.78125,
+                85.625
+              ],
+              [
+                115.78125,
+                86.25
+              ],
+              [
+                115.9375,
+                86.25
+              ],
+              [
+                115.9375,
+                86.5625
+              ],
+              [
+                116.09375,
+                86.5625
+              ],
+              [
+                116.09375,
+                87.03125
+              ],
+              [
+                116.25,
+                87.03125
+              ],
+              [
+                116.25,
+                87.5
+              ],
+              [
+                116.40625,
+                87.5
+              ],
+              [
+                116.40625,
+                89.53125
+              ],
+              [
+                116.5625,
+                89.53125
+              ],
+              [
+                116.5625,
+                90.78125
+              ],
+              [
+                116.71875,
+                90.78125
+              ],
+              [
+                116.71875,
+                91.09375
+              ],
+              [
+                116.5625,
+                91.09375
+              ],
+              [
+                116.5625,
+                91.25
+              ],
+              [
+                116.71875,
+                91.25
+              ],
+              [
+                116.71875,
+                91.71875
+              ],
+              [
+                116.5625,
+                91.71875
+              ],
+              [
+                116.5625,
+                91.875
+              ],
+              [
+                116.09375,
+                91.875
+              ],
+              [
+                116.09375,
+                92.03125
+              ],
+              [
+                114.21875,
+                92.03125
+              ],
+              [
+                114.21875,
+                91.875
+              ],
+              [
+                109.84375,
+                91.875
+              ],
+              [
+                109.84375,
+                92.03125
+              ],
+              [
+                107.34375,
+                92.03125
+              ]
+            ]
+          ]
+        },
+        "revision": 0,
+        "semantics": {
+          "geometryRole": "observed_roof_projection",
+          "evidenceState": "unresolved"
+        },
+        "sourceKey": "93e8187d-da63-5a6e-addc-4e6556f9ac97",
+        "identifier": "3DU-2C0EFNZHK781D9CB632ZKF6AMB:B003",
+        "properties": {
+          "name": "T066 fictional imagery building",
+          "source_id": "93e8187d-da63-5a6e-addc-4e6556f9ac97",
+          "spatialExtraction": {
+            "page": 1,
+            "jobId": "14a4d349-1205-4ca8-af5e-34cbddc59061",
+            "model": {
+              "id": "rfdetr-satellite-buildings-onnx-v1",
+              "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf"
+            },
+            "itemId": "5722878a-dd57-4724-84fd-5b979815b3ca",
+            "method": "reviewed pixel-to-metre similarity, then retained area origin addition",
+            "target": {
+              "frame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+              "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+              "origin": [
+                500000,
+                3100000
+              ],
+              "analysisCrs": "EPSG:32643",
+              "expectedRevision": 2
+            },
+            "authority": "Unreviewed model-derived footprint proposals. Height and ownership remain unknown.",
+            "selections": [
+              {
+                "subject": "T066 fictional imagery building",
+                "componentId": "93e8187d-da63-5a6e-addc-4e6556f9ac97"
+              }
+            ],
+            "calibration": {
+              "frame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+              "reason": "T066 authored fictional test controls: image width represents 40 metres in the retained named frame. Published imagery is not survey evidence for this fictional block.",
+              "imagePoints": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  256,
+                  0
+                ]
+              ],
+              "worldPoints": [
+                [
+                  100,
+                  100
+                ],
+                [
+                  140,
+                  100
+                ]
+              ],
+              "rasterSha256": "7e73557354dbf8955a6ebde7f84772c41785880bdeeace79630f934510bbbdb4"
+            },
+            "worldStatus": "synthetic",
+            "rasterSha256": "7e73557354dbf8955a6ebde7f84772c41785880bdeeace79630f934510bbbdb4",
+            "schemaVersion": "spatial-footprint-derivation/1",
+            "originalPartId": "cd9101aa-161f-4472-953c-e21c9e270f05",
+            "originalSha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+            "sourceWorkspace": {
+              "frame": {
+                "id": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+                "benchmark": "T061-SYNTHETIC-BM-99741d82",
+                "verticalUnit": "m",
+                "horizontalUnit": "m"
+              },
+              "caseId": "e0caa46d-5df6-4d86-853a-6097fec87b58",
+              "worldStatus": "synthetic",
+              "areaReferenceFingerprint": "4b213dd7dc0862db61b2e5fd6669db6221ce58ff4376d3d0d24feb817444efaf"
+            },
+            "inferenceReceipt": {
+              "model": {
+                "id": "rfdetr-satellite-buildings-onnx-v1",
+                "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+                "license": "Apache-2.0 model card; retain RF-DETR and checkpoint attribution",
+                "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
+              },
+              "tiling": {
+                "order": "row-major",
+                "tiles": [
+                  {
+                    "x": 0,
+                    "y": 0,
+                    "width": 256,
+                    "height": 256,
+                    "tileToRaster": [
+                      1,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0
+                    ]
+                  }
+                ],
+                "stride": 384,
+                "enabled": false,
+                "edgeRule": "anchor final tile to far edge; no padding",
+                "seamRule": "single tile; higher-confidence instance wins overlapping pixels",
+                "tileEdge": 512
+              },
+              "backend": "onnxruntime-cpu",
+              "quality": "Reviewed assistance only. Fixed 12 published OAM/OSM test tiles using this runtime: aggregate IoU 0.2874, precision 0.3418, recall 0.6434. Clear occupied tiles reach IoU 0.57–0.86; empty and blurred scenes show false positives. No threshold tuning. Single-tile feasibility results do not establish tiled boundary accuracy; overlap union may merge touching roofs and retain edge false positives. No cadastral or Indian pilot accuracy claim.",
+              "threads": 2,
+              "sourceId": "8a8d91d9-fdd2-4609-b912-5e9377eec39d",
+              "authority": "Unresolved model pixel proposals; metric placement and record review are separate.",
+              "scoreKind": "instance_sigmoid",
+              "inferenceMs": 1133.364,
+              "limitations": [
+                "Review every candidate against the source; false positives and missed regions occur.",
+                "A room or roof region does not establish ownership, a legal unit, height, level or metric geometry.",
+                "Named-frame calibration and independent placement evidence are required before metric application."
+              ],
+              "maskPalette": {
+                "0": "background",
+                "1": "building",
+                "2": "building",
+                "3": "building",
+                "4": "building",
+                "5": "building",
+                "6": "building",
+                "7": "building",
+                "8": "building"
+              },
+              "modelSha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+              "maskEncoding": "instance",
+              "sourceSha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+              "evidenceState": "unresolved",
+              "preprocessing": {
+                "input": "upright RGB selected crop; at most 2048 pixels per edge and 4,000,000 pixels total; retain source resolution",
+                "output": "200 object logits and 200 mask logits per tile; object sigmoid >0.5; half-pixel bilinear masks resized to tile raster; mask logits >0; higher-confidence instances paint first within each tile",
+                "resize": "Each tile uses Pillow bilinear to 432x432; no whole-raster downsampling",
+                "tensor": "NCHW float32, RGB/255, ImageNet mean [0.485,0.456,0.406] and std [0.229,0.224,0.225]",
+                "tiling": "Single image up to 512 pixels per edge retains instance masks. Larger images: 512-pixel tiles, stride 384, row-major, final tile anchored to far edge, no padding. Union foreground at source pixel coordinates and retain maximum accepted instance confidence per pixel; connected regions become review candidates.",
+                "geometry": "pixel-edge polygons; no metric inference",
+                "confidence": "uncalibrated instance sigmoid; maximum per pixel in tile overlaps, mean over each returned connected candidate"
+              },
+              "coordinateUnit": "pixel",
+              "polygonization": {
+                "method": "pixel-edge-4-connected",
+                "maxVertices": 500,
+                "maxComponents": 100,
+                "minimumPixels": 16,
+                "simplificationPixels": 0.5
+              },
+              "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2",
+              "runtimeVersion": "1.19.2",
+              "actualInference": true,
+              "rasterTransform": {
+                "page": 1,
+                "unit": "pixel",
+                "region": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1,
+                  "height": 1
+                },
+                "orientation": "exif-normalized",
+                "pixelRegion": [
+                  0,
+                  0,
+                  256,
+                  256
+                ],
+                "sourceWidth": 256,
+                "sourceHeight": 256,
+                "pixelToSource": [
+                  1,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0
+                ],
+                "coordinateConvention": "pixel-edge"
+              },
+              "foregroundPixels": 7911,
+              "inputFingerprint": "0399bd506ec88a84f39ed6c6504fae869161d27cc8f4d2cea4bc424cb6445d0c",
+              "scoresCalibrated": false,
+              "spatialAuthority": false,
+              "omittedComponents": {
+                "small": 0,
+                "complex": 0,
+                "invalid": 0,
+                "capacity": 0
+              }
+            },
+            "inputFingerprint": "c1d0d60321b66464c0d7a92bf481b28b60dc245d78972ed246811a55090a4af6",
+            "inferenceFingerprint": "0399bd506ec88a84f39ed6c6504fae869161d27cc8f4d2cea4bc424cb6445d0c",
+            "originalSourceRevisionId": "8a8d91d9-fdd2-4609-b912-5e9377eec39d"
+          }
+        },
+        "worldStatus": "synthetic",
+        "geometryRole": "observed_roof_projection",
+        "representation": "physical_exterior",
+        "sourceGeometry": {
+          "rings": [
+            [
+              [
+                500107.34375,
+                3100092.03125
+              ],
+              [
+                500107.34375,
+                3100091.71875
+              ],
+              [
+                500107.1875,
+                3100091.71875
+              ],
+              [
+                500107.1875,
+                3100090
+              ],
+              [
+                500107.03125,
+                3100090
+              ],
+              [
+                500107.03125,
+                3100086.71875
+              ],
+              [
+                500106.875,
+                3100086.71875
+              ],
+              [
+                500106.875,
+                3100085.78125
+              ],
+              [
+                500106.71875,
+                3100085.78125
+              ],
+              [
+                500106.71875,
+                3100085.625
+              ],
+              [
+                500106.875,
+                3100085.625
+              ],
+              [
+                500106.875,
+                3100085.46875
+              ],
+              [
+                500107.1875,
+                3100085.46875
+              ],
+              [
+                500107.1875,
+                3100085.3125
+              ],
+              [
+                500107.96875,
+                3100085.3125
+              ],
+              [
+                500107.96875,
+                3100085.15625
+              ],
+              [
+                500111.875,
+                3100085.15625
+              ],
+              [
+                500111.875,
+                3100085
+              ],
+              [
+                500112.1875,
+                3100085
+              ],
+              [
+                500112.1875,
+                3100084.84375
+              ],
+              [
+                500112.34375,
+                3100084.84375
+              ],
+              [
+                500112.34375,
+                3100084.53125
+              ],
+              [
+                500112.5,
+                3100084.53125
+              ],
+              [
+                500112.5,
+                3100082.65625
+              ],
+              [
+                500112.65625,
+                3100082.65625
+              ],
+              [
+                500112.65625,
+                3100082.34375
+              ],
+              [
+                500113.90625,
+                3100082.34375
+              ],
+              [
+                500113.90625,
+                3100082.5
+              ],
+              [
+                500114.53125,
+                3100082.5
+              ],
+              [
+                500114.53125,
+                3100082.65625
+              ],
+              [
+                500115.46875,
+                3100082.65625
+              ],
+              [
+                500115.46875,
+                3100083.4375
+              ],
+              [
+                500115.625,
+                3100083.4375
+              ],
+              [
+                500115.625,
+                3100085.625
+              ],
+              [
+                500115.78125,
+                3100085.625
+              ],
+              [
+                500115.78125,
+                3100086.25
+              ],
+              [
+                500115.9375,
+                3100086.25
+              ],
+              [
+                500115.9375,
+                3100086.5625
+              ],
+              [
+                500116.09375,
+                3100086.5625
+              ],
+              [
+                500116.09375,
+                3100087.03125
+              ],
+              [
+                500116.25,
+                3100087.03125
+              ],
+              [
+                500116.25,
+                3100087.5
+              ],
+              [
+                500116.40625,
+                3100087.5
+              ],
+              [
+                500116.40625,
+                3100089.53125
+              ],
+              [
+                500116.5625,
+                3100089.53125
+              ],
+              [
+                500116.5625,
+                3100090.78125
+              ],
+              [
+                500116.71875,
+                3100090.78125
+              ],
+              [
+                500116.71875,
+                3100091.09375
+              ],
+              [
+                500116.5625,
+                3100091.09375
+              ],
+              [
+                500116.5625,
+                3100091.25
+              ],
+              [
+                500116.71875,
+                3100091.25
+              ],
+              [
+                500116.71875,
+                3100091.71875
+              ],
+              [
+                500116.5625,
+                3100091.71875
+              ],
+              [
+                500116.5625,
+                3100091.875
+              ],
+              [
+                500116.09375,
+                3100091.875
+              ],
+              [
+                500116.09375,
+                3100092.03125
+              ],
+              [
+                500114.21875,
+                3100092.03125
+              ],
+              [
+                500114.21875,
+                3100091.875
+              ],
+              [
+                500109.84375,
+                3100091.875
+              ],
+              [
+                500109.84375,
+                3100092.03125
+              ],
+              [
+                500107.34375,
+                3100092.03125
+              ]
+            ]
+          ]
+        },
+        "sourceReference": {
+          "anchor": [
+            75.00000000000001,
+            28.025254985930832
+          ],
+          "origin": [
+            500000,
+            3100000
+          ],
+          "sourceCrs": "EPSG:32643",
+          "analysisCrs": "EPSG:32643",
+          "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=noop ellps=GRS80",
+          "verticalReference": "building-relative; not aligned between features"
+        },
+        "datasetNamespace": "spatial-ml:5722878a-dd57-4724-84fd-5b979815b3ca",
+        "sourceRevisionId": "60f27565-4d64-4651-b6c1-3330b0b35f43",
+        "geographicGeometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                75.00109201445989,
+                28.02608577196898
+              ],
+              [
+                75.00109201443142,
+                28.026082950949203
+              ],
+              [
+                75.00109042489076,
+                28.026082950961822
+              ],
+              [
+                75.0010904247344,
+                28.026067435352974
+              ],
+              [
+                75.00108883519397,
+                28.026067435365587
+              ],
+              [
+                75.00108883489591,
+                28.026037814657695
+              ],
+              [
+                75.00108724535592,
+                28.02603781467028
+              ],
+              [
+                75.00108724527088,
+                28.026029351610866
+              ],
+              [
+                75.001085655731,
+                28.02602935162343
+              ],
+              [
+                75.00108565571686,
+                28.026027941113526
+              ],
+              [
+                75.00108724525671,
+                28.026027941100956
+              ],
+              [
+                75.00108724524253,
+                28.026026530591054
+              ],
+              [
+                75.00109042432219,
+                28.02602653056586
+              ],
+              [
+                75.00109042430798,
+                28.02602512005595
+              ],
+              [
+                75.00109837200701,
+                28.026025119992656
+              ],
+              [
+                75.0010983719927,
+                28.026023709482757
+              ],
+              [
+                75.00113811048736,
+                28.026023709159382
+              ],
+              [
+                75.00113811047252,
+                28.026022298649472
+              ],
+              [
+                75.00114128955205,
+                28.026022298623108
+              ],
+              [
+                75.00114128953717,
+                28.026020888113205
+              ],
+              [
+                75.00114287907692,
+                28.02602088809999
+              ],
+              [
+                75.00114287904712,
+                28.02601806708018
+              ],
+              [
+                75.00114446858683,
+                28.02601806706695
+              ],
+              [
+                75.0011444684078,
+                28.026001140948054
+              ],
+              [
+                75.00114605794725,
+                28.0260011409348
+              ],
+              [
+                75.00114605791738,
+                28.025998319914983
+              ],
+              [
+                75.00115877423268,
+                28.02599831980834
+              ],
+              [
+                75.0011587742478,
+                28.025999730318254
+              ],
+              [
+                75.00116513240553,
+                28.025999730264488
+              ],
+              [
+                75.00116513242072,
+                28.026001140774397
+              ],
+              [
+                75.00117466965744,
+                28.0260011406932
+              ],
+              [
+                75.00117466973401,
+                28.026008193242752
+              ],
+              [
+                75.00117625927358,
+                28.02600819322915
+              ],
+              [
+                75.00117625948823,
+                28.026027940367843
+              ],
+              [
+                75.00117784902808,
+                28.026027940354226
+              ],
+              [
+                75.00117784908949,
+                28.026033582393836
+              ],
+              [
+                75.00117943862942,
+                28.026033582380208
+              ],
+              [
+                75.00117943866017,
+                28.026036403400017
+              ],
+              [
+                75.00118102820015,
+                28.02603640338636
+              ],
+              [
+                75.00118102824634,
+                28.026040634916065
+              ],
+              [
+                75.00118261778637,
+                28.026040634902397
+              ],
+              [
+                75.00118261783261,
+                28.026044866432105
+              ],
+              [
+                75.00118420737272,
+                28.026044866418413
+              ],
+              [
+                75.0011842075734,
+                28.0260632030471
+              ],
+              [
+                75.00118579711376,
+                28.0260632030334
+              ],
+              [
+                75.00118579723743,
+                28.026074487112567
+              ],
+              [
+                75.00118738677796,
+                28.026074487098832
+              ],
+              [
+                75.00118738680891,
+                28.026077308118623
+              ],
+              [
+                75.00118579726833,
+                28.02607730813235
+              ],
+              [
+                75.0011857972838,
+                28.026078718642243
+              ],
+              [
+                75.0011873868244,
+                28.026078718628515
+              ],
+              [
+                75.00118738687082,
+                28.026082950158198
+              ],
+              [
+                75.00118579733017,
+                28.026082950171926
+              ],
+              [
+                75.00118579734563,
+                28.02608436068181
+              ],
+              [
+                75.0011810287236,
+                28.026084360722884
+              ],
+              [
+                75.00118102873898,
+                28.026085771232776
+              ],
+              [
+                75.00116195425062,
+                28.026085771395387
+              ],
+              [
+                75.00116195423546,
+                28.0260843608855
+              ],
+              [
+                75.00111744709649,
+                28.026084361254632
+              ],
+              [
+                75.00111744711106,
+                28.026085771764524
+              ],
+              [
+                75.00109201445989,
+                28.02608577196898
+              ]
+            ]
+          ]
+        }
+      }
+    ],
+    "revision": 1,
+    "warnings": [
+      "1 building(s) have unknown height and remain footprint-only; no analytical height was invented.",
+      "Local geometry uses metres in the retained area frame and is not RFC GeoJSON. Building-relative heights do not establish shared elevation or legal rights.",
+      "Derived ML footprint proposals: review the retained original, model receipt and documented controls. Height and ownership are unknown; this draft is not survey evidence or statutory acceptance."
+    ],
+    "createdAt": "2026-09-20T14:18:57.957Z",
+    "questions": [
+      {
+        "id": "81da6e7b-49f3-4989-bbc2-055763612e11",
+        "kind": "missing_height",
+        "blocks": "Source-backed exterior volume checks; footprint recording can proceed.",
+        "message": "T066 fictional imagery building: no usable exterior height. Keep the footprint in 2D or enter a labeled display estimate.",
+        "entityId": "3395d7e2-897a-4001-b408-aeb998093f13",
+        "property": "building.exteriorHeight"
+      }
+    ],
+    "sourceHash": "0b5b5bc1541d3cc4f89a0ae61a3c8b7abe57eaa2a0be5adc7f5597f13671a31d",
+    "schemaVersion": "ulpin-canonical/2",
+    "factCandidates": [],
+    "importSignature": "e88a38652ff44ca97c4f0fa75f1a2d78cab64af67101b4625450ea32b3108540",
+    "datasetNamespace": "spatial-ml:5722878a-dd57-4724-84fd-5b979815b3ca",
+    "geographicExtent": [
+      75.00108565571686,
+      28.02599831980834,
+      75.00118738687082,
+      28.02608577196898
+    ],
+    "sourceRevisionIds": [
+      "60f27565-4d64-4651-b6c1-3330b0b35f43",
+      "8a8d91d9-fdd2-4609-b912-5e9377eec39d"
+    ]
+  },
+  "receipt": {
+    "page": 1,
+    "jobId": "14a4d349-1205-4ca8-af5e-34cbddc59061",
+    "model": {
+      "id": "rfdetr-satellite-buildings-onnx-v1",
+      "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf"
+    },
+    "itemId": "5722878a-dd57-4724-84fd-5b979815b3ca",
+    "method": "reviewed pixel-to-metre similarity, then retained area origin addition",
+    "target": {
+      "frame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "origin": [
+        500000,
+        3100000
+      ],
+      "analysisCrs": "EPSG:32643",
+      "expectedRevision": 2
+    },
+    "authority": "Unreviewed model-derived footprint proposals. Height and ownership remain unknown.",
+    "selections": [
+      {
+        "subject": "T066 fictional imagery building",
+        "componentId": "93e8187d-da63-5a6e-addc-4e6556f9ac97"
+      }
+    ],
+    "calibration": {
+      "frame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "reason": "T066 authored fictional test controls: image width represents 40 metres in the retained named frame. Published imagery is not survey evidence for this fictional block.",
+      "imagePoints": [
+        [
+          0,
+          0
+        ],
+        [
+          256,
+          0
+        ]
+      ],
+      "worldPoints": [
+        [
+          100,
+          100
+        ],
+        [
+          140,
+          100
+        ]
+      ],
+      "rasterSha256": "7e73557354dbf8955a6ebde7f84772c41785880bdeeace79630f934510bbbdb4"
+    },
+    "worldStatus": "synthetic",
+    "rasterSha256": "7e73557354dbf8955a6ebde7f84772c41785880bdeeace79630f934510bbbdb4",
+    "schemaVersion": "spatial-footprint-derivation/1",
+    "originalPartId": "cd9101aa-161f-4472-953c-e21c9e270f05",
+    "originalSha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+    "sourceWorkspace": {
+      "frame": {
+        "id": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+        "benchmark": "T061-SYNTHETIC-BM-99741d82",
+        "verticalUnit": "m",
+        "horizontalUnit": "m"
+      },
+      "caseId": "e0caa46d-5df6-4d86-853a-6097fec87b58",
+      "worldStatus": "synthetic",
+      "areaReferenceFingerprint": "4b213dd7dc0862db61b2e5fd6669db6221ce58ff4376d3d0d24feb817444efaf"
+    },
+    "inferenceReceipt": {
+      "model": {
+        "id": "rfdetr-satellite-buildings-onnx-v1",
+        "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+        "license": "Apache-2.0 model card; retain RF-DETR and checkpoint attribution",
+        "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
+      },
+      "tiling": {
+        "order": "row-major",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 256,
+            "height": 256,
+            "tileToRaster": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0
+            ]
+          }
+        ],
+        "stride": 384,
+        "enabled": false,
+        "edgeRule": "anchor final tile to far edge; no padding",
+        "seamRule": "single tile; higher-confidence instance wins overlapping pixels",
+        "tileEdge": 512
+      },
+      "backend": "onnxruntime-cpu",
+      "quality": "Reviewed assistance only. Fixed 12 published OAM/OSM test tiles using this runtime: aggregate IoU 0.2874, precision 0.3418, recall 0.6434. Clear occupied tiles reach IoU 0.57–0.86; empty and blurred scenes show false positives. No threshold tuning. Single-tile feasibility results do not establish tiled boundary accuracy; overlap union may merge touching roofs and retain edge false positives. No cadastral or Indian pilot accuracy claim.",
+      "threads": 2,
+      "sourceId": "8a8d91d9-fdd2-4609-b912-5e9377eec39d",
+      "authority": "Unresolved model pixel proposals; metric placement and record review are separate.",
+      "scoreKind": "instance_sigmoid",
+      "inferenceMs": 1133.364,
+      "limitations": [
+        "Review every candidate against the source; false positives and missed regions occur.",
+        "A room or roof region does not establish ownership, a legal unit, height, level or metric geometry.",
+        "Named-frame calibration and independent placement evidence are required before metric application."
+      ],
+      "maskPalette": {
+        "0": "background",
+        "1": "building",
+        "2": "building",
+        "3": "building",
+        "4": "building",
+        "5": "building",
+        "6": "building",
+        "7": "building",
+        "8": "building"
+      },
+      "modelSha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+      "maskEncoding": "instance",
+      "sourceSha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+      "evidenceState": "unresolved",
+      "preprocessing": {
+        "input": "upright RGB selected crop; at most 2048 pixels per edge and 4,000,000 pixels total; retain source resolution",
+        "output": "200 object logits and 200 mask logits per tile; object sigmoid >0.5; half-pixel bilinear masks resized to tile raster; mask logits >0; higher-confidence instances paint first within each tile",
+        "resize": "Each tile uses Pillow bilinear to 432x432; no whole-raster downsampling",
+        "tensor": "NCHW float32, RGB/255, ImageNet mean [0.485,0.456,0.406] and std [0.229,0.224,0.225]",
+        "tiling": "Single image up to 512 pixels per edge retains instance masks. Larger images: 512-pixel tiles, stride 384, row-major, final tile anchored to far edge, no padding. Union foreground at source pixel coordinates and retain maximum accepted instance confidence per pixel; connected regions become review candidates.",
+        "geometry": "pixel-edge polygons; no metric inference",
+        "confidence": "uncalibrated instance sigmoid; maximum per pixel in tile overlaps, mean over each returned connected candidate"
+      },
+      "coordinateUnit": "pixel",
+      "polygonization": {
+        "method": "pixel-edge-4-connected",
+        "maxVertices": 500,
+        "maxComponents": 100,
+        "minimumPixels": 16,
+        "simplificationPixels": 0.5
+      },
+      "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2",
+      "runtimeVersion": "1.19.2",
+      "actualInference": true,
+      "rasterTransform": {
+        "page": 1,
+        "unit": "pixel",
+        "region": {
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 1
+        },
+        "orientation": "exif-normalized",
+        "pixelRegion": [
+          0,
+          0,
+          256,
+          256
+        ],
+        "sourceWidth": 256,
+        "sourceHeight": 256,
+        "pixelToSource": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "coordinateConvention": "pixel-edge"
+      },
+      "foregroundPixels": 7911,
+      "inputFingerprint": "0399bd506ec88a84f39ed6c6504fae869161d27cc8f4d2cea4bc424cb6445d0c",
+      "scoresCalibrated": false,
+      "spatialAuthority": false,
+      "omittedComponents": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      }
+    },
+    "inputFingerprint": "c1d0d60321b66464c0d7a92bf481b28b60dc245d78972ed246811a55090a4af6",
+    "inferenceFingerprint": "0399bd506ec88a84f39ed6c6504fae869161d27cc8f4d2cea4bc424cb6445d0c",
+    "originalSourceRevisionId": "8a8d91d9-fdd2-4609-b912-5e9377eec39d"
+  }
+}

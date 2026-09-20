@@ -128,7 +128,7 @@ export async function createCase(
   );
   return caseFrom(result.rows[0]);
 }
-async function detailFromClient(
+export async function detailFromClient(
   client: PoolClient,
   id: string,
 ): Promise<CaseDetail> {
@@ -861,6 +861,8 @@ export async function retryJob(jobId: string) {
     const original =
       (await client.query("SELECT * FROM jobs WHERE id=$1", [jobId])).rows[0] ??
       notFound();
+    if (original.operation === "spatial-inference")
+      throw new AppError(422, "ML_ITEM_RETRY_REQUIRED", "Retry this extraction from its spatial batch item so its source, model and attempt history stay linked.");
     const current = await lockCase(client, original.case_id);
     if (original.status !== "failed")
       throw new AppError(

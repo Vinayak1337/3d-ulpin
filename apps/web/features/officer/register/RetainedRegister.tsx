@@ -174,6 +174,7 @@ export default function RetainedRegister({
                   </Button>
                 </div>
               </Panel>
+              <details className={styles.retainedDisclosure}><summary>Documents & recorded rights</summary>
               <Panel title="Rights & evidence">
                 <div className={styles.shortList}>
                   {record.rights.map((r, i) => (
@@ -203,6 +204,7 @@ export default function RetainedRegister({
                   ))}
                 </div>
               </Panel>
+              </details>
               {draft && (
                 <Panel title="Correction draft">
                   <div style={{ padding: 16, display: "grid", gap: 12 }}>
@@ -423,8 +425,8 @@ export default function RetainedRegister({
                   </div>
                 </Panel>
               )}
-              <RecordHistory key={record.id} record={record} />
-              <SpatialInquiry key={detail.site.id} detail={detail} />
+              <details className={styles.retainedDisclosure}><summary>Revision history</summary><RecordHistory key={record.id} record={record} /></details>
+              <details className={styles.retainedDisclosure}><summary>Spatial inquiry</summary><SpatialInquiry key={detail.site.id} detail={detail} /></details>
             </>
           ) : (
             <EmptyState

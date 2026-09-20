@@ -1,3 +1,5 @@
+import { studioProductUrl } from "../features/studio/product/urls";
+
 /** Compatibility for historical presentation links; source and API paths are untouched. */
 export function legacyUrl(value: string): string {
   if (!value.startsWith("/") || value.startsWith("//")) return value;
@@ -8,24 +10,24 @@ export function legacyUrl(value: string): string {
   if (path === "/")
     path = url.searchParams.get("case")
       ? `/workspace/${encodeURIComponent(url.searchParams.get("case")!)}`
-      : "/blocks";
+      : "/studio/work";
   else if (parts[0] === "areas")
-    path = "/blocks" + (parts[1] ? "/" + parts[1] : "");
+    path = "/blocks" + path.slice("/areas".length);
   else if (
     parts[0] === "properties" &&
     parts[1] &&
-    (!parts[2] || parts[2] === "prepare")
+    (parts.length === 2 || (parts.length === 3 && parts[2] === "prepare"))
   )
     path = `/properties/${parts[1]}/${parts[2] === "prepare" ? "workspace" : "register"}`;
   else if (parts[0] === "registry")
-    path = parts[1] ? `/register/records/${parts[1]}` : "/register";
+    path = parts[1] ? `/register/records/${parts.slice(1).join("/")}` : "/register";
   else if (parts[0] === "sites")
-    path = parts[1] ? `/register/sites/${parts[1]}` : "/register";
-  else if (parts[0] === "workbench")
+    path = parts[1] ? `/register/sites/${parts.slice(1).join("/")}` : "/register";
+  else if (path === "/workbench")
     path = url.searchParams.get("case")
       ? `/workspace/${encodeURIComponent(url.searchParams.get("case")!)}/geometry`
       : "/workspace";
-  return path + url.search + url.hash;
+  return studioProductUrl(path + url.search + url.hash);
 }
 export type RouteSearchParams = Record<string, string | string[] | undefined>;
 export function withRouteQuery(path: string, values: RouteSearchParams) {

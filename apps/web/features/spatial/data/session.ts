@@ -1,3 +1,4 @@
+import type {LocalOrbitState} from './local-session';
 export interface MapCamera {
     longitude: number;
     latitude: number;
@@ -12,6 +13,7 @@ export interface MapSelection {
     detailId?: string;
 }
 export interface MapSession {
+    localOrbit?:LocalOrbitState;
     selection: MapSelection | null;
     mode: "3d" | "2d";
     camera: MapCamera | null;

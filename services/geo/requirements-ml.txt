@@ -1,0 +1,4 @@
+# Optional local CPU inference; install alongside requirements.txt. No paid API.
+onnxruntime==1.19.2
+rasterio==1.4.4
+pypdfium2==4.30.0

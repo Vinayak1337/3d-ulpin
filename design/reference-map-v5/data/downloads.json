@@ -1,0 +1,14 @@
+[
+  {
+    "label": "neem-reference-dataset.zip",
+    "href": "data/neem-reference-dataset.zip",
+    "bytes": 105601,
+    "sha256": "36473bf20a32f721d9b596e1fa63891417fad3ef69907d7bb82ed6d75d301858"
+  },
+  {
+    "label": "neem-reference-gis.zip",
+    "href": "data/neem-reference-gis.zip",
+    "bytes": 18233,
+    "sha256": "4d5b80c7c630f5f4fbb08a8ced35b62c06c9952d21e012c8ac5a636071e4854f"
+  }
+]

@@ -1,0 +1,71 @@
+{
+  "schema": "canonical.elevation-surfaces.v1",
+  "records": [
+    {
+      "sourceFile": "elevation/lake-view-dem.tif",
+      "format": "GeoTIFF",
+      "width": 220,
+      "height": 230,
+      "bounds": [
+        -26,
+        -26,
+        194,
+        204
+      ],
+      "coordinateFrame": "LOCAL-LAKE-VIEW-DEMO-M",
+      "verticalReference": "DEMO-BM-01 fictional zero datum; not national MSL",
+      "affineTransform": [
+        1.0,
+        0.0,
+        -26.0,
+        0.0,
+        -1.0,
+        204.0
+      ],
+      "sourceRevision": "lake-view-complete-1",
+      "qualityStatus": "unreviewed_synthetic",
+      "assetId": "elevation/lake-view-dem.tif",
+      "type": "DEM",
+      "pixelSize": {
+        "x": 1,
+        "y": 1,
+        "unit": "metre"
+      },
+      "minimumElevation": 0,
+      "maximumElevation": 0.0
+    },
+    {
+      "sourceFile": "elevation/lake-view-dsm.tif",
+      "format": "GeoTIFF",
+      "width": 220,
+      "height": 230,
+      "bounds": [
+        -26,
+        -26,
+        194,
+        204
+      ],
+      "coordinateFrame": "LOCAL-LAKE-VIEW-DEMO-M",
+      "verticalReference": "DEMO-BM-01 fictional zero datum; not national MSL",
+      "affineTransform": [
+        1.0,
+        0.0,
+        -26.0,
+        0.0,
+        -1.0,
+        204.0
+      ],
+      "sourceRevision": "lake-view-complete-1",
+      "qualityStatus": "unreviewed_synthetic",
+      "assetId": "elevation/lake-view-dsm.tif",
+      "type": "DSM",
+      "pixelSize": {
+        "x": 1,
+        "y": 1,
+        "unit": "metre"
+      },
+      "minimumElevation": 0,
+      "maximumElevation": 15.5
+    }
+  ]
+}

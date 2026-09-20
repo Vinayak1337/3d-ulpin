@@ -1,0 +1,1118 @@
+{
+  "type": "FeatureCollection",
+  "name": "FICTIONAL floor_spaces",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "B01-FB",
+      "properties": {
+        "object_id": "B01-FB",
+        "object_type": "floor",
+        "name": "Basement",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 3.1,
+        "base_elevation_m": -3.1,
+        "area_sq_m": 253.11111110000002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": -1,
+        "buildingId": "B01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18782793861465,
+              28.549568704703347
+            ],
+            [
+              77.18799138599155,
+              28.549566069589165
+            ],
+            [
+              77.18799455701476,
+              28.549719408971292
+            ],
+            [
+              77.18793326416234,
+              28.549720397168407
+            ],
+            [
+              77.18793291183505,
+              28.54970335945876
+            ],
+            [
+              77.18783075709057,
+              28.549705006391388
+            ],
+            [
+              77.18782793861465,
+              28.549568704703347
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-FB-C",
+      "properties": {
+        "object_id": "B01-FB-C",
+        "object_type": "space",
+        "name": "Basement parking",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": -3.1,
+        "area_sq_m": 234.18444453600023,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": -1,
+        "floorId": "B01-FB",
+        "buildingId": "B01",
+        "use": "parking",
+        "bedrooms": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18783105609948,
+              28.54957121095341
+            ],
+            [
+              77.18798837420353,
+              28.54956867465574
+            ],
+            [
+              77.1879914395217,
+              28.54971690272549
+            ],
+            [
+              77.18793627595583,
+              28.5497177921028
+            ],
+            [
+              77.1879359236281,
+              28.549700754393182
+            ],
+            [
+              77.18783376888635,
+              28.549702401327934
+            ],
+            [
+              77.18783105609948,
+              28.54957121095341
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F0",
+      "properties": {
+        "object_id": "B01-F0",
+        "object_type": "floor",
+        "name": "Ground floor",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 3.1,
+        "base_elevation_m": 0.0,
+        "area_sq_m": 253.11111110000002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 0,
+        "buildingId": "B01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18782793861465,
+              28.549568704703347
+            ],
+            [
+              77.18799138599155,
+              28.549566069589165
+            ],
+            [
+              77.18799455701476,
+              28.549719408971292
+            ],
+            [
+              77.18793326416234,
+              28.549720397168407
+            ],
+            [
+              77.18793291183505,
+              28.54970335945876
+            ],
+            [
+              77.18783075709057,
+              28.549705006391388
+            ],
+            [
+              77.18782793861465,
+              28.549568704703347
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F0-U1",
+      "properties": {
+        "object_id": "B01-F0-U1",
+        "object_type": "space",
+        "name": "Apartment 101",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 0.0,
+        "area_sq_m": 103.26555559500002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 0,
+        "floorId": "B01-F0",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18783105609948,
+              28.54957121095341
+            ],
+            [
+              77.18790358587725,
+              28.549570041643985
+            ],
+            [
+              77.18790629875387,
+              28.549701232012165
+            ],
+            [
+              77.18783376888635,
+              28.549702401327934
+            ],
+            [
+              77.18783105609948,
+              28.54957121095341
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F0-U2",
+      "properties": {
+        "object_id": "B01-F0-U2",
+        "object_type": "space",
+        "name": "Apartment 102",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 0.0,
+        "area_sq_m": 113.465555601,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 0,
+        "floorId": "B01-F0",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18791584443082,
+              28.549569844010403
+            ],
+            [
+              77.18798837420353,
+              28.54956867465574
+            ],
+            [
+              77.1879914395217,
+              28.54971690272549
+            ],
+            [
+              77.18793627595583,
+              28.5497177921028
+            ],
+            [
+              77.1879359236281,
+              28.549700754393182
+            ],
+            [
+              77.18791855732262,
+              28.54970103437751
+            ],
+            [
+              77.18791584443082,
+              28.549569844010403
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F0-C",
+      "properties": {
+        "object_id": "B01-F0-C",
+        "object_type": "space",
+        "name": "Shared circulation",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 0.0,
+        "area_sq_m": 14.544444450000128,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 0,
+        "floorId": "B01-F0",
+        "buildingId": "B01",
+        "use": "common",
+        "bedrooms": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18790460742339,
+              28.549570025174564
+            ],
+            [
+              77.1879148228847,
+              28.54956986047991
+            ],
+            [
+              77.18791753577523,
+              28.549701050847105
+            ],
+            [
+              77.18790732030128,
+              28.549701215542655
+            ],
+            [
+              77.18790460742339,
+              28.549570025174564
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F1",
+      "properties": {
+        "object_id": "B01-F1",
+        "object_type": "floor",
+        "name": "Floor 1",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 3.1,
+        "base_elevation_m": 3.1,
+        "area_sq_m": 253.11111110000002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 1,
+        "buildingId": "B01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18782793861465,
+              28.549568704703347
+            ],
+            [
+              77.18799138599155,
+              28.549566069589165
+            ],
+            [
+              77.18799455701476,
+              28.549719408971292
+            ],
+            [
+              77.18793326416234,
+              28.549720397168407
+            ],
+            [
+              77.18793291183505,
+              28.54970335945876
+            ],
+            [
+              77.18783075709057,
+              28.549705006391388
+            ],
+            [
+              77.18782793861465,
+              28.549568704703347
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F1-U1",
+      "properties": {
+        "object_id": "B01-F1-U1",
+        "object_type": "space",
+        "name": "Apartment 201",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 3.1,
+        "area_sq_m": 103.26555559500002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 1,
+        "floorId": "B01-F1",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18783105609948,
+              28.54957121095341
+            ],
+            [
+              77.18790358587725,
+              28.549570041643985
+            ],
+            [
+              77.18790629875387,
+              28.549701232012165
+            ],
+            [
+              77.18783376888635,
+              28.549702401327934
+            ],
+            [
+              77.18783105609948,
+              28.54957121095341
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F1-U2",
+      "properties": {
+        "object_id": "B01-F1-U2",
+        "object_type": "space",
+        "name": "Apartment 202",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 3.1,
+        "area_sq_m": 113.465555601,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 1,
+        "floorId": "B01-F1",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18791584443082,
+              28.549569844010403
+            ],
+            [
+              77.18798837420353,
+              28.54956867465574
+            ],
+            [
+              77.1879914395217,
+              28.54971690272549
+            ],
+            [
+              77.18793627595583,
+              28.5497177921028
+            ],
+            [
+              77.1879359236281,
+              28.549700754393182
+            ],
+            [
+              77.18791855732262,
+              28.54970103437751
+            ],
+            [
+              77.18791584443082,
+              28.549569844010403
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F1-C",
+      "properties": {
+        "object_id": "B01-F1-C",
+        "object_type": "space",
+        "name": "Shared circulation",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 3.1,
+        "area_sq_m": 14.544444450000128,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 1,
+        "floorId": "B01-F1",
+        "buildingId": "B01",
+        "use": "common",
+        "bedrooms": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18790460742339,
+              28.549570025174564
+            ],
+            [
+              77.1879148228847,
+              28.54956986047991
+            ],
+            [
+              77.18791753577523,
+              28.549701050847105
+            ],
+            [
+              77.18790732030128,
+              28.549701215542655
+            ],
+            [
+              77.18790460742339,
+              28.549570025174564
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F2",
+      "properties": {
+        "object_id": "B01-F2",
+        "object_type": "floor",
+        "name": "Floor 2",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 3.1,
+        "base_elevation_m": 6.2,
+        "area_sq_m": 253.11111110000002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 2,
+        "buildingId": "B01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18782793861465,
+              28.549568704703347
+            ],
+            [
+              77.18799138599155,
+              28.549566069589165
+            ],
+            [
+              77.18799455701476,
+              28.549719408971292
+            ],
+            [
+              77.18793326416234,
+              28.549720397168407
+            ],
+            [
+              77.18793291183505,
+              28.54970335945876
+            ],
+            [
+              77.18783075709057,
+              28.549705006391388
+            ],
+            [
+              77.18782793861465,
+              28.549568704703347
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F2-U1",
+      "properties": {
+        "object_id": "B01-F2-U1",
+        "object_type": "space",
+        "name": "Apartment 301",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 6.2,
+        "area_sq_m": 103.26555559500002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 2,
+        "floorId": "B01-F2",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18783105609948,
+              28.54957121095341
+            ],
+            [
+              77.18790358587725,
+              28.549570041643985
+            ],
+            [
+              77.18790629875387,
+              28.549701232012165
+            ],
+            [
+              77.18783376888635,
+              28.549702401327934
+            ],
+            [
+              77.18783105609948,
+              28.54957121095341
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F2-U2",
+      "properties": {
+        "object_id": "B01-F2-U2",
+        "object_type": "space",
+        "name": "Apartment 302",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 6.2,
+        "area_sq_m": 113.465555601,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 2,
+        "floorId": "B01-F2",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18791584443082,
+              28.549569844010403
+            ],
+            [
+              77.18798837420353,
+              28.54956867465574
+            ],
+            [
+              77.1879914395217,
+              28.54971690272549
+            ],
+            [
+              77.18793627595583,
+              28.5497177921028
+            ],
+            [
+              77.1879359236281,
+              28.549700754393182
+            ],
+            [
+              77.18791855732262,
+              28.54970103437751
+            ],
+            [
+              77.18791584443082,
+              28.549569844010403
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F2-C",
+      "properties": {
+        "object_id": "B01-F2-C",
+        "object_type": "space",
+        "name": "Shared circulation",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 6.2,
+        "area_sq_m": 14.544444450000128,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 2,
+        "floorId": "B01-F2",
+        "buildingId": "B01",
+        "use": "common",
+        "bedrooms": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18790460742339,
+              28.549570025174564
+            ],
+            [
+              77.1879148228847,
+              28.54956986047991
+            ],
+            [
+              77.18791753577523,
+              28.549701050847105
+            ],
+            [
+              77.18790732030128,
+              28.549701215542655
+            ],
+            [
+              77.18790460742339,
+              28.549570025174564
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F3",
+      "properties": {
+        "object_id": "B01-F3",
+        "object_type": "floor",
+        "name": "Floor 3",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 3.1,
+        "base_elevation_m": 9.3,
+        "area_sq_m": 253.11111110000002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 3,
+        "buildingId": "B01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18782793861465,
+              28.549568704703347
+            ],
+            [
+              77.18799138599155,
+              28.549566069589165
+            ],
+            [
+              77.18799455701476,
+              28.549719408971292
+            ],
+            [
+              77.18793326416234,
+              28.549720397168407
+            ],
+            [
+              77.18793291183505,
+              28.54970335945876
+            ],
+            [
+              77.18783075709057,
+              28.549705006391388
+            ],
+            [
+              77.18782793861465,
+              28.549568704703347
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F3-U1",
+      "properties": {
+        "object_id": "B01-F3-U1",
+        "object_type": "space",
+        "name": "Apartment 401",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 9.3,
+        "area_sq_m": 103.26555559500002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 3,
+        "floorId": "B01-F3",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18783105609948,
+              28.54957121095341
+            ],
+            [
+              77.18790358587725,
+              28.549570041643985
+            ],
+            [
+              77.18790629875387,
+              28.549701232012165
+            ],
+            [
+              77.18783376888635,
+              28.549702401327934
+            ],
+            [
+              77.18783105609948,
+              28.54957121095341
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F3-U2",
+      "properties": {
+        "object_id": "B01-F3-U2",
+        "object_type": "space",
+        "name": "Apartment 402",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 9.3,
+        "area_sq_m": 113.465555601,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 3,
+        "floorId": "B01-F3",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18791584443082,
+              28.549569844010403
+            ],
+            [
+              77.18798837420353,
+              28.54956867465574
+            ],
+            [
+              77.1879914395217,
+              28.54971690272549
+            ],
+            [
+              77.18793627595583,
+              28.5497177921028
+            ],
+            [
+              77.1879359236281,
+              28.549700754393182
+            ],
+            [
+              77.18791855732262,
+              28.54970103437751
+            ],
+            [
+              77.18791584443082,
+              28.549569844010403
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F3-C",
+      "properties": {
+        "object_id": "B01-F3-C",
+        "object_type": "space",
+        "name": "Shared circulation",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 9.3,
+        "area_sq_m": 14.544444450000128,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 3,
+        "floorId": "B01-F3",
+        "buildingId": "B01",
+        "use": "common",
+        "bedrooms": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18790460742339,
+              28.549570025174564
+            ],
+            [
+              77.1879148228847,
+              28.54956986047991
+            ],
+            [
+              77.18791753577523,
+              28.549701050847105
+            ],
+            [
+              77.18790732030128,
+              28.549701215542655
+            ],
+            [
+              77.18790460742339,
+              28.549570025174564
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F4",
+      "properties": {
+        "object_id": "B01-F4",
+        "object_type": "floor",
+        "name": "Floor 4",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 3.1,
+        "base_elevation_m": 12.4,
+        "area_sq_m": 253.11111110000002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 4,
+        "buildingId": "B01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18782793861465,
+              28.549568704703347
+            ],
+            [
+              77.18799138599155,
+              28.549566069589165
+            ],
+            [
+              77.18799455701476,
+              28.549719408971292
+            ],
+            [
+              77.18793326416234,
+              28.549720397168407
+            ],
+            [
+              77.18793291183505,
+              28.54970335945876
+            ],
+            [
+              77.18783075709057,
+              28.549705006391388
+            ],
+            [
+              77.18782793861465,
+              28.549568704703347
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F4-U1",
+      "properties": {
+        "object_id": "B01-F4-U1",
+        "object_type": "space",
+        "name": "Apartment 501",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 12.4,
+        "area_sq_m": 103.26555559500002,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 4,
+        "floorId": "B01-F4",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18783105609948,
+              28.54957121095341
+            ],
+            [
+              77.18790358587725,
+              28.549570041643985
+            ],
+            [
+              77.18790629875387,
+              28.549701232012165
+            ],
+            [
+              77.18783376888635,
+              28.549702401327934
+            ],
+            [
+              77.18783105609948,
+              28.54957121095341
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F4-U2",
+      "properties": {
+        "object_id": "B01-F4-U2",
+        "object_type": "space",
+        "name": "Apartment 502",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 12.4,
+        "area_sq_m": 113.465555601,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 4,
+        "floorId": "B01-F4",
+        "buildingId": "B01",
+        "use": "residential",
+        "bedrooms": 2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18791584443082,
+              28.549569844010403
+            ],
+            [
+              77.18798837420353,
+              28.54956867465574
+            ],
+            [
+              77.1879914395217,
+              28.54971690272549
+            ],
+            [
+              77.18793627595583,
+              28.5497177921028
+            ],
+            [
+              77.1879359236281,
+              28.549700754393182
+            ],
+            [
+              77.18791855732262,
+              28.54970103437751
+            ],
+            [
+              77.18791584443082,
+              28.549569844010403
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F4-C",
+      "properties": {
+        "object_id": "B01-F4-C",
+        "object_type": "space",
+        "name": "Shared circulation",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 2.9,
+        "base_elevation_m": 12.4,
+        "area_sq_m": 14.544444450000128,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "level": 4,
+        "floorId": "B01-F4",
+        "buildingId": "B01",
+        "use": "common",
+        "bedrooms": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18790460742339,
+              28.549570025174564
+            ],
+            [
+              77.1879148228847,
+              28.54956986047991
+            ],
+            [
+              77.18791753577523,
+              28.549701050847105
+            ],
+            [
+              77.18790732030128,
+              28.549701215542655
+            ],
+            [
+              77.18790460742339,
+              28.549570025174564
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "url": "http://127.0.0.1:3013/#map",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "errors": [],
+  "checks": [
+    "Idle map does not render continuously",
+    "B12 has only a flat footprint",
+    "2D uses OrthographicCamera",
+    "2D changes actual canvas",
+    "Space selection keeps exact space identity",
+    "Isolate displays the exact selected floor",
+    "Separate floors changes displayed floor positions",
+    "Section elevation updates",
+    "Basement selection reveals underground view",
+    "Property search focuses the missing-height footprint",
+    "Missing height disables section controls",
+    "Close inspector expands canvas",
+    "Closing inspector preserves camera",
+    "Find property restores inspector",
+    "Tablet has no horizontal page overflow",
+    "WebGL fallback keeps property retrieval and inspector available",
+    "No browser page errors"
+  ],
+  "openingStats": {
+    "detail": "full",
+    "architecture": {
+      "buildings": 28,
+      "drawBatches": 282,
+      "detail": "full",
+      "authoredTextures": 2
+    },
+    "environment": {
+      "trees": 45,
+      "authored": true
+    },
+    "renderer": "Three.js 186",
+    "cameraType": "PerspectiveCamera",
+    "contextLost": false,
+    "drawCalls": 570,
+    "triangles": 195791,
+    "geometries": 515,
+    "textures": 9,
+    "renderCount": 2,
+    "elapsedMs": 1100,
+    "viewport": {
+      "width": 1120,
+      "height": 845,
+      "pixelRatio": 1
+    },
+    "activeFrameIntervals": {
+      "count": 1,
+      "averageMs": 233.4,
+      "p95Ms": 233.4
+    },
+    "cpuRenderTime": {
+      "count": 2,
+      "averageMs": 75.5,
+      "p95Ms": 148
+    },
+    "noHeightExtrusions": []
+  },
+  "orbitStats": {
+    "detail": "full",
+    "architecture": {
+      "buildings": 28,
+      "drawBatches": 282,
+      "detail": "full",
+      "authoredTextures": 2
+    },
+    "environment": {
+      "trees": 45,
+      "authored": true
+    },
+    "renderer": "Three.js 186",
+    "cameraType": "PerspectiveCamera",
+    "contextLost": false,
+    "drawCalls": 550,
+    "triangles": 188954,
+    "geometries": 608,
+    "textures": 9,
+    "renderCount": 89,
+    "elapsedMs": 8184,
+    "viewport": {
+      "width": 1120,
+      "height": 845,
+      "pixelRatio": 1
+    },
+    "activeFrameIntervals": {
+      "count": 68,
+      "averageMs": 33.82,
+      "p95Ms": 33.4
+    },
+    "cpuRenderTime": {
+      "count": 69,
+      "averageMs": 3.36,
+      "p95Ms": 5.1
+    },
+    "noHeightExtrusions": []
+  },
+  "continuousOrbitStats": {
+    "method": "Continuous requestAnimationFrame with OrbitControls.autoRotate; no pointer protocol pacing",
+    "measuredDurationMs": 2201,
+    "detail": "full",
+    "architecture": {
+      "buildings": 28,
+      "drawBatches": 282,
+      "detail": "full",
+      "authoredTextures": 2
+    },
+    "environment": {
+      "trees": 45,
+      "authored": true
+    },
+    "renderer": "Three.js 186",
+    "cameraType": "PerspectiveCamera",
+    "contextLost": false,
+    "drawCalls": 548,
+    "triangles": 187565,
+    "geometries": 608,
+    "textures": 9,
+    "renderCount": 155,
+    "elapsedMs": 10388,
+    "viewport": {
+      "width": 1120,
+      "height": 845,
+      "pixelRatio": 1
+    },
+    "activeFrameIntervals": {
+      "count": 65,
+      "averageMs": 33.33,
+      "p95Ms": 33.4
+    },
+    "cpuRenderTime": {
+      "count": 66,
+      "averageMs": 4.25,
+      "p95Ms": 6.4
+    },
+    "noHeightExtrusions": []
+  },
+  "tabletStats": {
+    "detail": "full",
+    "architecture": {
+      "buildings": 28,
+      "drawBatches": 282,
+      "detail": "full",
+      "authoredTextures": 2
+    },
+    "environment": {
+      "trees": 45,
+      "authored": true
+    },
+    "renderer": "Three.js 186",
+    "cameraType": "PerspectiveCamera",
+    "contextLost": false,
+    "drawCalls": 553,
+    "triangles": 195278,
+    "geometries": 503,
+    "textures": 9,
+    "renderCount": 2,
+    "elapsedMs": 600,
+    "viewport": {
+      "width": 724,
+      "height": 613,
+      "pixelRatio": 1
+    },
+    "activeFrameIntervals": {
+      "count": 1,
+      "averageMs": 166.6,
+      "p95Ms": 166.6
+    },
+    "cpuRenderTime": {
+      "count": 2,
+      "averageMs": 57.4,
+      "p95Ms": 111.8
+    },
+    "noHeightExtrusions": []
+  },
+  "graphics": {
+    "vendor": "Google Inc. (Apple)",
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M3, Unspecified Version)",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+  }
+}

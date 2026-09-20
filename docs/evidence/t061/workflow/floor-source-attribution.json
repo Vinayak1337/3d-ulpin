@@ -1,0 +1,11 @@
+{
+  "archive": "https://zenodo.org/api/records/2613548/files/cubicasa5k.zip/content",
+  "doi": "10.5281/zenodo.2613548",
+  "split": "test",
+  "sample": "high_quality_architectural/1191",
+  "files": [
+    "cubicasa5k/high_quality_architectural/1191/F1_scaled.png",
+    "cubicasa5k/high_quality_architectural/1191/F1_original.png",
+    "cubicasa5k/high_quality_architectural/1191/model.svg"
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "schema": "ulpin-spatial-ml-actual-workflow/1",
+  "status": "passed",
+  "environment": "Local production web/API and real private Docker Celery/ONNX worker; full bundled Chromium",
+  "run": "99741d82-febe-4533-bc05-49686744a555",
+  "completedAt": "2026-09-19T22:50:16.667Z",
+  "newSyntheticRecords": {
+    "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "buildingId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+    "caseId": "b5b9b4e8-c06a-4aca-afec-c8d443b708e1",
+    "preparationPackageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+    "unitId": "a0779a57-1106-4b5d-bd3f-1dbd498c777f",
+    "roofFeatureId": "4090eb05-5a24-4ed6-b449-18631c183210",
+    "roofPackageId": "8ca945f5-1d8a-409d-b300-6f1d8f701892"
+  },
+  "links": {
+    "workspace": "http://127.0.0.1:3000/studio/properties/1e6c6e44-15ee-4c41-b6bd-067e59151b47/workspace?area=4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "register": "http://127.0.0.1:3000/studio/properties/1e6c6e44-15ee-4c41-b6bd-067e59151b47/register?area=4c039f5f-c667-405a-962c-c317e6f32a8b&tab=floors&record=a0779a57-1106-4b5d-bd3f-1dbd498c777f",
+    "area": "http://127.0.0.1:3000/studio/areas/4c039f5f-c667-405a-962c-c317e6f32a8b?feature=1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+  },
+  "checks": {
+    "apiWorkflowGroups": 10,
+    "retainedMlBrowserGroups": 6,
+    "recordedRegisterBrowserGroups": 2,
+    "browserErrors": [],
+    "browserApiWrites": 0
+  },
+  "batch": {
+    "id": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+    "items": [
+      {
+        "id": "083be233-cc08-4a16-bae5-094621fe4dc3",
+        "task": "building",
+        "page": 1,
+        "state": "succeeded",
+        "regions": 8,
+        "retainedAttempts": 2,
+        "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
+      },
+      {
+        "id": "105d69bc-e749-463c-87b7-07e4b9ed66d8",
+        "task": "floor-plan",
+        "page": 1,
+        "state": "succeeded",
+        "regions": 75,
+        "retainedAttempts": 2,
+        "profileVersion": "cubicasa-rooms-768-bilinear-pad64-v1"
+      },
+      {
+        "id": "968a2ebf-224b-40d5-9980-5eeb42074a88",
+        "task": "floor-plan",
+        "page": 2,
+        "state": "failed",
+        "regions": 0,
+        "retainedAttempts": 2,
+        "profileVersion": null
+      },
+      {
+        "id": "fc58cb72-c064-47bb-a52b-9a8a7cd60b56",
+        "task": "building",
+        "page": 1,
+        "state": "empty",
+        "regions": 0,
+        "retainedAttempts": 2,
+        "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
+      }
+    ]
+  },
+  "syntheticMetrics": {
+    "area": 69.992404514,
+    "height": 3,
+    "volume": 209.977213542,
+    "unit": "m",
+    "roomRingPoints": 221,
+    "roomDistinctVertices": 220,
+    "authority": "Explicitly authored synthetic metre controls and height; exact model contour, not surveyed room dimensions or semantic acceptance."
+  },
+  "preservation": {
+    "individuallyVerifiedOriginals": 8,
+    "originalByteHashesAndReceiptStatuses": "unchanged after failure, recovery, application and recording",
+    "existingDatasetsMutated": false,
+    "repositorySnapshotRefreshed": false,
+    "roofHeight": null,
+    "roofWorldStatus": "synthetic"
+  },
+  "recovery": {
+    "failure": "Initial valid items failed because the Docker worker lacked native libexpat.so.1 needed by rasterio polygonization. No spatial facts were applied.",
+    "fix": "Install libexpat1 and perform real runtime imports in readiness; retry same items with retained request keys.",
+    "originalAttempts": "preserved unchanged",
+    "evidence": [
+      "workflow/batch-before-runtime-recovery-1.json",
+      "workflow/preserved-after-runtime-failure.json",
+      "workflow/batch-after-worker-retry.json",
+      "models/docker-native-dependency-failure.json"
+    ]
+  },
+  "qualification": [
+    "Published CubiCasa and OAM evaluation rasters retain exact bytes and attribution. The surrounding property, metric placement and vertical levels are synthetic.",
+    "Floor classes and connected regions contain errors, including a selected bedroom-class region spanning adjoining plan areas. This is a pipeline/contour-preservation test, not acceptance of room semantics or survey accuracy.",
+    "One floor plan, one positive overhead tile and one empty tile do not establish model generalization or Indian field qualification.",
+    "Browser checks use emulation, not a physical mobile device.",
+    "Initial harness-only mobile panel transition and async reload timing failures remain recorded separately; corrected checks follow actual Controls navigation and await real responses."
+  ]
+}

@@ -1,0 +1,173 @@
+[
+  {
+    "id": "REF-01",
+    "paths": [
+      "anchors/01-block-map-anchor.png",
+      "raw-root-exports/3d_ulpin_urban_inspection_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "648c967166d8f8d95f4ffd059c333c0aab5d0e03a9702cb3bf50071eb64f5ff1"
+  },
+  {
+    "id": "REF-02",
+    "paths": [
+      "anchors/02-property-register-anchor.png",
+      "raw-root-exports/3d_ulpin_building_register_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "a85692b4e5ec94ac49933506974515f5ac3c57171c3302d842c36e11c924989e"
+  },
+  {
+    "id": "REF-03",
+    "paths": [
+      "anchors/03-plan-workspace-anchor.png",
+      "raw-root-exports/3d_ulpin_plan_workspace_interface.png",
+      "workspace/02-measure-workspace-page.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "46dd50441cb39e02ff94cf0a5511e2ce72b33bc4b52169fac029179220737ac0"
+  },
+  {
+    "id": "REF-04",
+    "paths": [
+      "block-map/01-layers-2d-map.png",
+      "raw-root-exports/municipal_gis_dashboard_map.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "0a47cac16463ad150881d105b67a0b1a2253f3261af22d95afe4c37ef7ee7b82"
+  },
+  {
+    "id": "REF-05",
+    "paths": [
+      "block-map/02-import-export-data-tools-modal.png",
+      "raw-root-exports/data_tools_import_gis_layers.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "7fc89a7ee158bd78625164e426ed18e7a813e74d98be3e7dfca9ef7a137a5b3d"
+  },
+  {
+    "id": "REF-06",
+    "paths": [
+      "block-map/03-properties-parcel-inspector.png",
+      "raw-root-exports/3d_parcel_inspector_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "d338add3ab1bf5ae75d1b7427f43be7f04f3a21eeafb8daf741d1a3362fcbd3b"
+  },
+  {
+    "id": "REF-07",
+    "paths": [
+      "block-map/04-utility-and-findings.png",
+      "raw-root-exports/3d_utility_conflict_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "072abae217d4ad5d4b656d3642b3ed2092645cf1eded3ec6b2df5faf47725a5a"
+  },
+  {
+    "id": "REF-08",
+    "paths": [
+      "block-map/05-photos-and-history-sidebar.png",
+      "raw-root-exports/3d_ulpin_municipal_dashboard.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "65bf6bb5e63da9fb5d7a0eb5c9339f3774b08307c639deccba10176ba2b38827"
+  },
+  {
+    "id": "REF-09",
+    "paths": [
+      "raw-root-exports/3d_property_register_dashboard_ui.png",
+      "register/01-register-start-page.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "b82d3cc8e32fc6e63d853dee1d6a158ea221292d9c9a258223010098a27bdcc7"
+  },
+  {
+    "id": "REF-10",
+    "paths": [
+      "raw-root-exports/3d_ulpin_property_register_dashboard.png",
+      "register/02-floors-and-units-page.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "5c15f2cd71be752d6bee26650b9648a1d1cbd3445c0e0eb86f78d5557691f920"
+  },
+  {
+    "id": "REF-11",
+    "paths": [
+      "raw-root-exports/a_large_clean_ui_ux_concept_board_image_with_mult.png",
+      "workspace/01-workspace-start-page.png"
+    ],
+    "width": 1536,
+    "height": 1024,
+    "sha256": "cc1d44aae4c0986fcfde748fdcc7de2d4ab4592c786c30b3dbeb2a0366c61b80"
+  },
+  {
+    "id": "REF-12",
+    "paths": [
+      "raw-root-exports/a_large_composite_ui_design_mockup_image_flat_cle.png",
+      "reference-boards/board-01-multi-panel-storyboard.png"
+    ],
+    "width": 1536,
+    "height": 1024,
+    "sha256": "1a380f9e84ae3b61310137ab8c9b7e317ff7e72ba4db9e77ffcc03af489b0a63"
+  },
+  {
+    "id": "REF-13",
+    "paths": [
+      "raw-root-exports/a_large_composite_ui_design_presentation_image_li.png",
+      "reference-boards/board-04-21-panel-board.png"
+    ],
+    "width": 1536,
+    "height": 1024,
+    "sha256": "4cf13b0b07c36ca8f999a89e1d45e27351c2540de23ea1ea3da18291ca85faf7"
+  },
+  {
+    "id": "REF-14",
+    "paths": [
+      "raw-root-exports/a_large_composite_ui_design_presentation_image_mu.png",
+      "reference-boards/board-02-16-panel-storyboard.png"
+    ],
+    "width": 1536,
+    "height": 1024,
+    "sha256": "566822625f43f0bb95e00da8102fd42840812b0ae88601feae9bad0c90216faf"
+  },
+  {
+    "id": "REF-15",
+    "paths": [
+      "raw-root-exports/a_large_multi_panel_ui_design_mockup_collage_on_a.png",
+      "reference-boards/board-05-detailed-grid-board.png"
+    ],
+    "width": 1312,
+    "height": 1199,
+    "sha256": "d52384b8e0de06297e0d0a85cb42d7d53bcce237927dc9c31b1b55c7ffb94f08"
+  },
+  {
+    "id": "REF-16",
+    "paths": [
+      "raw-root-exports/a_large_tiled_ui_design_mockup_collage_clean_mode.png",
+      "reference-boards/board-03-a1-a4-b-c-board.png"
+    ],
+    "width": 1312,
+    "height": 1199,
+    "sha256": "ee5172af67d1ac065c712b236fcce0110bb004df07569463fde9a28cdff6a6f3"
+  },
+  {
+    "id": "REF-17",
+    "paths": [
+      "raw-root-exports/property_registry_investigation_dashboard.png",
+      "register/03-investigation-page.png"
+    ],
+    "width": 1672,
+    "height": 941,
+    "sha256": "7a4b3a5f26af5ff5965f1677c922f9b41ab70001b1ec830a7784caa9096e3033"
+  }
+]

@@ -1,0 +1,99 @@
+{
+  "scope": "Reference audit artifacts only; no application or schema implementation changes",
+  "original_paths_sha256_verified": 35,
+  "unique_images_sha256_verified": 17,
+  "http_images": [
+    {
+      "id": "REF-01",
+      "http": 200,
+      "bytes": 2324065
+    },
+    {
+      "id": "REF-02",
+      "http": 200,
+      "bytes": 1719965
+    },
+    {
+      "id": "REF-03",
+      "http": 200,
+      "bytes": 1789202
+    },
+    {
+      "id": "REF-04",
+      "http": 200,
+      "bytes": 2230032
+    },
+    {
+      "id": "REF-05",
+      "http": 200,
+      "bytes": 1652462
+    },
+    {
+      "id": "REF-06",
+      "http": 200,
+      "bytes": 2312311
+    },
+    {
+      "id": "REF-07",
+      "http": 200,
+      "bytes": 2318316
+    },
+    {
+      "id": "REF-08",
+      "http": 200,
+      "bytes": 1485977
+    },
+    {
+      "id": "REF-09",
+      "http": 200,
+      "bytes": 1726191
+    },
+    {
+      "id": "REF-10",
+      "http": 200,
+      "bytes": 1579680
+    },
+    {
+      "id": "REF-11",
+      "http": 200,
+      "bytes": 2308403
+    },
+    {
+      "id": "REF-12",
+      "http": 200,
+      "bytes": 2013636
+    },
+    {
+      "id": "REF-13",
+      "http": 200,
+      "bytes": 2060848
+    },
+    {
+      "id": "REF-14",
+      "http": 200,
+      "bytes": 1959018
+    },
+    {
+      "id": "REF-15",
+      "http": 200,
+      "bytes": 1935063
+    },
+    {
+      "id": "REF-16",
+      "http": 200,
+      "bytes": 1836568
+    },
+    {
+      "id": "REF-17",
+      "http": 200,
+      "bytes": 1693128
+    }
+  ],
+  "browser_review": {
+    "all_17_reference_selections": "passed; matching reference IDs, image paths and nonempty review notes",
+    "search": "workspace returns REF-03 and REF-11; clearing restores 17",
+    "comparison": "actual reference/current map side-by-side visually inspected",
+    "deliverable_tab": "http://127.0.0.1:3013/reference-audit/#REF-01"
+  },
+  "application_tests": "not rerun; application unchanged"
+}

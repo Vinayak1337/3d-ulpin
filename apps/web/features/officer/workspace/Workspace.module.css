@@ -1343,3 +1343,88 @@
     display: none;
   }
 }
+
+.directoryActions { display:flex; gap:10px; flex-wrap:wrap; }
+.directoryFilters { display:flex; gap:14px; padding:16px 18px; align-items:center; }
+.directoryFilters label { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+.directoryFilters input { width:100%; min-width:0; }
+.directoryFilters select { max-width:260px; }
+.directoryRecents { border-top:1px solid var(--ui-divider); padding-top:16px; }
+.directoryRecents summary { cursor:pointer; color:var(--ui-ink-soft); font-size:13px; font-weight:600; }
+@media(max-width:700px){.directoryFilters{flex-direction:column;align-items:stretch}.directoryFilters select{max-width:none}.directoryActions{gap:8px}.startHeading{flex-wrap:wrap}}
+
+/* Preparation review: one continuation and compact retained evidence. */
+.factDisclosure {
+  border-block: 1px solid #e0e7e2;
+  padding-block: 4px;
+  font-size: 14px;
+}
+.factDisclosure > summary {
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
+  color: #285644;
+  font-weight: 600;
+}
+.factDisclosure > summary:focus-visible,
+.modePanel :is(button, a, summary):focus-visible {
+  outline: 2px solid #146c4e;
+  outline-offset: 3px;
+}
+.factDisclosure[open] > .facts { margin-block: 8px 12px; }
+.fact :is(strong, b), .flow :where(h3, h4) { font-size: 14px; }
+.fact > small { font-size: 12px; color: #52665a; }
+.fact > .factSource {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 2px 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.factSource a { color: #285644; }
+.fact footer :global(.ui-button), .factSource :global(.ui-button) {
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.flow { font-size: 14px; }
+.flow :where(label, input, select, textarea) { font-size: 14px; }
+.flow :where(button, .property-link-button) { min-height: 44px; font-size: 14px; }
+.flow :global(.preparation-build) { border-color: #cadbd1; }
+.flow :global(.preparation-build) > h3 { font-size: 16px; }
+.flow :global(.preparation-build) :where(p) { line-height: 1.55; }
+.flow :global(.preparation-review) details { margin-block: 12px; }
+.flow :global(.preparation-review) summary { cursor: pointer; min-height: 44px; align-content: center; }
+.documents > button { display: flex; flex-direction: row; align-items: center; min-height: 52px; }
+.documents > button > span:nth-child(2) { width: auto; }
+.documents strong { font-size: 13px; }
+.documents small { font-size: 11px; margin-top: 2px; }
+
+/* T067: wide source canvas and one review/tool panel. */
+.workspace .workspaceGrid { grid-template-columns: minmax(0, 1fr) minmax(340px, 380px); gap: 16px; padding: 16px; }
+.workspace .workspaceToolbar { justify-content: flex-start; padding: 10px 20px; gap: 12px; }
+.reviewNavigation, .documentControls { display: flex; align-items: center; gap: 8px; }
+.documentControls { margin-left: auto; }
+.reviewNavigation :global(.ui-button)[aria-pressed="true"] { background: #edf4ef; color: #205b46; border-color: #b7cfc1; }
+.toolsMenu { display: flex; align-items: center; gap: 4px; padding-left: 12px; background: white; border: 1px solid var(--ui-divider); border-radius: 7px; }
+.toolsMenu select { border: 0; background: transparent; min-height: 44px; padding: 8px; font: inherit; color: var(--ui-ink); cursor: pointer; max-width: 135px; }
+.workspace .toolbarStatus { display: none; }
+.workspace .canvasBar strong { font-size: 14px; max-width: min(38vw, 520px); }
+.workspace .modePanel { padding: 20px; }
+.workspace .modePanel > h2, .workspace .panelHeading h2 { font-size: 18px; }
+.workspace .modePanel :where(p, label, summary) { font-size: 13px; line-height: 1.5; }
+.workspace .measureTools > button { min-height: 44px; font-size: 12px; }
+.workspace .headingIdentity h1 { font-size: 22px; }
+.documents strong { font-size: 14px; }
+.documents small { font-size: 12px; }
+@media (min-width: 1600px) { .workspace .workspaceGrid { grid-template-columns: minmax(0, 1fr) 420px; } }
+@media (max-width: 1050px) { .workspace .workspaceGrid { grid-template-columns: minmax(0, 1fr) 340px; gap: 12px; padding: 12px; } .workspace .workspaceToolbar { padding: 10px 12px; } }
+@media (max-width: 800px) {
+  .workspace .workspaceGrid { display: flex; padding: 8px; }
+  .workspace .workspaceToolbar { gap: 8px; flex-wrap: wrap; }
+  .documentControls { margin-left: auto; flex-wrap: wrap; }
+  .workspace .canvasBar strong { max-width: 52vw; }
+  .workspace .headingIdentity h1 { font-size: 18px; }
+}

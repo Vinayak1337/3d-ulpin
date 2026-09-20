@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
-import {chromium} from '@playwright/test';
+import {launchBrowser} from './browser-launch.mjs';
 const base=process.env.STUDIO_BASE_URL||'http://127.0.0.1:3000';
-const out='docs/evidence/t058/continuation/verification';await mkdir(out,{recursive:true});
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const out=process.env.STUDIO_CONTINUATION_DIR||'docs/evidence/t058/continuation/verification';await mkdir(out,{recursive:true});
+const browser=await launchBrowser();
 const report={startedAt:new Date().toISOString(),checks:[],unexpectedErrors:[],expectedFailures:[],backendWrites:0};let page;
 const pass=(name,detail={})=>{report.checks.push({name,passed:true,...detail});console.log('PASS '+name);};
 const url=path=>base+'/studio/'+path;

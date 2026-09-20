@@ -1,0 +1,12 @@
+{
+  "capturedAt": "2026-09-19T22:09:06.721Z",
+  "viewport": {
+    "width": 1672,
+    "height": 941
+  },
+  "errors": [],
+  "failed": [],
+  "images": [],
+  "result": "FAIL",
+  "error": "TimeoutError: page.waitForFunction: Timeout 120000ms exceeded."
+}

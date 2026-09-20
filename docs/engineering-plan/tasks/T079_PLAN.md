@@ -1,0 +1,9 @@
+# T079 — Officer workflow, map declutter and complete source showcase
+
+User priority: simplify the current interface using the attached bulk workflow; provide an importable fictional source dataset in the supplied formats that builds the reference-style city. Work solo. Preserve the accepted register and the shared renderer.
+
+1. Make Batches / Map / Register the consistent navigation. Collapse map exploration tools on demand, show one selected-property summary and one findings entry point, and remove duplicate map chrome. Keep keyboard, mobile and all map modes functional.
+2. Generate a new, separately named complete Lake View source package from the existing authored reference-city geometry. Include the observed MASTER and normalized v1 structures, GeoJSON/GPKG, plan PDFs/SVG/schedule, control CSV, LAS/LAZ and manifest, imagery GeoTIFF/preview, DEM/DSM, source assets/links/reports. Add explicitly fictional occupants, parties and rights as distinct records. Preserve all earlier fixture bytes. Cross-file coordinates/identities and fingerprints must agree.
+3. Import original source members through the shared adapter (not a prebuilt normalized scene), show a plain-language receipt and source coverage. Review geometry findings before opening the draft map; expose source originals and source-linked register data. Unsupported extraction must remain explicit, never a fabricated successful stage.
+4. Check the attached workflow against existing saved intake/preparation/review/record services. Qualify backend availability and unresolved scope; do not represent browser preview as persisted recorded data. Restore existing services only without resetting volumes.
+5. Test package integrity/geometry/joins and failure cases, inspect real browser map/import/register/mobile screens, then build and leave one web server running. Record evidence and limitations in the backlog.

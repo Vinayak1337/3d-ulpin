@@ -16,6 +16,7 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 from pyproj import CRS
+from pyproj.exceptions import CRSError
 from shapely import from_wkb
 
 from .validation import InputError
@@ -44,7 +45,7 @@ def _epsg(wkt):
         if code is None or len(reference.axis_info) != 2:
             raise ValueError()
         return code
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, CRSError):
         raise InputError("The source CRS must resolve to a supported two-dimensional EPSG reference; do not relabel unknown coordinates.") from None
 
 
@@ -71,6 +72,8 @@ def _field_names(mapping):
 
 
 def _gpkg(raw, layer, selected):
+    # selected=None is bounded metadata inspection through the same native reader.
+    inspecting = selected is None
     from .area import _json_geometry, _geometry, MAX_FEATURES, MAX_VERTICES
     if not raw.startswith(b"SQLite format 3\x00"):
         raise InputError("GeoPackage must be a SQLite GeoPackage file.")
@@ -89,6 +92,8 @@ def _gpkg(raw, layer, selected):
                 raise InputError("GeoPackage must have 1–100 feature layers; raster/tile-only packages need a different adapter.")
             if layer is None:
                 if len(names) != 1:
+                    if inspecting:
+                        return {"layers": names}
                     raise InputError("Select one GeoPackage feature layer explicitly; multiple layers must be ingested with their own semantics.")
                 layer = names[0]
             if layer not in names or not isinstance(layer, str) or len(layer) > 256:
@@ -104,8 +109,17 @@ def _gpkg(raw, layer, selected):
             if srs is None:
                 raise InputError("GeoPackage source CRS metadata is missing.")
             epsg = int(srs[1]) if str(srs[0]).upper() == "EPSG" and int(srs[1]) > 0 else _epsg(srs[2])
+            reference = CRS.from_epsg(epsg)
+            if len(reference.axis_info) != 2:
+                raise InputError("GeoPackage requires a two-dimensional EPSG reference.")
+            if srs[2] and str(srs[2]).lower() != "undefined" and not CRS.from_wkt(srs[2]).equals(reference):
+                raise InputError("GeoPackage EPSG and WKT declarations conflict; correct the source metadata.")
             quote = lambda name: '"' + name.replace('"', '""') + '"'
             available = {entry[1] for entry in connection.execute(f"PRAGMA table_info({quote(layer)})")}
+            if inspecting:
+                selected = sorted(available - {column})
+                if len(selected) > 256:
+                    raise InputError("GIS inspection supports at most 256 attribute fields.")
             if any(name not in available for name in selected):
                 raise InputError("A mapped field is absent from the selected GeoPackage layer.")
             records = connection.execute(f"SELECT {','.join(quote(name) for name in [column] + selected)} FROM {quote(layer)} LIMIT {MAX_FEATURES + 1}").fetchall()
@@ -137,7 +151,9 @@ def _gpkg(raw, layer, selected):
                     raise InputError("GeoPackage layer exceeds 100,000 vertices.")
                 features.append({"attributes": dict(zip(selected, record[1:])), "geometry": _arcgis(geometry)})
                 originals.append(geometry)
-            return features, originals, epsg, layer
+            return {"layers": names, "layer": layer, "features": features, "geometries": originals, "epsg": epsg} if inspecting else (features, originals, epsg, layer)
+        except CRSError:
+            raise InputError("GeoPackage CRS metadata is invalid; correct the source reference.") from None
         except sqlite3.Error:
             raise InputError("GeoPackage schema is malformed, unsupported or exceeds the five-second native read limit.") from None
         finally:
@@ -145,6 +161,7 @@ def _gpkg(raw, layer, selected):
 
 
 def _shapefile(raw, layer, selected):
+    inspecting = selected is None
     import shapefile
     from .area import _geometry, _arcgis_geometry, MAX_FEATURES, MAX_VERTICES
     try:
@@ -164,8 +181,12 @@ def _shapefile(raw, layer, selected):
                     raise InputError("Shapefile ZIP contains duplicate case-insensitive member names.")
                 names[name] = entry.filename
             layers = [name[:-4] for name in names if name.endswith(".shp")]
+            if not 1 <= len(layers) <= 100:
+                raise InputError("Shapefile ZIP must contain 1–100 layers.")
             if layer is None:
                 if len(layers) != 1:
+                    if inspecting:
+                        return {"layers": layers}
                     raise InputError("Select one Shapefile layer explicitly when the archive contains multiple sets.")
                 layer = layers[0]
             layer = str(layer).lower().removesuffix(".shp")
@@ -183,6 +204,10 @@ def _shapefile(raw, layer, selected):
                 if not 1 <= len(reader) <= MAX_FEATURES or reader.numShapes != reader.numRecords:
                     raise InputError("Shapefile must contain 1–2000 matching geometry/attribute records.")
                 fields = [item[0] for item in reader.fields[1:]]
+                if inspecting:
+                    selected = fields
+                    if len(selected) > 256:
+                        raise InputError("GIS inspection supports at most 256 attribute fields.")
                 if any(name not in fields for name in selected):
                     raise InputError("A mapped field is absent from the Shapefile DBF.")
                 features, originals, count = [], [], 0
@@ -203,7 +228,7 @@ def _shapefile(raw, layer, selected):
                     originals.append(geometry)
                 if len(features) != reader.numRecords:
                     raise InputError("Deleted/missing Shapefile records cannot silently disappear; supply a consistent source export.")
-                return features, originals, epsg, layer
+                return {"layers": layers, "layer": layer, "features": features, "geometries": originals, "epsg": epsg} if inspecting else (features, originals, epsg, layer)
     except InputError:
         raise
     except (zipfile.BadZipFile, UnicodeError, LookupError, shapefile.ShapefileException, ValueError, OSError):

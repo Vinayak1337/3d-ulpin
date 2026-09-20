@@ -211,6 +211,8 @@ export interface DocumentPart {
   };
 }
 export interface ImportPackage {
+  /** Explicit source-only intake; never a fabricated physical property. */
+  sourceWorkspace?: { caseId: string; frame: import("./index").CoordinateFrame; worldStatus: PhysicalFeature["worldStatus"]; areaReferenceFingerprint: string };
   selectedClaimIds?: string[];
   factDecisions?: {
     claimId: string;

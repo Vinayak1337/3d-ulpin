@@ -1,0 +1,1782 @@
+{
+  "id": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+  "name": "T061 synthetic ML verification 99741d82 · related documents",
+  "parts": [
+    {
+      "id": "8af534f2-efaf-4441-9bdd-834e882ed100",
+      "text": "Image reference: manual calibration and interpretation required.",
+      "locator": "image",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec"
+    },
+    {
+      "id": "53cf1f83-0429-4f94-9d68-5613654150f0",
+      "text": "{",
+      "locator": "line 1",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "818e5435-0afc-44b5-8b01-aced4369f1b5",
+      "text": "  \"archive\": \"https://zenodo.org/api/records/2613548/files/cubicasa5k.zip/content\",",
+      "locator": "line 2",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "55c083b5-11e9-4eec-a368-d5bef23c8b64",
+      "text": "  \"doi\": \"10.5281/zenodo.2613548\",",
+      "locator": "line 3",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "b1e54539-64ee-4869-b6cc-c4c7523bc564",
+      "text": "  \"split\": \"test\",",
+      "locator": "line 4",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "22ab56c1-68d3-4bd3-8aa2-702d5e6bbfd1",
+      "text": "  \"sample\": \"high_quality_architectural/1191\",",
+      "locator": "line 5",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "911be108-31c4-42dd-b1ac-a1f4074215dc",
+      "text": "  \"files\": [",
+      "locator": "line 6",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "2a92fc1a-ad9c-4036-8db1-620e5cccd2cc",
+      "text": "    \"cubicasa5k/high_quality_architectural/1191/F1_scaled.png\",",
+      "locator": "line 7",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "70a16111-bd77-45af-ad0b-bdd7a9db88f3",
+      "text": "    \"cubicasa5k/high_quality_architectural/1191/F1_original.png\",",
+      "locator": "line 8",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "644f3944-3635-49ba-9ee0-716027c18289",
+      "text": "    \"cubicasa5k/high_quality_architectural/1191/model.svg\"",
+      "locator": "line 9",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "b86a36dd-3022-47e3-b0b7-90307ce875c7",
+      "text": "  ]",
+      "locator": "line 10",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "8a601b2b-6c94-4b6c-8710-fb5fd0bd528a",
+      "text": "}",
+      "locator": "line 11",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95"
+    },
+    {
+      "id": "1c9b1f4f-cdfc-483c-bc3e-0850a58a14a1",
+      "text": "Image reference: manual calibration and interpretation required.",
+      "locator": "image",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "fbe615ed-7e7b-430b-8ec8-c407c13326fc"
+    },
+    {
+      "id": "ba5408b1-9bb4-42c3-b0c7-fcb47f84b7ec",
+      "text": "{",
+      "locator": "line 1",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "08b01d4b-f389-4ebe-8ab2-4d3f1c51ad0a",
+      "text": "  \"dataset\": \"hotosm/vhr-building-segmentation\",",
+      "locator": "line 2",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "8dac8b95-3f44-4ea4-ab04-4dbe49954695",
+      "text": "  \"revision\": \"8d3e64e5c69aa37209953cce3a48df1092bc7c94\",",
+      "locator": "line 3",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "741e71d3-17a9-4ec8-9d88-a02c67bcb716",
+      "text": "  \"split\": \"test\",",
+      "locator": "line 4",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "b69402db-b192-4f26-bfc3-a33f794da941",
+      "text": "  \"row\": 1200,",
+      "locator": "line 5",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "99e20c62-d615-4be5-b87b-e3ed069e0fc8",
+      "text": "  \"selection\": \"first tile with >=3 labeled buildings in a fixed 30-row window; selected before either model inference\",",
+      "locator": "line 6",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "c6324936-c48d-483e-ba20-3e23e1cc1afc",
+      "text": "  \"windowOffset\": 1200,",
+      "locator": "line 7",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "daea5bc5-b3b2-40c0-80ec-bfe9ed17aa45",
+      "text": "  \"tile_id\": \"OAM-467418-202747-19\",",
+      "locator": "line 8",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "22bbcb9d-a5cc-4c8a-8b0e-04772111b9da",
+      "text": "  \"tile_x\": 467418,",
+      "locator": "line 9",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "a11c0b20-3a59-4346-861e-3883d8aa0281",
+      "text": "  \"tile_y\": 202747,",
+      "locator": "line 10",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "43b670af-6b9b-4b25-8812-15aca3cacc01",
+      "text": "  \"tile_z\": 19,",
+      "locator": "line 11",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "98328851-7be6-4f36-b5d5-461330e12b99",
+      "text": "  \"project_id\": 14859,",
+      "locator": "line 12",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "3f6e4ecc-80a2-4e3d-891d-2f6c4b9e5d82",
+      "text": "  \"project_name\": \"Building Mapping in Kashima, Minami-Souma 2022 Fukushima Earthquake M7.4\",",
+      "locator": "line 13",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "6bda75e0-8422-4241-9c93-9c1133f199ec",
+      "text": "  \"country\": \"Japan\",",
+      "locator": "line 14",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "908d1981-feb7-43e8-bd6a-950969902795",
+      "text": "  \"organisation\": \"Crisis Mappers Japan\",",
+      "locator": "line 15",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "94f77a53-8f07-4798-b3e1-68852fb8ab4b",
+      "text": "  \"imagery_url\": \"https://tiles.openaerialmap.org/6255f9225c48220007e7c9a7/0/6255f9225c48220007e7c9a8/{z}/{x}/{y}\",",
+      "locator": "line 16",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "b341c08e-ffe9-4e26-8ba9-d33a4f455f2c",
+      "text": "  \"num_buildings\": 5,",
+      "locator": "line 17",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "f1a20e44-80d0-49c2-8e8c-3f07d196a19e",
+      "text": "  \"label_geojson\": \"{\\\"type\\\": \\\"FeatureCollection\\\", \\\"name\\\": \\\"OAM-467418-202747-19\\\", \\\"crs\\\": {\\\"type\\\": \\\"name\\\", \\\"properties\\\": {\\\"name\\\": \\\"urn:ogc:def:crs:OGC:1.3:CRS84\\\"}}, \\\"features\\\": [{\\\"type\\\": \\\"Feature\\\", \\\"properties\\\": {\\\"osm_id\\\": 1176539459, \\\"osm_type\\\": \\\"ways_poly\\\", \\\"version\\\": 1, \\\"tags\\\": {\\\"building\\\": \\\"yes\\\"}, \\\"changeset\\\": 136617816, \\\"timestamp\\\": \\\"2023-05-27T09:53:02\\\"}, \\\"geometry\\\": {\\\"type\\\": \\\"Polygon\\\", \\\"coordinates\\\": [[[140.9507888, 37.7210068], [140.9509156, 37.7209704], [140.9508924, 37.72092], [140.9507656, 37.7209564], [140.9507888, 37.7210068]]]}}, {\\\"type\\\": \\\"Feature\\\", \\\"properties\\\": {\\\"osm_id\\\": 1176539458, \\\"osm_type\\\": \\\"ways_poly\\\", \\\"version\\\": 1, \\\"tags\\\": {\\\"building\\\": \\\"yes\\\"}, \\\"changeset\\\": 136617816, \\\"timestamp\\\": \\\"2023-05-27T09:53:02\\\"}, \\\"geometry\\\": {\\\"type\\\": \\\"Polygon\\\", \\\"coordinates\\\": [[[140.9505818, 37.7210767], [140.9506595, 37.7210648], [140.9506527, 37.7210371], [140.9506933, 37.7210308], [140.9506795, 37.7209744], [140.9506305, 37.7209819], [140.9506411, 37.721025], [140.9505717, 37.7210356], [140.9505818, 37.7210767]]]}}, {\\\"type\\\": \\\"Feature\\\", \\\"properties\\\": {\\\"osm_id\\\": 1176539456, \\\"osm_type\\\": \\\"ways_poly\\\", \\\"version\\\": 1, \\\"tags\\\": {\\\"building\\\": \\\"yes\\\"}, \\\"changeset\\\": 136617816, \\\"timestamp\\\": \\\"2023-05-27T09:53:02\\\"}, \\\"geometry\\\": {\\\"type\\\": \\\"Polygon\\\", \\\"coordinates\\\": [[[140.9505028, 37.7210566], [140.950495, 37.7210321], [140.95046997070312, 37.7210371185646], [140.95046997070312, 37.72106311573832], [140.9505028, 37.7210566]]]}}, {\\\"type\\\": \\\"Feature\\\", \\\"properties\\\": {\\\"osm_id\\\": 1176539460, \\\"osm_type\\\": \\\"ways_poly\\\", \\\"version\\\": 1, \\\"tags\\\": {\\\"building\\\": \\\"yes\\\"}, \\\"changeset\\\": 136617816, \\\"timestamp\\\": \\\"2023-05-27T09:53:02\\\"}, \\\"geometry\\\": {\\\"type\\\": \\\"Polygon\\\", \\\"coordinates\\\": [[[140.9508323, 37.7211033], [140.9508793, 37.7210885], [140.950846, 37.7210223], [140.950799, 37.721037], [140.9508323, 37.7211033]]]}}, {\\\"type\\\": \\\"Feature\\\", \\\"properties\\\": {\\\"osm_id\\\": 1176539457, \\\"osm_type\\\": \\\"ways_poly\\\", \\\"version\\\": 1, \\\"tags\\\": {\\\"building\\\": \\\"yes\\\"}, \\\"changeset\\\": 136617816, \\\"timestamp\\\": \\\"2023-05-27T09:53:02\\\"}, \\\"geometry\\\": {\\\"type\\\": \\\"Polygon\\\", \\\"coordinates\\\": [[[140.9507549, 37.7211967], [140.9507506, 37.7211265], [140.9507696, 37.7211258], [140.9507655, 37.7210606], [140.950683, 37.7210638], [140.9506854, 37.7211025], [140.9505694, 37.721107], [140.9505691, 37.7211022], [140.9505284, 37.7211037], [140.9505278, 37.7210939], [140.95046997070312, 37.721096127773876], [140.95046997070312, 37.721207770404085], [140.9507549, 37.7211967]]]}}]}\",",
+      "locator": "line 18",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "dc6faa03-9e81-476f-9f52-b9091a64646b",
+      "text": "  \"bbox_west\": 140.95046997070312,",
+      "locator": "line 19",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "f134636c-933c-4189-a150-0eff9b853fe9",
+      "text": "  \"bbox_south\": 37.72076290898374,",
+      "locator": "line 20",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "21c4b985-a64f-45d9-b5da-f5c86040e3c5",
+      "text": "  \"bbox_east\": 140.95115661621094,",
+      "locator": "line 21",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "96791c43-83d4-4b26-b75b-efda9e9100b5",
+      "text": "  \"bbox_north\": 37.72130604487681,",
+      "locator": "line 22",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "6ea3b343-1b17-432b-aa32-c33175eb8a80",
+      "text": "  \"targetRasterization\": \"Original OSM GeoJSON; pixel-center containment in WGS84 from exact Web Mercator tile coordinates. No model used for target.\",",
+      "locator": "line 23",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "4de1b86c-df93-4bb5-8380-7b87609fd2d3",
+      "text": "  \"targetSha256\": \"f7c20ec85314289c25590290bd2c2ee3f56ee326ed7675abd4b9c9e46726ba15\"",
+      "locator": "line 24",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "92aa9d3f-9e59-4f3c-a69a-959d891db4d5",
+      "text": "}",
+      "locator": "line 25",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f"
+    },
+    {
+      "id": "b38a747a-392e-4d28-9f69-8bf6531e88b9",
+      "text": "Image reference: manual calibration and interpretation required.",
+      "locator": "image",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "1c253326-4e76-4d57-82e6-ea9d03c84c5b"
+    },
+    {
+      "id": "c307779a-9f9e-4969-8231-c35ac3f6fafa",
+      "text": "{",
+      "locator": "line 1",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "e74d7af5-6d08-4305-af28-bf83a73a7855",
+      "text": "  \"dataset\": \"hotosm/vhr-building-segmentation\",",
+      "locator": "line 2",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "fac464d5-2264-45ce-92b8-d59548ec34f6",
+      "text": "  \"revision\": \"8d3e64e5c69aa37209953cce3a48df1092bc7c94\",",
+      "locator": "line 3",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "13753a31-92b6-48c6-be94-59d539b0b421",
+      "text": "  \"split\": \"test\",",
+      "locator": "line 4",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "1f924eff-5373-4113-b487-c70c71e21e7d",
+      "text": "  \"row\": 1,",
+      "locator": "line 5",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "77227a7b-ce57-42bb-8111-2c91639e6a71",
+      "text": "  \"tile_id\": \"OAM-361313-199747-19\",",
+      "locator": "line 6",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "a5efc504-2591-4b9f-9053-152261042f84",
+      "text": "  \"tile_x\": 361313,",
+      "locator": "line 7",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "1b828eea-27de-45fd-b6eb-89714df6ea76",
+      "text": "  \"tile_y\": 199747,",
+      "locator": "line 8",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "893759db-df95-407d-98ee-0349c136af8e",
+      "text": "  \"tile_z\": 19,",
+      "locator": "line 9",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "5e4acf4f-bd0f-4082-b892-6c7dd7ced813",
+      "text": "  \"project_id\": 10655,",
+      "locator": "line 10",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "a3a39e0e-5128-4461-ae27-2d4e946c69d8",
+      "text": "  \"project_name\": \"Mapping of Artuch - Penjikent, Tajikistan\",",
+      "locator": "line 11",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "5905c8ef-28c4-43ad-a894-462c8c4d5b1f",
+      "text": "  \"country\": \"Tajikistan\",",
+      "locator": "line 12",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "020377b6-30ee-42e8-86ec-dd62459bd94f",
+      "text": "  \"organisation\": \"Little Earth\",",
+      "locator": "line 13",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "039dc56a-6c46-4a0e-b856-6a7d04c3e406",
+      "text": "  \"imagery_url\": \"https://tiles.openaerialmap.org/60531f7bbd447000051c8ede/0/60531f7bbd447000051c8edf/{z}/{x}/{y}\",",
+      "locator": "line 14",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "36debb39-5177-47b8-af7a-7ed325af67b3",
+      "text": "  \"num_buildings\": 0,",
+      "locator": "line 15",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "65b0f078-1065-4f24-a769-8d1f333bb932",
+      "text": "  \"label_geojson\": \"{\\\"type\\\": \\\"FeatureCollection\\\", \\\"name\\\": \\\"OAM-361313-199747-19\\\", \\\"crs\\\": {\\\"type\\\": \\\"name\\\", \\\"properties\\\": {\\\"name\\\": \\\"urn:ogc:def:crs:OGC:1.3:CRS84\\\"}}, \\\"features\\\": []}\",",
+      "locator": "line 16",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "e1755b60-703c-4dee-b600-fecc7c58feff",
+      "text": "  \"bbox_west\": 68.09394836425781,",
+      "locator": "line 17",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "b1818b7a-9f51-4df5-bbae-ce3f7b200d3b",
+      "text": "  \"bbox_south\": 39.33217302364838,",
+      "locator": "line 18",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "e821717e-f69f-452a-8f4d-ac8a06d8e1dc",
+      "text": "  \"bbox_east\": 68.09463500976562,",
+      "locator": "line 19",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "85e87f7b-d61d-4949-8d45-bf97b587ae1b",
+      "text": "  \"bbox_north\": 39.332704131239424,",
+      "locator": "line 20",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "9108d2a4-8dbb-4943-93d3-01283b753122",
+      "text": "  \"targetRasterization\": \"Original OSM GeoJSON; pixel-center containment in WGS84 from exact Web Mercator tile coordinates. No model used for target.\",",
+      "locator": "line 21",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "3270bc8f-c74f-4e16-a5e8-315a7a22ff51",
+      "text": "  \"targetSha256\": \"5933d4c44ed2bc2f431e2698b41923a18d056b24b450540bb109e7592a547060\"",
+      "locator": "line 22",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "c009b26b-6401-4abc-9c5c-7fd8df2817ad",
+      "text": "}",
+      "locator": "line 23",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d"
+    },
+    {
+      "id": "8a78f9c8-dc35-478b-a302-f56a638c1eee",
+      "text": "alias: ML-ROOM-01\nlower: 0\nupper: 3\nunit: m\nbenchmark: T061-SYNTHETIC-BM-99741d82\nlabel: Synthetic metric verification room\nlevel: Synthetic ground",
+      "locator": "CSV row 2",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "76d7968d-659f-4e58-ac26-929149c8a756"
+    },
+    {
+      "id": "47a999d8-cac8-4bd8-bde3-3e6b10fbc9b4",
+      "text": "Verification 99741d82-febe-4533-bc05-49686744a555. All metre controls, exterior context, floor levels and vertical benchmark T061-SYNTHETIC-BM-99741d82 are authored synthetic test values. Published floorplan and overhead raster originals retain their own attribution and are not surveys of this fictional property. Model contours must be retained exactly; heights never come from imagery.",
+      "locator": "line 1",
+      "entityIds": [
+        "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+      ],
+      "sourceRevisionId": "b011ba1d-6b0a-4221-81d5-5fb9275f7cd4"
+    }
+  ],
+  "state": "NEEDS_INPUT",
+  "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+  "features": [
+    {
+      "id": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+      "kind": "building",
+      "name": "T061 synthetic ML verification 99741d82",
+      "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "areaM2": 3600,
+      "height": {
+        "unit": "m",
+        "state": "source_supported",
+        "value": 9,
+        "method": "native_parse",
+        "meaning": "height above the building's own ground level",
+        "evidence": [
+          {
+            "featureId": "T061-TEST-PROPERTY",
+            "sourceRevisionId": "4f29322f-ba7d-4e4c-86af-680076be3d1b"
+          }
+        ],
+        "reference": "building-relative; not aligned between features",
+        "originalUnit": "m",
+        "originalValue": 9
+      },
+      "evidence": [
+        {
+          "featureId": "T061-TEST-PROPERTY",
+          "sourceRevisionId": "4f29322f-ba7d-4e4c-86af-680076be3d1b"
+        }
+      ],
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              60,
+              0
+            ],
+            [
+              60,
+              60
+            ],
+            [
+              0,
+              60
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        ]
+      },
+      "revision": 1,
+      "semantics": {
+        "geometryRole": "observed_ground_occupation",
+        "evidenceState": "source_supported"
+      },
+      "sourceKey": "T061-TEST-PROPERTY",
+      "identifier": "3DU-2C0EFNZHK781D9CB632ZKF6AMB:B001",
+      "properties": {
+        "id": "T061-TEST-PROPERTY",
+        "name": "T061 synthetic ML verification 99741d82",
+        "height": 9
+      },
+      "worldStatus": "synthetic",
+      "geometryRole": "observed_ground_occupation",
+      "representation": "physical_exterior",
+      "sourceGeometry": {
+        "rings": [
+          [
+            [
+              500000,
+              3100000
+            ],
+            [
+              500060,
+              3100000
+            ],
+            [
+              500060,
+              3100060
+            ],
+            [
+              500000,
+              3100060
+            ],
+            [
+              500000,
+              3100000
+            ]
+          ]
+        ]
+      },
+      "sourceReference": {
+        "anchor": [
+          75.00000000000001,
+          28.025254985930832
+        ],
+        "origin": [
+          500000,
+          3100000
+        ],
+        "sourceCrs": "EPSG:32643",
+        "analysisCrs": "EPSG:32643",
+        "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=noop ellps=GRS80",
+        "verticalReference": "building-relative; not aligned between features"
+      },
+      "datasetNamespace": "t061-actual-ml:99741d82-febe-4533-bc05-49686744a555",
+      "sourceRevisionId": "4f29322f-ba7d-4e4c-86af-680076be3d1b",
+      "geographicGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              75.00000000000001,
+              28.025254985930832
+            ],
+            [
+              75.00061037894189,
+              28.025254984575255
+            ],
+            [
+              75.00061038199716,
+              28.025796620418255
+            ],
+            [
+              75.00000000000001,
+              28.02579662177386
+            ],
+            [
+              75.00000000000001,
+              28.025254985930832
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "revision": 11,
+  "warnings": [
+    "Detailed spaces require a source outline, explicit levels and evidenced placement.",
+    "Image received as reference only; no dimensions or geometry have been extracted.",
+    "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.",
+    "Image received as reference only; no dimensions or geometry have been extracted.",
+    "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.",
+    "Image received as reference only; no dimensions or geometry have been extracted.",
+    "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.",
+    "Strict native level-schedule candidates require explicit building/space association and review. A benchmark string does not place local footprints in a geographic area.",
+    "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.",
+    "Placement reviewed: Reviewed explicitly authored synthetic test frame/benchmark; no real-world survey claim."
+  ],
+  "createdAt": "2026-09-19T22:42:51.067Z",
+  "questions": [],
+  "schemaVersion": "ulpin-canonical/2",
+  "factCandidates": [
+    {
+      "id": "257b2b21-0afe-47ed-add4-402454060559",
+      "unit": "m",
+      "value": 0,
+      "method": "native_parse",
+      "subject": "ML-ROOM-01",
+      "entityId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+      "evidence": [
+        {
+          "partId": "8a78f9c8-dc35-478b-a302-f56a638c1eee",
+          "sourceRevisionId": "76d7968d-659f-4e58-ac26-929149c8a756"
+        }
+      ],
+      "property": "space.lower",
+      "worldStatus": "synthetic",
+      "evidenceState": "source_supported",
+      "referenceFrameId": "T061-SYNTHETIC-BM-99741d82"
+    },
+    {
+      "id": "50aa69ec-7835-4c7d-a24f-bd39ec0a21a2",
+      "unit": "m",
+      "value": 3,
+      "method": "native_parse",
+      "subject": "ML-ROOM-01",
+      "entityId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+      "evidence": [
+        {
+          "partId": "8a78f9c8-dc35-478b-a302-f56a638c1eee",
+          "sourceRevisionId": "76d7968d-659f-4e58-ac26-929149c8a756"
+        }
+      ],
+      "property": "space.upper",
+      "worldStatus": "synthetic",
+      "evidenceState": "source_supported",
+      "referenceFrameId": "T061-SYNTHETIC-BM-99741d82"
+    },
+    {
+      "id": "ae7784cd-0bc1-4bde-9650-824511566c4d",
+      "value": "Synthetic metric verification room",
+      "method": "native_parse",
+      "subject": "ML-ROOM-01",
+      "entityId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+      "evidence": [
+        {
+          "partId": "8a78f9c8-dc35-478b-a302-f56a638c1eee",
+          "sourceRevisionId": "76d7968d-659f-4e58-ac26-929149c8a756"
+        }
+      ],
+      "property": "space.label",
+      "worldStatus": "synthetic",
+      "evidenceState": "source_supported",
+      "referenceFrameId": "T061-SYNTHETIC-BM-99741d82"
+    },
+    {
+      "id": "f8b32809-032e-4904-bc0f-f51bcb66b007",
+      "value": "Synthetic ground",
+      "method": "native_parse",
+      "subject": "ML-ROOM-01",
+      "entityId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+      "evidence": [
+        {
+          "partId": "8a78f9c8-dc35-478b-a302-f56a638c1eee",
+          "sourceRevisionId": "76d7968d-659f-4e58-ac26-929149c8a756"
+        }
+      ],
+      "property": "space.levelLabel",
+      "worldStatus": "synthetic",
+      "evidenceState": "source_supported",
+      "referenceFrameId": "T061-SYNTHETIC-BM-99741d82"
+    },
+    {
+      "id": "0bacbd10-84f8-4cfd-ac6a-2658bbcb3f2c",
+      "unit": "m",
+      "value": {
+        "frame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+        "jobId": "4f94eb21-4df2-430a-b847-22e6c5cb565d",
+        "itemId": "105d69bc-e749-463c-87b7-07e4b9ed66d8",
+        "reason": "T061 99741d82-febe-4533-bc05-49686744a555: explicitly authored synthetic test controls, 0.052083333333333336 m/pixel. Published source dimensions are not asserted. Not survey evidence.",
+        "modelId": "cubicasa5k-rooms-onnx-v1",
+        "imagePoints": [
+          [
+            0,
+            0
+          ],
+          [
+            768,
+            0
+          ]
+        ],
+        "modelSha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+        "worldPoints": [
+          [
+            5,
+            55
+          ],
+          [
+            45,
+            55
+          ]
+        ],
+        "rasterSha256": "81b6aa3172ca88b8fa7d49c4a9aaffdf66f5a347429036604c43c7de88515bdd"
+      },
+      "method": "human_entry",
+      "subject": "ML-ROOM-01",
+      "entityId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+      "evidence": [
+        {
+          "page": 1,
+          "partId": "8af534f2-efaf-4441-9bdd-834e882ed100",
+          "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec"
+        }
+      ],
+      "property": "placement.controls",
+      "worldStatus": "synthetic",
+      "evidenceState": "unresolved",
+      "referenceFrameId": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b"
+    },
+    {
+      "id": "790bbdcf-de91-4828-8144-b63f4ab3c36e",
+      "unit": "m",
+      "value": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              12.5,
+              50.364583333333336
+            ],
+            [
+              12.5,
+              50.260416666666664
+            ],
+            [
+              12.34375,
+              50.260416666666664
+            ],
+            [
+              12.34375,
+              50.3125
+            ],
+            [
+              12.291666666666668,
+              50.3125
+            ],
+            [
+              12.291666666666668,
+              50.260416666666664
+            ],
+            [
+              9.6875,
+              50.260416666666664
+            ],
+            [
+              9.6875,
+              50.3125
+            ],
+            [
+              8.333333333333334,
+              50.3125
+            ],
+            [
+              8.333333333333334,
+              50.260416666666664
+            ],
+            [
+              8.125,
+              50.260416666666664
+            ],
+            [
+              8.125,
+              50.3125
+            ],
+            [
+              7.760416666666667,
+              50.3125
+            ],
+            [
+              7.760416666666667,
+              50.260416666666664
+            ],
+            [
+              7.708333333333334,
+              50.260416666666664
+            ],
+            [
+              7.708333333333334,
+              50.3125
+            ],
+            [
+              7.65625,
+              50.3125
+            ],
+            [
+              7.65625,
+              50.260416666666664
+            ],
+            [
+              7.5,
+              50.260416666666664
+            ],
+            [
+              7.5,
+              49.791666666666664
+            ],
+            [
+              7.447916666666667,
+              49.791666666666664
+            ],
+            [
+              7.447916666666667,
+              49.739583333333336
+            ],
+            [
+              7.5,
+              49.739583333333336
+            ],
+            [
+              7.5,
+              49.583333333333336
+            ],
+            [
+              7.447916666666667,
+              49.583333333333336
+            ],
+            [
+              7.447916666666667,
+              44.479166666666664
+            ],
+            [
+              7.5,
+              44.479166666666664
+            ],
+            [
+              7.5,
+              44.11458333333333
+            ],
+            [
+              7.447916666666667,
+              44.11458333333333
+            ],
+            [
+              7.447916666666667,
+              44.0625
+            ],
+            [
+              7.5,
+              44.0625
+            ],
+            [
+              7.5,
+              43.95833333333333
+            ],
+            [
+              7.447916666666667,
+              43.95833333333333
+            ],
+            [
+              7.5,
+              43.75
+            ],
+            [
+              7.447916666666667,
+              43.75
+            ],
+            [
+              7.447916666666667,
+              43.697916666666664
+            ],
+            [
+              7.5,
+              43.697916666666664
+            ],
+            [
+              7.5,
+              43.59375
+            ],
+            [
+              7.916666666666667,
+              43.59375
+            ],
+            [
+              7.916666666666667,
+              43.541666666666664
+            ],
+            [
+              8.020833333333334,
+              43.541666666666664
+            ],
+            [
+              8.020833333333334,
+              43.59375
+            ],
+            [
+              8.125,
+              43.59375
+            ],
+            [
+              8.125,
+              43.541666666666664
+            ],
+            [
+              8.177083333333334,
+              43.541666666666664
+            ],
+            [
+              8.177083333333334,
+              43.59375
+            ],
+            [
+              8.4375,
+              43.59375
+            ],
+            [
+              8.4375,
+              43.541666666666664
+            ],
+            [
+              8.541666666666668,
+              43.541666666666664
+            ],
+            [
+              8.541666666666668,
+              43.59375
+            ],
+            [
+              8.59375,
+              43.59375
+            ],
+            [
+              8.59375,
+              43.541666666666664
+            ],
+            [
+              9.114583333333334,
+              43.541666666666664
+            ],
+            [
+              9.114583333333334,
+              43.59375
+            ],
+            [
+              9.427083333333334,
+              43.59375
+            ],
+            [
+              9.427083333333334,
+              43.541666666666664
+            ],
+            [
+              12.5,
+              43.541666666666664
+            ],
+            [
+              12.5,
+              43.385416666666664
+            ],
+            [
+              12.552083333333334,
+              43.385416666666664
+            ],
+            [
+              12.552083333333334,
+              43.541666666666664
+            ],
+            [
+              12.604166666666668,
+              43.541666666666664
+            ],
+            [
+              12.604166666666668,
+              43.64583333333333
+            ],
+            [
+              12.65625,
+              43.64583333333333
+            ],
+            [
+              12.65625,
+              43.80208333333333
+            ],
+            [
+              12.708333333333334,
+              43.80208333333333
+            ],
+            [
+              12.708333333333334,
+              43.95833333333333
+            ],
+            [
+              12.65625,
+              43.95833333333333
+            ],
+            [
+              12.65625,
+              44.166666666666664
+            ],
+            [
+              12.708333333333334,
+              44.166666666666664
+            ],
+            [
+              12.708333333333334,
+              44.6875
+            ],
+            [
+              12.65625,
+              44.6875
+            ],
+            [
+              12.65625,
+              45.46875
+            ],
+            [
+              12.708333333333334,
+              45.46875
+            ],
+            [
+              12.708333333333334,
+              45.78125
+            ],
+            [
+              12.8125,
+              45.78125
+            ],
+            [
+              12.8125,
+              45.67708333333333
+            ],
+            [
+              12.864583333333334,
+              45.67708333333333
+            ],
+            [
+              12.8125,
+              45.572916666666664
+            ],
+            [
+              12.864583333333334,
+              45.572916666666664
+            ],
+            [
+              12.864583333333334,
+              45.52083333333333
+            ],
+            [
+              13.020833333333334,
+              45.52083333333333
+            ],
+            [
+              13.020833333333334,
+              45.46875
+            ],
+            [
+              13.125,
+              45.46875
+            ],
+            [
+              13.125,
+              45.52083333333333
+            ],
+            [
+              13.75,
+              45.52083333333333
+            ],
+            [
+              13.75,
+              45.46875
+            ],
+            [
+              13.958333333333334,
+              45.52083333333333
+            ],
+            [
+              13.958333333333334,
+              45.46875
+            ],
+            [
+              14.322916666666668,
+              45.46875
+            ],
+            [
+              14.322916666666668,
+              45.416666666666664
+            ],
+            [
+              14.375,
+              45.416666666666664
+            ],
+            [
+              14.375,
+              45.46875
+            ],
+            [
+              14.583333333333334,
+              45.46875
+            ],
+            [
+              14.583333333333334,
+              45.416666666666664
+            ],
+            [
+              14.635416666666668,
+              45.416666666666664
+            ],
+            [
+              14.635416666666668,
+              45.46875
+            ],
+            [
+              15.46875,
+              45.46875
+            ],
+            [
+              15.46875,
+              45.416666666666664
+            ],
+            [
+              15.625,
+              45.416666666666664
+            ],
+            [
+              15.625,
+              45.46875
+            ],
+            [
+              17.239583333333336,
+              45.46875
+            ],
+            [
+              17.239583333333336,
+              45.416666666666664
+            ],
+            [
+              17.291666666666668,
+              45.416666666666664
+            ],
+            [
+              17.291666666666668,
+              45.46875
+            ],
+            [
+              19.791666666666668,
+              45.46875
+            ],
+            [
+              19.791666666666668,
+              45.416666666666664
+            ],
+            [
+              19.84375,
+              45.416666666666664
+            ],
+            [
+              19.84375,
+              45.46875
+            ],
+            [
+              20.052083333333336,
+              45.46875
+            ],
+            [
+              20.104166666666668,
+              45.572916666666664
+            ],
+            [
+              20.208333333333336,
+              45.572916666666664
+            ],
+            [
+              20.208333333333336,
+              45.625
+            ],
+            [
+              20.052083333333336,
+              45.625
+            ],
+            [
+              20.052083333333336,
+              45.67708333333333
+            ],
+            [
+              20.104166666666668,
+              45.67708333333333
+            ],
+            [
+              20.104166666666668,
+              45.78125
+            ],
+            [
+              20.15625,
+              45.78125
+            ],
+            [
+              20.15625,
+              45.83333333333333
+            ],
+            [
+              20.104166666666668,
+              45.83333333333333
+            ],
+            [
+              20.104166666666668,
+              47.916666666666664
+            ],
+            [
+              20.15625,
+              47.916666666666664
+            ],
+            [
+              20.15625,
+              48.333333333333336
+            ],
+            [
+              20.104166666666668,
+              48.333333333333336
+            ],
+            [
+              20.104166666666668,
+              48.385416666666664
+            ],
+            [
+              20.15625,
+              48.385416666666664
+            ],
+            [
+              20.15625,
+              50
+            ],
+            [
+              20.208333333333336,
+              50
+            ],
+            [
+              20.208333333333336,
+              50.104166666666664
+            ],
+            [
+              20.104166666666668,
+              50.15625
+            ],
+            [
+              20.15625,
+              50.260416666666664
+            ],
+            [
+              20.052083333333336,
+              50.260416666666664
+            ],
+            [
+              20.052083333333336,
+              50.3125
+            ],
+            [
+              20,
+              50.3125
+            ],
+            [
+              20,
+              50.260416666666664
+            ],
+            [
+              19.947916666666668,
+              50.260416666666664
+            ],
+            [
+              19.947916666666668,
+              50.3125
+            ],
+            [
+              19.166666666666668,
+              50.3125
+            ],
+            [
+              19.166666666666668,
+              50.260416666666664
+            ],
+            [
+              17.916666666666668,
+              50.260416666666664
+            ],
+            [
+              17.916666666666668,
+              50.3125
+            ],
+            [
+              17.5,
+              50.3125
+            ],
+            [
+              17.5,
+              50.260416666666664
+            ],
+            [
+              17.03125,
+              50.260416666666664
+            ],
+            [
+              17.03125,
+              50.3125
+            ],
+            [
+              16.666666666666668,
+              50.3125
+            ],
+            [
+              16.666666666666668,
+              50.260416666666664
+            ],
+            [
+              15.416666666666668,
+              50.260416666666664
+            ],
+            [
+              15.416666666666668,
+              50.3125
+            ],
+            [
+              15.208333333333334,
+              50.3125
+            ],
+            [
+              15.208333333333334,
+              50.260416666666664
+            ],
+            [
+              15,
+              50.260416666666664
+            ],
+            [
+              15,
+              50.3125
+            ],
+            [
+              14.84375,
+              50.3125
+            ],
+            [
+              14.84375,
+              50.260416666666664
+            ],
+            [
+              14.166666666666668,
+              50.260416666666664
+            ],
+            [
+              14.166666666666668,
+              50.3125
+            ],
+            [
+              14.0625,
+              50.3125
+            ],
+            [
+              14.0625,
+              50.260416666666664
+            ],
+            [
+              13.802083333333334,
+              50.260416666666664
+            ],
+            [
+              13.802083333333334,
+              50.3125
+            ],
+            [
+              13.75,
+              50.3125
+            ],
+            [
+              13.75,
+              50.260416666666664
+            ],
+            [
+              13.645833333333334,
+              50.260416666666664
+            ],
+            [
+              13.645833333333334,
+              50.3125
+            ],
+            [
+              13.541666666666668,
+              50.3125
+            ],
+            [
+              13.541666666666668,
+              50.260416666666664
+            ],
+            [
+              13.125,
+              50.260416666666664
+            ],
+            [
+              13.125,
+              50.3125
+            ],
+            [
+              13.072916666666668,
+              50.3125
+            ],
+            [
+              13.072916666666668,
+              50.260416666666664
+            ],
+            [
+              12.96875,
+              50.260416666666664
+            ],
+            [
+              12.96875,
+              50.208333333333336
+            ],
+            [
+              12.864583333333334,
+              50.15625
+            ],
+            [
+              12.864583333333334,
+              50.052083333333336
+            ],
+            [
+              12.8125,
+              50.052083333333336
+            ],
+            [
+              12.8125,
+              50
+            ],
+            [
+              12.916666666666668,
+              50
+            ],
+            [
+              12.916666666666668,
+              49.583333333333336
+            ],
+            [
+              12.864583333333334,
+              49.583333333333336
+            ],
+            [
+              12.864583333333334,
+              49.53125
+            ],
+            [
+              12.916666666666668,
+              49.53125
+            ],
+            [
+              12.916666666666668,
+              47.916666666666664
+            ],
+            [
+              12.864583333333334,
+              47.916666666666664
+            ],
+            [
+              12.864583333333334,
+              47.8125
+            ],
+            [
+              12.916666666666668,
+              47.8125
+            ],
+            [
+              12.916666666666668,
+              47.395833333333336
+            ],
+            [
+              12.864583333333334,
+              47.395833333333336
+            ],
+            [
+              12.864583333333334,
+              47.291666666666664
+            ],
+            [
+              12.916666666666668,
+              47.291666666666664
+            ],
+            [
+              12.916666666666668,
+              47.135416666666664
+            ],
+            [
+              12.864583333333334,
+              47.135416666666664
+            ],
+            [
+              12.864583333333334,
+              47.083333333333336
+            ],
+            [
+              12.916666666666668,
+              47.083333333333336
+            ],
+            [
+              12.916666666666668,
+              46.92708333333333
+            ],
+            [
+              12.864583333333334,
+              46.92708333333333
+            ],
+            [
+              12.864583333333334,
+              46.875
+            ],
+            [
+              12.916666666666668,
+              46.875
+            ],
+            [
+              12.916666666666668,
+              46.666666666666664
+            ],
+            [
+              12.864583333333334,
+              46.666666666666664
+            ],
+            [
+              12.916666666666668,
+              46.25
+            ],
+            [
+              12.864583333333334,
+              46.25
+            ],
+            [
+              12.864583333333334,
+              45.885416666666664
+            ],
+            [
+              12.916666666666668,
+              45.885416666666664
+            ],
+            [
+              12.916666666666668,
+              45.83333333333333
+            ],
+            [
+              12.65625,
+              45.83333333333333
+            ],
+            [
+              12.65625,
+              45.885416666666664
+            ],
+            [
+              12.708333333333334,
+              45.885416666666664
+            ],
+            [
+              12.708333333333334,
+              46.666666666666664
+            ],
+            [
+              12.65625,
+              46.666666666666664
+            ],
+            [
+              12.65625,
+              46.71875
+            ],
+            [
+              12.708333333333334,
+              46.71875
+            ],
+            [
+              12.708333333333334,
+              48.541666666666664
+            ],
+            [
+              12.65625,
+              48.541666666666664
+            ],
+            [
+              12.65625,
+              48.59375
+            ],
+            [
+              12.708333333333334,
+              48.59375
+            ],
+            [
+              12.708333333333334,
+              50.208333333333336
+            ],
+            [
+              12.65625,
+              50.208333333333336
+            ],
+            [
+              12.65625,
+              50.260416666666664
+            ],
+            [
+              12.604166666666668,
+              50.260416666666664
+            ],
+            [
+              12.604166666666668,
+              50.3125
+            ],
+            [
+              12.5,
+              50.364583333333336
+            ]
+          ]
+        ]
+      },
+      "method": "ai_extraction",
+      "subject": "ML-ROOM-01",
+      "entityId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+      "evidence": [
+        {
+          "page": 1,
+          "partId": "8af534f2-efaf-4441-9bdd-834e882ed100",
+          "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec"
+        }
+      ],
+      "property": "space.geometry",
+      "worldStatus": "synthetic",
+      "evidenceState": "unresolved",
+      "referenceFrameId": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b"
+    }
+  ],
+  "datasetNamespace": "t061-actual-ml:99741d82-febe-4533-bc05-49686744a555",
+  "sourceRevisionIds": [
+    "4f29322f-ba7d-4e4c-86af-680076be3d1b",
+    "1e86dd91-f1f9-46a7-b171-996fd3616aec",
+    "35b6cd7d-c138-4d20-9a70-ff468b9f7a95",
+    "fbe615ed-7e7b-430b-8ec8-c407c13326fc",
+    "010f8aff-c54b-4a41-9828-b254442f590f",
+    "1c253326-4e76-4d57-82e6-ea9d03c84c5b",
+    "7087dc8a-e0a2-4622-82ba-56d51b3d230d",
+    "76d7968d-659f-4e58-ac26-929149c8a756",
+    "b011ba1d-6b0a-4221-81d5-5fb9275f7cd4"
+  ]
+}

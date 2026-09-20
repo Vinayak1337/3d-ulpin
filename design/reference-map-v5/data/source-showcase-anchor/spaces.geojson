@@ -1,0 +1,501 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-LAKE-VIEW-DEMO-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "B01-F0-U1",
+      "properties": {
+        "use": "residential",
+        "level": 0,
+        "floorId": "B01-F0",
+        "unit_id": "B01-F0-U1",
+        "name": "Apartment 101",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F0-U1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F0",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:0:UNIT:B01-F0-U1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              68.3,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F0-U2",
+      "properties": {
+        "use": "residential",
+        "level": 0,
+        "floorId": "B01-F0",
+        "unit_id": "B01-F0-U2",
+        "name": "Apartment 102",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F0-U2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0.0,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F0",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:0:UNIT:B01-F0-U2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.6,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F1-U1",
+      "properties": {
+        "use": "residential",
+        "level": 1,
+        "floorId": "B01-F1",
+        "unit_id": "B01-F1-U1",
+        "name": "Apartment 201",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F1-U1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F1",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:1:UNIT:B01-F1-U1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              68.3,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F1-U2",
+      "properties": {
+        "use": "residential",
+        "level": 1,
+        "floorId": "B01-F1",
+        "unit_id": "B01-F1-U2",
+        "name": "Apartment 202",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F1-U2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 3.1,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F1",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:1:UNIT:B01-F1-U2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.6,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F2-U1",
+      "properties": {
+        "use": "residential",
+        "level": 2,
+        "floorId": "B01-F2",
+        "unit_id": "B01-F2-U1",
+        "name": "Apartment 301",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F2-U1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F2",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:2:UNIT:B01-F2-U1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              68.3,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F2-U2",
+      "properties": {
+        "use": "residential",
+        "level": 2,
+        "floorId": "B01-F2",
+        "unit_id": "B01-F2-U2",
+        "name": "Apartment 302",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F2-U2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 6.2,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F2",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:2:UNIT:B01-F2-U2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.6,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F3-U1",
+      "properties": {
+        "use": "residential",
+        "level": 3,
+        "floorId": "B01-F3",
+        "unit_id": "B01-F3-U1",
+        "name": "Apartment 401",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F3-U1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F3",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:3:UNIT:B01-F3-U1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              68.3,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F3-U2",
+      "properties": {
+        "use": "residential",
+        "level": 3,
+        "floorId": "B01-F3",
+        "unit_id": "B01-F3-U2",
+        "name": "Apartment 402",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F3-U2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 9.3,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F3",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:3:UNIT:B01-F3-U2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.6,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F4-U1",
+      "properties": {
+        "use": "residential",
+        "level": 4,
+        "floorId": "B01-F4",
+        "unit_id": "B01-F4-U1",
+        "name": "Apartment 501",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F4-U1-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F4",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:4:UNIT:B01-F4-U1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              68.3,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              63.099999999999994
+            ],
+            [
+              76.39999999999999,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              80.89999999999999
+            ],
+            [
+              68.3,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B01-F4-U2",
+      "properties": {
+        "use": "residential",
+        "level": 4,
+        "floorId": "B01-F4",
+        "unit_id": "B01-F4-U2",
+        "name": "Apartment 502",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-F4-U2-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 12.4,
+        "height_m": 2.9,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "floor_id": "B01-F4",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01:4:UNIT:B01-F4-U2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.6,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              63.099999999999994
+            ],
+            [
+              85.69999999999999,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              80.89999999999999
+            ],
+            [
+              77.6,
+              63.099999999999994
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

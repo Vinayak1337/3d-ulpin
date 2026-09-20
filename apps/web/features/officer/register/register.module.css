@@ -1928,3 +1928,37 @@
 .exportScope select {
   width: 100%;
 }
+
+/* T067: one identity, then model and selected records. */
+.page .registerLayout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+.page .content { padding: 18px 24px; }
+.page .floorsGrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 18px; align-items: start; }
+.page .floorsGrid > section:first-child { display: block; min-width: 0; }
+.page .floorsGrid :global(.property-scene) { height: clamp(390px, 56vh, 670px); }
+.page .floorsGrid .floorChips { border-left: 0; display: flex; flex-wrap: wrap; padding: 12px; }
+.page .floorChips button { min-height: 44px; }
+.page .table { font-size: 13px; }
+.page .table th { font-size: 12px; }
+.page .table td > button { min-height: 44px; }
+.page .table td small { overflow-wrap: anywhere; }
+.page .propertyHeader { padding-top: 14px; padding-bottom: 14px; }
+.page .titleIcon { display: none; }
+.page .tabNavigation { padding: 0 24px; overflow-x: auto; flex-shrink: 0; }
+.page .tabNavigation > button { font-size: 14px; white-space: nowrap; min-height: 48px; }
+.page :global(.ui-panel-heading) h2 { font-size: 16px; }
+.recordDetails { border-top: 1px solid var(--ui-divider); margin-top: 12px; padding-top: 8px; }
+.recordDetails > summary { cursor: pointer; padding: 12px 0; color: #385c4d; font-weight: 600; }
+.recordDetails > dl { margin-top: 12px; }
+.retainedDisclosure { background: white; border: 1px solid var(--ui-divider); border-radius: 8px; }
+.retainedDisclosure > summary { cursor: pointer; padding: 16px; font-weight: 600; min-height: 48px; }
+.retainedDisclosure > section { border: 0; }
+@media (max-width: 1000px) {
+  .page .content { padding: 12px; }
+  .page .floorsGrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .page .floorsGrid :global(.property-scene) { height: 430px; }
+}
+@media (max-width: 720px) {
+  .page .floorsGrid { grid-template-columns: minmax(0, 1fr); }
+  .page .floorsGrid :global(.property-scene) { height: 340px; }
+  .page .tabNavigation { padding: 0 10px; }
+}

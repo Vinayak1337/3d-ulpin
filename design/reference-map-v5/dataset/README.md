@@ -1,0 +1,9 @@
+# Fictional Neem Gali dense source package
+
+All data is authored synthetic demonstration material. This dense T073 specimen replaces the active layout; the prior T072 scene and ZIP are archived separately. Shared walls are valid zero-area contacts; building overlap, road overlap and parcel encroachment are computed in spatial-checks.json and issues[].evidence. Union blocks group render geometry while preserving independent building identities. Geographic placement is fictional and conveys no relationship to real properties or official ULPINs.
+
+Use buildings.geojson with the existing GIS import: kind=building, ID=object_id, name=name, height=height_m, heightUnit=m, worldStatus=synthetic. All GeoJSON geometry coordinates are WGS84 longitude/latitude. For exact canonical local coordinates retain EPSG:32643 analysis CRS with projected origin [714000,3160000] metres. See import-mapping.json. Null B12 height remains unknown.
+
+Other native supported source layers: parcels.geojson (parcel), roads.geojson (road), open_areas.geojson (public_land), utilities.geojson (utility). Do not map height_m for these surface/line layers. Floor/space hierarchy and custom vertical datum require the normalized exchange adapter; the existing area importer does not support floor/space kinds. floor_spaces.geojson and floor_schedule.csv preserve explicit authored unit outlines and stated areas, unlike the supplied Drive specimen whose unit outlines were unavailable.
+
+The ZIP is a dataset container, not a Shapefile ZIP. Extract a GeoJSON layer for the existing application, or load normalized.json with the isolated prototype. No app seed or database is included. MASTER_SCENE.json is the authored local baseline. schema.json validates normalized.json; manifest.json records SHA-256 and lengths of every other file. survey_controls.csv is a synthetic transformation check, not observed GNSS.

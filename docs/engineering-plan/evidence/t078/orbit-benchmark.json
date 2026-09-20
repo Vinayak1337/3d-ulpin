@@ -1,0 +1,78 @@
+{
+  "method": "Continuous requestAnimationFrame with OrbitControls.autoRotate; no pointer protocol pacing",
+  "measuredDurationMs": 2402,
+  "detail": "full",
+  "architecture": {
+    "buildings": 49,
+    "drawBatches": 2011,
+    "detail": "full",
+    "authoredTextures": 2
+  },
+  "environment": {
+    "trees": 268,
+    "authored": true
+  },
+  "renderer": "Three.js 186",
+  "cameraType": "PerspectiveCamera",
+  "cameraRange": {
+    "near": 1,
+    "far": 2760,
+    "maxDistance": 1150,
+    "planLift": 450
+  },
+  "sceneBounds": {
+    "min": [
+      -26,
+      -3.1,
+      -204
+    ],
+    "max": [
+      191,
+      15.5,
+      26
+    ]
+  },
+  "contextLost": false,
+  "spatialConflicts": [
+    {
+      "id": "spatial:OUTSIDE_PARCEL:B01:P01",
+      "code": "OUTSIDE_PARCEL",
+      "areaM2": 21.60000000000005,
+      "buildingIds": [
+        "B01"
+      ],
+      "solidTint": true
+    },
+    {
+      "id": "spatial:ROAD_OVERLAP:B01:R04",
+      "code": "ROAD_OVERLAP",
+      "areaM2": 21.60000000000005,
+      "buildingIds": [
+        "B01"
+      ],
+      "solidTint": true
+    }
+  ],
+  "drawCalls": 723,
+  "triangles": 334142,
+  "geometries": 568,
+  "textures": 9,
+  "renderCount": 694,
+  "elapsedMs": 54508,
+  "viewport": {
+    "width": 993,
+    "height": 814,
+    "pixelRatio": 0.8
+  },
+  "activeFrameIntervals": {
+    "count": 180,
+    "averageMs": 6.94,
+    "p95Ms": 7
+  },
+  "cpuRenderTime": {
+    "count": 180,
+    "averageMs": 2.43,
+    "p95Ms": 2.9
+  },
+  "noHeightExtrusions": []
+}

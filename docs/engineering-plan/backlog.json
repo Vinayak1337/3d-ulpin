@@ -1,12 +1,12 @@
 {
   "schema_version": "ulpin-execution-plan/1",
   "prepared_on": "2026-09-18",
-  "plan_version": "1.3",
+  "plan_version": "1.5",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T059_frontend_completion_review",
+  "current_action": "T089_publish_and_hosted_ui_import",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
-  "next_task": "T059",
+  "next_task": "T080",
   "epics": [
     {
       "id": "E01",
@@ -105,6 +105,13 @@
       "first": "T053",
       "last": "T056",
       "exit": "R3 increments are elected later; they do not block R1/R2."
+    },
+    {
+      "id": "E15",
+      "name": "Officer workflow simplification and Studio-only UI",
+      "first": "T062",
+      "last": "T068",
+      "exit": "Supported source-to-record journey is simple, resumable and uses only Studio presentation."
     }
   ],
   "tasks": [
@@ -157,7 +164,7 @@
         "T001"
       ],
       "scope": "Reconcile current requirements and the recovered reference packs into named outcomes and capability-specific visual targets.",
-      "outputs": "Requirement IDs; reference hash/screen mapping; F01–F09 fixture specifications; declared device and camera suite.",
+      "outputs": "Requirement IDs; reference hash/screen mapping; F01\u2013F09 fixture specifications; declared device and camera suite.",
       "acceptance": "Every primary screen has an anchor or an explicit design gap; dense and sparse inputs have honest targets; contradictory mockup numbers are not requirements.",
       "out_of_scope": "Recreating all UI screens or claiming original-chat completeness.",
       "detail_plan_path": "tasks/T002_PLAN.md",
@@ -555,7 +562,7 @@
       ],
       "scope": "Exercise one real API/storage path from source receipt and composition to the linked two-block scene read model.",
       "outputs": "Executable synthetic fixture; API integration test; expected object graph and analytical measurements; zero-document case.",
-      "acceptance": "One 80 m² synthetic building and 480 m³ exterior prism cross blocks without duplicate identity; its levels/units/parcel/utility sources stay traceable.",
+      "acceptance": "One 80 m\u00b2 synthetic building and 480 m\u00b3 exterior prism cross blocks without duplicate identity; its levels/units/parcel/utility sources stay traceable.",
       "out_of_scope": "Calling this an actual Uttam Nagar survey or pretending planning arithmetic is a executed test.",
       "detail_plan_path": "tasks/T012_PLAN.md",
       "detail_plan_exists": false,
@@ -1002,7 +1009,7 @@
       "depends_on": [
         "T025"
       ],
-      "scope": "Run the same pipeline on F02–F07 and a held-out shape family without locality-specific renderer edits.",
+      "scope": "Run the same pipeline on F02\u2013F07 and a held-out shape family without locality-specific renderer edits.",
       "outputs": "Dataset/quality-profile matrix; dense Uttam Nagar-style result; capability fallback and seam evidence.",
       "acceptance": "No widening alleys or filling courtyards; missing evidence is explicit; general rules, not locality-specific branches, handle failures.",
       "out_of_scope": "Claiming the held-out data remained held out after tuning to it; replace the holdout after leakage.",
@@ -1355,7 +1362,7 @@
         "T036"
       ],
       "scope": "Verify every promised map state against the same design and behavioral contract.",
-      "outputs": "UI-01–UI-07 evidence map; route/gesture/error regression; known limitations.",
+      "outputs": "UI-01\u2013UI-07 evidence map; route/gesture/error regression; known limitations.",
       "acceptance": "Map states meet visual, accessibility and interaction requirements without regressing renderer gates.",
       "out_of_scope": "Calling all screens finished from one hero screenshot.",
       "detail_plan_path": "tasks/T037_PLAN.md",
@@ -1515,7 +1522,7 @@
         "T041"
       ],
       "scope": "Qualify register/floor/unit/source flows as one connected product surface.",
-      "outputs": "UI-08–UI-12 results; cross-view identity/quantity tests; responsive/keyboard checks.",
+      "outputs": "UI-08\u2013UI-12 results; cross-view identity/quantity tests; responsive/keyboard checks.",
       "acceptance": "The complete selection-to-source-to-return flow is coherent with missing, private and absent evidence.",
       "out_of_scope": "Passing only the model or only the table while the combined journey fails.",
       "detail_plan_path": "tasks/T042_PLAN.md",
@@ -1670,7 +1677,7 @@
         "T046"
       ],
       "scope": "Prove one repeatable live import and a safe correction path using the already qualified first profiles.",
-      "outputs": "UI-13–UI-16 results; upload-to-map-to-register-to-computed-finding journey; recovery test.",
+      "outputs": "UI-13\u2013UI-16 results; upload-to-map-to-register-to-computed-finding journey; recovery test.",
       "acceptance": "Original upload through actual running app works; its demonstrated capability and limits are explicit; correction preserves history and IDs.",
       "out_of_scope": "Blocking this gate on every future adapter or presenting an exterior-only import as automatic interior generation.",
       "detail_plan_path": "tasks/T047_PLAN.md",
@@ -1981,7 +1988,7 @@
       "epic": "E14",
       "title": "Studio-based interface, prepared sources and reference-matched neighbourhood",
       "sequence": 58,
-      "status": "Review",
+      "status": "Implemented",
       "execution_state": "continuation_implemented_production_verified",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
@@ -2011,14 +2018,15 @@
         "../evidence/t058/continuation/verification/summary.json",
         "../evidence/t058/continuation/REVIEW.md"
       ],
-      "blocker": null
+      "blocker": null,
+      "acceptance_state": "Not accepted; historical visual/device review and reproduced gaps are tracked by T060."
     },
     {
       "id": "T059",
       "epic": "E14",
       "title": "Unified Studio frontend completion and acceptance evidence",
       "sequence": 59,
-      "status": "Review",
+      "status": "Implemented",
       "execution_state": "implemented_current_browser_verified",
       "plan_state": "detailed_plan_authored",
       "release": "R1-renderer",
@@ -2048,7 +2056,611 @@
         "../evidence/t059/final/saved-data-results.json",
         "../evidence/t059/final/capture.json"
       ],
+      "blocker": null,
+      "acceptance_state": "Not accepted; historical visual/device review and reproduced gaps are tracked by T060."
+    },
+    {
+      "id": "T060",
+      "epic": "E14",
+      "title": "Close reproduced Studio defects and refine reference visuals",
+      "sequence": 60,
+      "status": "Implemented",
+      "execution_state": "implemented_browser_verified_final_follow_up_recorded",
+      "plan_state": "detailed_plan_authored",
+      "release": "R1-renderer",
+      "suggested_owner": "Frontend / visual / QA",
+      "depends_on": [
+        "T059"
+      ],
+      "scope": "Reconcile both project chats, fix quick units/documents/shared navigation and scoped SVG, refine scene and tablet interaction, verify current application.",
+      "outputs": "Correctness fixes, scoped export regression, reference comparison, current saved/fixture browser checks.",
+      "acceptance": "Reproduced defects are fixed in current browser; supported source bytes and geometry remain unchanged; real-device and user acceptance are recorded separately.",
+      "out_of_scope": "ML, official identity issuance, production multi-user rollout and reshaping imported real geometry to imitate the synthetic reference.",
+      "detail_plan_path": "tasks/T060_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Current affected-file inspection",
+        "Studio and saved-data browser journeys",
+        "Production build",
+        "Reference-family captures",
+        "Responsive/accessibility baseline",
+        "No fabricated user approval"
+      ],
+      "evidence": [
+        "tasks/T060_RESULT.md",
+        "../evidence/t060/verification-summary.json",
+        "../evidence/t060/correctness-final/results.json",
+        "../evidence/t060/studio-original/results.json",
+        "../evidence/t060/studio-continuation/results.json",
+        "../evidence/t060/saved-final/results.json",
+        "../evidence/t060/visual-metal/capture.json",
+        "../evidence/t060/uttam-final/results.json"
+      ],
       "blocker": null
+    },
+    {
+      "id": "T061",
+      "title": "Local spatial extraction and reviewed bulk handoff",
+      "status": "Implemented",
+      "epic": "E13",
+      "depends_on": [],
+      "scope": "Pinned local building and floor-plan models, persisted per-source batches, exact raster review, calibrated candidates and ordinary preparation/area review handoff.",
+      "outputs": "Actual model evaluation, private inference runtime, immutable receipts and artifacts, review UI and source-to-draft verification.",
+      "acceptance": "Actual inference runs through retained originals and private jobs; masks and failures persist; calibration and review remain required; retry and replay preserve originals and identities.",
+      "out_of_scope": "Paid provider fallback, legal or statutory acceptance, ownership prediction, national data coverage and universal input formats.",
+      "detail_plan_path": "tasks/T061_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Actual local model inference",
+        "Original preservation",
+        "Partial failure and retry",
+        "Calibration and review gates",
+        "Production build",
+        "Current browser workflow"
+      ],
+      "evidence": [
+        "tasks/T061_RESULT.md",
+        "../evidence/t061/verification-summary.json",
+        "../evidence/t061/WORKFLOW_RESULT.md",
+        "../evidence/t061/workflow-result.json",
+        "../evidence/t061/atomic-footprint.json",
+        "../evidence/t061/models/evaluation.md"
+      ],
+      "blocker": null,
+      "sequence": 61,
+      "execution_state": "implemented_actual_model_workflow_browser_verified",
+      "plan_state": "authored",
+      "release": "R3-assistance",
+      "suggested_owner": "Codex"
+    },
+    {
+      "id": "T062",
+      "title": "Audit officer workflow and plan Studio-only simplification",
+      "status": "Implemented",
+      "epic": "E15",
+      "sequence": 62,
+      "depends_on": [],
+      "scope": "Audit rendered workflow and all route/capability families against SIH 26011; document safe automation and ordered migration.",
+      "outputs": "Audit rendered workflow and all route/capability families against SIH 26011; document safe automation and ordered migration.",
+      "acceptance": "Planning record consistency and truthful requirement coverage.",
+      "out_of_scope": "Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.",
+      "detail_plan_path": "tasks/T062_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Planning record consistency and truthful requirement coverage."
+      ],
+      "evidence": [
+        "tasks/T062_RESULT.md"
+      ],
+      "blocker": null,
+      "execution_state": "audit_complete",
+      "plan_state": "authored",
+      "release": "R2-officer-ux",
+      "suggested_owner": "Fresh Astra 6 High worker; parent review"
+    },
+    {
+      "id": "T063",
+      "title": "Unify Studio entry points and officer directories",
+      "status": "Implemented",
+      "epic": "E15",
+      "sequence": 63,
+      "depends_on": [
+        "T062"
+      ],
+      "scope": "Make Studio default and sole normal route family; replace duplicate pages with compatibility redirects; improve default landing and searchable directories.",
+      "outputs": "Make Studio default and sole normal route family; replace duplicate pages with compatibility redirects; improve default landing and searchable directories.",
+      "acceptance": "Route/context tests including legacy aliases, fixture/canonical separation and duplicate query values; focused typecheck/build; browser default, directory search and Back/reload.",
+      "out_of_scope": "Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.",
+      "detail_plan_path": "tasks/T063_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Route/context tests including legacy aliases, fixture/canonical separation and duplicate query values; focused typecheck/build; browser default, directory search and Back/reload."
+      ],
+      "evidence": [
+        "tasks/T063_RESULT.md",
+        "tasks/T063_WORKER_RESULT.md",
+        "../evidence/t063/results.json"
+      ],
+      "blocker": null,
+      "execution_state": "implemented_reviewed_browser_verified",
+      "plan_state": "authored",
+      "release": "R2-officer-ux",
+      "suggested_owner": "Fresh Astra 6 High worker; parent review"
+    },
+    {
+      "id": "T064",
+      "title": "Inspect files and simplify GIS intake",
+      "status": "Implemented",
+      "epic": "E15",
+      "sequence": 64,
+      "depends_on": [
+        "T063"
+      ],
+      "scope": "Replace front-loaded technical GIS form with file-first inspection and safe metadata defaults.",
+      "outputs": "Replace front-loaded technical GIS form with file-first inspection and safe metadata defaults.",
+      "acceptance": "Projected native files, multiple layers, missing/conflicting CRS, malformed files and ID ambiguity; original-byte preservation; browser file-to-draft review; typecheck/build.",
+      "out_of_scope": "Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.",
+      "detail_plan_path": "tasks/T064_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Projected native files, multiple layers, missing/conflicting CRS, malformed files and ID ambiguity; original-byte preservation; browser file-to-draft review; typecheck/build."
+      ],
+      "evidence": [
+        "tasks/T064_RESULT.md",
+        "tasks/T064_WORKER_RESULT.md",
+        "../evidence/t064/results.json"
+      ],
+      "blocker": null,
+      "execution_state": "implemented_reviewed_browser_verified",
+      "plan_state": "authored",
+      "release": "R2-officer-ux",
+      "suggested_owner": "Fresh Astra 6 High worker; parent review"
+    },
+    {
+      "id": "T065",
+      "title": "Resume and guide preparation from saved state",
+      "status": "Implemented",
+      "epic": "E15",
+      "sequence": 65,
+      "depends_on": [
+        "T064"
+      ],
+      "scope": "Persist continuation and show one useful next action; compact source-linked fact review and placement.",
+      "outputs": "Persist continuation and show one useful next action; compact source-linked fact review and placement.",
+      "acceptance": "Reload after upload/extraction/placement/build; stale/failed job; no duplicate model/record; browser Build-to-review and keyboard; targeted tests/build.",
+      "out_of_scope": "Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.",
+      "detail_plan_path": "tasks/T065_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Reload after upload/extraction/placement/build; stale/failed job; no duplicate model/record; browser Build-to-review and keyboard; targeted tests/build."
+      ],
+      "evidence": [
+        "tasks/T065_RESULT.md",
+        "tasks/T065_WORKER_RESULT.md",
+        "../evidence/t065/results.json",
+        "../evidence/t065/worker-state.json"
+      ],
+      "blocker": null,
+      "execution_state": "implemented_reviewed_browser_verified",
+      "plan_state": "authored",
+      "release": "R2-officer-ux",
+      "suggested_owner": "Fresh Astra 6 High worker; parent review"
+    },
+    {
+      "id": "T066",
+      "title": "Unify source intake and source-led extraction",
+      "status": "Implemented",
+      "epic": "E15",
+      "sequence": 66,
+      "depends_on": [
+        "T065"
+      ],
+      "scope": "Offer supported document uploads consistently and allow aerial building extraction before any building exists.",
+      "outputs": "Offer supported document uploads consistently and allow aerial building extraction before any building exists.",
+      "acceptance": "No existing building source-led journey, floor-plan path, partial/empty/error/retry/cancel, source/placement mismatch, idempotence and originals; actual local inference/browser; focused tests/build.",
+      "out_of_scope": "Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.",
+      "detail_plan_path": "tasks/T066_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "No existing building source-led journey, floor-plan path, partial/empty/error/retry/cancel, source/placement mismatch, idempotence and originals; actual local inference/browser; focused tests/build."
+      ],
+      "evidence": [
+        "tasks/T066_RESULT.md",
+        "tasks/T066_WORKER_RESULT.md",
+        "../evidence/t066/browser/results.json",
+        "../evidence/t066/workflow/state.json"
+      ],
+      "blocker": null,
+      "execution_state": "implemented_reviewed_browser_verified",
+      "plan_state": "authored",
+      "release": "R2-officer-ux",
+      "suggested_owner": "Fresh Astra 6 High worker; parent review"
+    },
+    {
+      "id": "T067",
+      "title": "Declutter Studio map register and workspace",
+      "status": "Implemented",
+      "epic": "E15",
+      "sequence": 67,
+      "depends_on": [
+        "T066"
+      ],
+      "scope": "Create consistent visual hierarchy and officer wording across maps, register, retained records and workspace.",
+      "outputs": "Create consistent visual hierarchy and officer wording across maps, register, retained records and workspace.",
+      "acceptance": "Desktop/tablet and keyboard/focus captures; floor/unit selection, findings, source/history/exports, advanced correction access; affected regression tests/build.",
+      "out_of_scope": "Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.",
+      "detail_plan_path": "tasks/T067_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Desktop/tablet and keyboard/focus captures; floor/unit selection, findings, source/history/exports, advanced correction access; affected regression tests/build."
+      ],
+      "evidence": [
+        "tasks/T067_RESULT.md",
+        "tasks/T067_WORKER_RESULT.md",
+        "../../evidence/t067/results.json",
+        "../../evidence/t067/queue-state.json"
+      ],
+      "blocker": null,
+      "execution_state": "implemented",
+      "plan_state": "authored",
+      "release": "R2-officer-ux",
+      "suggested_owner": "Fresh Astra 6 High worker; parent review"
+    },
+    {
+      "id": "T068",
+      "title": "Delete obsolete presentations and qualify complete journey",
+      "status": "Implemented",
+      "epic": "E15",
+      "sequence": 68,
+      "depends_on": [
+        "T067"
+      ],
+      "scope": "Remove proven-unused presentation code and verify the integrated officer journey.",
+      "outputs": "Remove proven-unused presentation code and verify the integrated officer journey.",
+      "acceptance": "Production build; supported GIS/source-to-extraction-to-review-to-record-to-export journey, refresh and errors; original/identity preservation; route scan; final browser captures; record actual results and unqualified acceptance gates.",
+      "out_of_scope": "Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.",
+      "detail_plan_path": "tasks/T068_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Production build; supported GIS/source-to-extraction-to-review-to-record-to-export journey, refresh and errors; original/identity preservation; route scan; final browser captures; record actual results and unqualified acceptance gates."
+      ],
+      "evidence": [
+        "tasks/T068_RESULT.md",
+        "tasks/T068_WORKER_RESULT.md",
+        "../../evidence/t068/journey.json",
+        "../../evidence/t068/preservation.json",
+        "../STUDIO_DEMO_GUIDE.md"
+      ],
+      "blocker": null,
+      "execution_state": "implemented",
+      "plan_state": "authored",
+      "release": "R2-officer-ux",
+      "suggested_owner": "Fresh Astra 6 High worker; parent review"
+    },
+    {
+      "id": "T069",
+      "title": "Correct supplied UI references before continuing implementation",
+      "status": "Implemented",
+      "epic": "E15",
+      "sequence": 69,
+      "depends_on": [
+        "T063"
+      ],
+      "scope": "Audit the supplied image pack and produce coherent simplified reference mockups first, then update remaining implementation tasks.",
+      "outputs": "Corrected screen set and interaction specification with consistent fictional specimen.",
+      "acceptance": "Each generated design is visually reviewed against hierarchy, automation, truthful state and consistent workflow; originals remain untouched.",
+      "out_of_scope": "Further app implementation until reference pass is complete; official issuance or survey claims.",
+      "detail_plan_path": "tasks/T069_PLAN.md",
+      "detail_plan_exists": true,
+      "legacy_refs": [],
+      "mandatory_checks": [
+        "Actual image inspection",
+        "Sequential mockup generation/review",
+        "Consistent fields and state",
+        "Preserve original reference files"
+      ],
+      "evidence": [
+        "tasks/T069_RESULT.md",
+        "../../design/officer-studio-v3/DESIGN_BRIEF.md",
+        "../../design/officer-studio-v3/REVIEW.md"
+      ],
+      "blocker": null,
+      "execution_state": "six_reference_mockups_reviewed_and_viewer_verified",
+      "plan_state": "authored",
+      "release": "R2-officer-ux",
+      "suggested_owner": "Parent design and review"
+    },
+    {
+      "id": "T070",
+      "title": "Clear application data and built-in demo entry points",
+      "status": "Implemented",
+      "sequence": 70,
+      "scope": "User-authorized local linked application reset; verified private database and object backup, clear saved data and job queue, remove hardcoded demo navigation, verify empty app.",
+      "detail_plan_path": "tasks/T070_PLAN.md",
+      "detail_plan_exists": true,
+      "depends_on": [],
+      "evidence": [
+        "tasks/T070_RESULT.md",
+        "../evidence/t070/verification.json"
+      ],
+      "execution_state": "clean_local_app_verified"
+    },
+    {
+      "id": "T071",
+      "title": "Bulk-first UI references and normalized demo data contract",
+      "status": "Implemented",
+      "sequence": 71,
+      "depends_on": [
+        "T070"
+      ],
+      "scope": "Reference audit, Drive source inventory, canonical schema and isolated fictional fixture, interactive UI reference set with highly usable 3D map.",
+      "detail_plan_path": "tasks/T071_PLAN.md",
+      "detail_plan_exists": true,
+      "evidence": [
+        "tasks/T071_RESULT.md",
+        "../../design/bulk-studio-v4/README.md",
+        "../../design/bulk-studio-v4/REFERENCE_AUDIT.md",
+        "../evidence/t071/verification.json"
+      ],
+      "execution_state": "isolated_reference_prototype_verified_pending_user_visual_review"
+    },
+    {
+      "id": "T072",
+      "title": "Recreate reference-quality 3D neighbourhood map",
+      "status": "Implemented",
+      "sequence": 72,
+      "depends_on": [
+        "T071"
+      ],
+      "scope": "Build separate synthetic reference neighbourhood, detailed renderer, uploadable source package and browser-verified usable map.",
+      "detail_plan_path": "tasks/T072_PLAN.md",
+      "detail_plan_exists": true,
+      "execution_state": "verified_local_prototype_visual_acceptance_pending",
+      "evidence": [
+        "evidence/t072/map/results.json",
+        "evidence/t072/map/context-loss.json",
+        "evidence/t072/upload-results.json",
+        "evidence/t072/upload-contract-results.json",
+        "evidence/t072/reference-comparison.png",
+        "../../design/reference-map-v5/data/validation-report.json"
+      ],
+      "result_path": "tasks/T072_RESULT.md"
+    },
+    {
+      "id": "T073",
+      "title": "Dense plotted block and computed spatial conflicts",
+      "status": "Implemented",
+      "sequence": 73,
+      "depends_on": [
+        "T072"
+      ],
+      "scope": "Correct the isolated map with attached/overlapping buildings, dense streets and computed building/road/parcel conflicts.",
+      "detail_plan_path": "tasks/T073_PLAN.md",
+      "detail_plan_exists": true,
+      "execution_state": "dense_arrangements_verified_visual_review_pending",
+      "evidence": [
+        "evidence/t073/map/results.json",
+        "evidence/t073/spatial-browser-results.json",
+        "evidence/t073/spatial-runtime-results.txt",
+        "evidence/t073/upload-results.json",
+        "evidence/t073/reference-comparison.png"
+      ],
+      "result_path": "tasks/T073_RESULT.md"
+    },
+    {
+      "id": "T074",
+      "title": "Audit all reference images and plan complete shared-schema replication",
+      "status": "Implemented",
+      "sequence": 74,
+      "depends_on": [
+        "T073"
+      ],
+      "scope": "Reference review and plan only: 35 paths / 17 unique images, current renderer/schema audit, interactive review gallery and sequential acceptance gates.",
+      "detail_plan_path": "tasks/T074_REFERENCE_REPLICATION_PLAN.md",
+      "detail_plan_exists": true,
+      "execution_state": "audit_complete_replication_not_implemented",
+      "evidence": [
+        "evidence/t074/reference-image-inventory.json",
+        "evidence/t074/verification.json",
+        "tasks/T074_MAP_IMAGE_AUDIT.md",
+        "tasks/T074_REGISTER_WORKSPACE_AUDIT.md",
+        "tasks/T074_BOARD_IMAGE_AUDIT.md",
+        "tasks/T074_SCHEMA_RENDERER_AUDIT.md"
+      ],
+      "result_path": "tasks/T074_RESULT.md"
+    },
+    {
+      "id": "T075",
+      "title": "Unify reference import compatibility with canonical scene contract",
+      "status": "Implemented",
+      "sequence": 75,
+      "depends_on": [
+        "T074"
+      ],
+      "scope": "Pin adapters and renderer profiles at existing canonical boundary; test source-preserving import for independent fixtures including multipart, holes, rotated frames and nonzero elevations. No live demo seeding.",
+      "detail_plan_exists": true,
+      "execution_state": "canonical_adapter_verified",
+      "planning_reference": "tasks/T074_REFERENCE_REPLICATION_PLAN.md",
+      "detail_plan_path": "tasks/T075_PLAN.md",
+      "result_path": "tasks/T075_RESULT.md",
+      "evidence": [
+        "../../tests/t075-reference-adapter.test.ts",
+        "../../tests/t075-package.test.ts",
+        "../../tests/t075-presentation.test.ts"
+      ]
+    },
+    {
+      "id": "T076",
+      "sequence": 76,
+      "title": "Shared reference viewport and exact Block Map composition",
+      "status": "Implemented",
+      "depends_on": [
+        "T075"
+      ],
+      "detail_plan_path": "tasks/T076_PLAN.md",
+      "detail_plan_exists": true,
+      "execution_state": "shared_runtime_verified_visual_superseded",
+      "result_path": "tasks/T076_RESULT.md"
+    },
+    {
+      "id": "T077",
+      "sequence": 77,
+      "title": "Searchable identities, source normalization and shared register",
+      "status": "Implemented",
+      "depends_on": [
+        "T076"
+      ],
+      "detail_plan_exists": true,
+      "detail_plan_path": "tasks/T077_PLAN.md",
+      "result_path": "tasks/T077_RESULT.md",
+      "execution_state": "register_accepted_map_rejected_by_user"
+    },
+    {
+      "id": "T078",
+      "sequence": 78,
+      "title": "Reconstruct reference neighbourhood and remove map lag",
+      "status": "Implemented",
+      "depends_on": [
+        "T077"
+      ],
+      "detail_plan_exists": true,
+      "detail_plan_path": "tasks/T078_PLAN.md",
+      "execution_state": "browser_verified_visual_review_open",
+      "result_path": "tasks/T078_RESULT.md"
+    },
+    {
+      "id": "T079",
+      "sequence": 79,
+      "title": "Declutter map and generate complete reference-city source package",
+      "status": "Implemented",
+      "depends_on": [
+        "T078"
+      ],
+      "detail_plan_exists": true,
+      "detail_plan_path": "tasks/T079_PLAN.md",
+      "execution_state": "source_draft_verified_recording_gap_open",
+      "result_path": "tasks/T079_RESULT.md"
+    },
+    {
+      "id": "T080",
+      "sequence": 80,
+      "title": "Connect mixed-source receipts to durable batch review and scoped recording",
+      "status": "Planned",
+      "depends_on": [
+        "T079"
+      ],
+      "detail_plan_exists": false,
+      "execution_state": "not_started",
+      "scope_note": "Use existing source storage/canonical services. Qualify frame mapping, source readback, resume/reimport identity and independent recording scope. See T079_WORKFLOW_AUDIT.md."
+    },
+    {
+      "id": "T081",
+      "sequence": 81,
+      "title": "Fix map navigation, import Shiv Vihar and audit statement coverage",
+      "status": "Implemented",
+      "depends_on": [
+        "T079"
+      ],
+      "detail_plan_exists": true,
+      "detail_plan_path": "tasks/T081_PLAN.md",
+      "execution_state": "browser_verified_preview_and_coverage_limits_documented",
+      "result_path": "tasks/T081_RESULT.md"
+    },
+    {
+      "id": "T082",
+      "sequence": 82,
+      "title": "List and directly reopen Lake View and Shiv Vihar",
+      "status": "Implemented",
+      "depends_on": [
+        "T081"
+      ],
+      "detail_plan_exists": true,
+      "detail_plan_path": "tasks/T082_PLAN.md",
+      "execution_state": "directory_and_named_reload_browser_verified",
+      "result_path": "tasks/T082_RESULT.md"
+    },
+    {
+      "id": "T083",
+      "sequence": 83,
+      "title": "Persist Lake View and Shiv Vihar with immutable originals and canonical snapshots",
+      "status": "Implemented",
+      "depends_on": [
+        "T082"
+      ],
+      "detail_plan_exists": true,
+      "detail_plan_path": "tasks/T083_PLAN.md",
+      "execution_state": "database_object_storage_and_ui_save_verified",
+      "result_path": "tasks/T083_RESULT.md"
+    },
+    {
+      "id": "T084",
+      "title": "Saved-dataset ML processing and live hackathon walkthrough",
+      "status": "Implemented",
+      "depends_on": [
+        "T083"
+      ],
+      "plan_path": "tasks/T084_PLAN.md",
+      "execution_state": "real_inference_review_calibration_and_live_walkthrough_verified",
+      "result_path": "tasks/T084_RESULT.md"
+    },
+    {
+      "id": "T085",
+      "title": "Visual-only hackathon presentation",
+      "status": "Implemented",
+      "depends_on": [
+        "T084"
+      ],
+      "plan_path": "tasks/T085_PLAN.md",
+      "execution_state": "superseded_by_T086_actual_ml_presentation",
+      "result_path": "tasks/T085_RESULT.md"
+    },
+    {
+      "id": "T086",
+      "title": "Actual ML input, pixel mask and outline presentation",
+      "status": "Implemented",
+      "depends_on": [
+        "T085"
+      ],
+      "plan_path": "tasks/T086_PLAN.md",
+      "execution_state": "actual_artifacts_and_browser_visuals_verified",
+      "result_path": "tasks/T086_RESULT.md"
+    },
+    {
+      "id": "T087",
+      "title": "Label ML source purposes and simplify processing UI",
+      "status": "Implemented",
+      "depends_on": [
+        "T086"
+      ],
+      "plan_path": "tasks/T087_PLAN.md",
+      "execution_state": "source_routing_guards_and_browser_ui_verified",
+      "result_path": "tasks/T087_RESULT.md"
+    },
+    {
+      "id": "T088",
+      "title": "PDF page controls, result arrows and complete Lake View demo package",
+      "status": "Implemented",
+      "depends_on": [
+        "T087"
+      ],
+      "plan_path": "tasks/T088_PLAN.md",
+      "execution_state": "pdf_bounds_result_navigation_and_full_import_verified",
+      "result_path": "tasks/T088_RESULT.md"
+    },
+    {
+      "id": "T089",
+      "title": "Publish main and import fresh hosted demo through UI",
+      "status": "In Progress",
+      "plan": "tasks/T089_PLAN.md"
     }
   ],
   "maintenance": [
@@ -2069,6 +2681,6 @@
       "completed_at": "2026-09-18"
     }
   ],
-  "execution_environment": "Windows source/browser verification plus owned GitHub-hosted integration resources",
-  "user_priority": "Finish and verify the unified Studio frontend against the complete reference set before starting ML or a new feature phase."
+  "execution_environment": "Current local macOS linked services, private Docker worker and bundled Chromium; historical Windows/hosted evidence remains separately identified.",
+  "user_priority": "Simplify officer UX, preserve the reference city and accepted register, and provide a complete source-format sample. T079 delivers import-to-draft; durable mixed-package recording remains open. Work solo, one bounded task at a time."
 }

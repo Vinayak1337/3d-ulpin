@@ -1,6 +1,5 @@
 "use client";
 import ParcelIdentity from "../shared/ParcelIdentity";
-import PropertyScene from "../scene/PropertyScene";
 import QuickRecords from "../../studio/product/QuickRecords";
 import {sourceKind} from "../register/model";
 import {SourcePreview} from "../register/Evidence";
@@ -119,6 +118,7 @@ export function BlockLeftRail({
               }
             />
           </label>
+          <label className="ui-layer"><Icon name="utility" /><span>Underground</span><input type="checkbox" checked={preferences.underground} onChange={event => block.setPreferences({ underground: event.target.checked })} /></label>
           <div className="ui-layer-info">
             <Icon name="info" />
             <span>
@@ -127,6 +127,7 @@ export function BlockLeftRail({
           </div>
         </div>
       )}
+      {preferences.rail === "properties" && <>
       <div className="ui-property-list-heading">
         <div className="ui-rail-caption">
           <h3>In this block</h3>
@@ -211,6 +212,7 @@ export function BlockLeftRail({
         </span>
         <Icon name="layers" size={14} />
       </footer>
+      </>}
     </aside>
   );
 }
@@ -282,7 +284,7 @@ export function BlockInspector({
       <header className="ui-inspector-heading">
         <h2>
           {mode === "property"
-            ? "Quick register"
+            ? "Selected property"
             : mode.charAt(0).toUpperCase() + mode.slice(1)}
         </h2>
         <span>
@@ -312,7 +314,7 @@ export function BlockInspector({
             >
               {item === "property"
                 ? "Overview"
-                : item.charAt(0).toUpperCase() + item.slice(1)}
+                : item === "evidence" ? "Documents" : item.charAt(0).toUpperCase() + item.slice(1)}
             </button>
           ),
         )}
@@ -327,13 +329,6 @@ export function BlockInspector({
             />
           ) : (
             <>
-              {dossier.data && selected.kind === "building" && (
-                <PropertyScene
-                  key={selected.id}
-                  dossier={dossier.data}
-                  compact
-                />
-              )}
               <div className="ui-property-summary">
                 <div className="ui-summary-mark">
                   <Icon
@@ -357,14 +352,6 @@ export function BlockInspector({
                 </p>
               </div>
               <ParcelIdentity identifiers={dossier.data?.parcelIdentifiers} />
-              <a
-                className="ui-button"
-                href={`/api/v1/buildings/${selected.id}/register?format=pdf`}
-                hidden={selected.kind !== "building"}
-              >
-                <Icon name="download" />
-                Download property PDF
-              </a>
               <div className="ui-inspector-metrics">
                 <div>
                   <small>Footprint</small>
@@ -386,14 +373,15 @@ export function BlockInspector({
               <details className="ui-source-details">
                 <summary>Source & reference details</summary>
                 <Metadata feature={selected} />
+                {selected.kind === "building" && <a className="ui-button" href={`/api/v1/buildings/${selected.id}/register?format=pdf`}><Icon name="download" />Download property PDF</a>}
               </details>
               {dossier.loading && <LoadingState label="Loading register" />}
               {dossier.error && (
                 <ErrorState message={dossier.error} retry={dossier.reload} />
               )}
               {selected.kind==='building'&&<div className="quick-shortcuts"><Button icon="layers" onClick={()=>block.setPreferences({inspector:'floors'})}>Inspect floors & units</Button><Button icon="document" onClick={()=>block.setPreferences({inspector:'evidence'})}>Open documents ({sources.length})</Button></div>}
-              <section className="ui-inspector-section">
-                <h3>Evidence coverage</h3>
+              <details className="ui-source-details">
+                <summary>Evidence coverage</summary>
                 {dossier.data?.missing.length ? (
                   <ul className="ui-coverage-list">
                     {dossier.data.missing.slice(0, 4).map((m) => (
@@ -410,7 +398,7 @@ export function BlockInspector({
                       : "Context feature from the recorded source."}
                   </p>
                 )}
-              </section>
+              </details>
             </>
           ))}
         {mode==='floors'&&<QuickRecords block={block} onSource={setSourceDialog}/>}
@@ -599,14 +587,14 @@ export function BlockInspector({
             href={routes.register(selected.id, block.context.data?.area.id)+(block.recordId?`&record=${encodeURIComponent(block.recordId)}`:'')}
           >
             <Icon name="register" />
-            Full register
+            Open property register
           </Link>
           <Link
             className="ui-button"
             href={routes.workspace(selected.id, block.context.data?.area.id)}
           >
             <Icon name="workspace" />
-            Open workspace
+            Prepare an update
           </Link>
         </footer>
       )}

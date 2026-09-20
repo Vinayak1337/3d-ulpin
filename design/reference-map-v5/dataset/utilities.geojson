@@ -1,0 +1,81 @@
+{
+  "type": "FeatureCollection",
+  "name": "FICTIONAL utilities",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "UT01",
+      "properties": {
+        "object_id": "UT01",
+        "object_type": "utility",
+        "name": "Water main",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": null,
+        "base_elevation_m": null,
+        "area_sq_m": null,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "service": "water",
+        "diameterM": 0.25,
+        "depthM": 2.2,
+        "vertex_elevations_m": [
+          -2.2,
+          -2.2
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.18802534615062,
+            28.5492316721207
+          ],
+          [
+            77.18804679770817,
+            28.550268967894574
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "UT02",
+      "properties": {
+        "object_id": "UT02",
+        "object_type": "utility",
+        "name": "Neem House service",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": null,
+        "base_elevation_m": null,
+        "area_sq_m": null,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "service": "water",
+        "diameterM": 0.12,
+        "depthM": 2.2,
+        "vertex_elevations_m": [
+          -2.2,
+          -2.2,
+          -2.2
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.18803215456559,
+            28.54956090079814
+          ],
+          [
+            77.18790956904431,
+            28.54956287718869
+          ],
+          [
+            77.18790984882898,
+            28.549576407135074
+          ]
+        ]
+      }
+    }
+  ]
+}

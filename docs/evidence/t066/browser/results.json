@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "Supported document intake needs no block or property; unsupported staged files block continuation with an explanation",
+    "Document-only Continue opens saved source review directly, without a property-creation step",
+    "All six document formats retain original bytes before spatial context; retry receipts reuse source IDs and do not imply suitability",
+    "Later explicit block/origin selection adopts original source IDs without copying files or making a placeholder property",
+    "Source-only workspace reopens actual retained building result and exact contour overlay",
+    "Extracted footprint continues into ordinary GIS review without silent recording",
+    "Mixed GIS and document intake keeps the new GIS destination available and carries it into document review",
+    "Routed intake fits tablet width with a compact selected-file row and one continuation action"
+  ],
+  "errors": [],
+  "result": "PASS"
+}

@@ -1,0 +1,1 @@
+T077 intermediate captures are superseded by T078 native browser captures. register-residents.png and mobile-register.png were rejected as blank output from the browser full-page capture API and are not acceptance evidence. Functional checks are described separately in T077_RESULT.md.

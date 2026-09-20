@@ -964,3 +964,31 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* T067: map first, one context panel, requested layer controls. */
+.ulpin-app .ui-block-grid.ui-focused-map { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px); position: relative; }
+.ulpin-app .ui-block-grid.ui-focused-map.ui-inspector-closed { grid-template-columns: minmax(0, 1fr); }
+.ulpin-app .ui-focused-map .ui-block-inspector { position: static; width: auto; box-shadow: none; }
+.ulpin-app .ui-map-toolbar .ui-mobile-layers { display: inline-flex; }
+.ulpin-app .ui-dialog .ui-block-left { display: flex; position: static; width: auto; border: 0; max-height: 65vh; box-shadow: none; }
+.ulpin-app .ui-dialog .ui-rail-tabs > .ui-button { display: none; }
+.ulpin-app .ui-map-toolbar .ui-button, .ulpin-app .ui-map-mode button { min-height: 44px; font-size: 13px; }
+.ulpin-app .ui-inspector-heading { min-height: 54px; }
+.ulpin-app .ui-inspector-content { padding: 20px; }
+.ulpin-app .ui-property-summary { text-align: left; }
+.ulpin-app .ui-property-summary h2 { font-size: 22px; margin: 12px 0 6px; }
+.ulpin-app .ui-property-summary .ui-summary-mark { display: none; }
+.ulpin-app .ui-inspector-tabs { overflow-x: auto; }
+.ulpin-app .ui-inspector-tabs button { min-height: 44px; white-space: nowrap; font-size: 12px; }
+.ulpin-app .ui-checks-panel { overflow: auto; }
+.ulpin-app .ui-check-actions { padding: 16px; display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--ui-divider); }
+.ulpin-app .ui-checks-panel .ui-findings-tray { flex: 1; max-height: none; border: 0; }
+.ulpin-app .ui-checks-panel .ui-findings-tray > header { flex-wrap: wrap; padding: 16px; }
+.ulpin-app .ui-checks-panel .ui-findings-list { display: flex; flex-direction: column; max-height: none; overflow: visible; }
+.ulpin-app .ui-checks-panel .ui-finding { width: auto; flex: none; }
+@media (max-width: 720px) {
+  .ulpin-app .ui-block-grid.ui-focused-map { grid-template-columns: minmax(0, 1fr); overflow: auto; }
+  .ulpin-app .ui-focused-map .ui-map-column { min-height: 48vh; }
+  .ulpin-app .ui-focused-map .ui-block-inspector { max-height: 46vh; border-top: 1px solid var(--ui-divider); }
+  .ulpin-app .ui-map-legend { display: none; }
+}

@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "ZIP verifies all 13 package hashes",
+    "ZIP opens all 86 objects",
+    "Property record keeps internal and official identity distinct",
+    "Wrong measurement units cannot replace the map",
+    "Failed import preserves the existing map and camera",
+    "tampered.zip rejected before rendering",
+    "false-source-fingerprint.zip rejected before rendering",
+    "Unavailable road geometry is skipped safely",
+    "Mobile preview has no horizontal overflow",
+    "Preview never requests the live application",
+    "No browser errors during import, records or mobile flow"
+  ],
+  "errors": []
+}

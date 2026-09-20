@@ -1,0 +1,17 @@
+PASS shared-wall touch has zero area and no conflict
+PASS identical polygons preserve identities and compute volume
+PASS different vertical levels and vertical touch are not volume conflicts
+PASS partial vertical overlap uses common height, not whole building
+PASS unknown height is only footprint review; no invented volume
+PASS concave polygons retain their missing corner
+PASS holes subtract area and courtyard occupant does not intersect shell
+PASS MultiPolygon calculation sums disconnected parts
+PASS road and linked parcel checks use actual polygon area
+PASS moving geometry recomputes and removes old fixture issue
+PASS geometry revision evidence follows current geometry
+PASS different datum cannot create fabricated overlap volume
+PASS different frame cannot create a measured overlap
+PASS over preview limit is explicit, not a misleading partial clean result
+PASS area computation stable at projected-size offsets
+PASS current dense source fixture matches independent Shapely oracle
+16 spatial runtime checks passed.

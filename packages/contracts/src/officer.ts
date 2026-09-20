@@ -8,6 +8,8 @@ import type {
   WorldStatus,
   ImportPackage,
 } from "./area";
+import type { ProcessingJob } from "./index";
+import type { RegistryReview } from "./registry";
 import type { RegistryRecord } from "./registry";
 
 export type GeometryRole =
@@ -82,6 +84,16 @@ export interface PreparationCase {
   placement: PlacementTransform;
   url: string;
   returnUrl: string;
+}
+/** Persisted preparation state, verified against the current retained build inputs. */
+export interface PreparationContinuation {
+  packageRevision: number;
+  preparationRevision: number;
+  caseRevision: number;
+  status: "needs_build" | "retry_build" | "processing" | "ready" | "reviewed" | "recorded";
+  spaceCount: number;
+  job: ProcessingJob | null;
+  review: RegistryReview | null;
 }
 export interface DossierSource {
   id: string;

@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Default queue, pagination, scoped navigation, exact recorded continuation, reload and automatic status refresh",
+    "Saved GIS draft resumes directly without another upload",
+    "Unified intake and visible tablet navigation fit",
+    "Canonical map has requested layers with Escape and focus return",
+    "Map checks use a single side panel",
+    "Register model, selected canonical unit, Documents, History and Investigation remain available without empty tablet rail",
+    "Workspace default review, document-dialog focus return, requested tools and recorded refresh",
+    "Reference map retains requested controls and one inspector"
+  ],
+  "errors": [],
+  "writes": [],
+  "selection": {
+    "areaId": "0ded05d3-b596-46a8-9918-ab1bc0a433be",
+    "buildingId": "fdb6f855-f533-487c-9ac7-525944640b2b"
+  },
+  "result": "PASS"
+}

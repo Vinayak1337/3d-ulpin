@@ -1,0 +1,22 @@
+.ulpin-app .source-intake{width:min(100%,1080px);margin:0 auto;padding:24px 28px 64px;color:var(--ui-text);font-size:15px;overflow:auto}
+.ulpin-app .source-intake header h1{font-size:32px;letter-spacing:-.7px;margin:22px 0 4px}
+.ulpin-app .source-intake header p{color:var(--ui-muted);margin:8px 0 20px}
+.ulpin-app .source-intake-back{color:var(--ui-primary);text-decoration:none}
+.ulpin-app .source-intake .ui-dropzone{padding:32px;margin:20px 0}
+.ulpin-app .source-intake .source-intake-compact{flex-direction:row;justify-content:space-between;padding:12px 18px;margin-bottom:12px}
+.ulpin-app .source-intake .ui-dropzone span,.ulpin-app .source-intake .ui-dropzone input{font-size:14px}
+.ulpin-app .source-intake-files{border:1px solid var(--ui-divider);border-radius:8px;overflow:hidden;margin-bottom:20px}
+.ulpin-app .source-intake-files .ui-intake-file{margin:0;border:0;border-radius:0;border-bottom:1px solid var(--ui-divider);min-height:68px}
+.ulpin-app .source-intake-files .ui-intake-file:last-child{border-bottom:0}
+.ulpin-app .source-intake-questions,.ulpin-app .source-intake-gis{border:1px solid var(--ui-divider);border-radius:8px;padding:20px;margin:18px 0;background:white}
+.ulpin-app .source-intake-questions label{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.ulpin-app .source-intake select{min-height:44px;font-size:15px;padding:8px}
+.ulpin-app .source-intake-questions p,.ulpin-app .source-intake-footer p{color:var(--ui-muted);line-height:1.5}
+.ulpin-app .source-intake h2{font-size:18px;margin:0 0 14px}
+.ulpin-app .source-intake-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:20px}
+.ulpin-app .source-intake-footer p{flex:1;min-width:200px;margin:0}
+.ulpin-app .source-intake-footer small{width:100%;text-align:right;color:var(--ui-muted)}
+.ulpin-app .source-intake button{min-height:44px}
+@media(max-width:700px){.ulpin-app .source-intake{padding:20px 16px}.ulpin-app .source-intake .source-intake-compact{flex-direction:column;align-items:flex-start}.ulpin-app .source-intake .import-progress{gap:8px;font-size:12px}.ulpin-app .source-intake-footer button{width:100%}}
+.ulpin-app .source-intake input[type=file]{width:auto;max-width:100%;background:transparent;border:0;padding:0;color:var(--ui-muted)}
+.ulpin-app .source-intake input[type=file]::file-selector-button{border:1px solid #cbd9d0;border-radius:5px;background:white;color:#315d4c;padding:10px 16px;margin-right:12px;font:inherit;font-weight:600;cursor:pointer}

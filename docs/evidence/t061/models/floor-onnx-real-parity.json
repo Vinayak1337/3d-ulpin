@@ -1,0 +1,48 @@
+{
+  "loadSeconds": 0.5836402089999999,
+  "threads": 2,
+  "provider": "CPUExecutionProvider",
+  "actualPlanInferenceCount": 2,
+  "source": "Same original CubiCasa test plans and pinned pretrained checkpoint; compare stored original PyTorch predictions",
+  "resize": "aspect preserving max768; white pad64; [-1,1]; output half-pixel bilinear resize",
+  "samples": [
+    {
+      "sample": "0",
+      "inputSize": [
+        768,
+        576
+      ],
+      "outputShape": [
+        1,
+        12,
+        576,
+        768
+      ],
+      "seconds": 11.431048042,
+      "actualInference": true,
+      "labelAgreementWithTorch": 0.9999958403181325,
+      "differingPixels": 15,
+      "meanPresentClassIoU": 0.6797678693252349,
+      "pixelAccuracy": 0.8621875212317095
+    },
+    {
+      "sample": "1",
+      "inputSize": [
+        768,
+        640
+      ],
+      "outputShape": [
+        1,
+        12,
+        640,
+        768
+      ],
+      "seconds": 7.244173290999999,
+      "actualInference": true,
+      "labelAgreementWithTorch": 1.0,
+      "differingPixels": 0,
+      "meanPresentClassIoU": 0.6955733403272765,
+      "pixelAccuracy": 0.8971059828754268
+    }
+  ]
+}

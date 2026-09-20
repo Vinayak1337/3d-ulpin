@@ -1,0 +1,116 @@
+{
+  "schema": "ulpin-task-verification/1",
+  "task": "T061",
+  "implementation": "implemented",
+  "branch": "feat/visual-ml-completion",
+  "base_commit": "da00fc1",
+  "verified_at": "2026-09-19T22:57:28.096898+00:00",
+  "environment": "Local macOS linked database/object storage, private Docker API/Celery/ONNX worker; bundled Chromium with Apple M3 Metal",
+  "checks": [
+    {
+      "name": "actual_original_to_model_to_review_to_record_workflow",
+      "status": "passed",
+      "groups": 10,
+      "evidence": "workflow-result.json"
+    },
+    {
+      "name": "retained_result_desktop_mobile_reload_browser",
+      "status": "passed",
+      "groups": 6,
+      "evidence": "browser/results.json"
+    },
+    {
+      "name": "recorded_3d_register_browser",
+      "status": "passed",
+      "groups": 2,
+      "evidence": "recorded-register/results.json"
+    },
+    {
+      "name": "atomic_footprint_rollback_and_retry",
+      "status": "passed",
+      "groups": 2,
+      "evidence": "atomic-footprint.json"
+    },
+    {
+      "name": "backend_contract_unit_tests",
+      "status": "passed",
+      "tests": 5,
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/spatial-ml-backend.test.ts"
+    },
+    {
+      "name": "isolated_backend_database_storage_integration",
+      "status": "passed",
+      "groups": 8,
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json tests/spatial-ml-backend-integration.ts"
+    },
+    {
+      "name": "processor_spatial_runtime_boundary_tests",
+      "status": "passed",
+      "tests": 14,
+      "evidence": "models/runtime-tests.json"
+    },
+    {
+      "name": "web_typecheck",
+      "status": "passed",
+      "command": "pnpm typecheck"
+    },
+    {
+      "name": "final_production_build",
+      "status": "passed",
+      "command": "pnpm build",
+      "evidence": "production-build.log"
+    },
+    {
+      "name": "private_platform_health",
+      "status": "passed",
+      "command": "pnpm platform:health",
+      "evidence": "platform-health.log"
+    },
+    {
+      "name": "protected_existing_data",
+      "status": "passed",
+      "evidence": "../t060/data-preservation.json"
+    }
+  ],
+  "model_readiness": {
+    "maxBatchItems": 12,
+    "models": [
+      {
+        "id": "cubicasa5k-rooms-onnx-v1",
+        "task": "floor-plan",
+        "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+        "profileVersion": "cubicasa-rooms-768-bilinear-pad64-v1",
+        "ready": true,
+        "name": "CubiCasa5K \u00b7 floor-plan regions",
+        "license": "CC-BY-NC-4.0; retain CubiCasa5K attribution; noncommercial scope",
+        "evaluation": "Reviewed assistance only. Two original published test plans: pixel accuracy 0.87195, mean class IoU 0.65622; room class errors remain. Rectangular ONNX/PyTorch label agreement >99.9995%. This is a small feasibility evaluation, not cadastral or Indian pilot accuracy."
+      },
+      {
+        "id": "rfdetr-satellite-buildings-onnx-v1",
+        "task": "building",
+        "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+        "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2",
+        "ready": true,
+        "name": "RF-DETR \u00b7 building outlines",
+        "license": "Apache-2.0 model card; retain RF-DETR and checkpoint attribution",
+        "evaluation": "Reviewed assistance only. Fixed 12 published OAM/OSM test tiles using this runtime: aggregate IoU 0.2874, precision 0.3418, recall 0.6434. Clear occupied tiles reach IoU 0.57\u20130.86; empty and blurred scenes show false positives. No threshold tuning. Single-tile feasibility results do not establish tiled boundary accuracy; overlap union may merge touching roofs and retain edge false positives. No cadastral or Indian pilot accuracy claim."
+      }
+    ]
+  },
+  "preservation": {
+    "existing_datasets": "protected original rows retained",
+    "verification_only": "one new explicitly synthetic ML area/property with authored controls and levels",
+    "individual_attached_originals_checked": 8,
+    "repository_snapshot_refreshed": false,
+    "weights_committed": false,
+    "paid_inference_used": false
+  },
+  "limits": [
+    "Model quality is reviewed assistance, not cadastral qualification; weak building tiles and merged floor regions remain documented.",
+    "CubiCasa model is noncommercial; model and dataset attribution retained.",
+    "Physical device, formal screen reader and complete true-200%-browser-zoom acceptance remain unverified.",
+    "Historical free Nous credential and Indian survey gates remain open.",
+    "City-scale streaming, every source-format adapter and clean-machine release qualification are not claimed."
+  ],
+  "build_notice": "Existing Next.js configuration disables production minification; a successful build is not a performance qualification."
+}

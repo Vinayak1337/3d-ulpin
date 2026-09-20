@@ -1,0 +1,101 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-NEEM-REFERENCE-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "PARK01",
+      "properties": {
+        "use": "park",
+        "open_area_id": "PARK01",
+        "name": "Neem Garden",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-PARK01-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              99,
+              70
+            ],
+            [
+              118,
+              70
+            ],
+            [
+              118,
+              120
+            ],
+            [
+              99,
+              120
+            ],
+            [
+              99,
+              70
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PARK02",
+      "properties": {
+        "use": "park",
+        "open_area_id": "PARK02",
+        "name": "East Grove",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-PARK02-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              132,
+              136
+            ],
+            [
+              174,
+              136
+            ],
+            [
+              174,
+              175
+            ],
+            [
+              132,
+              175
+            ],
+            [
+              132,
+              136
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

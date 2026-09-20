@@ -31,7 +31,7 @@ export function readStudioRoute(value:string,dataset:District):StudioRoute {
     if(building)route.property=building.id;
     if(route.floor!==null&&(!building||route.floor>=building.floors))throw new Error('The requested floor does not belong to this property.');
     if(route.unit){const unit=building?.units.find(u=>u.id===route.unit);if(!unit)throw new Error('The requested unit does not belong to this property.');if(route.floor!==null&&unit.floor!==route.floor)throw new Error('The requested unit and floor disagree.');route.floor=unit.floor;}
-    if(['register','documents','workspace'].includes(route.view)&&!building)throw new Error('Choose a property before opening its records.');
+    if((['register','documents','workspace'].includes(route.view)||route.doc)&&!building)throw new Error('Choose a property before opening its records.');
   }catch(error){route.error=error instanceof Error?error.message:'Invalid Studio route.';}
   return route;
 }

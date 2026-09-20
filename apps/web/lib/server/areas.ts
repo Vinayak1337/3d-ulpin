@@ -1,3 +1,4 @@
+import { documentProfileFormats, documentLimitMiB } from "../document-formats";
 import { areaSceneAssets } from "./scene-assets";
 import { usesGeographicNeighbours } from "./neighbour-scenario-policy";
 import { randomUUID } from "node:crypto";
@@ -62,7 +63,7 @@ type Normalized = {
   warnings: string[];
 };
 export async function areaGeo<T>(
-  operation: "normalize" | "check" | "extract" | "crop" | "profile",
+  operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis",
   input: unknown,
 ): Promise<T> {
   const response = await fetch(
@@ -103,13 +104,14 @@ function areaFrom(row: any): MapArea {
     featureCount: Number(row.feature_count || 0),
   };
 }
-export async function listAreas(includeArchived = false): Promise<MapArea[]> {
+export async function listAreas(includeArchived = false, client?: PoolClient): Promise<MapArea[]> {
+  const run = client ? client.query.bind(client) : query;
   // Include legacy sites added after the additive migration, without georeferencing them.
-  await query(
+  await run(
     "INSERT INTO map_areas(id,site_id,name) SELECT id,id,name FROM registry_sites ON CONFLICT(site_id) DO NOTHING",
   );
   return (
-    await query(
+    await run(
       `SELECT a.*, (SELECT count(*) FROM physical_features f WHERE f.revision>0 AND (f.area_id=a.id OR EXISTS (SELECT 1 FROM block_group_memberships gm JOIN block_groups gg ON gg.id=gm.group_id WHERE gm.feature_id=f.id AND gg.area_id=a.id))) feature_count,
         (SELECT CASE WHEN count(*)=0 THEN 'empty' WHEN bool_and(f.body->>'worldStatus'='synthetic') THEN 'demonstration' WHEN bool_and(f.body->>'worldStatus'='observed') THEN 'real' ELSE 'mixed' END FROM physical_features f WHERE f.revision>0 AND (f.area_id=a.id OR EXISTS (SELECT 1 FROM block_group_memberships gm JOIN block_groups gg ON gg.id=gm.group_id WHERE gm.feature_id=f.id AND gg.area_id=a.id))) data_kind,
         COALESCE((SELECT jsonb_agg(jsonb_strip_nulls(to_jsonb(u))) FROM administrative_units u JOIN area_memberships m ON m.unit_id=u.id WHERE m.area_id=a.id),'[]') administrative_units FROM map_areas a WHERE ($1::boolean OR a.archived_at IS NULL) ORDER BY (a.reference IS NOT NULL) DESC,a.created_at DESC`,
@@ -117,8 +119,8 @@ export async function listAreas(includeArchived = false): Promise<MapArea[]> {
     )
   ).rows.map(areaFrom);
 }
-export async function getArea(id: string): Promise<MapArea> {
-  const area = (await listAreas(true)).find((a) => a.id === id);
+export async function getArea(id: string, client?: PoolClient): Promise<MapArea> {
+  const area = (await listAreas(true, client)).find((a) => a.id === id);
   return area || notFound("Map area not found.");
 }
 async function projectedFeatures(
@@ -242,9 +244,10 @@ export async function areaContext(id: string): Promise<AreaContext> {
     latestCheck: latestCheck || null,
   };
 }
-export async function getPackage(id: string): Promise<ImportPackage> {
+export async function getPackage(id: string, client?: PoolClient): Promise<ImportPackage> {
+  const run = client ? client.query.bind(client) : query;
   return (
-    (await query("SELECT body FROM import_packages WHERE id=$1", [id])).rows[0]
+    (await run("SELECT body FROM import_packages WHERE id=$1", [id])).rows[0]
       ?.body || notFound("Import package not found.")
   );
 }
@@ -305,7 +308,16 @@ export async function ingestArea(input: {
   worldStatus?: PhysicalFeature["worldStatus"];
   administrativeUnits?: Omit<AdministrativeUnit, "id">[];
   acquisitionId?: string;
-}): Promise<ImportPackage> {
+  /** Internal derived-source adapter only; original image evidence remains linked. */
+  derivedObservation?: {
+    sourceRevisionId: string;
+    sourceSha256: string;
+    part: import("@ulpin/contracts").DocumentPart;
+    page: number;
+    receipt: Record<string, unknown>;
+  };
+}, externalClient?: PoolClient): Promise<ImportPackage> {
+  const run = externalClient ? externalClient.query.bind(externalClient) : query;
   if (input.bytes.length > 16 * 1024 * 1024 || !input.bytes.length)
     throw new AppError(
       413,
@@ -322,8 +334,8 @@ export async function ingestArea(input: {
   }
   const seedKey = `${input.namespace}:${input.name}`;
   const existingArea = input.areaId
-    ? await getArea(input.areaId)
-    : (await query("SELECT * FROM map_areas WHERE seed_key=$1", [seedKey]))
+    ? await getArea(input.areaId, externalClient)
+    : (await run("SELECT * FROM map_areas WHERE seed_key=$1", [seedKey]))
         .rows[0];
   const area = existingArea
     ? "siteId" in existingArea
@@ -352,7 +364,7 @@ export async function ingestArea(input: {
   );
   // A source revision retry remains idempotent after recording and after area changes.
   const retry = (
-    await query(
+    await run(
       "SELECT body FROM import_packages WHERE body->>'sourceHash'=$1 AND body->>'importSignature'=$2 ORDER BY created_at LIMIT 1",
       [
         digest,
@@ -447,7 +459,12 @@ export async function ingestArea(input: {
             ? "application/zip"
             : "application/json",
     );
-    return transaction(async (client) => {
+    const persist = async (client: PoolClient) => {
+      if (input.derivedObservation) {
+        const original = (await client.query("SELECT sha256 FROM sources WHERE id=$1 FOR SHARE", [input.derivedObservation.sourceRevisionId])).rows[0];
+        if (!original || original.sha256 !== input.derivedObservation.sourceSha256 || input.derivedObservation.part.sourceRevisionId !== input.derivedObservation.sourceRevisionId)
+          conflict("The retained image evidence changed before creating this derived draft.");
+      }
       await client.query(
         "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
         [seedKey],
@@ -594,6 +611,7 @@ export async function ingestArea(input: {
         ],
       );
       const features: PhysicalFeature[] = [];
+      const derivedPartId = input.derivedObservation ? randomUUID() : undefined;
       for (const candidate of normalized.features) {
         const linked = (
           await client.query(
@@ -667,6 +685,10 @@ export async function ingestArea(input: {
         identifier ||= `OBS-${id}`;
         const feature: PhysicalFeature = {
           ...candidate,
+          ...(input.derivedObservation ? {
+            semantics: { ...candidate.semantics, evidenceState: "unresolved" as const },
+            properties: { ...candidate.properties, spatialExtraction: input.derivedObservation.receipt },
+          } : {}),
           ...(candidate.verticalExtent
             ? {
                 verticalExtent: {
@@ -720,6 +742,7 @@ export async function ingestArea(input: {
           datasetNamespace: input.namespace,
           evidence: [
             { sourceRevisionId: sourceId, featureId: candidate.sourceKey },
+            ...(input.derivedObservation ? [{ sourceRevisionId: input.derivedObservation.sourceRevisionId, partId: derivedPartId!, page: input.derivedObservation.page }] : []),
           ],
           representation:
             candidate.kind === "building"
@@ -762,7 +785,7 @@ export async function ingestArea(input: {
         datasetNamespace: input.namespace,
         revision: 1,
         state: questions.length ? "NEEDS_INPUT" : "READY_FOR_REVIEW",
-        sourceRevisionIds: [sourceId],
+        sourceRevisionIds: [sourceId, ...(input.derivedObservation ? [input.derivedObservation.sourceRevisionId] : [])],
         features,
         questions,
         factCandidates: features
@@ -779,8 +802,8 @@ export async function ingestArea(input: {
             evidenceState: "source_supported",
             worldStatus: f.worldStatus,
           })),
-        parts: [],
-        warnings: normalized.warnings,
+        parts: input.derivedObservation ? [{ ...input.derivedObservation.part, id: derivedPartId!, entityIds: features.map(f => f.id) }] : [],
+        warnings: [...normalized.warnings, ...(input.derivedObservation ? ["Derived ML footprint proposals: review the retained original, model receipt and documented controls. Height and ownership are unknown; this draft is not survey evidence or statutory acceptance."] : [])],
         createdAt: new Date().toISOString(),
         sourceHash: digest,
         importSignature: sha256(
@@ -808,8 +831,9 @@ export async function ingestArea(input: {
         [packageId, pkg],
       );
       return pkg;
-    });
-  });
+    };
+    return externalClient ? persist(externalClient) : transaction(persist);
+  }, externalClient);
 }
 
 export async function answerQuestion(
@@ -1133,6 +1157,7 @@ export async function createPackageCorrection(id: string, requestKey: string) {
   });
 }
 export async function reviewPackage(id: string, expectedRevision: number) {
+  if ((await getPackage(id)).sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Review the derived footprint draft or assign documents to a property before recording.");
   const pkg = await getPackage(id),
     area = await getArea(pkg.areaId);
   if (pkg.revision !== expectedRevision) conflict();
@@ -1207,6 +1232,7 @@ export async function commitPackage(
       extent: Normalized["extent"];
       geographicExtent: Normalized["extent"];
     };
+    if (pkg.sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Source workspaces cannot be recorded as physical features.");
     if (pkg.state === "COMMITTED") return pkg;
     if (
       pkg.revision !== expectedRevision ||
@@ -1430,11 +1456,7 @@ type CopySourceRow = {
   sha256: string;
   object_key: string;
 };
-const copyFormats: Record<string, DocumentFile["format"]> = {
-  "plan-pdf-v1": "pdf",
-  "plan-png-v1": "png",
-  "levels-csv-v1": "csv",
-};
+const copyFormats = documentProfileFormats;
 function sourceCopyFingerprint(rows: CopySourceRow[]) {
   return sha256(
     JSON.stringify(
@@ -1531,15 +1553,14 @@ async function copySources(
       throw new AppError(
         422,
         "COPY_PROFILE",
-        "Only PDF plans, PNG plans and levels CSV sources can be assigned. Other source profiles require their own explicit import mapping.",
+        "Only supported PDF, PNG, JPEG, CSV, text and DOCX references can be assigned. Other profiles require explicit import mapping.",
       );
-    const limit =
-      row.profile === "plan-png-v1" ? 16 * 1024 * 1024 : 10 * 1024 * 1024;
+    const limit = documentLimitMiB(copyFormats[row.profile]) * 1024 * 1024;
     if (Number(row.bytes) <= 0 || Number(row.bytes) > limit)
       throw new AppError(
         413,
         "COPY_SIZE",
-        "Each PDF or CSV must be at most 10 MiB; each PNG at most 16 MiB.",
+        `Each ${copyFormats[row.profile].toUpperCase()} must be at most ${documentLimitMiB(copyFormats[row.profile])} MiB.`,
       );
     total += Number(row.bytes);
   }
@@ -1650,7 +1671,8 @@ export async function copyCaseDocuments(
   return attachDocumentBatch(id, input.expectedRevision, files, copy);
 }
 
-type DocumentFile = {
+export type DocumentFile = {
+  requestKey?: string;
   bytes: Uint8Array;
   name: string;
   format: "pdf" | "docx" | "text" | "csv" | "png" | "jpeg";
@@ -1669,7 +1691,7 @@ type CopyBatch = {
   payloadHash: string;
   sourceFingerprint: string;
 };
-const documentMime = {
+export const documentMime = {
   pdf: "application/pdf",
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   text: "text/plain",
@@ -1677,7 +1699,7 @@ const documentMime = {
   png: "image/png",
   jpeg: "image/jpeg",
 };
-async function extractDocument(file: DocumentFile) {
+export async function extractDocument(file: DocumentFile) {
   return file.format === "png" || file.format === "jpeg"
     ? {
         parts: [
@@ -1726,6 +1748,20 @@ async function attachDocumentBatch(
   copy?: CopyBatch,
 ) {
   const pkg = await getPackage(id);
+  const receipt = files.length === 1 && files[0].requestKey ? {
+    key: `source-document:${id}:${files[0].requestKey}`,
+    hash: sha256(JSON.stringify([files[0].name, files[0].format, files[0].entityIds, sha256(files[0].bytes)])),
+  } : null;
+  async function replay(client?: PoolClient) {
+    if (!receipt) return false;
+    const row = (await (client ? client.query.bind(client) : query)(
+      "SELECT o.payload_hash FROM operations o JOIN import_packages p ON p.case_id=o.case_id WHERE p.id=$1 AND o.operation_key=$2 AND o.kind='source-document'",
+      [id, receipt.key],
+    )).rows[0];
+    if (row && row.payload_hash !== receipt.hash) conflict("This document receipt key was already used for different original bytes or associations.");
+    return !!row;
+  }
+  if (await replay()) return pkg;
   if (pkg.revision !== expectedRevision || pkg.state === "COMMITTED") {
     if (
       copy &&
@@ -1743,12 +1779,14 @@ async function attachDocumentBatch(
     conflict();
   }
   for (const file of files) {
-    if (!file.bytes.length || file.bytes.length > 16 * 1024 * 1024)
+    if (!file.bytes.length || file.bytes.length > documentLimitMiB(file.format) * 1024 * 1024)
       throw new AppError(
         413,
         "FILE_SIZE",
-        "Choose a nonempty document up to 16 MiB.",
+        `Choose a nonempty ${file.format.toUpperCase()} document up to ${documentLimitMiB(file.format)} MiB.`,
       );
+    if (!file.entityIds.length && !pkg.sourceWorkspace)
+      throw new AppError(422, "ASSOCIATION", "Unassigned documents require an explicit source workspace.");
     if (
       file.entityIds.some(
         (entityId) => !pkg.features.some((f) => f.id === entityId),
@@ -1772,7 +1810,7 @@ async function attachDocumentBatch(
       digest = sha256(file.bytes),
       key = `areas/${sourceId}/${digest}`;
     const extracted = await extractDocument(file);
-    if (!extracted.parts.length && file.copiedFrom)
+    if (!extracted.parts.length)
       extracted.parts.push({
         locator: { label: "original file" },
         text: "No native text was extracted. Read the retained original; geometry and dimensions require explicit evidence.",
@@ -1797,6 +1835,7 @@ async function attachDocumentBatch(
         )
       ).rows[0];
       if (!row) notFound("Import package not found.");
+      if (await replay(client)) return row.body as ImportPackage;
       if (copy) {
         const replay = await copiedOperation(client, row.case_id, copy);
         if (replay) return row.body as ImportPackage;
@@ -1936,6 +1975,7 @@ async function attachDocumentBatch(
         ? "NEEDS_INPUT"
         : "READY_FOR_REVIEW";
       await savePackage(client, current);
+      if (receipt) await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'source-document',$3,$4)", [row.case_id,receipt.key,receipt.hash,{packageId:id,sourceRevisionIds:prepared.map(p=>p.sourceId)}]);
       if (copy) {
         await client.query(
           "INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'copy-case-documents',$3,$4)",

@@ -1,0 +1,35 @@
+{
+  "caseId": "b5b9b4e8-c06a-4aca-afec-c8d443b708e1",
+  "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+  "packageRevision": 18,
+  "caseRevision": 2,
+  "modelId": "f557aace-3344-4efc-9e2d-3344ac93ba60",
+  "modelFingerprint": "a94a4c54bd1a921e8210f5b85c71c42a2156cc7ccc527bfc36cc2a79fe5faf04",
+  "modelRevision": 2,
+  "sourceIds": [
+    "1e86dd91-f1f9-46a7-b171-996fd3616aec",
+    "35b6cd7d-c138-4d20-9a70-ff468b9f7a95",
+    "fbe615ed-7e7b-430b-8ec8-c407c13326fc",
+    "010f8aff-c54b-4a41-9828-b254442f590f",
+    "1c253326-4e76-4d57-82e6-ea9d03c84c5b",
+    "7087dc8a-e0a2-4622-82ba-56d51b3d230d",
+    "76d7968d-659f-4e58-ac26-929149c8a756",
+    "b011ba1d-6b0a-4221-81d5-5fb9275f7cd4",
+    "2b541d33-70ca-4e1d-95aa-32da1b13622b"
+  ],
+  "builds": [
+    {
+      "id": "4afc5349-05b5-479b-96fc-c6a55000a6b4",
+      "status": "succeeded",
+      "inputFingerprint": "a94a4c54bd1a921e8210f5b85c71c42a2156cc7ccc527bfc36cc2a79fe5faf04"
+    }
+  ],
+  "preparation": [
+    {
+      "id": "78a5512d-1697-41a8-a60c-bee8f04f2d50",
+      "revision": 2,
+      "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a"
+    }
+  ],
+  "units": 1
+}

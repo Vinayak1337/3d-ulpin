@@ -4,7 +4,6 @@ import { Badge, Button, EmptyState, Icon, Panel } from "../shared/ui";
 import styles from "./register.module.css";
 import Link from "next/link";
 import type { BuildingDossier, RegistryRecord } from "@ulpin/contracts";
-import ParcelIdentity from "../shared/ParcelIdentity";
 import RegisterGeometry from "./Geometry";
 import PropertyScene from "../scene/PropertyScene";
 import { number, words, recordEvidence } from "./model";
@@ -44,15 +43,6 @@ export default function Floors({
   const hasParties = spaces.some((record) => record.rights.length > 0);
   return (
     <>
-      <div className={styles.tabTitle}>
-        <div>
-          <h2>Floors & Units</h2>
-          <p>Recorded interior boundaries and source levels</p>
-        </div>
-        <Link className={styles.linkButton} href={workspaceUrl}>
-          <Icon name="workspace" /> Open Workspace
-        </Link>
-      </div>
       {!spaces.length ? (
         <Panel>
           <RegisterGeometry dossier={dossier} />
@@ -71,7 +61,7 @@ export default function Floors({
         </Panel>
       ) : (
         <div className={styles.floorsGrid}>
-          <Panel title="Building geometry">
+          <Panel title="Recorded model">
             <PropertyScene
               dossier={dossier}
               selectedId={selected?.id}
@@ -108,7 +98,7 @@ export default function Floors({
             </div>
           </Panel>
           <div className={styles.stack}>
-            <Panel title="Unit register">
+            <Panel title="Floors & spaces">
               {hasParties && (
                 <p className={styles.note}>
                   {spaces.every((record) => record.synthetic)
@@ -176,6 +166,24 @@ export default function Floors({
                 }
               >
                 <div className={styles.unitDetail}>
+                  <h3>Source evidence</h3>
+                  {evidence.length ? (
+                    evidence.map(({ source, locator }, index) => (
+                      <Button
+                        key={index}
+                        variant="ghost"
+                        onClick={() => onEvidence(source.id)}
+                        icon="document"
+                      >
+                        {source.name} · {locator}
+                      </Button>
+                    ))
+                  ) : (
+                    <p className={styles.note}>
+                      No source available in this dossier.
+                    </p>
+                  )}
+                  <details className={styles.recordDetails}><summary>Record details, rights & downloads</summary>
                   <dl>
                     <div>
                       <dt>3D ULPIN</dt>
@@ -201,7 +209,7 @@ export default function Floors({
                       </>
                     )}
                   </dl>
-                  <ParcelIdentity identifiers={dossier.parcelIdentifiers} />
+                  <p className={styles.note}>Level reference: {dossier.detailedScene.find(item => item.record.id === selected.id)?.verticalReference || dossier.area.reference?.verticalReference || "Not supplied"}</p>
                   {selected.rights.length > 0 && (
                     <section aria-label="Recorded parties and source evidence">
                       <h3>{selected.synthetic ? "Fictional residents / shared use" : "Recorded parties / claims"}</h3>
@@ -238,23 +246,8 @@ export default function Floors({
                       Report + original sources
                     </a>
                   </div>
-                  <h3>Source evidence</h3>
-                  {evidence.length ? (
-                    evidence.map(({ source, locator }, index) => (
-                      <Button
-                        key={index}
-                        variant="ghost"
-                        onClick={() => onEvidence(source.id)}
-                        icon="document"
-                      >
-                        {source.name} · {locator}
-                      </Button>
-                    ))
-                  ) : (
-                    <p className={styles.note}>
-                      No source available in this dossier.
-                    </p>
-                  )}
+
+                  </details>
                 </div>
               </Panel>
             )}

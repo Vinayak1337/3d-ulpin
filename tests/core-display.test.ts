@@ -26,6 +26,18 @@ test("unknown source height produces selectable flat geometry, not invented leve
   const rep=view.snapshot.representations.find(r=>r.entityId===view.items[0].id)!;assert.equal(rep.vertical!.upper,rep.vertical!.lower);
   const publication=compileSpatialSnapshot(view.snapshot,"/test");const bytes=[...publication.assets].find(([name])=>name.endsWith("-detail.glb"))![1];assert(bytes.length>1000);
 });
+test("recorded road centerlines survive the display projection without becoming road surfaces",async()=>{
+  const input=legacySliceFixture(),entry=input.features[0],id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+  const coordinates:[number,number][]=[[77,28],[77.0001,28.00005],[77.0002,28.00005]];
+  input.features=[{...entry,id,recordId:null,body:{...entry.body,id,kind:"road",name:"Recorded road centerline",geometryRole:"unknown",geometry:{type:"LineString",coordinates:[[0,0],[10,5],[20,5]]},geographicGeometry:{type:"LineString",coordinates},height:{...entry.body.height,value:null,state:"unknown"}}}];
+  const normalized=await normalizeLegacySpatialSlice(input,"synthetic"),before=JSON.stringify(normalized),view=projectCoreNeighbourhood(normalized);
+  assert.equal(view.items.length,1);assert.equal(view.items[0].canonicalRef.id,id);assert.equal(view.items[0].renderStatus,"alignment");
+  const rep=view.snapshot.representations.find(r=>r.entityId===view.items[0].id)!,frame=view.snapshot.frames[0],project=displayProjector(frame.anchor!.longitude,frame.anchor!.latitude);
+  assert.deepEqual(rep.geometry,{type:"LineString",coordinates:coordinates.map(project)});assert.equal(rep.role,"display_only");
+  assert.equal(rep.vertical!.lower,rep.vertical!.upper);assert.equal(view.items[0].prismVolume,null);
+  assert(view.notices.some(notice=>notice.includes("does not establish physical width")));assert(!view.notices.some(notice=>notice.includes("needs review")));
+  assert(compileSpatialSnapshot(view.snapshot,"/test").assets.has("context.glb"));assert.equal(JSON.stringify(normalized),before);
+});
 test("only explicit source floor counts drive synthetic detail and unknown states stay flat",async()=>{
   const input=legacySliceFixture();input.features[0].body.semantics={...input.features[0].body.semantics,floorCount:3};
   const view=projectCoreNeighbourhood(await normalizeLegacySpatialSlice(input,"synthetic"));

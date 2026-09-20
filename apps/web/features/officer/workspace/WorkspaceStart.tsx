@@ -1,8 +1,8 @@
 "use client";
-import { useState,useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect,useState,useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import type { CaseRecord,BuildingDossier,PreparationCase } from "@ulpin/contracts";
+import type { CaseRecord,BuildingDossier,PreparationCase,MapArea } from "@ulpin/contracts";
 import { request, useMutation, useResource } from "../shared/hooks";
 import { routes, withQuery } from "../shared/routes";
 import { useActiveRecents } from "../shared/useActiveRecents";
@@ -16,82 +16,46 @@ import {
   LoadingState,
   Panel,
 } from "../shared/ui";
+import { datasetLabel, filterWorkspaces, type WorkspaceSummary } from "../shared/directory";
 import PropertyChooser,{type PropertyChoice} from "./PropertyChooser";
 import styles from "./Workspace.module.css";
 export default function WorkspaceStart() {
   const router = useRouter(),
     recent = useActiveRecents();
-  const cases = useResource<
-    (CaseRecord & {
-      buildingId?: string;
-      areaId?: string;
-      propertyName?: string;
-      sourceCount: number;
-    })[]
-  >("/workspace-directory");
+  const cases = useResource<WorkspaceSummary[]>("/workspace-directory");
+  const areas = useResource<MapArea[]>("/areas");
+  const params = useSearchParams();
+  const [query, setQuery] = useState(params.get("q") || "");
+  const status = params.get("status") || "all";
+  useEffect(() => setQuery(params.get("q") || ""), [params]);
+  const updateFilter = (key: string, value: string) => {
+    const next = new URLSearchParams(window.location.search);
+    if(value) next.set(key,value); else next.delete(key);
+    window.history.replaceState(null, '', '/studio/workspaces'+(next.size?'?'+next:''));
+  };
   const mutation = useMutation();
   const [create, setCreate] = useState(false),
     [choose, setChoose] = useState(false);
-  const drafts = cases.data || [];
+  const drafts = filterWorkspaces(cases.data || [], query, status);
   const [destination,setDestination]=useState<'property'|'unassigned'>('unassigned'),[property,setProperty]=useState<PropertyChoice|null>(null);
   const operation=useRef(crypto.randomUUID());
   return (
     <div className={styles.start}>
       <header className={styles.startHeading}>
         <div>
-          <p className={styles.eyebrow}>PLAN WORKSPACE</p>
           <h1>Plan Workspace</h1>
-          <p>Create a workspace or continue a saved plan.</p>
+          <p>Continue a saved plan or add documents in a new workspace.</p>
         </div>
-        <Button variant="primary" icon="plus" onClick={() => setCreate(true)}>
-          New workspace
-        </Button>
+        <div className={styles.directoryActions}><Button icon="building" onClick={() => setChoose(true)}>Open a property</Button><Link className="ui-button ui-button--primary" href={routes.addFiles()}>Add files</Link><Button variant="ghost" onClick={() => setCreate(true)}>Create empty workspace</Button></div>
       </header>
-      <div className={styles.startActions}>
-        <button onClick={() => setCreate(true)}>
-          <span>
-            <Icon name="upload" size={26} />
-          </span>
-          <h2>Start with a plan</h2>
-          <p>Upload documents and assign a property when ready.</p>
-          <b>
-            Upload a source <Icon name="arrow" />
-          </b>
-        </button>
-        <button onClick={() => setChoose(true)}>
-          <span>
-            <Icon name="building" size={26} />
-          </span>
-          <h2>Open a property</h2>
-          <p>Choose a building and open its linked plans.</p>
-          <b>
-            Choose property <Icon name="arrow" />
-          </b>
-        </button>
-      </div>
-      {!!recent.length && (
-        <Panel title="Recently opened properties">
-          <div className={styles.recent}>
-            {recent.slice(0, 6).map((p) => (
-              <Link
-                key={p.buildingId}
-                href={routes.workspace(p.buildingId, p.areaId)}
-              >
-                <Icon name="building" />
-                <span>
-                  <strong>{p.name}</strong>
-                  <small>{p.identifier}</small>
-                </span>
-                <Icon name="arrow" />
-              </Link>
-            ))}
-          </div>
-        </Panel>
-      )}
       <Panel
         title="Saved workspaces"
-        actions={<Badge>{drafts.length} saved</Badge>}
+        actions={<Badge>{drafts.length} of {cases.data?.length || 0} saved</Badge>}
       >
+        <div className={styles.directoryFilters}>
+          <label><Icon name="search" /><input aria-label="Find a workspace" placeholder="Find a workspace or property" value={query} onChange={event => { setQuery(event.target.value); updateFilter("q",event.target.value); }} /></label>
+          <select aria-label="Workspace status" value={status} onChange={event => updateFilter("status",event.target.value)}><option value="all">All workspaces</option><option value="linked">Linked to a property</option><option value="unassigned">Awaiting property assignment</option></select>
+        </div>
         {cases.loading ? (
           <LoadingState label="Opening saved workspaces" />
         ) : cases.error ? (
@@ -108,14 +72,14 @@ export default function WorkspaceStart() {
                 </span>
                 <span>
                   <strong>
-                    {(c.propertyName || c.name).replace(/v2/gi, "")}
+                    {c.propertyName || c.name}
                   </strong>
                   <small>
-                    Updated {new Date(c.updatedAt).toLocaleDateString()}
+                    {c.propertyName && c.propertyName !== c.name ? `${c.name} · ` : ""}Updated {new Date(c.updatedAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })} · {datasetLabel(areas.data?.find(area => area.id === c.areaId)?.dataKind)}
                   </small>
                 </span>
                 <Badge>
-                  {c.buildingId ? `${c.sourceCount} sources` : "Unassigned"}
+                  {c.sourceCount} sources · {c.buildingId ? "Property linked" : "Unassigned"}
                 </Badge>
                 <Icon name="arrow" />
               </Link>
@@ -123,12 +87,31 @@ export default function WorkspaceStart() {
           </div>
         ) : (
           <EmptyState
-            title="Room for your next plan"
-            description="Your saved drafts will appear here."
+            title={cases.data?.length ? "No matching workspaces" : "No saved workspaces yet"}
+            description={cases.data?.length ? "Try another name or change the assignment filter." : "Create a workspace to add and review your plan documents."}
             icon="workspace"
           />
         )}
       </Panel>
+      {!!recent.length && (
+        <details className={styles.directoryRecents}><summary>Recently opened properties</summary>
+          <div className={styles.recent}>
+            {recent.slice(0, 6).map((p) => (
+              <Link
+                key={p.buildingId}
+                href={routes.workspace(p.buildingId, p.areaId)}
+              >
+                <Icon name="building" />
+                <span>
+                  <strong>{p.name}</strong>
+                  <small>{p.identifier}</small>
+                </span>
+                <Icon name="arrow" />
+              </Link>
+            ))}
+          </div>
+        </details>
+      )}
       <Dialog
         open={create}
         title="Create a plan workspace"

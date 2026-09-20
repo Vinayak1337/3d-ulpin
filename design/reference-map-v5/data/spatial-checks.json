@@ -1,0 +1,3569 @@
+{
+  "frameId": "FRAME-NEEM-REFERENCE",
+  "method": "shapely",
+  "softwareVersion": "2.0.7",
+  "toleranceM2": 1e-07,
+  "buildingPairs": [
+    {
+      "fromId": "B01",
+      "toId": "B34",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 13.91111111,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            40.0,
+            52.11111111
+          ],
+          [
+            40.0,
+            38.2
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B02",
+      "toId": "B03",
+      "classification": "positive_area_overlap",
+      "areaM2": 9.479999999999995,
+      "sharedBoundaryLengthM": 1.1999999999999993,
+      "intersectionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              7.4,
+              0.2
+            ],
+            [
+              7.4,
+              16.0
+            ],
+            [
+              8.0,
+              16.0
+            ],
+            [
+              8.0,
+              0.2
+            ],
+            [
+              7.4,
+              0.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B04",
+      "toId": "B05",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            24.0,
+            0.25
+          ],
+          [
+            24.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B05",
+      "toId": "B06",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            32.0,
+            0.2
+          ],
+          [
+            32.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B06",
+      "toId": "B07",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            40.0,
+            0.2
+          ],
+          [
+            40.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B07",
+      "toId": "B08",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            48.0,
+            0.25
+          ],
+          [
+            48.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B09",
+      "toId": "B10",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            72.0,
+            0.2
+          ],
+          [
+            72.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B10",
+      "toId": "B11",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.0,
+            0.2
+          ],
+          [
+            80.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B11",
+      "toId": "B12",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            88.0,
+            0.25
+          ],
+          [
+            88.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B12",
+      "toId": "B13",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            96.0,
+            0.25
+          ],
+          [
+            96.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B13",
+      "toId": "B14",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            104.0,
+            0.2
+          ],
+          [
+            104.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B14",
+      "toId": "B15",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            112.0,
+            0.2
+          ],
+          [
+            112.0,
+            16.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B16",
+      "toId": "B17",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.0,
+            19.25
+          ],
+          [
+            8.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B17",
+      "toId": "B18",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            16.0,
+            19.2
+          ],
+          [
+            16.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B18",
+      "toId": "B19",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            24.0,
+            19.2
+          ],
+          [
+            24.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B19",
+      "toId": "B20",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            32.0,
+            19.25
+          ],
+          [
+            32.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B20",
+      "toId": "B21",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            40.0,
+            19.25
+          ],
+          [
+            40.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B21",
+      "toId": "B22",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            48.0,
+            19.2
+          ],
+          [
+            48.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B23",
+      "toId": "B24",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            72.0,
+            19.25
+          ],
+          [
+            72.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B24",
+      "toId": "B25",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.0,
+            19.25
+          ],
+          [
+            80.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B25",
+      "toId": "B26",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            88.0,
+            19.2
+          ],
+          [
+            88.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B26",
+      "toId": "B27",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.8,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            96.0,
+            19.2
+          ],
+          [
+            96.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B27",
+      "toId": "B28",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            104.0,
+            19.25
+          ],
+          [
+            104.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B28",
+      "toId": "B29",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            112.0,
+            19.25
+          ],
+          [
+            112.0,
+            35.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B30",
+      "toId": "B31",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.0,
+            38.2
+          ],
+          [
+            8.0,
+            54.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B31",
+      "toId": "B32",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            16.0,
+            38.25
+          ],
+          [
+            16.0,
+            54.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B32",
+      "toId": "B33",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            24.0,
+            38.25
+          ],
+          [
+            24.0,
+            54.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B33",
+      "toId": "B34",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            32.0,
+            38.2
+          ],
+          [
+            32.0,
+            54.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B35",
+      "toId": "B36",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.0,
+            38.25
+          ],
+          [
+            80.0,
+            54.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B36",
+      "toId": "B37",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            88.0,
+            38.25
+          ],
+          [
+            88.0,
+            54.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B37",
+      "toId": "B38",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            96.0,
+            38.2
+          ],
+          [
+            96.0,
+            54.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B38",
+      "toId": "B39",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            104.0,
+            38.2
+          ],
+          [
+            104.0,
+            54.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B39",
+      "toId": "B40",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            112.0,
+            38.25
+          ],
+          [
+            112.0,
+            54.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B41",
+      "toId": "B42",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.0,
+            57.2
+          ],
+          [
+            8.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B42",
+      "toId": "B43",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            16.0,
+            57.2
+          ],
+          [
+            16.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B43",
+      "toId": "B44",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            24.0,
+            57.25
+          ],
+          [
+            24.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B44",
+      "toId": "B45",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            32.0,
+            57.25
+          ],
+          [
+            32.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B45",
+      "toId": "B46",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            40.0,
+            57.2
+          ],
+          [
+            40.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B46",
+      "toId": "B47",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            48.0,
+            57.2
+          ],
+          [
+            48.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B48",
+      "toId": "B49",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            72.0,
+            57.25
+          ],
+          [
+            72.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B49",
+      "toId": "B50",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.0,
+            57.2
+          ],
+          [
+            80.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B50",
+      "toId": "B51",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            88.0,
+            57.2
+          ],
+          [
+            88.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B51",
+      "toId": "B52",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            96.0,
+            57.25
+          ],
+          [
+            96.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B52",
+      "toId": "B53",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            104.0,
+            57.25
+          ],
+          [
+            104.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B53",
+      "toId": "B54",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            112.0,
+            57.2
+          ],
+          [
+            112.0,
+            73.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B55",
+      "toId": "B56",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.0,
+            76.25
+          ],
+          [
+            8.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B56",
+      "toId": "B57",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            16.0,
+            76.25
+          ],
+          [
+            16.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B57",
+      "toId": "B58",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            24.0,
+            76.2
+          ],
+          [
+            24.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B58",
+      "toId": "B59",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            32.0,
+            76.2
+          ],
+          [
+            32.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B59",
+      "toId": "B60",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            40.0,
+            76.25
+          ],
+          [
+            40.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B60",
+      "toId": "B61",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            48.0,
+            76.25
+          ],
+          [
+            48.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B62",
+      "toId": "B63",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            72.0,
+            76.2
+          ],
+          [
+            72.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B63",
+      "toId": "B64",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.0,
+            76.25
+          ],
+          [
+            80.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B64",
+      "toId": "B65",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            88.0,
+            76.25
+          ],
+          [
+            88.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B65",
+      "toId": "B66",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            96.0,
+            76.2
+          ],
+          [
+            96.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B66",
+      "toId": "B67",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            104.0,
+            76.2
+          ],
+          [
+            104.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B67",
+      "toId": "B68",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            112.0,
+            76.25
+          ],
+          [
+            112.0,
+            92.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B69",
+      "toId": "B70",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.0,
+            95.2
+          ],
+          [
+            8.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B70",
+      "toId": "B71",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            16.0,
+            95.2
+          ],
+          [
+            16.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B71",
+      "toId": "B72",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            24.0,
+            95.25
+          ],
+          [
+            24.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B72",
+      "toId": "B73",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            32.0,
+            95.25
+          ],
+          [
+            32.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B73",
+      "toId": "B74",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            40.0,
+            95.2
+          ],
+          [
+            40.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B74",
+      "toId": "B75",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            48.0,
+            95.2
+          ],
+          [
+            48.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B76",
+      "toId": "B77",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            72.0,
+            95.25
+          ],
+          [
+            72.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B77",
+      "toId": "B78",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            80.0,
+            95.2
+          ],
+          [
+            80.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B78",
+      "toId": "B79",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            88.0,
+            95.2
+          ],
+          [
+            88.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B79",
+      "toId": "B80",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            96.0,
+            95.25
+          ],
+          [
+            96.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B80",
+      "toId": "B81",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.75,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            104.0,
+            95.25
+          ],
+          [
+            104.0,
+            111.0
+          ]
+        ]
+      }
+    },
+    {
+      "fromId": "B81",
+      "toId": "B82",
+      "classification": "shared_boundary",
+      "areaM2": 0,
+      "sharedBoundaryLengthM": 15.799999999999997,
+      "intersectionGeometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            112.0,
+            95.2
+          ],
+          [
+            112.0,
+            111.0
+          ]
+        ]
+      }
+    }
+  ],
+  "parcelEncroachments": [
+    {
+      "buildingId": "B01",
+      "parcelId": "P01",
+      "areaM2": 16.0,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              56.0,
+              37.0
+            ],
+            [
+              40.0,
+              37.0
+            ],
+            [
+              40.0,
+              38.0
+            ],
+            [
+              56.0,
+              38.0
+            ],
+            [
+              56.0,
+              37.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "buildingId": "B03",
+      "parcelId": "P03",
+      "areaM2": 9.479999999999995,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              7.4,
+              0.2
+            ],
+            [
+              7.4,
+              16.0
+            ],
+            [
+              8.0,
+              16.0
+            ],
+            [
+              8.0,
+              0.2
+            ],
+            [
+              7.4,
+              0.2
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "roadOverlaps": [
+    {
+      "buildingId": "B01",
+      "roadId": "R03",
+      "areaM2": 16.0,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              56.0,
+              37.0
+            ],
+            [
+              40.0,
+              37.0
+            ],
+            [
+              40.0,
+              38.0
+            ],
+            [
+              56.0,
+              38.0
+            ],
+            [
+              56.0,
+              37.0
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "id": "BLOCK-01",
+      "objectIds": [
+        "B01",
+        "B30",
+        "B31",
+        "B32",
+        "B33",
+        "B34"
+      ],
+      "computedFromGeometryIds": [
+        "G-B01-v1",
+        "G-B30-v1",
+        "G-B31-v1",
+        "G-B32-v1",
+        "G-B33-v1",
+        "G-B34-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              50.0,
+              52.11111111
+            ],
+            [
+              50.0,
+              54.0
+            ],
+            [
+              56.0,
+              54.0
+            ],
+            [
+              56.0,
+              37.0
+            ],
+            [
+              40.0,
+              37.0
+            ],
+            [
+              40.0,
+              38.2
+            ],
+            [
+              32.0,
+              38.2
+            ],
+            [
+              32.0,
+              38.0
+            ],
+            [
+              29.0,
+              38.0
+            ],
+            [
+              29.0,
+              38.6
+            ],
+            [
+              27.0,
+              38.6
+            ],
+            [
+              27.0,
+              38.0
+            ],
+            [
+              24.0,
+              38.0
+            ],
+            [
+              24.0,
+              38.25
+            ],
+            [
+              16.0,
+              38.25
+            ],
+            [
+              16.0,
+              38.2
+            ],
+            [
+              8.0,
+              38.2
+            ],
+            [
+              0.0,
+              38.2
+            ],
+            [
+              0.0,
+              54.0
+            ],
+            [
+              8.0,
+              54.0
+            ],
+            [
+              16.0,
+              54.0
+            ],
+            [
+              18.0,
+              54.0
+            ],
+            [
+              18.0,
+              53.0
+            ],
+            [
+              21.0,
+              53.0
+            ],
+            [
+              21.0,
+              54.0
+            ],
+            [
+              24.0,
+              54.0
+            ],
+            [
+              32.0,
+              54.0
+            ],
+            [
+              40.0,
+              54.0
+            ],
+            [
+              40.0,
+              52.11111111
+            ],
+            [
+              50.0,
+              52.11111111
+            ]
+          ]
+        ]
+      },
+      "areaM2": 882.1111111,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-02",
+      "objectIds": [
+        "B02",
+        "B03"
+      ],
+      "computedFromGeometryIds": [
+        "G-B02-v1",
+        "G-B03-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.0,
+              0.2
+            ],
+            [
+              0.0,
+              16.0
+            ],
+            [
+              7.4,
+              16.0
+            ],
+            [
+              8.0,
+              16.0
+            ],
+            [
+              15.4,
+              16.0
+            ],
+            [
+              15.4,
+              0.2
+            ],
+            [
+              8.0,
+              0.2
+            ],
+            [
+              7.4,
+              0.2
+            ],
+            [
+              0.0,
+              0.2
+            ]
+          ]
+        ]
+      },
+      "areaM2": 243.32000000000002,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-03",
+      "objectIds": [
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08"
+      ],
+      "computedFromGeometryIds": [
+        "G-B04-v1",
+        "G-B05-v1",
+        "G-B06-v1",
+        "G-B07-v1",
+        "G-B08-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              29.0,
+              0.0
+            ],
+            [
+              29.0,
+              0.6
+            ],
+            [
+              27.0,
+              0.6
+            ],
+            [
+              27.0,
+              0.0
+            ],
+            [
+              24.0,
+              0.0
+            ],
+            [
+              24.0,
+              0.25
+            ],
+            [
+              16.0,
+              0.25
+            ],
+            [
+              16.0,
+              16.0
+            ],
+            [
+              18.0,
+              16.0
+            ],
+            [
+              18.0,
+              15.0
+            ],
+            [
+              21.0,
+              15.0
+            ],
+            [
+              21.0,
+              16.0
+            ],
+            [
+              24.0,
+              16.0
+            ],
+            [
+              32.0,
+              16.0
+            ],
+            [
+              40.0,
+              16.0
+            ],
+            [
+              48.0,
+              16.0
+            ],
+            [
+              50.0,
+              16.0
+            ],
+            [
+              50.0,
+              15.0
+            ],
+            [
+              53.0,
+              15.0
+            ],
+            [
+              53.0,
+              16.0
+            ],
+            [
+              56.0,
+              16.0
+            ],
+            [
+              56.0,
+              0.25
+            ],
+            [
+              48.0,
+              0.25
+            ],
+            [
+              48.0,
+              0.2
+            ],
+            [
+              40.0,
+              0.2
+            ],
+            [
+              32.0,
+              0.2
+            ],
+            [
+              32.0,
+              0.0
+            ],
+            [
+              29.0,
+              0.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 625.5999999999999,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-04",
+      "objectIds": [
+        "B09",
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "computedFromGeometryIds": [
+        "G-B09-v1",
+        "G-B10-v1",
+        "G-B11-v1",
+        "G-B12-v1",
+        "G-B13-v1",
+        "G-B14-v1",
+        "G-B15-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              69.0,
+              0.0
+            ],
+            [
+              69.0,
+              0.6
+            ],
+            [
+              67.0,
+              0.6
+            ],
+            [
+              67.0,
+              0.0
+            ],
+            [
+              64.0,
+              0.0
+            ],
+            [
+              64.0,
+              16.0
+            ],
+            [
+              72.0,
+              16.0
+            ],
+            [
+              80.0,
+              16.0
+            ],
+            [
+              88.0,
+              16.0
+            ],
+            [
+              90.0,
+              16.0
+            ],
+            [
+              90.0,
+              15.0
+            ],
+            [
+              93.0,
+              15.0
+            ],
+            [
+              93.0,
+              16.0
+            ],
+            [
+              96.0,
+              16.0
+            ],
+            [
+              104.0,
+              16.0
+            ],
+            [
+              112.0,
+              16.0
+            ],
+            [
+              120.0,
+              16.0
+            ],
+            [
+              120.0,
+              0.2
+            ],
+            [
+              112.0,
+              0.2
+            ],
+            [
+              104.0,
+              0.2
+            ],
+            [
+              104.0,
+              0.0
+            ],
+            [
+              101.0,
+              0.0
+            ],
+            [
+              101.0,
+              0.6
+            ],
+            [
+              99.0,
+              0.6
+            ],
+            [
+              99.0,
+              0.0
+            ],
+            [
+              96.0,
+              0.0
+            ],
+            [
+              96.0,
+              0.25
+            ],
+            [
+              88.0,
+              0.25
+            ],
+            [
+              88.0,
+              0.2
+            ],
+            [
+              80.0,
+              0.2
+            ],
+            [
+              72.0,
+              0.2
+            ],
+            [
+              72.0,
+              0.0
+            ],
+            [
+              69.0,
+              0.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 882.2,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-05",
+      "objectIds": [
+        "B16",
+        "B17",
+        "B18",
+        "B19",
+        "B20",
+        "B21",
+        "B22"
+      ],
+      "computedFromGeometryIds": [
+        "G-B16-v1",
+        "G-B17-v1",
+        "G-B18-v1",
+        "G-B19-v1",
+        "G-B20-v1",
+        "G-B21-v1",
+        "G-B22-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              13.0,
+              19.0
+            ],
+            [
+              13.0,
+              19.6
+            ],
+            [
+              11.0,
+              19.6
+            ],
+            [
+              11.0,
+              19.0
+            ],
+            [
+              8.0,
+              19.0
+            ],
+            [
+              8.0,
+              19.25
+            ],
+            [
+              0.0,
+              19.25
+            ],
+            [
+              0.0,
+              35.0
+            ],
+            [
+              2.0,
+              35.0
+            ],
+            [
+              2.0,
+              34.0
+            ],
+            [
+              5.0,
+              34.0
+            ],
+            [
+              5.0,
+              35.0
+            ],
+            [
+              8.0,
+              35.0
+            ],
+            [
+              16.0,
+              35.0
+            ],
+            [
+              24.0,
+              35.0
+            ],
+            [
+              32.0,
+              35.0
+            ],
+            [
+              34.0,
+              35.0
+            ],
+            [
+              34.0,
+              34.0
+            ],
+            [
+              37.0,
+              34.0
+            ],
+            [
+              37.0,
+              35.0
+            ],
+            [
+              40.0,
+              35.0
+            ],
+            [
+              48.0,
+              35.0
+            ],
+            [
+              56.0,
+              35.0
+            ],
+            [
+              56.0,
+              19.2
+            ],
+            [
+              48.0,
+              19.2
+            ],
+            [
+              48.0,
+              19.0
+            ],
+            [
+              45.0,
+              19.0
+            ],
+            [
+              45.0,
+              19.6
+            ],
+            [
+              43.0,
+              19.6
+            ],
+            [
+              43.0,
+              19.0
+            ],
+            [
+              40.0,
+              19.0
+            ],
+            [
+              40.0,
+              19.25
+            ],
+            [
+              32.0,
+              19.25
+            ],
+            [
+              32.0,
+              19.2
+            ],
+            [
+              24.0,
+              19.2
+            ],
+            [
+              16.0,
+              19.2
+            ],
+            [
+              16.0,
+              19.0
+            ],
+            [
+              13.0,
+              19.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 878.8,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-06",
+      "objectIds": [
+        "B23",
+        "B24",
+        "B25",
+        "B26",
+        "B27",
+        "B28",
+        "B29"
+      ],
+      "computedFromGeometryIds": [
+        "G-B23-v1",
+        "G-B24-v1",
+        "G-B25-v1",
+        "G-B26-v1",
+        "G-B27-v1",
+        "G-B28-v1",
+        "G-B29-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88.0,
+              35.0
+            ],
+            [
+              96.0,
+              35.0
+            ],
+            [
+              104.0,
+              35.0
+            ],
+            [
+              106.0,
+              35.0
+            ],
+            [
+              106.0,
+              34.0
+            ],
+            [
+              109.0,
+              34.0
+            ],
+            [
+              109.0,
+              35.0
+            ],
+            [
+              112.0,
+              35.0
+            ],
+            [
+              120.0,
+              35.0
+            ],
+            [
+              120.0,
+              19.0
+            ],
+            [
+              117.0,
+              19.0
+            ],
+            [
+              117.0,
+              19.6
+            ],
+            [
+              115.0,
+              19.6
+            ],
+            [
+              115.0,
+              19.0
+            ],
+            [
+              112.0,
+              19.0
+            ],
+            [
+              112.0,
+              19.25
+            ],
+            [
+              104.0,
+              19.25
+            ],
+            [
+              104.0,
+              19.2
+            ],
+            [
+              96.0,
+              19.2
+            ],
+            [
+              88.0,
+              19.2
+            ],
+            [
+              88.0,
+              19.0
+            ],
+            [
+              85.0,
+              19.0
+            ],
+            [
+              85.0,
+              19.6
+            ],
+            [
+              83.0,
+              19.6
+            ],
+            [
+              83.0,
+              19.0
+            ],
+            [
+              80.0,
+              19.0
+            ],
+            [
+              80.0,
+              19.25
+            ],
+            [
+              72.0,
+              19.25
+            ],
+            [
+              72.0,
+              19.2
+            ],
+            [
+              64.0,
+              19.2
+            ],
+            [
+              64.0,
+              35.0
+            ],
+            [
+              72.0,
+              35.0
+            ],
+            [
+              74.0,
+              35.0
+            ],
+            [
+              74.0,
+              34.0
+            ],
+            [
+              77.0,
+              34.0
+            ],
+            [
+              77.0,
+              35.0
+            ],
+            [
+              80.0,
+              35.0
+            ],
+            [
+              88.0,
+              35.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 878.8,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-07",
+      "objectIds": [
+        "B35",
+        "B36",
+        "B37",
+        "B38",
+        "B39",
+        "B40"
+      ],
+      "computedFromGeometryIds": [
+        "G-B35-v1",
+        "G-B36-v1",
+        "G-B37-v1",
+        "G-B38-v1",
+        "G-B39-v1",
+        "G-B40-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              93.0,
+              38.0
+            ],
+            [
+              93.0,
+              38.6
+            ],
+            [
+              91.0,
+              38.6
+            ],
+            [
+              91.0,
+              38.0
+            ],
+            [
+              88.0,
+              38.0
+            ],
+            [
+              88.0,
+              38.25
+            ],
+            [
+              80.0,
+              38.25
+            ],
+            [
+              80.0,
+              38.2
+            ],
+            [
+              72.0,
+              38.2
+            ],
+            [
+              72.0,
+              54.0
+            ],
+            [
+              80.0,
+              54.0
+            ],
+            [
+              82.0,
+              54.0
+            ],
+            [
+              82.0,
+              53.0
+            ],
+            [
+              85.0,
+              53.0
+            ],
+            [
+              85.0,
+              54.0
+            ],
+            [
+              88.0,
+              54.0
+            ],
+            [
+              96.0,
+              54.0
+            ],
+            [
+              104.0,
+              54.0
+            ],
+            [
+              112.0,
+              54.0
+            ],
+            [
+              114.0,
+              54.0
+            ],
+            [
+              114.0,
+              53.0
+            ],
+            [
+              117.0,
+              53.0
+            ],
+            [
+              117.0,
+              54.0
+            ],
+            [
+              120.0,
+              54.0
+            ],
+            [
+              120.0,
+              38.25
+            ],
+            [
+              112.0,
+              38.25
+            ],
+            [
+              112.0,
+              38.2
+            ],
+            [
+              104.0,
+              38.2
+            ],
+            [
+              96.0,
+              38.2
+            ],
+            [
+              96.0,
+              38.0
+            ],
+            [
+              93.0,
+              38.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 752.0,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-08",
+      "objectIds": [
+        "B41",
+        "B42",
+        "B43",
+        "B44",
+        "B45",
+        "B46",
+        "B47"
+      ],
+      "computedFromGeometryIds": [
+        "G-B41-v1",
+        "G-B42-v1",
+        "G-B43-v1",
+        "G-B44-v1",
+        "G-B45-v1",
+        "G-B46-v1",
+        "G-B47-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.0,
+              57.0
+            ],
+            [
+              5.0,
+              57.6
+            ],
+            [
+              3.0,
+              57.6
+            ],
+            [
+              3.0,
+              57.0
+            ],
+            [
+              0.0,
+              57.0
+            ],
+            [
+              0.0,
+              73.0
+            ],
+            [
+              8.0,
+              73.0
+            ],
+            [
+              16.0,
+              73.0
+            ],
+            [
+              24.0,
+              73.0
+            ],
+            [
+              26.0,
+              73.0
+            ],
+            [
+              26.0,
+              72.0
+            ],
+            [
+              29.0,
+              72.0
+            ],
+            [
+              29.0,
+              73.0
+            ],
+            [
+              32.0,
+              73.0
+            ],
+            [
+              40.0,
+              73.0
+            ],
+            [
+              48.0,
+              73.0
+            ],
+            [
+              56.0,
+              73.0
+            ],
+            [
+              56.0,
+              57.2
+            ],
+            [
+              48.0,
+              57.2
+            ],
+            [
+              40.0,
+              57.2
+            ],
+            [
+              40.0,
+              57.0
+            ],
+            [
+              37.0,
+              57.0
+            ],
+            [
+              37.0,
+              57.6
+            ],
+            [
+              35.0,
+              57.6
+            ],
+            [
+              35.0,
+              57.0
+            ],
+            [
+              32.0,
+              57.0
+            ],
+            [
+              32.0,
+              57.25
+            ],
+            [
+              24.0,
+              57.25
+            ],
+            [
+              24.0,
+              57.2
+            ],
+            [
+              16.0,
+              57.2
+            ],
+            [
+              8.0,
+              57.2
+            ],
+            [
+              8.0,
+              57.0
+            ],
+            [
+              5.0,
+              57.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 882.1999999999998,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-09",
+      "objectIds": [
+        "B48",
+        "B49",
+        "B50",
+        "B51",
+        "B52",
+        "B53",
+        "B54"
+      ],
+      "computedFromGeometryIds": [
+        "G-B48-v1",
+        "G-B49-v1",
+        "G-B50-v1",
+        "G-B51-v1",
+        "G-B52-v1",
+        "G-B53-v1",
+        "G-B54-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0,
+              57.0
+            ],
+            [
+              77.0,
+              57.6
+            ],
+            [
+              75.0,
+              57.6
+            ],
+            [
+              75.0,
+              57.0
+            ],
+            [
+              72.0,
+              57.0
+            ],
+            [
+              72.0,
+              57.25
+            ],
+            [
+              64.0,
+              57.25
+            ],
+            [
+              64.0,
+              73.0
+            ],
+            [
+              66.0,
+              73.0
+            ],
+            [
+              66.0,
+              72.0
+            ],
+            [
+              69.0,
+              72.0
+            ],
+            [
+              69.0,
+              73.0
+            ],
+            [
+              72.0,
+              73.0
+            ],
+            [
+              80.0,
+              73.0
+            ],
+            [
+              88.0,
+              73.0
+            ],
+            [
+              96.0,
+              73.0
+            ],
+            [
+              98.0,
+              73.0
+            ],
+            [
+              98.0,
+              72.0
+            ],
+            [
+              101.0,
+              72.0
+            ],
+            [
+              101.0,
+              73.0
+            ],
+            [
+              104.0,
+              73.0
+            ],
+            [
+              112.0,
+              73.0
+            ],
+            [
+              120.0,
+              73.0
+            ],
+            [
+              120.0,
+              57.2
+            ],
+            [
+              112.0,
+              57.2
+            ],
+            [
+              112.0,
+              57.0
+            ],
+            [
+              109.0,
+              57.0
+            ],
+            [
+              109.0,
+              57.6
+            ],
+            [
+              107.0,
+              57.6
+            ],
+            [
+              107.0,
+              57.0
+            ],
+            [
+              104.0,
+              57.0
+            ],
+            [
+              104.0,
+              57.25
+            ],
+            [
+              96.0,
+              57.25
+            ],
+            [
+              96.0,
+              57.2
+            ],
+            [
+              88.0,
+              57.2
+            ],
+            [
+              80.0,
+              57.2
+            ],
+            [
+              80.0,
+              57.0
+            ],
+            [
+              77.0,
+              57.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 878.7999999999998,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-10",
+      "objectIds": [
+        "B55",
+        "B56",
+        "B57",
+        "B58",
+        "B59",
+        "B60",
+        "B61"
+      ],
+      "computedFromGeometryIds": [
+        "G-B55-v1",
+        "G-B56-v1",
+        "G-B57-v1",
+        "G-B58-v1",
+        "G-B59-v1",
+        "G-B60-v1",
+        "G-B61-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24.0,
+              92.0
+            ],
+            [
+              32.0,
+              92.0
+            ],
+            [
+              40.0,
+              92.0
+            ],
+            [
+              42.0,
+              92.0
+            ],
+            [
+              42.0,
+              91.0
+            ],
+            [
+              45.0,
+              91.0
+            ],
+            [
+              45.0,
+              92.0
+            ],
+            [
+              48.0,
+              92.0
+            ],
+            [
+              56.0,
+              92.0
+            ],
+            [
+              56.0,
+              76.0
+            ],
+            [
+              53.0,
+              76.0
+            ],
+            [
+              53.0,
+              76.6
+            ],
+            [
+              51.0,
+              76.6
+            ],
+            [
+              51.0,
+              76.0
+            ],
+            [
+              48.0,
+              76.0
+            ],
+            [
+              48.0,
+              76.25
+            ],
+            [
+              40.0,
+              76.25
+            ],
+            [
+              40.0,
+              76.2
+            ],
+            [
+              32.0,
+              76.2
+            ],
+            [
+              24.0,
+              76.2
+            ],
+            [
+              24.0,
+              76.0
+            ],
+            [
+              21.0,
+              76.0
+            ],
+            [
+              21.0,
+              76.6
+            ],
+            [
+              19.0,
+              76.6
+            ],
+            [
+              19.0,
+              76.0
+            ],
+            [
+              16.0,
+              76.0
+            ],
+            [
+              16.0,
+              76.25
+            ],
+            [
+              8.0,
+              76.25
+            ],
+            [
+              8.0,
+              76.2
+            ],
+            [
+              0.0,
+              76.2
+            ],
+            [
+              0.0,
+              92.0
+            ],
+            [
+              8.0,
+              92.0
+            ],
+            [
+              10.0,
+              92.0
+            ],
+            [
+              10.0,
+              91.0
+            ],
+            [
+              13.0,
+              91.0
+            ],
+            [
+              13.0,
+              92.0
+            ],
+            [
+              16.0,
+              92.0
+            ],
+            [
+              24.0,
+              92.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 878.7999999999997,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-11",
+      "objectIds": [
+        "B62",
+        "B63",
+        "B64",
+        "B65",
+        "B66",
+        "B67",
+        "B68"
+      ],
+      "computedFromGeometryIds": [
+        "G-B62-v1",
+        "G-B63-v1",
+        "G-B64-v1",
+        "G-B65-v1",
+        "G-B66-v1",
+        "G-B67-v1",
+        "G-B68-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96.0,
+              92.0
+            ],
+            [
+              104.0,
+              92.0
+            ],
+            [
+              112.0,
+              92.0
+            ],
+            [
+              114.0,
+              92.0
+            ],
+            [
+              114.0,
+              91.0
+            ],
+            [
+              117.0,
+              91.0
+            ],
+            [
+              117.0,
+              92.0
+            ],
+            [
+              120.0,
+              92.0
+            ],
+            [
+              120.0,
+              76.25
+            ],
+            [
+              112.0,
+              76.25
+            ],
+            [
+              112.0,
+              76.2
+            ],
+            [
+              104.0,
+              76.2
+            ],
+            [
+              96.0,
+              76.2
+            ],
+            [
+              96.0,
+              76.0
+            ],
+            [
+              93.0,
+              76.0
+            ],
+            [
+              93.0,
+              76.6
+            ],
+            [
+              91.0,
+              76.6
+            ],
+            [
+              91.0,
+              76.0
+            ],
+            [
+              88.0,
+              76.0
+            ],
+            [
+              88.0,
+              76.25
+            ],
+            [
+              80.0,
+              76.25
+            ],
+            [
+              80.0,
+              76.2
+            ],
+            [
+              72.0,
+              76.2
+            ],
+            [
+              64.0,
+              76.2
+            ],
+            [
+              64.0,
+              92.0
+            ],
+            [
+              72.0,
+              92.0
+            ],
+            [
+              80.0,
+              92.0
+            ],
+            [
+              82.0,
+              92.0
+            ],
+            [
+              82.0,
+              91.0
+            ],
+            [
+              85.0,
+              91.0
+            ],
+            [
+              85.0,
+              92.0
+            ],
+            [
+              88.0,
+              92.0
+            ],
+            [
+              96.0,
+              92.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 878.3999999999999,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-12",
+      "objectIds": [
+        "B69",
+        "B70",
+        "B71",
+        "B72",
+        "B73",
+        "B74",
+        "B75"
+      ],
+      "computedFromGeometryIds": [
+        "G-B69-v1",
+        "G-B70-v1",
+        "G-B71-v1",
+        "G-B72-v1",
+        "G-B73-v1",
+        "G-B74-v1",
+        "G-B75-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.0,
+              95.0
+            ],
+            [
+              5.0,
+              95.6
+            ],
+            [
+              3.0,
+              95.6
+            ],
+            [
+              3.0,
+              95.0
+            ],
+            [
+              0.0,
+              95.0
+            ],
+            [
+              0.0,
+              111.0
+            ],
+            [
+              8.0,
+              111.0
+            ],
+            [
+              16.0,
+              111.0
+            ],
+            [
+              24.0,
+              111.0
+            ],
+            [
+              26.0,
+              111.0
+            ],
+            [
+              26.0,
+              110.0
+            ],
+            [
+              29.0,
+              110.0
+            ],
+            [
+              29.0,
+              111.0
+            ],
+            [
+              32.0,
+              111.0
+            ],
+            [
+              40.0,
+              111.0
+            ],
+            [
+              48.0,
+              111.0
+            ],
+            [
+              56.0,
+              111.0
+            ],
+            [
+              56.0,
+              95.2
+            ],
+            [
+              48.0,
+              95.2
+            ],
+            [
+              40.0,
+              95.2
+            ],
+            [
+              40.0,
+              95.0
+            ],
+            [
+              37.0,
+              95.0
+            ],
+            [
+              37.0,
+              95.6
+            ],
+            [
+              35.0,
+              95.6
+            ],
+            [
+              35.0,
+              95.0
+            ],
+            [
+              32.0,
+              95.0
+            ],
+            [
+              32.0,
+              95.25
+            ],
+            [
+              24.0,
+              95.25
+            ],
+            [
+              24.0,
+              95.2
+            ],
+            [
+              16.0,
+              95.2
+            ],
+            [
+              8.0,
+              95.2
+            ],
+            [
+              8.0,
+              95.0
+            ],
+            [
+              5.0,
+              95.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 882.1999999999998,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    },
+    {
+      "id": "BLOCK-13",
+      "objectIds": [
+        "B76",
+        "B77",
+        "B78",
+        "B79",
+        "B80",
+        "B81",
+        "B82"
+      ],
+      "computedFromGeometryIds": [
+        "G-B76-v1",
+        "G-B77-v1",
+        "G-B78-v1",
+        "G-B79-v1",
+        "G-B80-v1",
+        "G-B81-v1",
+        "G-B82-v1"
+      ],
+      "unionGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.0,
+              95.0
+            ],
+            [
+              77.0,
+              95.6
+            ],
+            [
+              75.0,
+              95.6
+            ],
+            [
+              75.0,
+              95.0
+            ],
+            [
+              72.0,
+              95.0
+            ],
+            [
+              72.0,
+              95.25
+            ],
+            [
+              64.0,
+              95.25
+            ],
+            [
+              64.0,
+              111.0
+            ],
+            [
+              66.0,
+              111.0
+            ],
+            [
+              66.0,
+              110.0
+            ],
+            [
+              69.0,
+              110.0
+            ],
+            [
+              69.0,
+              111.0
+            ],
+            [
+              72.0,
+              111.0
+            ],
+            [
+              80.0,
+              111.0
+            ],
+            [
+              88.0,
+              111.0
+            ],
+            [
+              96.0,
+              111.0
+            ],
+            [
+              98.0,
+              111.0
+            ],
+            [
+              98.0,
+              110.0
+            ],
+            [
+              101.0,
+              110.0
+            ],
+            [
+              101.0,
+              111.0
+            ],
+            [
+              104.0,
+              111.0
+            ],
+            [
+              112.0,
+              111.0
+            ],
+            [
+              120.0,
+              111.0
+            ],
+            [
+              120.0,
+              95.2
+            ],
+            [
+              112.0,
+              95.2
+            ],
+            [
+              112.0,
+              95.0
+            ],
+            [
+              109.0,
+              95.0
+            ],
+            [
+              109.0,
+              95.6
+            ],
+            [
+              107.0,
+              95.6
+            ],
+            [
+              107.0,
+              95.0
+            ],
+            [
+              104.0,
+              95.0
+            ],
+            [
+              104.0,
+              95.25
+            ],
+            [
+              96.0,
+              95.25
+            ],
+            [
+              96.0,
+              95.2
+            ],
+            [
+              88.0,
+              95.2
+            ],
+            [
+              80.0,
+              95.2
+            ],
+            [
+              80.0,
+              95.0
+            ],
+            [
+              77.0,
+              95.0
+            ]
+          ]
+        ]
+      },
+      "areaM2": 878.7999999999998,
+      "classification": "derived_building_union",
+      "identityPolicy": "Display grouping only; individual object IDs retained."
+    }
+  ]
+}

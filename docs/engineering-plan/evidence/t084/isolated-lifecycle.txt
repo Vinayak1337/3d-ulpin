@@ -1,0 +1,4 @@
+PASS additional original retained, replayed, listed and format bounded
+PASS saved-dataset job uses existing worker operation, running/completion and source state isolation
+PASS unmeasured height stays null, rejection creates no geometry, earlier review history survives
+PASS failure and retry preserve the completed sibling result

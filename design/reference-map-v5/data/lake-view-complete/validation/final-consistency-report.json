@@ -1,0 +1,11 @@
+{
+  "classification": "synthetic",
+  "status": "WARNING",
+  "buildingCount": 49,
+  "controlCount": 9,
+  "findings": 2,
+  "warnings": [
+    "Source assertions are unreviewed.",
+    "Do not equate retained binary originals with automatically extracted geometry."
+  ]
+}

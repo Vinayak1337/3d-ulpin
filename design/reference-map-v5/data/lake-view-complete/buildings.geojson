@@ -1,0 +1,2902 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-LAKE-VIEW-DEMO-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "B01",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "12, Lake View Road · fictional",
+        "parcel_id": "P01",
+        "building_id": "B01",
+        "name": "Lake View Residence",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B01-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B01",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P01",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              68,
+              62.8
+            ],
+            [
+              86,
+              62.8
+            ],
+            [
+              86,
+              84.0
+            ],
+            [
+              79.52,
+              84.0
+            ],
+            [
+              79.52,
+              82.2
+            ],
+            [
+              68,
+              82.2
+            ],
+            [
+              68,
+              62.8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B02",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "4, Lake View Road · fictional",
+        "parcel_id": "P02",
+        "building_id": "B02",
+        "name": "Lake View House 02",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B02-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B02",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P02",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              51,
+              67
+            ],
+            [
+              63,
+              67
+            ],
+            [
+              63,
+              86
+            ],
+            [
+              58.68,
+              86
+            ],
+            [
+              58.68,
+              84.2
+            ],
+            [
+              51,
+              84.2
+            ],
+            [
+              51,
+              67
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B03",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "6, Lake View Road · fictional",
+        "parcel_id": "P03",
+        "building_id": "B03",
+        "name": "Lake View House 03",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B03-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B03",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P03",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107,
+              67
+            ],
+            [
+              124,
+              67
+            ],
+            [
+              124,
+              86
+            ],
+            [
+              117.88,
+              86
+            ],
+            [
+              117.88,
+              84.2
+            ],
+            [
+              107,
+              84.2
+            ],
+            [
+              107,
+              67
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B04",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "8, Lake View Road · fictional",
+        "parcel_id": "P04",
+        "building_id": "B04",
+        "name": "Lake View House 04",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B04-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B04",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P04",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              132,
+              67
+            ],
+            [
+              149,
+              67
+            ],
+            [
+              149,
+              86
+            ],
+            [
+              142.88,
+              86
+            ],
+            [
+              142.88,
+              84.2
+            ],
+            [
+              132,
+              84.2
+            ],
+            [
+              132,
+              67
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B05",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "10, Lake View Road · fictional",
+        "parcel_id": "P05",
+        "building_id": "B05",
+        "name": "Lake View House 05",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B05-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B05",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P05",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9,
+              109
+            ],
+            [
+              23,
+              109
+            ],
+            [
+              23,
+              128
+            ],
+            [
+              17.96,
+              128
+            ],
+            [
+              17.96,
+              126.2
+            ],
+            [
+              9,
+              126.2
+            ],
+            [
+              9,
+              109
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B06",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "12, Lake View Road · fictional",
+        "parcel_id": "P06",
+        "building_id": "B06",
+        "name": "Lake View House 06",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B06-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B06",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P06",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              30,
+              109
+            ],
+            [
+              44,
+              109
+            ],
+            [
+              44,
+              128
+            ],
+            [
+              38.96,
+              128
+            ],
+            [
+              38.96,
+              126.2
+            ],
+            [
+              30,
+              126.2
+            ],
+            [
+              30,
+              109
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B07",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "14, Lake View Road · fictional",
+        "parcel_id": "P07",
+        "building_id": "B07",
+        "name": "Lake View House 07",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B07-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B07",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P07",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              51,
+              109
+            ],
+            [
+              63,
+              109
+            ],
+            [
+              63,
+              128
+            ],
+            [
+              58.68,
+              128
+            ],
+            [
+              58.68,
+              126.2
+            ],
+            [
+              51,
+              126.2
+            ],
+            [
+              51,
+              109
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B08",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "16, Lake View Road · fictional",
+        "parcel_id": "P08",
+        "building_id": "B08",
+        "name": "Lake View House 08",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B08-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B08",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P08",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              71,
+              109
+            ],
+            [
+              88,
+              109
+            ],
+            [
+              88,
+              128
+            ],
+            [
+              81.88,
+              128
+            ],
+            [
+              81.88,
+              126.2
+            ],
+            [
+              71,
+              126.2
+            ],
+            [
+              71,
+              109
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B09",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "18, Lake View Road · fictional",
+        "parcel_id": "P09",
+        "building_id": "B09",
+        "name": "Lake View House 09",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B09-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B09",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P09",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107,
+              109
+            ],
+            [
+              124,
+              109
+            ],
+            [
+              124,
+              128
+            ],
+            [
+              117.88,
+              128
+            ],
+            [
+              117.88,
+              126.2
+            ],
+            [
+              107,
+              126.2
+            ],
+            [
+              107,
+              109
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B10",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "20, Lake View Road · fictional",
+        "parcel_id": "P10",
+        "building_id": "B10",
+        "name": "Lake View House 10",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B10-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B10",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P10",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              132,
+              109
+            ],
+            [
+              149,
+              109
+            ],
+            [
+              149,
+              128
+            ],
+            [
+              142.88,
+              128
+            ],
+            [
+              142.88,
+              126.2
+            ],
+            [
+              132,
+              126.2
+            ],
+            [
+              132,
+              109
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B11",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "22, Lake View Road · fictional",
+        "parcel_id": "P11",
+        "building_id": "B11",
+        "name": "Lake View House 11",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B11-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B11",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P11",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9,
+              2
+            ],
+            [
+              23,
+              2
+            ],
+            [
+              23,
+              14
+            ],
+            [
+              17.96,
+              14
+            ],
+            [
+              17.96,
+              12.2
+            ],
+            [
+              9,
+              12.2
+            ],
+            [
+              9,
+              2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B12",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "24, Lake View Road · fictional",
+        "parcel_id": "P12",
+        "building_id": "B12",
+        "name": "Lake View House 12",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B12-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B12",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P12",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              30,
+              2
+            ],
+            [
+              44,
+              2
+            ],
+            [
+              44,
+              14
+            ],
+            [
+              38.96,
+              14
+            ],
+            [
+              38.96,
+              12.2
+            ],
+            [
+              30,
+              12.2
+            ],
+            [
+              30,
+              2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B13",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "26, Lake View Road · fictional",
+        "parcel_id": "P13",
+        "building_id": "B13",
+        "name": "Lake View House 13",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B13-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B13",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P13",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              51,
+              2
+            ],
+            [
+              63,
+              2
+            ],
+            [
+              63,
+              14
+            ],
+            [
+              58.68,
+              14
+            ],
+            [
+              58.68,
+              12.2
+            ],
+            [
+              51,
+              12.2
+            ],
+            [
+              51,
+              2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B14",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "28, Lake View Road · fictional",
+        "parcel_id": "P14",
+        "building_id": "B14",
+        "name": "Lake View House 14",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B14-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B14",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P14",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              71,
+              2
+            ],
+            [
+              88,
+              2
+            ],
+            [
+              88,
+              14
+            ],
+            [
+              81.88,
+              14
+            ],
+            [
+              81.88,
+              12.2
+            ],
+            [
+              71,
+              12.2
+            ],
+            [
+              71,
+              2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B15",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "30, Lake View Road · fictional",
+        "parcel_id": "P15",
+        "building_id": "B15",
+        "name": "Lake View House 15",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B15-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B15",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P15",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107,
+              2
+            ],
+            [
+              124,
+              2
+            ],
+            [
+              124,
+              14
+            ],
+            [
+              117.88,
+              14
+            ],
+            [
+              117.88,
+              12.2
+            ],
+            [
+              107,
+              12.2
+            ],
+            [
+              107,
+              2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B16",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "32, Lake View Road · fictional",
+        "parcel_id": "P16",
+        "building_id": "B16",
+        "name": "Lake View House 16",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B16-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B16",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P16",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              132,
+              2
+            ],
+            [
+              149,
+              2
+            ],
+            [
+              149,
+              14
+            ],
+            [
+              142.88,
+              14
+            ],
+            [
+              142.88,
+              12.2
+            ],
+            [
+              132,
+              12.2
+            ],
+            [
+              132,
+              2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B17",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "34, Lake View Road · fictional",
+        "parcel_id": "P17",
+        "building_id": "B17",
+        "name": "Lake View House 17",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B17-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B17",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P17",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9,
+              148
+            ],
+            [
+              23,
+              148
+            ],
+            [
+              23,
+              156
+            ],
+            [
+              17.96,
+              156
+            ],
+            [
+              17.96,
+              154.2
+            ],
+            [
+              9,
+              154.2
+            ],
+            [
+              9,
+              148
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B18",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "36, Lake View Road · fictional",
+        "parcel_id": "P18",
+        "building_id": "B18",
+        "name": "Lake View House 18",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B18-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B18",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P18",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              30,
+              148
+            ],
+            [
+              44,
+              148
+            ],
+            [
+              44,
+              156
+            ],
+            [
+              38.96,
+              156
+            ],
+            [
+              38.96,
+              154.2
+            ],
+            [
+              30,
+              154.2
+            ],
+            [
+              30,
+              148
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B19",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "38, Lake View Road · fictional",
+        "parcel_id": "P19",
+        "building_id": "B19",
+        "name": "Lake View House 19",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B19-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B19",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P19",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              51,
+              148
+            ],
+            [
+              63,
+              148
+            ],
+            [
+              63,
+              156
+            ],
+            [
+              58.68,
+              156
+            ],
+            [
+              58.68,
+              154.2
+            ],
+            [
+              51,
+              154.2
+            ],
+            [
+              51,
+              148
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B20",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "40, Lake View Road · fictional",
+        "parcel_id": "P20",
+        "building_id": "B20",
+        "name": "Lake View House 20",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B20-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B20",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P20",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              71,
+              148
+            ],
+            [
+              88,
+              148
+            ],
+            [
+              88,
+              156
+            ],
+            [
+              81.88,
+              156
+            ],
+            [
+              81.88,
+              154.2
+            ],
+            [
+              71,
+              154.2
+            ],
+            [
+              71,
+              148
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B21",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "42, Lake View Road · fictional",
+        "parcel_id": "P21",
+        "building_id": "B21",
+        "name": "Lake View House 21",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B21-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B21",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P21",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107,
+              148
+            ],
+            [
+              124,
+              148
+            ],
+            [
+              124,
+              156
+            ],
+            [
+              117.88,
+              156
+            ],
+            [
+              117.88,
+              154.2
+            ],
+            [
+              107,
+              154.2
+            ],
+            [
+              107,
+              148
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B22",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "44, Lake View Road · fictional",
+        "parcel_id": "P22",
+        "building_id": "B22",
+        "name": "Lake View House 22",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B22-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B22",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P22",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              132,
+              148
+            ],
+            [
+              149,
+              148
+            ],
+            [
+              149,
+              156
+            ],
+            [
+              142.88,
+              156
+            ],
+            [
+              142.88,
+              154.2
+            ],
+            [
+              132,
+              154.2
+            ],
+            [
+              132,
+              148
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B23",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "46, Lake View Road · fictional",
+        "parcel_id": "P23",
+        "building_id": "B23",
+        "name": "Lake View House 23",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B23-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B23",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P23",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              67,
+              30
+            ],
+            [
+              84,
+              30
+            ],
+            [
+              84,
+              49
+            ],
+            [
+              77.88,
+              49
+            ],
+            [
+              77.88,
+              47.2
+            ],
+            [
+              67,
+              47.2
+            ],
+            [
+              67,
+              30
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B24",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "48, Lake View Road · fictional",
+        "parcel_id": "P24",
+        "building_id": "B24",
+        "name": "Lake View House 24",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B24-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B24",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P24",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              107,
+              30
+            ],
+            [
+              124,
+              30
+            ],
+            [
+              124,
+              49
+            ],
+            [
+              117.88,
+              49
+            ],
+            [
+              117.88,
+              47.2
+            ],
+            [
+              107,
+              47.2
+            ],
+            [
+              107,
+              30
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B25",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "50, Lake View Road · fictional",
+        "parcel_id": "P25",
+        "building_id": "B25",
+        "name": "Lake View House 25",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B25-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B25",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P25",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              132,
+              30
+            ],
+            [
+              149,
+              30
+            ],
+            [
+              149,
+              49
+            ],
+            [
+              142.88,
+              49
+            ],
+            [
+              142.88,
+              47.2
+            ],
+            [
+              132,
+              47.2
+            ],
+            [
+              132,
+              30
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B26",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "52, Lake View Road · fictional",
+        "parcel_id": "P26",
+        "building_id": "B26",
+        "name": "Lake View House 26",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B26-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B26",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P26",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -22,
+              30
+            ],
+            [
+              -5,
+              30
+            ],
+            [
+              -5,
+              49
+            ],
+            [
+              -11.12,
+              49
+            ],
+            [
+              -11.12,
+              47.2
+            ],
+            [
+              -22,
+              47.2
+            ],
+            [
+              -22,
+              30
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B27",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "54, Lake View Road · fictional",
+        "parcel_id": "P27",
+        "building_id": "B27",
+        "name": "Lake View House 27",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B27-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B27",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P27",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -22,
+              67
+            ],
+            [
+              -5,
+              67
+            ],
+            [
+              -5,
+              86
+            ],
+            [
+              -11.12,
+              86
+            ],
+            [
+              -11.12,
+              84.2
+            ],
+            [
+              -22,
+              84.2
+            ],
+            [
+              -22,
+              67
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B28",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "56, Lake View Road · fictional",
+        "parcel_id": "P28",
+        "building_id": "B28",
+        "name": "Lake View House 28",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B28-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B28",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P28",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -22,
+              109
+            ],
+            [
+              -5,
+              109
+            ],
+            [
+              -5,
+              128
+            ],
+            [
+              -11.12,
+              128
+            ],
+            [
+              -11.12,
+              126.2
+            ],
+            [
+              -22,
+              126.2
+            ],
+            [
+              -22,
+              109
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B29",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "58, Lake View Road · fictional",
+        "parcel_id": "P29",
+        "building_id": "B29",
+        "name": "Lake View House 29",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B29-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B29",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P29",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -22,
+              148
+            ],
+            [
+              -5,
+              148
+            ],
+            [
+              -5,
+              167
+            ],
+            [
+              -11.12,
+              167
+            ],
+            [
+              -11.12,
+              165.2
+            ],
+            [
+              -22,
+              165.2
+            ],
+            [
+              -22,
+              148
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B30",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "60, Lake View Road · fictional",
+        "parcel_id": "P30",
+        "building_id": "B30",
+        "name": "Lake View House 30",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B30-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B30",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P30",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -22,
+              179
+            ],
+            [
+              -5,
+              179
+            ],
+            [
+              -5,
+              198
+            ],
+            [
+              -11.12,
+              198
+            ],
+            [
+              -11.12,
+              196.2
+            ],
+            [
+              -22,
+              196.2
+            ],
+            [
+              -22,
+              179
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B31",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "62, Lake View Road · fictional",
+        "parcel_id": "P31",
+        "building_id": "B31",
+        "name": "Lake View House 31",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B31-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B31",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P31",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              168,
+              30
+            ],
+            [
+              185,
+              30
+            ],
+            [
+              185,
+              49
+            ],
+            [
+              178.88,
+              49
+            ],
+            [
+              178.88,
+              47.2
+            ],
+            [
+              168,
+              47.2
+            ],
+            [
+              168,
+              30
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B32",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "64, Lake View Road · fictional",
+        "parcel_id": "P32",
+        "building_id": "B32",
+        "name": "Lake View House 32",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B32-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B32",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P32",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              168,
+              67
+            ],
+            [
+              185,
+              67
+            ],
+            [
+              185,
+              86
+            ],
+            [
+              178.88,
+              86
+            ],
+            [
+              178.88,
+              84.2
+            ],
+            [
+              168,
+              84.2
+            ],
+            [
+              168,
+              67
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B33",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "66, Lake View Road · fictional",
+        "parcel_id": "P33",
+        "building_id": "B33",
+        "name": "Lake View House 33",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B33-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B33",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P33",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              168,
+              109
+            ],
+            [
+              185,
+              109
+            ],
+            [
+              185,
+              128
+            ],
+            [
+              178.88,
+              128
+            ],
+            [
+              178.88,
+              126.2
+            ],
+            [
+              168,
+              126.2
+            ],
+            [
+              168,
+              109
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B34",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "68, Lake View Road · fictional",
+        "parcel_id": "P34",
+        "building_id": "B34",
+        "name": "Lake View House 34",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B34-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B34",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P34",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              168,
+              148
+            ],
+            [
+              185,
+              148
+            ],
+            [
+              185,
+              167
+            ],
+            [
+              178.88,
+              167
+            ],
+            [
+              178.88,
+              165.2
+            ],
+            [
+              168,
+              165.2
+            ],
+            [
+              168,
+              148
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B35",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "70, Lake View Road · fictional",
+        "parcel_id": "P35",
+        "building_id": "B35",
+        "name": "Lake View House 35",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B35-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B35",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P35",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              168,
+              179
+            ],
+            [
+              185,
+              179
+            ],
+            [
+              185,
+              198
+            ],
+            [
+              178.88,
+              198
+            ],
+            [
+              178.88,
+              196.2
+            ],
+            [
+              168,
+              196.2
+            ],
+            [
+              168,
+              179
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B36",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "72, Lake View Road · fictional",
+        "parcel_id": "P36",
+        "building_id": "B36",
+        "name": "Lake View House 36",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B36-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B36",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P36",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9,
+              -22
+            ],
+            [
+              25,
+              -22
+            ],
+            [
+              25,
+              -3
+            ],
+            [
+              19.240000000000002,
+              -3
+            ],
+            [
+              19.240000000000002,
+              -4.8
+            ],
+            [
+              9,
+              -4.8
+            ],
+            [
+              9,
+              -22
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B37",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "74, Lake View Road · fictional",
+        "parcel_id": "P37",
+        "building_id": "B37",
+        "name": "Lake View House 37",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B37-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B37",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P37",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              31,
+              -22
+            ],
+            [
+              47,
+              -22
+            ],
+            [
+              47,
+              -3
+            ],
+            [
+              41.24,
+              -3
+            ],
+            [
+              41.24,
+              -4.8
+            ],
+            [
+              31,
+              -4.8
+            ],
+            [
+              31,
+              -22
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B38",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "76, Lake View Road · fictional",
+        "parcel_id": "P38",
+        "building_id": "B38",
+        "name": "Lake View House 38",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B38-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B38",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P38",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              53,
+              -22
+            ],
+            [
+              69,
+              -22
+            ],
+            [
+              69,
+              -3
+            ],
+            [
+              63.24,
+              -3
+            ],
+            [
+              63.24,
+              -4.8
+            ],
+            [
+              53,
+              -4.8
+            ],
+            [
+              53,
+              -22
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B39",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "78, Lake View Road · fictional",
+        "parcel_id": "P39",
+        "building_id": "B39",
+        "name": "Lake View House 39",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B39-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B39",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P39",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              75,
+              -22
+            ],
+            [
+              91,
+              -22
+            ],
+            [
+              91,
+              -3
+            ],
+            [
+              85.24,
+              -3
+            ],
+            [
+              85.24,
+              -4.8
+            ],
+            [
+              75,
+              -4.8
+            ],
+            [
+              75,
+              -22
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B40",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "80, Lake View Road · fictional",
+        "parcel_id": "P40",
+        "building_id": "B40",
+        "name": "Lake View House 40",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B40-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B40",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P40",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108,
+              -22
+            ],
+            [
+              124,
+              -22
+            ],
+            [
+              124,
+              -3
+            ],
+            [
+              118.24,
+              -3
+            ],
+            [
+              118.24,
+              -4.8
+            ],
+            [
+              108,
+              -4.8
+            ],
+            [
+              108,
+              -22
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B41",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "82, Lake View Road · fictional",
+        "parcel_id": "P41",
+        "building_id": "B41",
+        "name": "Lake View House 41",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B41-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B41",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P41",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              135,
+              -22
+            ],
+            [
+              151,
+              -22
+            ],
+            [
+              151,
+              -3
+            ],
+            [
+              145.24,
+              -3
+            ],
+            [
+              145.24,
+              -4.8
+            ],
+            [
+              135,
+              -4.8
+            ],
+            [
+              135,
+              -22
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B42",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "84, Lake View Road · fictional",
+        "parcel_id": "P42",
+        "building_id": "B42",
+        "name": "Lake View House 42",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B42-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B42",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P42",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9,
+              179
+            ],
+            [
+              25,
+              179
+            ],
+            [
+              25,
+              198
+            ],
+            [
+              19.240000000000002,
+              198
+            ],
+            [
+              19.240000000000002,
+              196.2
+            ],
+            [
+              9,
+              196.2
+            ],
+            [
+              9,
+              179
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B43",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "86, Lake View Road · fictional",
+        "parcel_id": "P43",
+        "building_id": "B43",
+        "name": "Lake View House 43",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B43-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B43",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P43",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              31,
+              179
+            ],
+            [
+              47,
+              179
+            ],
+            [
+              47,
+              198
+            ],
+            [
+              41.24,
+              198
+            ],
+            [
+              41.24,
+              196.2
+            ],
+            [
+              31,
+              196.2
+            ],
+            [
+              31,
+              179
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B44",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "88, Lake View Road · fictional",
+        "parcel_id": "P44",
+        "building_id": "B44",
+        "name": "Lake View House 44",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B44-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B44",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P44",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              53,
+              179
+            ],
+            [
+              69,
+              179
+            ],
+            [
+              69,
+              198
+            ],
+            [
+              63.24,
+              198
+            ],
+            [
+              63.24,
+              196.2
+            ],
+            [
+              53,
+              196.2
+            ],
+            [
+              53,
+              179
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B45",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "90, Lake View Road · fictional",
+        "parcel_id": "P45",
+        "building_id": "B45",
+        "name": "Lake View House 45",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B45-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B45",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P45",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              75,
+              179
+            ],
+            [
+              91,
+              179
+            ],
+            [
+              91,
+              198
+            ],
+            [
+              85.24,
+              198
+            ],
+            [
+              85.24,
+              196.2
+            ],
+            [
+              75,
+              196.2
+            ],
+            [
+              75,
+              179
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B46",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "92, Lake View Road · fictional",
+        "parcel_id": "P46",
+        "building_id": "B46",
+        "name": "Lake View House 46",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B46-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B46",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P46",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              108,
+              179
+            ],
+            [
+              124,
+              179
+            ],
+            [
+              124,
+              198
+            ],
+            [
+              118.24,
+              198
+            ],
+            [
+              118.24,
+              196.2
+            ],
+            [
+              108,
+              196.2
+            ],
+            [
+              108,
+              179
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B47",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "94, Lake View Road · fictional",
+        "parcel_id": "P47",
+        "building_id": "B47",
+        "name": "Lake View House 47",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B47-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B47",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P47",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              135,
+              179
+            ],
+            [
+              151,
+              179
+            ],
+            [
+              151,
+              198
+            ],
+            [
+              145.24,
+              198
+            ],
+            [
+              145.24,
+              196.2
+            ],
+            [
+              135,
+              196.2
+            ],
+            [
+              135,
+              179
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B48",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "96, Lake View Road · fictional",
+        "parcel_id": "P48",
+        "building_id": "B48",
+        "name": "Lake View House 48",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B48-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B48",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P48",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -22,
+              -22
+            ],
+            [
+              -5,
+              -22
+            ],
+            [
+              -5,
+              -3
+            ],
+            [
+              -11.12,
+              -3
+            ],
+            [
+              -11.12,
+              -4.8
+            ],
+            [
+              -22,
+              -4.8
+            ],
+            [
+              -22,
+              -22
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B49",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "98, Lake View Road · fictional",
+        "parcel_id": "P49",
+        "building_id": "B49",
+        "name": "Lake View House 49",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "B49-shape-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-ANCHOR-B49",
+        "parcel_2d_demo_id": "DEMO-2D-ANCHOR-P49",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              168,
+              -22
+            ],
+            [
+              185,
+              -22
+            ],
+            [
+              185,
+              -3
+            ],
+            [
+              178.88,
+              -3
+            ],
+            [
+              178.88,
+              -4.8
+            ],
+            [
+              168,
+              -4.8
+            ],
+            [
+              168,
+              -22
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

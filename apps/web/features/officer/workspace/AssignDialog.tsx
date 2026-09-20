@@ -1,4 +1,5 @@
 "use client";
+import { documentProfileFormats } from "@/lib/document-formats";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
@@ -27,7 +28,7 @@ export default function AssignDialog({
     router = useRouter();
   const eligible =
     detail?.sources.filter((s) =>
-      ["plan-pdf-v1", "plan-png-v1", "levels-csv-v1"].includes(s.profile),
+      Object.hasOwn(documentProfileFormats, s.profile),
     ) || [];
   const selected = ids || eligible.map((s) => s.id);
   return (

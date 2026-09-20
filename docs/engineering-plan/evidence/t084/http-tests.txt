@@ -1,0 +1,14 @@
+✔ saved dataset queue action preserves durable identity without claiming publication (0.416167ms)
+✔ local API retains both source packages and replay creates no duplicates (1108.194916ms)
+✔ invalid packages fail without rows and cross-origin requests are refused (8.134417ms)
+✔ same-origin loopback writes use the validated browser Host, preserving port and cross-site checks (0.551208ms)
+✔ saved dataset processing resumes at the ML workflow without a publication claim (0.417875ms)
+✔ ML API bounds JSON, rejects foreign requests and scopes retained artifacts (487.82525ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1322.411875

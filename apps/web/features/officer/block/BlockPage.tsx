@@ -1,7 +1,6 @@
 "use client";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SavedSceneViewport from "../../studio/product/SavedSceneViewport";
 import { useBlock } from "./useBlock";
 import { BlockLeftRail, BlockInspector } from "./BlockRails";
@@ -11,6 +10,7 @@ import DataTools from "./DataTools";
 import {
   Badge,
   Button,
+  Dialog,
   EmptyState,
   ErrorState,
   Icon,
@@ -20,10 +20,6 @@ import { request, useMutation } from "../shared/hooks";
 import { routes } from "../shared/routes";
 import "./block.css";
 import "./data-tools.css";
-const AreaViewer = dynamic(() => import("@/components/AreaViewer"), {
-  ssr: false,
-  loading: () => <LoadingState label="Preparing 3D block" />,
-});
 export default function BlockPage({ areaId }: { areaId: string }) {
   const block = useBlock(areaId);
   const [tools, setTools] = useState<"import" | "export" | null>(null),
@@ -31,6 +27,10 @@ export default function BlockPage({ areaId }: { areaId: string }) {
     [leftOpen, setLeftOpen] = useState(false),
     [inspectorOpen, setInspectorOpen] = useState(true),
     [explode,setExplode]=useState(0);
+  const checksButton = useRef<HTMLButtonElement>(null);
+  const inspectorButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => { setInspectorOpen(true); }, [block.selectedId, block.recordId]);
+  const closeChecks = () => { block.setPreferences({ findingsOpen: false }); checksButton.current?.focus(); };
   const check = useMutation();
   const context = block.context.data;
   const runCheck = () => {
@@ -55,7 +55,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
         ) : (
           <LoadingState label="Loading the block" />
         )}
-        <Link className="ui-button" href={routes.home}>
+        <Link className="ui-button" href={routes.block()}>
           Choose another block
         </Link>
       </main>
@@ -64,7 +64,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
     <main className="ui-block-page">
       <div className="ui-contextbar">
         <div className="ui-block-title">
-          <Link href={routes.home} aria-label="All blocks">
+          <Link href={routes.block()} aria-label="All blocks">
             <Icon name="back" />
           </Link>
           <div>
@@ -78,32 +78,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
         </div>
         <div className="ui-context-actions">
 
-          <Button
-            icon="upload"
-            onClick={() => {
-              setPackageId(undefined);
-              setTools("import");
-            }}
-          >
-            Import
-          </Button>
-          <Button
-            icon="check"
-            variant="primary"
-            disabled={check.busy}
-            onClick={runCheck}
-          >
-            {check.busy ? "Checking…" : "Run check"}
-          </Button>
-          <Button
-            icon="warning"
-            aria-pressed={block.showConflicts}
-            disabled={!block.conflictCount}
-            onClick={block.toggleConflicts}
-          >
-            {block.showConflicts ? "Hide conflicts" : "Show conflicts"}
-            {block.conflictCount ? ` (${block.conflictCount})` : ""}
-          </Button>
+          <Link className="ui-button" href={routes.addFiles(areaId)}><Icon name="upload" />Add files</Link>
           <Button icon="download" onClick={() => setTools("export")}>
             Export
           </Button>
@@ -117,9 +92,8 @@ export default function BlockPage({ areaId }: { areaId: string }) {
         />
       )}
       <div
-        className={`ui-block-grid ${leftOpen ? "ui-left-open" : ""} ${inspectorOpen ? "" : "ui-inspector-closed"}`}
+        className={`ui-block-grid ui-focused-map ${block.preferences.findingsOpen || (inspectorOpen && block.selected) ? "" : "ui-inspector-closed"}`}
       >
-        <BlockLeftRail block={block} onClose={() => setLeftOpen(false)} />
         <section className="ui-map-column" aria-label="Shared block map">
           <div className="ui-map-stage">
             <div className="ui-map-toolbar">
@@ -140,30 +114,11 @@ export default function BlockPage({ areaId }: { areaId: string }) {
               </div>
               <Button
                 className="ui-mobile-layers"
+                aria-expanded={leftOpen}
                 icon="layers"
                 onClick={() => setLeftOpen(!leftOpen)}
               >
                 Layers
-              </Button>
-              <Button
-                icon="layers"
-                aria-pressed={block.preferences.underground}
-                onClick={() =>
-                  block.setPreferences({
-                    underground: !block.preferences.underground,
-                  })
-                }
-              >
-                Underground
-              </Button>
-              <Button
-                icon="eye"
-                aria-pressed={block.preferences.labels}
-                onClick={() =>
-                  block.setPreferences({ labels: !block.preferences.labels })
-                }
-              >
-                Labels
               </Button>
               <span className="ui-toolbar-spacer" />
               <Button icon="expand" onClick={() => block.navigate("fit")}>
@@ -271,21 +226,20 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                   Utilities
                 </span>
               </div>
-              {!inspectorOpen && (
-                <Button icon="info" onClick={() => setInspectorOpen(true)}>
-                  Inspector
-                </Button>
+              {!inspectorOpen && block.selected && (
+                <button className="ui-button" ref={inspectorButton} onClick={() => setInspectorOpen(true)}><Icon name="info" />Inspector</button>
               )}
-              <Button
-                icon="warning"
-                aria-pressed={block.preferences.findingsOpen}
+              <button
+                className="ui-button"
+                ref={checksButton}
+                aria-expanded={block.preferences.findingsOpen}
                 onClick={() =>
                   block.setPreferences({
                     findingsOpen: !block.preferences.findingsOpen,
                   })
                 }
               >
-                Findings{" "}
+                <Icon name="warning" />Checks{" "}
                 <Badge
                   tone={context.latestCheck?.stale ? "warning" : "neutral"}
                 >
@@ -293,7 +247,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                     ? "Out of date"
                     : (context.latestCheck?.findings.length ?? "Not checked")}
                 </Badge>
-              </Button>
+              </button>
             </div>
             {block.finding && (
               <div className="ui-active-finding">
@@ -312,7 +266,6 @@ export default function BlockPage({ areaId }: { areaId: string }) {
               </div>
             )}
           </div>
-          {block.preferences.findingsOpen && <FindingsTray block={block} />}
           <footer className="ui-map-status">
             {context.features.some((feature) =>
               String(feature.properties.source_provider || "").includes("OpenStreetMap"),
@@ -331,10 +284,18 @@ export default function BlockPage({ areaId }: { areaId: string }) {
             </span>
           </footer>
         </section>
-        {inspectorOpen && (
+        {block.preferences.findingsOpen ? (
+          <aside className="ui-block-inspector ui-checks-panel" aria-label="Block checks">
+            <div className="ui-check-actions">
+              <Button icon="check" disabled={check.busy} onClick={runCheck}>{check.busy ? "Checking…" : "Run check"}</Button>
+              <Button icon="eye" aria-pressed={block.showConflicts} disabled={!block.conflictCount} onClick={block.toggleConflicts}>{block.showConflicts ? "Hide conflicts" : "Show conflicts"}</Button>
+            </div>
+            <FindingsTray block={block} onClose={closeChecks} />
+          </aside>
+        ) : inspectorOpen && block.selected && (
           <BlockInspector
             block={block}
-            onClose={() => setInspectorOpen(false)}
+            onClose={() => { setInspectorOpen(false); requestAnimationFrame(() => inspectorButton.current?.focus()); }}
             onImport={(id) => {
               setPackageId(id);
               setTools("import");
@@ -342,6 +303,9 @@ export default function BlockPage({ areaId }: { areaId: string }) {
           />
         )}
       </div>
+      <Dialog open={leftOpen} title="Map layers & properties" onClose={() => setLeftOpen(false)}>
+        <BlockLeftRail block={block} onClose={() => { setLeftOpen(false); setInspectorOpen(true); }} />
+      </Dialog>
       <DataTools
         open={tools !== null}
         initialMode={tools || "import"}
