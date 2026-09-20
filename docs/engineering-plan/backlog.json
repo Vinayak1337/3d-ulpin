@@ -3,7 +3,7 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.5",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T090_searchable_identities_and_simplified_map_deployed",
+  "current_action": "T091_mobile_scroll_and_sidebar_verification",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
   "next_task": "T080",
@@ -2677,6 +2677,16 @@
       "plan_path": "tasks/T090_PLAN.md",
       "execution_state": "persisted_identifiers_global_search_and_hosted_map_verified",
       "result_path": "tasks/T090_RESULT.md"
+    },
+    {
+      "id": "T091",
+      "title": "Mobile scrolling and reachable map sidebars",
+      "status": "In Progress",
+      "depends_on": [
+        "T090"
+      ],
+      "plan_path": "tasks/T091_PLAN.md",
+      "execution_state": "implementing_and_browser_verifying"
     }
   ],
   "maintenance": [

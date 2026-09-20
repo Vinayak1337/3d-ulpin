@@ -17,6 +17,7 @@ import {PropertyContext,FloorRegister,RegisterToolbar,type RegisterMode} from '.
 import {ImportReceipt} from './ImportReceipt';
 import {demoDataset,demoDatasets,demoDatasetUrl} from './demo-datasets';
 import './workbench.css';
+import './responsive.css';
 
 const MapViewport=dynamic(()=>import('../MapViewport').then(m=>m.MapViewport),{ssr:false});
 type Imported=Awaited<ReturnType<typeof normalizeReferencePackage>>;
