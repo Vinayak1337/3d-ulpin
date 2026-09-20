@@ -1,0 +1,23 @@
+{
+  "runtimeCommit": "05b76c2",
+  "activeDatasets": 2,
+  "datasets": [
+    {
+      "datasetId": "d708811f-936a-4f9a-bad2-4b51f7465dd1",
+      "originalUnchanged": true,
+      "buildingAssignments": 49,
+      "floorAssignments": 184,
+      "method": "application-3d-v1"
+    },
+    {
+      "datasetId": "f660e739-fc33-4e48-861a-439ab2555058",
+      "originalUnchanged": true,
+      "buildingAssignments": 32,
+      "floorAssignments": 5,
+      "method": "application-3d-v1"
+    }
+  ],
+  "hostedFloorSearchVerified": true,
+  "finalBuildPassed": true,
+  "sourceFieldTest": "Isolated local synthetic preview only; never saved or uploaded to hosted app"
+}

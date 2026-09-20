@@ -3,7 +3,7 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.5",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T090_identity_assignment_and_map_simplification",
+  "current_action": "T090_searchable_identities_and_simplified_map_deployed",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
   "next_task": "T080",
@@ -2670,12 +2670,13 @@
     {
       "id": "T090",
       "title": "Source ULPIN mapping, persisted 3D identity and map clarity",
-      "status": "In progress",
+      "status": "Implemented",
       "depends_on": [
         "T089"
       ],
       "plan_path": "tasks/T090_PLAN.md",
-      "execution_state": "implementing"
+      "execution_state": "persisted_identifiers_global_search_and_hosted_map_verified",
+      "result_path": "tasks/T090_RESULT.md"
     }
   ],
   "maintenance": [
