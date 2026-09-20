@@ -1,3 +1,7 @@
+## Current — T091 mobile scrolling and sidebars
+
+Responsive map, explorer, inspector, register and import dialog fixes are implemented and deployed. Browser verified phone, landscape and short desktop layouts; all property/floor controls remain reachable. [Result](tasks/T091_RESULT.md). Source data and identities are unchanged. Point-cloud generation remains a separate gap: the existing sample LAS/LAZ is retained and does not currently generate the map geometry.
+
 ## Current — T083 datasets persisted
 
 Lake View and Shiv Vihar are saved in local linked PostgreSQL and object storage, with immutable canonical snapshots, source bindings and verified original bytes. Map and Batches list actual saved UUIDs. Duplicate saves reuse records; refresh/server restart reopen stored packages. Browser Save action and floor register verified. See [result](tasks/T083_RESULT.md). Saved fictional records still require review; T080 broader processing/publication remains open.
