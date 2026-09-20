@@ -3,7 +3,7 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.5",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T089_publish_and_hosted_ui_import",
+  "current_action": "T089_main_deployed_and_hosted_ui_imports_verified",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
   "next_task": "T080",
@@ -2659,8 +2659,13 @@
     {
       "id": "T089",
       "title": "Publish main and import fresh hosted demo through UI",
-      "status": "In Progress",
-      "plan": "tasks/T089_PLAN.md"
+      "status": "Implemented",
+      "depends_on": [
+        "T088"
+      ],
+      "plan_path": "tasks/T089_PLAN.md",
+      "result_path": "tasks/T089_RESULT.md",
+      "execution_state": "main_deployed_fresh_browser_imports_and_actual_ml_verified"
     }
   ],
   "maintenance": [

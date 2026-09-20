@@ -1,0 +1,21 @@
+{
+  "datasetId": "d708811f-936a-4f9a-bad2-4b51f7465dd1",
+  "runs": [
+    {
+      "id": "34e8d65a-9613-46c0-8499-43335af6eaed",
+      "task": "building",
+      "status": "succeeded",
+      "regions": 10,
+      "actualInference": true,
+      "model": "rfdetr-satellite-buildings-onnx-v1"
+    },
+    {
+      "id": "24d41c06-719e-4e5e-9f2d-3bf2d823faa8",
+      "task": "floor-plan",
+      "status": "succeeded",
+      "regions": 24,
+      "actualInference": true,
+      "model": "cubicasa5k-rooms-onnx-v1"
+    }
+  ]
+}

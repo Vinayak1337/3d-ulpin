@@ -44,3 +44,7 @@ Conflicts are **not automatically repaired**. Two overlapping footprints can rep
 ## Shiv Vihar
 
 `shiv-vihar-complete.zip` is a byte-identical copy of the supplied `provided-master.zip` package. Import it separately through the same file chooser, Review on map, then Save dataset. It contains 32 buildings, five supplied floors, 26 schedule spaces and five declared sources. This package is synthetic too. Missing floor geometry, residents and official 2D ULPINs remain unavailable.
+
+## Preferred upload entry
+
+Open **Add files** from Batches or Maps, choose a complete ZIP, verify the **Review dataset** counts, then **Save dataset → Open map**. Manifest-backed packages are recognized automatically; raw Shapefile ZIPs retain the GIS inspection flow. Map → Import remains supported. An identical file reuses its saved dataset; an archived dataset becomes active again.

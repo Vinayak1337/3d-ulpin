@@ -135,3 +135,9 @@ Concrete example: file A says B12 has footprint P and 3 floors; file B has the s
 - “Saved means approved, and zero findings means survey-accurate.”
 
 Code anchors: `features/spatial/reference-import/browser.ts`, `lib/server/spatial-datasets.ts`, `lib/server/spatial-dataset-db.ts`, `lib/server/dataset-ml.ts`, `services/geo/ml-models.json`, and `docs/local-spatial-extraction.md`. Paths under `features`/`lib` are relative to `apps/web`. Detailed dated implementation evidence is in `docs/engineering-plan/tasks/T083_RESULT.md` through `T088_RESULT.md`; older audits may predate durable saving and later ML integration.
+
+## Verified hosted demonstration
+
+Open https://168-144-77-211.sslip.io/studio/datasets . Lake View and Shiv Vihar were imported through the hosted Add files chooser into an initially empty store. Fresh hosted RF-DETR and CubiCasa runs succeeded: 10 building candidates and 24 floor-plan regions. These do not imply complete or accurate recovery of all buildings/rooms. Public test samples are separate from This dataset in Present mode. The Safari label-mask display issue has been fixed and checked in both modes.
+
+The existing local Lake View entry was archived at your request so you can show Add files → Save dataset → Open map. Identical-file saving reactivates that receipt; it does not create another independent Lake View. The hosted site retains both imported datasets.
