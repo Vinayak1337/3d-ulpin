@@ -3,7 +3,7 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.5",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T091_mobile_scroll_and_sidebar_verification",
+  "current_action": "T091_mobile_scroll_and_sidebar_fixes_deployed",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
   "next_task": "T080",
@@ -2681,12 +2681,13 @@
     {
       "id": "T091",
       "title": "Mobile scrolling and reachable map sidebars",
-      "status": "In Progress",
+      "status": "Implemented",
       "depends_on": [
         "T090"
       ],
       "plan_path": "tasks/T091_PLAN.md",
-      "execution_state": "implementing_and_browser_verifying"
+      "execution_state": "responsive_browser_verified_and_hosted_build_deployed",
+      "result_path": "tasks/T091_RESULT.md"
     }
   ],
   "maintenance": [
