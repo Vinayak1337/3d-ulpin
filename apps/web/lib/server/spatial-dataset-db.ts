@@ -16,5 +16,10 @@ export function ensureSpatialDatasets(){
  created_at timestamptz NOT NULL DEFAULT now()
  )`);
  await client.query('ALTER TABLE spatial_datasets ADD COLUMN IF NOT EXISTS archived_at timestamptz');
+ await client.query('ALTER TABLE spatial_datasets ADD COLUMN IF NOT EXISTS identifiers_version integer');
+ await client.query(`CREATE TABLE IF NOT EXISTS spatial_dataset_identifiers (
+ dataset_id uuid NOT NULL REFERENCES spatial_datasets(id), object_id text NOT NULL,
+ identifier text NOT NULL UNIQUE, record jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY(dataset_id,object_id))`);
  }).catch(error=>{ready=undefined;throw error;});
 }

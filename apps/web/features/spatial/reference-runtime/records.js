@@ -1,4 +1,4 @@
-/** Read-only record projection. IDs, floor records and people must already exist in the source. */
+/** Read-only projection of supplied records and separately persisted application identifiers. */
 export function createSceneRecords(scene) {
   const list=value=>Array.isArray(value)?value:[];
   const text=value=>typeof value==='string'&&value.trim()?value.trim():null;
@@ -24,6 +24,11 @@ export function createSceneRecords(scene) {
   function ownTwoD(id){
     const o=objectById.get(id),found=ownAssertions(id).filter(a=>twoDSchemes.has(a.scheme)).map(a=>({value:a.value,scheme:a.scheme,status:a.status||'reported',issuer:a.issuer||null,synthetic:['fictional','synthetic','prototype'].includes(a.status)||scene?.metadata?.classification==='synthetic'}));
     const authored=text(o?.attributes?.parcel2dDemoId);if(authored&&!found.some(a=>a.value===authored))found.push({value:authored,scheme:'2d_ulpin',status:'fictional',issuer:null,synthetic:true});
+    // Explicit source fields only. Numeric values cannot preserve leading zeroes.
+    for(const [key,value] of Object.entries(o?.attributes||{})){
+      if(!['ulpin','ulpin2d','2dulpin','parcelulpin','parcel2dulpin','official2dulpin'].includes(key.toLowerCase().replaceAll('_','').replaceAll('-','')))continue;
+      if(typeof value==='string'&&/^[A-Za-z0-9]{14}$/.test(value)&&!found.some(a=>a.value===value))found.push({value,scheme:'2d_ulpin',status:'reported',issuer:null,synthetic:scene?.metadata?.classification==='synthetic'});
+    }
     return found;
   }
   function parcels(id){
@@ -42,7 +47,7 @@ export function createSceneRecords(scene) {
     if(identityCache.has(id))return identityCache.get(id);
     const object=objectById.get(id);if(!object)return null;
     const supplied=ownAssertions(id),asserted=supplied.find(a=>threeDSchemes.has(a.scheme));
-    const threeDId=text(asserted?.value)||text(object.attributes?.internal3dId)||text(object.systemId);
+    const threeDId=text(object.attributes?.application3dId)||text(asserted?.value)||text(object.attributes?.internal3dId)||text(object.systemId);
     const twoDIds=[...ownTwoD(id),...parcels(id).filter(p=>p.id!==id).flatMap(p=>ownTwoD(p.id))].filter((a,i,all)=>all.findIndex(b=>b.value===a.value)===i);
     const classification=object.classification||object.attributes?.classification||scene?.metadata?.classification||'unknown';
     const value={objectId:id,threeDId,twoDIds,primary:threeDId||id,label:object.label||id,classification,synthetic:classification==='synthetic'||['fictional','synthetic','prototype'].includes(asserted?.status),internal:Boolean(threeDId),assertions:supplied};identityCache.set(id,value);return value;
@@ -64,7 +69,7 @@ export function createSceneRecords(scene) {
       if(!isBuilding(object)&&!isFloor(object)&&!['space','unit'].includes(object.type))continue;
       const record=identity(object.id);
       if(!q){if(isBuilding(object))add(object,'building',record.primary);continue;}
-      const ownMatch=[record.threeDId,object.id,object.label,object.attributes?.address].find(v=>typeof v==='string'&&v.toLocaleLowerCase().includes(q));
+      const ownMatch=[record.threeDId,...list(object.attributes?.identifierAliases),...record.assertions.map(a=>a.value),object.systemId,object.id,object.label,object.attributes?.address].find(v=>typeof v==='string'&&v.toLocaleLowerCase().includes(q));
       if(ownMatch)add(object,isFloor(object)?'floor':isBuilding(object)?'building':'space',ownMatch);
       else if(isBuilding(object)){const twoD=record.twoDIds.find(a=>a.value.toLocaleLowerCase().includes(q));if(twoD)add(object,'parcel',twoD.value);}
     }

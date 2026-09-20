@@ -53,7 +53,7 @@ flowchart LR
 - **Redis + Celery + dispatcher + private Python service**: queued processing. ONNX models run on the server; model artifacts are hash-pinned. A failed job is distinct from a damaged source.
 - **Source revisions / geometry revisions / receipts**: preserve provenance in supported workflows. The saved package importer currently stores immutable revision 1; it does not implement general merging of later overlapping datasets.
 - **Coordinates**: named local metre frame plus vertical benchmark. Local display zero is not sea-level elevation. Pixels require documented calibration before claiming metres. Two control pairs provide a similarity transform, not a correction for arbitrary perspective distortion.
-- **Identities**: building/floor IDs are demo/internal identifiers. A display floor ID can use `buildingId:floorNumber`; it is not a government-issued 3D ULPIN standard. Preserve stable identity independently of changes in labels and geometry; complete cross-dataset lifecycle handling remains work.
+- **Identities**: each imported building gets a persisted application assignment `3D-` plus 14 base32 characters. The token derives from SHA-256 of the immutable package fingerprint and canonical building ID; database uniqueness rejects collisions. Floors use the assigned building ID plus `:sourceLevel`, including ground 0 and negative basements. Reopening or retrying the same package reuses assignments; original identifiers remain searchable aliases. These are not government-issued or ECCMA-derived 3D ULPINs. Geometry is linked by canonical object ID, not decoded from the token. Different packages still require reviewed cross-source reconciliation.
 
 ## The bulk-data answer you should give
 
@@ -90,7 +90,7 @@ Concrete example: file A says B12 has footprint P and 3 floors; file B has the s
 | No official ID in a file? | Preserve a scoped source/internal identifier and mark official identity unavailable. Never invent an official ULPIN. |
 | Two sources disagree? | Preserve both source assertions and review the discrepancy; more complete does not automatically mean more correct. General automated reconciliation is not built. |
 | What happens if a building is demolished or subdivided? | It needs retained historical identity/revisions and explicit successor relationships. Do not claim the demo has a complete lifecycle workflow. |
-| Is `building:floor` an official standard? | No; it is the requested demo identifier convention. Official issuance/interoperability needs the applicable authority's specification. |
+| Is `building:floor` an official standard? | No; it is the application floor identifier convention. Official issuance/interoperability needs the applicable authority's specification. |
 | How do you know who lives there? | Supplied occupant records. ML cannot infer residents from a roof or floor plan. |
 | Does resident mean owner? | No. Occupancy, parties, asserted rights and geometry are separate. |
 | Can your system settle ownership disputes? | No. It can expose evidence and potential geometric inconsistencies for authorized review. |
@@ -141,3 +141,11 @@ Code anchors: `features/spatial/reference-import/browser.ts`, `lib/server/spatia
 Open https://168-144-77-211.sslip.io/studio/datasets . Lake View and Shiv Vihar were imported through the hosted Add files chooser into an initially empty store. Fresh hosted RF-DETR and CubiCasa runs succeeded: 10 building candidates and 24 floor-plan regions. These do not imply complete or accurate recovery of all buildings/rooms. Public test samples are separate from This dataset in Present mode. The Safari label-mask display issue has been fixed and checked in both modes.
 
 The existing local Lake View entry was archived at your request so you can show Add files → Save dataset → Open map. Identical-file saving reactivates that receipt; it does not create another independent Lake View. The hosted site retains both imported datasets.
+
+## Identity implementation (T090)
+
+2D ULPIN is a source field, never assigned by this app. Explicit `ulpin`, `ulpin_2d`, `2d_ulpin`, `parcel_ulpin`, `parcel2dUlpIn` and `official_2d_ulpin` string fields are supported in normalized object attributes (GeoJSON properties and supplied master/normalized records preserve these). Preserve leading zeros; a 14-character format check does not verify government issuance. DoLR describes ULPIN as 14-character alphanumeric: https://dolr.gov.in/en/ulpin/. A parcel ID is not a building ID: multiple buildings can share one parcel, and search returns each linked building. A ULPIN alone does not fetch a government record; a source dataset or authorized registry integration is still needed.
+
+The current Shiv Vihar ZIP contains no ULPIN field. Lake View contains legacy `DEMO-2D-…` references, not 14-character source ULPINs. Both correctly show “Not supplied” in the map, while originals and references remain available under Sources. No authentic-looking official numbers were invented.
+
+Assignment rows live in `spatial_dataset_identifiers`, separate from immutable `spatial_datasets.normalized_source`, canonical input, digest and original S3 objects. Existing saved datasets are indexed by the same allocator on first use; full uploads are checked for ambiguous floor numbering before saving. Global search opens the correct saved dataset, building and floor. This does not establish ownership or certify topology.

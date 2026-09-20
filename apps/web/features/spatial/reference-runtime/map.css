@@ -160,3 +160,23 @@
 .bm-canvas canvas:active{cursor:grabbing}
 .bm-canvas:focus-visible{outline:2px solid #386b57;outline-offset:-3px}
 @media(max-width:850px){.bm-navigation{bottom:20px}.bm-navigation-hint{display:none}}
+
+/* T090: identity first; supporting records are disclosed on demand. */
+.bm-inspector-heading{padding:16px 18px 12px}
+.bm-inspector-heading h2{font-size:17px;line-height:1.45;letter-spacing:.025em;overflow-wrap:anywhere}
+.bm-id-kind{font-size:10px;letter-spacing:.08em;color:#596e65}
+.bm-heading-parcel{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:12px!important;font-size:12px!important}
+.bm-heading-parcel span{color:#68796f;font-size:10px;letter-spacing:.04em}
+.bm-inspector-tabs{padding:0 18px;gap:22px}
+.bm-inspector-tabs button{flex:0 0 auto;padding:12px 0;font-size:12px}
+.bm-property-chips{margin-top:12px}
+.bm-neutral-note{padding:10px 0;background:none;border:0;color:#68776f;font-size:11px}
+.bm-metric-grid{background:none;gap:12px;border-bottom:1px solid #e4e9e4;padding-bottom:14px}
+.bm-metric-grid>div{background:none;border:0;padding:0}
+.bm-uncertainty{font-size:11px;line-height:1.6;color:#7b6544}
+.bm-inspector-scroll{padding:16px 18px}
+.bm-inspector-footer{padding:12px 18px}
+.bm-model-controls .bm-floor-options p{overflow-wrap:anywhere}
+
+.bm-root:not(.bm-inspector-closed) .bm-findings-tray{display:none}
+.bm-id-kind{margin-top:0}
