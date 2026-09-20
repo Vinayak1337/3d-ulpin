@@ -38,6 +38,7 @@ export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
       d.source_count,greatest(d.created_at,j.created_at,j.completed_at),'SAVED',j.status,false,NULL::jsonb,NULL::int,NULL::int,NULL::uuid,NULL::int,NULL::jsonb
     FROM spatial_datasets d
     LEFT JOIN LATERAL (SELECT status,created_at,completed_at FROM jobs WHERE case_id=d.case_id AND operation='dataset-spatial-inference' ORDER BY CASE WHEN status IN ('queued','running') THEN 0 ELSE 1 END,created_at DESC LIMIT 1) j ON true
+    WHERE d.archived_at IS NULL
   ), filtered AS (SELECT * FROM work WHERE
     ($1='' OR strpos(lower(name||' '||coalesce("areaName",'')||' '||id::text),lower($1))>0)
     AND ($2='all' OR ($2='recorded' AND "recordedHistory") OR ($2='processing' AND "jobStatus" IN ('queued','running','dispatched','retrying')))

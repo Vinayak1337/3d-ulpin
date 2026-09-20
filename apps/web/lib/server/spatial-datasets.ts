@@ -8,7 +8,7 @@ import {AppError,notFound} from './errors';
 import type {SavedSpatialDataset} from '../spatial-datasets';
 const columns=`id,name,original_name AS "originalName",sha256,digest,revision,classification,building_count AS "buildingCount",floor_count AS "floorCount",source_count AS "sourceCount",created_at AS "createdAt"`;
 export async function listSpatialDatasets():Promise<SavedSpatialDataset[]>{
- await ensureSpatialDatasets();return (await query<SavedSpatialDataset>(`SELECT ${columns} FROM spatial_datasets ORDER BY created_at,id`)).rows;
+ await ensureSpatialDatasets();return (await query<SavedSpatialDataset>(`SELECT ${columns} FROM spatial_datasets WHERE archived_at IS NULL ORDER BY created_at,id`)).rows;
 }
 export async function getSpatialDataset(id:string){
  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))notFound('Dataset not found.');
@@ -34,7 +34,7 @@ export async function saveSpatialDataset(name:string,bytes:Uint8Array):Promise<S
  return originalAttempt('sources',packageSourceId,remember=>transaction(async client=>{
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`spatial-dataset:${hash}`]);
   const prior=(await client.query<SavedSpatialDataset>(`SELECT ${columns} FROM spatial_datasets WHERE sha256=$1`,[hash])).rows[0];
-  if(prior)return prior;
+  if(prior){await client.query('UPDATE spatial_datasets SET archived_at=NULL WHERE id=$1',[prior.id]);return prior;}
   const frame=scene.frames[0];
   await client.query('INSERT INTO cases(id,name,description,frame) VALUES($1,$2,$3,$4)',[caseId,scene.metadata.title,'Saved fictional spatial dataset. Source assertions require review; no registry publication.',{...frame,horizontalUnit:'m',verticalUnit:'m',benchmark:frame.verticalDatum}]);
   async function store(sourceId:string,path:string,data:Uint8Array,mime:string,inspection:unknown){
@@ -53,4 +53,10 @@ export async function saveSpatialDataset(name:string,bytes:Uint8Array):Promise<S
   const result=await client.query<SavedSpatialDataset>(`INSERT INTO spatial_datasets(id,case_id,original_source_id,name,original_name,sha256,digest,classification,building_count,floor_count,source_count,normalized_source,canonical_input,snapshot_manifest,source_bindings,diagnostics) VALUES($1,$2,$3,$4,$5,$6,$7,'synthetic',$8,$9,$10,$11,$12,$13,$14,$15) RETURNING ${columns}`,[id,caseId,packageSourceId,scene.metadata.title,name,hash,scene.canonicalSnapshotDigest,scene.objects.filter(o=>o.type==='building').length,scene.objects.filter(o=>o.type==='floor').length,scene.sources.length,JSON.parse(imported.receipt.normalizedText),imported.canonical.input,imported.canonical.snapshot.manifest,JSON.stringify(bindings),JSON.stringify(imported.canonical.diagnostics)]);
   return result.rows[0];
  }));
+}
+
+/** Remove only from active directories; preserve originals and historical links. */
+export async function archiveSpatialDataset(id:string){
+ await getSpatialDataset(id);
+ await query('UPDATE spatial_datasets SET archived_at=coalesce(archived_at,now()) WHERE id=$1',[id]);
 }
