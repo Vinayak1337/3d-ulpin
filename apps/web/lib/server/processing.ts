@@ -4,12 +4,17 @@ import { query, transaction } from "./db";
 import { settings } from "./config";
 import { fingerprint, lockCase, recordEvent } from "./domain";
 import { buildResultSchema, inspectionSchema } from "./validation";
+import { failSpatialMlJob, ingestSpatialMlJob, markSpatialMlRunning } from "./spatial-ml";
+
+import {failDatasetMl,ingestDatasetMl,markDatasetMlRunning} from './dataset-ml';
+const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 
 type WorkerReply = {
   jobId: string;
   status: "queued" | "running" | "succeeded" | "failed";
   result?: unknown;
   error?: string;
+  errorCode?: string;
 };
 async function geo(path: string, init: RequestInit = {}): Promise<WorkerReply> {
   const response = await fetch(`${settings.geoUrl}${path}`, {
@@ -27,6 +32,9 @@ async function geo(path: string, init: RequestInit = {}): Promise<WorkerReply> {
 }
 
 async function failJob(id: string, message: string) {
+  const operation = (await query("SELECT operation FROM jobs WHERE id=$1", [id])).rows[0]?.operation;
+  if (operation === "dataset-spatial-inference") return failDatasetMl(id,message);
+  if (operation === "spatial-inference") return failSpatialMlJob(id, message);
   await transaction(async (client) => {
     const job = (await client.query("SELECT * FROM jobs WHERE id=$1", [id]))
       .rows[0];
@@ -50,6 +58,9 @@ async function failJob(id: string, message: string) {
 }
 
 export async function ingestJob(id: string, result: unknown) {
+  const operation = (await query("SELECT operation FROM jobs WHERE id=$1", [id])).rows[0]?.operation;
+  if (operation === "dataset-spatial-inference") return ingestDatasetMl(id,result);
+  if (operation === "spatial-inference") return ingestSpatialMlJob(id, result);
   await transaction(async (client) => {
     const job = (await client.query("SELECT * FROM jobs WHERE id=$1", [id]))
       .rows[0];
@@ -164,7 +175,7 @@ export async function dispatchTick(): Promise<number> {
             method: "POST",
             body: JSON.stringify({
               jobId: job.id,
-              operation: job.operation,
+              operation: isInference(job.operation)?"spatial-inference":job.operation,
               input: job.payload,
             }),
           });
@@ -172,10 +183,10 @@ export async function dispatchTick(): Promise<number> {
             throw new Error("Processor acknowledged a different job.");
           await transaction(async (client) => {
             await client.query(
-              "UPDATE jobs SET status='running',dispatched_at=now(),next_attempt_at=now(),error=NULL WHERE id=$1 AND status IN ('queued','running')",
-              [job.id],
+              "UPDATE jobs SET status=$2,dispatched_at=now(),next_attempt_at=now(),error=NULL WHERE id=$1 AND status IN ('queued','running')",
+              [job.id, isInference(job.operation) ? "queued" : "running"],
             );
-            if (job.source_id)
+            if (job.source_id && !isInference(job.operation))
               await client.query(
                 "UPDATE sources SET status='processing' WHERE id=$1 AND status='received'",
                 [job.source_id],
@@ -187,12 +198,19 @@ export async function dispatchTick(): Promise<number> {
           throw new Error("Processor returned a different job.");
         if (result.status === "succeeded")
           await ingestJob(job.id, result.result);
-        else if (result.status === "failed")
-          await failJob(
-            job.id,
-            result.error || "Processing failed. Inspect the source and retry.",
-          );
-        else if (Date.now() - new Date(job.created_at).getTime() > 120000)
+        else if (result.status === "failed") {
+          if (job.operation === "spatial-inference") await failSpatialMlJob(job.id, result.error || "Local inference failed. Retry this item after checking its source and model.", result.errorCode);
+          else await failJob(job.id, result.error || "Processing failed. Inspect the source and retry.");
+        } else if (isInference(job.operation)) {
+          // Waiting behind another batch item is not inference execution time.
+          if (result.status === "running") {
+            if(job.operation==='dataset-spatial-inference')await markDatasetMlRunning(job.id);else await markSpatialMlRunning(job.id);
+            if (job.started_at && Date.now() - new Date(job.started_at).getTime() > 120000) {
+              const message="Local inference exceeded its two-minute execution limit. The original remains available; retry this item.";
+              if(job.operation==='spatial-inference')await failSpatialMlJob(job.id,message,'INFERENCE_TIMEOUT');else await failJob(job.id,message);
+            }
+          }
+        } else if (Date.now() - new Date(job.created_at).getTime() > 120000)
           await failJob(
             job.id,
             "Processing exceeded two minutes. Check the worker and retry.",

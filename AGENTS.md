@@ -1,6 +1,18 @@
 # 3D ULPIN hackathon implementation
 
-Latest user priority (T058): T057 was rejected visually. First copy the actual
+Latest steering: first correct the reference image pack UX (T069), then resume
+T064–T068 app changes. See design/officer-studio-v3/DESIGN_BRIEF.md.
+
+Latest user priority (20 September 2026): Studio is the sole officer interface.
+Audit and simplify the complete source-to-record workflow for SIH 26011, safely
+automating source metadata and removing redundant presentation. Preserve all
+originals, identities, revision history and unique processing capabilities.
+Replace old pages with thin Studio URL resolvers; delete proven-unused UI code.
+Execute T062–T068 one bounded task at a time with fresh Astra 6 High workers and
+parent review. See docs/engineering-plan/STUDIO_UX_PLAN.md and CURRENT_WORK.md.
+This supersedes historical instructions to retain duplicate compatibility UIs.
+
+Historical user priority (T058): T057 was rejected visually. First copy the actual
 `E:/Projects/ulpin-city-studio` design and interactions into the product with
 working routes; then improve that Studio against the original image mockups.
 Prepare consistent synthetic records/documents first where needed. Compare actual

@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "checks": [
+    "Empty queue opens without saved demo records",
+    "Empty blocks opens without saved demo records",
+    "Empty register opens without saved demo records",
+    "Empty intake opens without saved demo records",
+    "Picker and search contain no built-in demo",
+    "Old map/BLD-0413 redirects to datasets",
+    "Old register/BLD-0413 redirects to registry",
+    "Old workspace/BLD-0413 redirects to work",
+    "APIs remain empty after page navigation"
+  ],
+  "errors": []
+}

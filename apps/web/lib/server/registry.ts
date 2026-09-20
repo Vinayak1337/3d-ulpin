@@ -1,3 +1,4 @@
+import { readPreparationBuild } from "./preparation-continuation";
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
 import { z } from "zod";
@@ -569,14 +570,14 @@ export function bodyOnly(r: RegistryRecord): RegistryBody {
 async function linkedPreparationFingerprint(client: PoolClient, caseId: string, lock = false): Promise<string | undefined> {
   const prep=(await client.query("SELECT id,package_id,building_id,body FROM building_preparations WHERE case_id=$1",[caseId])).rows[0];
   if(!prep)return undefined;
-  const pkg=(await client.query(`SELECT revision FROM import_packages WHERE id=$1 ${lock ? "FOR SHARE" : ""}`,[prep.package_id])).rows[0];
-  const c=(await client.query(`SELECT revision,current_snapshot_id FROM cases WHERE id=$1 ${lock ? "FOR SHARE" : ""}`,[caseId])).rows[0];
-  const f=(await client.query("SELECT revision FROM physical_features WHERE id=$1",[prep.building_id])).rows[0];
-  const built=(await client.query("SELECT result FROM operations WHERE case_id=$1 AND kind='canonical.prepare' ORDER BY created_at DESC LIMIT 1",[caseId])).rows[0]?.result;
-  const snapshot=(await client.query("SELECT revision FROM snapshots WHERE id=$1",[c.current_snapshot_id])).rows[0];
-  if(!built || built.packageRevision!==pkg.revision || !snapshot || snapshot.revision!==c.revision || f.revision!==prep.body.buildingRevision)
+  if (lock) {
+    await client.query("SELECT id FROM import_packages WHERE id=$1 FOR SHARE", [prep.package_id]);
+    await client.query("SELECT id FROM cases WHERE id=$1 FOR SHARE", [caseId]);
+  }
+  const { state, preparationFingerprint } = await readPreparationBuild(client, prep.package_id);
+  if (state.status !== "ready")
     conflict("The related documents, placement, exterior or prepared details changed. Prepare and build the current evidence before reviewing.");
-  return fingerprint({preparation:prep.body,packageRevision:pkg.revision,caseRevision:c.revision,snapshotId:c.current_snapshot_id,featureRevision:f.revision});
+  return preparationFingerprint;
 }
 export async function prepareRegistryReview(
   draftId: string,

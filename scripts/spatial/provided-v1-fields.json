@@ -1,0 +1,223 @@
+{
+  "source_assets.json": {
+    "schema": "canonical.source-assets.v1",
+    "topFields": [
+      "schema",
+      "coordinateFrame",
+      "assets"
+    ],
+    "rowFields": [
+      "assetId",
+      "sourceFile",
+      "sourceFormat",
+      "assetType",
+      "exists",
+      "fileSizeBytes",
+      "sha256",
+      "sourceRevision",
+      "provenance"
+    ]
+  },
+  "control_points.json": {
+    "schema": "canonical.control-points.v1",
+    "topFields": [
+      "schema",
+      "coordinateFrame",
+      "records"
+    ],
+    "rowFields": [
+      "canonicalControlPointId",
+      "sourcePointId",
+      "x",
+      "y",
+      "z",
+      "horizontalAccuracyM",
+      "verticalAccuracyM",
+      "coordinateFrame",
+      "verticalReference",
+      "observationDateTime",
+      "sourceAssetId",
+      "reviewStatus",
+      "provenance"
+    ]
+  },
+  "imagery_assets.json": {
+    "schema": "canonical.imagery-assets.v1",
+    "topFields": [
+      "schema",
+      "records"
+    ],
+    "rowFields": [
+      "assetId",
+      "sourceFile",
+      "format",
+      "type",
+      "coverage",
+      "width",
+      "height",
+      "resolution",
+      "coordinateFrame",
+      "acquisitionDateTime",
+      "sourceRevision",
+      "processingHistory",
+      "qualityStatus"
+    ]
+  },
+  "lidar_assets.json": {
+    "schema": "canonical.lidar-assets.v1",
+    "topFields": [
+      "schema",
+      "records"
+    ],
+    "rowFields": [
+      "assetId",
+      "sourceFile",
+      "format",
+      "pointCount",
+      "pointDataFormat",
+      "lasVersion",
+      "bounds",
+      "coordinateFrame",
+      "verticalReference",
+      "classificationSummary",
+      "estimatedPointDensity",
+      "sourceRevision",
+      "qualityStatus",
+      "representationStatus"
+    ]
+  },
+  "elevation_surfaces.json": {
+    "schema": "canonical.elevation-surfaces.v1",
+    "topFields": [
+      "schema",
+      "records"
+    ],
+    "rowFields": [
+      "assetId",
+      "sourceFile",
+      "type",
+      "width",
+      "height",
+      "pixelSize",
+      "bounds",
+      "coordinateFrame",
+      "verticalReference",
+      "minimumElevation",
+      "maximumElevation",
+      "sourceRevision",
+      "qualityStatus"
+    ]
+  },
+  "dataset-links.json": {
+    "schema": "canonical.dataset-links.v1",
+    "topFields": [
+      "schema",
+      "coordinateFrame",
+      "relationships"
+    ],
+    "rowFields": [
+      "fromId",
+      "relationship",
+      "toId"
+    ]
+  },
+  "parcels.json": {
+    "schema": "canonical.parcels.v1",
+    "topFields": [
+      "schema",
+      "coordinateFrame",
+      "horizontalUnit",
+      "verticalUnit",
+      "records"
+    ],
+    "rowFields": [
+      "areaSqM",
+      "blockId",
+      "buildingIds",
+      "canonicalParcelId",
+      "geometry",
+      "geometryStatus",
+      "landUse",
+      "occupancyType",
+      "provenance",
+      "reviewStatus",
+      "sourceAssetIds",
+      "sourceParcelIdentifiers",
+      "sourceRevisionId"
+    ]
+  },
+  "buildings.json": {
+    "schema": "canonical.buildings.v1",
+    "topFields": [
+      "schema",
+      "coordinateFrame",
+      "horizontalUnit",
+      "verticalUnit",
+      "records"
+    ],
+    "rowFields": [
+      "basement",
+      "buildingType",
+      "canonicalBuildingId",
+      "canonicalParcelIds",
+      "elevationAssetIds",
+      "floorCount",
+      "floorPlanIds",
+      "footprintAreaSqM",
+      "geometry",
+      "geometryStatus",
+      "heightM",
+      "imageryAssetIds",
+      "lidarAssetIds",
+      "provenance",
+      "reviewStatus",
+      "sourceAssetIds",
+      "sourceBuildingId",
+      "sourceRevisionId",
+      "useType"
+    ]
+  },
+  "floor_spaces.json": {
+    "schema": "canonical.floor-spaces.v1",
+    "topFields": [
+      "schema",
+      "coordinateFrame",
+      "horizontalUnit",
+      "records"
+    ],
+    "rowFields": [
+      "areaSqM",
+      "bathroomCount",
+      "bedroomCount",
+      "buildingId",
+      "floorId",
+      "floorName",
+      "geometryReference",
+      "level",
+      "provenance",
+      "reviewStatus",
+      "roomCount",
+      "sourcePlanFile",
+      "unitId",
+      "unitType"
+    ]
+  },
+  "roads.json": {
+    "schema": "canonical.roads.v1",
+    "topFields": [
+      "schema",
+      "coordinateFrame",
+      "horizontalUnit",
+      "records"
+    ],
+    "rowFields": [
+      "geometry",
+      "reviewStatus",
+      "roadId",
+      "roadType",
+      "sourceAssetIds",
+      "sourceRoadId",
+      "widthM"
+    ]
+  }
+}

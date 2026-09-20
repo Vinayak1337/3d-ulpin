@@ -10,6 +10,7 @@ import {
 } from "../packages/contracts/src/index";
 import { calibrationSnapshot } from "../apps/web/features/spatial/data/calibration";
 import { compileSpatialSnapshot } from "../apps/web/features/spatial/compiler/compile";
+import { buildMeshes } from "../apps/web/features/spatial/compiler/architecture";
 import { adaptAreaContext } from "../apps/web/features/spatial/data/legacy-adapter";
 import { ResourceCache } from "../apps/web/features/spatial/data/resource-cache";
 import { MapSessions } from "../apps/web/features/spatial/data/session";
@@ -128,6 +129,19 @@ test("compiler output survives input ordering, and never mutates its input", () 
   const q=compileSpatialSnapshot(b,"/test");assert.equal(p.id,q.id);
   assert.deepEqual([...p.assets].map(([k,v])=>[k,sha(v)]),[...q.assets].map(([k,v])=>[k,sha(v)]));
   assert.equal(stableEncode(a),before);
+});
+test("unknown-height footprint styling preserves its flat surface and courtyard hole", () => {
+  const s=small(),entity=s.entities.find(e=>e.kind==="building")!;
+  const representation:SpatialRepresentation={...buildingRep(s),role:"display_only",geometry:{type:"Polygon",coordinates:[rectangle(0,0,10,8),[...rectangle(2,2,3,2)].reverse()]},vertical:{lower:.08,upper:.08,reference:s.frames[0].verticalReference!}};
+  const before=stableEncode(representation),meshes=buildMeshes([{entity,representation}],true),fill=meshes.get(16)!;
+  assert.ok(fill);assert.deepEqual([...meshes.keys()],[16,17]);
+  let area=0;
+  for(let i=0;i<fill.indices.length;i+=3){
+    const [a,b,c]=fill.indices.slice(i,i+3).map(index=>fill.positions.slice(index*3,index*3+3));
+    assert.equal(a[1],.08);assert.equal(b[1],.08);assert.equal(c[1],.08);
+    area+=Math.abs((b[0]-a[0])*(c[2]-a[2])-(c[0]-a[0])*(b[2]-a[2]))/2;
+  }
+  assert.equal(area,74);assert.equal(stableEncode(representation),before);
 });
 test("optional document links do not change mesh bytes or measured geometry", () => {
   const a=small();const b={...a,attachments:[{id:"new-attachment",entityId:a.entities[0].id,sourceId:a.sources[0].id,sourceRevision:a.sources[0].revision,purpose:"context" as const}]};

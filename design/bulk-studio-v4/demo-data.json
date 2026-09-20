@@ -1,0 +1,7180 @@
+{
+  "schemaVersion": "1.0.0",
+  "metadata": {
+    "id": "BULK-STUDIO-FICTIONAL-01",
+    "title": "Neem Quarter",
+    "classification": "synthetic",
+    "description": "Independent fictional prototype fixture, not the supplied Shiv Vihar source geometry or real survey evidence.",
+    "focalObjectId": "B01",
+    "extent": [
+      0,
+      0,
+      240,
+      190
+    ],
+    "officialIssuance": false
+  },
+  "frames": [
+    {
+      "id": "FRAME-DEMO",
+      "name": "LOCAL-NEEM-QUARTER-DEMO",
+      "kind": "local_cartesian",
+      "horizontalUnit": "metre",
+      "verticalUnit": "metre",
+      "axisOrder": [
+        "east",
+        "north",
+        "up"
+      ],
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01: fictional benchmark at 0 m",
+      "geographicAnchor": null
+    }
+  ],
+  "objects": [
+    {
+      "id": "P01",
+      "type": "parcel",
+      "label": "Plot 01",
+      "systemId": "demo:3d:P01",
+      "geometryId": "G-P01-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P01"
+      ],
+      "attributes": {
+        "landUse": "mixed_use"
+      }
+    },
+    {
+      "id": "B01",
+      "type": "building",
+      "label": "Neem Court",
+      "systemId": "demo:3d:B01",
+      "geometryId": "G-B01-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01"
+      ],
+      "attributes": {
+        "use": "mixed_use",
+        "floorCount": 4,
+        "address": "01 Neem Quarter"
+      }
+    },
+    {
+      "id": "P02",
+      "type": "parcel",
+      "label": "Plot 02",
+      "systemId": "demo:3d:P02",
+      "geometryId": "G-P02-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P02"
+      ],
+      "attributes": {
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "B02",
+      "type": "building",
+      "label": "Courtyard House",
+      "systemId": "demo:3d:B02",
+      "geometryId": "G-B02-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B02"
+      ],
+      "attributes": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "02 Neem Quarter"
+      }
+    },
+    {
+      "id": "P03",
+      "type": "parcel",
+      "label": "Plot 03",
+      "systemId": "demo:3d:P03",
+      "geometryId": "G-P03-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P03"
+      ],
+      "attributes": {
+        "landUse": "mixed_use"
+      }
+    },
+    {
+      "id": "B03",
+      "type": "building",
+      "label": "Corner Stores",
+      "systemId": "demo:3d:B03",
+      "geometryId": "G-B03-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B03"
+      ],
+      "attributes": {
+        "use": "mixed_use",
+        "floorCount": 2,
+        "address": "03 Neem Quarter"
+      }
+    },
+    {
+      "id": "P04",
+      "type": "parcel",
+      "label": "Plot 04",
+      "systemId": "demo:3d:P04",
+      "geometryId": "G-P04-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P04"
+      ],
+      "attributes": {
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "B04",
+      "type": "building",
+      "label": "Mango House",
+      "systemId": "demo:3d:B04",
+      "geometryId": "G-B04-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B04"
+      ],
+      "attributes": {
+        "use": "residential",
+        "floorCount": 2,
+        "address": "04 Neem Quarter"
+      }
+    },
+    {
+      "id": "P05",
+      "type": "parcel",
+      "label": "Plot 05",
+      "systemId": "demo:3d:P05",
+      "geometryId": "G-P05-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P05"
+      ],
+      "attributes": {
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "B05",
+      "type": "building",
+      "label": "Workshop 05",
+      "systemId": "demo:3d:B05",
+      "geometryId": "G-B05-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B05"
+      ],
+      "attributes": {
+        "use": "residential",
+        "floorCount": 2,
+        "address": "05 Neem Quarter"
+      }
+    },
+    {
+      "id": "P06",
+      "type": "parcel",
+      "label": "Plot 06",
+      "systemId": "demo:3d:P06",
+      "geometryId": "G-P06-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P06"
+      ],
+      "attributes": {
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "B06",
+      "type": "building",
+      "label": "Terrace House",
+      "systemId": "demo:3d:B06",
+      "geometryId": "G-B06-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B06"
+      ],
+      "attributes": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "06 Neem Quarter"
+      }
+    },
+    {
+      "id": "P07",
+      "type": "parcel",
+      "label": "Plot 07",
+      "systemId": "demo:3d:P07",
+      "geometryId": "G-P07-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P07"
+      ],
+      "attributes": {
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "B07",
+      "type": "building",
+      "label": "Clinic Annex",
+      "systemId": "demo:3d:B07",
+      "geometryId": "G-B07-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B07"
+      ],
+      "attributes": {
+        "use": "public",
+        "floorCount": 2,
+        "address": "07 Neem Quarter"
+      }
+    },
+    {
+      "id": "P08",
+      "type": "parcel",
+      "label": "Plot 08",
+      "systemId": "demo:3d:P08",
+      "geometryId": "G-P08-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P08"
+      ],
+      "attributes": {
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "B08",
+      "type": "building",
+      "label": "Cedar House",
+      "systemId": "demo:3d:B08",
+      "geometryId": "G-B08-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B08"
+      ],
+      "attributes": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "08 Neem Quarter"
+      }
+    },
+    {
+      "id": "P09",
+      "type": "parcel",
+      "label": "Plot 09",
+      "systemId": "demo:3d:P09",
+      "geometryId": "G-P09-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P09"
+      ],
+      "attributes": {
+        "landUse": "mixed_use"
+      }
+    },
+    {
+      "id": "B09",
+      "type": "building",
+      "label": "South Arcade",
+      "systemId": "demo:3d:B09",
+      "geometryId": "G-B09-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B09"
+      ],
+      "attributes": {
+        "use": "mixed_use",
+        "floorCount": 3,
+        "address": "09 Neem Quarter"
+      }
+    },
+    {
+      "id": "P10",
+      "type": "parcel",
+      "label": "Plot 10",
+      "systemId": "demo:3d:P10",
+      "geometryId": "G-P10-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P10"
+      ],
+      "attributes": {
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "B10",
+      "type": "building",
+      "label": "Garden House",
+      "systemId": "demo:3d:B10",
+      "geometryId": "G-B10-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B10"
+      ],
+      "attributes": {
+        "use": "residential",
+        "floorCount": 2,
+        "address": "10 Neem Quarter"
+      }
+    },
+    {
+      "id": "P11",
+      "type": "parcel",
+      "label": "Plot 11",
+      "systemId": "demo:3d:P11",
+      "geometryId": "G-P11-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P11"
+      ],
+      "attributes": {
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "B11",
+      "type": "building",
+      "label": "Library Annex",
+      "systemId": "demo:3d:B11",
+      "geometryId": "G-B11-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B11"
+      ],
+      "attributes": {
+        "use": "public",
+        "floorCount": 1,
+        "address": "11 Neem Quarter"
+      }
+    },
+    {
+      "id": "P12",
+      "type": "parcel",
+      "label": "Plot 12",
+      "systemId": "demo:3d:P12",
+      "geometryId": "G-P12-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-P12"
+      ],
+      "attributes": {
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "B12",
+      "type": "building",
+      "label": "Unmeasured House",
+      "systemId": "demo:3d:B12",
+      "geometryId": "G-B12-v1",
+      "status": "needs_review",
+      "sourceRecordIds": [
+        "SR-B12"
+      ],
+      "attributes": {
+        "use": "residential",
+        "floorCount": null,
+        "address": "12 Neem Quarter"
+      }
+    },
+    {
+      "id": "B01-F0",
+      "type": "floor",
+      "label": "Ground floor",
+      "systemId": "demo:3d:B01-F0",
+      "geometryId": "G-B01-F0-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F0"
+      ],
+      "attributes": {
+        "level": 0,
+        "buildingId": "B01"
+      }
+    },
+    {
+      "id": "B01-F0-U1",
+      "type": "space",
+      "label": "Shop A",
+      "systemId": "demo:3d:B01-F0-U1",
+      "geometryId": "G-B01-F0-U1-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F0-U1"
+      ],
+      "attributes": {
+        "floorId": "B01-F0",
+        "buildingId": "B01",
+        "level": 0,
+        "use": "retail",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "B01-F0-U2",
+      "type": "space",
+      "label": "Shop B",
+      "systemId": "demo:3d:B01-F0-U2",
+      "geometryId": "G-B01-F0-U2-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F0-U2"
+      ],
+      "attributes": {
+        "floorId": "B01-F0",
+        "buildingId": "B01",
+        "level": 0,
+        "use": "retail",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "B01-F0-C",
+      "type": "space",
+      "label": "Shared circulation",
+      "systemId": "demo:3d:B01-F0-C",
+      "geometryId": "G-B01-F0-C-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F0-C"
+      ],
+      "attributes": {
+        "floorId": "B01-F0",
+        "buildingId": "B01",
+        "level": 0,
+        "use": "common",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "B01-F1",
+      "type": "floor",
+      "label": "Floor 1",
+      "systemId": "demo:3d:B01-F1",
+      "geometryId": "G-B01-F1-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F1"
+      ],
+      "attributes": {
+        "level": 1,
+        "buildingId": "B01"
+      }
+    },
+    {
+      "id": "B01-F1-U1",
+      "type": "space",
+      "label": "Apartment 101",
+      "systemId": "demo:3d:B01-F1-U1",
+      "geometryId": "G-B01-F1-U1-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F1-U1"
+      ],
+      "attributes": {
+        "floorId": "B01-F1",
+        "buildingId": "B01",
+        "level": 1,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "B01-F1-U2",
+      "type": "space",
+      "label": "Apartment 102",
+      "systemId": "demo:3d:B01-F1-U2",
+      "geometryId": "G-B01-F1-U2-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F1-U2"
+      ],
+      "attributes": {
+        "floorId": "B01-F1",
+        "buildingId": "B01",
+        "level": 1,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "B01-F1-C",
+      "type": "space",
+      "label": "Shared circulation",
+      "systemId": "demo:3d:B01-F1-C",
+      "geometryId": "G-B01-F1-C-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F1-C"
+      ],
+      "attributes": {
+        "floorId": "B01-F1",
+        "buildingId": "B01",
+        "level": 1,
+        "use": "common",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "B01-F2",
+      "type": "floor",
+      "label": "Floor 2",
+      "systemId": "demo:3d:B01-F2",
+      "geometryId": "G-B01-F2-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F2"
+      ],
+      "attributes": {
+        "level": 2,
+        "buildingId": "B01"
+      }
+    },
+    {
+      "id": "B01-F2-U1",
+      "type": "space",
+      "label": "Apartment 201",
+      "systemId": "demo:3d:B01-F2-U1",
+      "geometryId": "G-B01-F2-U1-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F2-U1"
+      ],
+      "attributes": {
+        "floorId": "B01-F2",
+        "buildingId": "B01",
+        "level": 2,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "B01-F2-U2",
+      "type": "space",
+      "label": "Apartment 202",
+      "systemId": "demo:3d:B01-F2-U2",
+      "geometryId": "G-B01-F2-U2-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F2-U2"
+      ],
+      "attributes": {
+        "floorId": "B01-F2",
+        "buildingId": "B01",
+        "level": 2,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "B01-F2-C",
+      "type": "space",
+      "label": "Shared circulation",
+      "systemId": "demo:3d:B01-F2-C",
+      "geometryId": "G-B01-F2-C-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F2-C"
+      ],
+      "attributes": {
+        "floorId": "B01-F2",
+        "buildingId": "B01",
+        "level": 2,
+        "use": "common",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "B01-F3",
+      "type": "floor",
+      "label": "Floor 3",
+      "systemId": "demo:3d:B01-F3",
+      "geometryId": "G-B01-F3-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F3"
+      ],
+      "attributes": {
+        "level": 3,
+        "buildingId": "B01"
+      }
+    },
+    {
+      "id": "B01-F3-U1",
+      "type": "space",
+      "label": "Apartment 301",
+      "systemId": "demo:3d:B01-F3-U1",
+      "geometryId": "G-B01-F3-U1-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F3-U1"
+      ],
+      "attributes": {
+        "floorId": "B01-F3",
+        "buildingId": "B01",
+        "level": 3,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "B01-F3-U2",
+      "type": "space",
+      "label": "Apartment 302",
+      "systemId": "demo:3d:B01-F3-U2",
+      "geometryId": "G-B01-F3-U2-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F3-U2"
+      ],
+      "attributes": {
+        "floorId": "B01-F3",
+        "buildingId": "B01",
+        "level": 3,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "B01-F3-C",
+      "type": "space",
+      "label": "Shared circulation",
+      "systemId": "demo:3d:B01-F3-C",
+      "geometryId": "G-B01-F3-C-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-B01-F3-C"
+      ],
+      "attributes": {
+        "floorId": "B01-F3",
+        "buildingId": "B01",
+        "level": 3,
+        "use": "common",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "R01",
+      "type": "road",
+      "label": "Neem Avenue",
+      "systemId": "demo:3d:R01",
+      "geometryId": "G-R01-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-R01"
+      ],
+      "attributes": {
+        "widthM": 12
+      }
+    },
+    {
+      "id": "R02",
+      "type": "road",
+      "label": "Market Lane",
+      "systemId": "demo:3d:R02",
+      "geometryId": "G-R02-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-R02"
+      ],
+      "attributes": {
+        "widthM": 8
+      }
+    },
+    {
+      "id": "R03",
+      "type": "road",
+      "label": "Garden Lane",
+      "systemId": "demo:3d:R03",
+      "geometryId": "G-R03-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-R03"
+      ],
+      "attributes": {
+        "widthM": 7
+      }
+    },
+    {
+      "id": "UT01",
+      "type": "utility",
+      "label": "Water service 01",
+      "systemId": "demo:3d:UT01",
+      "geometryId": "G-UT01-v1",
+      "status": "ready",
+      "sourceRecordIds": [
+        "SR-UT01"
+      ],
+      "attributes": {
+        "service": "water",
+        "diameterM": 0.3,
+        "depthM": 2
+      }
+    }
+  ],
+  "geometries": [
+    {
+      "id": "G-P01-v1",
+      "objectId": "P01",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            75,
+            102
+          ],
+          [
+            133,
+            102
+          ],
+          [
+            133,
+            141
+          ],
+          [
+            75,
+            141
+          ],
+          [
+            75,
+            102
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 2262.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P01"
+      ],
+      "lineageId": "LIN-P01"
+    },
+    {
+      "id": "G-B01-v1",
+      "objectId": "B01",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            78,
+            105
+          ],
+          [
+            130,
+            105
+          ],
+          [
+            130,
+            139
+          ],
+          [
+            113,
+            139
+          ],
+          [
+            113,
+            126
+          ],
+          [
+            98,
+            126
+          ],
+          [
+            98,
+            139
+          ],
+          [
+            78,
+            139
+          ],
+          [
+            78,
+            105
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 12.8,
+      "areaM2": 1573.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01"
+      ],
+      "lineageId": "LIN-B01"
+    },
+    {
+      "id": "G-P02-v1",
+      "objectId": "P02",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            7,
+            102
+          ],
+          [
+            47,
+            102
+          ],
+          [
+            47,
+            141
+          ],
+          [
+            7,
+            141
+          ],
+          [
+            7,
+            102
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1560.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P02"
+      ],
+      "lineageId": "LIN-P02"
+    },
+    {
+      "id": "G-B02-v1",
+      "objectId": "B02",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            10,
+            105
+          ],
+          [
+            39,
+            105
+          ],
+          [
+            44,
+            110
+          ],
+          [
+            44,
+            138
+          ],
+          [
+            32,
+            138
+          ],
+          [
+            32,
+            130
+          ],
+          [
+            10,
+            130
+          ],
+          [
+            10,
+            105
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 9.6,
+      "areaM2": 933.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B02"
+      ],
+      "lineageId": "LIN-B02"
+    },
+    {
+      "id": "G-P03-v1",
+      "objectId": "P03",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            140,
+            102
+          ],
+          [
+            180,
+            102
+          ],
+          [
+            180,
+            141
+          ],
+          [
+            140,
+            141
+          ],
+          [
+            140,
+            102
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1560.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P03"
+      ],
+      "lineageId": "LIN-P03"
+    },
+    {
+      "id": "G-B03-v1",
+      "objectId": "B03",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            143,
+            105
+          ],
+          [
+            172,
+            105
+          ],
+          [
+            177,
+            110
+          ],
+          [
+            177,
+            138
+          ],
+          [
+            165,
+            138
+          ],
+          [
+            165,
+            130
+          ],
+          [
+            143,
+            130
+          ],
+          [
+            143,
+            105
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 7.2,
+      "areaM2": 933.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B03"
+      ],
+      "lineageId": "LIN-B03"
+    },
+    {
+      "id": "G-P04-v1",
+      "objectId": "P04",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            191,
+            102
+          ],
+          [
+            231,
+            102
+          ],
+          [
+            231,
+            141
+          ],
+          [
+            191,
+            141
+          ],
+          [
+            191,
+            102
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1560.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P04"
+      ],
+      "lineageId": "LIN-P04"
+    },
+    {
+      "id": "G-B04-v1",
+      "objectId": "B04",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            194,
+            105
+          ],
+          [
+            223,
+            105
+          ],
+          [
+            228,
+            110
+          ],
+          [
+            228,
+            138
+          ],
+          [
+            216,
+            138
+          ],
+          [
+            216,
+            130
+          ],
+          [
+            194,
+            130
+          ],
+          [
+            194,
+            105
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 6.4,
+      "areaM2": 933.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B04"
+      ],
+      "lineageId": "LIN-B04"
+    },
+    {
+      "id": "G-P05-v1",
+      "objectId": "P05",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            7,
+            15
+          ],
+          [
+            47,
+            15
+          ],
+          [
+            47,
+            54
+          ],
+          [
+            7,
+            54
+          ],
+          [
+            7,
+            15
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1560.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P05"
+      ],
+      "lineageId": "LIN-P05"
+    },
+    {
+      "id": "G-B05-v1",
+      "objectId": "B05",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            10,
+            18
+          ],
+          [
+            39,
+            18
+          ],
+          [
+            44,
+            23
+          ],
+          [
+            44,
+            51
+          ],
+          [
+            32,
+            51
+          ],
+          [
+            32,
+            43
+          ],
+          [
+            10,
+            43
+          ],
+          [
+            10,
+            18
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 5.2,
+      "areaM2": 933.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B05"
+      ],
+      "lineageId": "LIN-B05"
+    },
+    {
+      "id": "G-P06-v1",
+      "objectId": "P06",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            47,
+            15
+          ],
+          [
+            87,
+            15
+          ],
+          [
+            87,
+            54
+          ],
+          [
+            47,
+            54
+          ],
+          [
+            47,
+            15
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1560.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P06"
+      ],
+      "lineageId": "LIN-P06"
+    },
+    {
+      "id": "G-B06-v1",
+      "objectId": "B06",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            50,
+            18
+          ],
+          [
+            79,
+            18
+          ],
+          [
+            84,
+            23
+          ],
+          [
+            84,
+            51
+          ],
+          [
+            72,
+            51
+          ],
+          [
+            72,
+            43
+          ],
+          [
+            50,
+            43
+          ],
+          [
+            50,
+            18
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 9.6,
+      "areaM2": 933.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B06"
+      ],
+      "lineageId": "LIN-B06"
+    },
+    {
+      "id": "G-P07-v1",
+      "objectId": "P07",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            90,
+            15
+          ],
+          [
+            130,
+            15
+          ],
+          [
+            130,
+            54
+          ],
+          [
+            90,
+            54
+          ],
+          [
+            90,
+            15
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1560.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P07"
+      ],
+      "lineageId": "LIN-P07"
+    },
+    {
+      "id": "G-B07-v1",
+      "objectId": "B07",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            93,
+            18
+          ],
+          [
+            122,
+            18
+          ],
+          [
+            127,
+            23
+          ],
+          [
+            127,
+            51
+          ],
+          [
+            115,
+            51
+          ],
+          [
+            115,
+            43
+          ],
+          [
+            93,
+            43
+          ],
+          [
+            93,
+            18
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 6.4,
+      "areaM2": 933.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B07"
+      ],
+      "lineageId": "LIN-B07"
+    },
+    {
+      "id": "G-P08-v1",
+      "objectId": "P08",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            136,
+            15
+          ],
+          [
+            176,
+            15
+          ],
+          [
+            176,
+            54
+          ],
+          [
+            136,
+            54
+          ],
+          [
+            136,
+            15
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1560.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P08"
+      ],
+      "lineageId": "LIN-P08"
+    },
+    {
+      "id": "G-B08-v1",
+      "objectId": "B08",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            139,
+            18
+          ],
+          [
+            168,
+            18
+          ],
+          [
+            173,
+            23
+          ],
+          [
+            173,
+            51
+          ],
+          [
+            161,
+            51
+          ],
+          [
+            161,
+            43
+          ],
+          [
+            139,
+            43
+          ],
+          [
+            139,
+            18
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 12.8,
+      "areaM2": 933.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B08"
+      ],
+      "lineageId": "LIN-B08"
+    },
+    {
+      "id": "G-P09-v1",
+      "objectId": "P09",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            184,
+            15
+          ],
+          [
+            224,
+            15
+          ],
+          [
+            224,
+            54
+          ],
+          [
+            184,
+            54
+          ],
+          [
+            184,
+            15
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1560.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P09"
+      ],
+      "lineageId": "LIN-P09"
+    },
+    {
+      "id": "G-B09-v1",
+      "objectId": "B09",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            187,
+            18
+          ],
+          [
+            216,
+            18
+          ],
+          [
+            221,
+            23
+          ],
+          [
+            221,
+            51
+          ],
+          [
+            209,
+            51
+          ],
+          [
+            209,
+            43
+          ],
+          [
+            187,
+            43
+          ],
+          [
+            187,
+            18
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 8.4,
+      "areaM2": 933.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B09"
+      ],
+      "lineageId": "LIN-B09"
+    },
+    {
+      "id": "G-P10-v1",
+      "objectId": "P10",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            7,
+            147
+          ],
+          [
+            45,
+            147
+          ],
+          [
+            45,
+            180
+          ],
+          [
+            7,
+            180
+          ],
+          [
+            7,
+            147
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1254.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P10"
+      ],
+      "lineageId": "LIN-P10"
+    },
+    {
+      "id": "G-B10-v1",
+      "objectId": "B10",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            10,
+            150
+          ],
+          [
+            37,
+            150
+          ],
+          [
+            42,
+            155
+          ],
+          [
+            42,
+            177
+          ],
+          [
+            30,
+            177
+          ],
+          [
+            30,
+            169
+          ],
+          [
+            10,
+            169
+          ],
+          [
+            10,
+            150
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 6.4,
+      "areaM2": 691.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B10"
+      ],
+      "lineageId": "LIN-B10"
+    },
+    {
+      "id": "G-P11-v1",
+      "objectId": "P11",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            62,
+            147
+          ],
+          [
+            100,
+            147
+          ],
+          [
+            100,
+            180
+          ],
+          [
+            62,
+            180
+          ],
+          [
+            62,
+            147
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1254.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P11"
+      ],
+      "lineageId": "LIN-P11"
+    },
+    {
+      "id": "G-B11-v1",
+      "objectId": "B11",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            65,
+            150
+          ],
+          [
+            92,
+            150
+          ],
+          [
+            97,
+            155
+          ],
+          [
+            97,
+            177
+          ],
+          [
+            85,
+            177
+          ],
+          [
+            85,
+            169
+          ],
+          [
+            65,
+            169
+          ],
+          [
+            65,
+            150
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 4.8,
+      "areaM2": 691.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B11"
+      ],
+      "lineageId": "LIN-B11"
+    },
+    {
+      "id": "G-P12-v1",
+      "objectId": "P12",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            174,
+            147
+          ],
+          [
+            212,
+            147
+          ],
+          [
+            212,
+            180
+          ],
+          [
+            174,
+            180
+          ],
+          [
+            174,
+            147
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": 0,
+      "areaM2": 1254.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-P12"
+      ],
+      "lineageId": "LIN-P12"
+    },
+    {
+      "id": "G-B12-v1",
+      "objectId": "B12",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            177,
+            150
+          ],
+          [
+            204,
+            150
+          ],
+          [
+            209,
+            155
+          ],
+          [
+            209,
+            177
+          ],
+          [
+            197,
+            177
+          ],
+          [
+            197,
+            169
+          ],
+          [
+            177,
+            169
+          ],
+          [
+            177,
+            150
+          ]
+        ]
+      ],
+      "baseElevationM": 0,
+      "heightM": null,
+      "areaM2": 691.5,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B12"
+      ],
+      "lineageId": "LIN-B12"
+    },
+    {
+      "id": "G-B01-F0-v1",
+      "objectId": "B01-F0",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            78,
+            105
+          ],
+          [
+            130,
+            105
+          ],
+          [
+            130,
+            139
+          ],
+          [
+            113,
+            139
+          ],
+          [
+            113,
+            126
+          ],
+          [
+            98,
+            126
+          ],
+          [
+            98,
+            139
+          ],
+          [
+            78,
+            139
+          ],
+          [
+            78,
+            105
+          ]
+        ]
+      ],
+      "baseElevationM": 0.0,
+      "heightM": 3.2,
+      "areaM2": 1573.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F0"
+      ],
+      "lineageId": "LIN-B01-F0"
+    },
+    {
+      "id": "G-B01-F0-U1-v1",
+      "objectId": "B01-F0-U1",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            79,
+            106
+          ],
+          [
+            99,
+            106
+          ],
+          [
+            99,
+            119
+          ],
+          [
+            97,
+            119
+          ],
+          [
+            97,
+            138
+          ],
+          [
+            79,
+            138
+          ],
+          [
+            79,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 0.0,
+      "heightM": 3,
+      "areaM2": 602.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F0-U1"
+      ],
+      "lineageId": "LIN-B01-F0-U1"
+    },
+    {
+      "id": "G-B01-F0-U2-v1",
+      "objectId": "B01-F0-U2",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            110,
+            106
+          ],
+          [
+            129,
+            106
+          ],
+          [
+            129,
+            138
+          ],
+          [
+            114,
+            138
+          ],
+          [
+            114,
+            125
+          ],
+          [
+            110,
+            125
+          ],
+          [
+            110,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 0.0,
+      "heightM": 3,
+      "areaM2": 556.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F0-U2"
+      ],
+      "lineageId": "LIN-B01-F0-U2"
+    },
+    {
+      "id": "G-B01-F0-C-v1",
+      "objectId": "B01-F0-C",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            100,
+            106
+          ],
+          [
+            109,
+            106
+          ],
+          [
+            109,
+            125
+          ],
+          [
+            100,
+            125
+          ],
+          [
+            100,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 0.0,
+      "heightM": 3,
+      "areaM2": 171.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F0-C"
+      ],
+      "lineageId": "LIN-B01-F0-C"
+    },
+    {
+      "id": "G-B01-F1-v1",
+      "objectId": "B01-F1",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            78,
+            105
+          ],
+          [
+            130,
+            105
+          ],
+          [
+            130,
+            139
+          ],
+          [
+            113,
+            139
+          ],
+          [
+            113,
+            126
+          ],
+          [
+            98,
+            126
+          ],
+          [
+            98,
+            139
+          ],
+          [
+            78,
+            139
+          ],
+          [
+            78,
+            105
+          ]
+        ]
+      ],
+      "baseElevationM": 3.2,
+      "heightM": 3.2,
+      "areaM2": 1573.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F1"
+      ],
+      "lineageId": "LIN-B01-F1"
+    },
+    {
+      "id": "G-B01-F1-U1-v1",
+      "objectId": "B01-F1-U1",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            79,
+            106
+          ],
+          [
+            99,
+            106
+          ],
+          [
+            99,
+            119
+          ],
+          [
+            97,
+            119
+          ],
+          [
+            97,
+            138
+          ],
+          [
+            79,
+            138
+          ],
+          [
+            79,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 3.2,
+      "heightM": 3,
+      "areaM2": 602.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F1-U1"
+      ],
+      "lineageId": "LIN-B01-F1-U1"
+    },
+    {
+      "id": "G-B01-F1-U2-v1",
+      "objectId": "B01-F1-U2",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            110,
+            106
+          ],
+          [
+            129,
+            106
+          ],
+          [
+            129,
+            138
+          ],
+          [
+            114,
+            138
+          ],
+          [
+            114,
+            125
+          ],
+          [
+            110,
+            125
+          ],
+          [
+            110,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 3.2,
+      "heightM": 3,
+      "areaM2": 556.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F1-U2"
+      ],
+      "lineageId": "LIN-B01-F1-U2"
+    },
+    {
+      "id": "G-B01-F1-C-v1",
+      "objectId": "B01-F1-C",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            100,
+            106
+          ],
+          [
+            109,
+            106
+          ],
+          [
+            109,
+            125
+          ],
+          [
+            100,
+            125
+          ],
+          [
+            100,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 3.2,
+      "heightM": 3,
+      "areaM2": 171.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F1-C"
+      ],
+      "lineageId": "LIN-B01-F1-C"
+    },
+    {
+      "id": "G-B01-F2-v1",
+      "objectId": "B01-F2",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            78,
+            105
+          ],
+          [
+            130,
+            105
+          ],
+          [
+            130,
+            139
+          ],
+          [
+            113,
+            139
+          ],
+          [
+            113,
+            126
+          ],
+          [
+            98,
+            126
+          ],
+          [
+            98,
+            139
+          ],
+          [
+            78,
+            139
+          ],
+          [
+            78,
+            105
+          ]
+        ]
+      ],
+      "baseElevationM": 6.4,
+      "heightM": 3.2,
+      "areaM2": 1573.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F2"
+      ],
+      "lineageId": "LIN-B01-F2"
+    },
+    {
+      "id": "G-B01-F2-U1-v1",
+      "objectId": "B01-F2-U1",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            79,
+            106
+          ],
+          [
+            99,
+            106
+          ],
+          [
+            99,
+            119
+          ],
+          [
+            97,
+            119
+          ],
+          [
+            97,
+            138
+          ],
+          [
+            79,
+            138
+          ],
+          [
+            79,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 6.4,
+      "heightM": 3,
+      "areaM2": 602.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F2-U1"
+      ],
+      "lineageId": "LIN-B01-F2-U1"
+    },
+    {
+      "id": "G-B01-F2-U2-v1",
+      "objectId": "B01-F2-U2",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            110,
+            106
+          ],
+          [
+            129,
+            106
+          ],
+          [
+            129,
+            138
+          ],
+          [
+            114,
+            138
+          ],
+          [
+            114,
+            125
+          ],
+          [
+            110,
+            125
+          ],
+          [
+            110,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 6.4,
+      "heightM": 3,
+      "areaM2": 556.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F2-U2"
+      ],
+      "lineageId": "LIN-B01-F2-U2"
+    },
+    {
+      "id": "G-B01-F2-C-v1",
+      "objectId": "B01-F2-C",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            100,
+            106
+          ],
+          [
+            109,
+            106
+          ],
+          [
+            109,
+            125
+          ],
+          [
+            100,
+            125
+          ],
+          [
+            100,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 6.4,
+      "heightM": 3,
+      "areaM2": 171.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F2-C"
+      ],
+      "lineageId": "LIN-B01-F2-C"
+    },
+    {
+      "id": "G-B01-F3-v1",
+      "objectId": "B01-F3",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            78,
+            105
+          ],
+          [
+            130,
+            105
+          ],
+          [
+            130,
+            139
+          ],
+          [
+            113,
+            139
+          ],
+          [
+            113,
+            126
+          ],
+          [
+            98,
+            126
+          ],
+          [
+            98,
+            139
+          ],
+          [
+            78,
+            139
+          ],
+          [
+            78,
+            105
+          ]
+        ]
+      ],
+      "baseElevationM": 9.6,
+      "heightM": 3.2,
+      "areaM2": 1573.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F3"
+      ],
+      "lineageId": "LIN-B01-F3"
+    },
+    {
+      "id": "G-B01-F3-U1-v1",
+      "objectId": "B01-F3-U1",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            79,
+            106
+          ],
+          [
+            99,
+            106
+          ],
+          [
+            99,
+            119
+          ],
+          [
+            97,
+            119
+          ],
+          [
+            97,
+            138
+          ],
+          [
+            79,
+            138
+          ],
+          [
+            79,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 9.6,
+      "heightM": 3,
+      "areaM2": 602.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F3-U1"
+      ],
+      "lineageId": "LIN-B01-F3-U1"
+    },
+    {
+      "id": "G-B01-F3-U2-v1",
+      "objectId": "B01-F3-U2",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            110,
+            106
+          ],
+          [
+            129,
+            106
+          ],
+          [
+            129,
+            138
+          ],
+          [
+            114,
+            138
+          ],
+          [
+            114,
+            125
+          ],
+          [
+            110,
+            125
+          ],
+          [
+            110,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 9.6,
+      "heightM": 3,
+      "areaM2": 556.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F3-U2"
+      ],
+      "lineageId": "LIN-B01-F3-U2"
+    },
+    {
+      "id": "G-B01-F3-C-v1",
+      "objectId": "B01-F3-C",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            100,
+            106
+          ],
+          [
+            109,
+            106
+          ],
+          [
+            109,
+            125
+          ],
+          [
+            100,
+            125
+          ],
+          [
+            100,
+            106
+          ]
+        ]
+      ],
+      "baseElevationM": 9.6,
+      "heightM": 3,
+      "areaM2": 171.0,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-B01-F3-C"
+      ],
+      "lineageId": "LIN-B01-F3-C"
+    },
+    {
+      "id": "G-R01-v1",
+      "objectId": "R01",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "LineString",
+      "coordinates": [
+        [
+          0,
+          92
+        ],
+        [
+          240,
+          92
+        ]
+      ],
+      "baseElevationM": null,
+      "heightM": null,
+      "areaM2": null,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-R01"
+      ],
+      "lineageId": "LIN-R01"
+    },
+    {
+      "id": "G-R02-v1",
+      "objectId": "R02",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "LineString",
+      "coordinates": [
+        [
+          0,
+          9
+        ],
+        [
+          240,
+          9
+        ]
+      ],
+      "baseElevationM": null,
+      "heightM": null,
+      "areaM2": null,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-R02"
+      ],
+      "lineageId": "LIN-R02"
+    },
+    {
+      "id": "G-R03-v1",
+      "objectId": "R03",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "LineString",
+      "coordinates": [
+        [
+          0,
+          146
+        ],
+        [
+          240,
+          146
+        ]
+      ],
+      "baseElevationM": null,
+      "heightM": null,
+      "areaM2": null,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-R03"
+      ],
+      "lineageId": "LIN-R03"
+    },
+    {
+      "id": "G-UT01-v1",
+      "objectId": "UT01",
+      "version": 1,
+      "supersedesId": null,
+      "frameId": "FRAME-DEMO",
+      "nativeCrs": null,
+      "verticalDatum": "DEMO-BM-01",
+      "type": "LineString",
+      "coordinates": [
+        [
+          8,
+          28,
+          -2
+        ],
+        [
+          220,
+          28,
+          -2
+        ]
+      ],
+      "baseElevationM": null,
+      "heightM": null,
+      "areaM2": null,
+      "status": "draft",
+      "classification": "synthetic",
+      "sourceRecordIds": [
+        "SR-UT01"
+      ],
+      "lineageId": "LIN-UT01"
+    }
+  ],
+  "relations": [
+    {
+      "id": "REL-001",
+      "fromId": "P01",
+      "toId": "B01",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-002",
+      "fromId": "P02",
+      "toId": "B02",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B02"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-003",
+      "fromId": "P03",
+      "toId": "B03",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B03"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-004",
+      "fromId": "P04",
+      "toId": "B04",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B04"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-005",
+      "fromId": "P05",
+      "toId": "B05",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B05"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-006",
+      "fromId": "P06",
+      "toId": "B06",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B06"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-007",
+      "fromId": "P07",
+      "toId": "B07",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B07"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-008",
+      "fromId": "P08",
+      "toId": "B08",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B08"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-009",
+      "fromId": "P09",
+      "toId": "B09",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B09"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-010",
+      "fromId": "P10",
+      "toId": "B10",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B10"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-011",
+      "fromId": "P11",
+      "toId": "B11",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B11"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-012",
+      "fromId": "P12",
+      "toId": "B12",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B12"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-013",
+      "fromId": "B01",
+      "toId": "B01-F0",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F0"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-014",
+      "fromId": "B01-F0",
+      "toId": "B01-F0-U1",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F0-U1"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-015",
+      "fromId": "B01-F0",
+      "toId": "B01-F0-U2",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F0-U2"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-016",
+      "fromId": "B01-F0",
+      "toId": "B01-F0-C",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F0-C"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-017",
+      "fromId": "B01",
+      "toId": "B01-F1",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F1"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-018",
+      "fromId": "B01-F1",
+      "toId": "B01-F1-U1",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F1-U1"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-019",
+      "fromId": "B01-F1",
+      "toId": "B01-F1-U2",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F1-U2"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-020",
+      "fromId": "B01-F1",
+      "toId": "B01-F1-C",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F1-C"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-021",
+      "fromId": "B01",
+      "toId": "B01-F2",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F2"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-022",
+      "fromId": "B01-F2",
+      "toId": "B01-F2-U1",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F2-U1"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-023",
+      "fromId": "B01-F2",
+      "toId": "B01-F2-U2",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F2-U2"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-024",
+      "fromId": "B01-F2",
+      "toId": "B01-F2-C",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F2-C"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-025",
+      "fromId": "B01",
+      "toId": "B01-F3",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F3"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-026",
+      "fromId": "B01-F3",
+      "toId": "B01-F3-U1",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F3-U1"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-027",
+      "fromId": "B01-F3",
+      "toId": "B01-F3-U2",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F3-U2"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-028",
+      "fromId": "B01-F3",
+      "toId": "B01-F3-C",
+      "kind": "contains",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-B01-F3-C"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-029",
+      "fromId": "UT01",
+      "toId": "P05",
+      "kind": "crosses",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-P05"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-030",
+      "fromId": "UT01",
+      "toId": "P06",
+      "kind": "crosses",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-P06"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-031",
+      "fromId": "UT01",
+      "toId": "P07",
+      "kind": "crosses",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-P07"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-032",
+      "fromId": "UT01",
+      "toId": "P08",
+      "kind": "crosses",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-P08"
+      ],
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "REL-033",
+      "fromId": "UT01",
+      "toId": "P09",
+      "kind": "crosses",
+      "status": "fixture_only",
+      "sourceRecordIds": [
+        "SR-P09"
+      ],
+      "validFrom": null,
+      "validTo": null
+    }
+  ],
+  "sources": [
+    {
+      "id": "SRC-GIS",
+      "label": "Parcel and building polygons",
+      "modality": "GIS",
+      "mimeType": "application/geo+json",
+      "classification": "synthetic",
+      "representation": "embedded_records",
+      "revision": "fixture-v1",
+      "originalUri": null,
+      "originalSha256": null,
+      "byteSize": null,
+      "nativeCrs": null,
+      "frameId": "FRAME-DEMO",
+      "verticalDatum": "DEMO-BM-01",
+      "acquiredAt": null,
+      "rasterMetadata": null,
+      "pointCloudMetadata": null,
+      "note": "Fictional embedded design records; no original file bytes claimed."
+    },
+    {
+      "id": "SRC-PLAN",
+      "label": "Neem Court floor layout",
+      "modality": "plan",
+      "mimeType": "application/json",
+      "classification": "synthetic",
+      "representation": "embedded_records",
+      "revision": "fixture-v1",
+      "originalUri": null,
+      "originalSha256": null,
+      "byteSize": null,
+      "nativeCrs": null,
+      "frameId": "FRAME-DEMO",
+      "verticalDatum": "DEMO-BM-01",
+      "acquiredAt": null,
+      "rasterMetadata": null,
+      "pointCloudMetadata": null,
+      "note": "Fictional embedded design records; no original file bytes claimed."
+    },
+    {
+      "id": "SRC-UTILITY",
+      "label": "Below-ground water service",
+      "modality": "utility",
+      "mimeType": "application/json",
+      "classification": "synthetic",
+      "representation": "embedded_records",
+      "revision": "fixture-v1",
+      "originalUri": null,
+      "originalSha256": null,
+      "byteSize": null,
+      "nativeCrs": null,
+      "frameId": "FRAME-DEMO",
+      "verticalDatum": "DEMO-BM-01",
+      "acquiredAt": null,
+      "rasterMetadata": null,
+      "pointCloudMetadata": null,
+      "note": "Fictional embedded design records; no original file bytes claimed."
+    },
+    {
+      "id": "SRC-IMAGERY",
+      "label": "Orthomosaic descriptor",
+      "modality": "imagery",
+      "mimeType": "image/tiff",
+      "classification": "synthetic",
+      "representation": "descriptor_only",
+      "revision": "fixture-v1",
+      "originalUri": null,
+      "originalSha256": null,
+      "byteSize": null,
+      "nativeCrs": null,
+      "frameId": "FRAME-DEMO",
+      "verticalDatum": "DEMO-BM-01",
+      "acquiredAt": null,
+      "rasterMetadata": {
+        "width": 240,
+        "height": 190,
+        "pixelSizeM": [
+          1,
+          1
+        ],
+        "geotransform": null
+      },
+      "pointCloudMetadata": null,
+      "note": "Demonstration metadata only; no raster, cloud, control observations or original bytes available."
+    },
+    {
+      "id": "SRC-LIDAR",
+      "label": "Point cloud descriptor",
+      "modality": "point_cloud",
+      "mimeType": "application/vnd.las",
+      "classification": "synthetic",
+      "representation": "descriptor_only",
+      "revision": "fixture-v1",
+      "originalUri": null,
+      "originalSha256": null,
+      "byteSize": null,
+      "nativeCrs": null,
+      "frameId": "FRAME-DEMO",
+      "verticalDatum": "DEMO-BM-01",
+      "acquiredAt": null,
+      "rasterMetadata": null,
+      "pointCloudMetadata": {
+        "pointCount": null,
+        "format": null,
+        "scale": null,
+        "offset": null
+      },
+      "note": "Demonstration metadata only; no raster, cloud, control observations or original bytes available."
+    },
+    {
+      "id": "SRC-CONTROL",
+      "label": "Survey control descriptor",
+      "modality": "survey_control",
+      "mimeType": "text/csv",
+      "classification": "synthetic",
+      "representation": "descriptor_only",
+      "revision": "fixture-v1",
+      "originalUri": null,
+      "originalSha256": null,
+      "byteSize": null,
+      "nativeCrs": null,
+      "frameId": "FRAME-DEMO",
+      "verticalDatum": "DEMO-BM-01",
+      "acquiredAt": null,
+      "rasterMetadata": null,
+      "pointCloudMetadata": null,
+      "note": "Demonstration metadata only; no raster, cloud, control observations or original bytes available."
+    },
+    {
+      "id": "SRC-ELEVATION",
+      "label": "Terrain descriptor",
+      "modality": "elevation",
+      "mimeType": "image/tiff",
+      "classification": "synthetic",
+      "representation": "descriptor_only",
+      "revision": "fixture-v1",
+      "originalUri": null,
+      "originalSha256": null,
+      "byteSize": null,
+      "nativeCrs": null,
+      "frameId": "FRAME-DEMO",
+      "verticalDatum": null,
+      "acquiredAt": null,
+      "rasterMetadata": {
+        "width": 240,
+        "height": 190,
+        "pixelSizeM": [
+          1,
+          1
+        ],
+        "geotransform": null
+      },
+      "pointCloudMetadata": null,
+      "note": "Demonstration metadata only; no raster, cloud, control observations or original bytes available."
+    }
+  ],
+  "sourceRecords": [
+    {
+      "id": "SR-P01",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P01",
+      "locator": "embedded:P01",
+      "attributes": {
+        "source_object_key": "P01",
+        "feature_type": "parcel",
+        "name": "Plot 01",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                75,
+                102
+              ],
+              [
+                133,
+                102
+              ],
+              [
+                133,
+                141
+              ],
+              [
+                75,
+                141
+              ],
+              [
+                75,
+                102
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "mixed_use"
+      }
+    },
+    {
+      "id": "SR-B01",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01",
+      "locator": "embedded:B01",
+      "attributes": {
+        "source_object_key": "B01",
+        "feature_type": "building",
+        "name": "Neem Court",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                78,
+                105
+              ],
+              [
+                130,
+                105
+              ],
+              [
+                130,
+                139
+              ],
+              [
+                113,
+                139
+              ],
+              [
+                113,
+                126
+              ],
+              [
+                98,
+                126
+              ],
+              [
+                98,
+                139
+              ],
+              [
+                78,
+                139
+              ],
+              [
+                78,
+                105
+              ]
+            ]
+          ]
+        },
+        "height_m": 12.8,
+        "base_elevation_m": 0,
+        "use": "mixed_use",
+        "floorCount": 4,
+        "address": "01 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P02",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P02",
+      "locator": "embedded:P02",
+      "attributes": {
+        "source_object_key": "P02",
+        "feature_type": "parcel",
+        "name": "Plot 02",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                7,
+                102
+              ],
+              [
+                47,
+                102
+              ],
+              [
+                47,
+                141
+              ],
+              [
+                7,
+                141
+              ],
+              [
+                7,
+                102
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "SR-B02",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B02",
+      "locator": "embedded:B02",
+      "attributes": {
+        "source_object_key": "B02",
+        "feature_type": "building",
+        "name": "Courtyard House",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                10,
+                105
+              ],
+              [
+                39,
+                105
+              ],
+              [
+                44,
+                110
+              ],
+              [
+                44,
+                138
+              ],
+              [
+                32,
+                138
+              ],
+              [
+                32,
+                130
+              ],
+              [
+                10,
+                130
+              ],
+              [
+                10,
+                105
+              ]
+            ]
+          ]
+        },
+        "height_m": 9.6,
+        "base_elevation_m": 0,
+        "use": "residential",
+        "floorCount": 3,
+        "address": "02 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P03",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P03",
+      "locator": "embedded:P03",
+      "attributes": {
+        "source_object_key": "P03",
+        "feature_type": "parcel",
+        "name": "Plot 03",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                140,
+                102
+              ],
+              [
+                180,
+                102
+              ],
+              [
+                180,
+                141
+              ],
+              [
+                140,
+                141
+              ],
+              [
+                140,
+                102
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "mixed_use"
+      }
+    },
+    {
+      "id": "SR-B03",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B03",
+      "locator": "embedded:B03",
+      "attributes": {
+        "source_object_key": "B03",
+        "feature_type": "building",
+        "name": "Corner Stores",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                143,
+                105
+              ],
+              [
+                172,
+                105
+              ],
+              [
+                177,
+                110
+              ],
+              [
+                177,
+                138
+              ],
+              [
+                165,
+                138
+              ],
+              [
+                165,
+                130
+              ],
+              [
+                143,
+                130
+              ],
+              [
+                143,
+                105
+              ]
+            ]
+          ]
+        },
+        "height_m": 7.2,
+        "base_elevation_m": 0,
+        "use": "mixed_use",
+        "floorCount": 2,
+        "address": "03 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P04",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P04",
+      "locator": "embedded:P04",
+      "attributes": {
+        "source_object_key": "P04",
+        "feature_type": "parcel",
+        "name": "Plot 04",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                191,
+                102
+              ],
+              [
+                231,
+                102
+              ],
+              [
+                231,
+                141
+              ],
+              [
+                191,
+                141
+              ],
+              [
+                191,
+                102
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "SR-B04",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B04",
+      "locator": "embedded:B04",
+      "attributes": {
+        "source_object_key": "B04",
+        "feature_type": "building",
+        "name": "Mango House",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                194,
+                105
+              ],
+              [
+                223,
+                105
+              ],
+              [
+                228,
+                110
+              ],
+              [
+                228,
+                138
+              ],
+              [
+                216,
+                138
+              ],
+              [
+                216,
+                130
+              ],
+              [
+                194,
+                130
+              ],
+              [
+                194,
+                105
+              ]
+            ]
+          ]
+        },
+        "height_m": 6.4,
+        "base_elevation_m": 0,
+        "use": "residential",
+        "floorCount": 2,
+        "address": "04 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P05",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P05",
+      "locator": "embedded:P05",
+      "attributes": {
+        "source_object_key": "P05",
+        "feature_type": "parcel",
+        "name": "Plot 05",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                7,
+                15
+              ],
+              [
+                47,
+                15
+              ],
+              [
+                47,
+                54
+              ],
+              [
+                7,
+                54
+              ],
+              [
+                7,
+                15
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "SR-B05",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B05",
+      "locator": "embedded:B05",
+      "attributes": {
+        "source_object_key": "B05",
+        "feature_type": "building",
+        "name": "Workshop 05",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                10,
+                18
+              ],
+              [
+                39,
+                18
+              ],
+              [
+                44,
+                23
+              ],
+              [
+                44,
+                51
+              ],
+              [
+                32,
+                51
+              ],
+              [
+                32,
+                43
+              ],
+              [
+                10,
+                43
+              ],
+              [
+                10,
+                18
+              ]
+            ]
+          ]
+        },
+        "height_m": 5.2,
+        "base_elevation_m": 0,
+        "use": "residential",
+        "floorCount": 2,
+        "address": "05 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P06",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P06",
+      "locator": "embedded:P06",
+      "attributes": {
+        "source_object_key": "P06",
+        "feature_type": "parcel",
+        "name": "Plot 06",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                47,
+                15
+              ],
+              [
+                87,
+                15
+              ],
+              [
+                87,
+                54
+              ],
+              [
+                47,
+                54
+              ],
+              [
+                47,
+                15
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "SR-B06",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B06",
+      "locator": "embedded:B06",
+      "attributes": {
+        "source_object_key": "B06",
+        "feature_type": "building",
+        "name": "Terrace House",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                50,
+                18
+              ],
+              [
+                79,
+                18
+              ],
+              [
+                84,
+                23
+              ],
+              [
+                84,
+                51
+              ],
+              [
+                72,
+                51
+              ],
+              [
+                72,
+                43
+              ],
+              [
+                50,
+                43
+              ],
+              [
+                50,
+                18
+              ]
+            ]
+          ]
+        },
+        "height_m": 9.6,
+        "base_elevation_m": 0,
+        "use": "residential",
+        "floorCount": 3,
+        "address": "06 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P07",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P07",
+      "locator": "embedded:P07",
+      "attributes": {
+        "source_object_key": "P07",
+        "feature_type": "parcel",
+        "name": "Plot 07",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                90,
+                15
+              ],
+              [
+                130,
+                15
+              ],
+              [
+                130,
+                54
+              ],
+              [
+                90,
+                54
+              ],
+              [
+                90,
+                15
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "SR-B07",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B07",
+      "locator": "embedded:B07",
+      "attributes": {
+        "source_object_key": "B07",
+        "feature_type": "building",
+        "name": "Clinic Annex",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                93,
+                18
+              ],
+              [
+                122,
+                18
+              ],
+              [
+                127,
+                23
+              ],
+              [
+                127,
+                51
+              ],
+              [
+                115,
+                51
+              ],
+              [
+                115,
+                43
+              ],
+              [
+                93,
+                43
+              ],
+              [
+                93,
+                18
+              ]
+            ]
+          ]
+        },
+        "height_m": 6.4,
+        "base_elevation_m": 0,
+        "use": "public",
+        "floorCount": 2,
+        "address": "07 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P08",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P08",
+      "locator": "embedded:P08",
+      "attributes": {
+        "source_object_key": "P08",
+        "feature_type": "parcel",
+        "name": "Plot 08",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                136,
+                15
+              ],
+              [
+                176,
+                15
+              ],
+              [
+                176,
+                54
+              ],
+              [
+                136,
+                54
+              ],
+              [
+                136,
+                15
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "SR-B08",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B08",
+      "locator": "embedded:B08",
+      "attributes": {
+        "source_object_key": "B08",
+        "feature_type": "building",
+        "name": "Cedar House",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                139,
+                18
+              ],
+              [
+                168,
+                18
+              ],
+              [
+                173,
+                23
+              ],
+              [
+                173,
+                51
+              ],
+              [
+                161,
+                51
+              ],
+              [
+                161,
+                43
+              ],
+              [
+                139,
+                43
+              ],
+              [
+                139,
+                18
+              ]
+            ]
+          ]
+        },
+        "height_m": 12.8,
+        "base_elevation_m": 0,
+        "use": "residential",
+        "floorCount": 4,
+        "address": "08 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P09",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P09",
+      "locator": "embedded:P09",
+      "attributes": {
+        "source_object_key": "P09",
+        "feature_type": "parcel",
+        "name": "Plot 09",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                184,
+                15
+              ],
+              [
+                224,
+                15
+              ],
+              [
+                224,
+                54
+              ],
+              [
+                184,
+                54
+              ],
+              [
+                184,
+                15
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "mixed_use"
+      }
+    },
+    {
+      "id": "SR-B09",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B09",
+      "locator": "embedded:B09",
+      "attributes": {
+        "source_object_key": "B09",
+        "feature_type": "building",
+        "name": "South Arcade",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                187,
+                18
+              ],
+              [
+                216,
+                18
+              ],
+              [
+                221,
+                23
+              ],
+              [
+                221,
+                51
+              ],
+              [
+                209,
+                51
+              ],
+              [
+                209,
+                43
+              ],
+              [
+                187,
+                43
+              ],
+              [
+                187,
+                18
+              ]
+            ]
+          ]
+        },
+        "height_m": 8.4,
+        "base_elevation_m": 0,
+        "use": "mixed_use",
+        "floorCount": 3,
+        "address": "09 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P10",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P10",
+      "locator": "embedded:P10",
+      "attributes": {
+        "source_object_key": "P10",
+        "feature_type": "parcel",
+        "name": "Plot 10",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                7,
+                147
+              ],
+              [
+                45,
+                147
+              ],
+              [
+                45,
+                180
+              ],
+              [
+                7,
+                180
+              ],
+              [
+                7,
+                147
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "SR-B10",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B10",
+      "locator": "embedded:B10",
+      "attributes": {
+        "source_object_key": "B10",
+        "feature_type": "building",
+        "name": "Garden House",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                10,
+                150
+              ],
+              [
+                37,
+                150
+              ],
+              [
+                42,
+                155
+              ],
+              [
+                42,
+                177
+              ],
+              [
+                30,
+                177
+              ],
+              [
+                30,
+                169
+              ],
+              [
+                10,
+                169
+              ],
+              [
+                10,
+                150
+              ]
+            ]
+          ]
+        },
+        "height_m": 6.4,
+        "base_elevation_m": 0,
+        "use": "residential",
+        "floorCount": 2,
+        "address": "10 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P11",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P11",
+      "locator": "embedded:P11",
+      "attributes": {
+        "source_object_key": "P11",
+        "feature_type": "parcel",
+        "name": "Plot 11",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                62,
+                147
+              ],
+              [
+                100,
+                147
+              ],
+              [
+                100,
+                180
+              ],
+              [
+                62,
+                180
+              ],
+              [
+                62,
+                147
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "SR-B11",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B11",
+      "locator": "embedded:B11",
+      "attributes": {
+        "source_object_key": "B11",
+        "feature_type": "building",
+        "name": "Library Annex",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                65,
+                150
+              ],
+              [
+                92,
+                150
+              ],
+              [
+                97,
+                155
+              ],
+              [
+                97,
+                177
+              ],
+              [
+                85,
+                177
+              ],
+              [
+                85,
+                169
+              ],
+              [
+                65,
+                169
+              ],
+              [
+                65,
+                150
+              ]
+            ]
+          ]
+        },
+        "height_m": 4.8,
+        "base_elevation_m": 0,
+        "use": "public",
+        "floorCount": 1,
+        "address": "11 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-P12",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "P12",
+      "locator": "embedded:P12",
+      "attributes": {
+        "source_object_key": "P12",
+        "feature_type": "parcel",
+        "name": "Plot 12",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                174,
+                147
+              ],
+              [
+                212,
+                147
+              ],
+              [
+                212,
+                180
+              ],
+              [
+                174,
+                180
+              ],
+              [
+                174,
+                147
+              ]
+            ]
+          ]
+        },
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "landUse": "residential"
+      }
+    },
+    {
+      "id": "SR-B12",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B12",
+      "locator": "embedded:B12",
+      "attributes": {
+        "source_object_key": "B12",
+        "feature_type": "building",
+        "name": "Unmeasured House",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                177,
+                150
+              ],
+              [
+                204,
+                150
+              ],
+              [
+                209,
+                155
+              ],
+              [
+                209,
+                177
+              ],
+              [
+                197,
+                177
+              ],
+              [
+                197,
+                169
+              ],
+              [
+                177,
+                169
+              ],
+              [
+                177,
+                150
+              ]
+            ]
+          ]
+        },
+        "height_m": null,
+        "base_elevation_m": 0,
+        "use": "residential",
+        "floorCount": null,
+        "address": "12 Neem Quarter"
+      }
+    },
+    {
+      "id": "SR-B01-F0",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F0",
+      "locator": "embedded:B01-F0",
+      "attributes": {
+        "source_object_key": "B01-F0",
+        "feature_type": "floor",
+        "name": "Ground floor",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                78,
+                105
+              ],
+              [
+                130,
+                105
+              ],
+              [
+                130,
+                139
+              ],
+              [
+                113,
+                139
+              ],
+              [
+                113,
+                126
+              ],
+              [
+                98,
+                126
+              ],
+              [
+                98,
+                139
+              ],
+              [
+                78,
+                139
+              ],
+              [
+                78,
+                105
+              ]
+            ]
+          ]
+        },
+        "height_m": 3.2,
+        "base_elevation_m": 0.0,
+        "level": 0,
+        "buildingId": "B01"
+      }
+    },
+    {
+      "id": "SR-B01-F0-U1",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F0-U1",
+      "locator": "embedded:B01-F0-U1",
+      "attributes": {
+        "source_object_key": "B01-F0-U1",
+        "feature_type": "space",
+        "name": "Shop A",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                79,
+                106
+              ],
+              [
+                99,
+                106
+              ],
+              [
+                99,
+                119
+              ],
+              [
+                97,
+                119
+              ],
+              [
+                97,
+                138
+              ],
+              [
+                79,
+                138
+              ],
+              [
+                79,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 0.0,
+        "floorId": "B01-F0",
+        "buildingId": "B01",
+        "level": 0,
+        "use": "retail",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "SR-B01-F0-U2",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F0-U2",
+      "locator": "embedded:B01-F0-U2",
+      "attributes": {
+        "source_object_key": "B01-F0-U2",
+        "feature_type": "space",
+        "name": "Shop B",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                110,
+                106
+              ],
+              [
+                129,
+                106
+              ],
+              [
+                129,
+                138
+              ],
+              [
+                114,
+                138
+              ],
+              [
+                114,
+                125
+              ],
+              [
+                110,
+                125
+              ],
+              [
+                110,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 0.0,
+        "floorId": "B01-F0",
+        "buildingId": "B01",
+        "level": 0,
+        "use": "retail",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "SR-B01-F0-C",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F0-C",
+      "locator": "embedded:B01-F0-C",
+      "attributes": {
+        "source_object_key": "B01-F0-C",
+        "feature_type": "space",
+        "name": "Shared circulation",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                100,
+                106
+              ],
+              [
+                109,
+                106
+              ],
+              [
+                109,
+                125
+              ],
+              [
+                100,
+                125
+              ],
+              [
+                100,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 0.0,
+        "floorId": "B01-F0",
+        "buildingId": "B01",
+        "level": 0,
+        "use": "common",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "SR-B01-F1",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F1",
+      "locator": "embedded:B01-F1",
+      "attributes": {
+        "source_object_key": "B01-F1",
+        "feature_type": "floor",
+        "name": "Floor 1",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                78,
+                105
+              ],
+              [
+                130,
+                105
+              ],
+              [
+                130,
+                139
+              ],
+              [
+                113,
+                139
+              ],
+              [
+                113,
+                126
+              ],
+              [
+                98,
+                126
+              ],
+              [
+                98,
+                139
+              ],
+              [
+                78,
+                139
+              ],
+              [
+                78,
+                105
+              ]
+            ]
+          ]
+        },
+        "height_m": 3.2,
+        "base_elevation_m": 3.2,
+        "level": 1,
+        "buildingId": "B01"
+      }
+    },
+    {
+      "id": "SR-B01-F1-U1",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F1-U1",
+      "locator": "embedded:B01-F1-U1",
+      "attributes": {
+        "source_object_key": "B01-F1-U1",
+        "feature_type": "space",
+        "name": "Apartment 101",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                79,
+                106
+              ],
+              [
+                99,
+                106
+              ],
+              [
+                99,
+                119
+              ],
+              [
+                97,
+                119
+              ],
+              [
+                97,
+                138
+              ],
+              [
+                79,
+                138
+              ],
+              [
+                79,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 3.2,
+        "floorId": "B01-F1",
+        "buildingId": "B01",
+        "level": 1,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "SR-B01-F1-U2",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F1-U2",
+      "locator": "embedded:B01-F1-U2",
+      "attributes": {
+        "source_object_key": "B01-F1-U2",
+        "feature_type": "space",
+        "name": "Apartment 102",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                110,
+                106
+              ],
+              [
+                129,
+                106
+              ],
+              [
+                129,
+                138
+              ],
+              [
+                114,
+                138
+              ],
+              [
+                114,
+                125
+              ],
+              [
+                110,
+                125
+              ],
+              [
+                110,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 3.2,
+        "floorId": "B01-F1",
+        "buildingId": "B01",
+        "level": 1,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "SR-B01-F1-C",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F1-C",
+      "locator": "embedded:B01-F1-C",
+      "attributes": {
+        "source_object_key": "B01-F1-C",
+        "feature_type": "space",
+        "name": "Shared circulation",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                100,
+                106
+              ],
+              [
+                109,
+                106
+              ],
+              [
+                109,
+                125
+              ],
+              [
+                100,
+                125
+              ],
+              [
+                100,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 3.2,
+        "floorId": "B01-F1",
+        "buildingId": "B01",
+        "level": 1,
+        "use": "common",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "SR-B01-F2",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F2",
+      "locator": "embedded:B01-F2",
+      "attributes": {
+        "source_object_key": "B01-F2",
+        "feature_type": "floor",
+        "name": "Floor 2",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                78,
+                105
+              ],
+              [
+                130,
+                105
+              ],
+              [
+                130,
+                139
+              ],
+              [
+                113,
+                139
+              ],
+              [
+                113,
+                126
+              ],
+              [
+                98,
+                126
+              ],
+              [
+                98,
+                139
+              ],
+              [
+                78,
+                139
+              ],
+              [
+                78,
+                105
+              ]
+            ]
+          ]
+        },
+        "height_m": 3.2,
+        "base_elevation_m": 6.4,
+        "level": 2,
+        "buildingId": "B01"
+      }
+    },
+    {
+      "id": "SR-B01-F2-U1",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F2-U1",
+      "locator": "embedded:B01-F2-U1",
+      "attributes": {
+        "source_object_key": "B01-F2-U1",
+        "feature_type": "space",
+        "name": "Apartment 201",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                79,
+                106
+              ],
+              [
+                99,
+                106
+              ],
+              [
+                99,
+                119
+              ],
+              [
+                97,
+                119
+              ],
+              [
+                97,
+                138
+              ],
+              [
+                79,
+                138
+              ],
+              [
+                79,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 6.4,
+        "floorId": "B01-F2",
+        "buildingId": "B01",
+        "level": 2,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "SR-B01-F2-U2",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F2-U2",
+      "locator": "embedded:B01-F2-U2",
+      "attributes": {
+        "source_object_key": "B01-F2-U2",
+        "feature_type": "space",
+        "name": "Apartment 202",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                110,
+                106
+              ],
+              [
+                129,
+                106
+              ],
+              [
+                129,
+                138
+              ],
+              [
+                114,
+                138
+              ],
+              [
+                114,
+                125
+              ],
+              [
+                110,
+                125
+              ],
+              [
+                110,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 6.4,
+        "floorId": "B01-F2",
+        "buildingId": "B01",
+        "level": 2,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "SR-B01-F2-C",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F2-C",
+      "locator": "embedded:B01-F2-C",
+      "attributes": {
+        "source_object_key": "B01-F2-C",
+        "feature_type": "space",
+        "name": "Shared circulation",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                100,
+                106
+              ],
+              [
+                109,
+                106
+              ],
+              [
+                109,
+                125
+              ],
+              [
+                100,
+                125
+              ],
+              [
+                100,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 6.4,
+        "floorId": "B01-F2",
+        "buildingId": "B01",
+        "level": 2,
+        "use": "common",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "SR-B01-F3",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F3",
+      "locator": "embedded:B01-F3",
+      "attributes": {
+        "source_object_key": "B01-F3",
+        "feature_type": "floor",
+        "name": "Floor 3",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                78,
+                105
+              ],
+              [
+                130,
+                105
+              ],
+              [
+                130,
+                139
+              ],
+              [
+                113,
+                139
+              ],
+              [
+                113,
+                126
+              ],
+              [
+                98,
+                126
+              ],
+              [
+                98,
+                139
+              ],
+              [
+                78,
+                139
+              ],
+              [
+                78,
+                105
+              ]
+            ]
+          ]
+        },
+        "height_m": 3.2,
+        "base_elevation_m": 9.6,
+        "level": 3,
+        "buildingId": "B01"
+      }
+    },
+    {
+      "id": "SR-B01-F3-U1",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F3-U1",
+      "locator": "embedded:B01-F3-U1",
+      "attributes": {
+        "source_object_key": "B01-F3-U1",
+        "feature_type": "space",
+        "name": "Apartment 301",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                79,
+                106
+              ],
+              [
+                99,
+                106
+              ],
+              [
+                99,
+                119
+              ],
+              [
+                97,
+                119
+              ],
+              [
+                97,
+                138
+              ],
+              [
+                79,
+                138
+              ],
+              [
+                79,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 9.6,
+        "floorId": "B01-F3",
+        "buildingId": "B01",
+        "level": 3,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "SR-B01-F3-U2",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F3-U2",
+      "locator": "embedded:B01-F3-U2",
+      "attributes": {
+        "source_object_key": "B01-F3-U2",
+        "feature_type": "space",
+        "name": "Apartment 302",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                110,
+                106
+              ],
+              [
+                129,
+                106
+              ],
+              [
+                129,
+                138
+              ],
+              [
+                114,
+                138
+              ],
+              [
+                114,
+                125
+              ],
+              [
+                110,
+                125
+              ],
+              [
+                110,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 9.6,
+        "floorId": "B01-F3",
+        "buildingId": "B01",
+        "level": 3,
+        "use": "residential",
+        "bedrooms": 2
+      }
+    },
+    {
+      "id": "SR-B01-F3-C",
+      "sourceId": "SRC-PLAN",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "B01-F3-C",
+      "locator": "embedded:B01-F3-C",
+      "attributes": {
+        "source_object_key": "B01-F3-C",
+        "feature_type": "space",
+        "name": "Shared circulation",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                100,
+                106
+              ],
+              [
+                109,
+                106
+              ],
+              [
+                109,
+                125
+              ],
+              [
+                100,
+                125
+              ],
+              [
+                100,
+                106
+              ]
+            ]
+          ]
+        },
+        "height_m": 3,
+        "base_elevation_m": 9.6,
+        "floorId": "B01-F3",
+        "buildingId": "B01",
+        "level": 3,
+        "use": "common",
+        "bedrooms": null
+      }
+    },
+    {
+      "id": "SR-R01",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "R01",
+      "locator": "embedded:R01",
+      "attributes": {
+        "source_object_key": "R01",
+        "feature_type": "road",
+        "name": "Neem Avenue",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              0,
+              92
+            ],
+            [
+              240,
+              92
+            ]
+          ]
+        },
+        "height_m": null,
+        "base_elevation_m": null,
+        "widthM": 12
+      }
+    },
+    {
+      "id": "SR-R02",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "R02",
+      "locator": "embedded:R02",
+      "attributes": {
+        "source_object_key": "R02",
+        "feature_type": "road",
+        "name": "Market Lane",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              0,
+              9
+            ],
+            [
+              240,
+              9
+            ]
+          ]
+        },
+        "height_m": null,
+        "base_elevation_m": null,
+        "widthM": 8
+      }
+    },
+    {
+      "id": "SR-R03",
+      "sourceId": "SRC-GIS",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "R03",
+      "locator": "embedded:R03",
+      "attributes": {
+        "source_object_key": "R03",
+        "feature_type": "road",
+        "name": "Garden Lane",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              0,
+              146
+            ],
+            [
+              240,
+              146
+            ]
+          ]
+        },
+        "height_m": null,
+        "base_elevation_m": null,
+        "widthM": 7
+      }
+    },
+    {
+      "id": "SR-UT01",
+      "sourceId": "SRC-UTILITY",
+      "sourceRevision": "fixture-v1",
+      "recordKey": "UT01",
+      "locator": "embedded:UT01",
+      "attributes": {
+        "source_object_key": "UT01",
+        "feature_type": "utility",
+        "name": "Water service 01",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [
+              8,
+              28,
+              -2
+            ],
+            [
+              220,
+              28,
+              -2
+            ]
+          ]
+        },
+        "height_m": null,
+        "base_elevation_m": null,
+        "service": "water",
+        "diameterM": 0.3,
+        "depthM": 2
+      }
+    }
+  ],
+  "observations": [
+    {
+      "id": "OBS-B01-heightM",
+      "objectId": "B01",
+      "field": "heightM",
+      "value": 12.8,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-areaM2",
+      "objectId": "B01",
+      "field": "areaM2",
+      "value": 1573.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B02-heightM",
+      "objectId": "B02",
+      "field": "heightM",
+      "value": 9.6,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B02"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B02-areaM2",
+      "objectId": "B02",
+      "field": "areaM2",
+      "value": 933.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B02"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B03-heightM",
+      "objectId": "B03",
+      "field": "heightM",
+      "value": 7.2,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B03"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B03-areaM2",
+      "objectId": "B03",
+      "field": "areaM2",
+      "value": 933.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B03"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B04-heightM",
+      "objectId": "B04",
+      "field": "heightM",
+      "value": 6.4,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B04"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B04-areaM2",
+      "objectId": "B04",
+      "field": "areaM2",
+      "value": 933.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B04"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B05-heightM",
+      "objectId": "B05",
+      "field": "heightM",
+      "value": 5.2,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B05"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B05-areaM2",
+      "objectId": "B05",
+      "field": "areaM2",
+      "value": 933.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B05"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B06-heightM",
+      "objectId": "B06",
+      "field": "heightM",
+      "value": 9.6,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B06"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B06-areaM2",
+      "objectId": "B06",
+      "field": "areaM2",
+      "value": 933.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B06"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B07-heightM",
+      "objectId": "B07",
+      "field": "heightM",
+      "value": 6.4,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B07"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B07-areaM2",
+      "objectId": "B07",
+      "field": "areaM2",
+      "value": 933.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B07"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B08-heightM",
+      "objectId": "B08",
+      "field": "heightM",
+      "value": 12.8,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B08"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B08-areaM2",
+      "objectId": "B08",
+      "field": "areaM2",
+      "value": 933.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B08"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B09-heightM",
+      "objectId": "B09",
+      "field": "heightM",
+      "value": 8.4,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B09"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B09-areaM2",
+      "objectId": "B09",
+      "field": "areaM2",
+      "value": 933.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B09"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B10-heightM",
+      "objectId": "B10",
+      "field": "heightM",
+      "value": 6.4,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B10"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B10-areaM2",
+      "objectId": "B10",
+      "field": "areaM2",
+      "value": 691.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B10"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B11-heightM",
+      "objectId": "B11",
+      "field": "heightM",
+      "value": 4.8,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B11"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B11-areaM2",
+      "objectId": "B11",
+      "field": "areaM2",
+      "value": 691.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B11"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B12-heightM",
+      "objectId": "B12",
+      "field": "heightM",
+      "value": null,
+      "unit": "metre",
+      "method": "not_supplied",
+      "sourceRecordIds": [
+        "SR-B12"
+      ],
+      "status": "unreviewed",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B12-areaM2",
+      "objectId": "B12",
+      "field": "areaM2",
+      "value": 691.5,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B12"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F0-U1-heightM",
+      "objectId": "B01-F0-U1",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F0-U1"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F0-U1-areaM2",
+      "objectId": "B01-F0-U1",
+      "field": "areaM2",
+      "value": 602.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F0-U1"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F0-U2-heightM",
+      "objectId": "B01-F0-U2",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F0-U2"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F0-U2-areaM2",
+      "objectId": "B01-F0-U2",
+      "field": "areaM2",
+      "value": 556.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F0-U2"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F0-C-heightM",
+      "objectId": "B01-F0-C",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F0-C"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F0-C-areaM2",
+      "objectId": "B01-F0-C",
+      "field": "areaM2",
+      "value": 171.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F0-C"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F1-U1-heightM",
+      "objectId": "B01-F1-U1",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F1-U1"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F1-U1-areaM2",
+      "objectId": "B01-F1-U1",
+      "field": "areaM2",
+      "value": 602.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F1-U1"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F1-U2-heightM",
+      "objectId": "B01-F1-U2",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F1-U2"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F1-U2-areaM2",
+      "objectId": "B01-F1-U2",
+      "field": "areaM2",
+      "value": 556.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F1-U2"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F1-C-heightM",
+      "objectId": "B01-F1-C",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F1-C"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F1-C-areaM2",
+      "objectId": "B01-F1-C",
+      "field": "areaM2",
+      "value": 171.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F1-C"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F2-U1-heightM",
+      "objectId": "B01-F2-U1",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F2-U1"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F2-U1-areaM2",
+      "objectId": "B01-F2-U1",
+      "field": "areaM2",
+      "value": 602.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F2-U1"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F2-U2-heightM",
+      "objectId": "B01-F2-U2",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F2-U2"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F2-U2-areaM2",
+      "objectId": "B01-F2-U2",
+      "field": "areaM2",
+      "value": 556.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F2-U2"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F2-C-heightM",
+      "objectId": "B01-F2-C",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F2-C"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F2-C-areaM2",
+      "objectId": "B01-F2-C",
+      "field": "areaM2",
+      "value": 171.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F2-C"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F3-U1-heightM",
+      "objectId": "B01-F3-U1",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F3-U1"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F3-U1-areaM2",
+      "objectId": "B01-F3-U1",
+      "field": "areaM2",
+      "value": 602.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F3-U1"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F3-U2-heightM",
+      "objectId": "B01-F3-U2",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F3-U2"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F3-U2-areaM2",
+      "objectId": "B01-F3-U2",
+      "field": "areaM2",
+      "value": 556.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F3-U2"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F3-C-heightM",
+      "objectId": "B01-F3-C",
+      "field": "heightM",
+      "value": 3,
+      "unit": "metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F3-C"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    },
+    {
+      "id": "OBS-B01-F3-C-areaM2",
+      "objectId": "B01-F3-C",
+      "field": "areaM2",
+      "value": 171.0,
+      "unit": "square_metre",
+      "method": "synthetic_design",
+      "sourceRecordIds": [
+        "SR-B01-F3-C"
+      ],
+      "status": "fixture_only",
+      "observedAt": null,
+      "uncertainty": null
+    }
+  ],
+  "lineage": [
+    {
+      "id": "LIN-P01",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P01"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P01-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "4fc629feed4a34bb7c778fc6c34afcd6dd8ce03fbc8103aa11f8644966c9b693",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "691bb6d371f264f9784bab4e834d1c089fe565005c0226bf7fb562a87d8fbd6f",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P02",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P02"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P02-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "fe987df59502b13acb2c3823cd165656c75ba4ac1624958acafbf0f206190e1b",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B02",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B02"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B02-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "ed80d2d6ee9e77bac943c0492d769ea1b1b0afa9bf7d16df3c295c142a6c5e57",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P03",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P03"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P03-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "c4f5fb3917c1735da1403e02c19a114f3b8c9f53e8d20e5ad013dee317747370",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B03",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B03"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B03-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "17a0e5431f48b878d3198e8fc004e9330b9bf596371c792981e28c6658c4bb45",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P04",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P04"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P04-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "980335daad539fbbebf914d8e0df5144d9b483be89bcf3afb7e110daaf3dc8da",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B04",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B04"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B04-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "74a019d512b598a3e81e63abb8d9094bbccb07d16dd6839d34f939bb5ff34ba0",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P05",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P05"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P05-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "9773110ce13712fa59fb39e902b82a644fb2cc62399622eabdd0c6adc3f9e372",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B05",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B05"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B05-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "9b81bcdca766e9daab75cfe1217d91652b2db985d6823137a225af90749a2884",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P06",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P06"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P06-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "c8d9314a6e15f8ed38c8b58fc5aa4ca67fbe36ea4de1d64ad3cd1e016eea0d9b",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B06",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B06"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B06-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "ecb48e71e6474563c8d837bd4d2b48395a663dede29d383589b6ea084ae54adb",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P07",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P07"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P07-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "489167aae806443a1315ef1ef053ba6964aa9b937feaacdd53e70a89168f784a",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B07",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B07"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B07-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "6621768a46a176a15dd944aa00dd036fef52a109304dc71a2df8eaad70c81c27",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P08",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P08"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P08-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "4798406f2e50896c5372f670fcafa47215cc2fa585dd18355e611329b9324169",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B08",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B08"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B08-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "102be46ebc24464db33ed3a8c5b043b86108a5127e8775b81c0c284d5679689c",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P09",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P09"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P09-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "a28bee015dd4ca7d28d9e9961624b01ce5bc58c531b13dd9cb389c71b6956940",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B09",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B09"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B09-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "55a9ea3a23c30b509be23a07737bcf01f5460a0a54e3ade4ef31425ac77a38a5",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P10",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P10"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P10-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "67374f3452c6f1776f458abe54d2df7f58b9f4467cf1e5679ddbddcf2f82e649",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B10",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B10"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B10-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "b7ee2b1034a660c2fe44422468dcbff28510d2e2a96e3de2f85b99139397614c",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P11",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P11"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P11-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "a94d7a99e4a3d2eb62d612ec9203ed0519f05484cadc83f7b5b157e460d82f78",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B11",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B11"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B11-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "41d53dc96fe29e305c038b605746b7b976eeacb32f91ad514145aa6fb6fe3f6a",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-P12",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-P12"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-P12-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "552e5e8bc04adb2f487c344df19ff113f72132a173bbec0e74a1082949b5fa50",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B12",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B12"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B12-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "b987fffcfee4ff23ac24f51943f8b09501e1e7eefbecd7e0a5be0ffd548c1789",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F0",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F0"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F0-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "ef501d13964aa0b8c7bb1580fc092bb0158b392ce3854312bb8866a42264480a",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F0-U1",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F0-U1"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F0-U1-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "b9d921789b03126a2d6d85ac55f4a9bb158797209a13fb59dbae30f69dbdb071",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F0-U2",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F0-U2"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F0-U2-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "a7abb63e1c2da181162480673bd34753033bf37cd2a55f62fdfcaf8e17cf6df0",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F0-C",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F0-C"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F0-C-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "a61dd0be472c8e2e530c1887896b046a7730df06445a62fddbed52a46d63a8fd",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F1",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F1"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F1-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "5cc89bc8df03016e2237d06d07f2484238d99475da05b7fa6056c0ea273811e8",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F1-U1",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F1-U1"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F1-U1-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "76ebc8db20620271f1803e30b8adceb07f9e1355881ed0caf329703f3f0c7b1d",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F1-U2",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F1-U2"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F1-U2-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "505de94fa1362933a0be3688f2b572794c2fc60d94aaf47a68c32c9400867b50",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F1-C",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F1-C"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F1-C-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "5e18720b8d1e3137559ec2853789f9051e1a27dabe5dfd7328e5924bc906a74d",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F2",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F2"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F2-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "4fc2838ac0b758b7ab1b2ac0db3d7c0191e1f5e2eaee364b089533a1aabe4a3d",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F2-U1",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F2-U1"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F2-U1-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "cba651141215787bb45b4c0837f6b5342a01a901e0096cc0f848ded65ed0c089",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F2-U2",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F2-U2"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F2-U2-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "9ed24143741e901b0ef41e6f923c1ba3dd877620b72e44ed218fba84cd972e92",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F2-C",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F2-C"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F2-C-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "3b295d6684fe6f3d0f14da08b9f86c3936a858ecbcf67ff17350e2962ed99648",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F3",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F3"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F3-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "885396bdc194841cfa1aafe65dd56600ec3cfee8a4ac9159fea48cb23e8cc75c",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F3-U1",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F3-U1"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F3-U1-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "12a9d2beb2cfd545b55c1cb5ddf74d3af7e6925b53c943df7fd6f9ecba62241d",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F3-U2",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F3-U2"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F3-U2-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "8f3c869e4570aa056ce5e04266d21f94b715ae3fdfa103444bb0d2b8e935cd19",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-B01-F3-C",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-B01-F3-C"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-B01-F3-C-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "275101dcd54f5c5879f786b45a2d832a87cedff4724db7ea9c8806c8dee89f79",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-R01",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-R01"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-R01-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "f93caf4458405c6a3b53d955a6ebbfc1cec1d8755460a1c6b111df0d6a6d4d68",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-R02",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-R02"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-R02-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "e7df8f69ce113ae6048145ed21610fb315e17dc434d4a8f46d68a030102e6190",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-R03",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-R03"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-R03-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "0d38eacb3e063e8d96fb5601a2baf2cefe63056ff1d1e3ec4afc9439454fb052",
+      "reviewStatus": "fixture_only"
+    },
+    {
+      "id": "LIN-UT01",
+      "operation": "synthetic_design_mapping",
+      "inputSourceRecordIds": [
+        "SR-UT01"
+      ],
+      "inputGeometryIds": [],
+      "outputGeometryId": "G-UT01-v1",
+      "parameters": {
+        "horizontalTransform": "identity",
+        "verticalTransform": "identity",
+        "noRealWorldGeoreferencing": true
+      },
+      "softwareVersion": "bulk-studio-fixture/1",
+      "inputFingerprint": "02e048377a6ba0a81c08230882f176f8ab04fca2ae8c455350fc045d13f65ec4",
+      "reviewStatus": "fixture_only"
+    }
+  ],
+  "identifierAssertions": [
+    {
+      "id": "ID-P01",
+      "objectId": "P01",
+      "scheme": "official_2d_ulpin",
+      "value": null,
+      "issuer": null,
+      "status": "unavailable",
+      "sourceRecordIds": [],
+      "note": "No official 2D ULPIN was supplied or issued. System identifiers are separate."
+    }
+  ],
+  "batches": [
+    {
+      "id": "BATCH-01",
+      "label": "Parcel and building survey",
+      "sourceIds": [
+        "SRC-GIS"
+      ],
+      "objectIds": [
+        "P01",
+        "B01",
+        "P02",
+        "B02",
+        "P03",
+        "B03",
+        "P04",
+        "B04",
+        "P05",
+        "B05",
+        "P06",
+        "B06",
+        "P07",
+        "B07",
+        "P08",
+        "B08",
+        "P09",
+        "B09",
+        "P10",
+        "B10",
+        "P11",
+        "B11",
+        "P12",
+        "B12",
+        "R01",
+        "R02",
+        "R03"
+      ],
+      "stage": "review",
+      "idempotencyKey": "fixture:BATCH-01:v1",
+      "mappingVersion": "bulk-studio/1",
+      "issueIds": [
+        "ISSUE-01"
+      ],
+      "commitPolicy": "ready_objects_only_after_explicit_review",
+      "classification": "synthetic"
+    },
+    {
+      "id": "BATCH-02",
+      "label": "Neem Court floor schedule",
+      "sourceIds": [
+        "SRC-PLAN"
+      ],
+      "objectIds": [
+        "B01-F0",
+        "B01-F0-U1",
+        "B01-F0-U2",
+        "B01-F0-C",
+        "B01-F1",
+        "B01-F1-U1",
+        "B01-F1-U2",
+        "B01-F1-C",
+        "B01-F2",
+        "B01-F2-U1",
+        "B01-F2-U2",
+        "B01-F2-C",
+        "B01-F3",
+        "B01-F3-U1",
+        "B01-F3-U2",
+        "B01-F3-C"
+      ],
+      "stage": "ready",
+      "idempotencyKey": "fixture:BATCH-02:v1",
+      "mappingVersion": "bulk-studio/1",
+      "issueIds": [],
+      "commitPolicy": "ready_objects_only_after_explicit_review",
+      "classification": "synthetic"
+    },
+    {
+      "id": "BATCH-03",
+      "label": "Utility network",
+      "sourceIds": [
+        "SRC-UTILITY"
+      ],
+      "objectIds": [
+        "UT01"
+      ],
+      "stage": "ready",
+      "idempotencyKey": "fixture:BATCH-03:v1",
+      "mappingVersion": "bulk-studio/1",
+      "issueIds": [],
+      "commitPolicy": "ready_objects_only_after_explicit_review",
+      "classification": "synthetic"
+    }
+  ],
+  "issues": [
+    {
+      "id": "ISSUE-01",
+      "code": "MISSING_BUILDING_HEIGHT",
+      "severity": "blocking",
+      "status": "open",
+      "objectIds": [
+        "B12"
+      ],
+      "sourceRecordIds": [
+        "SR-B12"
+      ],
+      "field": "heightM",
+      "title": "Building height is missing",
+      "description": "The footprint is available, but no building height or floor count was supplied. It can be shown in 2D only.",
+      "allowedActions": [
+        "defer",
+        "exclude_from_batch",
+        "attach_height_evidence"
+      ],
+      "resolution": null
+    }
+  ],
+  "rights": [
+    {
+      "id": "RIGHT-01",
+      "kind": "access",
+      "label": "Shared access to Neem Court circulation",
+      "subjectObjectIds": [
+        "B01-F1-C",
+        "B01-F2-C",
+        "B01-F3-C"
+      ],
+      "beneficiary": "Fictional occupants of Neem Court",
+      "evidenceSourceRecordIds": [
+        "SR-B01-F1-C"
+      ],
+      "status": "unverified",
+      "legalAuthority": null,
+      "validFrom": null,
+      "validTo": null,
+      "note": "Fictional demonstration assertion; geometry does not establish a legal right."
+    }
+  ],
+  "sceneDecoration": {
+    "trees": [
+      [
+        14,
+        83
+      ],
+      [
+        37,
+        84
+      ],
+      [
+        72,
+        83
+      ],
+      [
+        106,
+        84
+      ],
+      [
+        141,
+        84
+      ],
+      [
+        174,
+        84
+      ],
+      [
+        210,
+        83
+      ],
+      [
+        234,
+        84
+      ],
+      [
+        16,
+        173
+      ],
+      [
+        60,
+        173
+      ],
+      [
+        108,
+        173
+      ],
+      [
+        156,
+        174
+      ],
+      [
+        205,
+        173
+      ]
+    ],
+    "classification": "synthetic_visual_decoration"
+  }
+}

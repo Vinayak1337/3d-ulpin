@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "scope": "Existing immutable revisions and source original receipt columns; object byte download checks are separately reported.",
+  "before": "2026-09-20T13:13:11.626Z",
+  "after": "2026-09-20T14:59:29.939Z",
+  "counts": [
+    {
+      "table": "physical_feature_revisions",
+      "before": 559,
+      "after": 560
+    },
+    {
+      "table": "registry_revisions",
+      "before": 322,
+      "after": 322
+    },
+    {
+      "table": "unit_revisions",
+      "before": 1001,
+      "after": 1001
+    },
+    {
+      "table": "source_receipts",
+      "before": 554,
+      "after": 565
+    }
+  ]
+}

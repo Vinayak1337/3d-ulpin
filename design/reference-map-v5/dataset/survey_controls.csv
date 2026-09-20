@@ -1,0 +1,6 @@
+control_id,local_x_m,local_y_m,local_z_m,longitude,latitude,projected_crs,vertical_datum,classification
+CP01,0,0,0,77.18741242032422,28.549241552833298,EPSG:32643,DEMO-BM-01 fictional zero datum; not national MSL,synthetic
+CP02,120,0,0,77.1886382716683,28.549221788644314,EPSG:32643,DEMO-BM-01 fictional zero datum; not national MSL,synthetic
+CP03,0,115,0,77.18743386588427,28.550278849031276,EPSG:32643,DEMO-BM-01 fictional zero datum; not national MSL,synthetic
+CP04,120,115,0,77.1886597292233,28.550259083993968,EPSG:32643,DEMO-BM-01 fictional zero datum; not national MSL,synthetic
+CP05,48,38,0,77.18790984882898,28.549576407135074,EPSG:32643,DEMO-BM-01 fictional zero datum; not national MSL,synthetic

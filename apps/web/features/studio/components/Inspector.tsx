@@ -1,32 +1,31 @@
 import { Building2, X, MapPin, Layers3, ChevronRight, FileText, TriangleAlert, Expand, ArrowUpRight, Droplets, Users, Box, Landmark, Check, ChevronUp, ChevronDown } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import type { Building, Finding, InspectorTab, ModalKind, RecordContext } from '../types';
-import { BuildingPreview, FloorPlan } from './Visuals';
+import { FloorPlan } from './Visuals';
 import UtilitySection, { nearestWater } from './UtilitySection';
 import {district} from '../data/district';
 import SourceReceipt from './SourceReceipt';
-type Props={building:Building;findings:Finding[];tab:InspectorTab;onTab:(t:InspectorTab)=>void;onClose:()=>void;onFocus:()=>void;onModal:(k:ModalKind,c?:RecordContext)=>void;onFloor:(f:number|null)=>void;onExplode:()=>void;exploded:boolean;floor:number|null;unitId?:string|null;onUnit?:(id:string)=>void;preview?:string;mobileExpanded?:boolean;onToggleMobile?:()=>void};
+type Props={building:Building;findings:Finding[];tab:InspectorTab;onTab:(t:InspectorTab)=>void;onClose:()=>void;onFocus:()=>void;onModal:(k:ModalKind,c?:RecordContext)=>void;onFloor:(f:number|null)=>void;onExplode:()=>void;exploded:boolean;floor:number|null;unitId:string|null;onUnit:(id:string)=>void;preview?:string;mobileExpanded?:boolean;onToggleMobile?:()=>void};
 
 export default function Inspector({building:b,findings,tab,onTab,onClose,onFocus,onModal,onFloor,onExplode,exploded,floor,unitId,onUnit,preview,mobileExpanded,onToggleMobile}:Props){
   const scroll=useRef<HTMLDivElement>(null);
   useEffect(()=>{scroll.current?.scrollTo({top:0});},[b.id,tab]);
-  const closest=nearestWater(b),parcelFinding=findings.find(f=>f.type==='Parcel');
+  const closest=nearestWater(b);
   const vacant=b.units.filter(u=>u.tenure==='Vacant').length;
   const selectedUnit=b.units.find(u=>u.id===unitId);
   return <aside className={`inspector ${mobileExpanded?'mobile-expanded':'mobile-peek'}`} aria-label="Property inspector">
-    <div className="ins-heading"><strong><Building2 size={17}/>Quick register</strong><div><button className="icon-button" title="Focus selected building" onClick={onFocus}><Expand size={16}/></button><button className="icon-button" title="Close inspector" onClick={onClose}><X size={18}/></button></div></div>
+    <div className="ins-heading"><strong><Building2 size={17}/>Selected property</strong><div><button className="icon-button" title="Focus selected building" onClick={onFocus}><Expand size={16}/></button><button className="icon-button" title="Close inspector" onClick={onClose}><X size={18}/></button></div></div>
     <div className="mobile-property-handle"><button onClick={onToggleMobile} aria-expanded={mobileExpanded} aria-label={mobileExpanded?'Collapse property details':'Expand property details'}><Building2 size={20}/><span><strong>{b.name}</strong><small>{b.ulpin} · {b.floors} floors</small></span>{mobileExpanded?<ChevronDown size={20}/>:<ChevronUp size={20}/>}</button><button onClick={onClose} aria-label="Close mobile property details"><X size={18}/></button></div>
     <div ref={scroll} className="ins-scroll">
-      <div className="ins-preview">{preview?<img className="building-preview" src={preview} alt={`Scene view of ${b.name}`}/>:<BuildingPreview b={b}/>}<span className={`ins-preview-status ${findings.length?'alert':''}`}>{findings.length?<TriangleAlert size={13}/>:<Check size={13}/>} {findings.length?`${findings.length} inspection findings`:'No geometry findings'}</span><button onClick={onFocus} className="ins-preview-focus" title="Focus building on map"><Expand size={16}/></button></div>
-      <div className="ins-identity"><span className="ins-eyebrow">SYNTHETIC PROPERTY REFERENCE</span><h2 data-testid="selected-ulpin">{b.ulpin}</h2><p className="ins-building-name">{b.name}</p><p><MapPin size={14}/>{b.address}</p><div className="ins-badges"><span><Building2 size={13}/>{b.use}</span><span><Layers3 size={13}/>G+{b.floors-1}</span><span className="green"><i/>Modelled</span></div></div>
+      <div className="ins-identity"><span className="ins-eyebrow">SYNTHETIC PROPERTY REFERENCE</span><h2>{b.name}</h2><p className="ins-building-name" data-testid="selected-ulpin">{b.ulpin}</p><p><MapPin size={14}/>{b.address}</p><div className="ins-badges"><span><Building2 size={13}/>{b.use}</span><span><Layers3 size={13}/>G+{b.floors-1}</span><span className="green"><i/>Modelled</span></div></div>
       <nav className="ins-tabs" aria-label="Inspector tabs">{(['overview','parcel','floors','evidence','utilities'] as InspectorTab[]).map(t=><button aria-current={tab===t?'page':undefined} className={tab===t?'active':''} key={t} onClick={()=>onTab(t)}>{t[0].toUpperCase()+t.slice(1)}</button>)}</nav>
       <div className="ins-content">
         {tab==='overview'&&<>
           <div className="ins-metrics"><div><span>Footprint</span><strong>{b.width*b.depth} <small>m²</small></strong></div><div><span>Floors / units</span><strong>{b.floors} / {b.units.length}</strong></div><div><span>Parcel area</span><strong>{(b.parcel.width*b.parcel.depth).toFixed(2)} <small>m²</small></strong></div></div>
-          {parcelFinding&&<div className="ins-alert"><TriangleAlert size={21}/><div><span>Footprint outside recorded parcel</span><strong>{parcelFinding.value} m²</strong></div><span className="ins-tiny-pill">Computed</span></div>}
-          <div className="ins-section-title"><h3>Issues & clearances <span>({findings.length})</span></h3><span>Geometry checks</span></div>
-          {findings.length?findings.map(f=><button key={f.id} className={`ins-finding ${f.type==='Utility'?'utility':''}`} onClick={()=>onTab(f.type==='Utility'?'utilities':'parcel')}><span className="ins-finding-icon">{f.type==='Utility'?<Droplets size={17}/>:<TriangleAlert size={16}/>}</span><span>{f.title}</span><strong>{f.value} {f.unit}</strong><ChevronRight size={14}/></button>):<div className="ins-ok"><Check size={17}/>Footprint is inside this demo parcel.</div>}
-          <div className="ins-section-title"><h3>Linked property records</h3><span>{b.units.length} units</span></div>
+          <details className="ins-checks-disclosure"><summary><TriangleAlert size={17}/>{findings.length ? `${findings.length} checks need review` : 'No geometry findings'}</summary>
+          {findings.map(f=><button key={f.id} className={`ins-finding ${f.type==='Utility'?'utility':''}`} onClick={()=>onTab(f.type==='Utility'?'utilities':'parcel')}><span>{f.title}</span><strong>{f.value} {f.unit}</strong><ChevronRight size={14}/></button>)}
+          </details>
+
           <button className="ins-link-row" onClick={()=>onTab('parcel')}><span className="ins-tile"><Landmark size={17}/></span><div><strong>Land & parcel record</strong><small>{b.parcelId} · {b.owner}</small></div><ChevronRight size={16}/></button>
           <button className="ins-link-row" onClick={()=>onTab('floors')}><span className="ins-tile"><Users size={17}/></span><div><strong>Floor-wise occupancy</strong><small>{b.units.length-vacant} occupied · {vacant} vacant</small></div><ChevronRight size={16}/></button>
           <button className="ins-link-row" onClick={()=>onModal('documents',{doc:'land'})}><span className="ins-tile"><FileText size={17}/></span><div><strong>Evidence & documents</strong><small>Parcel, floor plans & rental records</small></div><ChevronRight size={16}/></button>
@@ -40,7 +39,7 @@ export default function Inspector({building:b,findings,tab,onTab,onClose,onFocus
         {tab==='floors'&&<>
           <div className="ins-section-title"><h3>Floors & units</h3><span>{b.units.length} linked records</span></div>
           <div className="ins-floor-actions"><button onClick={onExplode} className={exploded?'active':''}><Layers3 size={16}/>{exploded?'Collapse floors':'Explode floors'}</button><button onClick={()=>onFloor(null)}>Show all</button></div>
-          {Array.from({length:b.floors},(_,i)=>b.floors-1-i).map(f=><div key={f} className={`ins-floor ${floor===f?'active':''}`}><button className="ins-floor-heading" onClick={()=>onFloor(f)}><Layers3 size={16}/><strong>{f===0?'Ground floor':`Floor ${f}`}</strong><span>+{(f*b.floorHeight).toFixed(1)} m</span><ChevronRight size={15}/></button>{b.units.filter(u=>u.floor===f).map(u=><button className="ins-unit" key={u.id} onClick={()=>onUnit?.(u.id)} aria-pressed={unitId===u.id}><div><strong>Unit {u.number}</strong><small>{u.occupant}</small></div><span className={u.tenure==='Vacant'?'vacant':'occupied'}>{u.tenure==='Rented'?'Rented':u.tenure==='Vacant'?'Vacant':'Owner'}</span></button>)}</div>)}
+          {Array.from({length:b.floors},(_,i)=>b.floors-1-i).map(f=><div key={f} className={`ins-floor ${floor===f?'active':''}`}><button className="ins-floor-heading" onClick={()=>onFloor(f)}><Layers3 size={16}/><strong>{f===0?'Ground floor':`Floor ${f}`}</strong><span>+{(f*b.floorHeight).toFixed(1)} m</span><ChevronRight size={15}/></button>{b.units.filter(u=>u.floor===f).map(u=><button className="ins-unit" key={u.id} data-unit-id={u.id} onClick={()=>onUnit(u.id)} aria-pressed={unitId===u.id}><div><strong>Unit {u.number}</strong><small>{u.occupant}</small></div><span className={u.tenure==='Vacant'?'vacant':'occupied'}>{u.tenure==='Rented'?'Rented':u.tenure==='Vacant'?'Vacant':'Owner'}</span></button>)}</div>)}
           {selectedUnit&&<section className="fixture-quick-unit" data-quick-unit={selectedUnit.id}><header><Users size={16}/><strong>Unit {selectedUnit.number}</strong><span>{selectedUnit.tenure}</span></header><p>{selectedUnit.occupant}</p><dl><div><dt>Room-net area</dt><dd>{selectedUnit.area.toFixed(2)} m2</dd></div><div><dt>Bedrooms</dt><dd>{selectedUnit.bedrooms}</dd></div><div><dt>Floor</dt><dd>{selectedUnit.floor===0?'Ground':selectedUnit.floor}</dd></div></dl>{selectedUnit.tenure==='Rented'&&<small>INR {selectedUnit.rent.toLocaleString('en-IN')} / month ? {selectedUnit.leaseStart} to {selectedUnit.leaseEnd}</small>}<div><button onClick={()=>onModal('documents',{doc:'lease',unitId:selectedUnit.id,floor:selectedUnit.floor})}><FileText size={14}/>Unit original</button><button onClick={()=>onModal('documents',{doc:'plan',unitId:selectedUnit.id,floor:selectedUnit.floor})}><Layers3 size={14}/>Floor plan</button></div><small>Fictional occupancy source; inspected without leaving the map.</small></section>}
           <p className="ins-note">Select a floor to cut it away, or a unit to inspect that exact occupancy record. Rooms share the same geometry across map, plan and register.</p>
         </>}
@@ -50,7 +49,7 @@ export default function Inspector({building:b,findings,tab,onTab,onClose,onFocus
           <button className="ins-link-row" onClick={()=>onModal('documents',{doc:'plan',floor:floor??0})}><span className="ins-tile"><Layers3 size={17}/></span><div><strong>Floor plans</strong><small>Ground through top floor</small></div><ArrowUpRight size={15}/></button>
           <button className="ins-link-row" onClick={()=>onModal('documents',{doc:'lease',floor:floor??0})}><span className="ins-tile"><Users size={17}/></span><div><strong>Occupancy & rent agreements</strong><small>Unit-linked fictional residents</small></div><ArrowUpRight size={15}/></button>
           <button className="ins-link-row" onClick={()=>onModal('aerial')}><span className="ins-tile"><MapPin size={17}/></span><div><strong>Neighbourhood overview</strong><small>Entire {district.extent} × {district.extent} m fixture</small></div><ArrowUpRight size={15}/></button>
-          <SourceReceipt buildingId={b.id}/>
+          <details><summary>Source and processing details</summary><SourceReceipt buildingId={b.id}/></details>
           <button className="ins-plan-preview" onClick={()=>onModal('documents',{doc:'plan',floor:floor??0})} aria-label="Open floor plan preview"><FloorPlan b={b} floor={floor??0}/></button>
         </>}
         {tab==='utilities'&&<>
@@ -63,6 +62,6 @@ export default function Inspector({building:b,findings,tab,onTab,onClose,onFocus
         </>}
       </div>
     </div>
-    <div className="ins-footer"><button onClick={()=>onModal('register',{floor:floor??undefined})}><FileText size={16}/>Full register</button><button onClick={()=>onModal('workspace',{doc:'plan',floor:floor??0})}><Box size={16}/>Open workspace</button><p>Quick inspection stays on the map. Full register opens the complete property dossier.</p></div>
+    <div className="ins-footer"><button onClick={()=>onModal('register',{floor:floor??undefined,unitId:unitId??undefined})}><FileText size={16}/>Open property register</button><button onClick={()=>onModal('workspace',{doc:'plan',floor:floor??0,unitId:unitId??undefined})}><Box size={16}/>Prepare an update</button></div>
   </aside>;
 }

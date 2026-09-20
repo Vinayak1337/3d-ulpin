@@ -59,7 +59,8 @@ export function projectCoreNeighbourhood(data:NormalizedNeighbourhood):Neighbour
     const geometry=mapGeometry(rep.geometry.geometry,project),id=coreRefKey(entity.ref);
     if(geometry.type==="Point"&&entity.kind!=="vegetation"){notices.add("Unqualified point assets remain in the original register");continue;}
     if(geometry.type==="LineString"&&!["road","rail","utility"].includes(entity.kind)){notices.add("Unsupported alignment type retained in the original record");continue;}
-    const topology=metricTopologyIssue(geometry);if(topology){notices.add("Some source geometry needs review; its records were retained");continue;}
+    // Supported alignments were validated in the normalized read; polygon-area rules do not apply to them.
+    const topology=geometry.type==="LineString"?null:metricTopologyIssue(geometry);if(topology){notices.add("Some source geometry needs review; its records were retained");continue;}
     const height=saved.height?.value,validHeight=typeof height==="number"&&Number.isFinite(height)&&height>=0&&height<=2000&&saved.height?.state!=="unknown"&&saved.height?.state!=="unresolved";
     const building=entity.kind==="building"||entity.kind==="building_part",line=geometry.type==="LineString";
     const lower=building?0.08:entity.kind==="parcel"?0.025:entity.kind==="public_land"?0.012:line?0.16:0.055;

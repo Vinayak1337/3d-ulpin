@@ -1,0 +1,79 @@
+{
+  "saved": {
+    "id": "22b196c2-b467-4f38-9252-5b4c5e3a2f14",
+    "revision": 1,
+    "sha256": "94d6cd80cd0b2ac4c0d7b5abf6b01dc93a70e373e6e607aae3d746579beea087",
+    "building_count": 49,
+    "floor_count": 184,
+    "source_count": 50
+  },
+  "pdfPages": [
+    {
+      "name": "lake-view-survey-control-report.pdf",
+      "pages": 1
+    },
+    {
+      "name": "plans/B01-level-0.pdf",
+      "pages": 1
+    },
+    {
+      "name": "plans/B01-level--1.pdf",
+      "pages": 1
+    },
+    {
+      "name": "plans/B01-level-1.pdf",
+      "pages": 1
+    },
+    {
+      "name": "plans/B01-level-2.pdf",
+      "pages": 1
+    },
+    {
+      "name": "plans/B01-level-3.pdf",
+      "pages": 1
+    },
+    {
+      "name": "plans/B01-level-4.pdf",
+      "pages": 1
+    },
+    {
+      "name": "records/fictional-property-schedule.pdf",
+      "pages": 6
+    }
+  ],
+  "buildingRuns": [
+    {
+      "id": "29f1c2d3-df9c-40dc-9d1d-692d63538e46",
+      "predictedRegions": 10,
+      "raster": {
+        "url": "/api/v1/spatial-datasets/22b196c2-b467-4f38-9252-5b4c5e3a2f14/ml?run=29f1c2d3-df9c-40dc-9d1d-692d63538e46&artifact=raster",
+        "width": 220,
+        "height": 230,
+        "sha256": "895cb248f5564b2220f319ccc3f549cf228e8051cc51cc4313193caf0a6ba5be"
+      },
+      "omitted": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      }
+    },
+    {
+      "id": "de6763fd-e6dc-4ec1-80bd-f471d9385d36",
+      "predictedRegions": 10,
+      "raster": {
+        "url": "/api/v1/spatial-datasets/22b196c2-b467-4f38-9252-5b4c5e3a2f14/ml?run=de6763fd-e6dc-4ec1-80bd-f471d9385d36&artifact=raster",
+        "width": 220,
+        "height": 230,
+        "sha256": "895cb248f5564b2220f319ccc3f549cf228e8051cc51cc4313193caf0a6ba5be"
+      },
+      "omitted": {
+        "small": 0,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      }
+    }
+  ],
+  "retainedRuns": 6
+}

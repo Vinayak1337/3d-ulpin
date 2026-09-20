@@ -1,0 +1,32 @@
+[
+  {
+    "path": "building.onnx",
+    "bytes": 219574600,
+    "sha256": "9a28e28403accc06c70a3104aedb31eca50401ed23c8ba4314b26357c25e9043"
+  },
+  {
+    "path": "cubicasa-weights.pkl",
+    "bytes": 208651193,
+    "sha256": "dd20b4e1bf1d670f2125107b079df06958b1ccd36e49a464ab739aeb00b8e7a2"
+  },
+  {
+    "path": "floor.onnx",
+    "bytes": 69471289,
+    "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520"
+  },
+  {
+    "path": "rfdetr-model/model.safetensors",
+    "bytes": 141551436,
+    "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+  },
+  {
+    "path": "cubicasa-code/LICENSE",
+    "bytes": 253,
+    "sha256": "abb20326fa72589cde781457dbe51f7d69f376d167254e95c36f338923669303"
+  },
+  {
+    "path": "building-rfdetr.onnx",
+    "bytes": 135364538,
+    "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf"
+  }
+]

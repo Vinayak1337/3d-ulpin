@@ -1,0 +1,9 @@
+PASS partial batch receipt and exact replay; reused key with changed input conflicts
+PASS cancel suppresses late output; retry preserves attempts and replays its logical request
+PASS model unavailable is distinct and never rewrites source receipt status
+PASS old queue time does not consume execution deadline; actual worker running starts it
+PASS persisted raster and mask bytes verify; empty detections remain an explicit result
+PASS atomic unresolved fact handoff, request replay, refreshed-key dedup and stale revision rejection
+PASS new calibration retains new facts; changed source context blocks apply without discarding sibling pixels
+PASS original bytes and suitability preserved; all batch items and attempt receipts retained
+Completed 8 isolated backend checks; actual ML inference was not mocked as accuracy evidence.

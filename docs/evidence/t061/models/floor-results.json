@@ -1,0 +1,118 @@
+{
+  "model": "CubiCasa/CubiCasa5k hg_furukawa_original",
+  "sourceCommit": "c34440266665a11f4484eb06cd2e4b7d72ad76c1",
+  "weightsUrl": "https://drive.google.com/file/d/1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK/view",
+  "modelSha256": "dd20b4e1bf1d670f2125107b079df06958b1ccd36e49a464ab739aeb00b8e7a2",
+  "modelBytes": 208651193,
+  "checkpointEpoch": 430,
+  "loadSeconds": 5.953790750000003,
+  "device": "cpu",
+  "threads": 2,
+  "actualInferenceCount": 2,
+  "profile": "single orientation; maximum 768 pixels; aspect preserving resize; white padding to 64px multiples; input [-1,1]; segmentation logits resized to original label dimensions",
+  "aggregate": {
+    "meanPresentClassIoU": 0.6562174224903684,
+    "pixelAccuracy": 0.8719469210449544,
+    "classIoU": {
+      "Background": 0.9563518311551065,
+      "Outdoor": 0.8570129970050752,
+      "Wall": 0.7703764554611043,
+      "Kitchen": 0.8161394808880226,
+      "Living Room": 0.5601773487512651,
+      "Bedroom": 0.9362787718234421,
+      "Bath": 0.9118475243095304,
+      "Hallway": 0.7037998440089694,
+      "Railing": 0.37296321592350473,
+      "Storage": 0.7250374470029703,
+      "Garage": 0.0,
+      "Other rooms": 0.2646241535554309
+    }
+  },
+  "scope": "Two first entries from published test.txt, not a full benchmark. Upstream human SVG labels; no pseudo-label targets. Checkpoint-specific train isolation is not independently audited. Room classes do not establish ownership units or metric geometry.",
+  "samples": [
+    {
+      "sample": {
+        "archive": "https://zenodo.org/api/records/2613548/files/cubicasa5k.zip/content",
+        "doi": "10.5281/zenodo.2613548",
+        "split": "test",
+        "sample": "high_quality_architectural/1191",
+        "files": [
+          "cubicasa5k/high_quality_architectural/1191/F1_scaled.png",
+          "cubicasa5k/high_quality_architectural/1191/F1_original.png",
+          "cubicasa5k/high_quality_architectural/1191/model.svg"
+        ]
+      },
+      "originalSize": [
+        2319,
+        1555
+      ],
+      "inferenceSize": [
+        768,
+        576
+      ],
+      "seconds": 14.483414624999995,
+      "actualInference": true,
+      "meanPresentClassIoU": 0.6797675128032825,
+      "pixelAccuracy": 0.8621891851044565,
+      "classIoU": {
+        "Background": 0.9571564499762125,
+        "Outdoor": 0.8444037798876508,
+        "Wall": 0.8075530417660546,
+        "Kitchen": 0.8790754350077026,
+        "Living Room": 0.3934706820290612,
+        "Bedroom": 0.9269081146238562,
+        "Bath": 0.914262152544348,
+        "Hallway": 0.938823640394321,
+        "Railing": 0.3669706693689129,
+        "Storage": 0.8317300871144405,
+        "Garage": 0.0,
+        "Other rooms": 0.29685610092683096
+      },
+      "imageSha256": "aedd3b9f1fc8f69024c9e4690d77b3edf158ffc8cfadfc1ec44b7e2c561534e8",
+      "annotationSha256": "6a548e1daff8178ef70373a74eafa697a7117033668ab77ab4ba2a023750ff55",
+      "predictionSha256": "c9dfaf9c1a7d4132cb03eee7c0fb47431d5454787cb2df9982f4073e543af5a3"
+    },
+    {
+      "sample": {
+        "archive": "https://zenodo.org/api/records/2613548/files/cubicasa5k.zip/content",
+        "doi": "10.5281/zenodo.2613548",
+        "split": "test",
+        "sample": "high_quality_architectural/2536",
+        "files": [
+          "cubicasa5k/high_quality_architectural/2536/F1_scaled.png",
+          "cubicasa5k/high_quality_architectural/2536/F1_original.png",
+          "cubicasa5k/high_quality_architectural/2536/model.svg"
+        ]
+      },
+      "originalSize": [
+        1301,
+        1075
+      ],
+      "inferenceSize": [
+        768,
+        640
+      ],
+      "seconds": 14.230718584000002,
+      "actualInference": true,
+      "meanPresentClassIoU": 0.6955733403272765,
+      "pixelAccuracy": 0.8971059828754268,
+      "classIoU": {
+        "Background": 0.9533265435896375,
+        "Outdoor": 0.9614774050164039,
+        "Wall": 0.7054362880886427,
+        "Kitchen": 0.7335548117709438,
+        "Living Room": 0.9389342349791644,
+        "Bedroom": 0.9503444373531946,
+        "Bath": 0.9051858446472291,
+        "Hallway": 0.45248903011045544,
+        "Railing": 0.4118829981718464,
+        "Storage": 0.6386751498725223,
+        "Garage": null,
+        "Other rooms": 0.0
+      },
+      "imageSha256": "c4ab50bef59596d913099166886216769daa369aea54546650a54fc888c7ee75",
+      "annotationSha256": "101d74e6adc44cf89f76ee47c117542f73a52e7dc7c9a955c41bbf8fc4c14cb6",
+      "predictionSha256": "a95d52c656819df6f0b096d83c537339c428464c738fc04d918321521624eaa8"
+    }
+  ]
+}

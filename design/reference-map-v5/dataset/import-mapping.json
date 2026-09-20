@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1",
+  "classification": "synthetic",
+  "fieldMapping": {
+    "idField": "object_id",
+    "nameField": "name",
+    "heightField": "height_m",
+    "heightUnit": "m",
+    "kind": "building"
+  },
+  "sourceCrs": "EPSG:4326",
+  "canonicalFrame": {
+    "id": "FRAME-NEEM-REFERENCE",
+    "name": "LOCAL-NEEM-REFERENCE-M",
+    "kind": "local_cartesian",
+    "horizontalUnit": "metre",
+    "verticalUnit": "metre",
+    "axisOrder": [
+      "east",
+      "north",
+      "up"
+    ],
+    "nativeCrs": "EPSG:32643",
+    "verticalDatum": "DEMO-BM-01 fictional zero datum; not national MSL",
+    "geographicAnchor": {
+      "method": "UTM translation",
+      "projectedCrs": "EPSG:32643",
+      "eastingM": 714000.0,
+      "northingM": 3160000.0,
+      "classification": "synthetic_placement"
+    }
+  },
+  "transformation": {
+    "method": "EPSG4326 to EPSG32643 with always_xy; subtract projected origin",
+    "projectedOriginM": [
+      714000.0,
+      3160000.0
+    ],
+    "roundTripToleranceM": 1e-06,
+    "vertical": "per-feature authored base_elevation_m; utility vertex_elevations_m; no geoid transform"
+  },
+  "preserveNullHeight": true,
+  "identityNamespace": "NEEM-DENSE-FICTIONAL-02",
+  "unmappedAttributes": "preserve entire source feature",
+  "fileRoles": {
+    "buildings.geojson": "existing app building footprint import",
+    "parcels.geojson": "parcel layer",
+    "floor_spaces.geojson": "normalized floor/space adapter input",
+    "roads.geojson": "surface polygons with explicit local centerline metadata",
+    "utilities.geojson": "2D line + separate authored elevations",
+    "open_areas.geojson": "park polygons",
+    "floor_schedule.csv": "space assertions cross-check",
+    "survey_controls.csv": "synthetic frame check",
+    "MASTER_SCENE.json": "local authored baseline",
+    "normalized.json": "full normalized exchange snapshot"
+  }
+}

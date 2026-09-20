@@ -1,0 +1,32 @@
+{
+  "startedAt": "2026-09-19T22:50:11.838Z",
+  "scope": "Actual local retained results; no mocked API or additional writes.",
+  "checks": [
+    {
+      "name": "Canonical recorded test unit appears selected in a ready 3D register",
+      "passed": true,
+      "unitId": "a0779a57-1106-4b5d-bd3f-1dbd498c777f",
+      "identifier": "3DU-2C0EFNZHK781D9CB632ZKF6AMB:S001",
+      "syntheticMetrics": {
+        "area": 69.992404514,
+        "height": 3,
+        "volume": 209.977213542
+      },
+      "canvas": {
+        "width": 725,
+        "height": 430
+      }
+    },
+    {
+      "name": "Reload retains the exact recorded unit and leaves its dossier unchanged",
+      "passed": true,
+      "apiWrites": 0
+    }
+  ],
+  "errors": [],
+  "badResponses": [],
+  "blockedWrites": [],
+  "url": "http://127.0.0.1:3000/studio/properties/1e6c6e44-15ee-4c41-b6bd-067e59151b47/register?area=4c039f5f-c667-405a-962c-c317e6f32a8b&tab=floors&record=a0779a57-1106-4b5d-bd3f-1dbd498c777f",
+  "passed": true,
+  "completedAt": "2026-09-19T22:50:16.667Z"
+}

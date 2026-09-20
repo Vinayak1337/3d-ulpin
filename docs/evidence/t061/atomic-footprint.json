@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "ulpin-verification-receipt/1",
+  "task": "T061",
+  "check": "Atomic spatial ML footprint handoff",
+  "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json tests/spatial-ml-footprint-integration.ts",
+  "testFile": "tests/spatial-ml-footprint-integration.ts",
+  "exitCode": 0,
+  "passedGroups": 2,
+  "groups": [
+    {
+      "result": "passed",
+      "label": "Injected receipt failure rolls back every derived package, identity, source and revision row; original pixels remain unchanged",
+      "failurePoint": "Post-package creation, before spatial_ml_footprint_drafts receipt insertion, injected by an isolated PostgreSQL trigger",
+      "rollbackAssertion": "Every listed table returns to its exact pre-request row count; the ML item retains zero footprint-draft links",
+      "rollbackTables": [
+        "cases",
+        "sources",
+        "registry_records",
+        "physical_features",
+        "source_feature_links",
+        "import_packages",
+        "import_package_revisions",
+        "spatial_ml_footprint_drafts"
+      ]
+    },
+    {
+      "result": "passed",
+      "label": "Retry creates one linked draft and receipt atomically; actual derived original bytes survive commit and replay",
+      "assertions": [
+        "Retry of the failed request succeeds and links the new package from the ML item",
+        "Same-key replay returns that package and leaves exactly one footprint receipt",
+        "The draft retains the original image source revision and cloned document-part linkage",
+        "Derived semantics remain unresolved and exterior height remains unknown",
+        "No physical feature is published and the source preparation revision is unchanged",
+        "The derived S3 source bytes remain readable after commit and match their persisted SHA-256"
+      ]
+    }
+  ],
+  "environment": {
+    "database": "Real PostgreSQL/PostGIS in a unique test-owned schema, dropped after the run",
+    "poolMaximumConnections": 1,
+    "geometryNormalization": "Real private GIS normalization service",
+    "storage": "Real local S3-compatible storage; cleanup is restricted to tracked objects created by this test"
+  },
+  "qualification": [
+    "Inference output is explicitly synthetic; this test is transaction and source-preservation evidence, not a model-accuracy or actual-inference benchmark",
+    "Original and derived object readback hashes are checked against real stored bytes",
+    "Unreferenced newly derived S3 bytes may be retained after database rollback; no original object is altered or deleted by the handoff",
+    "TypeScript checking and the focused diff check also passed; final production build is recorded separately"
+  ]
+}

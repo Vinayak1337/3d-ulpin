@@ -25,7 +25,7 @@ export function useDocumentSelection() {
   return {
     sourceId,
     page,
-    selectSource: (id: string) => update(id, 1),
+    selectSource: (id: string, page = 1) => update(id, page),
     selectPage: (value: number) => update(sourceId, value),
   };
 }

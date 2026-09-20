@@ -1,0 +1,1699 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-NEEM-REFERENCE-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "B01",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "01 Neem Quarter",
+        "parcel_id": "P01",
+        "building_id": "B01",
+        "name": "Neem House",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B01-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B01",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P01",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78,
+              78
+            ],
+            [
+              94,
+              78
+            ],
+            [
+              94,
+              96
+            ],
+            [
+              88,
+              96
+            ],
+            [
+              88,
+              94
+            ],
+            [
+              78,
+              94
+            ],
+            [
+              78,
+              78
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B02",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "02 Neem Quarter",
+        "parcel_id": "P02",
+        "building_id": "B02",
+        "name": "Corner House 02",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B02-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B02",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P02",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              8
+            ],
+            [
+              21,
+              8
+            ],
+            [
+              21,
+              20
+            ],
+            [
+              18,
+              20
+            ],
+            [
+              18,
+              23
+            ],
+            [
+              8,
+              23
+            ],
+            [
+              8,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B03",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "03 Neem Quarter",
+        "parcel_id": "P03",
+        "building_id": "B03",
+        "name": "Ashok Apartments 03",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B03-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B03",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P03",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              8
+            ],
+            [
+              45,
+              8
+            ],
+            [
+              47,
+              10
+            ],
+            [
+              47,
+              26
+            ],
+            [
+              35,
+              26
+            ],
+            [
+              35,
+              23
+            ],
+            [
+              32,
+              23
+            ],
+            [
+              32,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B04",
+      "properties": {
+        "use": "residential",
+        "floorCount": 6,
+        "address": "04 Neem Quarter",
+        "parcel_id": "P04",
+        "building_id": "B04",
+        "name": "Mango Court 04",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B04-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 18.6,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B04",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P04",
+        "floor_count": 6
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              8
+            ],
+            [
+              87,
+              8
+            ],
+            [
+              87,
+              21
+            ],
+            [
+              84,
+              21
+            ],
+            [
+              84,
+              24
+            ],
+            [
+              73,
+              24
+            ],
+            [
+              73,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B05",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "05 Neem Quarter",
+        "parcel_id": "P05",
+        "building_id": "B05",
+        "name": "Garden Residence 05",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B05-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B05",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P05",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              97,
+              8
+            ],
+            [
+              109,
+              8
+            ],
+            [
+              109,
+              21
+            ],
+            [
+              106,
+              21
+            ],
+            [
+              106,
+              24
+            ],
+            [
+              97,
+              24
+            ],
+            [
+              97,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B06",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "06 Neem Quarter",
+        "parcel_id": "P06",
+        "building_id": "B06",
+        "name": "Neem House 06",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B06-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B06",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P06",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              8
+            ],
+            [
+              149,
+              8
+            ],
+            [
+              151,
+              10
+            ],
+            [
+              151,
+              25
+            ],
+            [
+              140,
+              25
+            ],
+            [
+              140,
+              22
+            ],
+            [
+              137,
+              22
+            ],
+            [
+              137,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B07",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "07 Neem Quarter",
+        "parcel_id": "P07",
+        "building_id": "B07",
+        "name": "Peepal Residence 07",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B07-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B07",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P07",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              8
+            ],
+            [
+              174,
+              8
+            ],
+            [
+              174,
+              20
+            ],
+            [
+              171,
+              20
+            ],
+            [
+              171,
+              23
+            ],
+            [
+              158,
+              23
+            ],
+            [
+              158,
+              8
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B08",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "08 Neem Quarter",
+        "parcel_id": "P08",
+        "building_id": "B08",
+        "name": "Corner House 08",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B08-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B08",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P08",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              33
+            ],
+            [
+              21,
+              33
+            ],
+            [
+              21,
+              48
+            ],
+            [
+              18,
+              48
+            ],
+            [
+              18,
+              51
+            ],
+            [
+              8,
+              51
+            ],
+            [
+              8,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B09",
+      "properties": {
+        "use": "residential",
+        "floorCount": 6,
+        "address": "09 Neem Quarter",
+        "parcel_id": "P09",
+        "building_id": "B09",
+        "name": "Ashok Apartments 09",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B09-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 18.6,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B09",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P09",
+        "floor_count": 6
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              33
+            ],
+            [
+              45,
+              33
+            ],
+            [
+              47,
+              35
+            ],
+            [
+              47,
+              49
+            ],
+            [
+              35,
+              49
+            ],
+            [
+              35,
+              46
+            ],
+            [
+              32,
+              46
+            ],
+            [
+              32,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B10",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "10 Neem Quarter",
+        "parcel_id": "P10",
+        "building_id": "B10",
+        "name": "Mango Court 10",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B10-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B10",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P10",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              73,
+              33
+            ],
+            [
+              87,
+              33
+            ],
+            [
+              87,
+              46
+            ],
+            [
+              84,
+              46
+            ],
+            [
+              84,
+              49
+            ],
+            [
+              73,
+              49
+            ],
+            [
+              73,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B11",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "11 Neem Quarter",
+        "parcel_id": "P11",
+        "building_id": "B11",
+        "name": "Garden Residence 11",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B11-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B11",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P11",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              97,
+              33
+            ],
+            [
+              109,
+              33
+            ],
+            [
+              109,
+              47
+            ],
+            [
+              106,
+              47
+            ],
+            [
+              106,
+              50
+            ],
+            [
+              97,
+              50
+            ],
+            [
+              97,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B12",
+      "properties": {
+        "use": "residential",
+        "floorCount": null,
+        "address": "12 Neem Quarter",
+        "parcel_id": "P12",
+        "building_id": "B12",
+        "name": "Neem House 12",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B12-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": null,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B12",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P12",
+        "floor_count": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              33
+            ],
+            [
+              149,
+              33
+            ],
+            [
+              151,
+              35
+            ],
+            [
+              151,
+              48
+            ],
+            [
+              140,
+              48
+            ],
+            [
+              140,
+              45
+            ],
+            [
+              137,
+              45
+            ],
+            [
+              137,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B13",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "13 Neem Quarter",
+        "parcel_id": "P13",
+        "building_id": "B13",
+        "name": "Peepal Residence 13",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B13-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B13",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P13",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              33
+            ],
+            [
+              174,
+              33
+            ],
+            [
+              174,
+              48
+            ],
+            [
+              171,
+              48
+            ],
+            [
+              171,
+              51
+            ],
+            [
+              158,
+              51
+            ],
+            [
+              158,
+              33
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B14",
+      "properties": {
+        "use": "residential",
+        "floorCount": 6,
+        "address": "14 Neem Quarter",
+        "parcel_id": "P14",
+        "building_id": "B14",
+        "name": "Corner House 14",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B14-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 18.6,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B14",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P14",
+        "floor_count": 6
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              76
+            ],
+            [
+              21,
+              76
+            ],
+            [
+              21,
+              89
+            ],
+            [
+              18,
+              89
+            ],
+            [
+              18,
+              92
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              8,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B15",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "15 Neem Quarter",
+        "parcel_id": "P15",
+        "building_id": "B15",
+        "name": "Ashok Apartments 15",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B15-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B15",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P15",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              76
+            ],
+            [
+              45,
+              76
+            ],
+            [
+              47,
+              78
+            ],
+            [
+              47,
+              92
+            ],
+            [
+              35,
+              92
+            ],
+            [
+              35,
+              89
+            ],
+            [
+              32,
+              89
+            ],
+            [
+              32,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B16",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "16 Neem Quarter",
+        "parcel_id": "P16",
+        "building_id": "B16",
+        "name": "Mango Court 16",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B16-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B16",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P16",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              76
+            ],
+            [
+              151,
+              76
+            ],
+            [
+              151,
+              90
+            ],
+            [
+              148,
+              90
+            ],
+            [
+              148,
+              93
+            ],
+            [
+              137,
+              93
+            ],
+            [
+              137,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B17",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "17 Neem Quarter",
+        "parcel_id": "P17",
+        "building_id": "B17",
+        "name": "Garden Residence 17",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B17-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B17",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P17",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              76
+            ],
+            [
+              170,
+              76
+            ],
+            [
+              170,
+              88
+            ],
+            [
+              167,
+              88
+            ],
+            [
+              167,
+              91
+            ],
+            [
+              158,
+              91
+            ],
+            [
+              158,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B18",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "18 Neem Quarter",
+        "parcel_id": "P18",
+        "building_id": "B18",
+        "name": "Neem House 18",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B18-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B18",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P18",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              101
+            ],
+            [
+              20,
+              101
+            ],
+            [
+              22,
+              103
+            ],
+            [
+              22,
+              119
+            ],
+            [
+              11,
+              119
+            ],
+            [
+              11,
+              116
+            ],
+            [
+              8,
+              116
+            ],
+            [
+              8,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B19",
+      "properties": {
+        "use": "residential",
+        "floorCount": 6,
+        "address": "19 Neem Quarter",
+        "parcel_id": "P19",
+        "building_id": "B19",
+        "name": "Peepal Residence 19",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B19-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 18.6,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B19",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P19",
+        "floor_count": 6
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              101
+            ],
+            [
+              48,
+              101
+            ],
+            [
+              48,
+              114
+            ],
+            [
+              45,
+              114
+            ],
+            [
+              45,
+              117
+            ],
+            [
+              32,
+              117
+            ],
+            [
+              32,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B20",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "20 Neem Quarter",
+        "parcel_id": "P20",
+        "building_id": "B20",
+        "name": "Corner House 20",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B20-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B20",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P20",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              137,
+              101
+            ],
+            [
+              150,
+              101
+            ],
+            [
+              150,
+              114
+            ],
+            [
+              147,
+              114
+            ],
+            [
+              147,
+              117
+            ],
+            [
+              137,
+              117
+            ],
+            [
+              137,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B21",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "21 Neem Quarter",
+        "parcel_id": "P21",
+        "building_id": "B21",
+        "name": "Ashok Apartments 21",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B21-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B21",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P21",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              158,
+              101
+            ],
+            [
+              171,
+              101
+            ],
+            [
+              173,
+              103
+            ],
+            [
+              173,
+              118
+            ],
+            [
+              161,
+              118
+            ],
+            [
+              161,
+              115
+            ],
+            [
+              158,
+              115
+            ],
+            [
+              158,
+              101
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B22",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "22 Neem Quarter",
+        "parcel_id": "P22",
+        "building_id": "B22",
+        "name": "Mango Court 22",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B22-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B22",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P22",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              138
+            ],
+            [
+              22,
+              138
+            ],
+            [
+              22,
+              150
+            ],
+            [
+              19,
+              150
+            ],
+            [
+              19,
+              153
+            ],
+            [
+              8,
+              153
+            ],
+            [
+              8,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B23",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "23 Neem Quarter",
+        "parcel_id": "P23",
+        "building_id": "B23",
+        "name": "Garden Residence 23",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B23-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B23",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P23",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              138
+            ],
+            [
+              44,
+              138
+            ],
+            [
+              44,
+              153
+            ],
+            [
+              41,
+              153
+            ],
+            [
+              41,
+              156
+            ],
+            [
+              32,
+              156
+            ],
+            [
+              32,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B24",
+      "properties": {
+        "use": "residential",
+        "floorCount": 6,
+        "address": "24 Neem Quarter",
+        "parcel_id": "P24",
+        "building_id": "B24",
+        "name": "Neem House 24",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B24-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 18.6,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B24",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P24",
+        "floor_count": 6
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              138
+            ],
+            [
+              86,
+              138
+            ],
+            [
+              88,
+              140
+            ],
+            [
+              88,
+              154
+            ],
+            [
+              77,
+              154
+            ],
+            [
+              77,
+              151
+            ],
+            [
+              74,
+              151
+            ],
+            [
+              74,
+              138
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B25",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "25 Neem Quarter",
+        "parcel_id": "P25",
+        "building_id": "B25",
+        "name": "Peepal Residence 25",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B25-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B25",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P25",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              158
+            ],
+            [
+              24,
+              158
+            ],
+            [
+              24,
+              171
+            ],
+            [
+              21,
+              171
+            ],
+            [
+              21,
+              174
+            ],
+            [
+              8,
+              174
+            ],
+            [
+              8,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B26",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "26 Neem Quarter",
+        "parcel_id": "P26",
+        "building_id": "B26",
+        "name": "Corner House 26",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B26-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B26",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P26",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              158
+            ],
+            [
+              45,
+              158
+            ],
+            [
+              45,
+              172
+            ],
+            [
+              42,
+              172
+            ],
+            [
+              42,
+              175
+            ],
+            [
+              32,
+              175
+            ],
+            [
+              32,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B27",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "27 Neem Quarter",
+        "parcel_id": "P27",
+        "building_id": "B27",
+        "name": "Ashok Apartments 27",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B27-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B27",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P27",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              74,
+              158
+            ],
+            [
+              87,
+              158
+            ],
+            [
+              89,
+              160
+            ],
+            [
+              89,
+              173
+            ],
+            [
+              77,
+              173
+            ],
+            [
+              77,
+              170
+            ],
+            [
+              74,
+              170
+            ],
+            [
+              74,
+              158
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B28",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "28 Neem Quarter",
+        "parcel_id": "P28",
+        "building_id": "B28",
+        "name": "Mango Court 28",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B28-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-REFERENCE-B28",
+        "parcel_2d_demo_id": "DEMO-2D-REFERENCE-P28",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              98,
+              138
+            ],
+            [
+              112,
+              138
+            ],
+            [
+              112,
+              153
+            ],
+            [
+              109,
+              153
+            ],
+            [
+              109,
+              156
+            ],
+            [
+              98,
+              156
+            ],
+            [
+              98,
+              138
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

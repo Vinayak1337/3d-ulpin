@@ -1,0 +1,1368 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ulpin/reference-map-v5/schema/1.0.0",
+  "title": "Bulk Studio proposed normalized exchange model (prototype)",
+  "description": "Immutable source-linked spatial objects and geometry versions. JSON Schema checks shape; validate-fixture.py checks references, measurements and uncertainty. This schema does not confer official identity or legal authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "frames": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/frame"
+      }
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/object"
+      }
+    },
+    "geometries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/geometry"
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/relation"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "sourceRecords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sourceRecord"
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/observation"
+      }
+    },
+    "lineage": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lineage"
+      }
+    },
+    "identifierAssertions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/identifierAssertion"
+      }
+    },
+    "batches": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/batch"
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/issue"
+      }
+    },
+    "rights": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/right"
+      }
+    },
+    "sceneDecoration": {
+      "$ref": "#/$defs/sceneDecoration"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "metadata",
+    "frames",
+    "objects",
+    "geometries",
+    "relations",
+    "sources",
+    "sourceRecords",
+    "observations",
+    "lineage",
+    "identifierAssertions",
+    "batches",
+    "issues",
+    "rights",
+    "sceneDecoration"
+  ],
+  "$defs": {
+    "position": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 3
+    },
+    "line": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/position"
+      },
+      "minItems": 2
+    },
+    "ring": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/position"
+      },
+      "minItems": 4
+    },
+    "polygon": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ring"
+      },
+      "minItems": 1
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string"
+        },
+        "classification": {
+          "enum": [
+            "synthetic",
+            "survey",
+            "mixed"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "focalObjectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "extent": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "officialIssuance": {
+          "const": false
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "classification",
+        "description",
+        "focalObjectId",
+        "extent",
+        "officialIssuance"
+      ]
+    },
+    "frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "local_cartesian",
+            "projected",
+            "geographic"
+          ]
+        },
+        "horizontalUnit": {
+          "type": "string"
+        },
+        "verticalUnit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "axisOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "maxItems": 3
+        },
+        "nativeCrs": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verticalDatum": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "geographicAnchor": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "horizontalUnit",
+        "verticalUnit",
+        "axisOrder",
+        "nativeCrs",
+        "verticalDatum",
+        "geographicAnchor"
+      ]
+    },
+    "object": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "parcel",
+            "building",
+            "floor",
+            "space",
+            "utility",
+            "road",
+            "control_point",
+            "open_area"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "systemId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "geometryId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "staged",
+            "ready",
+            "needs_review",
+            "recorded",
+            "archived"
+          ]
+        },
+        "sourceRecordIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "attributes": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "label",
+        "systemId",
+        "geometryId",
+        "status",
+        "sourceRecordIds",
+        "attributes"
+      ]
+    },
+    "geometry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "supersedesId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "frameId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nativeCrs": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verticalDatum": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "enum": [
+            "Polygon",
+            "MultiPolygon",
+            "LineString",
+            "Point"
+          ]
+        },
+        "coordinates": {
+          "type": "array"
+        },
+        "baseElevationM": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "heightM": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "areaM2": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "reviewed",
+            "accepted",
+            "superseded"
+          ]
+        },
+        "classification": {
+          "enum": [
+            "synthetic",
+            "observed",
+            "derived"
+          ]
+        },
+        "sourceRecordIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "lineageId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "objectId",
+        "version",
+        "supersedesId",
+        "frameId",
+        "nativeCrs",
+        "verticalDatum",
+        "type",
+        "coordinates",
+        "baseElevationM",
+        "heightM",
+        "areaM2",
+        "status",
+        "classification",
+        "sourceRecordIds",
+        "lineageId"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Polygon"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "coordinates": {
+                "$ref": "#/$defs/polygon"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "MultiPolygon"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/polygon"
+                },
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "LineString"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "coordinates": {
+                "$ref": "#/$defs/line"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "Point"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "coordinates": {
+                "$ref": "#/$defs/position"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fromId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "toId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "contains",
+            "occupies",
+            "crosses",
+            "overlaps",
+            "serves",
+            "adjacent",
+            "covered_by"
+          ]
+        },
+        "status": {
+          "enum": [
+            "fixture_only",
+            "asserted",
+            "reviewed",
+            "rejected"
+          ]
+        },
+        "sourceRecordIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "validFrom": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "validTo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "fromId",
+        "toId",
+        "kind",
+        "status",
+        "sourceRecordIds",
+        "validFrom",
+        "validTo"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string"
+        },
+        "modality": {
+          "enum": [
+            "GIS",
+            "plan",
+            "utility",
+            "imagery",
+            "point_cloud",
+            "survey_control",
+            "elevation",
+            "rights_evidence",
+            "document"
+          ]
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "classification": {
+          "enum": [
+            "synthetic",
+            "survey",
+            "unknown"
+          ]
+        },
+        "representation": {
+          "enum": [
+            "embedded_records",
+            "descriptor_only",
+            "original_file"
+          ]
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "originalUri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "originalSha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "byteSize": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "nativeCrs": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "frameId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verticalDatum": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "acquiredAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rasterMetadata": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "width": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "height": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "pixelSizeM": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "geotransform": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 6,
+                  "maxItems": 6
+                }
+              },
+              "required": [
+                "width",
+                "height",
+                "pixelSizeM",
+                "geotransform"
+              ]
+            }
+          ]
+        },
+        "pointCloudMetadata": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "pointCount": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "format": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "scale": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "offset": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              },
+              "required": [
+                "pointCount",
+                "format",
+                "scale",
+                "offset"
+              ]
+            }
+          ]
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "modality",
+        "mimeType",
+        "classification",
+        "representation",
+        "revision",
+        "originalUri",
+        "originalSha256",
+        "byteSize",
+        "nativeCrs",
+        "frameId",
+        "verticalDatum",
+        "acquiredAt",
+        "rasterMetadata",
+        "pointCloudMetadata",
+        "note"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "representation": {
+                "const": "descriptor_only"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "originalUri": {
+                "type": "null"
+              },
+              "originalSha256": {
+                "type": "null"
+              },
+              "byteSize": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "representation": {
+                "const": "original_file"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "originalUri": {
+                "type": "string",
+                "minLength": 1
+              },
+              "originalSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "byteSize": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "sourceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceRevision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recordKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locator": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "sourceId",
+        "sourceRevision",
+        "recordKey",
+        "locator",
+        "attributes"
+      ]
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {},
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "type": "string"
+        },
+        "sourceRecordIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "fixture_only",
+            "unreviewed",
+            "reviewed",
+            "rejected"
+          ]
+        },
+        "observedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uncertainty": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "required": [
+        "id",
+        "objectId",
+        "field",
+        "value",
+        "unit",
+        "method",
+        "sourceRecordIds",
+        "status",
+        "observedAt",
+        "uncertainty"
+      ]
+    },
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation": {
+          "type": "string"
+        },
+        "inputSourceRecordIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "inputGeometryIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "outputGeometryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parameters": {
+          "type": "object"
+        },
+        "softwareVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inputFingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "reviewStatus": {
+          "enum": [
+            "fixture_only",
+            "unreviewed",
+            "reviewed",
+            "rejected"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "operation",
+        "inputSourceRecordIds",
+        "inputGeometryIds",
+        "outputGeometryId",
+        "parameters",
+        "softwareVersion",
+        "inputFingerprint",
+        "reviewStatus"
+      ]
+    },
+    "identifierAssertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scheme": {
+          "enum": [
+            "official_2d_ulpin",
+            "source_identifier",
+            "external_identifier"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "issuer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "unavailable",
+            "asserted",
+            "verified",
+            "rejected"
+          ]
+        },
+        "sourceRecordIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "objectId",
+        "scheme",
+        "value",
+        "issuer",
+        "status",
+        "sourceRecordIds",
+        "note"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "verified"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "string",
+                "minLength": 1
+              },
+              "issuer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sourceRecordIds": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "batch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string"
+        },
+        "sourceIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "objectIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "stage": {
+          "enum": [
+            "receipt",
+            "classified",
+            "mapped",
+            "processing",
+            "review",
+            "ready",
+            "recorded",
+            "failed"
+          ]
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mappingVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issueIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "commitPolicy": {
+          "enum": [
+            "ready_objects_only_after_explicit_review",
+            "atomic_after_explicit_review"
+          ]
+        },
+        "classification": {
+          "enum": [
+            "synthetic",
+            "survey",
+            "mixed"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "sourceIds",
+        "objectIds",
+        "stage",
+        "idempotencyKey",
+        "mappingVersion",
+        "issueIds",
+        "commitPolicy",
+        "classification"
+      ]
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "informational",
+            "warning",
+            "blocking"
+          ]
+        },
+        "status": {
+          "enum": [
+            "open",
+            "deferred",
+            "resolved",
+            "excluded"
+          ]
+        },
+        "objectIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "sourceRecordIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "field": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "allowedActions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "defer",
+              "exclude_from_batch",
+              "attach_height_evidence",
+              "attach_source_evidence",
+              "correct_mapping",
+              "review_transform"
+            ]
+          }
+        },
+        "resolution": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "severity",
+        "status",
+        "objectIds",
+        "sourceRecordIds",
+        "field",
+        "title",
+        "description",
+        "allowedActions",
+        "resolution"
+      ]
+    },
+    "right": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "ownership",
+            "lease",
+            "access",
+            "easement",
+            "restriction",
+            "responsibility"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "subjectObjectIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "beneficiary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidenceSourceRecordIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "unverified",
+            "asserted",
+            "reviewed",
+            "rejected"
+          ]
+        },
+        "legalAuthority": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "validFrom": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "validTo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "label",
+        "subjectObjectIds",
+        "beneficiary",
+        "evidenceSourceRecordIds",
+        "status",
+        "legalAuthority",
+        "validFrom",
+        "validTo",
+        "note"
+      ]
+    },
+    "sceneDecoration": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "classification": {
+          "const": "synthetic_visual_decoration"
+        },
+        "trees": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/position"
+          }
+        }
+      },
+      "required": [
+        "classification",
+        "trees"
+      ]
+    }
+  }
+}

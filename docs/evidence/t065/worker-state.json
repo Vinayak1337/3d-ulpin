@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-09-20T14:09:56.401Z",
+  "context": "Private-PC linked T061 case; read-only, not hosted-fixture acceptance",
+  "caseId": "b5b9b4e8-c06a-4aca-afec-c8d443b708e1",
+  "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+  "status": "recorded",
+  "packageRevision": 18,
+  "caseRevision": 2,
+  "spaceCount": 1,
+  "reviewId": "b0f193d0-9d68-494d-88b4-4b7bffcc7d4c",
+  "committed": true,
+  "matchingBuildBeyondHistoryWindow": true,
+  "before": {
+    "revision": 2,
+    "current_snapshot_id": "f557aace-3344-4efc-9e2d-3344ac93ba60",
+    "package_revision": 18,
+    "sources": "9",
+    "jobs": "9",
+    "drafts": "1",
+    "reviews": "1"
+  },
+  "after": {
+    "revision": 2,
+    "current_snapshot_id": "f557aace-3344-4efc-9e2d-3344ac93ba60",
+    "package_revision": 18,
+    "sources": "9",
+    "jobs": "9",
+    "drafts": "1",
+    "reviews": "1"
+  },
+  "unchanged": true
+}

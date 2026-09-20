@@ -1,4 +1,5 @@
 'use client';
 import App from './App';
 import {StudioViewportProvider} from './scene/SharedViewport';
-export default function StudioApp(){return <StudioViewportProvider><App/></StudioViewportProvider>;}
+import {SpatialDataProvider} from '../spatial/data/Provider';
+export default function StudioApp(){return <SpatialDataProvider><StudioViewportProvider><App/></StudioViewportProvider></SpatialDataProvider>;}

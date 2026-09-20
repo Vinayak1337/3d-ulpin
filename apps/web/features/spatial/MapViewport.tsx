@@ -2,7 +2,13 @@
 import AreaLayer, { type AreaViewerProps } from "./layers/AreaLayer";
 import LocalModelLayer, { type LocalModelProps } from "./layers/LocalModelLayer";
 import TileLayer, { type TileLayerProps } from "./layers/TileLayer";
+import dynamic from 'next/dynamic';
+import type {ReferenceLayerProps} from './layers/ReferenceLayer';
+const ReferenceLayer=dynamic(()=>import('./layers/ReferenceLayer'),{ssr:false});
 export type MapViewportSource = {
+    kind:'canonical-scene';
+    props:ReferenceLayerProps;
+} | {
     kind: "area";
     props: AreaViewerProps;
 } | {
@@ -16,5 +22,5 @@ export type MapViewportSource = {
 export function MapViewport({ source }: {
     source: MapViewportSource;
 }) {
-    return source.kind === "tiles" ? <TileLayer {...source.props}/> : source.kind === "area" ? <AreaLayer {...source.props}/> : <LocalModelLayer {...source.props}/>;
+    return source.kind === 'canonical-scene'?<ReferenceLayer {...source.props}/>:source.kind === "tiles" ? <TileLayer {...source.props}/> : source.kind === "area" ? <AreaLayer {...source.props}/> : <LocalModelLayer {...source.props}/>;
 }

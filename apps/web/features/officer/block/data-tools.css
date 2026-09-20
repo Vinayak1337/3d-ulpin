@@ -229,3 +229,34 @@
     flex-direction: column;
   }
 }
+/* File-first GIS intake follows the corrected Add Files reference. */
+.ulpin-app .ui-dialog:has(.ui-import-form) { width: min(980px, calc(100vw - 32px)); }
+.ulpin-app .ui-import-form { font-size: 14px; }
+.ulpin-app .ui-intake-intro { color: var(--ui-muted); margin: 0 0 20px; font-size: 15px; }
+.ulpin-app .ui-import-form .ui-dropzone { border-radius: 6px; padding: 28px 20px; margin-bottom: 16px; }
+.ulpin-app .ui-import-form :where(input,select,.ui-button) { min-height: 44px; font-size: 14px; }
+.ulpin-app .ui-import-form :where(.ui-dropzone span,.ui-form-grid label,.ui-form-details summary) { font-size: 14px; }
+.ulpin-app .ui-intake-file { display: flex; gap: 14px; align-items: center; padding: 16px; border: 1px solid var(--ui-divider); border-radius: 6px; margin-bottom: 12px; }
+.ulpin-app .ui-intake-file > div { flex: 1; min-width: 0; display: grid; gap: 5px; overflow-wrap: anywhere; }
+.ulpin-app .ui-intake-file span,.ulpin-app .ui-intake-fields small { color: var(--ui-muted); font-size: 12px; line-height: 1.5; }
+.ulpin-app .ui-intake-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.ulpin-app .ui-intake-detected { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #eef5f1; color: #305a43; border-radius: 6px; margin: 14px 0; line-height: 1.5; }
+.ulpin-app .ui-intake-questions,.ulpin-app .ui-intake-question { display: grid; gap: 12px; padding: 18px; border: 1px solid var(--ui-divider); border-radius: 6px; }
+.ulpin-app .ui-intake-questions h3 { font-size: 16px; margin: 0; }
+.ulpin-app .ui-intake-questions p { font-size: 14px; color: var(--ui-muted); margin: -6px 0 2px; }
+.ulpin-app .ui-intake-error { padding: 14px; border: 1px solid #d6a7a7; border-radius: 6px; margin: 12px 0; }
+.ulpin-app .ui-intake-error p { margin: 0 0 10px; }
+.ulpin-app .ui-intake-continue { display: grid; gap: 7px; text-align: right; }
+.ulpin-app .ui-intake-continue small { font-size: 12px; color: var(--ui-muted); max-width: 320px; }
+.ulpin-app .ui-import-form .ui-form-footer > span { font-size: 12px; max-width: 370px; line-height: 1.5; }
+.ulpin-app .ui-dropzone:focus-within { outline: 2px solid var(--ui-primary); outline-offset: 3px; }
+@media (max-width: 550px) { .ulpin-app .ui-intake-continue { text-align: left; } .ulpin-app .ui-intake-file { padding: 12px; } }
+.ulpin-app .ui-intake-context { color: var(--ui-muted); font-size: 13px; margin: -10px 0 20px; }
+.ulpin-app .import-progress { display: flex; list-style: none; padding: 0; margin: 0 0 22px; gap: 20px; }
+.ulpin-app .import-progress li { flex: 1; display: flex; align-items: center; gap: 9px; color: var(--ui-muted); font-size: 13px; }
+.ulpin-app .import-progress li > span { width: 30px; height: 30px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: #eef1ef; }
+.ulpin-app .import-progress li[aria-current="step"] { color: var(--ui-ink); font-weight: 600; }
+.ulpin-app .import-progress li[aria-current="step"] > span { background: var(--ui-primary); color: white; }
+.ulpin-app .ui-import-form:has(.ui-intake-file) .ui-dropzone { padding: 16px; }
+@media (max-width: 550px) { .ulpin-app .import-progress { gap: 8px; } .ulpin-app .import-progress li { font-size: 12px; gap: 6px; } }
+.ulpin-app .ui-boundary-check{border-block:1px solid var(--ui-divider);margin:18px 0;padding:6px 0;font-size:13px;line-height:1.6}.ulpin-app .ui-boundary-check details{padding:10px 0}.ulpin-app .ui-boundary-check summary{cursor:pointer;font-weight:600}.ulpin-app .ui-boundary-check li{margin:10px 0}.ulpin-app .ui-boundary-check p{margin:5px 0;color:var(--ui-muted)}

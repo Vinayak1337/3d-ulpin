@@ -1,0 +1,379 @@
+{
+  "model": "merve/rf-detr-seg-satellite-buildings",
+  "revision": "05b80dce9a57701724ad6a0fc052827c8b724257",
+  "modelSha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7",
+  "modelBytes": 141551436,
+  "loadSeconds": 0.21431650000158697,
+  "threshold": "Official processor defaults; no evaluation tuning",
+  "actualInferenceCount": 12,
+  "aggregate": {
+    "iou": 0.2882232927614482,
+    "precision": 0.3487459638056619,
+    "recall": 0.6241747165056699
+  },
+  "scope": "HOTOSM published test tiles; original OAM imagery and exact OSM vectors. Independent downstream sample set relative to the stated RF-DETR satellite training dataset; no full training-data-overlap audit. Small feasibility evaluation, not Indian pilot or cadastral accuracy.",
+  "samples": [
+    {
+      "sample": "0",
+      "seconds": 1.4434054589946754,
+      "actualInference": true,
+      "instances": 1,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.852327
+        }
+      ],
+      "truePositivePixels": 170,
+      "falsePositivePixels": 9,
+      "falseNegativePixels": 25,
+      "iou": 0.8333333333333334,
+      "precision": 0.9497206703910615,
+      "recall": 0.8717948717948718
+    },
+    {
+      "sample": "1",
+      "seconds": 1.5311772910063155,
+      "actualInference": true,
+      "instances": 0,
+      "segmentsInfo": [],
+      "truePositivePixels": 0,
+      "falsePositivePixels": 0,
+      "falseNegativePixels": 0,
+      "iou": null,
+      "precision": null,
+      "recall": null
+    },
+    {
+      "sample": "2",
+      "seconds": 1.4102838750113733,
+      "actualInference": true,
+      "instances": 1,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.569719
+        }
+      ],
+      "truePositivePixels": 0,
+      "falsePositivePixels": 10050,
+      "falseNegativePixels": 0,
+      "iou": 0.0,
+      "precision": 0.0,
+      "recall": null
+    },
+    {
+      "sample": "100",
+      "seconds": 1.1853962079621851,
+      "actualInference": true,
+      "instances": 1,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.608966
+        }
+      ],
+      "truePositivePixels": 0,
+      "falsePositivePixels": 26275,
+      "falseNegativePixels": 0,
+      "iou": 0.0,
+      "precision": 0.0,
+      "recall": null
+    },
+    {
+      "sample": "300",
+      "seconds": 1.1833596249925904,
+      "actualInference": true,
+      "instances": 6,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.94753
+        },
+        {
+          "id": 2,
+          "label_id": 0,
+          "score": 0.921643
+        },
+        {
+          "id": 3,
+          "label_id": 0,
+          "score": 0.921034
+        },
+        {
+          "id": 4,
+          "label_id": 0,
+          "score": 0.901521
+        },
+        {
+          "id": 5,
+          "label_id": 0,
+          "score": 0.881962
+        },
+        {
+          "id": 6,
+          "label_id": 0,
+          "score": 0.793157
+        }
+      ],
+      "truePositivePixels": 8274,
+      "falsePositivePixels": 1066,
+      "falseNegativePixels": 3714,
+      "iou": 0.6338287115060518,
+      "precision": 0.8858672376873662,
+      "recall": 0.6901901901901902
+    },
+    {
+      "sample": "1200",
+      "seconds": 1.2738807499990799,
+      "actualInference": true,
+      "instances": 8,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.930433
+        },
+        {
+          "id": 2,
+          "label_id": 0,
+          "score": 0.904491
+        },
+        {
+          "id": 3,
+          "label_id": 0,
+          "score": 0.88865
+        },
+        {
+          "id": 4,
+          "label_id": 0,
+          "score": 0.857017
+        },
+        {
+          "id": 5,
+          "label_id": 0,
+          "score": 0.842093
+        },
+        {
+          "id": 6,
+          "label_id": 0,
+          "score": 0.807798
+        },
+        {
+          "id": 7,
+          "label_id": 0,
+          "score": 0.700032
+        },
+        {
+          "id": 8,
+          "label_id": 0,
+          "score": 0.556512
+        }
+      ],
+      "truePositivePixels": 7628,
+      "falsePositivePixels": 286,
+      "falseNegativePixels": 1111,
+      "iou": 0.845207756232687,
+      "precision": 0.9638615112458934,
+      "recall": 0.8728687492848152
+    },
+    {
+      "sample": "2000",
+      "seconds": 9.837403792014811,
+      "actualInference": true,
+      "instances": 1,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.533941
+        }
+      ],
+      "truePositivePixels": 0,
+      "falsePositivePixels": 6345,
+      "falseNegativePixels": 0,
+      "iou": 0.0,
+      "precision": 0.0,
+      "recall": null
+    },
+    {
+      "sample": "2405",
+      "seconds": 14.586475374992006,
+      "actualInference": true,
+      "instances": 1,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.91397
+        }
+      ],
+      "truePositivePixels": 586,
+      "falsePositivePixels": 37,
+      "falseNegativePixels": 406,
+      "iou": 0.5694849368318756,
+      "precision": 0.9406099518459069,
+      "recall": 0.5907258064516129
+    },
+    {
+      "sample": "3604",
+      "seconds": 69.24341445800383,
+      "actualInference": true,
+      "instances": 4,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.946587
+        },
+        {
+          "id": 2,
+          "label_id": 0,
+          "score": 0.881742
+        },
+        {
+          "id": 3,
+          "label_id": 0,
+          "score": 0.790652
+        },
+        {
+          "id": 4,
+          "label_id": 0,
+          "score": 0.500109
+        }
+      ],
+      "truePositivePixels": 4608,
+      "falsePositivePixels": 813,
+      "falseNegativePixels": 186,
+      "iou": 0.8218298555377207,
+      "precision": 0.8500276701715551,
+      "recall": 0.9612015018773467
+    },
+    {
+      "sample": "4801",
+      "seconds": 12.283701041014865,
+      "actualInference": true,
+      "instances": 3,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.888899
+        },
+        {
+          "id": 2,
+          "label_id": 0,
+          "score": 0.875438
+        },
+        {
+          "id": 3,
+          "label_id": 0,
+          "score": 0.574202
+        }
+      ],
+      "truePositivePixels": 1136,
+      "falsePositivePixels": 93,
+      "falseNegativePixels": 487,
+      "iou": 0.662004662004662,
+      "precision": 0.9243287225386493,
+      "recall": 0.6999383857054837
+    },
+    {
+      "sample": "6000",
+      "seconds": 1.7936030409764498,
+      "actualInference": true,
+      "instances": 2,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.897845
+        },
+        {
+          "id": 2,
+          "label_id": 0,
+          "score": 0.823361
+        }
+      ],
+      "truePositivePixels": 12733,
+      "falsePositivePixels": 17780,
+      "falseNegativePixels": 6488,
+      "iou": 0.3441258344369071,
+      "precision": 0.417297545308557,
+      "recall": 0.6624525258831486
+    },
+    {
+      "sample": "6901",
+      "seconds": 2.4430443750461563,
+      "actualInference": true,
+      "instances": 11,
+      "segmentsInfo": [
+        {
+          "id": 1,
+          "label_id": 0,
+          "score": 0.870774
+        },
+        {
+          "id": 2,
+          "label_id": 0,
+          "score": 0.775937
+        },
+        {
+          "id": 3,
+          "label_id": 0,
+          "score": 0.758553
+        },
+        {
+          "id": 4,
+          "label_id": 0,
+          "score": 0.70608
+        },
+        {
+          "id": 5,
+          "label_id": 0,
+          "score": 0.700478
+        },
+        {
+          "id": 6,
+          "label_id": 0,
+          "score": 0.69597
+        },
+        {
+          "id": 7,
+          "label_id": 0,
+          "score": 0.650243
+        },
+        {
+          "id": 8,
+          "label_id": 0,
+          "score": 0.60615
+        },
+        {
+          "id": 9,
+          "label_id": 0,
+          "score": 0.553072
+        },
+        {
+          "id": 10,
+          "label_id": 0,
+          "score": 0.529072
+        },
+        {
+          "id": 11,
+          "label_id": 0,
+          "score": 0.503523
+        }
+      ],
+      "truePositivePixels": 2019,
+      "falsePositivePixels": 6628,
+      "falseNegativePixels": 9954,
+      "iou": 0.10854255147572711,
+      "precision": 0.23349138429513125,
+      "recall": 0.16862941618641944
+    }
+  ]
+}

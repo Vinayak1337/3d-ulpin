@@ -5,12 +5,12 @@ import { redirectLegacyFamily } from "./legacy-redirect-page";
 
 test("historical links preserve identity and repeated context while reaching the replacement interface", async () => {
   for (const [oldPath, destination] of [
-    ["/areas", "/blocks"],
-    ["/areas/block-1", "/blocks/block-1"],
-    ["/properties/building-1/prepare", "/properties/building-1/workspace"],
-    ["/registry/3DU-A%3AB001", "/register/records/3DU-A%3AB001"],
-    ["/workbench", "/workspace/c1/geometry"],
-    ["/sites/site-1", "/register/sites/site-1"],
+    ["/areas", "/studio/datasets"],
+    ["/areas/block-1", "/studio/areas/block-1"],
+    ["/properties/building-1/prepare", "/studio/properties/building-1/workspace"],
+    ["/registry/3DU-A%3AB001", "/studio/registry/records/3DU-A%3AB001"],
+    ["/workbench", "/studio/cases/c1/geometry"],
+    ["/sites/site-1", "/studio/registry/sites/site-1"],
   ]) {
     const input = new URL(
       oldPath +
@@ -42,9 +42,9 @@ test("historical links preserve identity and repeated context while reaching the
     );
   }
 });
-test("root opens the block directory and case bookmarks open their saved workspace", () => {
-  assert.equal(rootPresentationUrl({}), "/blocks");
-  assert.equal(rootPresentationUrl({ case: "" }), "/blocks?case=");
+test("root opens the work queue and case bookmarks open their saved workspace", () => {
+  assert.equal(rootPresentationUrl({}), "/studio/work");
+  assert.equal(rootPresentationUrl({ case: "" }), "/studio/work?case=");
   const result = new URL(
     rootPresentationUrl({
       case: "c1",
@@ -54,7 +54,7 @@ test("root opens the block directory and case bookmarks open their saved workspa
     }),
     "http://local",
   );
-  assert.equal(result.pathname, "/workspace/c1");
+  assert.equal(result.pathname, "/studio/cases/c1");
   assert.deepEqual(result.searchParams.getAll("tag"), ["first", "second"]);
   assert.equal(result.searchParams.get("building"), "b1");
 });
@@ -71,7 +71,7 @@ test("compatibility is idempotent and leaves source/API/external URLs unchanged"
     "https://example.com/areas/a",
     "//example.com/registry/a",
     "#reference",
-    "/blocks/a?feature=b",
+    "/studio/areas/a?feature=b",
     "/areas-other",
   ])
     assert.equal(legacyUrl(value), value);

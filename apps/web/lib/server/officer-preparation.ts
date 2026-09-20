@@ -1,3 +1,4 @@
+import { preparationContinuation } from "./preparation-continuation";
 import { randomUUID } from "node:crypto";
 import type {
   FactCandidate,
@@ -469,17 +470,24 @@ export async function prepareDetails(id: string, expectedRevision: number) {
       [prepRow.body.caseId, operationKey],
     )
   ).rows[0]?.result;
-  if (retry) {
-    const job = await requestBuild(retry.caseId, retry.caseRevision);
+  const pkg = await getPackage(id);
+  if (retry && retry.packageRevision !== pkg.revision)
+    conflict("The source facts or placement changed. Build the current preparation.");
+  // Reloads submit the post-derivative revision. Reuse that retained derivative,
+  // including failed-job retries, instead of adding another case/source revision.
+  const continuation = await preparationContinuation(id);
+  if (retry && continuation.status === "needs_build")
+    conflict("The prepared geometry or exterior changed. Build the current preparation.");
+  if (retry || (pkg.revision === expectedRevision && continuation.status !== "needs_build")) {
+    const job = await requestBuild(prepRow.body.caseId, retry?.caseRevision ?? continuation.caseRevision);
     return {
-      caseId: retry.caseId,
+      caseId: prepRow.body.caseId,
       package: await getPackage(id),
       job,
       preparation: prepRow.body,
       cached: true,
     };
   }
-  const pkg = await getPackage(id);
   if (pkg.revision !== expectedRevision) conflict();
   const requirements = await preparationRequirements(id);
   if (requirements.detailedSpaces.length || requirements.placement.length)

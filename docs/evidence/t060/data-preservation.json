@@ -1,0 +1,49 @@
+{
+  "kind": "protected-existing-row-multiset",
+  "result": "PASS",
+  "before": "2026-09-19T22:08:12.775Z",
+  "after": "2026-09-19T22:50:45.780Z",
+  "tables": [
+    {
+      "table": "map_areas",
+      "original": 13,
+      "after": 14
+    },
+    {
+      "table": "physical_features",
+      "original": 557,
+      "after": 559
+    },
+    {
+      "table": "physical_feature_revisions",
+      "original": 557,
+      "after": 559
+    },
+    {
+      "table": "registry_records",
+      "original": 627,
+      "after": 631
+    },
+    {
+      "table": "registry_revisions",
+      "original": 319,
+      "after": 322
+    },
+    {
+      "table": "sources",
+      "original": 542,
+      "after": 554
+    },
+    {
+      "table": "units",
+      "original": 673,
+      "after": 674
+    },
+    {
+      "table": "unit_revisions",
+      "original": 1000,
+      "after": 1001
+    }
+  ],
+  "scope": "Existing original rows were retained. New synthetic source uploads may add rows; no claim of zero writes."
+}

@@ -1,0 +1,28 @@
+{
+  "attachments": {
+    "pdf": {
+      "sourceId": "5c213c88-b047-43c7-a7a0-d03945c4037e",
+      "sha256": "6b284308657320d7a91626876e5b9458c964411bb1a0882b20bfc5d75c0bb90d"
+    },
+    "png": {
+      "sourceId": "913f35c6-691e-4bda-844d-133ef7042272",
+      "sha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a"
+    },
+    "jpeg": {
+      "sourceId": "f7ca098e-e3cb-4537-b5f6-96bc6b06d9fb",
+      "sha256": "cfa40bc9d9417d1852db8753a8d5917f110c40101179f63543c382e39bc05e4a"
+    },
+    "csv": {
+      "sourceId": "7ab1b561-d60e-4c8f-8c2f-45756de38e45",
+      "sha256": "6ada8dedb3ab90a90aeb1fac2ef8415e71a4c10a5eb1d4dd808477a6354c3dce"
+    },
+    "docx": {
+      "sourceId": "d8d8f1ca-1f9e-4fed-b28d-add45fd32a77",
+      "sha256": "ec8d540cd877ce4c8ef1007ee99027241d96a830fd07936d4e1059904d914187"
+    }
+  },
+  "caseId": "4d4c7f14-9264-4200-9b1e-48e7f0fe4ba3",
+  "packageId": "0998e735-136f-43a1-9b4c-67b3f9d703c7",
+  "mixedAreaId": "914c0ca4-6d38-4de1-a60f-178e91b111a1",
+  "mixedCaseId": "bca1588e-7cf5-458e-ac53-fc6e2691ec3b"
+}

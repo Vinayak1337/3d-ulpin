@@ -33,22 +33,19 @@ export default function DataTools({
   initialPackageId?: string;
   onChanged?: () => void;
 }) {
-  const [mode, setMode] = useState(initialMode),
-    [source, setSource] = useState<"file" | "catalog">("file"),
+  const mode = initialMode;
+  const [source, setSource] = useState<"file" | "catalog">("file"),
     [pkg, setPackage] = useState<ImportPackage | null>(null);
   const mutation = useMutation();
   const router = useRouter();
   const catalog = useResource<SourceCatalogEntry[]>(
-    open && source === "catalog" ? "/source-catalog" : null,
+    open && mode === "import" && source === "catalog"
+      ? "/source-catalog"
+      : null,
   );
   const existing = useResource<ImportPackage>(
     open && initialPackageId ? `/import-packages/${initialPackageId}` : null,
   );
-  useEffect(() => {
-    if (open) {
-      setMode(initialMode);
-    }
-  }, [open, initialMode]);
   useEffect(() => {
     if (existing.data) setPackage(existing.data);
   }, [existing.data]);
@@ -65,20 +62,40 @@ export default function DataTools({
     onChanged?.();
   };
   return (
-    <Dialog open={open} onClose={onClose} title="Data tools">
-      <nav className="ui-data-tabs" aria-label="Data tools mode">
-        {(["import", "export"] as const).map((value) => (
-          <button
-            key={value}
-            aria-pressed={mode === value}
-            onClick={() => setMode(value)}
-          >
-            <Icon name={value === "import" ? "upload" : "download"} />
-            {value === "import" ? "Import sources" : "Export data"}
-          </button>
-        ))}
-      </nav>
-      {mode==='import'&&<ol className="import-progress" aria-label="Import progress">{['Original source','Map fields','Inspect geometry','Review','Record'].map((label,index)=>{const step=!pkg?1:pkg.state==='COMMITTED'?4:pkg.state==='REVIEWED'?3:2;return <li key={label} aria-current={index===step?'step':undefined} data-done={index<step}><span>{index+1}</span>{label}</li>;})}</ol>}
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={
+        mode === "import"
+          ? pkg
+            ? "Review GIS source"
+            : "Add GIS files"
+          : "Export data"
+      }
+    >
+      {mode === "import" && (
+        <ol className="import-progress" aria-label="Import progress">
+          {["Add files", "Review details", "Check & record"].map(
+            (label, index) => {
+              const step = !pkg
+                ? 0
+                : pkg.state === "REVIEWED" || pkg.state === "COMMITTED"
+                  ? 2
+                  : 1;
+              return (
+                <li
+                  key={label}
+                  aria-current={index === step ? "step" : undefined}
+                  data-done={index < step}
+                >
+                  <span>{index + 1}</span>
+                  {label}
+                </li>
+              );
+            },
+          )}
+        </ol>
+      )}
       {mutation.error && <ErrorState message={mutation.error} />}{" "}
       {existing.error && (
         <ErrorState message={existing.error} retry={existing.reload} />
@@ -104,24 +121,24 @@ export default function DataTools({
           <>
             <div className="ui-source-tabs">
               <Button
-                variant={source === "file" ? "primary" : "ghost"}
-                onClick={() => setSource("file")}
+                variant="ghost"
+                onClick={() =>
+                  setSource(source === "file" ? "catalog" : "file")
+                }
               >
-                Upload file
-              </Button>
-              <Button
-                variant={source === "catalog" ? "primary" : "ghost"}
-                onClick={() => setSource("catalog")}
-              >
-                Source catalogue
+                {source === "file"
+                  ? "Browse source catalogue"
+                  : "Back to file upload"}
               </Button>
             </div>
             {source === "file" ? (
-              <ImportForm
-                area={context?.area}
-                busy={mutation.busy}
-                onImport={update}
-              />
+              open && (
+                <ImportForm
+                  area={context?.area}
+                  busy={mutation.busy}
+                  onImport={update}
+                />
+              )
             ) : (
               <div className="ui-source-catalog">
                 {catalog.error && (
@@ -212,8 +229,7 @@ export default function DataTools({
             icon="download"
           />
         ) : (
-          <ScopedExport context={context} selectedId={selectedId}/>
-
+          <ScopedExport context={context} selectedId={selectedId} />
         ))}
     </Dialog>
   );

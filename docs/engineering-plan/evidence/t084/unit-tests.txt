@@ -1,0 +1,23 @@
+✔ model pixel calibration retains holes and flips image Y exactly once (1.823875ms)
+✔ rotated controls preserve multipart model components (0.2035ms)
+✔ different raster, impossible controls and nonready result cannot produce metric proposals (0.6025ms)
+✔ pixel rings cannot escape the retained raster or silently lose closure (0.083959ms)
+✔ batch selection is bounded and rejects arbitrary processor input (1.221625ms)
+✔ historical footprint receipt restores exact nonzero controls without floor applications or item migration (2.932916ms)
+✔ building calibration reuse rejects source, part, raster, model, job and source association changes (0.395375ms)
+✔ building calibration reuse rejects same-name changed frame, changed area origin and invalid controls (0.265417ms)
+✔ new property-linked footprint receipts require the same complete frame/reference evidence (0.121333ms)
+✔ saved dataset queue action preserves durable identity without claiming publication (0.407916ms)
+﹣ local API retains both source packages and replay creates no duplicates (0.048584ms) # SKIP
+﹣ invalid packages fail without rows and cross-origin requests are refused (0.035833ms) # SKIP
+✔ same-origin loopback writes use the validated browser Host, preserving port and cross-site checks (9.6365ms)
+✔ saved dataset processing resumes at the ML workflow without a publication claim (0.453792ms)
+﹣ ML API bounds JSON, rejects foreign requests and scopes retained artifacts (0.053208ms) # SKIP
+ℹ tests 15
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 3
+ℹ todo 0
+ℹ duration_ms 412.315625

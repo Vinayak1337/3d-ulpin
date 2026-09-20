@@ -57,7 +57,8 @@ export function buildMeshes(inputs: readonly RenderInput[], detail: boolean,synt
         }
         const color = seed % 3, h = upper - lower;
         if (h <= 0) {
-            for(const p of polygons){material(8).prism(p,lower,lower,feature);for(const ring of p)material(6).stroke(ring,lower+.015,.16,feature);}
+            // A distinct diagram fill makes source outlines legible without implying a roof or height.
+            for(const p of polygons){material(16).prism(p,lower,lower,feature);for(const ring of p)material(17).stroke(ring,lower+.015,.16,feature);}
             return;
         }
         for (const p of polygons) {

@@ -1,0 +1,2463 @@
+{
+  "run": "99741d82-febe-4533-bc05-49686744a555",
+  "createdAt": "2026-09-19T22:35:01.391Z",
+  "base": "http://127.0.0.1:3000",
+  "attachments": {
+    "floor": {
+      "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec",
+      "partId": "8af534f2-efaf-4441-9bdd-834e882ed100",
+      "filename": "published-CubiCasa-test-1191-F1_scaled.png",
+      "sha256": "aedd3b9f1fc8f69024c9e4690d77b3edf158ffc8cfadfc1ec44b7e2c561534e8",
+      "bytes": 628257
+    },
+    "floorAttribution": {
+      "sourceRevisionId": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95",
+      "partId": "53cf1f83-0429-4f94-9d68-5613654150f0",
+      "filename": "published-CubiCasa-source-attribution.txt",
+      "sha256": "741698268f2c9e091d72f6a8ab64a0509de729537b41157bcd8f34561c9f2aea",
+      "bytes": 394
+    },
+    "building": {
+      "sourceRevisionId": "fbe615ed-7e7b-430b-8ec8-c407c13326fc",
+      "partId": "1c9b1f4f-cdfc-483c-bc3e-0850a58a14a1",
+      "filename": "published-OAM-test-1200-source-original.png",
+      "sha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+      "bytes": 130339
+    },
+    "buildingAttribution": {
+      "sourceRevisionId": "010f8aff-c54b-4a41-9828-b254442f590f",
+      "partId": "ba5408b1-9bb4-42c3-b0c7-fcb47f84b7ec",
+      "filename": "published-OAM-test-1200-source-attribution.txt",
+      "sha256": "05cda120c92a60cb7c467dbaf522cf2d692872d8f639317caf7d223a0f15f197",
+      "bytes": 3692
+    },
+    "emptyBuilding": {
+      "sourceRevisionId": "1c253326-4e76-4d57-82e6-ea9d03c84c5b",
+      "partId": "b38a747a-392e-4d28-9f69-8bf6531e88b9",
+      "filename": "published-OAM-test-1-source-original.png",
+      "sha256": "7567cd480b5b990994bfa8368c4c664db50c03001ec6b3d644b6ba33f9d993bf",
+      "bytes": 96880
+    },
+    "emptyBuildingAttribution": {
+      "sourceRevisionId": "7087dc8a-e0a2-4622-82ba-56d51b3d230d",
+      "partId": "c307779a-9f9e-4969-8231-c35ac3f6fafa",
+      "filename": "published-OAM-test-1-source-attribution.txt",
+      "sha256": "f7ae89c01677c62995f15b4dc20b5cbd0232047017c8ba965132d837fe946e62",
+      "bytes": 1099
+    },
+    "levels": {
+      "sourceRevisionId": "76d7968d-659f-4e58-ac26-929149c8a756",
+      "partId": "8a78f9c8-dc35-478b-a302-f56a638c1eee",
+      "filename": "T061-authored-synthetic-room-levels.csv",
+      "sha256": "a556499659fe0b9c28d4a226b726bc280b2f3453897ef80d785f9f8e68ae8c0c",
+      "bytes": 141
+    },
+    "controls": {
+      "sourceRevisionId": "b011ba1d-6b0a-4221-81d5-5fb9275f7cd4",
+      "partId": "47a999d8-cac8-4bd8-bde3-3e6b10fbc9b4",
+      "filename": "T061-authored-synthetic-controls.txt",
+      "sha256": "0966da666abbeb35b9f1cdebe95f07d45a883e3f80502960009fc6df1e10690f",
+      "bytes": 388
+    }
+  },
+  "checks": [
+    {
+      "name": "New synthetic test property retains published originals and distinct synthetic metric evidence",
+      "passed": true,
+      "at": "2026-09-19T22:46:32.036Z",
+      "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "buildingId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47"
+    },
+    {
+      "name": "Real private worker floor/building inference and per-page partial failure",
+      "passed": true,
+      "at": "2026-09-19T22:46:38.129Z",
+      "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+      "floorRegions": 75,
+      "buildingRegions": 8
+    },
+    {
+      "name": "Immutable raster/mask bytes, pixel grid, pinned models and reload receipts match",
+      "passed": true,
+      "at": "2026-09-19T22:46:38.129Z"
+    },
+    {
+      "name": "Published empty evaluation tile retains genuine empty output without invented regions",
+      "passed": true,
+      "at": "2026-09-19T22:46:38.129Z",
+      "itemId": "fc58cb72-c064-47bb-a52b-9a8a7cd60b56"
+    },
+    {
+      "name": "Calibrated exact room contours remain unreviewed; replay/dedup and stale/fingerprint guards hold",
+      "passed": true,
+      "at": "2026-09-19T22:46:38.395Z",
+      "factIds": [
+        "0bacbd10-84f8-4cfd-ac6a-2658bbcb3f2c",
+        "790bbdcf-de91-4828-8144-b63f4ab3c36e"
+      ]
+    },
+    {
+      "name": "Building mask enters ordinary footprint draft review with original evidence and no inferred height",
+      "passed": true,
+      "at": "2026-09-19T22:46:39.398Z",
+      "packageId": "8ca945f5-1d8a-409d-b300-6f1d8f701892"
+    },
+    {
+      "name": "Actual worker retry preserves prior failure and same-key retry creates one attempt",
+      "passed": true,
+      "at": "2026-09-19T22:48:56.254Z"
+    },
+    {
+      "name": "Exact model room contour follows normal review → real build → recorded 3D unit",
+      "passed": true,
+      "at": "2026-09-19T22:48:59.864Z",
+      "unitId": "a0779a57-1106-4b5d-bd3f-1dbd498c777f",
+      "syntheticMetrics": {
+        "area": 69.992404514,
+        "height": 3,
+        "volume": 209.977213542
+      }
+    },
+    {
+      "name": "Ordinary area review records the exact roof proposal while height remains unknown",
+      "passed": true,
+      "at": "2026-09-19T22:49:00.033Z",
+      "featureId": "4090eb05-5a24-4ed6-b449-18631c183210"
+    },
+    {
+      "name": "Original source bytes and independent receipt statuses preserved",
+      "passed": true,
+      "at": "2026-09-19T22:49:00.079Z",
+      "originals": 8
+    }
+  ],
+  "scope": "New synthetic verification property and authored metric controls/levels. Published CubiCasa/OAM source rasters retain their real attribution; they are not survey evidence for this fictional property.",
+  "failures": [
+    {
+      "at": "2026-09-19T22:35:01.470Z",
+      "message": "TypeError: fetch failed"
+    },
+    {
+      "at": "2026-09-19T22:42:57.362Z",
+      "message": "AssertionError [ERR_ASSERTION]: [{\"error\":\"Local inference could not complete. No spatial facts were applied; retry a smaller selected region.\",\"jobId\":\"c353b76c-471a-49a2-8997-b02315bb8e82\",\"state\":\"failed\",\"createdAt\":\"2026-09-19T22:42:51.327Z\",\"errorCode\":\"INFERENCE_FAILED\",\"completedAt\":\"2026-09-19T22:42:53.701Z\"}]\n\n'failed' !== 'empty'\n\n    at <anonymous> (/Users/vinayak/Desktop/3D Ulpin/scripts/ml/verify-workflow.ts:142:12)"
+    }
+  ],
+  "contextPackageId": "63413671-6dbe-483d-8a6b-1577aed0b1af",
+  "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+  "building": {
+    "id": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+    "kind": "building",
+    "name": "T061 synthetic ML verification 99741d82",
+    "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "areaM2": 3600,
+    "height": {
+      "unit": "m",
+      "state": "source_supported",
+      "value": 9,
+      "method": "native_parse",
+      "meaning": "height above the building's own ground level",
+      "evidence": [
+        {
+          "featureId": "T061-TEST-PROPERTY",
+          "sourceRevisionId": "4f29322f-ba7d-4e4c-86af-680076be3d1b"
+        }
+      ],
+      "reference": "building-relative; not aligned between features",
+      "originalUnit": "m",
+      "originalValue": 9
+    },
+    "evidence": [
+      {
+        "featureId": "T061-TEST-PROPERTY",
+        "sourceRevisionId": "4f29322f-ba7d-4e4c-86af-680076be3d1b"
+      }
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            60,
+            0
+          ],
+          [
+            60,
+            60
+          ],
+          [
+            0,
+            60
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ]
+    },
+    "revision": 1,
+    "semantics": {
+      "geometryRole": "observed_ground_occupation",
+      "evidenceState": "source_supported"
+    },
+    "sourceKey": "T061-TEST-PROPERTY",
+    "identifier": "3DU-2C0EFNZHK781D9CB632ZKF6AMB:B001",
+    "properties": {
+      "id": "T061-TEST-PROPERTY",
+      "name": "T061 synthetic ML verification 99741d82",
+      "height": 9
+    },
+    "worldStatus": "synthetic",
+    "geometryRole": "observed_ground_occupation",
+    "representation": "physical_exterior",
+    "sourceGeometry": {
+      "rings": [
+        [
+          [
+            500000,
+            3100000
+          ],
+          [
+            500060,
+            3100000
+          ],
+          [
+            500060,
+            3100060
+          ],
+          [
+            500000,
+            3100060
+          ],
+          [
+            500000,
+            3100000
+          ]
+        ]
+      ]
+    },
+    "sourceReference": {
+      "anchor": [
+        75.00000000000001,
+        28.025254985930832
+      ],
+      "origin": [
+        500000,
+        3100000
+      ],
+      "sourceCrs": "EPSG:32643",
+      "analysisCrs": "EPSG:32643",
+      "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / proj=noop ellps=GRS80",
+      "verticalReference": "building-relative; not aligned between features"
+    },
+    "datasetNamespace": "t061-actual-ml:99741d82-febe-4533-bc05-49686744a555",
+    "sourceRevisionId": "4f29322f-ba7d-4e4c-86af-680076be3d1b",
+    "geographicGeometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            75.00000000000001,
+            28.025254985930832
+          ],
+          [
+            75.00061037894189,
+            28.025254984575255
+          ],
+          [
+            75.00061038199716,
+            28.025796620418255
+          ],
+          [
+            75.00000000000001,
+            28.02579662177386
+          ],
+          [
+            75.00000000000001,
+            28.025254985930832
+          ]
+        ]
+      ]
+    }
+  },
+  "preparation": {
+    "id": "78a5512d-1697-41a8-a60c-bee8f04f2d50",
+    "url": "/properties/1e6c6e44-15ee-4c41-b6bd-067e59151b47/workspace",
+    "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "caseId": "b5b9b4e8-c06a-4aca-afec-c8d443b708e1",
+    "revision": 2,
+    "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+    "placement": {
+      "id": "f824a886-5b13-4708-ad2e-d583a3c9cf14",
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "method": "canonical_area",
+      "status": "reviewed",
+      "evidence": [
+        {
+          "sourceRevisionId": "b011ba1d-6b0a-4221-81d5-5fb9275f7cd4",
+          "partId": "47a999d8-cac8-4bd8-bde3-3e6b10fbc9b4"
+        }
+      ],
+      "revision": 2,
+      "sourceFrame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "targetFrame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "verticalOffset": 0,
+      "verticalReference": "T061-SYNTHETIC-BM-99741d82",
+      "sourceVerticalReference": "T061-SYNTHETIC-BM-99741d82"
+    },
+    "returnUrl": "/blocks/4c039f5f-c667-405a-962c-c317e6f32a8b?feature=1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+    "buildingId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+    "buildingRevision": 1
+  },
+  "workspaceUrl": "http://127.0.0.1:3000/studio/properties/1e6c6e44-15ee-4c41-b6bd-067e59151b47/workspace?area=4c039f5f-c667-405a-962c-c317e6f32a8b",
+  "originalStatuses": [
+    {
+      "id": "1e86dd91-f1f9-46a7-b171-996fd3616aec",
+      "sha256": "aedd3b9f1fc8f69024c9e4690d77b3edf158ffc8cfadfc1ec44b7e2c561534e8",
+      "status": "inspected"
+    },
+    {
+      "id": "35b6cd7d-c138-4d20-9a70-ff468b9f7a95",
+      "sha256": "741698268f2c9e091d72f6a8ab64a0509de729537b41157bcd8f34561c9f2aea",
+      "status": "inspected"
+    },
+    {
+      "id": "fbe615ed-7e7b-430b-8ec8-c407c13326fc",
+      "sha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+      "status": "inspected"
+    },
+    {
+      "id": "010f8aff-c54b-4a41-9828-b254442f590f",
+      "sha256": "05cda120c92a60cb7c467dbaf522cf2d692872d8f639317caf7d223a0f15f197",
+      "status": "inspected"
+    },
+    {
+      "id": "1c253326-4e76-4d57-82e6-ea9d03c84c5b",
+      "sha256": "7567cd480b5b990994bfa8368c4c664db50c03001ec6b3d644b6ba33f9d993bf",
+      "status": "inspected"
+    },
+    {
+      "id": "7087dc8a-e0a2-4622-82ba-56d51b3d230d",
+      "sha256": "f7ae89c01677c62995f15b4dc20b5cbd0232047017c8ba965132d837fe946e62",
+      "status": "inspected"
+    },
+    {
+      "id": "76d7968d-659f-4e58-ac26-929149c8a756",
+      "sha256": "a556499659fe0b9c28d4a226b726bc280b2f3453897ef80d785f9f8e68ae8c0c",
+      "status": "inspected"
+    },
+    {
+      "id": "b011ba1d-6b0a-4221-81d5-5fb9275f7cd4",
+      "sha256": "0966da666abbeb35b9f1cdebe95f07d45a883e3f80502960009fc6df1e10690f",
+      "status": "inspected"
+    }
+  ],
+  "batchRequest": {
+    "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+    "expectedRevision": 9,
+    "requestKey": "6d6f7627-43d7-4e76-97dd-06b59b5d4b46",
+    "items": [
+      {
+        "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec",
+        "partId": "8af534f2-efaf-4441-9bdd-834e882ed100",
+        "page": 1,
+        "task": "floor-plan"
+      },
+      {
+        "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec",
+        "partId": "8af534f2-efaf-4441-9bdd-834e882ed100",
+        "page": 2,
+        "task": "floor-plan"
+      },
+      {
+        "sourceRevisionId": "fbe615ed-7e7b-430b-8ec8-c407c13326fc",
+        "partId": "1c9b1f4f-cdfc-483c-bc3e-0850a58a14a1",
+        "page": 1,
+        "task": "building"
+      },
+      {
+        "sourceRevisionId": "1c253326-4e76-4d57-82e6-ea9d03c84c5b",
+        "partId": "b38a747a-392e-4d28-9f69-8bf6531e88b9",
+        "page": 1,
+        "task": "building"
+      }
+    ]
+  },
+  "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+  "recoveryRequests": {
+    "runtime-recovery-1": {
+      "083be233-cc08-4a16-bae5-094621fe4dc3": "7b15fabb-7358-405e-9a2f-d30b9ac61088",
+      "105d69bc-e749-463c-87b7-07e4b9ed66d8": "16871769-5ed1-433a-a507-f21f5f2fa7da",
+      "fc58cb72-c064-47bb-a52b-9a8a7cd60b56": "e38ddccc-5cee-471c-8a76-2dffd4581811"
+    }
+  },
+  "recoveryBaselines": {
+    "runtime-recovery-1": {
+      "id": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+      "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+      "requestKey": "6d6f7627-43d7-4e76-97dd-06b59b5d4b46",
+      "createdAt": "2026-09-19T22:42:51.360Z",
+      "items": [
+        {
+          "id": "083be233-cc08-4a16-bae5-094621fe4dc3",
+          "page": 1,
+          "task": "building",
+          "state": "failed",
+          "partId": "1c9b1f4f-cdfc-483c-bc3e-0850a58a14a1",
+          "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+          "modelId": "rfdetr-satellite-buildings-onnx-v1",
+          "attempts": [
+            {
+              "error": "Local inference could not complete. No spatial facts were applied; retry a smaller selected region.",
+              "jobId": "07423fda-82ea-4fea-ab36-2d94612b3474",
+              "state": "failed",
+              "createdAt": "2026-09-19T22:42:51.326Z",
+              "errorCode": "INFERENCE_FAILED",
+              "completedAt": "2026-09-19T22:42:55.287Z"
+            }
+          ],
+          "createdAt": "2026-09-19T22:42:51.326Z",
+          "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+          "updatedAt": "2026-09-19T22:42:55.289Z",
+          "modelSha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+          "applications": [],
+          "currentJobId": "07423fda-82ea-4fea-ab36-2d94612b3474",
+          "sourceSha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+          "inputFingerprint": "3da59e187c6d84a7502cd2ec96d32587b36c5fd7ad956f0d29041c54a2945e40",
+          "sourceRevisionId": "fbe615ed-7e7b-430b-8ec8-c407c13326fc"
+        },
+        {
+          "id": "105d69bc-e749-463c-87b7-07e4b9ed66d8",
+          "page": 1,
+          "task": "floor-plan",
+          "state": "failed",
+          "partId": "8af534f2-efaf-4441-9bdd-834e882ed100",
+          "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+          "modelId": "cubicasa5k-rooms-onnx-v1",
+          "attempts": [
+            {
+              "error": "Local inference could not complete. No spatial facts were applied; retry a smaller selected region.",
+              "jobId": "406af89b-c4fe-4a1c-88ad-73f53aa2fbcd",
+              "state": "failed",
+              "createdAt": "2026-09-19T22:42:51.318Z",
+              "errorCode": "INFERENCE_FAILED",
+              "completedAt": "2026-09-19T22:42:54.503Z"
+            }
+          ],
+          "createdAt": "2026-09-19T22:42:51.318Z",
+          "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+          "updatedAt": "2026-09-19T22:42:54.509Z",
+          "modelSha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+          "applications": [],
+          "currentJobId": "406af89b-c4fe-4a1c-88ad-73f53aa2fbcd",
+          "sourceSha256": "aedd3b9f1fc8f69024c9e4690d77b3edf158ffc8cfadfc1ec44b7e2c561534e8",
+          "inputFingerprint": "7839c7c9a4f1e88175c49ada7f2d82f1499bc509581b8819f4e9a82fba3bef32",
+          "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec"
+        },
+        {
+          "id": "968a2ebf-224b-40d5-9980-5eeb42074a88",
+          "page": 2,
+          "task": "floor-plan",
+          "state": "failed",
+          "partId": "8af534f2-efaf-4441-9bdd-834e882ed100",
+          "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+          "modelId": "cubicasa5k-rooms-onnx-v1",
+          "attempts": [
+            {
+              "error": "Choose a PNG/JPEG original or a PDF page; an image has only page 1.",
+              "jobId": "12e60ee5-ece1-4433-ab98-bac2e7c19798",
+              "state": "failed",
+              "createdAt": "2026-09-19T22:42:51.322Z",
+              "errorCode": "UNSUPPORTED_SOURCE",
+              "completedAt": "2026-09-19T22:42:51.322Z"
+            }
+          ],
+          "createdAt": "2026-09-19T22:42:51.322Z",
+          "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+          "updatedAt": "2026-09-19T22:42:51.322Z",
+          "modelSha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+          "applications": [],
+          "currentJobId": "12e60ee5-ece1-4433-ab98-bac2e7c19798",
+          "sourceSha256": "aedd3b9f1fc8f69024c9e4690d77b3edf158ffc8cfadfc1ec44b7e2c561534e8",
+          "inputFingerprint": "06ab197ecd40e9f340a34752e0de32f1fdea47e0a93d71f6d718430c8009408c",
+          "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec"
+        },
+        {
+          "id": "fc58cb72-c064-47bb-a52b-9a8a7cd60b56",
+          "page": 1,
+          "task": "building",
+          "state": "failed",
+          "partId": "b38a747a-392e-4d28-9f69-8bf6531e88b9",
+          "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+          "modelId": "rfdetr-satellite-buildings-onnx-v1",
+          "attempts": [
+            {
+              "error": "Local inference could not complete. No spatial facts were applied; retry a smaller selected region.",
+              "jobId": "c353b76c-471a-49a2-8997-b02315bb8e82",
+              "state": "failed",
+              "createdAt": "2026-09-19T22:42:51.327Z",
+              "errorCode": "INFERENCE_FAILED",
+              "completedAt": "2026-09-19T22:42:53.701Z"
+            }
+          ],
+          "createdAt": "2026-09-19T22:42:51.327Z",
+          "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+          "updatedAt": "2026-09-19T22:42:53.703Z",
+          "modelSha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+          "applications": [],
+          "currentJobId": "c353b76c-471a-49a2-8997-b02315bb8e82",
+          "sourceSha256": "7567cd480b5b990994bfa8368c4c664db50c03001ec6b3d644b6ba33f9d993bf",
+          "inputFingerprint": "a04af3bdce3dfdb724b3947a7e6e19fc1028ad5f59bc57d8cf83c646dd93ba63",
+          "sourceRevisionId": "1c253326-4e76-4d57-82e6-ea9d03c84c5b"
+        }
+      ]
+    }
+  },
+  "floorItemId": "105d69bc-e749-463c-87b7-07e4b9ed66d8",
+  "buildingItemId": "083be233-cc08-4a16-bae5-094621fe4dc3",
+  "emptyItemId": "fc58cb72-c064-47bb-a52b-9a8a7cd60b56",
+  "failedItemId": "968a2ebf-224b-40d5-9980-5eeb42074a88",
+  "applyRequest": {
+    "expectedRevision": 10,
+    "requestKey": "95fcffa3-9592-4c23-b255-ec7e0755fc40",
+    "entityId": "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+    "selections": [
+      {
+        "componentId": "31f1be95-89e0-50f1-b829-ce86abe66a3c",
+        "subject": "ML-ROOM-01"
+      }
+    ],
+    "property": "space.geometry",
+    "calibration": {
+      "rasterSha256": "81b6aa3172ca88b8fa7d49c4a9aaffdf66f5a347429036604c43c7de88515bdd",
+      "imagePoints": [
+        [
+          0,
+          0
+        ],
+        [
+          768,
+          0
+        ]
+      ],
+      "worldPoints": [
+        [
+          5,
+          55
+        ],
+        [
+          45,
+          55
+        ]
+      ],
+      "frame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "reason": "T061 99741d82-febe-4533-bc05-49686744a555: explicitly authored synthetic test controls, 0.052083333333333336 m/pixel. Published source dimensions are not asserted. Not survey evidence."
+    }
+  },
+  "factIds": [
+    "0bacbd10-84f8-4cfd-ac6a-2658bbcb3f2c",
+    "790bbdcf-de91-4828-8144-b63f4ab3c36e"
+  ],
+  "component": {
+    "id": "31f1be95-89e0-50f1-b829-ce86abe66a3c",
+    "score": 0.993575,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            144,
+            89
+          ],
+          [
+            144,
+            91
+          ],
+          [
+            141,
+            91
+          ],
+          [
+            141,
+            90
+          ],
+          [
+            140,
+            90
+          ],
+          [
+            140,
+            91
+          ],
+          [
+            90,
+            91
+          ],
+          [
+            90,
+            90
+          ],
+          [
+            64,
+            90
+          ],
+          [
+            64,
+            91
+          ],
+          [
+            60,
+            91
+          ],
+          [
+            60,
+            90
+          ],
+          [
+            53,
+            90
+          ],
+          [
+            53,
+            91
+          ],
+          [
+            52,
+            91
+          ],
+          [
+            52,
+            90
+          ],
+          [
+            51,
+            90
+          ],
+          [
+            51,
+            91
+          ],
+          [
+            48,
+            91
+          ],
+          [
+            48,
+            100
+          ],
+          [
+            47,
+            100
+          ],
+          [
+            47,
+            101
+          ],
+          [
+            48,
+            101
+          ],
+          [
+            48,
+            104
+          ],
+          [
+            47,
+            104
+          ],
+          [
+            47,
+            202
+          ],
+          [
+            48,
+            202
+          ],
+          [
+            48,
+            209
+          ],
+          [
+            47,
+            209
+          ],
+          [
+            47,
+            210
+          ],
+          [
+            48,
+            210
+          ],
+          [
+            48,
+            212
+          ],
+          [
+            47,
+            212
+          ],
+          [
+            48,
+            216
+          ],
+          [
+            47,
+            216
+          ],
+          [
+            47,
+            217
+          ],
+          [
+            48,
+            217
+          ],
+          [
+            48,
+            219
+          ],
+          [
+            56,
+            219
+          ],
+          [
+            56,
+            220
+          ],
+          [
+            58,
+            220
+          ],
+          [
+            58,
+            219
+          ],
+          [
+            60,
+            219
+          ],
+          [
+            60,
+            220
+          ],
+          [
+            61,
+            220
+          ],
+          [
+            61,
+            219
+          ],
+          [
+            66,
+            219
+          ],
+          [
+            66,
+            220
+          ],
+          [
+            68,
+            220
+          ],
+          [
+            68,
+            219
+          ],
+          [
+            69,
+            219
+          ],
+          [
+            69,
+            220
+          ],
+          [
+            79,
+            220
+          ],
+          [
+            79,
+            219
+          ],
+          [
+            85,
+            219
+          ],
+          [
+            85,
+            220
+          ],
+          [
+            144,
+            220
+          ],
+          [
+            144,
+            223
+          ],
+          [
+            145,
+            223
+          ],
+          [
+            145,
+            220
+          ],
+          [
+            146,
+            220
+          ],
+          [
+            146,
+            218
+          ],
+          [
+            147,
+            218
+          ],
+          [
+            147,
+            215
+          ],
+          [
+            148,
+            215
+          ],
+          [
+            148,
+            212
+          ],
+          [
+            147,
+            212
+          ],
+          [
+            147,
+            208
+          ],
+          [
+            148,
+            208
+          ],
+          [
+            148,
+            198
+          ],
+          [
+            147,
+            198
+          ],
+          [
+            147,
+            183
+          ],
+          [
+            148,
+            183
+          ],
+          [
+            148,
+            177
+          ],
+          [
+            150,
+            177
+          ],
+          [
+            150,
+            179
+          ],
+          [
+            151,
+            179
+          ],
+          [
+            150,
+            181
+          ],
+          [
+            151,
+            181
+          ],
+          [
+            151,
+            182
+          ],
+          [
+            154,
+            182
+          ],
+          [
+            154,
+            183
+          ],
+          [
+            156,
+            183
+          ],
+          [
+            156,
+            182
+          ],
+          [
+            168,
+            182
+          ],
+          [
+            168,
+            183
+          ],
+          [
+            172,
+            182
+          ],
+          [
+            172,
+            183
+          ],
+          [
+            179,
+            183
+          ],
+          [
+            179,
+            184
+          ],
+          [
+            180,
+            184
+          ],
+          [
+            180,
+            183
+          ],
+          [
+            184,
+            183
+          ],
+          [
+            184,
+            184
+          ],
+          [
+            185,
+            184
+          ],
+          [
+            185,
+            183
+          ],
+          [
+            201,
+            183
+          ],
+          [
+            201,
+            184
+          ],
+          [
+            204,
+            184
+          ],
+          [
+            204,
+            183
+          ],
+          [
+            235,
+            183
+          ],
+          [
+            235,
+            184
+          ],
+          [
+            236,
+            184
+          ],
+          [
+            236,
+            183
+          ],
+          [
+            284,
+            183
+          ],
+          [
+            284,
+            184
+          ],
+          [
+            285,
+            184
+          ],
+          [
+            285,
+            183
+          ],
+          [
+            289,
+            183
+          ],
+          [
+            290,
+            181
+          ],
+          [
+            292,
+            181
+          ],
+          [
+            292,
+            180
+          ],
+          [
+            289,
+            180
+          ],
+          [
+            289,
+            179
+          ],
+          [
+            290,
+            179
+          ],
+          [
+            290,
+            177
+          ],
+          [
+            291,
+            177
+          ],
+          [
+            291,
+            176
+          ],
+          [
+            290,
+            176
+          ],
+          [
+            290,
+            136
+          ],
+          [
+            291,
+            136
+          ],
+          [
+            291,
+            128
+          ],
+          [
+            290,
+            128
+          ],
+          [
+            290,
+            127
+          ],
+          [
+            291,
+            127
+          ],
+          [
+            291,
+            96
+          ],
+          [
+            292,
+            96
+          ],
+          [
+            292,
+            94
+          ],
+          [
+            290,
+            93
+          ],
+          [
+            291,
+            91
+          ],
+          [
+            289,
+            91
+          ],
+          [
+            289,
+            90
+          ],
+          [
+            288,
+            90
+          ],
+          [
+            288,
+            91
+          ],
+          [
+            287,
+            91
+          ],
+          [
+            287,
+            90
+          ],
+          [
+            272,
+            90
+          ],
+          [
+            272,
+            91
+          ],
+          [
+            248,
+            91
+          ],
+          [
+            248,
+            90
+          ],
+          [
+            240,
+            90
+          ],
+          [
+            240,
+            91
+          ],
+          [
+            231,
+            91
+          ],
+          [
+            231,
+            90
+          ],
+          [
+            224,
+            90
+          ],
+          [
+            224,
+            91
+          ],
+          [
+            200,
+            91
+          ],
+          [
+            200,
+            90
+          ],
+          [
+            196,
+            90
+          ],
+          [
+            196,
+            91
+          ],
+          [
+            192,
+            91
+          ],
+          [
+            192,
+            90
+          ],
+          [
+            189,
+            90
+          ],
+          [
+            189,
+            91
+          ],
+          [
+            176,
+            91
+          ],
+          [
+            176,
+            90
+          ],
+          [
+            174,
+            90
+          ],
+          [
+            174,
+            91
+          ],
+          [
+            169,
+            91
+          ],
+          [
+            169,
+            90
+          ],
+          [
+            168,
+            90
+          ],
+          [
+            168,
+            91
+          ],
+          [
+            166,
+            91
+          ],
+          [
+            166,
+            90
+          ],
+          [
+            164,
+            90
+          ],
+          [
+            164,
+            91
+          ],
+          [
+            156,
+            91
+          ],
+          [
+            156,
+            90
+          ],
+          [
+            155,
+            90
+          ],
+          [
+            155,
+            91
+          ],
+          [
+            153,
+            91
+          ],
+          [
+            153,
+            92
+          ],
+          [
+            151,
+            93
+          ],
+          [
+            151,
+            95
+          ],
+          [
+            150,
+            95
+          ],
+          [
+            150,
+            96
+          ],
+          [
+            152,
+            96
+          ],
+          [
+            152,
+            104
+          ],
+          [
+            151,
+            104
+          ],
+          [
+            151,
+            105
+          ],
+          [
+            152,
+            105
+          ],
+          [
+            152,
+            136
+          ],
+          [
+            151,
+            136
+          ],
+          [
+            151,
+            138
+          ],
+          [
+            152,
+            138
+          ],
+          [
+            152,
+            146
+          ],
+          [
+            151,
+            146
+          ],
+          [
+            151,
+            148
+          ],
+          [
+            152,
+            148
+          ],
+          [
+            152,
+            151
+          ],
+          [
+            151,
+            151
+          ],
+          [
+            151,
+            152
+          ],
+          [
+            152,
+            152
+          ],
+          [
+            152,
+            155
+          ],
+          [
+            151,
+            155
+          ],
+          [
+            151,
+            156
+          ],
+          [
+            152,
+            156
+          ],
+          [
+            152,
+            160
+          ],
+          [
+            151,
+            160
+          ],
+          [
+            152,
+            168
+          ],
+          [
+            151,
+            168
+          ],
+          [
+            151,
+            175
+          ],
+          [
+            152,
+            175
+          ],
+          [
+            152,
+            176
+          ],
+          [
+            147,
+            176
+          ],
+          [
+            147,
+            175
+          ],
+          [
+            148,
+            175
+          ],
+          [
+            148,
+            160
+          ],
+          [
+            147,
+            160
+          ],
+          [
+            147,
+            159
+          ],
+          [
+            148,
+            159
+          ],
+          [
+            148,
+            124
+          ],
+          [
+            147,
+            124
+          ],
+          [
+            147,
+            123
+          ],
+          [
+            148,
+            123
+          ],
+          [
+            148,
+            92
+          ],
+          [
+            147,
+            92
+          ],
+          [
+            147,
+            91
+          ],
+          [
+            146,
+            91
+          ],
+          [
+            146,
+            90
+          ],
+          [
+            144,
+            89
+          ]
+        ]
+      ]
+    },
+    "className": "bedroom"
+  },
+  "expectedRing": [
+    [
+      12.5,
+      50.364583333333336
+    ],
+    [
+      12.5,
+      50.260416666666664
+    ],
+    [
+      12.34375,
+      50.260416666666664
+    ],
+    [
+      12.34375,
+      50.3125
+    ],
+    [
+      12.291666666666668,
+      50.3125
+    ],
+    [
+      12.291666666666668,
+      50.260416666666664
+    ],
+    [
+      9.6875,
+      50.260416666666664
+    ],
+    [
+      9.6875,
+      50.3125
+    ],
+    [
+      8.333333333333334,
+      50.3125
+    ],
+    [
+      8.333333333333334,
+      50.260416666666664
+    ],
+    [
+      8.125,
+      50.260416666666664
+    ],
+    [
+      8.125,
+      50.3125
+    ],
+    [
+      7.760416666666667,
+      50.3125
+    ],
+    [
+      7.760416666666667,
+      50.260416666666664
+    ],
+    [
+      7.708333333333334,
+      50.260416666666664
+    ],
+    [
+      7.708333333333334,
+      50.3125
+    ],
+    [
+      7.65625,
+      50.3125
+    ],
+    [
+      7.65625,
+      50.260416666666664
+    ],
+    [
+      7.5,
+      50.260416666666664
+    ],
+    [
+      7.5,
+      49.791666666666664
+    ],
+    [
+      7.447916666666667,
+      49.791666666666664
+    ],
+    [
+      7.447916666666667,
+      49.739583333333336
+    ],
+    [
+      7.5,
+      49.739583333333336
+    ],
+    [
+      7.5,
+      49.583333333333336
+    ],
+    [
+      7.447916666666667,
+      49.583333333333336
+    ],
+    [
+      7.447916666666667,
+      44.479166666666664
+    ],
+    [
+      7.5,
+      44.479166666666664
+    ],
+    [
+      7.5,
+      44.11458333333333
+    ],
+    [
+      7.447916666666667,
+      44.11458333333333
+    ],
+    [
+      7.447916666666667,
+      44.0625
+    ],
+    [
+      7.5,
+      44.0625
+    ],
+    [
+      7.5,
+      43.95833333333333
+    ],
+    [
+      7.447916666666667,
+      43.95833333333333
+    ],
+    [
+      7.5,
+      43.75
+    ],
+    [
+      7.447916666666667,
+      43.75
+    ],
+    [
+      7.447916666666667,
+      43.697916666666664
+    ],
+    [
+      7.5,
+      43.697916666666664
+    ],
+    [
+      7.5,
+      43.59375
+    ],
+    [
+      7.916666666666667,
+      43.59375
+    ],
+    [
+      7.916666666666667,
+      43.541666666666664
+    ],
+    [
+      8.020833333333334,
+      43.541666666666664
+    ],
+    [
+      8.020833333333334,
+      43.59375
+    ],
+    [
+      8.125,
+      43.59375
+    ],
+    [
+      8.125,
+      43.541666666666664
+    ],
+    [
+      8.177083333333334,
+      43.541666666666664
+    ],
+    [
+      8.177083333333334,
+      43.59375
+    ],
+    [
+      8.4375,
+      43.59375
+    ],
+    [
+      8.4375,
+      43.541666666666664
+    ],
+    [
+      8.541666666666668,
+      43.541666666666664
+    ],
+    [
+      8.541666666666668,
+      43.59375
+    ],
+    [
+      8.59375,
+      43.59375
+    ],
+    [
+      8.59375,
+      43.541666666666664
+    ],
+    [
+      9.114583333333334,
+      43.541666666666664
+    ],
+    [
+      9.114583333333334,
+      43.59375
+    ],
+    [
+      9.427083333333334,
+      43.59375
+    ],
+    [
+      9.427083333333334,
+      43.541666666666664
+    ],
+    [
+      12.5,
+      43.541666666666664
+    ],
+    [
+      12.5,
+      43.385416666666664
+    ],
+    [
+      12.552083333333334,
+      43.385416666666664
+    ],
+    [
+      12.552083333333334,
+      43.541666666666664
+    ],
+    [
+      12.604166666666668,
+      43.541666666666664
+    ],
+    [
+      12.604166666666668,
+      43.64583333333333
+    ],
+    [
+      12.65625,
+      43.64583333333333
+    ],
+    [
+      12.65625,
+      43.80208333333333
+    ],
+    [
+      12.708333333333334,
+      43.80208333333333
+    ],
+    [
+      12.708333333333334,
+      43.95833333333333
+    ],
+    [
+      12.65625,
+      43.95833333333333
+    ],
+    [
+      12.65625,
+      44.166666666666664
+    ],
+    [
+      12.708333333333334,
+      44.166666666666664
+    ],
+    [
+      12.708333333333334,
+      44.6875
+    ],
+    [
+      12.65625,
+      44.6875
+    ],
+    [
+      12.65625,
+      45.46875
+    ],
+    [
+      12.708333333333334,
+      45.46875
+    ],
+    [
+      12.708333333333334,
+      45.78125
+    ],
+    [
+      12.8125,
+      45.78125
+    ],
+    [
+      12.8125,
+      45.67708333333333
+    ],
+    [
+      12.864583333333334,
+      45.67708333333333
+    ],
+    [
+      12.8125,
+      45.572916666666664
+    ],
+    [
+      12.864583333333334,
+      45.572916666666664
+    ],
+    [
+      12.864583333333334,
+      45.52083333333333
+    ],
+    [
+      13.020833333333334,
+      45.52083333333333
+    ],
+    [
+      13.020833333333334,
+      45.46875
+    ],
+    [
+      13.125,
+      45.46875
+    ],
+    [
+      13.125,
+      45.52083333333333
+    ],
+    [
+      13.75,
+      45.52083333333333
+    ],
+    [
+      13.75,
+      45.46875
+    ],
+    [
+      13.958333333333334,
+      45.52083333333333
+    ],
+    [
+      13.958333333333334,
+      45.46875
+    ],
+    [
+      14.322916666666668,
+      45.46875
+    ],
+    [
+      14.322916666666668,
+      45.416666666666664
+    ],
+    [
+      14.375,
+      45.416666666666664
+    ],
+    [
+      14.375,
+      45.46875
+    ],
+    [
+      14.583333333333334,
+      45.46875
+    ],
+    [
+      14.583333333333334,
+      45.416666666666664
+    ],
+    [
+      14.635416666666668,
+      45.416666666666664
+    ],
+    [
+      14.635416666666668,
+      45.46875
+    ],
+    [
+      15.46875,
+      45.46875
+    ],
+    [
+      15.46875,
+      45.416666666666664
+    ],
+    [
+      15.625,
+      45.416666666666664
+    ],
+    [
+      15.625,
+      45.46875
+    ],
+    [
+      17.239583333333336,
+      45.46875
+    ],
+    [
+      17.239583333333336,
+      45.416666666666664
+    ],
+    [
+      17.291666666666668,
+      45.416666666666664
+    ],
+    [
+      17.291666666666668,
+      45.46875
+    ],
+    [
+      19.791666666666668,
+      45.46875
+    ],
+    [
+      19.791666666666668,
+      45.416666666666664
+    ],
+    [
+      19.84375,
+      45.416666666666664
+    ],
+    [
+      19.84375,
+      45.46875
+    ],
+    [
+      20.052083333333336,
+      45.46875
+    ],
+    [
+      20.104166666666668,
+      45.572916666666664
+    ],
+    [
+      20.208333333333336,
+      45.572916666666664
+    ],
+    [
+      20.208333333333336,
+      45.625
+    ],
+    [
+      20.052083333333336,
+      45.625
+    ],
+    [
+      20.052083333333336,
+      45.67708333333333
+    ],
+    [
+      20.104166666666668,
+      45.67708333333333
+    ],
+    [
+      20.104166666666668,
+      45.78125
+    ],
+    [
+      20.15625,
+      45.78125
+    ],
+    [
+      20.15625,
+      45.83333333333333
+    ],
+    [
+      20.104166666666668,
+      45.83333333333333
+    ],
+    [
+      20.104166666666668,
+      47.916666666666664
+    ],
+    [
+      20.15625,
+      47.916666666666664
+    ],
+    [
+      20.15625,
+      48.333333333333336
+    ],
+    [
+      20.104166666666668,
+      48.333333333333336
+    ],
+    [
+      20.104166666666668,
+      48.385416666666664
+    ],
+    [
+      20.15625,
+      48.385416666666664
+    ],
+    [
+      20.15625,
+      50
+    ],
+    [
+      20.208333333333336,
+      50
+    ],
+    [
+      20.208333333333336,
+      50.104166666666664
+    ],
+    [
+      20.104166666666668,
+      50.15625
+    ],
+    [
+      20.15625,
+      50.260416666666664
+    ],
+    [
+      20.052083333333336,
+      50.260416666666664
+    ],
+    [
+      20.052083333333336,
+      50.3125
+    ],
+    [
+      20,
+      50.3125
+    ],
+    [
+      20,
+      50.260416666666664
+    ],
+    [
+      19.947916666666668,
+      50.260416666666664
+    ],
+    [
+      19.947916666666668,
+      50.3125
+    ],
+    [
+      19.166666666666668,
+      50.3125
+    ],
+    [
+      19.166666666666668,
+      50.260416666666664
+    ],
+    [
+      17.916666666666668,
+      50.260416666666664
+    ],
+    [
+      17.916666666666668,
+      50.3125
+    ],
+    [
+      17.5,
+      50.3125
+    ],
+    [
+      17.5,
+      50.260416666666664
+    ],
+    [
+      17.03125,
+      50.260416666666664
+    ],
+    [
+      17.03125,
+      50.3125
+    ],
+    [
+      16.666666666666668,
+      50.3125
+    ],
+    [
+      16.666666666666668,
+      50.260416666666664
+    ],
+    [
+      15.416666666666668,
+      50.260416666666664
+    ],
+    [
+      15.416666666666668,
+      50.3125
+    ],
+    [
+      15.208333333333334,
+      50.3125
+    ],
+    [
+      15.208333333333334,
+      50.260416666666664
+    ],
+    [
+      15,
+      50.260416666666664
+    ],
+    [
+      15,
+      50.3125
+    ],
+    [
+      14.84375,
+      50.3125
+    ],
+    [
+      14.84375,
+      50.260416666666664
+    ],
+    [
+      14.166666666666668,
+      50.260416666666664
+    ],
+    [
+      14.166666666666668,
+      50.3125
+    ],
+    [
+      14.0625,
+      50.3125
+    ],
+    [
+      14.0625,
+      50.260416666666664
+    ],
+    [
+      13.802083333333334,
+      50.260416666666664
+    ],
+    [
+      13.802083333333334,
+      50.3125
+    ],
+    [
+      13.75,
+      50.3125
+    ],
+    [
+      13.75,
+      50.260416666666664
+    ],
+    [
+      13.645833333333334,
+      50.260416666666664
+    ],
+    [
+      13.645833333333334,
+      50.3125
+    ],
+    [
+      13.541666666666668,
+      50.3125
+    ],
+    [
+      13.541666666666668,
+      50.260416666666664
+    ],
+    [
+      13.125,
+      50.260416666666664
+    ],
+    [
+      13.125,
+      50.3125
+    ],
+    [
+      13.072916666666668,
+      50.3125
+    ],
+    [
+      13.072916666666668,
+      50.260416666666664
+    ],
+    [
+      12.96875,
+      50.260416666666664
+    ],
+    [
+      12.96875,
+      50.208333333333336
+    ],
+    [
+      12.864583333333334,
+      50.15625
+    ],
+    [
+      12.864583333333334,
+      50.052083333333336
+    ],
+    [
+      12.8125,
+      50.052083333333336
+    ],
+    [
+      12.8125,
+      50
+    ],
+    [
+      12.916666666666668,
+      50
+    ],
+    [
+      12.916666666666668,
+      49.583333333333336
+    ],
+    [
+      12.864583333333334,
+      49.583333333333336
+    ],
+    [
+      12.864583333333334,
+      49.53125
+    ],
+    [
+      12.916666666666668,
+      49.53125
+    ],
+    [
+      12.916666666666668,
+      47.916666666666664
+    ],
+    [
+      12.864583333333334,
+      47.916666666666664
+    ],
+    [
+      12.864583333333334,
+      47.8125
+    ],
+    [
+      12.916666666666668,
+      47.8125
+    ],
+    [
+      12.916666666666668,
+      47.395833333333336
+    ],
+    [
+      12.864583333333334,
+      47.395833333333336
+    ],
+    [
+      12.864583333333334,
+      47.291666666666664
+    ],
+    [
+      12.916666666666668,
+      47.291666666666664
+    ],
+    [
+      12.916666666666668,
+      47.135416666666664
+    ],
+    [
+      12.864583333333334,
+      47.135416666666664
+    ],
+    [
+      12.864583333333334,
+      47.083333333333336
+    ],
+    [
+      12.916666666666668,
+      47.083333333333336
+    ],
+    [
+      12.916666666666668,
+      46.92708333333333
+    ],
+    [
+      12.864583333333334,
+      46.92708333333333
+    ],
+    [
+      12.864583333333334,
+      46.875
+    ],
+    [
+      12.916666666666668,
+      46.875
+    ],
+    [
+      12.916666666666668,
+      46.666666666666664
+    ],
+    [
+      12.864583333333334,
+      46.666666666666664
+    ],
+    [
+      12.916666666666668,
+      46.25
+    ],
+    [
+      12.864583333333334,
+      46.25
+    ],
+    [
+      12.864583333333334,
+      45.885416666666664
+    ],
+    [
+      12.916666666666668,
+      45.885416666666664
+    ],
+    [
+      12.916666666666668,
+      45.83333333333333
+    ],
+    [
+      12.65625,
+      45.83333333333333
+    ],
+    [
+      12.65625,
+      45.885416666666664
+    ],
+    [
+      12.708333333333334,
+      45.885416666666664
+    ],
+    [
+      12.708333333333334,
+      46.666666666666664
+    ],
+    [
+      12.65625,
+      46.666666666666664
+    ],
+    [
+      12.65625,
+      46.71875
+    ],
+    [
+      12.708333333333334,
+      46.71875
+    ],
+    [
+      12.708333333333334,
+      48.541666666666664
+    ],
+    [
+      12.65625,
+      48.541666666666664
+    ],
+    [
+      12.65625,
+      48.59375
+    ],
+    [
+      12.708333333333334,
+      48.59375
+    ],
+    [
+      12.708333333333334,
+      50.208333333333336
+    ],
+    [
+      12.65625,
+      50.208333333333336
+    ],
+    [
+      12.65625,
+      50.260416666666664
+    ],
+    [
+      12.604166666666668,
+      50.260416666666664
+    ],
+    [
+      12.604166666666668,
+      50.3125
+    ],
+    [
+      12.5,
+      50.364583333333336
+    ]
+  ],
+  "footprintRequest": {
+    "expectedRevision": 11,
+    "expectedAreaRevision": 1,
+    "requestKey": "0c5bf03c-b556-4a80-864f-aef4ad377c2f",
+    "selections": [
+      {
+        "componentId": "678cc8ec-8c49-5663-bff9-e5cd69455de6",
+        "subject": "T061 synthetic placement of published roof"
+      }
+    ],
+    "calibration": {
+      "rasterSha256": "7e73557354dbf8955a6ebde7f84772c41785880bdeeace79630f934510bbbdb4",
+      "imagePoints": [
+        [
+          0,
+          0
+        ],
+        [
+          256,
+          0
+        ]
+      ],
+      "worldPoints": [
+        [
+          70,
+          55
+        ],
+        [
+          110,
+          55
+        ]
+      ],
+      "frame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "reason": "T061 99741d82-febe-4533-bc05-49686744a555: explicitly authored synthetic test controls, 0.15625 m/pixel. Published source dimensions are not asserted. Not survey evidence."
+    }
+  },
+  "footprintPackageId": "8ca945f5-1d8a-409d-b300-6f1d8f701892",
+  "expectedRoofVertices": [
+    "76.71875,40.62500",
+    "76.71875,40.78125",
+    "76.87500,40.46875",
+    "76.87500,40.62500",
+    "76.87500,40.78125",
+    "76.87500,41.71875",
+    "77.03125,41.71875",
+    "77.03125,45.00000",
+    "77.18750,40.31250",
+    "77.18750,40.46875",
+    "77.18750,45.00000",
+    "77.18750,46.71875",
+    "77.34375,46.71875",
+    "77.34375,47.03125",
+    "77.96875,40.15625",
+    "77.96875,40.31250",
+    "79.84375,46.87500",
+    "79.84375,47.03125",
+    "81.87500,40.00000",
+    "81.87500,40.15625",
+    "82.18750,39.84375",
+    "82.18750,40.00000",
+    "82.34375,39.53125",
+    "82.34375,39.84375",
+    "82.50000,37.65625",
+    "82.50000,39.53125",
+    "82.65625,37.34375",
+    "82.65625,37.65625",
+    "83.90625,37.34375",
+    "83.90625,37.50000",
+    "84.21875,46.87500",
+    "84.21875,47.03125",
+    "84.53125,37.50000",
+    "84.53125,37.65625",
+    "85.46875,37.65625",
+    "85.46875,38.43750",
+    "85.62500,38.43750",
+    "85.62500,40.62500",
+    "85.78125,40.62500",
+    "85.78125,41.25000",
+    "85.93750,41.25000",
+    "85.93750,41.56250",
+    "86.09375,41.56250",
+    "86.09375,42.03125",
+    "86.09375,46.87500",
+    "86.09375,47.03125",
+    "86.25000,42.03125",
+    "86.25000,42.50000",
+    "86.40625,42.50000",
+    "86.40625,44.53125",
+    "86.56250,44.53125",
+    "86.56250,45.78125",
+    "86.56250,46.09375",
+    "86.56250,46.25000",
+    "86.56250,46.71875",
+    "86.56250,46.87500",
+    "86.71875,45.78125",
+    "86.71875,46.09375",
+    "86.71875,46.25000",
+    "86.71875,46.71875"
+  ],
+  "stage": "recorded",
+  "retryKey": "370970c8-2538-4932-b295-8aac15974558",
+  "retryVerified": true,
+  "buildJobId": "4afc5349-05b5-479b-96fc-c6a55000a6b4",
+  "recordedUnitId": "a0779a57-1106-4b5d-bd3f-1dbd498c777f",
+  "metrics": {
+    "area": 69.992404514,
+    "height": 3,
+    "volume": 209.977213542
+  }
+}

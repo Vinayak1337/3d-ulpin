@@ -78,7 +78,18 @@ function streets():Parts {
 const streetData=streets();
 function trees(){
   const trunks:Item[]=[],crowns:Item[]=[];let n=0;
-  const tree=(x:number,z:number,scale=1)=>{n++;const h=(4.9+(n%5)*.36)*scale;add(trunks,x,h*.3,z,.25*scale,h*.6,.25*scale,'#6b6352');const palettes=['#7b955b','#708d51','#638049','#93a568','#6e8a50','#879961'];for(let k=0;k<5;k++){const angle=(k*2.2+n)*1.4;add(crowns,x+Math.cos(angle)*scale*1.1,h*.7+(k%2)*scale*.65,z+Math.sin(angle)*scale*1.1,scale*(1.65+(n+k)%3*.2),scale*1.85,scale*1.75,palettes[(n+k)%palettes.length],undefined,[n*.6,k*.7,.15]);}};
+  const tree=(x:number,z:number,scale=1)=>{
+    n++;const h=(5.1+(n%5)*.44)*scale,tall=n%4===0;
+    add(trunks,x,h*.3,z,.24*scale,h*.6,.24*scale,'#70654e');
+    const palettes=['#708b53','#829757','#647e48','#94a16a','#6e8850','#7b9359'];
+    for(let k=0;k<5;k++){
+      const angle=k*2.39996+n*1.7,reach=scale*(tall?.65:1.15)*(k===4?.35:1),upper=k===4;
+      const cx=x+Math.cos(angle)*reach,cz=z+Math.sin(angle)*reach;
+      const cy=h*(upper?.9:.67)+(k%2)*scale*.38;
+      add(crowns,cx,cy,cz,scale*(tall?1.35:1.75+(n+k)%3*.18),scale*(upper?1.75:tall?2.35:1.8),scale*(tall?1.4:1.78),palettes[(n+k)%palettes.length],undefined,[n*.6,k*.7,.1]);
+      if(k<3)add(trunks,x+Math.cos(angle)*reach*.42,h*.51,z+Math.sin(angle)*reach*.42,.13*scale,h*.28,.13*scale,'#796b51',undefined,[Math.sin(angle)*.55,0,-Math.cos(angle)*.55]);
+    }
+  };
   for(const block of district.blocks){const x=block.x,z=block.z;for(let p=-24;p<=25;p+=12){tree(x+p,z-block.depth/2+.8,.95);tree(x+p,z+block.depth/2-.8,.95);tree(x-block.width/2+.8,z+p,.9);tree(x+block.width/2-.8,z+p,.9);}}
   for(const b of district.buildings){tree(b.parcel.x-b.parcel.width/2+3,b.parcel.z+b.parcel.depth/2-3,.80);}
   for(const p of district.parks){for(let i=0;i<26;i++){const x=p.x-p.width/2+2+(i*7.23)%(p.width-4),z=p.z-p.depth/2+2+(i*13.71)%(p.depth-4);if(Math.abs(x-p.x)<2||Math.abs(z-p.z)<2||Math.hypot(x-p.x,z-p.z)<5.5)continue;tree(x,z,.90+(i%3)*.18);}}
@@ -159,7 +170,7 @@ function Selection({b,exploded,floor,onFloor,layers,onUnit}:{b:Building;exploded
 function NeighbourhoodLight(){
  const light=useRef<THREE.DirectionalLight>(null!);const {camera}=useThree();
  useFrame(state=>{const ctl=state.controls as unknown as {target:THREE.Vector3}|null;if(!ctl||!light.current)return;const t=ctl.target,l=light.current;l.position.set(t.x-100,190,t.z+120);l.target.position.set(t.x,0,t.z);l.target.updateMatrixWorld();const span=camera.zoom<2?180:105;const c=l.shadow.camera as THREE.OrthographicCamera;if(c.left!==-span){c.left=-span;c.right=span;c.top=span;c.bottom=-span;c.updateProjectionMatrix();}});
- return <directionalLight ref={light} position={[-100,190,120]} intensity={2.9} color="#fff8ed" castShadow shadow-mapSize={[4096,4096]} shadow-camera-left={-105} shadow-camera-right={105} shadow-camera-top={105} shadow-camera-bottom={-105} shadow-camera-near={1} shadow-camera-far={480} shadow-normalBias={.04} shadow-bias={-.000035} shadow-radius={2}/>;
+ return <directionalLight ref={light} position={[-100,190,120]} intensity={2.45} color="#fff4e4" castShadow shadow-mapSize={[4096,4096]} shadow-camera-left={-105} shadow-camera-right={105} shadow-camera-top={105} shadow-camera-bottom={-105} shadow-camera-near={1} shadow-camera-far={480} shadow-normalBias={.04} shadow-bias={-.000035} shadow-radius={3}/>;
 }
 type SceneProps={selected:Building|null;layers:Layers;underground:boolean;exploded:boolean;floor:number|null;mode:'2d'|'3d';paused?:boolean;inspectUtilities?:boolean;onUnit?:(id:string)=>void;command:CameraCommand;onSelect:(id:string)=>void;onFloor:(n:number|null)=>void;onCamera:(c:{x:number;z:number;zoom:number;heading:number})=>void;onReady:()=>void};
 function World(props:SceneProps){
@@ -205,7 +216,7 @@ function World(props:SceneProps){
   const hovered=hover&&hover!==selected?.id?district.buildings.find(b=>b.id===hover):null;
   return <>
     <color attach="background" args={[underground?'#d5e0df':'#dfe5d9']}/>
-    <ambientLight intensity={.18}/><hemisphereLight args={['#e8f2f6','#aaa78f',.52]}/>
+    <ambientLight intensity={.2}/><hemisphereLight args={['#e8f2f6','#aaa78f',.64]}/>
     <NeighbourhoodLight/>
     <EnvironmentLighting/>
     {!underground&&layers.buildings&&<Grounding/>}

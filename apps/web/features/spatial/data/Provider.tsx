@@ -9,8 +9,9 @@ const Context = createContext<{
 export function SpatialDataProvider({ children }: {
     children: ReactNode;
 }) {
-    const [value] = useState(() => ({ resources: new ResourceCache(), sessions: new MapSessions() }));
-    return <Context.Provider value={value}>{children}</Context.Provider>;
+    const parent=useContext(Context);
+    const [value] = useState(() => parent ?? ({ resources: new ResourceCache(), sessions: new MapSessions() }));
+    return parent?<>{children}</>:<Context.Provider value={value}>{children}</Context.Provider>;
 }
 /** Standalone legacy callers get an isolated store; routed pages share the layout provider. */
 export function useSpatialServices() { const shared = useContext(Context); const [local] = useState(() => ({ resources: new ResourceCache(), sessions: new MapSessions() })); return shared || local; }

@@ -1,0 +1,32 @@
+{
+  "command": "PYTHONPATH=services/geo python -m pytest services/geo/tests/test_spatial_ml.py -q -rA",
+  "source": "services/geo/tests/test_spatial_ml.py",
+  "sourceSha256": "5b2d4f5bb5c74c0974f530cfbe61bb29e64bee0dfc66c9c727df327ef3a29ec2",
+  "runtimeSourceSha256": "b6c107c317f288e779199693d81f2b7d74d80c4f94c03d98f0ef994196edf759",
+  "modelManifestSha256": "64464b7d237186746de56b769c5b79290a542405dd78d5cb4a111c173897dc40",
+  "timestamp": "2026-09-20T04:15:32.294953+05:30",
+  "tests": 14,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 0.52,
+  "python": "3.9.6",
+  "runtime": "macOS ARM64 feasibility venv; Linux ARM64 Docker workflow is a separate integration receipt",
+  "testCases": [
+    "test_changed_queued_model_and_nonfinite_crop_fail_before_reading_sources",
+    "test_source_limits_formats_and_image_page_are_explicit",
+    "test_exact_original_hash_and_size_are_verified_and_stream_closed",
+    "test_crop_and_downsample_keep_a_reversible_pixel_transform",
+    "test_image_format_spoofing_tiny_crop_and_large_aerial_region_fail",
+    "test_invisible_pixel_content_is_flattened_onto_white",
+    "test_pdf_page_is_rendered_locally_with_page_coordinate_receipt",
+    "test_polygonization_preserves_pixel_edges_holes_and_deterministic_identity",
+    "test_component_cap_reports_omissions_without_truncating_raster",
+    "test_model_readiness_refuses_missing_or_changed_artifacts",
+    "test_missing_native_library_blocks_readiness_and_inference_before_storage",
+    "test_empty_output_still_retains_exact_raster_and_mask_receipts",
+    "test_tiled_buildings_union_seams_in_source_coordinates_with_max_confidence",
+    "test_empty_tiled_receipt_retains_all_tile_transforms_and_same_size_masks"
+  ],
+  "scope": "Boundary/crop/profile/hash/seam/empty/polygon tests. Mocked model outputs are not accuracy evidence."
+}

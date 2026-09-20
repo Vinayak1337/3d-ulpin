@@ -43,7 +43,7 @@ export default function ImportReview({
       </div>
       <div className="ui-import-preview">
         <MapPlan features={pkg.features} interactive={false} />
-        <span>Source geometry preview · not yet published</span>
+        <span>{pkg.state === "COMMITTED" ? "Recorded source geometry" : "Source geometry preview · not yet recorded"}</span>
       </div>
       {pkg.warnings.length > 0 && (
         <details className="ui-form-details">
@@ -124,7 +124,7 @@ export default function ImportReview({
         <div className="ui-review-summary">
           <Icon name="check" />
           <div>
-            <h3>Review recorded</h3>
+            <h3>{pkg.state === "COMMITTED" ? "Observations recorded" : "Check complete"}</h3>
             <p>
               {pkg.review.findings.length} findings ·{" "}
               {pkg.review.coverage.length} coverage notices
@@ -132,6 +132,17 @@ export default function ImportReview({
           </div>
         </div>
       )}
+      {pkg.review && <section className="ui-boundary-check" aria-label="Boundary check findings">
+        <details open={pkg.state !== "COMMITTED" && pkg.review.findings.length > 0}>
+          <summary>Findings ({pkg.review.findings.length})</summary>
+          {pkg.review.findings.length ? <ul>{pkg.review.findings.map(finding => <li key={finding.id}>
+            <strong>{finding.participants?.map(item => item.name).join(", ") || finding.code.replaceAll("_", " ").toLowerCase()}</strong>
+            <p>{finding.message}</p>
+          </li>)}</ul> : <p>No findings in this technical check.</p>}
+        </details>
+        <details><summary>Check coverage ({pkg.review.coverage.length})</summary><ul>{pkg.review.coverage.map((notice,index)=><li key={index}>{notice}</li>)}</ul></details>
+      </section>}
+      <details className="ui-form-details"><summary>Original source files ({pkg.sourceRevisionIds.length})</summary><ul>{pkg.sourceRevisionIds.map((id,index)=><li key={id}><a href={`/api/v1/sources/${id}/file`} target="_blank" rel="noreferrer">Open original {index+1}</a></li>)}</ul></details>
       {pkg.state !== "COMMITTED" && (
         <div className="ui-form-footer">
           {pkg.state === "REVIEWED" ? (

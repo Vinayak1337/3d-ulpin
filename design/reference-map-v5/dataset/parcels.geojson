@@ -1,0 +1,3614 @@
+{
+  "type": "FeatureCollection",
+  "name": "FICTIONAL parcels",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "P01",
+      "properties": {
+        "object_id": "P01",
+        "object_type": "parcel",
+        "name": "Plot 01",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 256.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18782812513082,
+              28.54957772466809
+            ],
+            [
+              77.18799157252164,
+              28.549575089552924
+            ],
+            [
+              77.18799455701476,
+              28.549719408971292
+            ],
+            [
+              77.18783110940143,
+              28.549722044102186
+            ],
+            [
+              77.18782812513082,
+              28.54957772466809
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P02",
+      "properties": {
+        "object_id": "P02",
+        "object_type": "parcel",
+        "name": "Plot 02",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B02"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18741242032422,
+              28.549241552833298
+            ],
+            [
+              77.18749414378559,
+              28.54924023556464
+            ],
+            [
+              77.18749712755903,
+              28.549384555038174
+            ],
+            [
+              77.1874154039864,
+              28.549385872314705
+            ],
+            [
+              77.18741242032422,
+              28.549241552833298
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P03",
+      "properties": {
+        "object_id": "P03",
+        "object_type": "parcel",
+        "name": "Plot 03",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B03"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18749414378559,
+              28.54924023556464
+            ],
+            [
+              77.18757586724145,
+              28.549238918246843
+            ],
+            [
+              77.18757885112615,
+              28.549383237712515
+            ],
+            [
+              77.18749712755903,
+              28.549384555038174
+            ],
+            [
+              77.18749414378559,
+              28.54924023556464
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P04",
+      "properties": {
+        "object_id": "P04",
+        "object_type": "parcel",
+        "name": "Plot 04",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B04"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18757586724145,
+              28.549238918246843
+            ],
+            [
+              77.18765759069183,
+              28.549237600879913
+            ],
+            [
+              77.18766057468778,
+              28.549381920337716
+            ],
+            [
+              77.18757885112615,
+              28.549383237712515
+            ],
+            [
+              77.18757586724145,
+              28.549238918246843
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P05",
+      "properties": {
+        "object_id": "P05",
+        "object_type": "parcel",
+        "name": "Plot 05",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B05"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18765759069183,
+              28.549237600879913
+            ],
+            [
+              77.18773931413672,
+              28.549236283463852
+            ],
+            [
+              77.18774229824393,
+              28.549380602913793
+            ],
+            [
+              77.18766057468778,
+              28.549381920337716
+            ],
+            [
+              77.18765759069183,
+              28.549237600879913
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P06",
+      "properties": {
+        "object_id": "P06",
+        "object_type": "parcel",
+        "name": "Plot 06",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B06"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18773931413672,
+              28.549236283463852
+            ],
+            [
+              77.18782103757611,
+              28.549234965998654
+            ],
+            [
+              77.18782402179458,
+              28.549379285440722
+            ],
+            [
+              77.18774229824393,
+              28.549380602913793
+            ],
+            [
+              77.18773931413672,
+              28.549236283463852
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P07",
+      "properties": {
+        "object_id": "P07",
+        "object_type": "parcel",
+        "name": "Plot 07",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B07"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18782103757611,
+              28.549234965998654
+            ],
+            [
+              77.18790276101004,
+              28.549233648484332
+            ],
+            [
+              77.18790574533976,
+              28.549377967918524
+            ],
+            [
+              77.18782402179458,
+              28.549379285440722
+            ],
+            [
+              77.18782103757611,
+              28.549234965998654
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P08",
+      "properties": {
+        "object_id": "P08",
+        "object_type": "parcel",
+        "name": "Plot 08",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B08"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18790276101004,
+              28.549233648484332
+            ],
+            [
+              77.18798448443846,
+              28.549232330920862
+            ],
+            [
+              77.18798746887944,
+              28.5493766503472
+            ],
+            [
+              77.18790574533976,
+              28.549377967918524
+            ],
+            [
+              77.18790276101004,
+              28.549233648484332
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P09",
+      "properties": {
+        "object_id": "P09",
+        "object_type": "parcel",
+        "name": "Plot 09",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B09"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18806620786141,
+              28.549231013308262
+            ],
+            [
+              77.18814793127886,
+              28.54922969564653
+            ],
+            [
+              77.18815091594234,
+              28.549374015057126
+            ],
+            [
+              77.18806919241364,
+              28.54937533272673
+            ],
+            [
+              77.18806620786141,
+              28.549231013308262
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P10",
+      "properties": {
+        "object_id": "P10",
+        "object_type": "parcel",
+        "name": "Plot 10",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B10"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18814793127886,
+              28.54922969564653
+            ],
+            [
+              77.18822965469083,
+              28.549228377935663
+            ],
+            [
+              77.18823263946555,
+              28.54937269733839
+            ],
+            [
+              77.18815091594234,
+              28.549374015057126
+            ],
+            [
+              77.18814793127886,
+              28.54922969564653
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P11",
+      "properties": {
+        "object_id": "P11",
+        "object_type": "parcel",
+        "name": "Plot 11",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B11"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18822965469083,
+              28.549228377935663
+            ],
+            [
+              77.18831137809728,
+              28.549227060175667
+            ],
+            [
+              77.18831436298329,
+              28.54937137957052
+            ],
+            [
+              77.18823263946555,
+              28.54937269733839
+            ],
+            [
+              77.18822965469083,
+              28.549228377935663
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P12",
+      "properties": {
+        "object_id": "P12",
+        "object_type": "parcel",
+        "name": "Plot 12",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B12"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18831137809728,
+              28.549227060175667
+            ],
+            [
+              77.18839310149828,
+              28.549225742366527
+            ],
+            [
+              77.18839608649553,
+              28.54937006175351
+            ],
+            [
+              77.18831436298329,
+              28.54937137957052
+            ],
+            [
+              77.18831137809728,
+              28.549227060175667
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P13",
+      "properties": {
+        "object_id": "P13",
+        "object_type": "parcel",
+        "name": "Plot 13",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B13"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18839310149828,
+              28.549225742366527
+            ],
+            [
+              77.18847482489377,
+              28.549224424508253
+            ],
+            [
+              77.18847781000227,
+              28.54936874388737
+            ],
+            [
+              77.18839608649553,
+              28.54937006175351
+            ],
+            [
+              77.18839310149828,
+              28.549225742366527
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P14",
+      "properties": {
+        "object_id": "P14",
+        "object_type": "parcel",
+        "name": "Plot 14",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B14"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18847482489377,
+              28.549224424508253
+            ],
+            [
+              77.18855654828377,
+              28.549223106600852
+            ],
+            [
+              77.18855953350354,
+              28.549367425972097
+            ],
+            [
+              77.18847781000227,
+              28.54936874388737
+            ],
+            [
+              77.18847482489377,
+              28.549224424508253
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P15",
+      "properties": {
+        "object_id": "P15",
+        "object_type": "parcel",
+        "name": "Plot 15",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B15"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18855654828377,
+              28.549223106600852
+            ],
+            [
+              77.1886382716683,
+              28.549221788644314
+            ],
+            [
+              77.1886412569993,
+              28.549366108007693
+            ],
+            [
+              77.18855953350354,
+              28.549367425972097
+            ],
+            [
+              77.18855654828377,
+              28.549223106600852
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P16",
+      "properties": {
+        "object_id": "P16",
+        "object_type": "parcel",
+        "name": "Plot 16",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B16"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18741596342552,
+              28.54941293221709
+            ],
+            [
+              77.18749768701899,
+              28.54941161493909
+            ],
+            [
+              77.18750067081851,
+              28.549555934408648
+            ],
+            [
+              77.18741894711377,
+              28.549557251694516
+            ],
+            [
+              77.18741596342552,
+              28.54941293221709
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P17",
+      "properties": {
+        "object_id": "P17",
+        "object_type": "parcel",
+        "name": "Plot 17",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B17"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18749768701899,
+              28.54941161493909
+            ],
+            [
+              77.18757941060697,
+              28.549410297611953
+            ],
+            [
+              77.18758239451773,
+              28.549554617073643
+            ],
+            [
+              77.18750067081851,
+              28.549555934408648
+            ],
+            [
+              77.18749768701899,
+              28.54941161493909
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P18",
+      "properties": {
+        "object_id": "P18",
+        "object_type": "parcel",
+        "name": "Plot 18",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B18"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18757941060697,
+              28.549410297611953
+            ],
+            [
+              77.18766113418947,
+              28.549408980235686
+            ],
+            [
+              77.18766411821149,
+              28.549553299689503
+            ],
+            [
+              77.18758239451773,
+              28.549554617073643
+            ],
+            [
+              77.18757941060697,
+              28.549410297611953
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P19",
+      "properties": {
+        "object_id": "P19",
+        "object_type": "parcel",
+        "name": "Plot 19",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B19"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18766113418947,
+              28.549408980235686
+            ],
+            [
+              77.18774285776648,
+              28.54940766281028
+            ],
+            [
+              77.18774584189975,
+              28.549551982256233
+            ],
+            [
+              77.18766411821149,
+              28.549553299689503
+            ],
+            [
+              77.18766113418947,
+              28.549408980235686
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P20",
+      "properties": {
+        "object_id": "P20",
+        "object_type": "parcel",
+        "name": "Plot 20",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B20"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18774285776648,
+              28.54940766281028
+            ],
+            [
+              77.18782458133799,
+              28.54940634533574
+            ],
+            [
+              77.18782756558254,
+              28.549550664773825
+            ],
+            [
+              77.18774584189975,
+              28.549551982256233
+            ],
+            [
+              77.18774285776648,
+              28.54940766281028
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P21",
+      "properties": {
+        "object_id": "P21",
+        "object_type": "parcel",
+        "name": "Plot 21",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B21"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18782458133799,
+              28.54940634533574
+            ],
+            [
+              77.18790630490402,
+              28.54940502781207
+            ],
+            [
+              77.18790928925982,
+              28.549549347242284
+            ],
+            [
+              77.18782756558254,
+              28.549550664773825
+            ],
+            [
+              77.18782458133799,
+              28.54940634533574
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P22",
+      "properties": {
+        "object_id": "P22",
+        "object_type": "parcel",
+        "name": "Plot 22",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B22"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18790630490402,
+              28.54940502781207
+            ],
+            [
+              77.18798802846457,
+              28.549403710239257
+            ],
+            [
+              77.18799101293162,
+              28.549548029661604
+            ],
+            [
+              77.18790928925982,
+              28.549549347242284
+            ],
+            [
+              77.18790630490402,
+              28.54940502781207
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P23",
+      "properties": {
+        "object_id": "P23",
+        "object_type": "parcel",
+        "name": "Plot 23",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B23"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18806975201963,
+              28.549402392617317
+            ],
+            [
+              77.1881514755692,
+              28.54940107494624
+            ],
+            [
+              77.18815446025876,
+              28.549545394352855
+            ],
+            [
+              77.18807273659793,
+              28.5495467120318
+            ],
+            [
+              77.18806975201963,
+              28.549402392617317
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P24",
+      "properties": {
+        "object_id": "P24",
+        "object_type": "parcel",
+        "name": "Plot 24",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B24"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1881514755692,
+              28.54940107494624
+            ],
+            [
+              77.18823319911327,
+              28.549399757226027
+            ],
+            [
+              77.18823618391409,
+              28.54954407662477
+            ],
+            [
+              77.18815446025876,
+              28.549545394352855
+            ],
+            [
+              77.1881514755692,
+              28.54940107494624
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P25",
+      "properties": {
+        "object_id": "P25",
+        "object_type": "parcel",
+        "name": "Plot 25",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B25"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18823319911327,
+              28.549399757226027
+            ],
+            [
+              77.18831492265186,
+              28.549398439456684
+            ],
+            [
+              77.18831790756393,
+              28.549542758847558
+            ],
+            [
+              77.18823618391409,
+              28.54954407662477
+            ],
+            [
+              77.18823319911327,
+              28.549399757226027
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P26",
+      "properties": {
+        "object_id": "P26",
+        "object_type": "parcel",
+        "name": "Plot 26",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B26"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18831492265186,
+              28.549398439456684
+            ],
+            [
+              77.18839664618497,
+              28.549397121638197
+            ],
+            [
+              77.18839963120828,
+              28.549541441021205
+            ],
+            [
+              77.18831790756393,
+              28.549542758847558
+            ],
+            [
+              77.18831492265186,
+              28.549398439456684
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P27",
+      "properties": {
+        "object_id": "P27",
+        "object_type": "parcel",
+        "name": "Plot 27",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B27"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18839664618497,
+              28.549397121638197
+            ],
+            [
+              77.18847836971257,
+              28.549395803770583
+            ],
+            [
+              77.18848135484716,
+              28.549540123145718
+            ],
+            [
+              77.18839963120828,
+              28.549541441021205
+            ],
+            [
+              77.18839664618497,
+              28.549397121638197
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P28",
+      "properties": {
+        "object_id": "P28",
+        "object_type": "parcel",
+        "name": "Plot 28",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B28"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18847836971257,
+              28.549395803770583
+            ],
+            [
+              77.18856009323468,
+              28.549394485853835
+            ],
+            [
+              77.18856307848051,
+              28.5495388052211
+            ],
+            [
+              77.18848135484716,
+              28.549540123145718
+            ],
+            [
+              77.18847836971257,
+              28.549395803770583
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P29",
+      "properties": {
+        "object_id": "P29",
+        "object_type": "parcel",
+        "name": "Plot 29",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B29"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18856009323468,
+              28.549394485853835
+            ],
+            [
+              77.18864181675131,
+              28.549393167887953
+            ],
+            [
+              77.18864480210841,
+              28.549537487247342
+            ],
+            [
+              77.18856307848051,
+              28.5495388052211
+            ],
+            [
+              77.18856009323468,
+              28.549394485853835
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P30",
+      "properties": {
+        "object_id": "P30",
+        "object_type": "parcel",
+        "name": "Plot 30",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B30"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18741950655776,
+              28.549584311596156
+            ],
+            [
+              77.18750123028336,
+              28.549582994308807
+            ],
+            [
+              77.18750421410894,
+              28.549727313774376
+            ],
+            [
+              77.18742249027208,
+              28.549728631069584
+            ],
+            [
+              77.18741950655776,
+              28.549584311596156
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P31",
+      "properties": {
+        "object_id": "P31",
+        "object_type": "parcel",
+        "name": "Plot 31",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B31"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18750123028336,
+              28.549582994308807
+            ],
+            [
+              77.18758295400345,
+              28.549581676972334
+            ],
+            [
+              77.18758593794028,
+              28.54972599643003
+            ],
+            [
+              77.18750421410894,
+              28.549727313774376
+            ],
+            [
+              77.18750123028336,
+              28.549582994308807
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P32",
+      "properties": {
+        "object_id": "P32",
+        "object_type": "parcel",
+        "name": "Plot 32",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B32"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18758295400345,
+              28.549581676972334
+            ],
+            [
+              77.18766467771808,
+              28.54958035958672
+            ],
+            [
+              77.18766766176616,
+              28.549724679036558
+            ],
+            [
+              77.18758593794028,
+              28.54972599643003
+            ],
+            [
+              77.18758295400345,
+              28.549581676972334
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P33",
+      "properties": {
+        "object_id": "P33",
+        "object_type": "parcel",
+        "name": "Plot 33",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B33"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18766467771808,
+              28.54958035958672
+            ],
+            [
+              77.18774640142719,
+              28.549579042151976
+            ],
+            [
+              77.18774938558654,
+              28.549723361593937
+            ],
+            [
+              77.18766766176616,
+              28.549724679036558
+            ],
+            [
+              77.18766467771808,
+              28.54958035958672
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P34",
+      "properties": {
+        "object_id": "P34",
+        "object_type": "parcel",
+        "name": "Plot 34",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B34"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18774640142719,
+              28.549579042151976
+            ],
+            [
+              77.18782812513082,
+              28.54957772466809
+            ],
+            [
+              77.18783110940143,
+              28.549722044102186
+            ],
+            [
+              77.18774938558654,
+              28.549723361593937
+            ],
+            [
+              77.18774640142719,
+              28.549579042151976
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P35",
+      "properties": {
+        "object_id": "P35",
+        "object_type": "parcel",
+        "name": "Plot 35",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B35"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18815501989049,
+              28.549572454241222
+            ],
+            [
+              77.18823674356668,
+              28.549571136511656
+            ],
+            [
+              77.18823972839358,
+              28.54971545590642
+            ],
+            [
+              77.18815800460612,
+              28.549716773643844
+            ],
+            [
+              77.18815501989049,
+              28.549572454241222
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P36",
+      "properties": {
+        "object_id": "P36",
+        "object_type": "parcel",
+        "name": "Plot 36",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B36"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18823674356668,
+              28.549571136511656
+            ],
+            [
+              77.18831846723738,
+              28.549569818732966
+            ],
+            [
+              77.18832145217554,
+              28.549714138119853
+            ],
+            [
+              77.18823972839358,
+              28.54971545590642
+            ],
+            [
+              77.18823674356668,
+              28.549571136511656
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P37",
+      "properties": {
+        "object_id": "P37",
+        "object_type": "parcel",
+        "name": "Plot 37",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B37"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18831846723738,
+              28.549569818732966
+            ],
+            [
+              77.18840019090261,
+              28.549568500905142
+            ],
+            [
+              77.188403175952,
+              28.54971282028416
+            ],
+            [
+              77.18832145217554,
+              28.549714138119853
+            ],
+            [
+              77.18831846723738,
+              28.549569818732966
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P38",
+      "properties": {
+        "object_id": "P38",
+        "object_type": "parcel",
+        "name": "Plot 38",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B38"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18840019090261,
+              28.549568500905142
+            ],
+            [
+              77.18848191456232,
+              28.549567183028184
+            ],
+            [
+              77.18848489972298,
+              28.549711502399326
+            ],
+            [
+              77.188403175952,
+              28.54971282028416
+            ],
+            [
+              77.18840019090261,
+              28.549568500905142
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P39",
+      "properties": {
+        "object_id": "P39",
+        "object_type": "parcel",
+        "name": "Plot 39",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B39"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18848191456232,
+              28.549567183028184
+            ],
+            [
+              77.18856363821656,
+              28.549565865102085
+            ],
+            [
+              77.18856662348848,
+              28.54971018446536
+            ],
+            [
+              77.18848489972298,
+              28.549711502399326
+            ],
+            [
+              77.18848191456232,
+              28.549567183028184
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P40",
+      "properties": {
+        "object_id": "P40",
+        "object_type": "parcel",
+        "name": "Plot 40",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B40"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18856363821656,
+              28.549565865102085
+            ],
+            [
+              77.18864536186531,
+              28.54956454712686
+            ],
+            [
+              77.18864834724849,
+              28.549708866482263
+            ],
+            [
+              77.18856662348848,
+              28.54971018446536
+            ],
+            [
+              77.18856363821656,
+              28.549565865102085
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P41",
+      "properties": {
+        "object_id": "P41",
+        "object_type": "parcel",
+        "name": "Plot 41",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B41"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18742304972096,
+              28.549755690970475
+            ],
+            [
+              77.18750477357867,
+              28.5497543736738
+            ],
+            [
+              77.18750775743031,
+              28.54989869313538
+            ],
+            [
+              77.18742603346135,
+              28.549900010439927
+            ],
+            [
+              77.18742304972096,
+              28.549755690970475
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P42",
+      "properties": {
+        "object_id": "P42",
+        "object_type": "parcel",
+        "name": "Plot 42",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B42"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18750477357867,
+              28.5497543736738
+            ],
+            [
+              77.18758649743089,
+              28.54975305632798
+            ],
+            [
+              77.18758948139379,
+              28.54989737578169
+            ],
+            [
+              77.18750775743031,
+              28.54989869313538
+            ],
+            [
+              77.18750477357867,
+              28.5497543736738
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P43",
+      "properties": {
+        "object_id": "P43",
+        "object_type": "parcel",
+        "name": "Plot 43",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B43"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18758649743089,
+              28.54975305632798
+            ],
+            [
+              77.1876682212776,
+              28.54975173893303
+            ],
+            [
+              77.18767120535178,
+              28.549896058378877
+            ],
+            [
+              77.18758948139379,
+              28.54989737578169
+            ],
+            [
+              77.18758649743089,
+              28.54975305632798
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P44",
+      "properties": {
+        "object_id": "P44",
+        "object_type": "parcel",
+        "name": "Plot 44",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B44"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1876682212776,
+              28.54975173893303
+            ],
+            [
+              77.18774994511885,
+              28.549750421488934
+            ],
+            [
+              77.18775292930428,
+              28.549894740926916
+            ],
+            [
+              77.18767120535178,
+              28.549896058378877
+            ],
+            [
+              77.1876682212776,
+              28.54975173893303
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P45",
+      "properties": {
+        "object_id": "P45",
+        "object_type": "parcel",
+        "name": "Plot 45",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B45"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18774994511885,
+              28.549750421488934
+            ],
+            [
+              77.18783166895462,
+              28.549749103995712
+            ],
+            [
+              77.1878346532513,
+              28.549893423425825
+            ],
+            [
+              77.18775292930428,
+              28.549894740926916
+            ],
+            [
+              77.18774994511885,
+              28.549750421488934
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P46",
+      "properties": {
+        "object_id": "P46",
+        "object_type": "parcel",
+        "name": "Plot 46",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B46"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18783166895462,
+              28.549749103995712
+            ],
+            [
+              77.18791339278488,
+              28.54974778645335
+            ],
+            [
+              77.18791637719282,
+              28.549892105875596
+            ],
+            [
+              77.1878346532513,
+              28.549893423425825
+            ],
+            [
+              77.18783166895462,
+              28.549749103995712
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P47",
+      "properties": {
+        "object_id": "P47",
+        "object_type": "parcel",
+        "name": "Plot 47",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B47"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18791339278488,
+              28.54974778645335
+            ],
+            [
+              77.18799511660966,
+              28.549746468861855
+            ],
+            [
+              77.18799810112884,
+              28.549890788276237
+            ],
+            [
+              77.18791637719282,
+              28.549892105875596
+            ],
+            [
+              77.18791339278488,
+              28.54974778645335
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P48",
+      "properties": {
+        "object_id": "P48",
+        "object_type": "parcel",
+        "name": "Plot 48",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B48"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18807684042895,
+              28.549745151221224
+            ],
+            [
+              77.18815856424274,
+              28.54974383353146
+            ],
+            [
+              77.18816154898445,
+              28.5498881529301
+            ],
+            [
+              77.1880798250594,
+              28.549889470627733
+            ],
+            [
+              77.18807684042895,
+              28.549745151221224
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P49",
+      "properties": {
+        "object_id": "P49",
+        "object_type": "parcel",
+        "name": "Plot 49",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B49"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18815856424274,
+              28.54974383353146
+            ],
+            [
+              77.18824028805106,
+              28.549742515792556
+            ],
+            [
+              77.18824327290403,
+              28.549886835183326
+            ],
+            [
+              77.18816154898445,
+              28.5498881529301
+            ],
+            [
+              77.18815856424274,
+              28.54974383353146
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P50",
+      "properties": {
+        "object_id": "P50",
+        "object_type": "parcel",
+        "name": "Plot 50",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B50"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18824028805106,
+              28.549742515792556
+            ],
+            [
+              77.18832201185388,
+              28.549741198004522
+            ],
+            [
+              77.1883249968181,
+              28.549885517387427
+            ],
+            [
+              77.18824327290403,
+              28.549886835183326
+            ],
+            [
+              77.18824028805106,
+              28.549742515792556
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P51",
+      "properties": {
+        "object_id": "P51",
+        "object_type": "parcel",
+        "name": "Plot 51",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B51"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18832201185388,
+              28.549741198004522
+            ],
+            [
+              77.18840373565122,
+              28.549739880167348
+            ],
+            [
+              77.18840672072669,
+              28.549884199542387
+            ],
+            [
+              77.1883249968181,
+              28.549885517387427
+            ],
+            [
+              77.18832201185388,
+              28.549741198004522
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P52",
+      "properties": {
+        "object_id": "P52",
+        "object_type": "parcel",
+        "name": "Plot 52",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B52"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18840373565122,
+              28.549739880167348
+            ],
+            [
+              77.18848545944306,
+              28.549738562281046
+            ],
+            [
+              77.1884884446298,
+              28.549882881648205
+            ],
+            [
+              77.18840672072669,
+              28.549884199542387
+            ],
+            [
+              77.18840373565122,
+              28.549739880167348
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P53",
+      "properties": {
+        "object_id": "P53",
+        "object_type": "parcel",
+        "name": "Plot 53",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B53"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18848545944306,
+              28.549738562281046
+            ],
+            [
+              77.18856718322941,
+              28.5497372443456
+            ],
+            [
+              77.1885701685274,
+              28.549881563704893
+            ],
+            [
+              77.1884884446298,
+              28.549882881648205
+            ],
+            [
+              77.18848545944306,
+              28.549738562281046
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P54",
+      "properties": {
+        "object_id": "P54",
+        "object_type": "parcel",
+        "name": "Plot 54",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B54"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18856718322941,
+              28.5497372443456
+            ],
+            [
+              77.18864890701028,
+              28.549735926361024
+            ],
+            [
+              77.18865189241953,
+              28.549880245712448
+            ],
+            [
+              77.1885701685274,
+              28.549881563704893
+            ],
+            [
+              77.18856718322941,
+              28.5497372443456
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P55",
+      "properties": {
+        "object_id": "P55",
+        "object_type": "parcel",
+        "name": "Plot 55",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B55"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1874265929151,
+              28.54992707034008
+            ],
+            [
+              77.18750831690494,
+              28.549925753034056
+            ],
+            [
+              77.18751130078265,
+              28.550070072491657
+            ],
+            [
+              77.18742957668155,
+              28.550071389805545
+            ],
+            [
+              77.1874265929151,
+              28.54992707034008
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P56",
+      "properties": {
+        "object_id": "P56",
+        "object_type": "parcel",
+        "name": "Plot 56",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B56"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18750831690494,
+              28.549925753034056
+            ],
+            [
+              77.18759004088928,
+              28.549924435678893
+            ],
+            [
+              77.18759302487824,
+              28.550068755128624
+            ],
+            [
+              77.18751130078265,
+              28.550070072491657
+            ],
+            [
+              77.18750831690494,
+              28.549925753034056
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P57",
+      "properties": {
+        "object_id": "P57",
+        "object_type": "parcel",
+        "name": "Plot 57",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B57"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18759004088928,
+              28.549924435678893
+            ],
+            [
+              77.18767176486811,
+              28.5499231182746
+            ],
+            [
+              77.18767474896835,
+              28.550067437716468
+            ],
+            [
+              77.18759302487824,
+              28.550068755128624
+            ],
+            [
+              77.18759004088928,
+              28.549924435678893
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P58",
+      "properties": {
+        "object_id": "P58",
+        "object_type": "parcel",
+        "name": "Plot 58",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B58"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18767176486811,
+              28.5499231182746
+            ],
+            [
+              77.18775348884148,
+              28.549921800821163
+            ],
+            [
+              77.18775647305297,
+              28.550066120255167
+            ],
+            [
+              77.18767474896835,
+              28.550067437716468
+            ],
+            [
+              77.18767176486811,
+              28.5499231182746
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P59",
+      "properties": {
+        "object_id": "P59",
+        "object_type": "parcel",
+        "name": "Plot 59",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B59"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18775348884148,
+              28.549921800821163
+            ],
+            [
+              77.18783521280936,
+              28.549920483318598
+            ],
+            [
+              77.1878381971321,
+              28.55006480274473
+            ],
+            [
+              77.18775647305297,
+              28.550066120255167
+            ],
+            [
+              77.18775348884148,
+              28.549921800821163
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P60",
+      "properties": {
+        "object_id": "P60",
+        "object_type": "parcel",
+        "name": "Plot 60",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B60"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18783521280936,
+              28.549920483318598
+            ],
+            [
+              77.18791693677174,
+              28.549919165766898
+            ],
+            [
+              77.18791992120575,
+              28.550063485185156
+            ],
+            [
+              77.1878381971321,
+              28.55006480274473
+            ],
+            [
+              77.18783521280936,
+              28.549920483318598
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P61",
+      "properties": {
+        "object_id": "P61",
+        "object_type": "parcel",
+        "name": "Plot 61",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B61"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18791693677174,
+              28.549919165766898
+            ],
+            [
+              77.18799866072864,
+              28.54991784816606
+            ],
+            [
+              77.1880016452739,
+              28.55006216757645
+            ],
+            [
+              77.18791992120575,
+              28.550063485185156
+            ],
+            [
+              77.18791693677174,
+              28.549919165766898
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P62",
+      "properties": {
+        "object_id": "P62",
+        "object_type": "parcel",
+        "name": "Plot 62",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B62"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18808038468005,
+              28.549916530516086
+            ],
+            [
+              77.18816210862597,
+              28.549915212816977
+            ],
+            [
+              77.18816509339375,
+              28.550059532211634
+            ],
+            [
+              77.18808336933657,
+              28.55006084991861
+            ],
+            [
+              77.18808038468005,
+              28.549916530516086
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P63",
+      "properties": {
+        "object_id": "P63",
+        "object_type": "parcel",
+        "name": "Plot 63",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B63"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18816210862597,
+              28.549915212816977
+            ],
+            [
+              77.1882438325664,
+              28.549913895068727
+            ],
+            [
+              77.18824681744543,
+              28.550058214455518
+            ],
+            [
+              77.18816509339375,
+              28.550059532211634
+            ],
+            [
+              77.18816210862597,
+              28.549915212816977
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P64",
+      "properties": {
+        "object_id": "P64",
+        "object_type": "parcel",
+        "name": "Plot 64",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B64"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1882438325664,
+              28.549913895068727
+            ],
+            [
+              77.18832555650134,
+              28.549912577271353
+            ],
+            [
+              77.18832854149163,
+              28.550056896650272
+            ],
+            [
+              77.18824681744543,
+              28.550058214455518
+            ],
+            [
+              77.1882438325664,
+              28.549913895068727
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P65",
+      "properties": {
+        "object_id": "P65",
+        "object_type": "parcel",
+        "name": "Plot 65",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B65"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18832555650134,
+              28.549912577271353
+            ],
+            [
+              77.18840728043078,
+              28.549911259424835
+            ],
+            [
+              77.18841026553234,
+              28.55005557879588
+            ],
+            [
+              77.18832854149163,
+              28.550056896650272
+            ],
+            [
+              77.18832555650134,
+              28.549912577271353
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P66",
+      "properties": {
+        "object_id": "P66",
+        "object_type": "parcel",
+        "name": "Plot 66",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B66"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18840728043078,
+              28.549911259424835
+            ],
+            [
+              77.18848900435475,
+              28.549909941529183
+            ],
+            [
+              77.18849198956757,
+              28.55005426089236
+            ],
+            [
+              77.18841026553234,
+              28.55005557879588
+            ],
+            [
+              77.18840728043078,
+              28.549911259424835
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P67",
+      "properties": {
+        "object_id": "P67",
+        "object_type": "parcel",
+        "name": "Plot 67",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B67"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18848900435475,
+              28.549909941529183
+            ],
+            [
+              77.18857072827322,
+              28.54990862358439
+            ],
+            [
+              77.18857371359731,
+              28.5500529429397
+            ],
+            [
+              77.18849198956757,
+              28.55005426089236
+            ],
+            [
+              77.18848900435475,
+              28.549909941529183
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P68",
+      "properties": {
+        "object_id": "P68",
+        "object_type": "parcel",
+        "name": "Plot 68",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B68"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18857072827322,
+              28.54990862358439
+            ],
+            [
+              77.1886524521862,
+              28.549907305590473
+            ],
+            [
+              77.18865543762153,
+              28.550051624937907
+            ],
+            [
+              77.18857371359731,
+              28.5500529429397
+            ],
+            [
+              77.18857072827322,
+              28.54990862358439
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P69",
+      "properties": {
+        "object_id": "P69",
+        "object_type": "parcel",
+        "name": "Plot 69",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B69"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18743013614021,
+              28.550098449704944
+            ],
+            [
+              77.18751186026216,
+              28.550097132389585
+            ],
+            [
+              77.18751484416593,
+              28.550241451843196
+            ],
+            [
+              77.18743311993272,
+              28.550242769166427
+            ],
+            [
+              77.18743013614021,
+              28.550098449704944
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P70",
+      "properties": {
+        "object_id": "P70",
+        "object_type": "parcel",
+        "name": "Plot 70",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B70"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18751186026216,
+              28.550097132389585
+            ],
+            [
+              77.1875935843786,
+              28.550095815025074
+            ],
+            [
+              77.18759656839364,
+              28.550240134470826
+            ],
+            [
+              77.18751484416593,
+              28.550241451843196
+            ],
+            [
+              77.18751186026216,
+              28.550097132389585
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P71",
+      "properties": {
+        "object_id": "P71",
+        "object_type": "parcel",
+        "name": "Plot 71",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B71"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1875935843786,
+              28.550095815025074
+            ],
+            [
+              77.18767530848957,
+              28.55009449761144
+            ],
+            [
+              77.18767829261587,
+              28.55023881704932
+            ],
+            [
+              77.18759656839364,
+              28.550240134470826
+            ],
+            [
+              77.1875935843786,
+              28.550095815025074
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P72",
+      "properties": {
+        "object_id": "P72",
+        "object_type": "parcel",
+        "name": "Plot 72",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B72"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18767530848957,
+              28.55009449761144
+            ],
+            [
+              77.18775703259507,
+              28.550093180148668
+            ],
+            [
+              77.18776001683263,
+              28.55023749957868
+            ],
+            [
+              77.18767829261587,
+              28.55023881704932
+            ],
+            [
+              77.18767530848957,
+              28.55009449761144
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P73",
+      "properties": {
+        "object_id": "P73",
+        "object_type": "parcel",
+        "name": "Plot 73",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B73"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18775703259507,
+              28.550093180148668
+            ],
+            [
+              77.18783875669506,
+              28.550091862636755
+            ],
+            [
+              77.18784174104388,
+              28.5502361820589
+            ],
+            [
+              77.18776001683263,
+              28.55023749957868
+            ],
+            [
+              77.18775703259507,
+              28.550093180148668
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P74",
+      "properties": {
+        "object_id": "P74",
+        "object_type": "parcel",
+        "name": "Plot 74",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B74"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18783875669506,
+              28.550091862636755
+            ],
+            [
+              77.18792048078957,
+              28.550090545075708
+            ],
+            [
+              77.18792346524964,
+              28.550234864489987
+            ],
+            [
+              77.18784174104388,
+              28.5502361820589
+            ],
+            [
+              77.18783875669506,
+              28.550091862636755
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P75",
+      "properties": {
+        "object_id": "P75",
+        "object_type": "parcel",
+        "name": "Plot 75",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B75"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18792048078957,
+              28.550090545075708
+            ],
+            [
+              77.18800220487859,
+              28.550089227465524
+            ],
+            [
+              77.18800518944991,
+              28.550233546871937
+            ],
+            [
+              77.18792346524964,
+              28.550234864489987
+            ],
+            [
+              77.18792048078957,
+              28.550090545075708
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P76",
+      "properties": {
+        "object_id": "P76",
+        "object_type": "parcel",
+        "name": "Plot 76",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B76"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18808392896212,
+              28.550087909806205
+            ],
+            [
+              77.18816565304016,
+              28.550086592097756
+            ],
+            [
+              77.18816863783401,
+              28.55023091148843
+            ],
+            [
+              77.18808691364471,
+              28.550232229204752
+            ],
+            [
+              77.18808392896212,
+              28.550087909806205
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P77",
+      "properties": {
+        "object_id": "P77",
+        "object_type": "parcel",
+        "name": "Plot 77",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B77"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18816565304016,
+              28.550086592097756
+            ],
+            [
+              77.1882473771127,
+              28.550085274340162
+            ],
+            [
+              77.18825036201781,
+              28.550229593722968
+            ],
+            [
+              77.18816863783401,
+              28.55023091148843
+            ],
+            [
+              77.18816565304016,
+              28.550086592097756
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P78",
+      "properties": {
+        "object_id": "P78",
+        "object_type": "parcel",
+        "name": "Plot 78",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B78"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1882473771127,
+              28.550085274340162
+            ],
+            [
+              77.18832910117976,
+              28.550083956533438
+            ],
+            [
+              77.18833208619614,
+              28.550228275908374
+            ],
+            [
+              77.18825036201781,
+              28.550229593722968
+            ],
+            [
+              77.1882473771127,
+              28.550085274340162
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P79",
+      "properties": {
+        "object_id": "P79",
+        "object_type": "parcel",
+        "name": "Plot 79",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B79"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18832910117976,
+              28.550083956533438
+            ],
+            [
+              77.18841082524133,
+              28.55008263867758
+            ],
+            [
+              77.18841381036897,
+              28.550226958044643
+            ],
+            [
+              77.18833208619614,
+              28.550228275908374
+            ],
+            [
+              77.18832910117976,
+              28.550083956533438
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P80",
+      "properties": {
+        "object_id": "P80",
+        "object_type": "parcel",
+        "name": "Plot 80",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B80"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18841082524133,
+              28.55008263867758
+            ],
+            [
+              77.18849254929742,
+              28.55008132077258
+            ],
+            [
+              77.1884955345363,
+              28.550225640131774
+            ],
+            [
+              77.18841381036897,
+              28.550226958044643
+            ],
+            [
+              77.18841082524133,
+              28.55008263867758
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P81",
+      "properties": {
+        "object_id": "P81",
+        "object_type": "parcel",
+        "name": "Plot 81",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B81"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18849254929742,
+              28.55008132077258
+            ],
+            [
+              77.18857427334801,
+              28.550080002818447
+            ],
+            [
+              77.18857725869816,
+              28.550224322169775
+            ],
+            [
+              77.1884955345363,
+              28.550225640131774
+            ],
+            [
+              77.18849254929742,
+              28.55008132077258
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "P82",
+      "properties": {
+        "object_id": "P82",
+        "object_type": "parcel",
+        "name": "Plot 82",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "landUse": "residential",
+        "building_ids": "B82"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18857427334801,
+              28.550080002818447
+            ],
+            [
+              77.1886559973931,
+              28.550078684815183
+            ],
+            [
+              77.18865898285452,
+              28.550223004158635
+            ],
+            [
+              77.18857725869816,
+              28.550224322169775
+            ],
+            [
+              77.18857427334801,
+              28.550080002818447
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

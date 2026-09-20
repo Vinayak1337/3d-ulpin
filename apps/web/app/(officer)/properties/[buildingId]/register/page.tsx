@@ -1,14 +1,10 @@
-import { Suspense } from "react";
-import RegisterPage from "@/features/officer/register/RegisterPage";
-export default async function Page({
-  params,
-}: {
+import { redirectLegacyFamily } from "@/lib/legacy-redirect-page";
+import type { RouteSearchParams } from "@/lib/legacy-url";
+
+export default async function Page({ params, searchParams }: {
   params: Promise<{ buildingId: string }>;
+  searchParams: Promise<RouteSearchParams>;
 }) {
   const { buildingId } = await params;
-  return (
-    <Suspense fallback={<p role="status">Opening property register…</p>}>
-      <RegisterPage key={buildingId} buildingId={buildingId} />
-    </Suspense>
-  );
+  await redirectLegacyFamily("properties", { params: Promise.resolve({ path: [buildingId,'register'] }), searchParams });
 }

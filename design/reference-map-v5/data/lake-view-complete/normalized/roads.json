@@ -1,0 +1,193 @@
+{
+  "schema": "canonical.roads.v1",
+  "coordinateFrame": "LOCAL-LAKE-VIEW-DEMO-M",
+  "horizontalUnit": "metre",
+  "verticalUnit": "metre",
+  "records": [
+    {
+      "roadId": "R01",
+      "name": "Lake View Road",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -26.0,
+            101.0
+          ],
+          [
+            191.0,
+            101.0
+          ]
+        ]
+      },
+      "widthM": 10.0,
+      "provenance": [
+        {
+          "sourceFile": "MASTER_SCENE.json",
+          "sourceFormat": "JSON",
+          "sourceObjectId": "R01",
+          "sourceRevision": "lake-view-complete-1",
+          "processingStep": "deterministic source conversion",
+          "transformation": "none",
+          "timestamp": null,
+          "reviewStatus": "unreviewed_synthetic"
+        }
+      ],
+      "sourceRoadId": "R01",
+      "roadType": "local_street",
+      "sourceAssetIds": [
+        "roads.geojson",
+        "MASTER_SCENE.json"
+      ],
+      "reviewStatus": "unreviewed_synthetic"
+    },
+    {
+      "roadId": "R02",
+      "name": "Park Lane",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            98.5,
+            -26.0
+          ],
+          [
+            98.5,
+            204.0
+          ]
+        ]
+      },
+      "widthM": 9.0,
+      "provenance": [
+        {
+          "sourceFile": "MASTER_SCENE.json",
+          "sourceFormat": "JSON",
+          "sourceObjectId": "R02",
+          "sourceRevision": "lake-view-complete-1",
+          "processingStep": "deterministic source conversion",
+          "transformation": "none",
+          "timestamp": null,
+          "reviewStatus": "unreviewed_synthetic"
+        }
+      ],
+      "sourceRoadId": "R02",
+      "roadType": "local_street",
+      "sourceAssetIds": [
+        "roads.geojson",
+        "MASTER_SCENE.json"
+      ],
+      "reviewStatus": "unreviewed_synthetic"
+    },
+    {
+      "roadId": "R03",
+      "name": "5th Main Road",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -26.0,
+            22.0
+          ],
+          [
+            191.0,
+            22.0
+          ]
+        ]
+      },
+      "widthM": 10.0,
+      "provenance": [
+        {
+          "sourceFile": "MASTER_SCENE.json",
+          "sourceFormat": "JSON",
+          "sourceObjectId": "R03",
+          "sourceRevision": "lake-view-complete-1",
+          "processingStep": "deterministic source conversion",
+          "transformation": "none",
+          "timestamp": null,
+          "reviewStatus": "unreviewed_synthetic"
+        }
+      ],
+      "sourceRoadId": "R03",
+      "roadType": "local_street",
+      "sourceAssetIds": [
+        "roads.geojson",
+        "MASTER_SCENE.json"
+      ],
+      "reviewStatus": "unreviewed_synthetic"
+    },
+    {
+      "roadId": "R04",
+      "name": "Lake View Lane",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            47.0,
+            60.0
+          ],
+          [
+            191.0,
+            60.0
+          ]
+        ]
+      },
+      "widthM": 8.0,
+      "provenance": [
+        {
+          "sourceFile": "MASTER_SCENE.json",
+          "sourceFormat": "JSON",
+          "sourceObjectId": "R04",
+          "sourceRevision": "lake-view-complete-1",
+          "processingStep": "deterministic source conversion",
+          "transformation": "none",
+          "timestamp": null,
+          "reviewStatus": "unreviewed_synthetic"
+        }
+      ],
+      "sourceRoadId": "R04",
+      "roadType": "local_street",
+      "sourceAssetIds": [
+        "roads.geojson",
+        "MASTER_SCENE.json"
+      ],
+      "reviewStatus": "unreviewed_synthetic"
+    },
+    {
+      "roadId": "R05",
+      "name": "Garden Lane",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -26.0,
+            141.0
+          ],
+          [
+            191.0,
+            141.0
+          ]
+        ]
+      },
+      "widthM": 8.0,
+      "provenance": [
+        {
+          "sourceFile": "MASTER_SCENE.json",
+          "sourceFormat": "JSON",
+          "sourceObjectId": "R05",
+          "sourceRevision": "lake-view-complete-1",
+          "processingStep": "deterministic source conversion",
+          "transformation": "none",
+          "timestamp": null,
+          "reviewStatus": "unreviewed_synthetic"
+        }
+      ],
+      "sourceRoadId": "R05",
+      "roadType": "local_street",
+      "sourceAssetIds": [
+        "roads.geojson",
+        "MASTER_SCENE.json"
+      ],
+      "reviewStatus": "unreviewed_synthetic"
+    }
+  ]
+}

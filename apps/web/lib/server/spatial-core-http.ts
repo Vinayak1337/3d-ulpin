@@ -10,7 +10,10 @@ export function localRequest(request:Request):void {
   if(host)try{const declared=new URL(`http://${host}`);hostValid=loopback(declared.hostname)&&!declared.username&&!declared.password&&declared.pathname==="/"&&!declared.search&&!declared.hash;}catch{hostValid=false;}
   if(!loopback(url.hostname)||!hostValid)throw new LegacySpatialReadError(403,"LOCAL_READ_ONLY","This endpoint is qualified for the local single-operator deployment only");
   const origin=request.headers.get("origin");
-  if(origin&&origin!==url.origin||request.headers.get("sec-fetch-site")==="cross-site")throw new LegacySpatialReadError(403,"CROSS_ORIGIN_READ","Cross-origin spatial reads are not allowed");
+  // Next may expose localhost internally while the browser uses 127.0.0.1.
+  // Compare against the already validated public Host, retaining the exact port.
+  const expectedOrigin=host?new URL(`${url.protocol}//${host}`).origin:url.origin;
+  if(origin&&origin!==expectedOrigin||request.headers.get("sec-fetch-site")==="cross-site")throw new LegacySpatialReadError(403,"CROSS_ORIGIN_READ","Cross-origin spatial reads are not allowed");
 }
 
 export async function handleLegacyCoreRead(request:Request,areaId:string,read=readLegacySpatialSlice):Promise<Response> {

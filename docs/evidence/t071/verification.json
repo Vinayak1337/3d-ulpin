@@ -1,0 +1,23 @@
+{
+  "checks": [
+    "Batch directory has fixture-derived counts and parent dependency",
+    "Seven source entries distinguish three embedded sources from four descriptors",
+    "Deferral retains unresolved B12 and excludes it from recording",
+    "Scope includes parents, cascades exclusions and invalidates previous acknowledgement",
+    "Partial recording shows progress, preserves exception and unlocks dependent floor batch",
+    "Floor/space scope preserves containment dependencies",
+    "Floor-layout review switches floors, selected spaces and proposed overlay",
+    "Register directory searches records and opens source-linked floor/space geometry",
+    "Rights are separate unverified assertions; evidence opens readable facts with optional raw record",
+    "Scoped fictional register export downloads",
+    "Map 2D/3D, floor isolation and exact unit selection work",
+    "Map context survives register navigation and inspector can close/reopen",
+    "Floor separation, section plane and underground controls change map state",
+    "Layers and property search work; unknown-height property remains explicit",
+    "Tablet map and scope layouts have no horizontal overflow",
+    "No page errors or requests to the live application"
+  ],
+  "errors": [],
+  "liveAppRequests": [],
+  "result": "PASS"
+}

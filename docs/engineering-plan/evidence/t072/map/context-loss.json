@@ -1,0 +1,46 @@
+{
+  "checks": [
+    "Context loss tracked without page error",
+    "Property lookup remains available during context loss",
+    "Context restored and render invalidated"
+  ],
+  "errors": [],
+  "afterRestore": {
+    "detail": "full",
+    "architecture": {
+      "buildings": 28,
+      "drawBatches": 282,
+      "detail": "full",
+      "authoredTextures": 2
+    },
+    "environment": {
+      "trees": 45,
+      "authored": true
+    },
+    "renderer": "Three.js 186",
+    "cameraType": "PerspectiveCamera",
+    "contextLost": false,
+    "drawCalls": 621,
+    "triangles": 341613,
+    "geometries": 340,
+    "textures": 9,
+    "renderCount": 4,
+    "elapsedMs": 659,
+    "viewport": {
+      "width": 1120,
+      "height": 845,
+      "pixelRatio": 1
+    },
+    "activeFrameIntervals": {
+      "count": 3,
+      "averageMs": 133.3,
+      "p95Ms": 199.93
+    },
+    "cpuRenderTime": {
+      "count": 4,
+      "averageMs": 59.08,
+      "p95Ms": 119.9
+    },
+    "noHeightExtrusions": []
+  }
+}

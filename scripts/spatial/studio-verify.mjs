@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import {chromium} from '@playwright/test';
+import {launchBrowser} from './browser-launch.mjs';
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 const base=process.env.STUDIO_BASE_URL||'http://127.0.0.1:3000',out=process.env.STUDIO_VERIFICATION_DIR||'docs/evidence/t058/verification';await mkdir(out,{recursive:true});
 const report={startedAt:new Date().toISOString(),kind:'actual-studio-browser-verification',base,checks:[],errors:[],badResponses:[],sourceUpload:null};
-const browser=await chromium.launch({channel:'chrome',headless:true});let page;
+const browser=await launchBrowser();let page;
 const pass=(name,detail={})=>{report.checks.push({name,passed:true,...detail});console.log('PASS '+name);};
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 try{
@@ -42,7 +42,7 @@ try{
  const cameraBeforeRegister=await page.evaluate(()=>window.__CITY_DEBUG__);
  await page.getByRole('button',{name:'Full register',exact:true}).click();await page.waitForSelector('.register-overview');await page.waitForTimeout(700);
  assert.equal(await page.locator('canvas[data-studio-canvas]').count(),1);assert(await page.evaluate(()=>document.querySelector('canvas[data-studio-canvas]')===window.__STUDIO_ORIGINAL_CANVAS));
- await page.locator('[data-unit-id="BLD-0413/F1/U1"]').click();await page.getByRole('button',{name:'Inspect record',exact:true}).click();assert.match(page.url(),/doc=lease/);assert.match(page.url(),/unit=BLD-0413%2FF1%2FU1/);
+ await page.locator('.register-unit-row[data-unit-id="BLD-0413/F1/U1"]').click();await page.getByRole('button',{name:'Inspect record',exact:true}).click();assert.match(page.url(),/doc=lease/);assert.match(page.url(),/unit=BLD-0413%2FF1%2FU1/);
  const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'PDF',exact:true}).click();const download=await downloadPromise;const file=out+'/'+download.suggestedFilename();await download.saveAs(file);
  const manifest=await (await context.request.get(base+'/api/v1/studio/sources/manifest.json')).json();const specimen=manifest.documents.find(d=>d.id==='lease-BLD-0413-F1-U1');assert(specimen);assert.equal(sha(await readFile(file)),specimen.sha256);
  pass('Register reuses the canvas and downloads the exact prepared unit PDF with matching SHA-256',{document:specimen.id,sha256:specimen.sha256});
@@ -80,7 +80,7 @@ try{
  await page.getByRole('button',{name:'Prepared demo',exact:true}).click();await page.getByText(String(manifest.counts.documents),{exact:true}).waitFor();await page.screenshot({path:out+'/prepared-sources.png'});
  await page.getByRole('button',{name:'Upload original',exact:true}).click();
  if(process.env.STUDIO_TEST_UPLOAD==='1'){
-  await page.getByLabel('Destination workspace').selectOption('');await page.getByLabel('New workspace name').fill('Studio T058 verification — synthetic source review');
+  await page.getByLabel('Destination workspace').selectOption('');await page.getByLabel('New workspace name').fill(`Studio browser verification — synthetic source review ${report.startedAt}`);
   await page.getByRole('button',{name:'Use prepared ground-floor plan',exact:true}).click();
   const received=page.waitForResponse(r=>r.request().method()==='POST'&&/\/cases\/[^/]+\/sources$/.test(new URL(r.url()).pathname));
   await page.locator('.sti-body footer').getByRole('button',{name:'Upload original',exact:true}).click();

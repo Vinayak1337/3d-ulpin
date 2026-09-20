@@ -1,0 +1,816 @@
+{
+  "schemaVersion": "ulpin-source-package/1",
+  "classification": "synthetic",
+  "metadata": {
+    "id": "NEEM-DENSE-FICTIONAL-02-SOURCE-SHOWCASE",
+    "title": "Neem Gali · fictional source showcase",
+    "classification": "synthetic",
+    "description": "Authored source-style local GeoJSON and CSV demo. All IDs are DEMO identifiers, residents are fictional occupants, and schedule-only units have no invented geometry.",
+    "focalObjectId": "B01",
+    "extent": [
+      0,
+      0,
+      120,
+      115
+    ],
+    "officialIssuance": false
+  },
+  "frame": {
+    "id": "FRAME-NEEM-REFERENCE",
+    "name": "LOCAL-NEEM-REFERENCE-M",
+    "kind": "local_cartesian",
+    "horizontalUnit": "metre",
+    "verticalUnit": "metre",
+    "axisOrder": [
+      "east",
+      "north",
+      "up"
+    ],
+    "nativeCrs": "EPSG:32643",
+    "verticalDatum": "DEMO-BM-01 fictional zero datum; not national MSL"
+  },
+  "sourceRevision": "source-showcase-1",
+  "files": [
+    {
+      "path": "parcels.geojson",
+      "role": "parcels",
+      "bytes": 92989,
+      "sha256": "c303b2e45aec444a9e3fa54f0dc8236f25ff1861066f84067c6dbab15f13e409"
+    },
+    {
+      "path": "buildings.geojson",
+      "role": "buildings",
+      "bytes": 115310,
+      "sha256": "ce897f698b30ba676ad376c9401ba8d17f51a6e4bac60897a34d104ea9271223"
+    },
+    {
+      "path": "floors.geojson",
+      "role": "floors",
+      "bytes": 428143,
+      "sha256": "fbe6af52202d7c2f1620e4c228de981398bc3c712af71ed7b3ed55ddcdcf34b3"
+    },
+    {
+      "path": "spaces.geojson",
+      "role": "spaces",
+      "bytes": 22222,
+      "sha256": "07b99feb4e93bd2ec54f6548754c65c18f46be41e6f86961accb8ee8729b6acb"
+    },
+    {
+      "path": "roads.geojson",
+      "role": "roads",
+      "bytes": 9245,
+      "sha256": "41d766e5ca83bb4bb48f4ea3783c78af4aa8781a70f51524f626f0688f227349"
+    },
+    {
+      "path": "utilities.geojson",
+      "role": "utilities",
+      "bytes": 2071,
+      "sha256": "23389495a295d064dd7009a1f000b2d888c48add44abee729ddbeaa9a7c830c6"
+    },
+    {
+      "path": "public_land.geojson",
+      "role": "public_land",
+      "bytes": 1233,
+      "sha256": "34df2f4058da112d3130d419bbbfa39327dd6aec21ec8783f14210522d4bf20b"
+    },
+    {
+      "path": "floor-schedule.csv",
+      "role": "floor_schedule",
+      "bytes": 82121,
+      "sha256": "06787e3327252c376f74bf8e62ce5a0bbb357c52419bdd2d2aa6e2ca070dea9a"
+    },
+    {
+      "path": "fictional-residents.csv",
+      "role": "residents",
+      "bytes": 77170,
+      "sha256": "431251c8f1eea6762b8987d7ff0c5f25a2a09472012ad9840281e3bbba246f42"
+    }
+  ],
+  "sceneDecoration": {
+    "classification": "synthetic_visual_decoration",
+    "urbanForm": "dense_plotted",
+    "ground": "paved",
+    "plotWalls": false,
+    "trees": [
+      [
+        68,
+        42
+      ],
+      [
+        68,
+        50
+      ]
+    ],
+    "buildingStyles": {
+      "B01": {
+        "palette": 1,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B02": {
+        "palette": 2,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B03": {
+        "palette": 3,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B04": {
+        "palette": 4,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B05": {
+        "palette": 0,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B06": {
+        "palette": 1,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B07": {
+        "palette": 2,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B08": {
+        "palette": 3,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B09": {
+        "palette": 4,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B10": {
+        "palette": 0,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B11": {
+        "palette": 1,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B12": {
+        "palette": 2,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": false,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B13": {
+        "palette": 3,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B14": {
+        "palette": 4,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B15": {
+        "palette": 0,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B16": {
+        "palette": 1,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B17": {
+        "palette": 2,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B18": {
+        "palette": 3,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B19": {
+        "palette": 4,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B20": {
+        "palette": 0,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B21": {
+        "palette": 1,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B22": {
+        "palette": 2,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B23": {
+        "palette": 3,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B24": {
+        "palette": 4,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B25": {
+        "palette": 0,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B26": {
+        "palette": 1,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B27": {
+        "palette": 2,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B28": {
+        "palette": 3,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B29": {
+        "palette": 4,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B30": {
+        "palette": 0,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B31": {
+        "palette": 1,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B32": {
+        "palette": 2,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B33": {
+        "palette": 3,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B34": {
+        "palette": 4,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B35": {
+        "palette": 0,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B36": {
+        "palette": 1,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B37": {
+        "palette": 2,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B38": {
+        "palette": 3,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B39": {
+        "palette": 4,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B40": {
+        "palette": 0,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B41": {
+        "palette": 1,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B42": {
+        "palette": 2,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B43": {
+        "palette": 3,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B44": {
+        "palette": 4,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B45": {
+        "palette": 0,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B46": {
+        "palette": 1,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B47": {
+        "palette": 2,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B48": {
+        "palette": 3,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B49": {
+        "palette": 4,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B50": {
+        "palette": 0,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B51": {
+        "palette": 1,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B52": {
+        "palette": 2,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B53": {
+        "palette": 3,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B54": {
+        "palette": 4,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B55": {
+        "palette": 0,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B56": {
+        "palette": 1,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B57": {
+        "palette": 2,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B58": {
+        "palette": 3,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B59": {
+        "palette": 4,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B60": {
+        "palette": 0,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B61": {
+        "palette": 1,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B62": {
+        "palette": 2,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B63": {
+        "palette": 3,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B64": {
+        "palette": 4,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B65": {
+        "palette": 0,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B66": {
+        "palette": 1,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B67": {
+        "palette": 2,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B68": {
+        "palette": 3,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B69": {
+        "palette": 4,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B70": {
+        "palette": 0,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B71": {
+        "palette": 1,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B72": {
+        "palette": 2,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B73": {
+        "palette": 3,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B74": {
+        "palette": 4,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B75": {
+        "palette": 0,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B76": {
+        "palette": 1,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B77": {
+        "palette": 2,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B78": {
+        "palette": 3,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B79": {
+        "palette": 4,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B80": {
+        "palette": 0,
+        "style": "brick_accent",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B81": {
+        "palette": 1,
+        "style": "plaster",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": false,
+        "classification": "synthetic_visual_decoration"
+      },
+      "B82": {
+        "palette": 2,
+        "style": "warm_concrete",
+        "frontEdge": 0,
+        "roofCore": true,
+        "hasBalconies": true,
+        "classification": "synthetic_visual_decoration"
+      }
+    },
+    "architecture": {
+      "classification": "synthetic_visual_decoration",
+      "maxFacadeInsetM": 0.9,
+      "roofEquipmentWithinFootprint": true,
+      "roofEquipment": {
+        "classification": "synthetic_visual_decoration",
+        "maxHeightAboveRoofM": 2.1,
+        "withinFootprint": true,
+        "analyticalGeometry": false
+      },
+      "analyticalGeometry": false
+    },
+    "parkPaths": [],
+    "cars": [
+      {
+        "position": [
+          59,
+          12
+        ],
+        "heading": 0
+      },
+      {
+        "position": [
+          61,
+          80
+        ],
+        "heading": 0
+      },
+      {
+        "position": [
+          59,
+          103
+        ],
+        "heading": 0
+      }
+    ],
+    "camera": {
+      "focus": [
+        49,
+        46,
+        7.5
+      ],
+      "position": [
+        142,
+        165,
+        112
+      ],
+      "northAxis": [
+        0,
+        1,
+        0
+      ]
+    }
+  }
+}

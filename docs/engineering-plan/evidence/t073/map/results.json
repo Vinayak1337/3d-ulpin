@@ -1,0 +1,435 @@
+{
+  "url": "http://127.0.0.1:3013/",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "errors": [],
+  "checks": [
+    "Four positive-area computed findings include exact 16 m² road intrusion",
+    "Inspector explains actual computed overlap area",
+    "Inspector selects an exact intersection geometry",
+    "B01 remains red after selecting another building",
+    "Both overlapping buildings retain independent conflict states",
+    "The actual intersection polygon is selectable on the canvas",
+    "Repeated canvas clicks cycle both overlapping building identities",
+    "A selected non-conflicting building is green",
+    "Idle map does not render continuously",
+    "Missing height alone receives no conflict tint",
+    "B12 has only a flat footprint",
+    "2D uses OrthographicCamera",
+    "2D changes actual canvas",
+    "Space selection keeps exact space identity",
+    "Isolate displays the exact selected floor",
+    "Separate floors changes displayed floor positions",
+    "Section elevation updates",
+    "Basement selection reveals underground view",
+    "Property search focuses the missing-height footprint",
+    "Missing height disables section controls",
+    "Close inspector expands canvas",
+    "Closing inspector preserves camera",
+    "Find property restores inspector",
+    "Tablet has no horizontal page overflow",
+    "Unknown height shows footprint overlap without inventing a solid collision",
+    "Vertically disjoint buildings receive no collision tint",
+    "Shared-wall contact receives no positive-area conflict",
+    "WebGL fallback keeps property retrieval and inspector available",
+    "No browser page errors"
+  ],
+  "openingStats": {
+    "detail": "full",
+    "architecture": {
+      "buildings": 82,
+      "drawBatches": 840,
+      "detail": "full",
+      "authoredTextures": 2
+    },
+    "environment": {
+      "trees": 2,
+      "authored": true
+    },
+    "renderer": "Three.js 186",
+    "cameraType": "PerspectiveCamera",
+    "contextLost": false,
+    "spatialConflicts": [
+      {
+        "id": "spatial:OUTSIDE_PARCEL:B01:P01",
+        "code": "OUTSIDE_PARCEL",
+        "areaM2": 16,
+        "buildingIds": [
+          "B01"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:ROAD_OVERLAP:B01:R03",
+        "code": "ROAD_OVERLAP",
+        "areaM2": 16,
+        "buildingIds": [
+          "B01"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:BUILDING_OVERLAP:B02:B03",
+        "code": "BUILDING_OVERLAP",
+        "areaM2": 9.479999999999995,
+        "buildingIds": [
+          "B02",
+          "B03"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:OUTSIDE_PARCEL:B03:P03",
+        "code": "OUTSIDE_PARCEL",
+        "areaM2": 9.479999999999995,
+        "buildingIds": [
+          "B03"
+        ],
+        "solidTint": true
+      }
+    ],
+    "drawCalls": 988,
+    "triangles": 316650,
+    "geometries": 512,
+    "textures": 9,
+    "renderCount": 2,
+    "elapsedMs": 1085,
+    "viewport": {
+      "width": 1120,
+      "height": 845,
+      "pixelRatio": 1
+    },
+    "activeFrameIntervals": {
+      "count": 1,
+      "averageMs": 233.3,
+      "p95Ms": 233.3
+    },
+    "cpuRenderTime": {
+      "count": 2,
+      "averageMs": 87.6,
+      "p95Ms": 168.2
+    },
+    "noHeightExtrusions": []
+  },
+  "intersectionPick": {
+    "hitPoint": {
+      "x": 656.2237757897842,
+      "y": 577.4993680438236,
+      "issueId": "spatial:BUILDING_OVERLAP:B02:B03"
+    },
+    "state": {
+      "selectedId": "B02",
+      "activeConflictId": "spatial:BUILDING_OVERLAP:B02:B03",
+      "inspectorOpen": true,
+      "mode": "2d",
+      "floor": "all",
+      "space": "none",
+      "floorMode": "below",
+      "explode": false,
+      "section": false,
+      "sectionHeight": 9.299999999999999,
+      "underground": false,
+      "layers": {
+        "buildings": true,
+        "parcels": true,
+        "roads": true,
+        "trees": true,
+        "utilities": true,
+        "conflicts": true
+      },
+      "camera": {
+        "position": [
+          4,
+          454.65,
+          -8.098999999958627
+        ],
+        "target": [
+          4,
+          4.6499999999999995,
+          -8.1
+        ],
+        "zoom": 1,
+        "orthoHalfHeight": 16.245984811645318,
+        "perspectiveOffset": [
+          22.328180215829246,
+          35.4171134457981,
+          27.33277233317029
+        ]
+      }
+    }
+  },
+  "orbitStats": {
+    "detail": "full",
+    "architecture": {
+      "buildings": 82,
+      "drawBatches": 840,
+      "detail": "full",
+      "authoredTextures": 2
+    },
+    "environment": {
+      "trees": 2,
+      "authored": true
+    },
+    "renderer": "Three.js 186",
+    "cameraType": "PerspectiveCamera",
+    "contextLost": false,
+    "spatialConflicts": [
+      {
+        "id": "spatial:OUTSIDE_PARCEL:B01:P01",
+        "code": "OUTSIDE_PARCEL",
+        "areaM2": 16,
+        "buildingIds": [
+          "B01"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:ROAD_OVERLAP:B01:R03",
+        "code": "ROAD_OVERLAP",
+        "areaM2": 16,
+        "buildingIds": [
+          "B01"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:BUILDING_OVERLAP:B02:B03",
+        "code": "BUILDING_OVERLAP",
+        "areaM2": 9.479999999999995,
+        "buildingIds": [
+          "B02",
+          "B03"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:OUTSIDE_PARCEL:B03:P03",
+        "code": "OUTSIDE_PARCEL",
+        "areaM2": 9.479999999999995,
+        "buildingIds": [
+          "B03"
+        ],
+        "solidTint": true
+      }
+    ],
+    "drawCalls": 1090,
+    "triangles": 351340,
+    "geometries": 571,
+    "textures": 9,
+    "renderCount": 94,
+    "elapsedMs": 9369,
+    "viewport": {
+      "width": 1120,
+      "height": 845,
+      "pixelRatio": 1
+    },
+    "activeFrameIntervals": {
+      "count": 68,
+      "averageMs": 33.82,
+      "p95Ms": 33.4
+    },
+    "cpuRenderTime": {
+      "count": 69,
+      "averageMs": 3.92,
+      "p95Ms": 4.6
+    },
+    "noHeightExtrusions": []
+  },
+  "continuousOrbitStats": {
+    "method": "Continuous requestAnimationFrame with OrbitControls.autoRotate; no pointer protocol pacing",
+    "measuredDurationMs": 2201,
+    "detail": "full",
+    "architecture": {
+      "buildings": 82,
+      "drawBatches": 840,
+      "detail": "full",
+      "authoredTextures": 2
+    },
+    "environment": {
+      "trees": 2,
+      "authored": true
+    },
+    "renderer": "Three.js 186",
+    "cameraType": "PerspectiveCamera",
+    "contextLost": false,
+    "spatialConflicts": [
+      {
+        "id": "spatial:OUTSIDE_PARCEL:B01:P01",
+        "code": "OUTSIDE_PARCEL",
+        "areaM2": 16,
+        "buildingIds": [
+          "B01"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:ROAD_OVERLAP:B01:R03",
+        "code": "ROAD_OVERLAP",
+        "areaM2": 16,
+        "buildingIds": [
+          "B01"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:BUILDING_OVERLAP:B02:B03",
+        "code": "BUILDING_OVERLAP",
+        "areaM2": 9.479999999999995,
+        "buildingIds": [
+          "B02",
+          "B03"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:OUTSIDE_PARCEL:B03:P03",
+        "code": "OUTSIDE_PARCEL",
+        "areaM2": 9.479999999999995,
+        "buildingIds": [
+          "B03"
+        ],
+        "solidTint": true
+      }
+    ],
+    "drawCalls": 1093,
+    "triangles": 350382,
+    "geometries": 571,
+    "textures": 9,
+    "renderCount": 160,
+    "elapsedMs": 11572,
+    "viewport": {
+      "width": 1120,
+      "height": 845,
+      "pixelRatio": 1
+    },
+    "activeFrameIntervals": {
+      "count": 65,
+      "averageMs": 33.33,
+      "p95Ms": 33.4
+    },
+    "cpuRenderTime": {
+      "count": 66,
+      "averageMs": 4.19,
+      "p95Ms": 5
+    },
+    "noHeightExtrusions": []
+  },
+  "tabletStats": {
+    "detail": "full",
+    "architecture": {
+      "buildings": 82,
+      "drawBatches": 840,
+      "detail": "full",
+      "authoredTextures": 2
+    },
+    "environment": {
+      "trees": 2,
+      "authored": true
+    },
+    "renderer": "Three.js 186",
+    "cameraType": "PerspectiveCamera",
+    "contextLost": false,
+    "spatialConflicts": [
+      {
+        "id": "spatial:OUTSIDE_PARCEL:B01:P01",
+        "code": "OUTSIDE_PARCEL",
+        "areaM2": 16,
+        "buildingIds": [
+          "B01"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:ROAD_OVERLAP:B01:R03",
+        "code": "ROAD_OVERLAP",
+        "areaM2": 16,
+        "buildingIds": [
+          "B01"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:BUILDING_OVERLAP:B02:B03",
+        "code": "BUILDING_OVERLAP",
+        "areaM2": 9.479999999999995,
+        "buildingIds": [
+          "B02",
+          "B03"
+        ],
+        "solidTint": true
+      },
+      {
+        "id": "spatial:OUTSIDE_PARCEL:B03:P03",
+        "code": "OUTSIDE_PARCEL",
+        "areaM2": 9.479999999999995,
+        "buildingIds": [
+          "B03"
+        ],
+        "solidTint": true
+      }
+    ],
+    "drawCalls": 953,
+    "triangles": 303818,
+    "geometries": 501,
+    "textures": 9,
+    "renderCount": 2,
+    "elapsedMs": 632,
+    "viewport": {
+      "width": 724,
+      "height": 613,
+      "pixelRatio": 1
+    },
+    "activeFrameIntervals": {
+      "count": 1,
+      "averageMs": 200,
+      "p95Ms": 200
+    },
+    "cpuRenderTime": {
+      "count": 2,
+      "averageMs": 75.55,
+      "p95Ms": 145.7
+    },
+    "noHeightExtrusions": []
+  },
+  "graphics": {
+    "vendor": "Google Inc. (Apple)",
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M3, Unspecified Version)",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+  },
+  "variantChecks": {
+    "unknown": {
+      "conflicts": [
+        {
+          "id": "spatial:BUILDING_OVERLAP:B02:B03",
+          "code": "BUILDING_OVERLAP",
+          "areaM2": 9.479999999999995,
+          "buildingIds": [
+            "B02",
+            "B03"
+          ],
+          "solidTint": false
+        }
+      ],
+      "states": [
+        "selected",
+        "height-unresolved"
+      ]
+    },
+    "disjoint": {
+      "conflicts": [],
+      "states": [
+        "selected",
+        "default"
+      ]
+    },
+    "touching": {
+      "conflicts": [],
+      "states": [
+        "selected",
+        "default"
+      ]
+    }
+  }
+}

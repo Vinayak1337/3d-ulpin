@@ -1,0 +1,88 @@
+{
+  "status": "passed",
+  "schema": "passed",
+  "objects": 196,
+  "buildings": 82,
+  "spaces": 16,
+  "sources": 8,
+  "sourceFilesRoundTripped": 6,
+  "roundTripObjectCount": 196,
+  "maxRoundTripErrorM": 1.9199706733309015e-09,
+  "hashesAndZipContents": "passed",
+  "pendingHeightPreserved": true,
+  "existingAppPureAdapterChecks": [
+    {
+      "file": "buildings.geojson",
+      "kind": "building",
+      "featureCount": 82,
+      "sourceCrs": "EPSG:4326"
+    },
+    {
+      "file": "parcels.geojson",
+      "kind": "parcel",
+      "featureCount": 82,
+      "sourceCrs": "EPSG:4326"
+    },
+    {
+      "file": "roads.geojson",
+      "kind": "road",
+      "featureCount": 7,
+      "sourceCrs": "EPSG:4326"
+    },
+    {
+      "file": "open_areas.geojson",
+      "kind": "public_land",
+      "featureCount": 1,
+      "sourceCrs": "EPSG:4326"
+    },
+    {
+      "file": "utilities.geojson",
+      "kind": "utility",
+      "featureCount": 2,
+      "sourceCrs": "EPSG:4326"
+    }
+  ],
+  "computedSpatialIssues": [
+    {
+      "code": "BUILDING_OVERLAP",
+      "objectIds": [
+        "B02",
+        "B03"
+      ],
+      "areaM2": 9.479999999999995
+    },
+    {
+      "code": "OUTSIDE_PARCEL",
+      "objectIds": [
+        "B01",
+        "P01"
+      ],
+      "areaM2": 16.0
+    },
+    {
+      "code": "ROAD_OVERLAP",
+      "objectIds": [
+        "B01",
+        "R03"
+      ],
+      "areaM2": 16.0
+    },
+    {
+      "code": "OUTSIDE_PARCEL",
+      "objectIds": [
+        "B03",
+        "P03"
+      ],
+      "areaM2": 9.479999999999995
+    }
+  ],
+  "validSharedWallPairs": 68,
+  "unionBlocks": 13,
+  "buildingCoverageFraction": 0.7552196457318838,
+  "limitations": [
+    "No live application ingestion or database writes performed.",
+    "Floor/space source adapter is this package round-trip; existing area adapter has no floor/space kind.",
+    "Existing app checks verify horizontal geometry and building-relative heights, not preservation of this custom vertical datum or complete raw properties.",
+    "ZIP is a package to extract or use with prototype adapter, not a Shapefile ZIP accepted by the existing native-GIS upload route."
+  ]
+}

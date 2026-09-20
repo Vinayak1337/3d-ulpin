@@ -1,0 +1,10 @@
+fiona==1.10.1
+laspy==2.6.1
+lazrs==0.8.2
+numpy==2.0.2
+pillow==11.3.0
+pypdf==6.19.0
+python-docx==1.2.0
+rasterio==1.4.3
+reportlab==5.0.1
+shapely==2.0.7

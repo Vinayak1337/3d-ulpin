@@ -1,4 +1,5 @@
 "use client";
+import { documentFormat, documentSizeError } from "@/lib/document-formats";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
@@ -61,8 +62,9 @@ export function useWorkspace(buildingId?: string, unassignedCaseId?: string) {
     (!recordedPreparation || opened.revision > recordedPreparation.revision)
       ? opened
       : recordedPreparation || null;
+  const sourceWorkspace = useResource<ImportPackage>(unassignedCaseId && !buildingId ? `/source-workspaces?caseId=${unassignedCaseId}` : null);
   const pkg = useResource<ImportPackage>(
-    preparation ? `/import-packages/${preparation.packageId}` : null,
+    preparation ? `/import-packages/${preparation.packageId}` : sourceWorkspace.data ? `/import-packages/${sourceWorkspace.data.id}` : null,
   );
   const caseId = preparation?.caseId || unassignedCaseId;
   const detail = useResource<CaseDetail>(caseId ? `/cases/${caseId}` : null);
@@ -71,6 +73,11 @@ export function useWorkspace(buildingId?: string, unassignedCaseId?: string) {
   );
   const mutation = useMutation();
   const requestKey = useRef<string | null>(null);
+  const receiptKeys = useRef(new WeakMap<File, string>());
+  const receiptKey = (file: File) => {
+    const retained = receiptKeys.current.get(file); if (retained) return retained;
+    const key = crypto.randomUUID(); receiptKeys.current.set(file, key); return key;
+  };
   const selectProperty = useOfficerStore((state) => state.selectProperty);
   useEffect(() => {
     if (!dossier.data || !backArea || membership.loading) return;
@@ -127,28 +134,22 @@ export function useWorkspace(buildingId?: string, unassignedCaseId?: string) {
   const upload = async (files: File[]) =>
     mutation.run(async () => {
       if (!files.length) return;
-      if (pkg.data && buildingId) {
+      const sizeError = files.map(documentSizeError).find(Boolean);
+      if (sizeError) throw new Error(sizeError);
+      if (pkg.data && (buildingId || pkg.data.sourceWorkspace)) {
         let current = pkg.data;
         try {
           for (const file of files) {
-            const suffix = file.name.split(".").at(-1)?.toLowerCase();
-            const format =
-              suffix === "jpg" ? "jpeg" : suffix === "txt" ? "text" : suffix;
-            if (
-              !["pdf", "png", "jpeg", "csv", "docx", "text"].includes(
-                format || "",
-              )
-            )
-              throw new Error(
-                `Unsupported document: ${file.name}. Use PDF, image, CSV, text or DOCX.`,
-              );
+            const format = documentFormat(file.name);
+            if (!format) throw new Error(`Unsupported document: ${file.name}. Use PDF, PNG, JPEG, CSV, text or DOCX.`);
             const form = new FormData();
             form.set("file", file);
             form.set("format", format!);
-            form.set("entityIds", JSON.stringify([buildingId]));
+            form.set("entityIds", JSON.stringify(buildingId ? [buildingId] : []));
             form.set("expectedRevision", String(current.revision));
+            form.set("requestKey", receiptKey(file));
             const response = await fetch(
-              `/api/v1/import-packages/${current.id}/documents`,
+              `/api/v1/import-packages/${current.id}/${buildingId ? "documents" : "source-documents"}`,
               { method: "POST", body: form },
             );
             const value = await response.json();
@@ -165,20 +166,11 @@ export function useWorkspace(buildingId?: string, unassignedCaseId?: string) {
       } else if (caseId) {
         try {
           for (const file of files) {
-            const suffix = file.name.split(".").at(-1)?.toLowerCase();
-            const profile: SourceProfile | undefined =
-              suffix === "pdf"
-                ? "plan-pdf-v1"
-                : suffix === "png"
-                  ? "plan-png-v1"
-                  : suffix === "csv"
-                    ? "levels-csv-v1"
-                    : undefined;
-            if (!profile)
-              throw new Error(
-                "Unassigned workspaces accept PDF, PNG and level CSV. Assign a property to use other document formats.",
-              );
-            await api.upload(caseId, file, profile);
+            const format = documentFormat(file.name);
+            if (!format) throw new Error("Use PDF, PNG, JPEG, CSV, text or DOCX.");
+            const form = new FormData(); form.set("file", file); form.set("format", format); form.set("requestKey", receiptKey(file));
+            const response = await fetch(`/api/v1/cases/${caseId}/reference-documents`, {method:"POST",body:form});
+            const value = await response.json(); if(!response.ok) throw new Error(value.error?.message || `Could not read ${file.name}`);
           }
         } finally {
           await detail.reload();
@@ -232,12 +224,14 @@ export function useWorkspace(buildingId?: string, unassignedCaseId?: string) {
       url: routes.source(source.id),
       kind: sourceKind(source.name, source.profile),
       status: source.status,
-      parts: [],
+      originalKind: sourceKind(source.name, source.profile) as "image" | "pdf" | "text",
+      parts: pkg.data ? pkg.data.parts.filter(part => part.sourceRevisionId === source.id) : source.inspection?.referenceParts || [],
     }));
   }, [dossier.data, pkg.data, detail.data]);
   return {
     dossier: dossier.data,
     backArea,
+    intakeAreaId: requestedArea,
     contextWarning:
       requestedArea &&
       dossier.data &&
@@ -248,6 +242,7 @@ export function useWorkspace(buildingId?: string, unassignedCaseId?: string) {
         : "",
     preparation,
     pkg: pkg.data,
+    sourceWorkspace: sourceWorkspace.data,
     detail: detail.data,
     requirements: requirements.data,
     sources,
@@ -264,6 +259,7 @@ export function useWorkspace(buildingId?: string, unassignedCaseId?: string) {
       mutation.error ||
       dossier.error ||
       pkg.error ||
+      sourceWorkspace.error ||
       detail.error ||
       requirements.error,
     loading: dossier.loading || detail.loading || pkg.loading,

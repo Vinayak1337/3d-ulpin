@@ -1,0 +1,184 @@
+{
+  "sha256": "94d6cd80cd0b2ac4c0d7b5abf6b01dc93a70e373e6e607aae3d746579beea087",
+  "buildings": 49,
+  "floors": 184,
+  "spaces": 189,
+  "sources": 50,
+  "issues": [
+    {
+      "id": "spatial:OUTSIDE_PARCEL:B01:P01",
+      "origin": "spatial-preview",
+      "code": "OUTSIDE_PARCEL",
+      "severity": "review",
+      "status": "open",
+      "objectIds": [
+        "B01",
+        "P01"
+      ],
+      "sourceRecordIds": [
+        "record/buildings.geojson/B01",
+        "record/parcels.geojson/P01"
+      ],
+      "field": "geometry",
+      "title": "Building extends outside its linked parcel",
+      "description": "Lake View Residence / Plot 01: 21.60 m² outside the linked parcel. No overlap volume asserted. Review source geometry and rights evidence; this is not a legal determination.",
+      "allowedActions": [
+        "review_geometry",
+        "attach_evidence"
+      ],
+      "resolution": null,
+      "evidence": {
+        "method": "polygon-clipping@0.15.7",
+        "frameId": "FRAME-LAKE-VIEW-DEMO",
+        "verticalDatum": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "computedFromGeometryIds": [
+          "B01-shape-v1",
+          "P01-shape-v1"
+        ],
+        "geometryRefs": [
+          {
+            "objectId": "B01",
+            "geometryId": "B01-shape-v1",
+            "version": 1
+          },
+          {
+            "objectId": "P01",
+            "geometryId": "P01-shape-v1",
+            "version": 1
+          }
+        ],
+        "areaM2": 21.60000000000005,
+        "volumeM3": null,
+        "verticalRelation": "surface",
+        "overlapHeightM": null,
+        "toleranceM": 0.001,
+        "areaToleranceM2": 0.000001,
+        "intersectionGeometry": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  68,
+                  62.8
+                ],
+                [
+                  86,
+                  62.8
+                ],
+                [
+                  86,
+                  64
+                ],
+                [
+                  68,
+                  64
+                ],
+                [
+                  68,
+                  62.8
+                ]
+              ]
+            ]
+          ]
+        },
+        "otherObjectId": "P01",
+        "relation": "difference",
+        "legalFinding": false
+      }
+    },
+    {
+      "id": "spatial:ROAD_OVERLAP:B01:R04",
+      "origin": "spatial-preview",
+      "code": "ROAD_OVERLAP",
+      "severity": "review",
+      "status": "open",
+      "objectIds": [
+        "B01",
+        "R04"
+      ],
+      "sourceRecordIds": [
+        "record/buildings.geojson/B01",
+        "record/roads.geojson/R04"
+      ],
+      "field": "geometry",
+      "title": "Building footprint overlaps a street corridor",
+      "description": "Lake View Residence / Lake View Lane: 21.60 m² plan overlap. No overlap volume asserted. Review source geometry and rights evidence; this is not a legal determination.",
+      "allowedActions": [
+        "review_geometry",
+        "attach_evidence"
+      ],
+      "resolution": null,
+      "evidence": {
+        "method": "polygon-clipping@0.15.7",
+        "frameId": "FRAME-LAKE-VIEW-DEMO",
+        "verticalDatum": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "computedFromGeometryIds": [
+          "B01-shape-v1",
+          "R04-shape-v1"
+        ],
+        "geometryRefs": [
+          {
+            "objectId": "B01",
+            "geometryId": "B01-shape-v1",
+            "version": 1
+          },
+          {
+            "objectId": "R04",
+            "geometryId": "R04-shape-v1",
+            "version": 1
+          }
+        ],
+        "areaM2": 21.60000000000005,
+        "volumeM3": null,
+        "verticalRelation": "surface",
+        "overlapHeightM": null,
+        "toleranceM": 0.001,
+        "areaToleranceM2": 0.000001,
+        "intersectionGeometry": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  68,
+                  62.8
+                ],
+                [
+                  86,
+                  62.8
+                ],
+                [
+                  86,
+                  64
+                ],
+                [
+                  68,
+                  64
+                ],
+                [
+                  68,
+                  62.8
+                ]
+              ]
+            ]
+          ]
+        },
+        "otherObjectId": "R04",
+        "relation": "intersection",
+        "legalFinding": false
+      }
+    }
+  ],
+  "checks": {
+    "engine": "polygon-clipping@0.15.7",
+    "status": "complete",
+    "buildingCount": 49,
+    "areaToleranceM2": 0.000001,
+    "verticalToleranceM": 0.001,
+    "checkedPairs": 50,
+    "skipped": [],
+    "scope": "Polygon footprints and vertical extrusions in one named metre frame. Geometry review only; not a legal finding.",
+    "issueCount": 2
+  }
+}

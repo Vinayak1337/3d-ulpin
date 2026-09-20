@@ -1,0 +1,398 @@
+{
+  "type": "FeatureCollection",
+  "name": "FICTIONAL roads",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "R01",
+      "properties": {
+        "object_id": "R01",
+        "object_type": "road",
+        "name": "Collector street",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 920.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "widthM": 8,
+        "centerline": [
+          [
+            60,
+            0
+          ],
+          [
+            60,
+            115
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "collector"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18798448443846,
+              28.549232330920862
+            ],
+            [
+              77.18806620786141,
+              28.549231013308262
+            ],
+            [
+              77.18808765981879,
+              28.55026830905386
+            ],
+            [
+              77.18800593559618,
+              28.550269626723015
+            ],
+            [
+              77.18798448443846,
+              28.549232330920862
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R02",
+      "properties": {
+        "object_id": "R02",
+        "object_type": "road",
+        "name": "Gali 1",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 360.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            17.5
+          ],
+          [
+            120,
+            17.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.1874154039864,
+              28.549385872314705
+            ],
+            [
+              77.1886412569993,
+              28.549366108007693
+            ],
+            [
+              77.18864181675131,
+              28.549393167887953
+            ],
+            [
+              77.18741596342552,
+              28.54941293221709
+            ],
+            [
+              77.1874154039864,
+              28.549385872314705
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R03",
+      "properties": {
+        "object_id": "R03",
+        "object_type": "road",
+        "name": "Gali 2",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 360.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            36.5
+          ],
+          [
+            120,
+            36.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18741894711377,
+              28.549557251694516
+            ],
+            [
+              77.18864480210841,
+              28.549537487247342
+            ],
+            [
+              77.18864536186531,
+              28.54956454712686
+            ],
+            [
+              77.18741950655776,
+              28.549584311596156
+            ],
+            [
+              77.18741894711377,
+              28.549557251694516
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R04",
+      "properties": {
+        "object_id": "R04",
+        "object_type": "road",
+        "name": "Gali 3",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 360.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            55.5
+          ],
+          [
+            120,
+            55.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18742249027208,
+              28.549728631069584
+            ],
+            [
+              77.18864834724849,
+              28.549708866482263
+            ],
+            [
+              77.18864890701028,
+              28.549735926361024
+            ],
+            [
+              77.18742304972096,
+              28.549755690970475
+            ],
+            [
+              77.18742249027208,
+              28.549728631069584
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R05",
+      "properties": {
+        "object_id": "R05",
+        "object_type": "road",
+        "name": "Gali 4",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 360.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            74.5
+          ],
+          [
+            120,
+            74.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18742603346135,
+              28.549900010439927
+            ],
+            [
+              77.18865189241953,
+              28.549880245712448
+            ],
+            [
+              77.1886524521862,
+              28.549907305590473
+            ],
+            [
+              77.1874265929151,
+              28.54992707034008
+            ],
+            [
+              77.18742603346135,
+              28.549900010439927
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R06",
+      "properties": {
+        "object_id": "R06",
+        "object_type": "road",
+        "name": "Gali 5",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 360.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            93.5
+          ],
+          [
+            120,
+            93.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18742957668155,
+              28.550071389805545
+            ],
+            [
+              77.18865543762153,
+              28.550051624937907
+            ],
+            [
+              77.1886559973931,
+              28.550078684815183
+            ],
+            [
+              77.18743013614021,
+              28.550098449704944
+            ],
+            [
+              77.18742957668155,
+              28.550071389805545
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R07",
+      "properties": {
+        "object_id": "R07",
+        "object_type": "road",
+        "name": "Gali 6",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 360.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "widthM": 3,
+        "centerline": [
+          [
+            0,
+            113.5
+          ],
+          [
+            120,
+            113.5
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "paved",
+        "streetClass": "gali"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18743330642049,
+              28.55025178913266
+            ],
+            [
+              77.18865916944658,
+              28.550232024117484
+            ],
+            [
+              77.1886597292233,
+              28.550259083993968
+            ],
+            [
+              77.18743386588427,
+              28.550278849031276
+            ],
+            [
+              77.18743330642049,
+              28.55025178913266
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

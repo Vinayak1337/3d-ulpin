@@ -64,11 +64,17 @@ def run_job(identity: str, store=None) -> dict:
         if record["status"] in ("succeeded", "failed"):
             return {"jobId": identity, "status": record["status"]}
         store.update(identity, status="running")
-        result = inspect_object(record["input"]) if record["operation"] == "inspect" else build_model(record["input"])
+        if record["operation"] == "inspect":
+            result = inspect_object(record["input"])
+        elif record["operation"] == "spatial-inference":
+            from .spatial_ml import infer_spatial
+            result = infer_spatial(record["input"])
+        else:
+            result = build_model(record["input"])
         store.update(identity, status="succeeded", result=result)
         return {"jobId": identity, "status": "succeeded"}
     except InputError as error:
-        store.update(identity, status="failed", error=str(error))
+        store.update(identity, status="failed", error=str(error), errorCode=getattr(error, "code", "INVALID_INPUT"))
         return {"jobId": identity, "status": "failed"}
     except SoftTimeLimitExceeded:
         store.update(identity, status="failed", error="Processing exceeded the 110-second limit. Simplify the input and retry.")

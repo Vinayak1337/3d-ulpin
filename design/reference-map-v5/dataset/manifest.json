@@ -1,0 +1,78 @@
+{
+  "datasetId": "NEEM-DENSE-FICTIONAL-02",
+  "revision": "fictional-dense-v2",
+  "classification": "synthetic",
+  "notOfficialEvidence": true,
+  "files": [
+    {
+      "path": "MASTER_SCENE.json",
+      "sha256": "145c7043c277f4c7d287499691a813b4141dfc58ce6260cc2498c84587038a90",
+      "bytes": 366733
+    },
+    {
+      "path": "README.md",
+      "sha256": "6add09f47a6fc62e0f292a48c7984f0b5c048962144390157485fa506eb55e3e",
+      "bytes": 1888
+    },
+    {
+      "path": "buildings.geojson",
+      "sha256": "c408e052a047b9648a7a8305e143f8e5cb684ecb0f75d539d0be34614343bda4",
+      "bytes": 106805
+    },
+    {
+      "path": "floor_schedule.csv",
+      "sha256": "c48689448ffe064b6330ae25308aaf761396925d2f66a38e8f7d847ad85331f3",
+      "bytes": 1354
+    },
+    {
+      "path": "floor_spaces.geojson",
+      "sha256": "b5df142e9dfbdb9814fb578e4ad545f043384ef2fa9bdf7add746382be97f6ff",
+      "bytes": 26855
+    },
+    {
+      "path": "import-mapping.json",
+      "sha256": "33a724704ccf88eade68e16334a4821967e141bca283850935bf7cdd3c7107e2",
+      "bytes": 1869
+    },
+    {
+      "path": "normalized.json",
+      "sha256": "a002af7215c1b2d0eb05fee88dce19b6dfaa2b6eb7bc54d98125ae30d465dd94",
+      "bytes": 879219
+    },
+    {
+      "path": "open_areas.geojson",
+      "sha256": "c193b8026283536eb2c4e850511e3f56c811bbc89ad9fb14e674afc21be12f13",
+      "bytes": 1122
+    },
+    {
+      "path": "parcels.geojson",
+      "sha256": "41b3012233e4aaa915f192c5af42ff48d351ea014d4f6e1330ad38bf13b49c28",
+      "bytes": 85357
+    },
+    {
+      "path": "roads.geojson",
+      "sha256": "eb7acd1decfa4c208a8817ff717c136fea196fddf1480dbe1ad32cdbe7b23982",
+      "bytes": 8882
+    },
+    {
+      "path": "schema.json",
+      "sha256": "60a3f1c9a77c9ecb5936ea98336ac802b14893b878e1309acc5a11baac9e112d",
+      "bytes": 39560
+    },
+    {
+      "path": "spatial-checks.json",
+      "sha256": "e52c497845eb26932a6e9c596ca49bff5d1c142cd7e62acb89a74ad1d73508d0",
+      "bytes": 65323
+    },
+    {
+      "path": "survey_controls.csv",
+      "sha256": "03830b53516e308de4cf92638d2c807e0c34c88e413da6f6c2f7674693dfaa2f",
+      "bytes": 713
+    },
+    {
+      "path": "utilities.geojson",
+      "sha256": "777c92c7a2027c1f9255338db3be267020c7e4235e6a0439f3398cdbb8c5fb0a",
+      "bytes": 1832
+    }
+  ]
+}

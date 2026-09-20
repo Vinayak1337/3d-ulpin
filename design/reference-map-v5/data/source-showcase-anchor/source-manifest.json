@@ -1,0 +1,2556 @@
+{
+  "schemaVersion": "ulpin-source-package/1",
+  "classification": "synthetic",
+  "metadata": {
+    "id": "LAKE-VIEW-ANCHOR-DEMO-SOURCE-SHOWCASE",
+    "title": "Lake View · fictional source showcase",
+    "classification": "synthetic",
+    "description": "Authored source-style local GeoJSON and CSV demo. All IDs are DEMO identifiers, residents are fictional occupants, and schedule-only units have no invented geometry.",
+    "focalObjectId": "B01",
+    "extent": [
+      -26,
+      -26,
+      191,
+      204
+    ],
+    "officialIssuance": false
+  },
+  "frame": {
+    "id": "FRAME-LAKE-VIEW-DEMO",
+    "name": "LOCAL-LAKE-VIEW-DEMO-M",
+    "kind": "local_cartesian",
+    "horizontalUnit": "metre",
+    "verticalUnit": "metre",
+    "axisOrder": [
+      "east",
+      "north",
+      "up"
+    ],
+    "nativeCrs": "LOCAL-LAKE-VIEW-DEMO-M",
+    "verticalDatum": "DEMO-BM-01 fictional zero datum; not national MSL"
+  },
+  "sourceRevision": "source-showcase-1",
+  "files": [
+    {
+      "path": "parcels.geojson",
+      "role": "parcels",
+      "bytes": 54562,
+      "sha256": "4eb1bee339787c12eb3e51ec3a4bc6d2a08b6072cbf21be8b63248991c5f39f5"
+    },
+    {
+      "path": "buildings.geojson",
+      "role": "buildings",
+      "bytes": 70936,
+      "sha256": "e1bfe1173bee76c3ac25e43e73d5fe7dd9752d05cd76a711c7e4a6dfa32ec35f"
+    },
+    {
+      "path": "floors.geojson",
+      "role": "floors",
+      "bytes": 245891,
+      "sha256": "3b39a5e7e5fc1679f8890ebbb41e5a50517b822a53de3964a88e8cef00760830"
+    },
+    {
+      "path": "spaces.geojson",
+      "role": "spaces",
+      "bytes": 13507,
+      "sha256": "32b9086179bc6edb60af4de62f9f808cc9608dd92267b78eb3fba53218a78e7d"
+    },
+    {
+      "path": "roads.geojson",
+      "role": "roads",
+      "bytes": 5497,
+      "sha256": "125171433666fd090ba20a8f0b9c8d501e863568a30bcc20262263aaeaccb176"
+    },
+    {
+      "path": "utilities.geojson",
+      "role": "utilities",
+      "bytes": 1137,
+      "sha256": "7e2e3176041c4bf3df275ca11e379703aea807dfc04dd09d2aa4b7486cc1866e"
+    },
+    {
+      "path": "public_land.geojson",
+      "role": "public_land",
+      "bytes": 1257,
+      "sha256": "0ec92cb9efc4cedbe6f2cad1329b1d090da959bb47c8244fe52c607d88f16e02"
+    },
+    {
+      "path": "floor-schedule.csv",
+      "role": "floor_schedule",
+      "bytes": 46031,
+      "sha256": "b4d30b9ae20a8f508b005fed872d19bb34abc3b266e792d863f35f7004dc972f"
+    },
+    {
+      "path": "fictional-residents.csv",
+      "role": "residents",
+      "bytes": 43385,
+      "sha256": "945e33df6c7edfbf036858f45b3a351056701dc5ed31667d5bcec23d2e5a76f1"
+    }
+  ],
+  "sceneDecoration": {
+    "classification": "synthetic_visual_decoration",
+    "urbanForm": "open_block",
+    "ground": "grass",
+    "plotWalls": true,
+    "trees": [
+      {
+        "position": [
+          7.19,
+          28.93
+        ],
+        "heightM": 7.24,
+        "radiusM": 2.43
+      },
+      {
+        "position": [
+          8.5,
+          52.46
+        ],
+        "heightM": 5.38,
+        "radiusM": 2.51
+      },
+      {
+        "position": [
+          8.0,
+          65.48
+        ],
+        "heightM": 5.71,
+        "radiusM": 1.84
+      },
+      {
+        "position": [
+          8.34,
+          94.19
+        ],
+        "heightM": 6.62,
+        "radiusM": 1.86
+      },
+      {
+        "position": [
+          8.55,
+          107.67
+        ],
+        "heightM": 5.54,
+        "radiusM": 2.54
+      },
+      {
+        "position": [
+          8.89,
+          135.33
+        ],
+        "heightM": 5.88,
+        "radiusM": 1.99
+      },
+      {
+        "position": [
+          8.66,
+          146.77
+        ],
+        "heightM": 6.25,
+        "radiusM": 1.8
+      },
+      {
+        "position": [
+          13.23,
+          28.7
+        ],
+        "heightM": 7.15,
+        "radiusM": 2.82
+      },
+      {
+        "position": [
+          13.18,
+          53.48
+        ],
+        "heightM": 5.16,
+        "radiusM": 2.13
+      },
+      {
+        "position": [
+          14.77,
+          94.52
+        ],
+        "heightM": 7.62,
+        "radiusM": 2.02
+      },
+      {
+        "position": [
+          13.5,
+          107.47
+        ],
+        "heightM": 7.47,
+        "radiusM": 2.22
+      },
+      {
+        "position": [
+          13.51,
+          135.37
+        ],
+        "heightM": 5.59,
+        "radiusM": 2.44
+      },
+      {
+        "position": [
+          13.81,
+          146.56
+        ],
+        "heightM": 5.14,
+        "radiusM": 2.38
+      },
+      {
+        "position": [
+          20.32,
+          29.47
+        ],
+        "heightM": 7.99,
+        "radiusM": 2.4
+      },
+      {
+        "position": [
+          19.52,
+          94.08
+        ],
+        "heightM": 5.42,
+        "radiusM": 2.44
+      },
+      {
+        "position": [
+          19.1,
+          107.81
+        ],
+        "heightM": 6.46,
+        "radiusM": 2.39
+      },
+      {
+        "position": [
+          19.2,
+          135.51
+        ],
+        "heightM": 7.28,
+        "radiusM": 2.35
+      },
+      {
+        "position": [
+          19.59,
+          147.11
+        ],
+        "heightM": 5.51,
+        "radiusM": 2.73
+      },
+      {
+        "position": [
+          25.48,
+          28.9
+        ],
+        "heightM": 5.14,
+        "radiusM": 2.72
+      },
+      {
+        "position": [
+          25.97,
+          94.21
+        ],
+        "heightM": 7.62,
+        "radiusM": 2.7
+      },
+      {
+        "position": [
+          26.6,
+          107.64
+        ],
+        "heightM": 6.37,
+        "radiusM": 2.62
+      },
+      {
+        "position": [
+          26.65,
+          134.42
+        ],
+        "heightM": 6.25,
+        "radiusM": 2.74
+      },
+      {
+        "position": [
+          26.38,
+          147.02
+        ],
+        "heightM": 7.3,
+        "radiusM": 2.8
+      },
+      {
+        "position": [
+          32.57,
+          29.25
+        ],
+        "heightM": 7.67,
+        "radiusM": 2.14
+      },
+      {
+        "position": [
+          31.55,
+          93.9
+        ],
+        "heightM": 7.95,
+        "radiusM": 2.01
+      },
+      {
+        "position": [
+          32.94,
+          107.53
+        ],
+        "heightM": 6.33,
+        "radiusM": 1.98
+      },
+      {
+        "position": [
+          31.04,
+          135.45
+        ],
+        "heightM": 6.09,
+        "radiusM": 2.29
+      },
+      {
+        "position": [
+          31.87,
+          146.69
+        ],
+        "heightM": 5.17,
+        "radiusM": 2.79
+      },
+      {
+        "position": [
+          37.2,
+          28.86
+        ],
+        "heightM": 7.51,
+        "radiusM": 2.22
+      },
+      {
+        "position": [
+          38.83,
+          94.02
+        ],
+        "heightM": 6.52,
+        "radiusM": 2.23
+      },
+      {
+        "position": [
+          38.71,
+          108.22
+        ],
+        "heightM": 6.45,
+        "radiusM": 2.53
+      },
+      {
+        "position": [
+          38.16,
+          134.58
+        ],
+        "heightM": 7.86,
+        "radiusM": 2.03
+      },
+      {
+        "position": [
+          37.12,
+          146.68
+        ],
+        "heightM": 6.8,
+        "radiusM": 2.75
+      },
+      {
+        "position": [
+          44.75,
+          28.51
+        ],
+        "heightM": 5.72,
+        "radiusM": 2.56
+      },
+      {
+        "position": [
+          43.3,
+          52.87
+        ],
+        "heightM": 5.45,
+        "radiusM": 2.35
+      },
+      {
+        "position": [
+          43.91,
+          65.65
+        ],
+        "heightM": 5.74,
+        "radiusM": 2.85
+      },
+      {
+        "position": [
+          44.36,
+          94.36
+        ],
+        "heightM": 7.61,
+        "radiusM": 2.01
+      },
+      {
+        "position": [
+          43.15,
+          108.41
+        ],
+        "heightM": 6.61,
+        "radiusM": 2.25
+      },
+      {
+        "position": [
+          44.02,
+          134.82
+        ],
+        "heightM": 6.97,
+        "radiusM": 2.08
+      },
+      {
+        "position": [
+          43.85,
+          146.75
+        ],
+        "heightM": 6.98,
+        "radiusM": 2.82
+      },
+      {
+        "position": [
+          49.04,
+          29.51
+        ],
+        "heightM": 6.89,
+        "radiusM": 2.85
+      },
+      {
+        "position": [
+          50.95,
+          52.65
+        ],
+        "heightM": 7.19,
+        "radiusM": 2.39
+      },
+      {
+        "position": [
+          49.6,
+          65.7
+        ],
+        "heightM": 5.14,
+        "radiusM": 2.41
+      },
+      {
+        "position": [
+          50.33,
+          93.45
+        ],
+        "heightM": 7.39,
+        "radiusM": 2.23
+      },
+      {
+        "position": [
+          49.45,
+          107.87
+        ],
+        "heightM": 6.81,
+        "radiusM": 1.94
+      },
+      {
+        "position": [
+          49.6,
+          134.61
+        ],
+        "heightM": 6.63,
+        "radiusM": 2.57
+      },
+      {
+        "position": [
+          50.45,
+          146.77
+        ],
+        "heightM": 5.5,
+        "radiusM": 2.71
+      },
+      {
+        "position": [
+          55.54,
+          28.77
+        ],
+        "heightM": 7.18,
+        "radiusM": 2.06
+      },
+      {
+        "position": [
+          56.25,
+          52.87
+        ],
+        "heightM": 7.77,
+        "radiusM": 2.08
+      },
+      {
+        "position": [
+          56.36,
+          65.51
+        ],
+        "heightM": 5.77,
+        "radiusM": 2.89
+      },
+      {
+        "position": [
+          56.15,
+          94.0
+        ],
+        "heightM": 5.78,
+        "radiusM": 2.19
+      },
+      {
+        "position": [
+          56.11,
+          108.34
+        ],
+        "heightM": 6.29,
+        "radiusM": 2.45
+      },
+      {
+        "position": [
+          55.88,
+          135.18
+        ],
+        "heightM": 5.43,
+        "radiusM": 2.21
+      },
+      {
+        "position": [
+          56.57,
+          146.55
+        ],
+        "heightM": 6.55,
+        "radiusM": 2.2
+      },
+      {
+        "position": [
+          62.14,
+          29.57
+        ],
+        "heightM": 5.72,
+        "radiusM": 2.53
+      },
+      {
+        "position": [
+          61.29,
+          53.03
+        ],
+        "heightM": 7.28,
+        "radiusM": 2.38
+      },
+      {
+        "position": [
+          61.01,
+          65.46
+        ],
+        "heightM": 6.28,
+        "radiusM": 2.5
+      },
+      {
+        "position": [
+          61.35,
+          94.46
+        ],
+        "heightM": 7.65,
+        "radiusM": 2.28
+      },
+      {
+        "position": [
+          62.55,
+          107.88
+        ],
+        "heightM": 6.35,
+        "radiusM": 1.82
+      },
+      {
+        "position": [
+          61.05,
+          134.51
+        ],
+        "heightM": 6.01,
+        "radiusM": 2.5
+      },
+      {
+        "position": [
+          62.55,
+          147.51
+        ],
+        "heightM": 7.95,
+        "radiusM": 2.57
+      },
+      {
+        "position": [
+          67.88,
+          29.39
+        ],
+        "heightM": 6.59,
+        "radiusM": 2.25
+      },
+      {
+        "position": [
+          67.0,
+          52.66
+        ],
+        "heightM": 7.22,
+        "radiusM": 1.82
+      },
+      {
+        "position": [
+          67.24,
+          65.87
+        ],
+        "heightM": 5.39,
+        "radiusM": 2.61
+      },
+      {
+        "position": [
+          67.31,
+          94.32
+        ],
+        "heightM": 6.54,
+        "radiusM": 2.29
+      },
+      {
+        "position": [
+          67.66,
+          107.41
+        ],
+        "heightM": 6.8,
+        "radiusM": 2.36
+      },
+      {
+        "position": [
+          68.95,
+          134.95
+        ],
+        "heightM": 7.75,
+        "radiusM": 2.7
+      },
+      {
+        "position": [
+          67.68,
+          147.48
+        ],
+        "heightM": 6.71,
+        "radiusM": 2.8
+      },
+      {
+        "position": [
+          73.01,
+          29.17
+        ],
+        "heightM": 5.56,
+        "radiusM": 2.54
+      },
+      {
+        "position": [
+          74.76,
+          52.8
+        ],
+        "heightM": 7.01,
+        "radiusM": 1.83
+      },
+      {
+        "position": [
+          73.45,
+          94.31
+        ],
+        "heightM": 7.32,
+        "radiusM": 1.97
+      },
+      {
+        "position": [
+          73.73,
+          107.75
+        ],
+        "heightM": 5.46,
+        "radiusM": 2.45
+      },
+      {
+        "position": [
+          73.26,
+          134.56
+        ],
+        "heightM": 5.52,
+        "radiusM": 2.0
+      },
+      {
+        "position": [
+          74.32,
+          146.55
+        ],
+        "heightM": 6.62,
+        "radiusM": 2.82
+      },
+      {
+        "position": [
+          80.16,
+          28.89
+        ],
+        "heightM": 5.26,
+        "radiusM": 1.84
+      },
+      {
+        "position": [
+          80.38,
+          53.23
+        ],
+        "heightM": 5.53,
+        "radiusM": 2.39
+      },
+      {
+        "position": [
+          79.19,
+          93.75
+        ],
+        "heightM": 6.63,
+        "radiusM": 1.89
+      },
+      {
+        "position": [
+          79.29,
+          108.48
+        ],
+        "heightM": 7.08,
+        "radiusM": 2.48
+      },
+      {
+        "position": [
+          79.17,
+          134.74
+        ],
+        "heightM": 7.71,
+        "radiusM": 2.49
+      },
+      {
+        "position": [
+          79.03,
+          146.7
+        ],
+        "heightM": 7.98,
+        "radiusM": 2.01
+      },
+      {
+        "position": [
+          86.45,
+          29.03
+        ],
+        "heightM": 5.48,
+        "radiusM": 2.78
+      },
+      {
+        "position": [
+          85.65,
+          52.47
+        ],
+        "heightM": 6.25,
+        "radiusM": 2.45
+      },
+      {
+        "position": [
+          86.23,
+          65.45
+        ],
+        "heightM": 6.74,
+        "radiusM": 2.6
+      },
+      {
+        "position": [
+          85.33,
+          93.62
+        ],
+        "heightM": 5.29,
+        "radiusM": 2.18
+      },
+      {
+        "position": [
+          86.25,
+          107.52
+        ],
+        "heightM": 6.51,
+        "radiusM": 2.46
+      },
+      {
+        "position": [
+          86.52,
+          135.23
+        ],
+        "heightM": 7.14,
+        "radiusM": 1.91
+      },
+      {
+        "position": [
+          85.5,
+          146.73
+        ],
+        "heightM": 5.96,
+        "radiusM": 2.45
+      },
+      {
+        "position": [
+          91.37,
+          28.57
+        ],
+        "heightM": 5.91,
+        "radiusM": 2.79
+      },
+      {
+        "position": [
+          92.47,
+          53.15
+        ],
+        "heightM": 6.85,
+        "radiusM": 1.98
+      },
+      {
+        "position": [
+          91.4,
+          66.59
+        ],
+        "heightM": 5.46,
+        "radiusM": 2.5
+      },
+      {
+        "position": [
+          92.98,
+          94.03
+        ],
+        "heightM": 7.01,
+        "radiusM": 2.74
+      },
+      {
+        "position": [
+          91.22,
+          107.9
+        ],
+        "heightM": 7.97,
+        "radiusM": 2.56
+      },
+      {
+        "position": [
+          91.2,
+          135.06
+        ],
+        "heightM": 7.41,
+        "radiusM": 2.22
+      },
+      {
+        "position": [
+          91.58,
+          146.9
+        ],
+        "heightM": 6.03,
+        "radiusM": 2.07
+      },
+      {
+        "position": [
+          104.7,
+          28.88
+        ],
+        "heightM": 7.21,
+        "radiusM": 2.76
+      },
+      {
+        "position": [
+          104.9,
+          53.57
+        ],
+        "heightM": 6.16,
+        "radiusM": 2.42
+      },
+      {
+        "position": [
+          103.69,
+          66.09
+        ],
+        "heightM": 6.27,
+        "radiusM": 2.58
+      },
+      {
+        "position": [
+          104.3,
+          94.36
+        ],
+        "heightM": 5.14,
+        "radiusM": 1.87
+      },
+      {
+        "position": [
+          104.26,
+          108.49
+        ],
+        "heightM": 6.18,
+        "radiusM": 2.32
+      },
+      {
+        "position": [
+          103.17,
+          135.25
+        ],
+        "heightM": 5.78,
+        "radiusM": 2.18
+      },
+      {
+        "position": [
+          103.59,
+          146.93
+        ],
+        "heightM": 6.28,
+        "radiusM": 2.13
+      },
+      {
+        "position": [
+          109.89,
+          29.16
+        ],
+        "heightM": 6.14,
+        "radiusM": 2.84
+      },
+      {
+        "position": [
+          110.83,
+          52.83
+        ],
+        "heightM": 5.27,
+        "radiusM": 2.02
+      },
+      {
+        "position": [
+          110.17,
+          65.86
+        ],
+        "heightM": 6.24,
+        "radiusM": 2.57
+      },
+      {
+        "position": [
+          110.95,
+          93.87
+        ],
+        "heightM": 6.54,
+        "radiusM": 2.54
+      },
+      {
+        "position": [
+          109.37,
+          108.28
+        ],
+        "heightM": 7.55,
+        "radiusM": 2.32
+      },
+      {
+        "position": [
+          109.76,
+          134.68
+        ],
+        "heightM": 6.87,
+        "radiusM": 2.79
+      },
+      {
+        "position": [
+          110.68,
+          146.5
+        ],
+        "heightM": 7.03,
+        "radiusM": 2.66
+      },
+      {
+        "position": [
+          115.11,
+          28.95
+        ],
+        "heightM": 6.06,
+        "radiusM": 2.77
+      },
+      {
+        "position": [
+          115.83,
+          52.81
+        ],
+        "heightM": 6.81,
+        "radiusM": 2.7
+      },
+      {
+        "position": [
+          116.03,
+          65.78
+        ],
+        "heightM": 5.99,
+        "radiusM": 2.7
+      },
+      {
+        "position": [
+          116.3,
+          94.41
+        ],
+        "heightM": 6.78,
+        "radiusM": 2.86
+      },
+      {
+        "position": [
+          115.74,
+          108.37
+        ],
+        "heightM": 5.25,
+        "radiusM": 2.8
+      },
+      {
+        "position": [
+          115.84,
+          135.29
+        ],
+        "heightM": 6.23,
+        "radiusM": 2.45
+      },
+      {
+        "position": [
+          115.22,
+          147.33
+        ],
+        "heightM": 5.26,
+        "radiusM": 2.26
+      },
+      {
+        "position": [
+          122.16,
+          29.13
+        ],
+        "heightM": 5.47,
+        "radiusM": 2.34
+      },
+      {
+        "position": [
+          121.2,
+          52.72
+        ],
+        "heightM": 5.61,
+        "radiusM": 1.85
+      },
+      {
+        "position": [
+          121.03,
+          65.75
+        ],
+        "heightM": 6.73,
+        "radiusM": 2.89
+      },
+      {
+        "position": [
+          121.72,
+          94.37
+        ],
+        "heightM": 6.97,
+        "radiusM": 2.12
+      },
+      {
+        "position": [
+          121.85,
+          107.58
+        ],
+        "heightM": 7.79,
+        "radiusM": 2.17
+      },
+      {
+        "position": [
+          122.15,
+          135.18
+        ],
+        "heightM": 5.44,
+        "radiusM": 2.69
+      },
+      {
+        "position": [
+          121.56,
+          147.05
+        ],
+        "heightM": 6.49,
+        "radiusM": 1.82
+      },
+      {
+        "position": [
+          127.38,
+          29.31
+        ],
+        "heightM": 5.29,
+        "radiusM": 2.48
+      },
+      {
+        "position": [
+          127.33,
+          52.89
+        ],
+        "heightM": 5.55,
+        "radiusM": 2.11
+      },
+      {
+        "position": [
+          127.11,
+          65.57
+        ],
+        "heightM": 7.53,
+        "radiusM": 2.18
+      },
+      {
+        "position": [
+          128.96,
+          94.15
+        ],
+        "heightM": 6.1,
+        "radiusM": 2.84
+      },
+      {
+        "position": [
+          127.25,
+          107.65
+        ],
+        "heightM": 6.3,
+        "radiusM": 2.83
+      },
+      {
+        "position": [
+          128.63,
+          135.58
+        ],
+        "heightM": 7.46,
+        "radiusM": 2.7
+      },
+      {
+        "position": [
+          127.66,
+          147.36
+        ],
+        "heightM": 5.9,
+        "radiusM": 2.11
+      },
+      {
+        "position": [
+          133.29,
+          29.03
+        ],
+        "heightM": 6.8,
+        "radiusM": 2.51
+      },
+      {
+        "position": [
+          134.54,
+          53.03
+        ],
+        "heightM": 7.35,
+        "radiusM": 1.93
+      },
+      {
+        "position": [
+          133.77,
+          66.6
+        ],
+        "heightM": 5.67,
+        "radiusM": 2.83
+      },
+      {
+        "position": [
+          133.81,
+          94.51
+        ],
+        "heightM": 6.68,
+        "radiusM": 1.96
+      },
+      {
+        "position": [
+          133.02,
+          107.85
+        ],
+        "heightM": 6.73,
+        "radiusM": 2.11
+      },
+      {
+        "position": [
+          133.37,
+          135.29
+        ],
+        "heightM": 5.12,
+        "radiusM": 2.43
+      },
+      {
+        "position": [
+          133.97,
+          147.23
+        ],
+        "heightM": 6.24,
+        "radiusM": 2.32
+      },
+      {
+        "position": [
+          140.0,
+          29.32
+        ],
+        "heightM": 6.36,
+        "radiusM": 2.51
+      },
+      {
+        "position": [
+          139.68,
+          52.68
+        ],
+        "heightM": 6.54,
+        "radiusM": 2.87
+      },
+      {
+        "position": [
+          139.38,
+          66.43
+        ],
+        "heightM": 7.98,
+        "radiusM": 1.96
+      },
+      {
+        "position": [
+          139.4,
+          94.45
+        ],
+        "heightM": 7.61,
+        "radiusM": 2.07
+      },
+      {
+        "position": [
+          140.57,
+          107.94
+        ],
+        "heightM": 7.1,
+        "radiusM": 2.28
+      },
+      {
+        "position": [
+          140.97,
+          134.62
+        ],
+        "heightM": 6.93,
+        "radiusM": 2.18
+      },
+      {
+        "position": [
+          139.46,
+          147.52
+        ],
+        "heightM": 6.94,
+        "radiusM": 2.24
+      },
+      {
+        "position": [
+          145.1,
+          29.12
+        ],
+        "heightM": 6.9,
+        "radiusM": 2.68
+      },
+      {
+        "position": [
+          146.56,
+          53.04
+        ],
+        "heightM": 7.31,
+        "radiusM": 2.13
+      },
+      {
+        "position": [
+          146.71,
+          65.93
+        ],
+        "heightM": 7.0,
+        "radiusM": 2.44
+      },
+      {
+        "position": [
+          145.19,
+          93.96
+        ],
+        "heightM": 5.14,
+        "radiusM": 2.08
+      },
+      {
+        "position": [
+          146.69,
+          108.17
+        ],
+        "heightM": 7.41,
+        "radiusM": 2.03
+      },
+      {
+        "position": [
+          145.49,
+          134.65
+        ],
+        "heightM": 6.17,
+        "radiusM": 2.36
+      },
+      {
+        "position": [
+          145.35,
+          147.55
+        ],
+        "heightM": 7.84,
+        "radiusM": 2.11
+      },
+      {
+        "position": [
+          151.07,
+          29.41
+        ],
+        "heightM": 5.24,
+        "radiusM": 2.4
+      },
+      {
+        "position": [
+          151.45,
+          53.28
+        ],
+        "heightM": 5.7,
+        "radiusM": 2.17
+      },
+      {
+        "position": [
+          152.84,
+          66.49
+        ],
+        "heightM": 6.65,
+        "radiusM": 2.45
+      },
+      {
+        "position": [
+          151.37,
+          93.93
+        ],
+        "heightM": 7.61,
+        "radiusM": 2.0
+      },
+      {
+        "position": [
+          152.48,
+          107.89
+        ],
+        "heightM": 7.97,
+        "radiusM": 1.84
+      },
+      {
+        "position": [
+          151.74,
+          135.42
+        ],
+        "heightM": 7.94,
+        "radiusM": 2.37
+      },
+      {
+        "position": [
+          152.65,
+          147.07
+        ],
+        "heightM": 5.31,
+        "radiusM": 2.01
+      },
+      {
+        "position": [
+          5.23,
+          31
+        ],
+        "heightM": 6.63,
+        "radiusM": 1.97
+      },
+      {
+        "position": [
+          5.31,
+          40
+        ],
+        "heightM": 7.25,
+        "radiusM": 2.24
+      },
+      {
+        "position": [
+          4.69,
+          49
+        ],
+        "heightM": 6.23,
+        "radiusM": 2.07
+      },
+      {
+        "position": [
+          5.33,
+          67
+        ],
+        "heightM": 7.44,
+        "radiusM": 2.06
+      },
+      {
+        "position": [
+          4.68,
+          76
+        ],
+        "heightM": 5.81,
+        "radiusM": 2.19
+      },
+      {
+        "position": [
+          4.54,
+          85
+        ],
+        "heightM": 6.01,
+        "radiusM": 2.75
+      },
+      {
+        "position": [
+          4.94,
+          94
+        ],
+        "heightM": 7.1,
+        "radiusM": 2.81
+      },
+      {
+        "position": [
+          4.92,
+          112
+        ],
+        "heightM": 5.22,
+        "radiusM": 2.75
+      },
+      {
+        "position": [
+          5.43,
+          121
+        ],
+        "heightM": 7.12,
+        "radiusM": 1.81
+      },
+      {
+        "position": [
+          4.45,
+          130
+        ],
+        "heightM": 5.46,
+        "radiusM": 2.1
+      },
+      {
+        "position": [
+          25.4,
+          31
+        ],
+        "heightM": 7.47,
+        "radiusM": 2.28
+      },
+      {
+        "position": [
+          26.05,
+          94
+        ],
+        "heightM": 6.98,
+        "radiusM": 2.22
+      },
+      {
+        "position": [
+          26.19,
+          112
+        ],
+        "heightM": 7.08,
+        "radiusM": 2.16
+      },
+      {
+        "position": [
+          25.97,
+          121
+        ],
+        "heightM": 7.85,
+        "radiusM": 1.87
+      },
+      {
+        "position": [
+          26.16,
+          130
+        ],
+        "heightM": 7.01,
+        "radiusM": 2.27
+      },
+      {
+        "position": [
+          47.39,
+          31
+        ],
+        "heightM": 6.46,
+        "radiusM": 1.83
+      },
+      {
+        "position": [
+          47.38,
+          40
+        ],
+        "heightM": 6.73,
+        "radiusM": 2.47
+      },
+      {
+        "position": [
+          47.46,
+          49
+        ],
+        "heightM": 6.71,
+        "radiusM": 1.85
+      },
+      {
+        "position": [
+          47.03,
+          67
+        ],
+        "heightM": 6.71,
+        "radiusM": 2.11
+      },
+      {
+        "position": [
+          46.56,
+          76
+        ],
+        "heightM": 6.57,
+        "radiusM": 2.55
+      },
+      {
+        "position": [
+          47.47,
+          85
+        ],
+        "heightM": 6.39,
+        "radiusM": 2.35
+      },
+      {
+        "position": [
+          46.53,
+          94
+        ],
+        "heightM": 5.15,
+        "radiusM": 2.43
+      },
+      {
+        "position": [
+          47.22,
+          112
+        ],
+        "heightM": 6.66,
+        "radiusM": 2.89
+      },
+      {
+        "position": [
+          46.9,
+          121
+        ],
+        "heightM": 7.85,
+        "radiusM": 2.16
+      },
+      {
+        "position": [
+          46.5,
+          130
+        ],
+        "heightM": 5.65,
+        "radiusM": 2.4
+      },
+      {
+        "position": [
+          63.1,
+          31
+        ],
+        "heightM": 7.63,
+        "radiusM": 2.05
+      },
+      {
+        "position": [
+          63.18,
+          40
+        ],
+        "heightM": 6.89,
+        "radiusM": 1.94
+      },
+      {
+        "position": [
+          63.36,
+          49
+        ],
+        "heightM": 5.53,
+        "radiusM": 2.44
+      },
+      {
+        "position": [
+          63.13,
+          85
+        ],
+        "heightM": 6.29,
+        "radiusM": 1.85
+      },
+      {
+        "position": [
+          63.33,
+          94
+        ],
+        "heightM": 6.38,
+        "radiusM": 2.4
+      },
+      {
+        "position": [
+          63.2,
+          112
+        ],
+        "heightM": 6.13,
+        "radiusM": 1.96
+      },
+      {
+        "position": [
+          63.46,
+          121
+        ],
+        "heightM": 7.84,
+        "radiusM": 2.78
+      },
+      {
+        "position": [
+          62.53,
+          130
+        ],
+        "heightM": 6.06,
+        "radiusM": 2.59
+      },
+      {
+        "position": [
+          92.33,
+          31
+        ],
+        "heightM": 6.81,
+        "radiusM": 2.28
+      },
+      {
+        "position": [
+          91.91,
+          40
+        ],
+        "heightM": 7.32,
+        "radiusM": 2.19
+      },
+      {
+        "position": [
+          92.44,
+          49
+        ],
+        "heightM": 6.57,
+        "radiusM": 2.19
+      },
+      {
+        "position": [
+          92.34,
+          67
+        ],
+        "heightM": 5.76,
+        "radiusM": 1.92
+      },
+      {
+        "position": [
+          91.99,
+          76
+        ],
+        "heightM": 5.17,
+        "radiusM": 2.12
+      },
+      {
+        "position": [
+          92.19,
+          85
+        ],
+        "heightM": 7.48,
+        "radiusM": 1.96
+      },
+      {
+        "position": [
+          92.22,
+          94
+        ],
+        "heightM": 7.12,
+        "radiusM": 2.21
+      },
+      {
+        "position": [
+          92.08,
+          112
+        ],
+        "heightM": 5.28,
+        "radiusM": 2.01
+      },
+      {
+        "position": [
+          91.72,
+          121
+        ],
+        "heightM": 6.43,
+        "radiusM": 2.28
+      },
+      {
+        "position": [
+          91.67,
+          130
+        ],
+        "heightM": 6.97,
+        "radiusM": 2.81
+      },
+      {
+        "position": [
+          104.6,
+          31
+        ],
+        "heightM": 7.55,
+        "radiusM": 2.04
+      },
+      {
+        "position": [
+          105.21,
+          40
+        ],
+        "heightM": 7.07,
+        "radiusM": 1.83
+      },
+      {
+        "position": [
+          104.47,
+          49
+        ],
+        "heightM": 7.57,
+        "radiusM": 2.6
+      },
+      {
+        "position": [
+          105.57,
+          67
+        ],
+        "heightM": 5.09,
+        "radiusM": 2.0
+      },
+      {
+        "position": [
+          105.13,
+          76
+        ],
+        "heightM": 6.77,
+        "radiusM": 2.12
+      },
+      {
+        "position": [
+          104.78,
+          85
+        ],
+        "heightM": 6.68,
+        "radiusM": 2.05
+      },
+      {
+        "position": [
+          104.58,
+          94
+        ],
+        "heightM": 7.65,
+        "radiusM": 2.54
+      },
+      {
+        "position": [
+          104.9,
+          112
+        ],
+        "heightM": 6.61,
+        "radiusM": 2.73
+      },
+      {
+        "position": [
+          105.5,
+          121
+        ],
+        "heightM": 6.29,
+        "radiusM": 2.51
+      },
+      {
+        "position": [
+          104.43,
+          130
+        ],
+        "heightM": 5.4,
+        "radiusM": 1.98
+      },
+      {
+        "position": [
+          128.25,
+          31
+        ],
+        "heightM": 5.58,
+        "radiusM": 2.79
+      },
+      {
+        "position": [
+          127.95,
+          40
+        ],
+        "heightM": 6.68,
+        "radiusM": 2.89
+      },
+      {
+        "position": [
+          127.87,
+          49
+        ],
+        "heightM": 6.61,
+        "radiusM": 2.62
+      },
+      {
+        "position": [
+          128.1,
+          67
+        ],
+        "heightM": 6.08,
+        "radiusM": 2.72
+      },
+      {
+        "position": [
+          127.61,
+          76
+        ],
+        "heightM": 6.41,
+        "radiusM": 2.72
+      },
+      {
+        "position": [
+          127.81,
+          85
+        ],
+        "heightM": 6.31,
+        "radiusM": 2.69
+      },
+      {
+        "position": [
+          127.78,
+          94
+        ],
+        "heightM": 6.13,
+        "radiusM": 2.52
+      },
+      {
+        "position": [
+          127.82,
+          112
+        ],
+        "heightM": 5.81,
+        "radiusM": 2.34
+      },
+      {
+        "position": [
+          127.85,
+          121
+        ],
+        "heightM": 5.3,
+        "radiusM": 1.95
+      },
+      {
+        "position": [
+          127.68,
+          130
+        ],
+        "heightM": 7.62,
+        "radiusM": 2.08
+      },
+      {
+        "position": [
+          155.45,
+          31
+        ],
+        "heightM": 6.21,
+        "radiusM": 2.8
+      },
+      {
+        "position": [
+          155.97,
+          40
+        ],
+        "heightM": 5.24,
+        "radiusM": 1.95
+      },
+      {
+        "position": [
+          156.44,
+          49
+        ],
+        "heightM": 5.46,
+        "radiusM": 2.37
+      },
+      {
+        "position": [
+          155.89,
+          67
+        ],
+        "heightM": 6.02,
+        "radiusM": 2.18
+      },
+      {
+        "position": [
+          155.75,
+          76
+        ],
+        "heightM": 7.61,
+        "radiusM": 2.17
+      },
+      {
+        "position": [
+          155.89,
+          85
+        ],
+        "heightM": 6.67,
+        "radiusM": 2.0
+      },
+      {
+        "position": [
+          155.77,
+          94
+        ],
+        "heightM": 6.08,
+        "radiusM": 2.8
+      },
+      {
+        "position": [
+          155.8,
+          112
+        ],
+        "heightM": 7.66,
+        "radiusM": 2.59
+      },
+      {
+        "position": [
+          156.5,
+          121
+        ],
+        "heightM": 6.15,
+        "radiusM": 2.04
+      },
+      {
+        "position": [
+          155.91,
+          130
+        ],
+        "heightM": 6.76,
+        "radiusM": 1.87
+      },
+      {
+        "position": [
+          54.63,
+          49.16
+        ],
+        "heightM": 7.81,
+        "radiusM": 2.73
+      },
+      {
+        "position": [
+          57.5,
+          47.96
+        ],
+        "heightM": 7.95,
+        "radiusM": 2.89
+      },
+      {
+        "position": [
+          49.85,
+          47.34
+        ],
+        "heightM": 7.72,
+        "radiusM": 2.01
+      },
+      {
+        "position": [
+          48.1,
+          48.0
+        ],
+        "heightM": 5.42,
+        "radiusM": 2.02
+      },
+      {
+        "position": [
+          32.57,
+          39.04
+        ],
+        "heightM": 7.24,
+        "radiusM": 1.97
+      },
+      {
+        "position": [
+          44.66,
+          48.26
+        ],
+        "heightM": 5.73,
+        "radiusM": 2.14
+      },
+      {
+        "position": [
+          27.62,
+          43.72
+        ],
+        "heightM": 5.93,
+        "radiusM": 1.9
+      },
+      {
+        "position": [
+          57.54,
+          39.25
+        ],
+        "heightM": 6.15,
+        "radiusM": 1.99
+      }
+    ],
+    "cars": [
+      {
+        "position": [
+          22,
+          100.2
+        ],
+        "heading": 90
+      },
+      {
+        "position": [
+          58,
+          100.2
+        ],
+        "heading": 90
+      },
+      {
+        "position": [
+          116,
+          100.2
+        ],
+        "heading": 90
+      },
+      {
+        "position": [
+          99.8,
+          39
+        ],
+        "heading": 0
+      },
+      {
+        "position": [
+          99.8,
+          82
+        ],
+        "heading": 0
+      },
+      {
+        "position": [
+          99.8,
+          123
+        ],
+        "heading": 0
+      }
+    ],
+    "buildingStyles": {
+      "B01": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B02": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B03": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B04": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B05": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B06": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B07": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B08": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B09": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B10": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B11": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B12": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B13": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B14": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B15": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B16": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B17": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B18": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B19": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B20": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B21": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B22": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B23": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B24": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B25": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B26": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B27": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B28": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B29": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B30": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B31": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B32": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B33": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B34": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B35": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B36": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B37": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B38": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B39": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B40": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B41": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B42": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B43": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B44": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B45": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B46": {
+        "wallColor": "#e8e5dc",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B47": {
+        "wallColor": "#dce3e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B48": {
+        "wallColor": "#e7e9e6",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      },
+      "B49": {
+        "wallColor": "#e0e5e5",
+        "palette": 1,
+        "frontEdges": [
+          0,
+          1
+        ],
+        "hasBalconies": true,
+        "roofCore": true
+      }
+    },
+    "parkPaths": [],
+    "architecture": {
+      "roofEquipment": {
+        "maxHeightAboveRoofM": 1.8
+      }
+    },
+    "camera": {
+      "direction": [
+        0.85,
+        1.65,
+        1.45
+      ],
+      "distanceM": 156,
+      "focusOffset": [
+        -3,
+        0,
+        13
+      ]
+    }
+  }
+}

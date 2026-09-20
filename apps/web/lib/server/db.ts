@@ -3,6 +3,7 @@ import { migrateRegistry } from "./registry-db";
 import { migrateAreas } from "./area-db";
 import { migrateOfficer } from "./officer-db";
 import { migrateOfficerAi } from "./officer-ai";
+import { migrateSpatialMl } from "./spatial-ml-db";
 import { settings } from "./config";
 const globals = globalThis as unknown as { ulpinPool?: Pool };
 export function pool(): Pool {
@@ -178,4 +179,5 @@ export async function migrate() {
   await migrateAreas();
   await migrateOfficer();
   await migrateOfficerAi();
+  await migrateSpatialMl();
 }

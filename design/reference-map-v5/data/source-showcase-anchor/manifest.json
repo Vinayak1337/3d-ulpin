@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "source-integrity/1",
+  "classification": "synthetic",
+  "files": [
+    {
+      "path": "parcels.geojson",
+      "bytes": 54562,
+      "sha256": "4eb1bee339787c12eb3e51ec3a4bc6d2a08b6072cbf21be8b63248991c5f39f5"
+    },
+    {
+      "path": "buildings.geojson",
+      "bytes": 70936,
+      "sha256": "e1bfe1173bee76c3ac25e43e73d5fe7dd9752d05cd76a711c7e4a6dfa32ec35f"
+    },
+    {
+      "path": "floors.geojson",
+      "bytes": 245891,
+      "sha256": "3b39a5e7e5fc1679f8890ebbb41e5a50517b822a53de3964a88e8cef00760830"
+    },
+    {
+      "path": "spaces.geojson",
+      "bytes": 13507,
+      "sha256": "32b9086179bc6edb60af4de62f9f808cc9608dd92267b78eb3fba53218a78e7d"
+    },
+    {
+      "path": "roads.geojson",
+      "bytes": 5497,
+      "sha256": "125171433666fd090ba20a8f0b9c8d501e863568a30bcc20262263aaeaccb176"
+    },
+    {
+      "path": "utilities.geojson",
+      "bytes": 1137,
+      "sha256": "7e2e3176041c4bf3df275ca11e379703aea807dfc04dd09d2aa4b7486cc1866e"
+    },
+    {
+      "path": "public_land.geojson",
+      "bytes": 1257,
+      "sha256": "0ec92cb9efc4cedbe6f2cad1329b1d090da959bb47c8244fe52c607d88f16e02"
+    },
+    {
+      "path": "floor-schedule.csv",
+      "bytes": 46031,
+      "sha256": "b4d30b9ae20a8f508b005fed872d19bb34abc3b266e792d863f35f7004dc972f"
+    },
+    {
+      "path": "fictional-residents.csv",
+      "bytes": 43385,
+      "sha256": "945e33df6c7edfbf036858f45b3a351056701dc5ed31667d5bcec23d2e5a76f1"
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 44460,
+      "sha256": "59beb856c6b2de1cc5193841836106651657ea89433bbb9e80a979d00a3556bd"
+    }
+  ]
+}

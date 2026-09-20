@@ -1,0 +1,297 @@
+{
+  "floor": {
+    "planCount": 2,
+    "originalPixels": 5004620,
+    "correctPixels": 4363763,
+    "presentClassCount": 12,
+    "confusionMatrixTrueRowsPredictedColumns": [
+      [
+        1761032,
+        12358,
+        15919,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1818,
+        0,
+        0,
+        0
+      ],
+      [
+        28428,
+        300749,
+        504,
+        0,
+        0,
+        0,
+        0,
+        0,
+        697,
+        0,
+        0,
+        0
+      ],
+      [
+        9089,
+        4320,
+        366673,
+        1001,
+        2445,
+        11901,
+        2434,
+        1965,
+        2021,
+        454,
+        1,
+        2889
+      ],
+      [
+        0,
+        0,
+        4152,
+        227778,
+        8060,
+        0,
+        189,
+        2272,
+        0,
+        0,
+        0,
+        18973
+      ],
+      [
+        1056,
+        0,
+        6826,
+        66,
+        447766,
+        15,
+        0,
+        0,
+        0,
+        0,
+        0,
+        17
+      ],
+      [
+        0,
+        0,
+        14477,
+        0,
+        0,
+        711805,
+        0,
+        0,
+        0,
+        0,
+        1950,
+        19298
+      ],
+      [
+        0,
+        0,
+        5548,
+        0,
+        0,
+        525,
+        138599,
+        13,
+        0,
+        730,
+        0,
+        3958
+      ],
+      [
+        0,
+        0,
+        4030,
+        0,
+        4162,
+        22,
+        2,
+        173253,
+        0,
+        0,
+        0,
+        47716
+      ],
+      [
+        11237,
+        3541,
+        5796,
+        33,
+        316,
+        0,
+        0,
+        0,
+        15290,
+        0,
+        0,
+        247
+      ],
+      [
+        442,
+        0,
+        2398,
+        0,
+        0,
+        194,
+        0,
+        12534,
+        0,
+        57117,
+        0,
+        4066
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        27,
+        330,
+        11123,
+        16568,
+        328600,
+        62,
+        0,
+        199,
+        0,
+        843,
+        0,
+        163701
+      ]
+    ]
+  },
+  "buildingRuntime": {
+    "tileCount": 12,
+    "pixels": 786432,
+    "targetPositivePixels": 59525,
+    "truePositivePixels": 38301,
+    "falsePositivePixels": 73753,
+    "falseNegativePixels": 21224,
+    "emptyTargetTiles": 4,
+    "samples": [
+      {
+        "sample": "0",
+        "pixels": 65536,
+        "targetPositivePixels": 195,
+        "truePositivePixels": 170,
+        "falsePositivePixels": 9,
+        "falseNegativePixels": 25,
+        "trueNegativePixels": 65332
+      },
+      {
+        "sample": "1",
+        "pixels": 65536,
+        "targetPositivePixels": 0,
+        "truePositivePixels": 0,
+        "falsePositivePixels": 0,
+        "falseNegativePixels": 0,
+        "trueNegativePixels": 65536
+      },
+      {
+        "sample": "2",
+        "pixels": 65536,
+        "targetPositivePixels": 0,
+        "truePositivePixels": 0,
+        "falsePositivePixels": 10858,
+        "falseNegativePixels": 0,
+        "trueNegativePixels": 54678
+      },
+      {
+        "sample": "100",
+        "pixels": 65536,
+        "targetPositivePixels": 0,
+        "truePositivePixels": 0,
+        "falsePositivePixels": 26358,
+        "falseNegativePixels": 0,
+        "trueNegativePixels": 39178
+      },
+      {
+        "sample": "300",
+        "pixels": 65536,
+        "targetPositivePixels": 11988,
+        "truePositivePixels": 9203,
+        "falsePositivePixels": 3316,
+        "falseNegativePixels": 2785,
+        "trueNegativePixels": 50232
+      },
+      {
+        "sample": "1200",
+        "pixels": 65536,
+        "targetPositivePixels": 8739,
+        "truePositivePixels": 7622,
+        "falsePositivePixels": 289,
+        "falseNegativePixels": 1117,
+        "trueNegativePixels": 56508
+      },
+      {
+        "sample": "2000",
+        "pixels": 65536,
+        "targetPositivePixels": 0,
+        "truePositivePixels": 0,
+        "falsePositivePixels": 6341,
+        "falseNegativePixels": 0,
+        "trueNegativePixels": 59195
+      },
+      {
+        "sample": "2405",
+        "pixels": 65536,
+        "targetPositivePixels": 992,
+        "truePositivePixels": 586,
+        "falsePositivePixels": 35,
+        "falseNegativePixels": 406,
+        "trueNegativePixels": 64509
+      },
+      {
+        "sample": "3604",
+        "pixels": 65536,
+        "targetPositivePixels": 4794,
+        "truePositivePixels": 4608,
+        "falsePositivePixels": 586,
+        "falseNegativePixels": 186,
+        "trueNegativePixels": 60156
+      },
+      {
+        "sample": "4801",
+        "pixels": 65536,
+        "targetPositivePixels": 1623,
+        "truePositivePixels": 1137,
+        "falsePositivePixels": 93,
+        "falseNegativePixels": 486,
+        "trueNegativePixels": 63820
+      },
+      {
+        "sample": "6000",
+        "pixels": 65536,
+        "targetPositivePixels": 19221,
+        "truePositivePixels": 12975,
+        "falsePositivePixels": 18527,
+        "falseNegativePixels": 6246,
+        "trueNegativePixels": 27788
+      },
+      {
+        "sample": "6901",
+        "pixels": 65536,
+        "targetPositivePixels": 11973,
+        "truePositivePixels": 2000,
+        "falsePositivePixels": 7341,
+        "falseNegativePixels": 9973,
+        "trueNegativePixels": 46222
+      }
+    ]
+  }
+}

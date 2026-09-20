@@ -1,0 +1,120 @@
+{
+  "id": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+  "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+  "requestKey": "6d6f7627-43d7-4e76-97dd-06b59b5d4b46",
+  "createdAt": "2026-09-19T22:42:51.360Z",
+  "items": [
+    {
+      "id": "083be233-cc08-4a16-bae5-094621fe4dc3",
+      "page": 1,
+      "task": "building",
+      "state": "failed",
+      "partId": "1c9b1f4f-cdfc-483c-bc3e-0850a58a14a1",
+      "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+      "modelId": "rfdetr-satellite-buildings-onnx-v1",
+      "attempts": [
+        {
+          "error": "Local inference could not complete. No spatial facts were applied; retry a smaller selected region.",
+          "jobId": "07423fda-82ea-4fea-ab36-2d94612b3474",
+          "state": "failed",
+          "createdAt": "2026-09-19T22:42:51.326Z",
+          "errorCode": "INFERENCE_FAILED",
+          "completedAt": "2026-09-19T22:42:55.287Z"
+        }
+      ],
+      "createdAt": "2026-09-19T22:42:51.326Z",
+      "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+      "updatedAt": "2026-09-19T22:42:55.289Z",
+      "modelSha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+      "applications": [],
+      "currentJobId": "07423fda-82ea-4fea-ab36-2d94612b3474",
+      "sourceSha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+      "inputFingerprint": "3da59e187c6d84a7502cd2ec96d32587b36c5fd7ad956f0d29041c54a2945e40",
+      "sourceRevisionId": "fbe615ed-7e7b-430b-8ec8-c407c13326fc"
+    },
+    {
+      "id": "105d69bc-e749-463c-87b7-07e4b9ed66d8",
+      "page": 1,
+      "task": "floor-plan",
+      "state": "failed",
+      "partId": "8af534f2-efaf-4441-9bdd-834e882ed100",
+      "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+      "modelId": "cubicasa5k-rooms-onnx-v1",
+      "attempts": [
+        {
+          "error": "Local inference could not complete. No spatial facts were applied; retry a smaller selected region.",
+          "jobId": "406af89b-c4fe-4a1c-88ad-73f53aa2fbcd",
+          "state": "failed",
+          "createdAt": "2026-09-19T22:42:51.318Z",
+          "errorCode": "INFERENCE_FAILED",
+          "completedAt": "2026-09-19T22:42:54.503Z"
+        }
+      ],
+      "createdAt": "2026-09-19T22:42:51.318Z",
+      "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+      "updatedAt": "2026-09-19T22:42:54.509Z",
+      "modelSha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+      "applications": [],
+      "currentJobId": "406af89b-c4fe-4a1c-88ad-73f53aa2fbcd",
+      "sourceSha256": "aedd3b9f1fc8f69024c9e4690d77b3edf158ffc8cfadfc1ec44b7e2c561534e8",
+      "inputFingerprint": "7839c7c9a4f1e88175c49ada7f2d82f1499bc509581b8819f4e9a82fba3bef32",
+      "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec"
+    },
+    {
+      "id": "968a2ebf-224b-40d5-9980-5eeb42074a88",
+      "page": 2,
+      "task": "floor-plan",
+      "state": "failed",
+      "partId": "8af534f2-efaf-4441-9bdd-834e882ed100",
+      "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+      "modelId": "cubicasa5k-rooms-onnx-v1",
+      "attempts": [
+        {
+          "error": "Choose a PNG/JPEG original or a PDF page; an image has only page 1.",
+          "jobId": "12e60ee5-ece1-4433-ab98-bac2e7c19798",
+          "state": "failed",
+          "createdAt": "2026-09-19T22:42:51.322Z",
+          "errorCode": "UNSUPPORTED_SOURCE",
+          "completedAt": "2026-09-19T22:42:51.322Z"
+        }
+      ],
+      "createdAt": "2026-09-19T22:42:51.322Z",
+      "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+      "updatedAt": "2026-09-19T22:42:51.322Z",
+      "modelSha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+      "applications": [],
+      "currentJobId": "12e60ee5-ece1-4433-ab98-bac2e7c19798",
+      "sourceSha256": "aedd3b9f1fc8f69024c9e4690d77b3edf158ffc8cfadfc1ec44b7e2c561534e8",
+      "inputFingerprint": "06ab197ecd40e9f340a34752e0de32f1fdea47e0a93d71f6d718430c8009408c",
+      "sourceRevisionId": "1e86dd91-f1f9-46a7-b171-996fd3616aec"
+    },
+    {
+      "id": "fc58cb72-c064-47bb-a52b-9a8a7cd60b56",
+      "page": 1,
+      "task": "building",
+      "state": "failed",
+      "partId": "b38a747a-392e-4d28-9f69-8bf6531e88b9",
+      "batchId": "1425b166-3862-421a-b1eb-5388c7fc6bc0",
+      "modelId": "rfdetr-satellite-buildings-onnx-v1",
+      "attempts": [
+        {
+          "error": "Local inference could not complete. No spatial facts were applied; retry a smaller selected region.",
+          "jobId": "c353b76c-471a-49a2-8997-b02315bb8e82",
+          "state": "failed",
+          "createdAt": "2026-09-19T22:42:51.327Z",
+          "errorCode": "INFERENCE_FAILED",
+          "completedAt": "2026-09-19T22:42:53.701Z"
+        }
+      ],
+      "createdAt": "2026-09-19T22:42:51.327Z",
+      "packageId": "89e437a6-7234-47ca-b55c-8d10bab3300a",
+      "updatedAt": "2026-09-19T22:42:53.703Z",
+      "modelSha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+      "applications": [],
+      "currentJobId": "c353b76c-471a-49a2-8997-b02315bb8e82",
+      "sourceSha256": "7567cd480b5b990994bfa8368c4c664db50c03001ec6b3d644b6ba33f9d993bf",
+      "inputFingerprint": "a04af3bdce3dfdb724b3947a7e6e19fc1028ad5f59bc57d8cf83c646dd93ba63",
+      "sourceRevisionId": "1c253326-4e76-4d57-82e6-ea9d03c84c5b"
+    }
+  ]
+}

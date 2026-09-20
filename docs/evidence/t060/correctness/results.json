@@ -1,0 +1,10 @@
+{
+  "startedAt": "2026-09-19T22:09:05.185Z",
+  "checks": [],
+  "errors": [],
+  "backendWrites": [],
+  "resolverCoverage": "Explicit synthetic resolver response verifies shared search integration; no persisted search match is fabricated.",
+  "result": "FAIL",
+  "error": "page.waitForFunction: Timeout 120000ms exceeded.\n    at /Users/vinayak/Desktop/3D Ulpin/scripts/spatial/studio-correctness-verify.mjs:21:13",
+  "finishedAt": "2026-09-19T22:12:40.497Z"
+}

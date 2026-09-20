@@ -1,0 +1,86 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-NEEM-REFERENCE-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "UT01",
+      "properties": {
+        "service": "water",
+        "diameterM": 0.25,
+        "depthM": 2.2,
+        "utility_id": "UT01",
+        "name": "Water main",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-UT01-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": null,
+        "height_m": null,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            60,
+            0,
+            -2.2
+          ],
+          [
+            60,
+            115,
+            -2.2
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "UT02",
+      "properties": {
+        "service": "water",
+        "diameterM": 0.12,
+        "depthM": 2.2,
+        "utility_id": "UT02",
+        "name": "Neem House service",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-UT02-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": null,
+        "height_m": null,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            60,
+            36.5,
+            -2.2
+          ],
+          [
+            48,
+            36.5,
+            -2.2
+          ],
+          [
+            48,
+            38,
+            -2.2
+          ]
+        ]
+      }
+    }
+  ]
+}

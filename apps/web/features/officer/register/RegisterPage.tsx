@@ -24,8 +24,7 @@ import ParcelIdentity from "../shared/ParcelIdentity";
 import { hasGoogleAttribution } from "@/lib/map-attribution";
 import Evidence, { SourcePreview } from "./Evidence";
 import Investigation from "./Investigation";
-import PropertyScene from "../scene/PropertyScene";
-import { number, words } from "./model";
+import { words } from "./model";
 import Overview from "./Overview";
 import Floors from "./Floors";
 import Issues from "./Issues";
@@ -43,10 +42,10 @@ const tabs = [
 ] as const;
 type Tab = (typeof tabs)[number];
 const navigation: { id: Tab; label: string; icon: IconName }[] = [
-  { id: "overview", label: "Overview", icon: "building" },
-  { id: "floors", label: "Floors & Units", icon: "layers" },
-  { id: "evidence", label: "Evidence", icon: "document" },
-  { id: "issues", label: "Issues", icon: "warning" },
+  { id: "floors", label: "Floors & spaces", icon: "layers" },
+  { id: "overview", label: "Property details", icon: "building" },
+  { id: "evidence", label: "Documents", icon: "document" },
+  { id: "issues", label: "Checks", icon: "warning" },
   { id: "history", label: "History", icon: "history" },
   { id: "investigation", label: "Investigation", icon: "search" },
 ];
@@ -72,13 +71,12 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
   const [tab, setTab] = useQueryState(
       "tab",
       tabs,
-      validRequestedRecord ? "floors" : "overview",
+      "floors",
     ),
     [selectedRecord, setSelectedRecord] = useState<string>(),
     [sourceId, setSourceId] = useState<string>(),
     [sourceDialog, setSourceDialog] = useState<string>(),
     [exportOpen, setExportOpen] = useState(false),
-    [exportRecord, setExportRecord] = useState(""),
     [findingId, setFindingId] = useState<string>();
   const selectProperty = useOfficerStore((state) => state.selectProperty);
   const dossier = resource.data;
@@ -162,19 +160,12 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
       { scroll: false },
     );
   };
-  const parcelCount = dossier.parcels.filter(
-    (parcel) => parcel.status === "confirmed",
-  ).length;
   return (
     <main className={styles.page} data-register-building={buildingId}>
       <div className={styles.breadcrumb}>
         <Link href={backUrl}>
-          <Icon name="back" /> Back to Block
+          <Icon name="back" /> {backArea?.name || "Block"} map
         </Link>
-        <span>/</span>
-        <span>{backArea?.name}</span>
-        <span>/</span>
-        <strong>{dossier.building.name}</strong>
         <span className={styles.saved}>
           Saved locally · revision {dossier.building.revision}
         </span>
@@ -219,21 +210,16 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
           <Button
             icon="download"
             onClick={() => {
-              setExportRecord(
-                selected?.kind === "floor" || selected?.kind === "space"
-                  ? selected.id
-                  : "",
-              );
               setExportOpen(true);
             }}
           >
             Export register
           </Button>
           <Link
-            className={`${styles.linkButton} ${styles.linkPrimary}`}
+            className={styles.linkButton}
             href={routes.workspace(buildingId, backArea?.id)}
           >
-            <Icon name="workspace" /> Open Workspace
+            <Icon name="workspace" /> Prepare an update
           </Link>
         </div>
       </header>
@@ -274,36 +260,6 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
         ))}
       </nav>
       <div className={styles.registerLayout}>
-        <aside className={styles.sidebar}>
-          <div className={styles.identityCard}>
-            <PropertyScene dossier={dossier} compact />
-            <div>
-              <small>Property record</small>
-              <strong>{dossier.building.name}</strong>
-              <span>{dossier.building.sourceKey}</span>
-            </div>
-          </div>
-
-          <div className={styles.sidebarFacts}>
-            <div>
-              <span>Building footprint</span>
-              <strong>{number(dossier.building.areaM2, "m²")}</strong>
-            </div>
-            <div>
-              <span>Exterior height</span>
-              <strong>{number(dossier.building.height.value, "m")}</strong>
-            </div>
-            <div>
-              <span>Parcel linkage</span>
-              <strong>
-                {parcelCount ? `${parcelCount} confirmed` : "Not confirmed"}
-              </strong>
-            </div>
-          </div>
-          <Link className={styles.sidebarMap} href={backUrl}>
-            <Icon name="map" /> View in block <Icon name="arrow" />
-          </Link>
-        </aside>
         <div className={styles.content} key={`${buildingId}:${tab}`}>
           {tab === "overview" && (
             <Overview

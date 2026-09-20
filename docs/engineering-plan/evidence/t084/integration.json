@@ -1,0 +1,183 @@
+{
+  "checks": [
+    "actual CPU inference retained for both models",
+    "exact batch replay creates no jobs",
+    "changed request, snapshot and cross-dataset source rejected atomically",
+    "all retained source bytes and original package unchanged",
+    "source/model fingerprints, artifact hashes and dataset scoping enforced",
+    "review replay, dataset/frame/raster/height guards and 369 m² × 3 m = 1107 m³ verified",
+    "no mutation of canonical source snapshot"
+  ],
+  "sourceObjectsVerified": 53,
+  "dataset": "22b196c2-b467-4f38-9252-5b4c5e3a2f14",
+  "runs": [
+    {
+      "id": "29f1c2d3-df9c-40dc-9d1d-692d63538e46",
+      "task": "building",
+      "status": "succeeded",
+      "regions": 10,
+      "model": {
+        "id": "rfdetr-satellite-buildings-onnx-v1",
+        "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf"
+      },
+      "actualInference": true,
+      "inferenceMs": 942.15,
+      "review": null
+    },
+    {
+      "id": "ecee487b-c364-4330-a334-35f38c16c2bf",
+      "task": "floor-plan",
+      "status": "succeeded",
+      "regions": 24,
+      "model": {
+        "id": "cubicasa5k-rooms-onnx-v1",
+        "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520"
+      },
+      "actualInference": true,
+      "inferenceMs": 1498.901,
+      "review": null
+    },
+    {
+      "id": "de6763fd-e6dc-4ec1-80bd-f471d9385d36",
+      "task": "building",
+      "status": "succeeded",
+      "regions": 10,
+      "model": {
+        "id": "rfdetr-satellite-buildings-onnx-v1",
+        "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf"
+      },
+      "actualInference": true,
+      "inferenceMs": 1072.92,
+      "review": {
+        "id": "f8c8def7-897c-496b-b703-0014e6447b11",
+        "note": "Fictional demo: compared this candidate with the retained aerial preview. It roughly follows a rendered roof; retain for calibration demonstration only. Model misses other buildings and needs boundary correction before acceptance.",
+        "checks": [],
+        "lowerM": 0,
+        "upperM": 3,
+        "decision": "keep",
+        "geometry": [
+          {
+            "id": "fd5c1f0a-0ece-524b-8d99-1de03aaebc42",
+            "areaM2": 369,
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -9,
+                    168
+                  ],
+                  [
+                    -9,
+                    167
+                  ],
+                  [
+                    -12,
+                    167
+                  ],
+                  [
+                    -12,
+                    166
+                  ],
+                  [
+                    -20,
+                    166
+                  ],
+                  [
+                    -20,
+                    165
+                  ],
+                  [
+                    -23,
+                    165
+                  ],
+                  [
+                    -23,
+                    149
+                  ],
+                  [
+                    -22,
+                    149
+                  ],
+                  [
+                    -21,
+                    147
+                  ],
+                  [
+                    -4,
+                    147
+                  ],
+                  [
+                    -4,
+                    163
+                  ],
+                  [
+                    -3,
+                    163
+                  ],
+                  [
+                    -3,
+                    165
+                  ],
+                  [
+                    -4,
+                    165
+                  ],
+                  [
+                    -4,
+                    167
+                  ],
+                  [
+                    -5,
+                    167
+                  ],
+                  [
+                    -5,
+                    168
+                  ],
+                  [
+                    -9,
+                    168
+                  ]
+                ]
+              ]
+            },
+            "volumeM3": 1107,
+            "className": "building"
+          }
+        ],
+        "createdAt": "2026-09-20T20:46:46.753Z",
+        "calibration": {
+          "frame": "FRAME-LAKE-VIEW-DEMO",
+          "reason": "Authored synthetic raster: generator generate-complete-showcase.py uses from_origin(-26,204,1,1) and copies the identical 220 by 230 RGB grid into this JPEG. Controls are fixture grid edges, not GNSS measurements.",
+          "imagePoints": [
+            [
+              0,
+              0
+            ],
+            [
+              220,
+              0
+            ]
+          ],
+          "worldPoints": [
+            [
+              -26,
+              204
+            ],
+            [
+              194,
+              204
+            ]
+          ],
+          "rasterSha256": "895cb248f5564b2220f319ccc3f549cf228e8051cc51cc4313193caf0a6ba5be"
+        },
+        "componentIds": [
+          "fd5c1f0a-0ece-524b-8d99-1de03aaebc42"
+        ],
+        "levelEvidence": "Authored hackathon example only: 0 m to 3 m above DEMO-BM-01. These levels illustrate prism calculation; they were not extracted by the model or measured from a survey, and are not asserted as this building’s actual height."
+      }
+    }
+  ],
+  "classification": "fictional demonstration; model predictions remain unapproved"
+}

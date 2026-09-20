@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "name": "FICTIONAL open_areas",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "PARK01",
+      "properties": {
+        "object_id": "PARK01",
+        "object_type": "open_area",
+        "name": "Pocket public court",
+        "classification": "synthetic",
+        "source_revision": "fictional-dense-v2",
+        "height_m": 0,
+        "base_elevation_m": 0,
+        "area_sq_m": 128.0,
+        "frame_id": "FRAME-NEEM-REFERENCE",
+        "use": "pocket_public_area"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.18807329620881,
+              28.549573771921636
+            ],
+            [
+              77.18815501989049,
+              28.549572454241222
+            ],
+            [
+              77.18815800460612,
+              28.549716773643844
+            ],
+            [
+              77.18807628081318,
+              28.54971809133213
+            ],
+            [
+              77.18807329620881,
+              28.549573771921636
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

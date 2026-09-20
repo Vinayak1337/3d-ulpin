@@ -49,6 +49,8 @@ export interface TileLayerProps {
 export interface TileOverlay {
     representation:SpatialRepresentation;frame:SpatialFrame;color:string;
     opacity?:number;outlineOnly?:boolean;selectable?:boolean;
+    /** Screen pixels for diagram linework; never a physical width. */
+    strokeWidth?:number;
 }
 const snapshotCamera = (viewer: Cesium.Viewer): MapCamera => ({
     longitude: viewer.camera.positionCartographic.longitude,
@@ -253,7 +255,7 @@ export default function TileLayer(props: TileLayerProps) {
             const properties=overlay.selectable===false?{}:{entityId:rep.entityId,representationId:rep.id};
             const geometry=rep.geometry;
             if(geometry.type==='Point')entities.push(viewer.entities.add({position:point(geometry.coordinates),point:{pixelSize:9,color,outlineWidth:2,outlineColor:Cesium.Color.WHITE},properties}));
-            else if(geometry.type==='LineString')entities.push(viewer.entities.add({polyline:{positions:geometry.coordinates.map(p=>point(p)),width:4,material:color,arcType:Cesium.ArcType.NONE},properties}));
+            else if(geometry.type==='LineString')entities.push(viewer.entities.add({polyline:{positions:geometry.coordinates.map(p=>point(p)),width:overlay.strokeWidth??4,material:color.withAlpha(overlay.opacity??1),arcType:Cesium.ArcType.NONE},properties}));
             else{
                 const polygons=geometry.type==='Polygon'?[geometry.coordinates]:geometry.coordinates;
                 for(const polygon of polygons){
@@ -261,7 +263,7 @@ export default function TileLayer(props: TileLayerProps) {
                         const hierarchy=new Cesium.PolygonHierarchy(polygon[0].map(p=>point(p,lower)),polygon.slice(1).map(r=>new Cesium.PolygonHierarchy(r.map(p=>point(p,lower)))));
                         entities.push(viewer.entities.add({polygon:{hierarchy,perPositionHeight:true,material,outline:false,...(upper>lower?{extrudedHeight:Cesium.Cartographic.fromCartesian(point(polygon[0][0],upper)).height}:{}),closeTop:true,closeBottom:true},properties}));
                     }
-                    for(const ring of polygon)entities.push(viewer.entities.add({polyline:{positions:ring.map(p=>point(p,upper+.04)),width:2,material:color,arcType:Cesium.ArcType.NONE},properties}));
+                    for(const ring of polygon)entities.push(viewer.entities.add({polyline:{positions:ring.map(p=>point(p,upper+.04)),width:overlay.strokeWidth??2,material:color,arcType:Cesium.ArcType.NONE},properties}));
                 }
             }
         }

@@ -1,3 +1,5 @@
+import { readWorkQueue } from "./work-queue";
+import { preparationContinuation } from "./preparation-continuation";
 import { exportBlock } from "./block-export";
 import { z } from "zod";
 import {
@@ -24,7 +26,7 @@ import { getPackage } from "./areas";
 import { importRegistryCase } from "./registry-seed";
 import { prepareRegistryReview, draftDetail } from "./registry";
 import { query } from "./db";
-import { AppError, notFound } from "./errors";
+import { AppError, conflict, notFound } from "./errors";
 const uuid = z.string().uuid(),
   rev = z.number().int().nonnegative(),
   str = z.string().trim().min(1).max(200),
@@ -80,6 +82,7 @@ export async function officerRoutes(
   p: string[],
 ): Promise<Response | null> {
   const method = r.method;
+  if (p[0] === "work-queue" && p.length === 1 && method === "GET") return json(await readWorkQueue(new URL(r.url)));
   if(p[0]==='physical-features'&&p.length===3&&p[2]==='revisions'&&method==='GET'){
     const id=uuid.parse(p[1]),url=new URL(r.url);
     const before=url.searchParams.has('before')?z.coerce.number().int().positive().parse(url.searchParams.get('before')):2147483647;
@@ -155,6 +158,11 @@ export async function officerRoutes(
               [id],
             )
           ).rows[0]?.body ?? notFound();
+      const continuation = await preparationContinuation(prep.packageId);
+      if (continuation.caseRevision !== b.expectedRevision ||
+          !["ready", "reviewed", "recorded"].includes(continuation.status))
+        conflict("The preparation changed. Build the current source facts before reviewing.");
+      if (continuation.review) return json(continuation.review);
       const d = await buildingDossier(id);
       const draftId = await importRegistryCase(
         d.area.siteId,
@@ -226,6 +234,8 @@ export async function officerRoutes(
     );
   if (p[0] === "import-packages" && p.length === 3) {
     const id = uuid.parse(p[1]);
+    if (p[2] === "continuation" && method === "GET")
+      return json(await preparationContinuation(id));
     if (p[2] === "requirements" && method === "GET")
       return json(await preparationRequirements(id));
     if (p[2] === "preparation-facts" && method === "POST") {

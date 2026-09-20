@@ -1,0 +1,1596 @@
+{
+  "relationships": [
+    {
+      "fromId": "P01",
+      "relationship": "contains_building",
+      "toId": "B01"
+    },
+    {
+      "fromId": "P02",
+      "relationship": "contains_building",
+      "toId": "B02"
+    },
+    {
+      "fromId": "P03",
+      "relationship": "contains_building",
+      "toId": "B03"
+    },
+    {
+      "fromId": "P04",
+      "relationship": "contains_building",
+      "toId": "B04"
+    },
+    {
+      "fromId": "P05",
+      "relationship": "contains_building",
+      "toId": "B05"
+    },
+    {
+      "fromId": "P06",
+      "relationship": "contains_building",
+      "toId": "B06"
+    },
+    {
+      "fromId": "P07",
+      "relationship": "contains_building",
+      "toId": "B07"
+    },
+    {
+      "fromId": "P08",
+      "relationship": "contains_building",
+      "toId": "B08"
+    },
+    {
+      "fromId": "P09",
+      "relationship": "contains_building",
+      "toId": "B09"
+    },
+    {
+      "fromId": "P10",
+      "relationship": "contains_building",
+      "toId": "B10"
+    },
+    {
+      "fromId": "P11",
+      "relationship": "contains_building",
+      "toId": "B11"
+    },
+    {
+      "fromId": "P12",
+      "relationship": "contains_building",
+      "toId": "B12"
+    },
+    {
+      "fromId": "P13",
+      "relationship": "contains_building",
+      "toId": "B13"
+    },
+    {
+      "fromId": "P14",
+      "relationship": "contains_building",
+      "toId": "B14"
+    },
+    {
+      "fromId": "P15",
+      "relationship": "contains_building",
+      "toId": "B15"
+    },
+    {
+      "fromId": "P16",
+      "relationship": "contains_building",
+      "toId": "B16"
+    },
+    {
+      "fromId": "P17",
+      "relationship": "contains_building",
+      "toId": "B17"
+    },
+    {
+      "fromId": "P18",
+      "relationship": "contains_building",
+      "toId": "B18"
+    },
+    {
+      "fromId": "P19",
+      "relationship": "contains_building",
+      "toId": "B19"
+    },
+    {
+      "fromId": "P20",
+      "relationship": "contains_building",
+      "toId": "B20"
+    },
+    {
+      "fromId": "P21",
+      "relationship": "contains_building",
+      "toId": "B21"
+    },
+    {
+      "fromId": "P22",
+      "relationship": "contains_building",
+      "toId": "B22"
+    },
+    {
+      "fromId": "P23",
+      "relationship": "contains_building",
+      "toId": "B23"
+    },
+    {
+      "fromId": "P24",
+      "relationship": "contains_building",
+      "toId": "B24"
+    },
+    {
+      "fromId": "P25",
+      "relationship": "contains_building",
+      "toId": "B25"
+    },
+    {
+      "fromId": "P26",
+      "relationship": "contains_building",
+      "toId": "B26"
+    },
+    {
+      "fromId": "P27",
+      "relationship": "contains_building",
+      "toId": "B27"
+    },
+    {
+      "fromId": "P28",
+      "relationship": "contains_building",
+      "toId": "B28"
+    },
+    {
+      "fromId": "P29",
+      "relationship": "contains_building",
+      "toId": "B29"
+    },
+    {
+      "fromId": "P30",
+      "relationship": "contains_building",
+      "toId": "B30"
+    },
+    {
+      "fromId": "P31",
+      "relationship": "contains_building",
+      "toId": "B31"
+    },
+    {
+      "fromId": "P32",
+      "relationship": "contains_building",
+      "toId": "B32"
+    },
+    {
+      "fromId": "P33",
+      "relationship": "contains_building",
+      "toId": "B33"
+    },
+    {
+      "fromId": "P34",
+      "relationship": "contains_building",
+      "toId": "B34"
+    },
+    {
+      "fromId": "P35",
+      "relationship": "contains_building",
+      "toId": "B35"
+    },
+    {
+      "fromId": "P36",
+      "relationship": "contains_building",
+      "toId": "B36"
+    },
+    {
+      "fromId": "P37",
+      "relationship": "contains_building",
+      "toId": "B37"
+    },
+    {
+      "fromId": "P38",
+      "relationship": "contains_building",
+      "toId": "B38"
+    },
+    {
+      "fromId": "P39",
+      "relationship": "contains_building",
+      "toId": "B39"
+    },
+    {
+      "fromId": "P40",
+      "relationship": "contains_building",
+      "toId": "B40"
+    },
+    {
+      "fromId": "P41",
+      "relationship": "contains_building",
+      "toId": "B41"
+    },
+    {
+      "fromId": "P42",
+      "relationship": "contains_building",
+      "toId": "B42"
+    },
+    {
+      "fromId": "P43",
+      "relationship": "contains_building",
+      "toId": "B43"
+    },
+    {
+      "fromId": "P44",
+      "relationship": "contains_building",
+      "toId": "B44"
+    },
+    {
+      "fromId": "P45",
+      "relationship": "contains_building",
+      "toId": "B45"
+    },
+    {
+      "fromId": "P46",
+      "relationship": "contains_building",
+      "toId": "B46"
+    },
+    {
+      "fromId": "P47",
+      "relationship": "contains_building",
+      "toId": "B47"
+    },
+    {
+      "fromId": "P48",
+      "relationship": "contains_building",
+      "toId": "B48"
+    },
+    {
+      "fromId": "P49",
+      "relationship": "contains_building",
+      "toId": "B49"
+    },
+    {
+      "fromId": "B01",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B02",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B03",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B04",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B05",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B06",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B07",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B08",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B09",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B10",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B11",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B12",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B13",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B14",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B15",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B16",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B17",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B18",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B19",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B20",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B21",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B22",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B23",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B24",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B25",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B26",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B27",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B28",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B29",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B30",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B31",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B32",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B33",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B34",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B35",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B36",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B37",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B38",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B39",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B40",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B41",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B42",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B43",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B44",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B45",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B46",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B47",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B48",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B49",
+      "relationship": "covered_by_asset",
+      "toId": "records/fictional-property-schedule.pdf"
+    },
+    {
+      "fromId": "B01",
+      "relationship": "has_floor",
+      "toId": "B01-FB"
+    },
+    {
+      "fromId": "B01",
+      "relationship": "has_floor",
+      "toId": "B01-F0"
+    },
+    {
+      "fromId": "B01",
+      "relationship": "has_floor",
+      "toId": "B01-F1"
+    },
+    {
+      "fromId": "B01",
+      "relationship": "has_floor",
+      "toId": "B01-F2"
+    },
+    {
+      "fromId": "B01",
+      "relationship": "has_floor",
+      "toId": "B01-F3"
+    },
+    {
+      "fromId": "B01",
+      "relationship": "has_floor",
+      "toId": "B01-F4"
+    },
+    {
+      "fromId": "B02",
+      "relationship": "has_floor",
+      "toId": "B02-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B02",
+      "relationship": "has_floor",
+      "toId": "B02-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B02",
+      "relationship": "has_floor",
+      "toId": "B02-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B02",
+      "relationship": "has_floor",
+      "toId": "B02-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B03",
+      "relationship": "has_floor",
+      "toId": "B03-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B03",
+      "relationship": "has_floor",
+      "toId": "B03-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B03",
+      "relationship": "has_floor",
+      "toId": "B03-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B03",
+      "relationship": "has_floor",
+      "toId": "B03-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B03",
+      "relationship": "has_floor",
+      "toId": "B03-SHOWCASE-F4"
+    },
+    {
+      "fromId": "B04",
+      "relationship": "has_floor",
+      "toId": "B04-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B04",
+      "relationship": "has_floor",
+      "toId": "B04-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B04",
+      "relationship": "has_floor",
+      "toId": "B04-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B05",
+      "relationship": "has_floor",
+      "toId": "B05-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B05",
+      "relationship": "has_floor",
+      "toId": "B05-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B05",
+      "relationship": "has_floor",
+      "toId": "B05-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B05",
+      "relationship": "has_floor",
+      "toId": "B05-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B06",
+      "relationship": "has_floor",
+      "toId": "B06-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B06",
+      "relationship": "has_floor",
+      "toId": "B06-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B06",
+      "relationship": "has_floor",
+      "toId": "B06-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B06",
+      "relationship": "has_floor",
+      "toId": "B06-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B06",
+      "relationship": "has_floor",
+      "toId": "B06-SHOWCASE-F4"
+    },
+    {
+      "fromId": "B07",
+      "relationship": "has_floor",
+      "toId": "B07-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B07",
+      "relationship": "has_floor",
+      "toId": "B07-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B07",
+      "relationship": "has_floor",
+      "toId": "B07-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B08",
+      "relationship": "has_floor",
+      "toId": "B08-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B08",
+      "relationship": "has_floor",
+      "toId": "B08-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B08",
+      "relationship": "has_floor",
+      "toId": "B08-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B08",
+      "relationship": "has_floor",
+      "toId": "B08-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B09",
+      "relationship": "has_floor",
+      "toId": "B09-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B09",
+      "relationship": "has_floor",
+      "toId": "B09-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B09",
+      "relationship": "has_floor",
+      "toId": "B09-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B09",
+      "relationship": "has_floor",
+      "toId": "B09-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B09",
+      "relationship": "has_floor",
+      "toId": "B09-SHOWCASE-F4"
+    },
+    {
+      "fromId": "B10",
+      "relationship": "has_floor",
+      "toId": "B10-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B10",
+      "relationship": "has_floor",
+      "toId": "B10-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B10",
+      "relationship": "has_floor",
+      "toId": "B10-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B11",
+      "relationship": "has_floor",
+      "toId": "B11-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B11",
+      "relationship": "has_floor",
+      "toId": "B11-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B11",
+      "relationship": "has_floor",
+      "toId": "B11-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B11",
+      "relationship": "has_floor",
+      "toId": "B11-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B12",
+      "relationship": "has_floor",
+      "toId": "B12-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B12",
+      "relationship": "has_floor",
+      "toId": "B12-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B12",
+      "relationship": "has_floor",
+      "toId": "B12-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B12",
+      "relationship": "has_floor",
+      "toId": "B12-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B12",
+      "relationship": "has_floor",
+      "toId": "B12-SHOWCASE-F4"
+    },
+    {
+      "fromId": "B13",
+      "relationship": "has_floor",
+      "toId": "B13-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B13",
+      "relationship": "has_floor",
+      "toId": "B13-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B13",
+      "relationship": "has_floor",
+      "toId": "B13-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B14",
+      "relationship": "has_floor",
+      "toId": "B14-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B14",
+      "relationship": "has_floor",
+      "toId": "B14-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B14",
+      "relationship": "has_floor",
+      "toId": "B14-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B14",
+      "relationship": "has_floor",
+      "toId": "B14-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B15",
+      "relationship": "has_floor",
+      "toId": "B15-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B15",
+      "relationship": "has_floor",
+      "toId": "B15-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B15",
+      "relationship": "has_floor",
+      "toId": "B15-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B15",
+      "relationship": "has_floor",
+      "toId": "B15-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B15",
+      "relationship": "has_floor",
+      "toId": "B15-SHOWCASE-F4"
+    },
+    {
+      "fromId": "B16",
+      "relationship": "has_floor",
+      "toId": "B16-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B16",
+      "relationship": "has_floor",
+      "toId": "B16-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B16",
+      "relationship": "has_floor",
+      "toId": "B16-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B17",
+      "relationship": "has_floor",
+      "toId": "B17-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B17",
+      "relationship": "has_floor",
+      "toId": "B17-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B17",
+      "relationship": "has_floor",
+      "toId": "B17-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B17",
+      "relationship": "has_floor",
+      "toId": "B17-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B18",
+      "relationship": "has_floor",
+      "toId": "B18-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B18",
+      "relationship": "has_floor",
+      "toId": "B18-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B18",
+      "relationship": "has_floor",
+      "toId": "B18-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B18",
+      "relationship": "has_floor",
+      "toId": "B18-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B18",
+      "relationship": "has_floor",
+      "toId": "B18-SHOWCASE-F4"
+    },
+    {
+      "fromId": "B19",
+      "relationship": "has_floor",
+      "toId": "B19-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B19",
+      "relationship": "has_floor",
+      "toId": "B19-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B19",
+      "relationship": "has_floor",
+      "toId": "B19-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B20",
+      "relationship": "has_floor",
+      "toId": "B20-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B20",
+      "relationship": "has_floor",
+      "toId": "B20-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B20",
+      "relationship": "has_floor",
+      "toId": "B20-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B20",
+      "relationship": "has_floor",
+      "toId": "B20-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B21",
+      "relationship": "has_floor",
+      "toId": "B21-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B21",
+      "relationship": "has_floor",
+      "toId": "B21-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B21",
+      "relationship": "has_floor",
+      "toId": "B21-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B21",
+      "relationship": "has_floor",
+      "toId": "B21-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B21",
+      "relationship": "has_floor",
+      "toId": "B21-SHOWCASE-F4"
+    },
+    {
+      "fromId": "B22",
+      "relationship": "has_floor",
+      "toId": "B22-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B22",
+      "relationship": "has_floor",
+      "toId": "B22-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B22",
+      "relationship": "has_floor",
+      "toId": "B22-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B23",
+      "relationship": "has_floor",
+      "toId": "B23-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B23",
+      "relationship": "has_floor",
+      "toId": "B23-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B23",
+      "relationship": "has_floor",
+      "toId": "B23-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B24",
+      "relationship": "has_floor",
+      "toId": "B24-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B24",
+      "relationship": "has_floor",
+      "toId": "B24-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B24",
+      "relationship": "has_floor",
+      "toId": "B24-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B24",
+      "relationship": "has_floor",
+      "toId": "B24-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B25",
+      "relationship": "has_floor",
+      "toId": "B25-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B25",
+      "relationship": "has_floor",
+      "toId": "B25-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B25",
+      "relationship": "has_floor",
+      "toId": "B25-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B26",
+      "relationship": "has_floor",
+      "toId": "B26-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B26",
+      "relationship": "has_floor",
+      "toId": "B26-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B26",
+      "relationship": "has_floor",
+      "toId": "B26-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B26",
+      "relationship": "has_floor",
+      "toId": "B26-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B27",
+      "relationship": "has_floor",
+      "toId": "B27-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B27",
+      "relationship": "has_floor",
+      "toId": "B27-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B27",
+      "relationship": "has_floor",
+      "toId": "B27-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B28",
+      "relationship": "has_floor",
+      "toId": "B28-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B28",
+      "relationship": "has_floor",
+      "toId": "B28-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B28",
+      "relationship": "has_floor",
+      "toId": "B28-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B28",
+      "relationship": "has_floor",
+      "toId": "B28-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B29",
+      "relationship": "has_floor",
+      "toId": "B29-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B29",
+      "relationship": "has_floor",
+      "toId": "B29-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B29",
+      "relationship": "has_floor",
+      "toId": "B29-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B30",
+      "relationship": "has_floor",
+      "toId": "B30-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B30",
+      "relationship": "has_floor",
+      "toId": "B30-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B30",
+      "relationship": "has_floor",
+      "toId": "B30-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B30",
+      "relationship": "has_floor",
+      "toId": "B30-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B31",
+      "relationship": "has_floor",
+      "toId": "B31-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B31",
+      "relationship": "has_floor",
+      "toId": "B31-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B31",
+      "relationship": "has_floor",
+      "toId": "B31-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B32",
+      "relationship": "has_floor",
+      "toId": "B32-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B32",
+      "relationship": "has_floor",
+      "toId": "B32-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B32",
+      "relationship": "has_floor",
+      "toId": "B32-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B32",
+      "relationship": "has_floor",
+      "toId": "B32-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B33",
+      "relationship": "has_floor",
+      "toId": "B33-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B33",
+      "relationship": "has_floor",
+      "toId": "B33-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B33",
+      "relationship": "has_floor",
+      "toId": "B33-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B34",
+      "relationship": "has_floor",
+      "toId": "B34-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B34",
+      "relationship": "has_floor",
+      "toId": "B34-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B34",
+      "relationship": "has_floor",
+      "toId": "B34-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B34",
+      "relationship": "has_floor",
+      "toId": "B34-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B35",
+      "relationship": "has_floor",
+      "toId": "B35-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B35",
+      "relationship": "has_floor",
+      "toId": "B35-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B35",
+      "relationship": "has_floor",
+      "toId": "B35-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B36",
+      "relationship": "has_floor",
+      "toId": "B36-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B36",
+      "relationship": "has_floor",
+      "toId": "B36-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B36",
+      "relationship": "has_floor",
+      "toId": "B36-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B36",
+      "relationship": "has_floor",
+      "toId": "B36-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B37",
+      "relationship": "has_floor",
+      "toId": "B37-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B37",
+      "relationship": "has_floor",
+      "toId": "B37-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B37",
+      "relationship": "has_floor",
+      "toId": "B37-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B38",
+      "relationship": "has_floor",
+      "toId": "B38-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B38",
+      "relationship": "has_floor",
+      "toId": "B38-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B38",
+      "relationship": "has_floor",
+      "toId": "B38-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B38",
+      "relationship": "has_floor",
+      "toId": "B38-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B39",
+      "relationship": "has_floor",
+      "toId": "B39-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B39",
+      "relationship": "has_floor",
+      "toId": "B39-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B39",
+      "relationship": "has_floor",
+      "toId": "B39-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B40",
+      "relationship": "has_floor",
+      "toId": "B40-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B40",
+      "relationship": "has_floor",
+      "toId": "B40-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B40",
+      "relationship": "has_floor",
+      "toId": "B40-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B40",
+      "relationship": "has_floor",
+      "toId": "B40-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B41",
+      "relationship": "has_floor",
+      "toId": "B41-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B41",
+      "relationship": "has_floor",
+      "toId": "B41-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B41",
+      "relationship": "has_floor",
+      "toId": "B41-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B42",
+      "relationship": "has_floor",
+      "toId": "B42-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B42",
+      "relationship": "has_floor",
+      "toId": "B42-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B42",
+      "relationship": "has_floor",
+      "toId": "B42-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B42",
+      "relationship": "has_floor",
+      "toId": "B42-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B43",
+      "relationship": "has_floor",
+      "toId": "B43-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B43",
+      "relationship": "has_floor",
+      "toId": "B43-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B43",
+      "relationship": "has_floor",
+      "toId": "B43-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B44",
+      "relationship": "has_floor",
+      "toId": "B44-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B44",
+      "relationship": "has_floor",
+      "toId": "B44-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B44",
+      "relationship": "has_floor",
+      "toId": "B44-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B44",
+      "relationship": "has_floor",
+      "toId": "B44-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B45",
+      "relationship": "has_floor",
+      "toId": "B45-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B45",
+      "relationship": "has_floor",
+      "toId": "B45-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B45",
+      "relationship": "has_floor",
+      "toId": "B45-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B46",
+      "relationship": "has_floor",
+      "toId": "B46-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B46",
+      "relationship": "has_floor",
+      "toId": "B46-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B46",
+      "relationship": "has_floor",
+      "toId": "B46-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B46",
+      "relationship": "has_floor",
+      "toId": "B46-SHOWCASE-F3"
+    },
+    {
+      "fromId": "B47",
+      "relationship": "has_floor",
+      "toId": "B47-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B47",
+      "relationship": "has_floor",
+      "toId": "B47-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B47",
+      "relationship": "has_floor",
+      "toId": "B47-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B48",
+      "relationship": "has_floor",
+      "toId": "B48-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B48",
+      "relationship": "has_floor",
+      "toId": "B48-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B48",
+      "relationship": "has_floor",
+      "toId": "B48-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B49",
+      "relationship": "has_floor",
+      "toId": "B49-SHOWCASE-F0"
+    },
+    {
+      "fromId": "B49",
+      "relationship": "has_floor",
+      "toId": "B49-SHOWCASE-F1"
+    },
+    {
+      "fromId": "B49",
+      "relationship": "has_floor",
+      "toId": "B49-SHOWCASE-F2"
+    },
+    {
+      "fromId": "B49",
+      "relationship": "has_floor",
+      "toId": "B49-SHOWCASE-F3"
+    },
+    {
+      "fromId": "LV-CP-01",
+      "relationship": "controls_asset",
+      "toId": "imagery/lake-view-orthomosaic.tif"
+    },
+    {
+      "fromId": "LV-CP-01",
+      "relationship": "controls_asset",
+      "toId": "lidar/lake-view-pointcloud.las"
+    },
+    {
+      "fromId": "LV-CP-01",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dem.tif"
+    },
+    {
+      "fromId": "LV-CP-01",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dsm.tif"
+    },
+    {
+      "fromId": "LV-CP-02",
+      "relationship": "controls_asset",
+      "toId": "imagery/lake-view-orthomosaic.tif"
+    },
+    {
+      "fromId": "LV-CP-02",
+      "relationship": "controls_asset",
+      "toId": "lidar/lake-view-pointcloud.las"
+    },
+    {
+      "fromId": "LV-CP-02",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dem.tif"
+    },
+    {
+      "fromId": "LV-CP-02",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dsm.tif"
+    },
+    {
+      "fromId": "LV-CP-03",
+      "relationship": "controls_asset",
+      "toId": "imagery/lake-view-orthomosaic.tif"
+    },
+    {
+      "fromId": "LV-CP-03",
+      "relationship": "controls_asset",
+      "toId": "lidar/lake-view-pointcloud.las"
+    },
+    {
+      "fromId": "LV-CP-03",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dem.tif"
+    },
+    {
+      "fromId": "LV-CP-03",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dsm.tif"
+    },
+    {
+      "fromId": "LV-CP-04",
+      "relationship": "controls_asset",
+      "toId": "imagery/lake-view-orthomosaic.tif"
+    },
+    {
+      "fromId": "LV-CP-04",
+      "relationship": "controls_asset",
+      "toId": "lidar/lake-view-pointcloud.las"
+    },
+    {
+      "fromId": "LV-CP-04",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dem.tif"
+    },
+    {
+      "fromId": "LV-CP-04",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dsm.tif"
+    },
+    {
+      "fromId": "LV-CP-05",
+      "relationship": "controls_asset",
+      "toId": "imagery/lake-view-orthomosaic.tif"
+    },
+    {
+      "fromId": "LV-CP-05",
+      "relationship": "controls_asset",
+      "toId": "lidar/lake-view-pointcloud.las"
+    },
+    {
+      "fromId": "LV-CP-05",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dem.tif"
+    },
+    {
+      "fromId": "LV-CP-05",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dsm.tif"
+    },
+    {
+      "fromId": "LV-CP-06",
+      "relationship": "controls_asset",
+      "toId": "imagery/lake-view-orthomosaic.tif"
+    },
+    {
+      "fromId": "LV-CP-06",
+      "relationship": "controls_asset",
+      "toId": "lidar/lake-view-pointcloud.las"
+    },
+    {
+      "fromId": "LV-CP-06",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dem.tif"
+    },
+    {
+      "fromId": "LV-CP-06",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dsm.tif"
+    },
+    {
+      "fromId": "LV-CP-07",
+      "relationship": "controls_asset",
+      "toId": "imagery/lake-view-orthomosaic.tif"
+    },
+    {
+      "fromId": "LV-CP-07",
+      "relationship": "controls_asset",
+      "toId": "lidar/lake-view-pointcloud.las"
+    },
+    {
+      "fromId": "LV-CP-07",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dem.tif"
+    },
+    {
+      "fromId": "LV-CP-07",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dsm.tif"
+    },
+    {
+      "fromId": "LV-CP-08",
+      "relationship": "controls_asset",
+      "toId": "imagery/lake-view-orthomosaic.tif"
+    },
+    {
+      "fromId": "LV-CP-08",
+      "relationship": "controls_asset",
+      "toId": "lidar/lake-view-pointcloud.las"
+    },
+    {
+      "fromId": "LV-CP-08",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dem.tif"
+    },
+    {
+      "fromId": "LV-CP-08",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dsm.tif"
+    },
+    {
+      "fromId": "LV-CP-09",
+      "relationship": "controls_asset",
+      "toId": "imagery/lake-view-orthomosaic.tif"
+    },
+    {
+      "fromId": "LV-CP-09",
+      "relationship": "controls_asset",
+      "toId": "lidar/lake-view-pointcloud.las"
+    },
+    {
+      "fromId": "LV-CP-09",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dem.tif"
+    },
+    {
+      "fromId": "LV-CP-09",
+      "relationship": "controls_asset",
+      "toId": "elevation/lake-view-dsm.tif"
+    }
+  ],
+  "schema": "canonical.dataset-links.v1",
+  "coordinateFrame": "LOCAL-LAKE-VIEW-DEMO-M"
+}

@@ -89,7 +89,7 @@ class JobStore:
 def public_job(entry: dict, include_result: bool = True) -> dict:
     result = {"jobId": entry["jobId"], "status": entry["status"]}
     if include_result:
-        for key in ("result", "error"):
+        for key in ("result", "error", "errorCode"):
             if key in entry:
                 result[key] = entry[key]
     return result

@@ -1,0 +1,5 @@
+import Link from 'next/link';
+import {listSpatialDatasets} from '@/lib/server/spatial-datasets';
+import styles from '@/features/spatial/dataset-processing/processing.module.css';
+export const dynamic='force-dynamic';
+export default async function Page(){const datasets=await listSpatialDatasets();return <main className={styles.page}><header className={styles.header}><Link href="/studio/datasets">← Saved maps</Link><Link href="/explain">Hackathon presentation →</Link></header><div className={styles.heading}><div><span className={styles.eyebrow}>LIVE PROCESSING</span><h1>Choose a dataset</h1><p>Run local extraction, inspect retained predictions and explain the workflow.</p></div></div>{datasets.map(d=><Link href={`/studio/processing/${d.id}`} key={d.id}><section className={styles.card}><h2>{d.name}</h2><p>{d.buildingCount} buildings · {d.floorCount} supplied floors · fictional demonstration</p><strong>Open evidence preparation →</strong></section></Link>)}{!datasets.length&&<p>Import and save a dataset first.</p>}</main>;}

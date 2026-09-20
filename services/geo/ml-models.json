@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "ulpin-local-spatial-models/1",
+  "models": [
+    {
+      "id": "cubicasa5k-rooms-onnx-v1",
+      "task": "floor-plan",
+      "filename": "floor.onnx",
+      "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+      "bytes": 69471289,
+      "profileVersion": "cubicasa-rooms-768-bilinear-pad64-v1",
+      "license": "CC-BY-NC-4.0; retain CubiCasa5K attribution; noncommercial scope",
+      "source": "https://github.com/CubiCasa/CubiCasa5k/tree/c34440266665a11f4484eb06cd2e4b7d72ad76c1",
+      "weights": {
+        "url": "https://drive.google.com/file/d/1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK/view",
+        "sha256": "dd20b4e1bf1d670f2125107b079df06958b1ccd36e49a464ab739aeb00b8e7a2",
+        "bytes": 208651193
+      },
+      "preprocessing": {
+        "input": "upright RGB, transparent pixels flattened onto white",
+        "resize": "aspect preserving longest edge 768; Pillow bilinear; white right/bottom padding to multiples of 64",
+        "tensor": "NCHW float32, value / 127.5 - 1",
+        "output": "12 room logits; original model channels 21:33; argmax class mask; crop padding",
+        "confidence": "uncalibrated mean selected-class softmax",
+        "geometry": "pixel-edge polygons; no metric inference"
+      },
+      "quality": "Reviewed assistance only. Two original published test plans: pixel accuracy 0.87195, mean class IoU 0.65622; room class errors remain. Rectangular ONNX/PyTorch label agreement >99.9995%. This is a small feasibility evaluation, not cadastral or Indian pilot accuracy.",
+      "sourceCode": [
+        {
+          "filename": "floortrans/__init__.py",
+          "url": "https://raw.githubusercontent.com/CubiCasa/CubiCasa5k/c34440266665a11f4484eb06cd2e4b7d72ad76c1/floortrans/__init__.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "filename": "floortrans/models/__init__.py",
+          "url": "https://raw.githubusercontent.com/CubiCasa/CubiCasa5k/c34440266665a11f4484eb06cd2e4b7d72ad76c1/floortrans/models/__init__.py",
+          "sha256": "9eb6b4906a922a8ceee9e925e89495408a0b163a64b30e13b52334957973b646",
+          "bytes": 325
+        },
+        {
+          "filename": "floortrans/models/model_1427.py",
+          "url": "https://raw.githubusercontent.com/CubiCasa/CubiCasa5k/c34440266665a11f4484eb06cd2e4b7d72ad76c1/floortrans/models/model_1427.py",
+          "sha256": "1b602dc086d3ea7f0eaefb480156c10e6e09bae073c08976c43fb0493613b921",
+          "bytes": 20726
+        },
+        {
+          "filename": "floortrans/models/hg_furukawa_original.py",
+          "url": "https://raw.githubusercontent.com/CubiCasa/CubiCasa5k/c34440266665a11f4484eb06cd2e4b7d72ad76c1/floortrans/models/hg_furukawa_original.py",
+          "sha256": "05a07265d9ec8cade5228b834645af00c655e1413b21d02b0b3183d041f7752a",
+          "bytes": 8377
+        }
+      ],
+      "name": "CubiCasa5K \u00b7 floor-plan regions"
+    },
+    {
+      "id": "rfdetr-satellite-buildings-onnx-v1",
+      "task": "building",
+      "filename": "building-rfdetr.onnx",
+      "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+      "bytes": 135364538,
+      "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2",
+      "license": "Apache-2.0 model card; retain RF-DETR and checkpoint attribution",
+      "source": "https://huggingface.co/merve/rf-detr-seg-satellite-buildings/tree/05b80dce9a57701724ad6a0fc052827c8b724257",
+      "sourceArtifacts": [
+        {
+          "filename": "model.safetensors",
+          "url": "https://huggingface.co/merve/rf-detr-seg-satellite-buildings/resolve/05b80dce9a57701724ad6a0fc052827c8b724257/model.safetensors",
+          "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7",
+          "bytes": 141551436
+        },
+        {
+          "filename": "config.json",
+          "url": "https://huggingface.co/merve/rf-detr-seg-satellite-buildings/resolve/05b80dce9a57701724ad6a0fc052827c8b724257/config.json",
+          "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7",
+          "bytes": 2490
+        },
+        {
+          "filename": "preprocessor_config.json",
+          "url": "https://huggingface.co/merve/rf-detr-seg-satellite-buildings/resolve/05b80dce9a57701724ad6a0fc052827c8b724257/preprocessor_config.json",
+          "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382",
+          "bytes": 442
+        }
+      ],
+      "preprocessing": {
+        "input": "upright RGB selected crop; at most 2048 pixels per edge and 4,000,000 pixels total; retain source resolution",
+        "resize": "Each tile uses Pillow bilinear to 432x432; no whole-raster downsampling",
+        "tensor": "NCHW float32, RGB/255, ImageNet mean [0.485,0.456,0.406] and std [0.229,0.224,0.225]",
+        "output": "200 object logits and 200 mask logits per tile; object sigmoid >0.5; half-pixel bilinear masks resized to tile raster; mask logits >0; higher-confidence instances paint first within each tile",
+        "confidence": "uncalibrated instance sigmoid; maximum per pixel in tile overlaps, mean over each returned connected candidate",
+        "geometry": "pixel-edge polygons; no metric inference",
+        "tiling": "Single image up to 512 pixels per edge retains instance masks. Larger images: 512-pixel tiles, stride 384, row-major, final tile anchored to far edge, no padding. Union foreground at source pixel coordinates and retain maximum accepted instance confidence per pixel; connected regions become review candidates."
+      },
+      "quality": "Reviewed assistance only. Fixed 12 published OAM/OSM test tiles using this runtime: aggregate IoU 0.2874, precision 0.3418, recall 0.6434. Clear occupied tiles reach IoU 0.57\u20130.86; empty and blurred scenes show false positives. No threshold tuning. Single-tile feasibility results do not establish tiled boundary accuracy; overlap union may merge touching roofs and retain edge false positives. No cadastral or Indian pilot accuracy claim.",
+      "name": "RF-DETR \u00b7 building outlines"
+    }
+  ]
+}

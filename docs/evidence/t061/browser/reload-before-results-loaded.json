@@ -1,0 +1,44 @@
+{
+  "startedAt": "2026-09-19T22:48:09.089Z",
+  "scope": "Actual local retained results; no mocked API or additional writes.",
+  "checks": [
+    {
+      "name": "Retained batch shows separate success and unsupported-page failure with retry affordance",
+      "passed": true
+    },
+    {
+      "name": "Actual empty result remains visible with its limits and no invented regions",
+      "passed": true
+    },
+    {
+      "name": "floor result displays exact retained raster, pixel contours, receipt and overlay controls",
+      "passed": true,
+      "itemId": "105d69bc-e749-463c-87b7-07e4b9ed66d8",
+      "regions": 75
+    },
+    {
+      "name": "building result displays exact retained raster, pixel contours, receipt and overlay controls",
+      "passed": true,
+      "itemId": "083be233-cc08-4a16-bae5-094621fe4dc3",
+      "regions": 8
+    },
+    {
+      "name": "Retained result review fits a narrow viewport",
+      "passed": true,
+      "layout": {
+        "width": 374.390625,
+        "viewport": 390,
+        "scrollWidth": 372,
+        "clientWidth": 372,
+        "bodyScrollWidth": 372,
+        "bodyClientWidth": 372
+      }
+    }
+  ],
+  "errors": [],
+  "badResponses": [],
+  "blockedWrites": [],
+  "passed": false,
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 4\n\n    at file:///Users/vinayak/Desktop/3D%20Ulpin/scripts/ml/browser-workflow.mjs:88:9",
+  "completedAt": "2026-09-19T22:48:14.604Z"
+}

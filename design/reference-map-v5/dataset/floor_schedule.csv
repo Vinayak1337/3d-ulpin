@@ -1,0 +1,17 @@
+space_id,building_id,floor_id,level,name,use,area_sq_m,base_elevation_m,height_m,classification
+B01-FB-C,B01,B01-FB,-1,Basement parking,parking,234.184445,-3.1,2.9,synthetic
+B01-F0-U1,B01,B01-F0,0,Apartment 101,residential,103.265556,0.0,2.9,synthetic
+B01-F0-U2,B01,B01-F0,0,Apartment 102,residential,113.465556,0.0,2.9,synthetic
+B01-F0-C,B01,B01-F0,0,Shared circulation,common,14.544444,0.0,2.9,synthetic
+B01-F1-U1,B01,B01-F1,1,Apartment 201,residential,103.265556,3.1,2.9,synthetic
+B01-F1-U2,B01,B01-F1,1,Apartment 202,residential,113.465556,3.1,2.9,synthetic
+B01-F1-C,B01,B01-F1,1,Shared circulation,common,14.544444,3.1,2.9,synthetic
+B01-F2-U1,B01,B01-F2,2,Apartment 301,residential,103.265556,6.2,2.9,synthetic
+B01-F2-U2,B01,B01-F2,2,Apartment 302,residential,113.465556,6.2,2.9,synthetic
+B01-F2-C,B01,B01-F2,2,Shared circulation,common,14.544444,6.2,2.9,synthetic
+B01-F3-U1,B01,B01-F3,3,Apartment 401,residential,103.265556,9.3,2.9,synthetic
+B01-F3-U2,B01,B01-F3,3,Apartment 402,residential,113.465556,9.3,2.9,synthetic
+B01-F3-C,B01,B01-F3,3,Shared circulation,common,14.544444,9.3,2.9,synthetic
+B01-F4-U1,B01,B01-F4,4,Apartment 501,residential,103.265556,12.4,2.9,synthetic
+B01-F4-U2,B01,B01-F4,4,Apartment 502,residential,113.465556,12.4,2.9,synthetic
+B01-F4-C,B01,B01-F4,4,Shared circulation,common,14.544444,12.4,2.9,synthetic

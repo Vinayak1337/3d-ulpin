@@ -1,0 +1,239 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-NEEM-REFERENCE-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "R01",
+      "properties": {
+        "widthM": 12,
+        "centerline": [
+          [
+            0,
+            62
+          ],
+          [
+            180,
+            62
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "asphalt",
+        "road_id": "R01",
+        "name": "Neem Avenue",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R01-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              56
+            ],
+            [
+              180,
+              56
+            ],
+            [
+              180,
+              68
+            ],
+            [
+              0,
+              68
+            ],
+            [
+              0,
+              56
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R02",
+      "properties": {
+        "widthM": 10,
+        "centerline": [
+          [
+            60,
+            0
+          ],
+          [
+            60,
+            180
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "asphalt",
+        "road_id": "R02",
+        "name": "Park Road",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R02-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              55,
+              0
+            ],
+            [
+              65,
+              0
+            ],
+            [
+              65,
+              180
+            ],
+            [
+              55,
+              180
+            ],
+            [
+              55,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R03",
+      "properties": {
+        "widthM": 8,
+        "centerline": [
+          [
+            0,
+            126
+          ],
+          [
+            180,
+            126
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "asphalt",
+        "road_id": "R03",
+        "name": "Garden Lane",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R03-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              122
+            ],
+            [
+              180,
+              122
+            ],
+            [
+              180,
+              130
+            ],
+            [
+              0,
+              130
+            ],
+            [
+              0,
+              122
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "R04",
+      "properties": {
+        "widthM": 8,
+        "centerline": [
+          [
+            124,
+            0
+          ],
+          [
+            124,
+            180
+          ]
+        ],
+        "centerlineFrameId": "FRAME-NEEM-REFERENCE",
+        "surface": "asphalt",
+        "road_id": "R04",
+        "name": "East Lane",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-R04-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 0,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              120,
+              0
+            ],
+            [
+              128,
+              0
+            ],
+            [
+              128,
+              180
+            ],
+            [
+              120,
+              180
+            ],
+            [
+              120,
+              0
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

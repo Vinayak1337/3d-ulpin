@@ -1,0 +1,68 @@
+{
+  "startedAt": "2026-09-19T22:37:06.108Z",
+  "base": "http://127.0.0.1:3000",
+  "scope": "Existing local saved datasets; read-only UI/API verification; no mocked resolver or invented identities.",
+  "checks": [
+    {
+      "name": "Dataset chooser opens an actual saved demonstration with its own identity",
+      "passed": true,
+      "areaId": "0ded05d3-b596-46a8-9918-ab1bc0a433be",
+      "features": 22
+    },
+    {
+      "name": "Real saved search and quick unit selection retain building, block and record identity",
+      "passed": true,
+      "buildingId": "fdb6f855-f533-487c-9ac7-525944640b2b",
+      "unitId": "9bb255b1-2078-495a-98e6-4a9209426592"
+    },
+    {
+      "name": "Selected SVG contains one feature and byte-preserving source/geometry receipts",
+      "passed": true,
+      "featureId": "fdb6f855-f533-487c-9ac7-525944640b2b",
+      "sourceRevisionId": "efe1776c-be2c-4cb9-92b1-41445c0ea6b2",
+      "sha256": "9aa15fd1301fd07e8dbe43948859a5cc701b281e6e7fee9154879b547b1cadc3"
+    },
+    {
+      "name": "Complete saved register exposes retained Evidence, History and Investigation",
+      "passed": true,
+      "sources": 11,
+      "retainedRevisions": 1,
+      "investigations": 0
+    },
+    {
+      "name": "Narrow register and workspace directory retain navigation without page overflow",
+      "passed": true,
+      "width": 390,
+      "height": 844,
+      "physicalDevice": false
+    },
+    {
+      "name": "Saved context, dossier, source bytes and revision metadata are unchanged",
+      "passed": true,
+      "before": {
+        "context": "b3bc7981b4ec38946382e436800d35f4f23c3eb048216a92cfb5e09e929a9e98",
+        "dossier": "42bb7e73e3b78973da2707e787d8d8dce3235054e2f58b650720e950bb530e0d",
+        "source": "7c078e71c1cab8ebd3b97fff78b312af79cf1991ff63f24f2b7919dc5de78113"
+      },
+      "after": {
+        "context": "b3bc7981b4ec38946382e436800d35f4f23c3eb048216a92cfb5e09e929a9e98",
+        "dossier": "42bb7e73e3b78973da2707e787d8d8dce3235054e2f58b650720e950bb530e0d",
+        "source": "7c078e71c1cab8ebd3b97fff78b312af79cf1991ff63f24f2b7919dc5de78113"
+      }
+    }
+  ],
+  "errors": [],
+  "badResponses": [],
+  "blockedWrites": [],
+  "selection": {
+    "areaId": "0ded05d3-b596-46a8-9918-ab1bc0a433be",
+    "areaName": "Lake View · demonstration",
+    "buildingId": "fdb6f855-f533-487c-9ac7-525944640b2b",
+    "identifier": "3DU-0DXM2X7DCP8TM9J65B3F0A8CXY:B001",
+    "unitId": "9bb255b1-2078-495a-98e6-4a9209426592",
+    "sourceId": "53f30f8a-f38d-4a70-9364-ab5854be8995",
+    "sourceSha256": "7c078e71c1cab8ebd3b97fff78b312af79cf1991ff63f24f2b7919dc5de78113"
+  },
+  "result": "PASS",
+  "finishedAt": "2026-09-19T22:37:25.097Z"
+}

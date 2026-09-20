@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "File-first intake shows no technical form before a source is selected",
+    "Projected GeoPackage metadata is detected; only meaning and origin need confirmation",
+    "Continue creates a review draft through real ingestion and retains byte-identical original; no recording performed",
+    "Multiple layers require explicit selection and get distinct stable identity namespaces",
+    "Missing ArcGIS CRS is requested without inventing coordinates",
+    "Complete retained GeoJSON Feature IDs require no redundant ID-column entry",
+    "Malformed input shows an actionable error and cannot continue",
+    "Inspection can recover with a replacement file; detailed overrides remain accessible",
+    "Intake fits tablet width"
+  ],
+  "errors": [],
+  "fixture": {
+    "packageId": "b8a94f15-0875-4109-b3f3-b7c8b620ad6d",
+    "areaId": "914c0ca4-6d38-4de1-a60f-178e91b111a1",
+    "sourceRevisionId": "72ae90a4-7867-4986-b55e-4a4b7d6884e8",
+    "state": "NEEDS_INPUT"
+  },
+  "result": "PASS"
+}

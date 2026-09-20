@@ -13,11 +13,25 @@ export function studioProductUrl(value:string):string {
  return value;
 }
 export function productFamily(path:string):'block'|'register'|'workspace'{
- if(/\/(workspace|workspaces|cases)(\/|$)/.test(path))return 'workspace';
+ if(/\/(work|workspace|workspaces|cases|add-files|imports)(\/|$)/.test(path))return 'workspace';
  return /\/(register|registry)(\/|$)/.test(path)?'register':'block';
 }
 export const productNavigation=[
+ {key:'workspace',label:'Batches',href:'/studio/work'},
  {key:'block',label:'Map',href:'/studio/datasets'},
- {key:'register',label:'Property Register',href:'/studio/registry'},
- {key:'workspace',label:'Plan Workspace',href:'/studio/workspaces'},
+ {key:'register',label:'Register',href:'/studio/registry'},
 ] as const;
+
+/** Keep the full incoming context when an identifier resolves to a canonical route. */
+export function studioResolutionUrl(destination:string,values:Record<string,string|string[]|undefined>,selectedIdentity=false):string {
+ const url=new URL(destination,'http://local');
+ for(const [key,value] of Object.entries(values)){
+  if(value===undefined)continue;
+  // An explicit ambiguity choice owns its identity; source, page and vertical scope still travel with it.
+  if(selectedIdentity && (['record','building','feature'].includes(key) || (key==='area' && url.searchParams.has(key))))continue;
+  // A supplied context takes precedence over inferred area context; repeated values stay repeated.
+  url.searchParams.delete(key);
+  for(const item of Array.isArray(value)?value:[value])url.searchParams.append(key,item);
+ }
+ return url.pathname+url.search;
+}

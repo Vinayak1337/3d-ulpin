@@ -1,9 +1,10 @@
-import BlockPage from "@/features/officer/block/BlockPage";
-export default async function Page({
-  params,
-}: {
+import { redirectLegacyFamily } from "@/lib/legacy-redirect-page";
+import type { RouteSearchParams } from "@/lib/legacy-url";
+
+export default async function Page({ params, searchParams }: {
   params: Promise<{ areaId: string }>;
+  searchParams: Promise<RouteSearchParams>;
 }) {
   const { areaId } = await params;
-  return <BlockPage key={areaId} areaId={areaId} />;
+  await redirectLegacyFamily("blocks", { params: Promise.resolve({ path: [areaId] }), searchParams });
 }

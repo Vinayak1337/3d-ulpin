@@ -11,7 +11,8 @@ export type SourceProfile =
   | "levels-csv-v1"
   | "control-csv-v1"
   | "plan-png-v1"
-  | "plan-pdf-v1";
+  | "plan-pdf-v1"
+  | "pdf-reference-v2" | "png-reference-v2" | "jpeg-reference-v2" | "csv-reference-v2" | "text-reference-v2" | "docx-reference-v2";
 export interface Issue {
   code: string;
   message: string;
@@ -118,6 +119,7 @@ export interface ControlPoint {
   locator: string;
 }
 export interface InspectionResult {
+  referenceParts?: import("./area").DocumentPart[];
   profile: SourceProfile;
   status: "ready" | "needs_input" | "failed";
   issues: Issue[];
@@ -157,8 +159,8 @@ export interface ProcessingJob {
   id: string;
   caseId: string;
   sourceId: string | null;
-  operation: "inspect" | "build";
-  status: "queued" | "running" | "succeeded" | "failed" | "stale";
+  operation: "inspect" | "build" | "spatial-inference";
+  status: "queued" | "running" | "succeeded" | "failed" | "stale" | "cancelled";
   createdAt: string;
   completedAt: string | null;
   error: string | null;
@@ -214,3 +216,5 @@ export * from './registry';
 export * from './area';
 
 export * from "./spatial";
+export * from "./spatial-ml";
+export * from "./gis-inspection";

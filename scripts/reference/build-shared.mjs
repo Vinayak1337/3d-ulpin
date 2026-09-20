@@ -1,0 +1,15 @@
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+import {mkdir,copyFile} from 'node:fs/promises';
+const require=createRequire(import.meta.url);
+const {build}=createRequire(require.resolve('tsx'))('esbuild');
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
+await build({entryPoints:[path.join(root,'apps/web/features/spatial/reference-import/browser.ts')],outfile:path.join(root,'design/reference-map-v5/shared/contract.js'),bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,banner:{js:'// Generated from the shared product contract. Run node scripts/reference/build-shared.mjs; do not edit.'}});
+await build({entryPoints:[path.join(root,'apps/web/features/spatial/reference-runtime/index.js')],outfile:path.join(root,'design/reference-map-v5/shared/runtime.js'),bundle:true,format:'esm',platform:'browser',target:'es2022',plugins:[{name:'shared-three',setup(build){build.onResolve({filter:/^three$/},()=>({path:'three',external:true}));}}],minify:true,banner:{js:'// Generated from the shared product map runtime. Run node scripts/reference/build-shared.mjs; do not edit.'}});
+await copyFile(path.join(root,'apps/web/features/spatial/reference-runtime/map.css'),path.join(root,'design/reference-map-v5/map.css'));
+await mkdir(path.join(root,'apps/web/public/reference'),{recursive:true});
+await copyFile(path.join(root,'design/reference-map-v5/data/neem-reference-dataset.zip'),path.join(root,'apps/web/public/reference/neem-reference-dataset.zip'));
+await copyFile(path.join(root,'design/reference-map-v5/data/archive/t072-reference-v5/neem-reference-dataset.zip'),path.join(root,'apps/web/public/reference/reference-block.zip'));
+await copyFile(path.join(root,'design/reference-map-v5/data/independent-arrangements.json'),path.join(root,'apps/web/public/reference/independent-arrangements.json'));
+console.log('Built shared import/runtime artifacts and copied the original reference package.');

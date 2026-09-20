@@ -10,7 +10,8 @@ export function withQuery(
   return `${path}${query.size ? `?${query}` : ""}`;
 }
 export const routes = {
-  home: "/studio/datasets",
+  addFiles: (areaId?: string | null, buildingId?: string | null, caseId?: string | null) => withQuery("/studio/add-files", {area: areaId, building: buildingId, case: caseId}),
+  home: "/studio/work",
   block: (areaId?: string | null, buildingId?: string | null) =>
     areaId
       ? withQuery(`/studio/areas/${segment(areaId)}`, { feature: buildingId })

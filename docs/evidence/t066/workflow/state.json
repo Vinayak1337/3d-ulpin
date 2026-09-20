@@ -1,0 +1,149 @@
+{
+  "requestKey": "865304e3-1dbe-42e0-9e16-5d30dede9a24",
+  "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+  "attachments": {
+    "building": {
+      "sourceRevisionId": "8a8d91d9-fdd2-4609-b912-5e9377eec39d",
+      "sha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+      "name": "published-OAM-test-1200-source-original.png"
+    },
+    "buildingAttribution": {
+      "sourceRevisionId": "09dc6f3e-3a7b-4e47-8e5b-34db2ee4210e",
+      "sha256": "05cda120c92a60cb7c467dbaf522cf2d692872d8f639317caf7d223a0f15f197",
+      "name": "published-OAM-test-1200-source-attribution.txt"
+    }
+  },
+  "checks": [
+    {
+      "name": "Source-only workspace is persisted and resumable without creating or choosing a property",
+      "passed": true
+    },
+    {
+      "name": "PNG and text attribution upload consistently without property association; byte-identical originals retained",
+      "passed": true
+    },
+    {
+      "name": "Actual local building model runs from source-only workspace and retains exact raster/model receipt",
+      "passed": true,
+      "components": 8
+    },
+    {
+      "name": "Reviewed controls preserve actual model contour in an ordinary unrecorded draft; repeat request keeps identity and unknown height",
+      "passed": true
+    },
+    {
+      "name": "Wrong named frame is rejected before any footprint is recorded",
+      "passed": true
+    }
+  ],
+  "scope": "New explicitly fictional source-only workflow in retained T061 demonstration block. Published raster and attribution retained; calibration is authored synthetic test evidence, not survey coordinates.",
+  "initialArea": {
+    "revision": 2,
+    "featureIds": [
+      "1e6c6e44-15ee-4c41-b6bd-067e59151b47",
+      "4090eb05-5a24-4ed6-b449-18631c183210"
+    ]
+  },
+  "workspace": {
+    "id": "b0b641f6-a5e4-4bbb-813a-3f327dcf95c2",
+    "schemaVersion": "ulpin-canonical/2",
+    "areaId": "4c039f5f-c667-405a-962c-c317e6f32a8b",
+    "name": "T066 fictional source-led review 865304e3",
+    "datasetNamespace": "source-workspace:206816b25a6dcad2edf8181182ed08ce954d5668ebc5f31a62af36d15c6d7cc4",
+    "revision": 1,
+    "state": "RECEIVED",
+    "features": [],
+    "sourceRevisionIds": [],
+    "questions": [],
+    "factCandidates": [],
+    "parts": [],
+    "warnings": [],
+    "createdAt": "2026-09-20T14:18:51.666Z",
+    "sourceWorkspace": {
+      "caseId": "e0caa46d-5df6-4d86-853a-6097fec87b58",
+      "frame": {
+        "id": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+        "benchmark": "T061-SYNTHETIC-BM-99741d82",
+        "verticalUnit": "m",
+        "horizontalUnit": "m"
+      },
+      "worldStatus": "synthetic",
+      "areaReferenceFingerprint": "4b213dd7dc0862db61b2e5fd6669db6221ce58ff4376d3d0d24feb817444efaf"
+    }
+  },
+  "caseId": "e0caa46d-5df6-4d86-853a-6097fec87b58",
+  "batchKey": "0047a74e-6fec-4ef9-abfb-6b8b1a4402ef",
+  "batch": {
+    "id": "f6275400-b618-4dd0-a475-57d9f54d3175",
+    "packageId": "b0b641f6-a5e4-4bbb-813a-3f327dcf95c2",
+    "requestKey": "0047a74e-6fec-4ef9-abfb-6b8b1a4402ef",
+    "createdAt": "2026-09-20T14:18:52.546Z",
+    "items": [
+      {
+        "id": "5722878a-dd57-4724-84fd-5b979815b3ca",
+        "page": 1,
+        "task": "building",
+        "state": "queued",
+        "partId": "cd9101aa-161f-4472-953c-e21c9e270f05",
+        "batchId": "f6275400-b618-4dd0-a475-57d9f54d3175",
+        "modelId": "rfdetr-satellite-buildings-onnx-v1",
+        "attempts": [
+          {
+            "jobId": "14a4d349-1205-4ca8-af5e-34cbddc59061",
+            "state": "queued",
+            "createdAt": "2026-09-20T14:18:52.554Z"
+          }
+        ],
+        "createdAt": "2026-09-20T14:18:52.554Z",
+        "packageId": "b0b641f6-a5e4-4bbb-813a-3f327dcf95c2",
+        "updatedAt": "2026-09-20T14:18:52.554Z",
+        "modelSha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+        "applications": [],
+        "currentJobId": "14a4d349-1205-4ca8-af5e-34cbddc59061",
+        "sourceSha256": "6c83203556280716ed9645fdfe225a73662db1cca172c24b98975de7f7637d2a",
+        "inputFingerprint": "0399bd506ec88a84f39ed6c6504fae869161d27cc8f4d2cea4bc424cb6445d0c",
+        "sourceRevisionId": "8a8d91d9-fdd2-4609-b912-5e9377eec39d"
+      }
+    ]
+  },
+  "itemId": "5722878a-dd57-4724-84fd-5b979815b3ca",
+  "draftInput": {
+    "requestKey": "0d473488-b4cf-42df-a1d1-0d34918cfb0e",
+    "expectedRevision": 3,
+    "expectedAreaRevision": 2,
+    "selections": [
+      {
+        "componentId": "93e8187d-da63-5a6e-addc-4e6556f9ac97",
+        "subject": "T066 fictional imagery building"
+      }
+    ],
+    "calibration": {
+      "rasterSha256": "7e73557354dbf8955a6ebde7f84772c41785880bdeeace79630f934510bbbdb4",
+      "imagePoints": [
+        [
+          0,
+          0
+        ],
+        [
+          256,
+          0
+        ]
+      ],
+      "worldPoints": [
+        [
+          100,
+          100
+        ],
+        [
+          140,
+          100
+        ]
+      ],
+      "frame": "AREA-4c039f5f-c667-405a-962c-c317e6f32a8b",
+      "reason": "T066 authored fictional test controls: image width represents 40 metres in the retained named frame. Published imagery is not survey evidence for this fictional block."
+    }
+  },
+  "result": "PASS",
+  "draftPackageId": "5fd5efff-4f12-4173-a60f-eb2e852fd9a5",
+  "featureId": "3395d7e2-897a-4001-b408-aeb998093f13"
+}

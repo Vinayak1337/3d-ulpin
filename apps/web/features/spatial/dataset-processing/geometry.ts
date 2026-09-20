@@ -1,0 +1,1 @@
+export function pathFor(geometry:{type:string;coordinates:unknown}){const coordinates=geometry.coordinates as number[][][]|number[][][][];const polygons=geometry.type==='Polygon'?[coordinates as number[][][]]:coordinates as number[][][][];return polygons.flatMap((p:number[][][])=>p.map(r=>'M'+r.map(point=>point.join(',')).join('L')+'Z')).join(' ');}

@@ -1,0 +1,46 @@
+{
+  "sourceIntegrationTests": 48,
+  "runtimeTests": 15,
+  "finalFixtureTestsRepeated": 3,
+  "productionBuild": "passed",
+  "linkedServiceHealth": {
+    "database": true,
+    "storage": true,
+    "processor": true,
+    "redis": true,
+    "worker": true
+  },
+  "packageSha256": "94d6cd80cd0b2ac4c0d7b5abf6b01dc93a70e373e6e607aae3d746579beea087",
+  "downloadedPackageMatches": true,
+  "downloadedFloorPdfMatches": true,
+  "limits": [
+    "Draft preview only; mixed-package durable recording remains open",
+    "Supporting binary receipt is not automatic extraction"
+  ],
+  "browserChecks": {
+    "downloadedZipUploaded": true,
+    "computedReceipt": [
+      49,
+      184,
+      189,
+      50
+    ],
+    "invalidReplacementRetainsMap": true,
+    "layerPropertyPanelsMutuallyExclusive": true,
+    "floorIdSearch": "DEMO-3D-ANCHOR-B01:1",
+    "floorResidents": 2,
+    "floorRights": "Fictional Leaseholder B01-F1; unreviewed lease",
+    "savedBatchRoute": "healthy; 0 items; no seeding",
+    "mobileViewport": [
+      390,
+      844
+    ],
+    "mobileDocumentSize": [
+      390,
+      844
+    ],
+    "mobileDownloadIconVisible": true,
+    "actualBeforeAfterComparison": true,
+    "finalConsoleErrors": []
+  }
+}

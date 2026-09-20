@@ -6,7 +6,9 @@ import type {
   ImportPackage,
   SourceLocator,
 } from "@ulpin/contracts";
+import { evidenceLabel, evidencePage, groupPreparationFacts } from "./fact-review";
 import AssistancePanel from "./AssistancePanel";
+import SpatialExtractionPanel from "./ml/SpatialExtractionPanel";
 import PreparationBuild from "@/components/PreparationBuild";
 import PreparationPlacement from "@/components/PreparationPlacement";
 import { Button, Badge, Dialog, EmptyState } from "../shared/ui";
@@ -43,6 +45,7 @@ export default function BuildPanel({
   onBusy,
   onModel,
   onAssign,
+  onSource,
 }: {
   workspace: Workspace;
   source?: CanvasSource;
@@ -51,11 +54,12 @@ export default function BuildPanel({
   onBusy: (message: string) => void;
   onModel: () => void;
   onAssign: () => void;
+  onSource?: (id: string, page?: number) => void;
 }) {
-  const [subject, setSubject] = useState("");
   const [partId, setPartId] = useState(""),
     [editing, setEditing] = useState(false),
     [selected, setSelected] = useState<FactCandidate | null>(null),
+    [correction, setCorrection] = useState<FactCandidate | null>(null),
     [trace, setTrace] = useState<Measurement | null>(null);
   const [property, setProperty] =
     useState<CanonicalFactProperty>("space.label");
@@ -75,18 +79,11 @@ export default function BuildPanel({
     ? Object.entries(workspace.requirements)
         .filter(([key]) => ["detailedSpaces", "placement"].includes(key))
         .flatMap(([, items]) => items)
-    : [];
+    : ["Checking required source details…"];
   const facts =
     pkg?.factCandidates.filter((f) => f.entityId === workspace.buildingId) ||
     [];
-  const subjects = [...new Set(facts.map((f) => f.subject || "Building"))];
-  const activeSubject = subjects.includes(subject) ? subject : subjects[0];
-  const shownFacts = facts.filter(
-    (f) => (f.subject || "Building") === activeSubject,
-  );
-  const selectedCount = facts.filter((f) =>
-    pkg?.selectedClaimIds?.includes(f.id),
-  ).length;
+  const grouped = groupPreparationFacts(facts, pkg?.selectedClaimIds);
   const numeric = [
     "space.lower",
     "space.upper",
@@ -109,16 +106,14 @@ export default function BuildPanel({
   if (!workspace.buildingId)
     return (
       <div className={styles.modePanel}>
-        <h2>Build details</h2>
-        <EmptyState
-          title="Assign a property first"
-          description="Originals and local measurements stay in this draft."
-          action={
-            <Button variant="primary" onClick={onAssign}>
-              Assign property
-            </Button>
-          }
-        />
+        <h2>Review source details</h2>
+        {!pkg && <p><a className="ui-button ui-button--primary" href={`${routes.addFiles(workspace.intakeAreaId, undefined, workspace.caseId)}&context=1`}>Choose a block for imagery extraction</a></p>}
+        {pkg?.sourceWorkspace && <SpatialExtractionPanel pkg={pkg} sources={workspace.sources} disabled={disabled} onUpdated={workspace.updatePackage} />}
+        <details>
+          <summary>Link sources to an existing property</summary>
+          <p>Optional for imagery. Floor-plan regions need a property and reviewed placement before they can become detailed records.</p>
+          <Button variant="ghost" onClick={onAssign}>Choose property</Button>
+        </details>
       </div>
     );
   if (!pkg || !prep)
@@ -140,118 +135,81 @@ export default function BuildPanel({
         />
       </div>
     );
+  const sourceOptions = (
+    <label className={styles.field}>
+      Cited source location
+      <select value={part?.id || ""} onChange={(event) => setPartId(event.target.value)}>
+        <option value="">Select a source location</option>
+        {pkg.parts.map((p) => <option key={p.id} value={p.id}>
+          {evidenceLabel({ sourceRevisionId: p.sourceRevisionId, partId: p.id }, pkg, workspace.sources)} · {p.locator}
+        </option>)}
+      </select>
+      {part && <a href={routes.source(part.sourceRevisionId)} target="_blank" rel="noreferrer">Open cited original ↗</a>}
+    </label>
+  );
+  const factCard = (fact: FactCandidate) => {
+    const reviewed = pkg.selectedClaimIds?.includes(fact.id);
+    return <article key={fact.id} className={styles.fact}>
+      <div><strong>{label(fact)}</strong><Badge tone={reviewed ? "success" : grouped.conflictingIds.has(fact.id) ? "warning" : "info"}>
+        {reviewed ? "Reviewed" : grouped.conflictingIds.has(fact.id) ? "Conflicting values" : "Suggested"}
+      </Badge></div>
+      <small>{fact.subject || workspace.dossier?.building.name}</small>
+      <b>{displayValue(fact.value)} {fact.unit || ""}</b>
+      {fact.referenceFrameId && <small>Reference: {fact.referenceFrameId}</small>}
+      {fact.evidence.map((evidence, index) => <div className={styles.factSource} key={index}>
+        <a href={routes.source(evidence.sourceRevisionId)} target="_blank" rel="noreferrer">
+          {evidenceLabel(evidence, pkg, workspace.sources)} ↗
+        </a>
+        {onSource && workspace.sources.some((value) => value.id === evidence.sourceRevisionId) &&
+          <Button variant="ghost" onClick={() => onSource(evidence.sourceRevisionId, evidencePage(evidence, pkg))}>Show source</Button>}
+      </div>)}
+      <footer><Button variant={!reviewed && fact.id === grouped.pending[0]?.id ? "primary" : "ghost"}
+        disabled={disabled} onClick={() => setSelected(fact)}>{reviewed ? "Review / change value" : "Review value"}</Button></footer>
+    </article>;
+  };
   return (
     <div className={styles.modePanel}>
       <div className={styles.panelHeading}>
-        <h2>Build details</h2>
+        <h2>Review details</h2>
         <Badge tone={missing.length ? "warning" : "info"}>
-          {missing.length ? `${missing.length} to resolve` : "Review ready"}
+          {missing.length ? `${missing.length} to resolve` : "Source details ready"}
         </Badge>
       </div>
-      <div className={styles.progressSteps}>
-        <span>Documents</span>
-        <span>Facts</span>
-        <span>Placement</span>
-        <span>Review</span>
-      </div>
-      <label className={styles.field}>
-        Evidence for a new fact
-        <select
-          value={part?.id || ""}
-          onChange={(event) => setPartId(event.target.value)}
-        >
-          <option value="">Select a source part</option>
-          {pkg.parts.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.locator} · {p.text.slice(0, 48) || "Original image"}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className={styles.panelHeading}>
-        <h3>Source facts</h3>
-        <span>
-          {selectedCount} / {facts.length} reviewed
-        </span>
-      </div>
-      {!facts.length && (
-        <p className={styles.muted}>
-          Upload source schedules or enter a supported fact.
-        </p>
-      )}
-      <AssistancePanel
-        key={pkg.id}
-        pkg={pkg}
-        buildingId={workspace.buildingId}
-        source={source}
-        onUpdated={workspace.updatePackage}
-        disabled={disabled}
-        onBusy={onBusy}
-      />
-      {subjects.length > 1 && (
-        <label className={styles.field}>
-          Review a space
-          <select
-            aria-label="Space to review"
-            value={activeSubject}
-            onChange={(e) => setSubject(e.target.value)}
-          >
-            {subjects.map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
-        </label>
-      )}
-      <div className={styles.facts}>
-        {shownFacts.map((fact) => (
-          <article key={fact.id} className={styles.fact}>
-            <div>
-              <strong>{label(fact)}</strong>
-              <Badge
-                tone={
-                  pkg.selectedClaimIds?.includes(fact.id)
-                    ? "success"
-                    : "warning"
-                }
-              >
-                {pkg.selectedClaimIds?.includes(fact.id)
-                  ? "Selected"
-                  : "Review"}
-              </Badge>
-            </div>
-            <small>{fact.subject || workspace.dossier?.building.name}</small>
-            <b>
-              {displayValue(fact.value)} {fact.unit || ""}
-            </b>
-            {fact.referenceFrameId && <small>{fact.referenceFrameId}</small>}
-            <footer>
-              <a
-                href={routes.source(fact.evidence[0]?.sourceRevisionId || "")}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Source ↗
-              </a>
-              {!pkg.selectedClaimIds?.includes(fact.id) && (
-                <Button
-                  variant="ghost"
-                  disabled={disabled}
-                  onClick={() => setSelected(fact)}
-                >
-                  Review value
-                </Button>
-              )}
-            </footer>
-          </article>
-        ))}
-      </div>
-      <Button
-        disabled={disabled || !part}
-        onClick={() => setEditing(true)}
-        icon="plus"
-      >
-        Add source fact
-      </Button>
+      <p className={styles.muted}>Draft changes are saved. The register changes only after explicit recording.</p>
+      {!missing.length && <div className={styles.flow}>
+        <PreparationBuild preparation={prep} pkg={pkg} disabled={disabled} onBusy={onBusy}
+          editorUrl={`${routes.case(prep.caseId)}/geometry?building=${prep.buildingId}&area=${prep.areaId}`}
+          recordUrl={routes.register(prep.buildingId, prep.areaId)}
+          missing={missing} onPackage={workspace.updatePackage} onRecorded={() => void workspace.refresh()} />
+      </div>}
+      {!!missing.length && <div className={styles.notice}>
+        <h3>Still needed</h3><p>{missing[0]}</p>
+        {missing.length > 1 && <details><summary>{missing.length - 1} more requirements</summary><ul>
+          {missing.slice(1).map((item, index) => <li key={index}>{item}</li>)}
+        </ul></details>}
+      </div>}
+      <div className={styles.panelHeading}><h3>Source facts</h3><span>{grouped.reviewed.length} reviewed</span></div>
+      {!facts.length && <p className={styles.muted}>Add source schedules or enter a supported fact.</p>}
+      {!!grouped.pending.length && <div className={styles.facts} aria-label="Source facts needing review">
+        {grouped.pending.map(factCard)}
+      </div>}
+      {!!grouped.reviewed.length && <details className={styles.factDisclosure}>
+        <summary>Reviewed details ({grouped.reviewed.length})</summary>
+        <div className={styles.facts}>{grouped.reviewed.map(factCard)}</div>
+      </details>}
+      {!!grouped.alternatives.length && <details className={styles.factDisclosure}>
+        <summary>Other source values ({grouped.alternatives.length})</summary>
+        <p className={styles.muted}>These alternatives remain retained. Reviewing one replaces the selected value for that subject and fact.</p>
+        <div className={styles.facts}>{grouped.alternatives.map(factCard)}</div>
+      </details>}
+      <Button disabled={disabled || !part} onClick={() => { setCorrection(null); setEditing(true); }} icon="plus">Add source fact</Button>
+      <details className={styles.factDisclosure}>
+        <summary>Read details from a source</summary>
+        <AssistancePanel key={pkg.id} pkg={pkg} buildingId={workspace.buildingId} source={source}
+          onUpdated={workspace.updatePackage} disabled={disabled} onBusy={onBusy} />
+        <SpatialExtractionPanel key={`spatial-${pkg.id}`} pkg={pkg} buildingId={workspace.buildingId}
+          preparation={prep} sources={workspace.sources} onUpdated={workspace.updatePackage} disabled={disabled} />
+      </details>
       {!!traces.length && (
         <details>
           <summary>Use a calibrated trace</summary>
@@ -270,17 +228,11 @@ export default function BuildPanel({
           ))}
         </details>
       )}
-      {!!missing.length && (
-        <div className={styles.notice}>
-          <h3>Still needed</h3>
-          <ul>
-            {missing.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
       <div className={styles.flow}>
+        <details className={styles.factDisclosure} open={prep.placement.status !== "reviewed"}>
+          <summary>{prep.placement.status === "reviewed" ? "Reviewed placement" : "Confirm source placement"}</summary>
+          <p className={styles.muted}>{prep.placement.verticalReference}</p>
+          {sourceOptions}
         <PreparationPlacement
           preparation={prep}
           evidence={evidence}
@@ -291,19 +243,11 @@ export default function BuildPanel({
             await workspace.refresh();
           }}
         />
-        <PreparationBuild
-          preparation={prep}
-          editorUrl={`${routes.case(prep.caseId)}/geometry?building=${prep.buildingId}&area=${prep.areaId}`}
-          pkg={pkg}
-          disabled={disabled}
-          onBusy={onBusy}
-          onPackage={workspace.updatePackage}
-          onRecorded={() => void workspace.refresh()}
-        />
+        </details>
       </div>
       {workspace.detail?.model && (
         <Button icon="cube" onClick={onModel}>
-          Inspect actual 3D draft
+          Inspect computed 3D model
         </Button>
       )}
       <Dialog
@@ -352,6 +296,14 @@ export default function BuildPanel({
               ))}
             </>
           )}
+          {selected && properties[selected.property as CanonicalFactProperty] && <Button
+            disabled={disabled} onClick={() => {
+              setCorrection(selected);
+              setProperty(selected.property as CanonicalFactProperty);
+              setPartId(selected.evidence[0]?.partId || "");
+              setSelected(null);
+              setEditing(true);
+            }}>Enter a corrected candidate</Button>}
           <label>
             Why does the source support this value?
             <textarea name="reason" required />
@@ -400,10 +352,12 @@ export default function BuildPanel({
             });
           }}
         >
+          {sourceOptions}
           <label>
             Space or subject
             <input
               name="subject"
+              defaultValue={correction?.subject}
               maxLength={60}
               required
               placeholder="Space alias from the plan"
@@ -429,6 +383,7 @@ export default function BuildPanel({
             <input
               key={property}
               name="value"
+              defaultValue={correction?.property === property ? String(correction.value) : undefined}
               type={numeric ? "number" : "text"}
               step="any"
               required
@@ -505,6 +460,7 @@ export default function BuildPanel({
             });
           }}
         >
+          {sourceOptions}
           <p>
             Retains the original pixel controls, documented metre coordinates
             and traced boundary. It remains a candidate until reviewed.

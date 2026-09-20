@@ -1,0 +1,4841 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "LOCAL-NEEM-REFERENCE-M"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "B01",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "01 Neem Gali",
+        "parcel_id": "P01",
+        "building_id": "B01",
+        "name": "Neem House",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B01-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B01",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P01",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              37.0
+            ],
+            [
+              56,
+              37.0
+            ],
+            [
+              56,
+              54.0
+            ],
+            [
+              50,
+              54.0
+            ],
+            [
+              50,
+              52.11111111
+            ],
+            [
+              40,
+              52.11111111
+            ],
+            [
+              40,
+              37.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B02",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "02 Neem Gali",
+        "parcel_id": "P02",
+        "building_id": "B02",
+        "name": "Corner House 02",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B02-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B02",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P02",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              0.2
+            ],
+            [
+              8,
+              0.2
+            ],
+            [
+              8,
+              16
+            ],
+            [
+              0,
+              16
+            ],
+            [
+              0,
+              0.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B03",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "03 Neem Gali",
+        "parcel_id": "P03",
+        "building_id": "B03",
+        "name": "Ashok House 03",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B03-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B03",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P03",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              7.4,
+              0.2
+            ],
+            [
+              15.4,
+              0.2
+            ],
+            [
+              15.4,
+              16
+            ],
+            [
+              7.4,
+              16
+            ],
+            [
+              7.4,
+              0.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B04",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "04 Neem Gali",
+        "parcel_id": "P04",
+        "building_id": "B04",
+        "name": "Mango House 04",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B04-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B04",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P04",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              0.25
+            ],
+            [
+              24,
+              0.25
+            ],
+            [
+              24,
+              16
+            ],
+            [
+              21,
+              16
+            ],
+            [
+              21,
+              15
+            ],
+            [
+              18,
+              15
+            ],
+            [
+              18,
+              16
+            ],
+            [
+              16,
+              16
+            ],
+            [
+              16,
+              0.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B05",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "05 Neem Gali",
+        "parcel_id": "P05",
+        "building_id": "B05",
+        "name": "Courtyard House 05",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B05-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B05",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P05",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              0
+            ],
+            [
+              27,
+              0
+            ],
+            [
+              27,
+              0.6
+            ],
+            [
+              29,
+              0.6
+            ],
+            [
+              29,
+              0
+            ],
+            [
+              32,
+              0
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              24,
+              16
+            ],
+            [
+              24,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B06",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "06 Neem Gali",
+        "parcel_id": "P06",
+        "building_id": "B06",
+        "name": "Neem House 06",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B06-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B06",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P06",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              0.2
+            ],
+            [
+              40,
+              0.2
+            ],
+            [
+              40,
+              16
+            ],
+            [
+              32,
+              16
+            ],
+            [
+              32,
+              0.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B07",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "07 Neem Gali",
+        "parcel_id": "P07",
+        "building_id": "B07",
+        "name": "Gali Residence 07",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B07-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B07",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P07",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              0.2
+            ],
+            [
+              48,
+              0.2
+            ],
+            [
+              48,
+              16
+            ],
+            [
+              40,
+              16
+            ],
+            [
+              40,
+              0.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B08",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "08 Neem Gali",
+        "parcel_id": "P08",
+        "building_id": "B08",
+        "name": "Corner House 08",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B08-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B08",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P08",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              0.25
+            ],
+            [
+              56,
+              0.25
+            ],
+            [
+              56,
+              16
+            ],
+            [
+              53,
+              16
+            ],
+            [
+              53,
+              15
+            ],
+            [
+              50,
+              15
+            ],
+            [
+              50,
+              16
+            ],
+            [
+              48,
+              16
+            ],
+            [
+              48,
+              0.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B09",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "09 Neem Gali",
+        "parcel_id": "P09",
+        "building_id": "B09",
+        "name": "Ashok House 09",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B09-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B09",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P09",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              0
+            ],
+            [
+              67,
+              0
+            ],
+            [
+              67,
+              0.6
+            ],
+            [
+              69,
+              0.6
+            ],
+            [
+              69,
+              0
+            ],
+            [
+              72,
+              0
+            ],
+            [
+              72,
+              16
+            ],
+            [
+              64,
+              16
+            ],
+            [
+              64,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B10",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "10 Neem Gali",
+        "parcel_id": "P10",
+        "building_id": "B10",
+        "name": "Mango House 10",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B10-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B10",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P10",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              0.2
+            ],
+            [
+              80,
+              0.2
+            ],
+            [
+              80,
+              16
+            ],
+            [
+              72,
+              16
+            ],
+            [
+              72,
+              0.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B11",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "11 Neem Gali",
+        "parcel_id": "P11",
+        "building_id": "B11",
+        "name": "Courtyard House 11",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B11-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B11",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P11",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              0.2
+            ],
+            [
+              88,
+              0.2
+            ],
+            [
+              88,
+              16
+            ],
+            [
+              80,
+              16
+            ],
+            [
+              80,
+              0.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B12",
+      "properties": {
+        "use": "residential",
+        "floorCount": null,
+        "address": "12 Neem Gali",
+        "parcel_id": "P12",
+        "building_id": "B12",
+        "name": "Neem House 12",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B12-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": null,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B12",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P12",
+        "floor_count": null
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              0.25
+            ],
+            [
+              96,
+              0.25
+            ],
+            [
+              96,
+              16
+            ],
+            [
+              93,
+              16
+            ],
+            [
+              93,
+              15
+            ],
+            [
+              90,
+              15
+            ],
+            [
+              90,
+              16
+            ],
+            [
+              88,
+              16
+            ],
+            [
+              88,
+              0.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B13",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "13 Neem Gali",
+        "parcel_id": "P13",
+        "building_id": "B13",
+        "name": "Gali Residence 13",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B13-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B13",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P13",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              0
+            ],
+            [
+              99,
+              0
+            ],
+            [
+              99,
+              0.6
+            ],
+            [
+              101,
+              0.6
+            ],
+            [
+              101,
+              0
+            ],
+            [
+              104,
+              0
+            ],
+            [
+              104,
+              16
+            ],
+            [
+              96,
+              16
+            ],
+            [
+              96,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B14",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "14 Neem Gali",
+        "parcel_id": "P14",
+        "building_id": "B14",
+        "name": "Corner House 14",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B14-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B14",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P14",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              0.2
+            ],
+            [
+              112,
+              0.2
+            ],
+            [
+              112,
+              16
+            ],
+            [
+              104,
+              16
+            ],
+            [
+              104,
+              0.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B15",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "15 Neem Gali",
+        "parcel_id": "P15",
+        "building_id": "B15",
+        "name": "Ashok House 15",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B15-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B15",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P15",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              0.2
+            ],
+            [
+              120,
+              0.2
+            ],
+            [
+              120,
+              16
+            ],
+            [
+              112,
+              16
+            ],
+            [
+              112,
+              0.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B16",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "16 Neem Gali",
+        "parcel_id": "P16",
+        "building_id": "B16",
+        "name": "Mango House 16",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B16-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B16",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P16",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              19.25
+            ],
+            [
+              8,
+              19.25
+            ],
+            [
+              8,
+              35
+            ],
+            [
+              5,
+              35
+            ],
+            [
+              5,
+              34
+            ],
+            [
+              2,
+              34
+            ],
+            [
+              2,
+              35
+            ],
+            [
+              0,
+              35
+            ],
+            [
+              0,
+              19.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B17",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "17 Neem Gali",
+        "parcel_id": "P17",
+        "building_id": "B17",
+        "name": "Courtyard House 17",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B17-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B17",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P17",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              19
+            ],
+            [
+              11,
+              19
+            ],
+            [
+              11,
+              19.6
+            ],
+            [
+              13,
+              19.6
+            ],
+            [
+              13,
+              19
+            ],
+            [
+              16,
+              19
+            ],
+            [
+              16,
+              35
+            ],
+            [
+              8,
+              35
+            ],
+            [
+              8,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B18",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "18 Neem Gali",
+        "parcel_id": "P18",
+        "building_id": "B18",
+        "name": "Neem House 18",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B18-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B18",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P18",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              19.2
+            ],
+            [
+              24,
+              19.2
+            ],
+            [
+              24,
+              35
+            ],
+            [
+              16,
+              35
+            ],
+            [
+              16,
+              19.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B19",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "19 Neem Gali",
+        "parcel_id": "P19",
+        "building_id": "B19",
+        "name": "Gali Residence 19",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B19-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B19",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P19",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              19.2
+            ],
+            [
+              32,
+              19.2
+            ],
+            [
+              32,
+              35
+            ],
+            [
+              24,
+              35
+            ],
+            [
+              24,
+              19.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B20",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "20 Neem Gali",
+        "parcel_id": "P20",
+        "building_id": "B20",
+        "name": "Corner House 20",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B20-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B20",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P20",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              19.25
+            ],
+            [
+              40,
+              19.25
+            ],
+            [
+              40,
+              35
+            ],
+            [
+              37,
+              35
+            ],
+            [
+              37,
+              34
+            ],
+            [
+              34,
+              34
+            ],
+            [
+              34,
+              35
+            ],
+            [
+              32,
+              35
+            ],
+            [
+              32,
+              19.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B21",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "21 Neem Gali",
+        "parcel_id": "P21",
+        "building_id": "B21",
+        "name": "Ashok House 21",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B21-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B21",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P21",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              19
+            ],
+            [
+              43,
+              19
+            ],
+            [
+              43,
+              19.6
+            ],
+            [
+              45,
+              19.6
+            ],
+            [
+              45,
+              19
+            ],
+            [
+              48,
+              19
+            ],
+            [
+              48,
+              35
+            ],
+            [
+              40,
+              35
+            ],
+            [
+              40,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B22",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "22 Neem Gali",
+        "parcel_id": "P22",
+        "building_id": "B22",
+        "name": "Mango House 22",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B22-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B22",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P22",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              19.2
+            ],
+            [
+              56,
+              19.2
+            ],
+            [
+              56,
+              35
+            ],
+            [
+              48,
+              35
+            ],
+            [
+              48,
+              19.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B23",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "23 Neem Gali",
+        "parcel_id": "P23",
+        "building_id": "B23",
+        "name": "Courtyard House 23",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B23-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B23",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P23",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              19.2
+            ],
+            [
+              72,
+              19.2
+            ],
+            [
+              72,
+              35
+            ],
+            [
+              64,
+              35
+            ],
+            [
+              64,
+              19.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B24",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "24 Neem Gali",
+        "parcel_id": "P24",
+        "building_id": "B24",
+        "name": "Neem House 24",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B24-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B24",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P24",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              19.25
+            ],
+            [
+              80,
+              19.25
+            ],
+            [
+              80,
+              35
+            ],
+            [
+              77,
+              35
+            ],
+            [
+              77,
+              34
+            ],
+            [
+              74,
+              34
+            ],
+            [
+              74,
+              35
+            ],
+            [
+              72,
+              35
+            ],
+            [
+              72,
+              19.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B25",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "25 Neem Gali",
+        "parcel_id": "P25",
+        "building_id": "B25",
+        "name": "Gali Residence 25",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B25-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B25",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P25",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              19
+            ],
+            [
+              83,
+              19
+            ],
+            [
+              83,
+              19.6
+            ],
+            [
+              85,
+              19.6
+            ],
+            [
+              85,
+              19
+            ],
+            [
+              88,
+              19
+            ],
+            [
+              88,
+              35
+            ],
+            [
+              80,
+              35
+            ],
+            [
+              80,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B26",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "26 Neem Gali",
+        "parcel_id": "P26",
+        "building_id": "B26",
+        "name": "Corner House 26",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B26-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B26",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P26",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              19.2
+            ],
+            [
+              96,
+              19.2
+            ],
+            [
+              96,
+              35
+            ],
+            [
+              88,
+              35
+            ],
+            [
+              88,
+              19.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B27",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "27 Neem Gali",
+        "parcel_id": "P27",
+        "building_id": "B27",
+        "name": "Ashok House 27",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B27-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B27",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P27",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              19.2
+            ],
+            [
+              104,
+              19.2
+            ],
+            [
+              104,
+              35
+            ],
+            [
+              96,
+              35
+            ],
+            [
+              96,
+              19.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B28",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "28 Neem Gali",
+        "parcel_id": "P28",
+        "building_id": "B28",
+        "name": "Mango House 28",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B28-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B28",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P28",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              19.25
+            ],
+            [
+              112,
+              19.25
+            ],
+            [
+              112,
+              35
+            ],
+            [
+              109,
+              35
+            ],
+            [
+              109,
+              34
+            ],
+            [
+              106,
+              34
+            ],
+            [
+              106,
+              35
+            ],
+            [
+              104,
+              35
+            ],
+            [
+              104,
+              19.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B29",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "29 Neem Gali",
+        "parcel_id": "P29",
+        "building_id": "B29",
+        "name": "Courtyard House 29",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B29-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B29",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P29",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              19
+            ],
+            [
+              115,
+              19
+            ],
+            [
+              115,
+              19.6
+            ],
+            [
+              117,
+              19.6
+            ],
+            [
+              117,
+              19
+            ],
+            [
+              120,
+              19
+            ],
+            [
+              120,
+              35
+            ],
+            [
+              112,
+              35
+            ],
+            [
+              112,
+              19
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B30",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "30 Neem Gali",
+        "parcel_id": "P30",
+        "building_id": "B30",
+        "name": "Neem House 30",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B30-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B30",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P30",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              38.2
+            ],
+            [
+              8,
+              38.2
+            ],
+            [
+              8,
+              54
+            ],
+            [
+              0,
+              54
+            ],
+            [
+              0,
+              38.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B31",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "31 Neem Gali",
+        "parcel_id": "P31",
+        "building_id": "B31",
+        "name": "Gali Residence 31",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B31-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B31",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P31",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              38.2
+            ],
+            [
+              16,
+              38.2
+            ],
+            [
+              16,
+              54
+            ],
+            [
+              8,
+              54
+            ],
+            [
+              8,
+              38.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B32",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "32 Neem Gali",
+        "parcel_id": "P32",
+        "building_id": "B32",
+        "name": "Corner House 32",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B32-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B32",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P32",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              38.25
+            ],
+            [
+              24,
+              38.25
+            ],
+            [
+              24,
+              54
+            ],
+            [
+              21,
+              54
+            ],
+            [
+              21,
+              53
+            ],
+            [
+              18,
+              53
+            ],
+            [
+              18,
+              54
+            ],
+            [
+              16,
+              54
+            ],
+            [
+              16,
+              38.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B33",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "33 Neem Gali",
+        "parcel_id": "P33",
+        "building_id": "B33",
+        "name": "Ashok House 33",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B33-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B33",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P33",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              38
+            ],
+            [
+              27,
+              38
+            ],
+            [
+              27,
+              38.6
+            ],
+            [
+              29,
+              38.6
+            ],
+            [
+              29,
+              38
+            ],
+            [
+              32,
+              38
+            ],
+            [
+              32,
+              54
+            ],
+            [
+              24,
+              54
+            ],
+            [
+              24,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B34",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "34 Neem Gali",
+        "parcel_id": "P34",
+        "building_id": "B34",
+        "name": "Mango House 34",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B34-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B34",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P34",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              38.2
+            ],
+            [
+              40,
+              38.2
+            ],
+            [
+              40,
+              54
+            ],
+            [
+              32,
+              54
+            ],
+            [
+              32,
+              38.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B35",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "35 Neem Gali",
+        "parcel_id": "P35",
+        "building_id": "B35",
+        "name": "Courtyard House 35",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B35-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B35",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P35",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              38.2
+            ],
+            [
+              80,
+              38.2
+            ],
+            [
+              80,
+              54
+            ],
+            [
+              72,
+              54
+            ],
+            [
+              72,
+              38.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B36",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "36 Neem Gali",
+        "parcel_id": "P36",
+        "building_id": "B36",
+        "name": "Neem House 36",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B36-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B36",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P36",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              38.25
+            ],
+            [
+              88,
+              38.25
+            ],
+            [
+              88,
+              54
+            ],
+            [
+              85,
+              54
+            ],
+            [
+              85,
+              53
+            ],
+            [
+              82,
+              53
+            ],
+            [
+              82,
+              54
+            ],
+            [
+              80,
+              54
+            ],
+            [
+              80,
+              38.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B37",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "37 Neem Gali",
+        "parcel_id": "P37",
+        "building_id": "B37",
+        "name": "Gali Residence 37",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B37-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B37",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P37",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              38
+            ],
+            [
+              91,
+              38
+            ],
+            [
+              91,
+              38.6
+            ],
+            [
+              93,
+              38.6
+            ],
+            [
+              93,
+              38
+            ],
+            [
+              96,
+              38
+            ],
+            [
+              96,
+              54
+            ],
+            [
+              88,
+              54
+            ],
+            [
+              88,
+              38
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B38",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "38 Neem Gali",
+        "parcel_id": "P38",
+        "building_id": "B38",
+        "name": "Corner House 38",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B38-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B38",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P38",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              38.2
+            ],
+            [
+              104,
+              38.2
+            ],
+            [
+              104,
+              54
+            ],
+            [
+              96,
+              54
+            ],
+            [
+              96,
+              38.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B39",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "39 Neem Gali",
+        "parcel_id": "P39",
+        "building_id": "B39",
+        "name": "Ashok House 39",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B39-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B39",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P39",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              38.2
+            ],
+            [
+              112,
+              38.2
+            ],
+            [
+              112,
+              54
+            ],
+            [
+              104,
+              54
+            ],
+            [
+              104,
+              38.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B40",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "40 Neem Gali",
+        "parcel_id": "P40",
+        "building_id": "B40",
+        "name": "Mango House 40",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B40-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B40",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P40",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              38.25
+            ],
+            [
+              120,
+              38.25
+            ],
+            [
+              120,
+              54
+            ],
+            [
+              117,
+              54
+            ],
+            [
+              117,
+              53
+            ],
+            [
+              114,
+              53
+            ],
+            [
+              114,
+              54
+            ],
+            [
+              112,
+              54
+            ],
+            [
+              112,
+              38.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B41",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "41 Neem Gali",
+        "parcel_id": "P41",
+        "building_id": "B41",
+        "name": "Courtyard House 41",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B41-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B41",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P41",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              57
+            ],
+            [
+              3,
+              57
+            ],
+            [
+              3,
+              57.6
+            ],
+            [
+              5,
+              57.6
+            ],
+            [
+              5,
+              57
+            ],
+            [
+              8,
+              57
+            ],
+            [
+              8,
+              73
+            ],
+            [
+              0,
+              73
+            ],
+            [
+              0,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B42",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "42 Neem Gali",
+        "parcel_id": "P42",
+        "building_id": "B42",
+        "name": "Neem House 42",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B42-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B42",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P42",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              57.2
+            ],
+            [
+              16,
+              57.2
+            ],
+            [
+              16,
+              73
+            ],
+            [
+              8,
+              73
+            ],
+            [
+              8,
+              57.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B43",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "43 Neem Gali",
+        "parcel_id": "P43",
+        "building_id": "B43",
+        "name": "Gali Residence 43",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B43-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B43",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P43",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              57.2
+            ],
+            [
+              24,
+              57.2
+            ],
+            [
+              24,
+              73
+            ],
+            [
+              16,
+              73
+            ],
+            [
+              16,
+              57.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B44",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "44 Neem Gali",
+        "parcel_id": "P44",
+        "building_id": "B44",
+        "name": "Corner House 44",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B44-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B44",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P44",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              57.25
+            ],
+            [
+              32,
+              57.25
+            ],
+            [
+              32,
+              73
+            ],
+            [
+              29,
+              73
+            ],
+            [
+              29,
+              72
+            ],
+            [
+              26,
+              72
+            ],
+            [
+              26,
+              73
+            ],
+            [
+              24,
+              73
+            ],
+            [
+              24,
+              57.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B45",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "45 Neem Gali",
+        "parcel_id": "P45",
+        "building_id": "B45",
+        "name": "Ashok House 45",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B45-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B45",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P45",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              57
+            ],
+            [
+              35,
+              57
+            ],
+            [
+              35,
+              57.6
+            ],
+            [
+              37,
+              57.6
+            ],
+            [
+              37,
+              57
+            ],
+            [
+              40,
+              57
+            ],
+            [
+              40,
+              73
+            ],
+            [
+              32,
+              73
+            ],
+            [
+              32,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B46",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "46 Neem Gali",
+        "parcel_id": "P46",
+        "building_id": "B46",
+        "name": "Mango House 46",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B46-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B46",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P46",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              57.2
+            ],
+            [
+              48,
+              57.2
+            ],
+            [
+              48,
+              73
+            ],
+            [
+              40,
+              73
+            ],
+            [
+              40,
+              57.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B47",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "47 Neem Gali",
+        "parcel_id": "P47",
+        "building_id": "B47",
+        "name": "Courtyard House 47",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B47-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B47",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P47",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              57.2
+            ],
+            [
+              56,
+              57.2
+            ],
+            [
+              56,
+              73
+            ],
+            [
+              48,
+              73
+            ],
+            [
+              48,
+              57.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B48",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "48 Neem Gali",
+        "parcel_id": "P48",
+        "building_id": "B48",
+        "name": "Neem House 48",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B48-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B48",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P48",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              57.25
+            ],
+            [
+              72,
+              57.25
+            ],
+            [
+              72,
+              73
+            ],
+            [
+              69,
+              73
+            ],
+            [
+              69,
+              72
+            ],
+            [
+              66,
+              72
+            ],
+            [
+              66,
+              73
+            ],
+            [
+              64,
+              73
+            ],
+            [
+              64,
+              57.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B49",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "49 Neem Gali",
+        "parcel_id": "P49",
+        "building_id": "B49",
+        "name": "Gali Residence 49",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B49-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B49",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P49",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              57
+            ],
+            [
+              75,
+              57
+            ],
+            [
+              75,
+              57.6
+            ],
+            [
+              77,
+              57.6
+            ],
+            [
+              77,
+              57
+            ],
+            [
+              80,
+              57
+            ],
+            [
+              80,
+              73
+            ],
+            [
+              72,
+              73
+            ],
+            [
+              72,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B50",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "50 Neem Gali",
+        "parcel_id": "P50",
+        "building_id": "B50",
+        "name": "Corner House 50",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B50-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B50",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P50",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              57.2
+            ],
+            [
+              88,
+              57.2
+            ],
+            [
+              88,
+              73
+            ],
+            [
+              80,
+              73
+            ],
+            [
+              80,
+              57.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B51",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "51 Neem Gali",
+        "parcel_id": "P51",
+        "building_id": "B51",
+        "name": "Ashok House 51",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B51-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B51",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P51",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              57.2
+            ],
+            [
+              96,
+              57.2
+            ],
+            [
+              96,
+              73
+            ],
+            [
+              88,
+              73
+            ],
+            [
+              88,
+              57.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B52",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "52 Neem Gali",
+        "parcel_id": "P52",
+        "building_id": "B52",
+        "name": "Mango House 52",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B52-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B52",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P52",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              57.25
+            ],
+            [
+              104,
+              57.25
+            ],
+            [
+              104,
+              73
+            ],
+            [
+              101,
+              73
+            ],
+            [
+              101,
+              72
+            ],
+            [
+              98,
+              72
+            ],
+            [
+              98,
+              73
+            ],
+            [
+              96,
+              73
+            ],
+            [
+              96,
+              57.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B53",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "53 Neem Gali",
+        "parcel_id": "P53",
+        "building_id": "B53",
+        "name": "Courtyard House 53",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B53-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B53",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P53",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              57
+            ],
+            [
+              107,
+              57
+            ],
+            [
+              107,
+              57.6
+            ],
+            [
+              109,
+              57.6
+            ],
+            [
+              109,
+              57
+            ],
+            [
+              112,
+              57
+            ],
+            [
+              112,
+              73
+            ],
+            [
+              104,
+              73
+            ],
+            [
+              104,
+              57
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B54",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "54 Neem Gali",
+        "parcel_id": "P54",
+        "building_id": "B54",
+        "name": "Neem House 54",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B54-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B54",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P54",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              57.2
+            ],
+            [
+              120,
+              57.2
+            ],
+            [
+              120,
+              73
+            ],
+            [
+              112,
+              73
+            ],
+            [
+              112,
+              57.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B55",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "55 Neem Gali",
+        "parcel_id": "P55",
+        "building_id": "B55",
+        "name": "Gali Residence 55",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B55-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B55",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P55",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              76.2
+            ],
+            [
+              8,
+              76.2
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              0,
+              92
+            ],
+            [
+              0,
+              76.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B56",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "56 Neem Gali",
+        "parcel_id": "P56",
+        "building_id": "B56",
+        "name": "Corner House 56",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B56-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B56",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P56",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              76.25
+            ],
+            [
+              16,
+              76.25
+            ],
+            [
+              16,
+              92
+            ],
+            [
+              13,
+              92
+            ],
+            [
+              13,
+              91
+            ],
+            [
+              10,
+              91
+            ],
+            [
+              10,
+              92
+            ],
+            [
+              8,
+              92
+            ],
+            [
+              8,
+              76.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B57",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "57 Neem Gali",
+        "parcel_id": "P57",
+        "building_id": "B57",
+        "name": "Ashok House 57",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B57-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B57",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P57",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              76
+            ],
+            [
+              19,
+              76
+            ],
+            [
+              19,
+              76.6
+            ],
+            [
+              21,
+              76.6
+            ],
+            [
+              21,
+              76
+            ],
+            [
+              24,
+              76
+            ],
+            [
+              24,
+              92
+            ],
+            [
+              16,
+              92
+            ],
+            [
+              16,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B58",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "58 Neem Gali",
+        "parcel_id": "P58",
+        "building_id": "B58",
+        "name": "Mango House 58",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B58-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B58",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P58",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              76.2
+            ],
+            [
+              32,
+              76.2
+            ],
+            [
+              32,
+              92
+            ],
+            [
+              24,
+              92
+            ],
+            [
+              24,
+              76.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B59",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "59 Neem Gali",
+        "parcel_id": "P59",
+        "building_id": "B59",
+        "name": "Courtyard House 59",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B59-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B59",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P59",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              76.2
+            ],
+            [
+              40,
+              76.2
+            ],
+            [
+              40,
+              92
+            ],
+            [
+              32,
+              92
+            ],
+            [
+              32,
+              76.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B60",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "60 Neem Gali",
+        "parcel_id": "P60",
+        "building_id": "B60",
+        "name": "Neem House 60",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B60-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B60",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P60",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              76.25
+            ],
+            [
+              48,
+              76.25
+            ],
+            [
+              48,
+              92
+            ],
+            [
+              45,
+              92
+            ],
+            [
+              45,
+              91
+            ],
+            [
+              42,
+              91
+            ],
+            [
+              42,
+              92
+            ],
+            [
+              40,
+              92
+            ],
+            [
+              40,
+              76.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B61",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "61 Neem Gali",
+        "parcel_id": "P61",
+        "building_id": "B61",
+        "name": "Gali Residence 61",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B61-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B61",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P61",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              76
+            ],
+            [
+              51,
+              76
+            ],
+            [
+              51,
+              76.6
+            ],
+            [
+              53,
+              76.6
+            ],
+            [
+              53,
+              76
+            ],
+            [
+              56,
+              76
+            ],
+            [
+              56,
+              92
+            ],
+            [
+              48,
+              92
+            ],
+            [
+              48,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B62",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "62 Neem Gali",
+        "parcel_id": "P62",
+        "building_id": "B62",
+        "name": "Corner House 62",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B62-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B62",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P62",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              76.2
+            ],
+            [
+              72,
+              76.2
+            ],
+            [
+              72,
+              92
+            ],
+            [
+              64,
+              92
+            ],
+            [
+              64,
+              76.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B63",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "63 Neem Gali",
+        "parcel_id": "P63",
+        "building_id": "B63",
+        "name": "Ashok House 63",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B63-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B63",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P63",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              76.2
+            ],
+            [
+              80,
+              76.2
+            ],
+            [
+              80,
+              92
+            ],
+            [
+              72,
+              92
+            ],
+            [
+              72,
+              76.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B64",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "64 Neem Gali",
+        "parcel_id": "P64",
+        "building_id": "B64",
+        "name": "Mango House 64",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B64-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B64",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P64",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              76.25
+            ],
+            [
+              88,
+              76.25
+            ],
+            [
+              88,
+              92
+            ],
+            [
+              85,
+              92
+            ],
+            [
+              85,
+              91
+            ],
+            [
+              82,
+              91
+            ],
+            [
+              82,
+              92
+            ],
+            [
+              80,
+              92
+            ],
+            [
+              80,
+              76.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B65",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "65 Neem Gali",
+        "parcel_id": "P65",
+        "building_id": "B65",
+        "name": "Courtyard House 65",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B65-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B65",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P65",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              76
+            ],
+            [
+              91,
+              76
+            ],
+            [
+              91,
+              76.6
+            ],
+            [
+              93,
+              76.6
+            ],
+            [
+              93,
+              76
+            ],
+            [
+              96,
+              76
+            ],
+            [
+              96,
+              92
+            ],
+            [
+              88,
+              92
+            ],
+            [
+              88,
+              76
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B66",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "66 Neem Gali",
+        "parcel_id": "P66",
+        "building_id": "B66",
+        "name": "Neem House 66",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B66-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B66",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P66",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              76.2
+            ],
+            [
+              104,
+              76.2
+            ],
+            [
+              104,
+              92
+            ],
+            [
+              96,
+              92
+            ],
+            [
+              96,
+              76.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B67",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "67 Neem Gali",
+        "parcel_id": "P67",
+        "building_id": "B67",
+        "name": "Gali Residence 67",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B67-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B67",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P67",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              76.2
+            ],
+            [
+              112,
+              76.2
+            ],
+            [
+              112,
+              92
+            ],
+            [
+              104,
+              92
+            ],
+            [
+              104,
+              76.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B68",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "68 Neem Gali",
+        "parcel_id": "P68",
+        "building_id": "B68",
+        "name": "Corner House 68",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B68-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B68",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P68",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              76.25
+            ],
+            [
+              120,
+              76.25
+            ],
+            [
+              120,
+              92
+            ],
+            [
+              117,
+              92
+            ],
+            [
+              117,
+              91
+            ],
+            [
+              114,
+              91
+            ],
+            [
+              114,
+              92
+            ],
+            [
+              112,
+              92
+            ],
+            [
+              112,
+              76.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B69",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "69 Neem Gali",
+        "parcel_id": "P69",
+        "building_id": "B69",
+        "name": "Ashok House 69",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B69-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B69",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P69",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              95
+            ],
+            [
+              3,
+              95
+            ],
+            [
+              3,
+              95.6
+            ],
+            [
+              5,
+              95.6
+            ],
+            [
+              5,
+              95
+            ],
+            [
+              8,
+              95
+            ],
+            [
+              8,
+              111
+            ],
+            [
+              0,
+              111
+            ],
+            [
+              0,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B70",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "70 Neem Gali",
+        "parcel_id": "P70",
+        "building_id": "B70",
+        "name": "Mango House 70",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B70-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B70",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P70",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              8,
+              95.2
+            ],
+            [
+              16,
+              95.2
+            ],
+            [
+              16,
+              111
+            ],
+            [
+              8,
+              111
+            ],
+            [
+              8,
+              95.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B71",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "71 Neem Gali",
+        "parcel_id": "P71",
+        "building_id": "B71",
+        "name": "Courtyard House 71",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B71-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B71",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P71",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16,
+              95.2
+            ],
+            [
+              24,
+              95.2
+            ],
+            [
+              24,
+              111
+            ],
+            [
+              16,
+              111
+            ],
+            [
+              16,
+              95.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B72",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "72 Neem Gali",
+        "parcel_id": "P72",
+        "building_id": "B72",
+        "name": "Neem House 72",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B72-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B72",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P72",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              24,
+              95.25
+            ],
+            [
+              32,
+              95.25
+            ],
+            [
+              32,
+              111
+            ],
+            [
+              29,
+              111
+            ],
+            [
+              29,
+              110
+            ],
+            [
+              26,
+              110
+            ],
+            [
+              26,
+              111
+            ],
+            [
+              24,
+              111
+            ],
+            [
+              24,
+              95.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B73",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "73 Neem Gali",
+        "parcel_id": "P73",
+        "building_id": "B73",
+        "name": "Gali Residence 73",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B73-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B73",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P73",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              32,
+              95
+            ],
+            [
+              35,
+              95
+            ],
+            [
+              35,
+              95.6
+            ],
+            [
+              37,
+              95.6
+            ],
+            [
+              37,
+              95
+            ],
+            [
+              40,
+              95
+            ],
+            [
+              40,
+              111
+            ],
+            [
+              32,
+              111
+            ],
+            [
+              32,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B74",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "74 Neem Gali",
+        "parcel_id": "P74",
+        "building_id": "B74",
+        "name": "Corner House 74",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B74-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B74",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P74",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              40,
+              95.2
+            ],
+            [
+              48,
+              95.2
+            ],
+            [
+              48,
+              111
+            ],
+            [
+              40,
+              111
+            ],
+            [
+              40,
+              95.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B75",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "75 Neem Gali",
+        "parcel_id": "P75",
+        "building_id": "B75",
+        "name": "Ashok House 75",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B75-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B75",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P75",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              48,
+              95.2
+            ],
+            [
+              56,
+              95.2
+            ],
+            [
+              56,
+              111
+            ],
+            [
+              48,
+              111
+            ],
+            [
+              48,
+              95.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B76",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "76 Neem Gali",
+        "parcel_id": "P76",
+        "building_id": "B76",
+        "name": "Mango House 76",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B76-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B76",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P76",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              64,
+              95.25
+            ],
+            [
+              72,
+              95.25
+            ],
+            [
+              72,
+              111
+            ],
+            [
+              69,
+              111
+            ],
+            [
+              69,
+              110
+            ],
+            [
+              66,
+              110
+            ],
+            [
+              66,
+              111
+            ],
+            [
+              64,
+              111
+            ],
+            [
+              64,
+              95.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B77",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "77 Neem Gali",
+        "parcel_id": "P77",
+        "building_id": "B77",
+        "name": "Courtyard House 77",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B77-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B77",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P77",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72,
+              95
+            ],
+            [
+              75,
+              95
+            ],
+            [
+              75,
+              95.6
+            ],
+            [
+              77,
+              95.6
+            ],
+            [
+              77,
+              95
+            ],
+            [
+              80,
+              95
+            ],
+            [
+              80,
+              111
+            ],
+            [
+              72,
+              111
+            ],
+            [
+              72,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B78",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "78 Neem Gali",
+        "parcel_id": "P78",
+        "building_id": "B78",
+        "name": "Neem House 78",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B78-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B78",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P78",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              80,
+              95.2
+            ],
+            [
+              88,
+              95.2
+            ],
+            [
+              88,
+              111
+            ],
+            [
+              80,
+              111
+            ],
+            [
+              80,
+              95.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B79",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "79 Neem Gali",
+        "parcel_id": "P79",
+        "building_id": "B79",
+        "name": "Gali Residence 79",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B79-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B79",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P79",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88,
+              95.2
+            ],
+            [
+              96,
+              95.2
+            ],
+            [
+              96,
+              111
+            ],
+            [
+              88,
+              111
+            ],
+            [
+              88,
+              95.2
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B80",
+      "properties": {
+        "use": "residential",
+        "floorCount": 3,
+        "address": "80 Neem Gali",
+        "parcel_id": "P80",
+        "building_id": "B80",
+        "name": "Corner House 80",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B80-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 9.3,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B80",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P80",
+        "floor_count": 3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              96,
+              95.25
+            ],
+            [
+              104,
+              95.25
+            ],
+            [
+              104,
+              111
+            ],
+            [
+              101,
+              111
+            ],
+            [
+              101,
+              110
+            ],
+            [
+              98,
+              110
+            ],
+            [
+              98,
+              111
+            ],
+            [
+              96,
+              111
+            ],
+            [
+              96,
+              95.25
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B81",
+      "properties": {
+        "use": "residential",
+        "floorCount": 4,
+        "address": "81 Neem Gali",
+        "parcel_id": "P81",
+        "building_id": "B81",
+        "name": "Ashok House 81",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B81-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 12.4,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B81",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P81",
+        "floor_count": 4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              104,
+              95
+            ],
+            [
+              107,
+              95
+            ],
+            [
+              107,
+              95.6
+            ],
+            [
+              109,
+              95.6
+            ],
+            [
+              109,
+              95
+            ],
+            [
+              112,
+              95
+            ],
+            [
+              112,
+              111
+            ],
+            [
+              104,
+              111
+            ],
+            [
+              104,
+              95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "B82",
+      "properties": {
+        "use": "residential",
+        "floorCount": 5,
+        "address": "82 Neem Gali",
+        "parcel_id": "P82",
+        "building_id": "B82",
+        "name": "Mango House 82",
+        "classification": "synthetic",
+        "source_revision": "source-showcase-1",
+        "geometry_status": "authored_synthetic",
+        "geometry_note": "Author-provided fictional geometry; not AI extraction or survey evidence.",
+        "geometry_id": "G-B82-v1",
+        "geometry_revision": 1,
+        "base_elevation_m": 0,
+        "height_m": 15.5,
+        "vertical_reference": "DEMO-BM-01 fictional zero datum; not national MSL",
+        "internal_3d_id": "DEMO-3D-DENSE-B82",
+        "parcel_2d_demo_id": "DEMO-2D-DENSE-P82",
+        "floor_count": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              112,
+              95.2
+            ],
+            [
+              120,
+              95.2
+            ],
+            [
+              120,
+              111
+            ],
+            [
+              112,
+              111
+            ],
+            [
+              112,
+              95.2
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

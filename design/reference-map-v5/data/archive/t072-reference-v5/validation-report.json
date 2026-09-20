@@ -1,0 +1,51 @@
+{
+  "status": "passed",
+  "schema": "passed",
+  "objects": 86,
+  "buildings": 28,
+  "spaces": 16,
+  "sources": 8,
+  "sourceFilesRoundTripped": 6,
+  "roundTripObjectCount": 86,
+  "maxRoundTripErrorM": 1.979060471057892e-09,
+  "hashesAndZipContents": "passed",
+  "pendingHeightPreserved": true,
+  "existingAppPureAdapterChecks": [
+    {
+      "file": "buildings.geojson",
+      "kind": "building",
+      "featureCount": 28,
+      "sourceCrs": "EPSG:4326"
+    },
+    {
+      "file": "parcels.geojson",
+      "kind": "parcel",
+      "featureCount": 28,
+      "sourceCrs": "EPSG:4326"
+    },
+    {
+      "file": "roads.geojson",
+      "kind": "road",
+      "featureCount": 4,
+      "sourceCrs": "EPSG:4326"
+    },
+    {
+      "file": "open_areas.geojson",
+      "kind": "public_land",
+      "featureCount": 2,
+      "sourceCrs": "EPSG:4326"
+    },
+    {
+      "file": "utilities.geojson",
+      "kind": "utility",
+      "featureCount": 2,
+      "sourceCrs": "EPSG:4326"
+    }
+  ],
+  "limitations": [
+    "No live application ingestion or database writes performed.",
+    "Floor/space source adapter is this package round-trip; existing area adapter has no floor/space kind.",
+    "Existing app checks verify horizontal geometry and building-relative heights, not preservation of this custom vertical datum or complete raw properties.",
+    "ZIP is a package to extract or use with prototype adapter, not a Shapefile ZIP accepted by the existing native-GIS upload route."
+  ]
+}
