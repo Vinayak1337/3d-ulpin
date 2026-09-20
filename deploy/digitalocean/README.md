@@ -8,4 +8,4 @@ Architecture: Caddy HTTPS → loopback Next.js:3000; private PostgreSQL/PostGIS,
 
 Do not commit private SSH keys, access files, actual .env files or model weights. Source-package and evidence bytes have explicit git attributes to survive platform line-ending normalization.
 
-See T089_RESULT.md for deployed revision, verified imported IDs and remaining limitations. Upload sources are in `data-source/`; import the complete ZIPs rather than individual evidence files. See `docs/HACKATHON_BRIEFING.md` for presentation facts and judge questions.
+See `docs/engineering-plan/tasks/T089_RESULT.md` for deployed revision, verified imported IDs and remaining limitations. Upload sources are in `data-source/`; import the complete ZIPs rather than individual evidence files. See `docs/HACKATHON_BRIEFING.md` for presentation facts and judge questions.

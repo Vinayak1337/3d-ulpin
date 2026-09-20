@@ -1,0 +1,34 @@
+{
+  "revision": "35c17e256255539fd6dcff466b64196bead4eb11",
+  "uploadMethod": "Safari hosted Add files native file chooser and Save dataset buttons",
+  "emptyBeforeImport": true,
+  "datasets": [
+    {
+      "id": "d708811f-936a-4f9a-bad2-4b51f7465dd1",
+      "name": "Lake View \u00b7 complete fictional source dataset",
+      "originalName": "lake-view-complete.zip",
+      "sha256": "94d6cd80cd0b2ac4c0d7b5abf6b01dc93a70e373e6e607aae3d746579beea087",
+      "digest": "5475e2943de69732563c9ff5fc9c821dd93a336a70f36e2381166ce6e20a0877",
+      "revision": 1,
+      "classification": "synthetic",
+      "buildingCount": 49,
+      "floorCount": 184,
+      "sourceCount": 50,
+      "createdAt": "2026-09-20T22:10:51.054Z"
+    },
+    {
+      "id": "f660e739-fc33-4e48-861a-439ab2555058",
+      "name": "Shiv Vihar Extension \u2014 Block A \u00b7 supplied synthetic master",
+      "originalName": "shiv-vihar-complete.zip",
+      "sha256": "2a1668dfe509b828ef8696f96eff3d024ef3eff61d8c3b5249b6911a433fdd39",
+      "digest": "c735e2010edf848933553d3bc6caf3977ab57ca2d8412948dcfb3e12ed54343c",
+      "revision": 1,
+      "classification": "synthetic",
+      "buildingCount": 32,
+      "floorCount": 5,
+      "sourceCount": 5,
+      "createdAt": "2026-09-20T22:11:26.207Z"
+    }
+  ],
+  "packageBytesVerified": true
+}
