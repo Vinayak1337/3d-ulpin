@@ -7,12 +7,14 @@ import { withQuery } from "../shared/routes";
 import { request, useMutation, useResource } from "../shared/hooks";
 import { routes } from "../shared/routes";
 import { Button, ErrorState, Icon } from "../shared/ui";
+import {intakeFileKind,type IntakeFileKind} from "@/lib/intake-file-kind";
+import DatasetIntake from "./DatasetIntake";
 import ImportForm from "../block/ImportForm";
 import ImportReview from "../block/ImportReview";
 import "../block/data-tools.css";
 import "./add-files.css";
 
-type Selection = { id: string; file: File; kind: "document" | "gis" | "unsupported"; state: "selected" | "retained"; package?: ImportPackage };
+type Selection = { id: string; file: File; kind: IntakeFileKind | "checking"; error?: string; state: "selected" | "retained"; package?: ImportPackage };
 export default function AddFiles() {
   const search = useSearchParams(), router = useRouter();
   const buildingId = search.get("building"), caseId = search.get("case"), contextOnly = search.get("context") === "1";
@@ -29,12 +31,14 @@ export default function AddFiles() {
   const area = areas.data?.find(a => a.id === destinationAreaId) || (createdArea?.id === destinationAreaId ? createdArea : undefined);
   const pending = files.filter(f => f.state === "selected");
   const invalidDocument = pending.map(row => documentSizeError(row.file)).find(Boolean);
-  const unsupported = pending.some(f => f.kind === "unsupported") || !!invalidDocument;
+  const unsupported = pending.some(f => f.kind === "unsupported" || f.kind === "checking" || !!f.error) || !!invalidDocument;
   const gis = pending.find(f => f.kind === "gis");
   const documents = pending.filter(f => f.kind === "document");
   const retained = files.filter(f => f.state === "retained");
   function select(list: File[]) {
-    setFiles(old => [...old, ...list.map(file => ({id: crypto.randomUUID(), file, state: "selected" as const, kind: documentFormat(file.name) ? "document" as const : /\.(geojson|json|gpkg|zip)$/i.test(file.name) ? "gis" as const : "unsupported" as const}))]);
+    const rows:Selection[]=list.map(file=>({id:crypto.randomUUID(),file,state:"selected",kind:"checking"}));
+    setFiles(old=>[...old,...rows]);
+    for(const row of rows)void intakeFileKind(row.file).then(kind=>setFiles(old=>old.map(item=>item.id===row.id?{...item,kind}:item))).catch(error=>setFiles(old=>old.map(item=>item.id===row.id?{...item,kind:"unsupported",error:error instanceof Error?error.message:"Unable to read file"}:item)));
   }
   async function destination() {
     if (workspace.current) return workspace.current;
@@ -84,9 +88,9 @@ export default function AddFiles() {
     {!contextOnly && <label className={`ui-dropzone ${files.length ? "source-intake-compact" : ""}`} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(!mutation.busy)select(Array.from(e.dataTransfer.files));}}>
       {!files.length && <Icon name="upload" size={28}/>}<strong>{files.length ? "Add more files" : "Drop survey or plan files here"}</strong>
       <input aria-label="Survey or plan files" type="file" multiple accept={`${documentAccept},.geojson,.json,.gpkg,.zip`} disabled={mutation.busy} onChange={e=>{select(Array.from(e.target.files || []));e.target.value="";}}/>
-      {!files.length && <span>PDF / CSV / text / DOCX: up to 10 MiB. PNG / JPEG / GIS: up to 16 MiB.</span>}
+      {!files.length && <span>Dataset ZIP / JSON: up to 20 MiB. Documents: 10 MiB. Images / raw GIS: 16 MiB.</span>}
     </label>}
-    {files.length>0 && <section aria-label="Selected files" className="source-intake-files">{files.map(row=><div className="ui-intake-file" key={row.id}><Icon name="document"/><div><strong>{row.file.name}</strong><span>{row.state==="retained"?"Original retained":documentSizeError(row.file) || (row.kind==="unsupported"?"Unsupported format — remove to continue":row.kind==="gis"?"GIS source · inspect and review below":`${documentFormat(row.file.name)?.toUpperCase()} · ready to read`)}</span></div>{row.state==="selected"?<Button variant="ghost" disabled={mutation.busy} onClick={()=>setFiles(old=>old.filter(f=>f.id!==row.id))}>Remove</Button>:row.kind==="gis"?<Button onClick={()=>setReview(row.package!)}>Review GIS draft</Button>:<Icon name="check"/>}</div>)}</section>}
+    {files.length>0 && <section aria-label="Selected files" className="source-intake-files">{files.map(row=><div className="ui-intake-file" key={row.id}><Icon name="document"/><div><strong>{row.file.name}</strong><span>{row.state==="retained"?"Original retained":row.error || documentSizeError(row.file) || (row.kind==="checking"?"Reading file type…":row.kind==="dataset"?"Area dataset · review below":row.kind==="unsupported"?"Unsupported format — remove to continue":row.kind==="gis"?"GIS source · inspect and review below":`${documentFormat(row.file.name)?.toUpperCase()} · ready to read`)}</span></div>{row.state==="selected"?<Button variant="ghost" disabled={mutation.busy} onClick={()=>setFiles(old=>old.filter(f=>f.id!==row.id))}>Remove</Button>:row.kind==="gis"?<Button onClick={()=>setReview(row.package!)}>Review GIS draft</Button>:<Icon name="check"/>}</div>)}</section>}
     {(mutation.error || dossier.error || existing.error || areas.error) && <ErrorState message={mutation.error || dossier.error || existing.error || areas.error || ""}/>}
     {!buildingId && !target && contextOnly && <fieldset className="source-intake-questions" disabled={mutation.busy}><legend>Where will these sources be reviewed?</legend>
       <label>Destination block<select value={areaId} onChange={e=>setAreaId(e.target.value)}><option value="">Choose a saved block…</option>{areas.data?.map(a=><option key={a.id} value={a.id}>{a.name}{a.dataKind==="demonstration"?" · Fictional demonstration":""}</option>)}</select></label>
@@ -95,6 +99,7 @@ export default function AddFiles() {
     </fieldset>}
     {!buildingId && !target && contextOnly && <Button variant="primary" disabled={mutation.busy || !area || !origin} onClick={()=>void mutation.run(async()=>{const pkg=await destination();if(pkg?.sourceWorkspace)router.push(withQuery(routes.case(pkg.sourceWorkspace.caseId),{mode:"build"}));})}>Continue to extraction</Button>}
     {unsupported && <p role="alert">{invalidDocument || "Remove unsupported files to continue. Their originals have not been uploaded."}</p>}
+    {files.filter(row=>row.kind==="dataset").map(row=><DatasetIntake key={row.id} file={row.file}/>)}
     {gis && !unsupported && (!buildingId || !!dossier.data) && !areas.loading && <section className="source-intake-gis" aria-label={`Review ${gis.file.name}`}><h2>Review GIS details</h2><ImportForm key={`${gis.id}:${area?.id || "new"}`} area={area} busy={mutation.busy} initialFile={gis.file} hideFileControls onImport={operation=>{void mutation.run(async()=>{const pkg=await operation();setFiles(old=>old.map(row=>row.id===gis.id?{...row,state:"retained",package:pkg || undefined}:row));if(!areaId){setAreaId(pkg.areaId);const context=await request<AreaContext>(`/areas/${pkg.areaId}/context`);setCreatedArea(context.area);}await areas.reload();});}}/></section>}
     {review && <section className="source-intake-gis"><Button variant="ghost" onClick={()=>setReview(null)}>Close GIS review</Button><ImportReview pkg={review} busy={mutation.busy} onUpdate={operation=>{void mutation.run(async()=>setReview(await operation()));}} onCommitted={pkg=>{setReview(pkg);}}/></section>}
     {documents.length>0 && <footer className="source-intake-footer"><p>Original files are retained unchanged. Receipt is separate from suitability and recording.</p><Button variant="primary" disabled={!ready} onClick={()=>void retainDocuments()}>Continue to document review</Button>{!ready && !mutation.busy && <small>{unsupported ? invalidDocument || "Remove unsupported files to continue." : "Waiting for the selected destination to load."}</small>}</footer>}
