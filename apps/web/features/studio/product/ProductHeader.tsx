@@ -7,7 +7,7 @@ import type {MapArea} from '@ulpin/contracts';
 import {searchTargets,searchTargetRoute,type ResolveMatch} from '../../officer/shared/search-targets';
 import {useDebouncedValue,useResource} from '../../officer/shared/hooks';
 import {productFamily,productNavigation} from './urls';
-import {savedDatasetUrl,type SavedSpatialDataset} from '@/lib/spatial-datasets';
+import {savedDatasetUrl,type SavedSpatialDataset,type DatasetIdentityMatch} from '@/lib/spatial-datasets';
 import './product.css';
 import './header.css';
 import {confirmStudioNavigation} from '../data/navigation-guard';
@@ -20,13 +20,15 @@ export default function ProductHeader({actions,dataset='Datasets',areaId}:Props)
  const search=useRef<HTMLInputElement>(null),container=useRef<HTMLDivElement>(null);
  const settled=useDebouncedValue(query.trim());
  const remote=useResource<{matches:ResolveMatch[]}>(settled?`/resolve?identifier=${encodeURIComponent(settled)}`:null);
+ const spatialSearch=useResource<{matches:DatasetIdentityMatch[]}>(settled?`/spatial-datasets/search?q=${encodeURIComponent(settled)}`:null);
  const areas=useResource<MapArea[]>(datasets?'/areas':null);
  const savedDatasets=useResource<SavedSpatialDataset[]>(datasets?'/spatial-datasets':null);
  const results=useMemo<Result[]>(()=>{
   if(!query.trim())return [];
   const stored=settled===query.trim()?(remote.data?.matches??[]).flatMap(m=>searchTargets(m)).map(t=>({key:`${t.kind}:${t.id}:${t.areaId}:${t.recordId??''}`,label:t.recordName?`${t.recordName} · ${t.name}`:t.name,detail:`Saved record · ${t.identifier}`,href:searchTargetRoute(t,family)})):[];
+  if(settled===query.trim())stored.unshift(...(spatialSearch.data?.matches??[]).map(r=>({key:`dataset:${r.datasetId}:${r.objectId}`,label:r.identifier,detail:`${r.datasetName} · ${r.label}`,href:r.href})));
   return [...new Map(stored.map(x=>[x.key,x])).values()].slice(0,12);
- },[query,settled,remote.data,family]);
+ },[query,settled,remote.data,spatialSearch.data,family]);
  useEffect(()=>setActive(results.length?0:-1),[query,results.length]);
  useEffect(()=>{
   const key=(e:KeyboardEvent)=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();search.current?.focus();setOpen(true);}if(e.key==='Escape'){setOpen(false);setDatasets(false);setMobile(false);}};
@@ -40,9 +42,9 @@ export default function ProductHeader({actions,dataset='Datasets',areaId}:Props)
   <div className="city-search" ref={container}><Search size={17}/><input ref={search} role="combobox" aria-label="Search properties and record IDs" aria-expanded={open&&!!query.trim()} aria-controls="city-search-list" aria-activedescendant={open&&active>=0?`city-result-${active}`:undefined} aria-autocomplete="list" value={query} maxLength={150} placeholder="Search properties and record IDs" onChange={e=>{setQuery(e.target.value);setOpen(true);}} onFocus={()=>setOpen(true)} onKeyDown={e=>{if(e.key==='ArrowDown'){e.preventDefault();setActive(i=>Math.min(results.length-1,i+1));}if(e.key==='ArrowUp'){e.preventDefault();setActive(i=>Math.max(0,i-1));}if(e.key==='Enter'&&results[active]){e.preventDefault();choose(results[active]);}}}/><kbd>⌘ K</kbd>
    {open&&query.trim()&&<div className="city-search-results" id="city-search-list" role="listbox" aria-label="Matching properties">
     {results.map((r,i)=><button key={r.key} id={`city-result-${i}`} role="option" aria-selected={i===active} onMouseMove={()=>setActive(i)} onClick={()=>choose(r)}><Building2 size={19}/><span><strong>{r.label}</strong><small>{r.detail}</small></span><ArrowUpRight size={14}/></button>)}
-    {(remote.loading||settled!==query.trim())&&<p role="status">Searching saved sources…</p>}
-    {remote.error&&<p role="alert">Saved search unavailable. <button onClick={()=>void remote.reload()}>Retry</button></p>}
-    {!results.length&&!remote.loading&&settled===query.trim()&&<p>No matching property. Search a record ID, or browse the property register.</p>}
+    {(remote.loading||spatialSearch.loading||settled!==query.trim())&&<p role="status">Searching saved sources…</p>}
+    {(remote.error||spatialSearch.error)&&<p role="alert">Saved search unavailable. <button onClick={()=>void Promise.all([remote.reload(),spatialSearch.reload()])}>Retry</button></p>}
+    {!results.length&&!remote.loading&&!spatialSearch.loading&&settled===query.trim()&&<p>No matching property. Search a record ID, or browse the property register.</p>}
     <footer>Distinct datasets retain their own identities. <Link href="/studio/registry">Browse registers</Link></footer>
    </div>}
   </div>

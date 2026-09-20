@@ -1,3 +1,4 @@
+import {assignApplicationIdentifiers} from '../../features/spatial/reference-runtime/application-identifiers';
 import {randomUUID} from 'node:crypto';
 import {normalizeReferencePackage} from '../../features/spatial/reference-import/browser';
 import {query,transaction} from './db';
@@ -28,6 +29,8 @@ export async function saveSpatialDataset(name:string,bytes:Uint8Array):Promise<S
  let imported:Awaited<ReturnType<typeof normalizeReferencePackage>>;
  try{imported=await normalizeReferencePackage(name,bytes);}catch{throw new AppError(422,'PACKAGE_INVALID','Package validation failed. Open the import receipt to review its format and source fingerprints.');}
  const scene=imported.render.scene,hash=imported.receipt.originalSha256;
+ // Check ambiguous floor levels before any source upload or saved row is created.
+ await assignApplicationIdentifiers(scene,hash);
  const sourceByPath=new Map(scene.sources.map(s=>[typeof s.originalUri==='string'?s.originalUri.replace(/^dataset\//,''):undefined,s]));
  const id=randomUUID(),caseId=randomUUID(),packageSourceId=randomUUID();
  await ensureSpatialDatasets();
