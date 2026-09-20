@@ -1,0 +1,59 @@
+/* Each desktop sidebar owns its scrolling. On small screens the document does. */
+.reference-workbench .bm-root,
+.reference-workbench .bm-stage { min-height: 0; }
+.reference-workbench .bm-inspector { overflow-y: auto; overscroll-behavior: contain; }
+.reference-workbench .bm-inspector > * { flex-shrink: 0; }
+.reference-workbench .bm-inspector-title { position: sticky; top: 0; z-index: 2; background: #f9fbfc; }
+.reference-workbench .bm-inspector-scroll { flex: none; overflow: visible; }
+.reference-workbench .bm-left-rail { overflow-y: auto; overscroll-behavior: contain; }
+.reference-workbench .bm-left-rail > * { flex-shrink: 0; }
+.reference-workbench .bm-left-rail .bm-property-pop { flex: none; min-height: 0; }
+.reference-workbench .bm-left-rail .bm-property-list { max-height: none; min-height: 0; overflow: visible; }
+.reference-workbench .bm-left-rail .bm-rail-findings { flex: none; overflow: visible; }
+.reference-workbench .bm-mobile-rail-heading { position: sticky; top: 0; z-index: 2; background: #f9fbfc; }
+.reference-workbench .pr-tabs { flex-shrink: 0; }
+.reference-workbench .pr-schedule-scroll { flex: 1; min-height: 0; overscroll-behavior: contain; }
+.reference-workbench .pr-details-toggle { display: none; }
+.reference-workbench .rw-dialog { overflow-y: auto; overscroll-behavior: contain; max-height: calc(100dvh - 32px); }
+.reference-workbench .rw-dialog-heading { position: sticky; top: -25px; z-index: 2; background: #fff; }
+
+@media (max-width: 850px) {
+  .reference-workbench { height: auto; min-height: 100dvh; overflow: visible; }
+  .reference-workbench .rw-header { height: auto; min-height: 105px; padding: 10px 12px; gap: 10px; flex-wrap: wrap; }
+  .reference-workbench .rw-brand { width: auto; min-width: 0; }
+  .reference-workbench .rw-header .rw-search { order: 4; flex: 1 0 100%; min-width: 0; max-width: none; }
+  .reference-workbench .rw-context { height: auto; min-height: 38px; flex-wrap: wrap; padding: 8px 12px; }
+  .reference-workbench .rw-status { height: auto; min-height: 24px; white-space: normal; flex-wrap: wrap; }
+  .reference-workbench .rw-map { flex: none; }
+  .reference-workbench .rw-map:not(.rw-register) .rw-viewport,
+  .reference-workbench .rw-map:not(.rw-register) .rw-view-canvas,
+  .reference-workbench .rw-map:not(.rw-register) .shared-reference-view { height: auto !important; }
+  .reference-workbench .rw-map:not(.rw-register) .bm-root { height: auto !important; min-height: 0; grid-template-rows: clamp(240px, 46svh, 380px) auto; overflow: visible; }
+  .reference-workbench .rw-map:not(.rw-register) .bm-root.bm-inspector-closed { grid-template-rows: clamp(240px, 60svh, 500px); }
+  .reference-workbench .bm-inspector { height: auto; overflow: visible; }
+  .reference-workbench .bm-inspector-scroll { overflow: visible; }
+  .reference-workbench .bm-left-rail { position: fixed; inset: 12px auto 12px 12px; width: min(330px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); z-index: 52; border-radius: 12px; }
+  .reference-workbench .bm-rail-backdrop:not([hidden]) { position: fixed; inset: 0; z-index: 51; }
+  .reference-workbench .rw-map.rw-register { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; }
+  .reference-workbench .pr-context { display: block; overflow: visible; padding: 12px 16px; border-bottom: 1px solid #dce5e1; }
+  .reference-workbench .pr-context .pr-back { margin-bottom: 8px; }
+  .reference-workbench .pr-details-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; padding: 8px 0; border: 0; background: transparent; color: #315c4c; font: inherit; font-weight: 600; }
+  .reference-workbench .pr-details-toggle[aria-expanded=true] svg { transform: rotate(90deg); }
+  .reference-workbench .pr-context-details[data-expanded=false] { display: none; }
+  .reference-workbench .rw-register .rw-viewport { height: clamp(320px, 55svh, 520px); }
+  .reference-workbench .rw-register .pr-toolbar { height: auto; min-height: 75px; flex-shrink: 0; }
+  .reference-workbench .pr-schedule { overflow: visible; }
+  .reference-workbench .pr-schedule-scroll { flex: none; overflow: visible; }
+  .reference-workbench .pr-tabs { position: sticky; top: 0; z-index: 3; background: #f9fbfc; }
+}
+
+@media (max-width: 540px) {
+  .reference-workbench .rw-dialog-heading { top: -18px; }
+  .reference-workbench .rw-header { display: grid; grid-template-columns: auto minmax(0, 1fr); }
+  .reference-workbench .rw-nav { justify-self: end; }
+  .reference-workbench .rw-actions { grid-column: 1 / -1; justify-content: flex-end; margin-left: 0; flex-wrap: wrap; }
+  .reference-workbench .rw-header .rw-search { grid-column: 1 / -1; width: 100%; box-sizing: border-box; }
+  .reference-workbench .rw-search input { min-width: 0; }
+  .reference-workbench .pr-context h1,
+  .reference-workbench .pr-parcel strong { overflow-wrap: anywhere; }
+}
