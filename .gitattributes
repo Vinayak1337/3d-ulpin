@@ -28,3 +28,10 @@ docs/engineering-plan/** text eol=lf
 docs/engineering-plan/legacy/** -text
 packages/contracts/schemas/** -text
 services/geo/geo/contracts/** -text
+
+# Preserve original/source-package and screenshot bytes through every checkout.
+apps/web/public/reference/** -text
+data-source/** -text
+data-source/*.md text eol=lf
+docs/engineering-plan/**/*.png -text -diff
+docs/engineering-plan/**/*.jpg -text -diff
