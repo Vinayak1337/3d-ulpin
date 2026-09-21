@@ -3,7 +3,7 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.5",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T093_floor_registry_in_progress",
+  "current_action": "T093_floor_registry_deployed",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
   "next_task": "T080",
@@ -2703,11 +2703,13 @@
     {
       "id": "T093",
       "title": "Clear selectable 3D floor registry",
-      "status": "In progress",
+      "status": "Implemented",
       "depends_on": [
         "T092"
       ],
-      "plan_path": "tasks/T093_PLAN.md"
+      "plan_path": "tasks/T093_PLAN.md",
+      "execution_state": "local_mobile_geometry_tests_and_hosted_render_verified",
+      "result_path": "tasks/T093_RESULT.md"
     }
   ],
   "maintenance": [
