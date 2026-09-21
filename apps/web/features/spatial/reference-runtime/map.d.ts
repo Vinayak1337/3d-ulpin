@@ -1,6 +1,7 @@
 export interface ReferenceRuntime {
  select(id:string,notify?:boolean,focus?:boolean):void;
  setPresentation?(mode:'block'|'building'|'exploded'|'elevation'|'section'):void;
+ setSourceView?(id:string):void;
  setMode(mode:'2d'|'3d'):void;
  getState():unknown;
  restoreState(state:unknown):void;
