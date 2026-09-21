@@ -31,33 +31,64 @@ export function buildReferenceFloorPlate(floorGeometry, units = [], identity = {
       const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color, roughness: .95, side: THREE.DoubleSide }));
       mesh.position.y = y; mesh.userData = { ...metadata, ...record }; mesh.receiveShadow = true;
       group.add(mesh); pickables.push(mesh);
+      if (!record.unitId) {
+        const slab = new THREE.ExtrudeGeometry(shape, { depth: .18, bevelEnabled: false });
+        slab.rotateX(-Math.PI / 2);
+        const base = new THREE.Mesh(slab, new THREE.MeshStandardMaterial({ color: '#d5d8d2', roughness: .95 }));
+        base.position.y = -.185; base.userData = { ...metadata, role: 'diagram_slab_not_measured_structure' };
+        base.receiveShadow = true; group.add(base);
+      }
     });
   }
   function edges(geo, color, y, record) {
     polygons(geo).forEach(rings => rings.forEach(ring => {
       const positions = [], points = [];
+      const wallHeight = 1.05, halfWidth = .09;
+      const tri = (a,b,c) => positions.push(...a,...b,...c);
+      const quad = (a,b,c,d) => { tri(a,b,c); tri(a,c,d); };
       for (let i = 0; i < ring.length - 1; i++) {
-        const a = ring[i], b = ring[i + 1];
-        // Zero-thickness display fins follow the exact boundary, including holes.
-        positions.push(a[0], y, -a[1], b[0], y, -b[1], b[0], y + .38, -b[1], a[0], y, -a[1], b[0], y + .38, -b[1], a[0], y + .38, -a[1]);
+        const a = ring[i], b = ring[i + 1], length = Math.hypot(b[0]-a[0], b[1]-a[1]);
+        if (!length) continue;
+        // Display-only low walls centred on the supplied boundaries, not surveyed wall solids.
+        const dx = -(b[1]-a[1])/length*halfWidth, dz = -(b[0]-a[0])/length*halfWidth;
+        const lo = [[a[0]+dx,y,-a[1]+dz],[b[0]+dx,y,-b[1]+dz],[b[0]-dx,y,-b[1]-dz],[a[0]-dx,y,-a[1]-dz]];
+        const hi = lo.map(p => [p[0],y+wallHeight,p[2]]);
+        quad(...hi); for (let k=0;k<4;k++) quad(lo[k],lo[(k+1)%4],hi[(k+1)%4],hi[k]);
       }
-      ring.forEach(p => points.push(new THREE.Vector3(p[0], y + .38, -p[1])));
+      ring.forEach(p => points.push(new THREE.Vector3(p[0], y + wallHeight, -p[1])));
       const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); geometry.computeVertexNormals();
       const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color, roughness: 1, side: THREE.DoubleSide }));
       mesh.userData = { ...metadata, ...record, role: 'diagram_boundary_not_measured_wall' }; group.add(mesh);
-      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: '#486d66' }));
+      const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: '#8d9285' }));
       line.userData = mesh.userData; group.add(line);
     }));
   }
-  surface(floorGeometry, '#e2ece7', 0, {}); edges(floorGeometry, '#acbeb5', 0, {});
+  surface(floorGeometry, '#eeeae0', 0, {}); edges(floorGeometry, '#d8d3c7', 0, {});
   let unitCount = 0;
   units.forEach(({ object, geometry }) => {
     if (!valid(geometry) || geometry.frameId !== floorGeometry.frameId) return;
     const record = { unitId: object.id, geometryId: geometry.id, role: 'source_unit_boundary' };
-    surface(geometry, unitCount % 2 ? '#d8e7da' : '#d1e2da', .012, record);
-    edges(geometry, '#a5bcad', .012, record); unitCount++;
+    surface(geometry, ['#d9c9ab','#dfd9c8','#c6d6d3','#ddd1c2'][unitCount % 4], .012, record);
+    edges(geometry, '#e5dfd2', .012, record); unitCount++;
   });
   return { group, pickables, unitCount, unavailableUnitCount: units.length - unitCount, available: true };
+}
+
+/** Selection changes only disposable presentation materials, never source geometry. */
+export function styleReferenceFloorPlate(plate, selectedFloorId = 'all') {
+  const selected = selectedFloorId === plate.group.userData.floorId;
+  const muted = selectedFloorId !== 'all' && !selected;
+  plate.group.traverse(node => {
+    const material = node.material;
+    if (!material?.color) return;
+    if (!material.userData.floorBaseColor) material.userData.floorBaseColor = material.color.clone();
+    material.color.copy(material.userData.floorBaseColor);
+    if (selected && node.userData.role === 'diagram_boundary_not_measured_wall') material.color.set('#246e59');
+    material.transparent = muted;
+    material.opacity = muted ? .28 : 1;
+    material.depthWrite = !muted;
+    material.needsUpdate = true;
+  });
 }
 
 /** Standalone, synthetic local-metre scene. Original fixture geometry is never mutated. */
@@ -130,7 +161,7 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
     <div class="bm-canvas" tabindex="0" role="application" aria-label="3D neighborhood. Drag to move the map. Choose Rotate to orbit. Scroll to zoom. Arrow keys move; F fits the block."></div>
     <div class="bm-top-tools"><button class="bm-button bm-explorer-trigger" data-action="explorer" aria-label="Open block explorer" aria-expanded="false">${icon('layers')}<span>Map tools</span></button><div class="bm-segment" aria-label="Map perspective"><button data-mode="3d" aria-pressed="true">3D</button><button data-mode="2d" aria-pressed="false">2D</button></div><button class="bm-button bm-underground" data-action="underground" aria-pressed="false">${icon('pipe')}<span>Underground</span></button><button class="bm-button" data-action="labels" aria-pressed="true">${icon('source')}<span>Labels</span></button></div>
     <div class="bm-nav-tools"><button class="bm-button" data-action="fit" title="Fit neighborhood (F)">${icon('fit')}<span>Fit block</span></button><button class="bm-button" data-action="focus" aria-label="Focus selected building">${icon('target')}<span>Focus</span></button><button class="bm-button bm-north" data-action="north" title="Face north" aria-label="Face north"><span class="bm-north-arrow">↑</span><span>N</span></button></div>
-    <div class="bm-plate-tools" hidden><div class="bm-segment"><button data-action="floor-plates" aria-pressed="true">Floor plates</button><button data-action="exterior-floors" aria-pressed="false">Exterior floors</button></div><p></p></div><div class="bm-world-labels" aria-hidden="true"></div><div class="bm-floor-labels" aria-hidden="true"></div><div class="bm-selected-label" hidden></div><div class="bm-utility-note" hidden>Utility alignment · x-ray view</div>
+    <div class="bm-plate-tools" hidden><div class="bm-segment"><button data-action="floor-plates" aria-pressed="true">Floor plates</button><button data-action="exterior-floors" aria-pressed="false">Exterior floors</button></div><p></p></div><div class="bm-world-labels" aria-hidden="true"></div><div class="bm-floor-labels" role="group" aria-label="Floor labels"></div><div class="bm-selected-label" hidden></div><div class="bm-utility-note" hidden>Utility alignment · x-ray view</div>
     <div class="bm-minimap" aria-label="Block overview"></div><div class="bm-findings-tray"></div>
     <div class="bm-scale"><span></span><small></small></div><div class="bm-scene-caption"><span class="bm-caption-dot"></span>Synthetic block · local metres</div>
     <div class="bm-navigation"><div class="bm-segment" role="group" aria-label="Drag action"><button data-navigation="pan" aria-pressed="true">Move</button><button data-navigation="rotate" aria-pressed="false">Rotate</button></div><small class="bm-navigation-hint">Drag to move · scroll to zoom</small></div><div class="bm-zoom"><button data-action="zoom-in" aria-label="Zoom in">${icon('plus')}</button><button data-action="zoom-out" aria-label="Zoom out">${icon('minus')}</button></div>
@@ -372,11 +403,11 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
       const selectedFloorIndex=entry.floors.findIndex(f=>f.id===state.floor);
       entry.segments.forEach(segment=>{
         const selectedPlaced=entry.segments.some(segment=>segment.id===state.floor);
-        const levelVisible=!active||state.floor==='all'||!selectedPlaced||(state.floorMode==='isolate'?segment.index===selectedFloorIndex:segment.index<=selectedFloorIndex);
+        const levelVisible=showingPlates()||!active||state.floor==='all'||!selectedPlaced||(state.floorMode==='isolate'?segment.index===selectedFloorIndex:segment.index<=selectedFloorIndex);
         segment.group.visible=!batched&&levelVisible&&(segment.base>=0||state.underground||state.presentation==='exploded'||(active&&segment.id===state.floor));
         segment.group.position.y=segment.base+(active&&state.explode?segment.index*3:0);
         const plate = active && activePlates?.floors.get(segment.id);
-        if (plate) { plate.group.visible = segment.group.visible; plate.group.position.y = segment.group.position.y; segment.group.visible = false; }
+        if (plate) { plate.group.visible = segment.group.visible; plate.group.position.y = segment.group.position.y; styleReferenceFloorPlate(plate, state.floor); segment.group.visible = false; }
       });
       entry.outline.forEach(line=>{line.visible=(active||conflictsFor(entry.object.id).some(conflict=>conflict.solidTint))&&state.floor==='all'&&!state.section&&!state.explode;});
     });
@@ -637,17 +668,17 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
     const entry=buildingEntries.get(state.selectedId),host=$('.bm-floor-labels');
     const segments=entry?.segments.filter(segment=>objectById.get(segment.id)&&['floor','level'].includes(objectById.get(segment.id).type))||[];
     const key=state.selectedId+':'+segments.map(s=>s.id).join(',');
-    if(floorLabelKey!==key){host.innerHTML=segments.map(segment=>`<span class="bm-floor-map-label"><strong>${esc(objectById.get(segment.id)?.label)}</strong><small>${esc(primaryId(segment.id))}</small></span>`).join('');floorLabelKey=key;}
+    if(floorLabelKey!==key){host.innerHTML=segments.map(segment=>`<button type="button" class="bm-floor-map-label" data-floor-select="${esc(segment.id)}" aria-label="Select ${esc(objectById.get(segment.id)?.label)}"><strong>${esc(objectById.get(segment.id)?.label)}</strong><small>${Number(segment.base.toFixed(1))} m</small></button>`).join('');floorLabelKey=key;}
     const nodes=[...host.children],occupied=[];
     segments.forEach((segment,i)=>{
-      const node=nodes[i];node.hidden=true;
+      const node=nodes[i];node.hidden=true;node.setAttribute('aria-pressed',String(state.floor===segment.id));
       const plate=showingPlates()?floorPlateEntries.get(state.selectedId)?.floors.get(segment.id):null;
       if((state.sourceView!=='model'&&!state.sourceModelOverlay)||!state.labels||!state.layers.buildings||(!state.explode&&state.floor!==segment.id)||!(plate?plate.group.visible:segment.group.visible))return;
       const elevation=segment.group.position.y+(plate ? .15 : segment.height*.5),points=pointsFor(segment.geometry).map(p=>new THREE.Vector3(p[0],elevation,-p[1]).project(camera));
       const visible=points.filter(p=>p.z>=-1&&p.z<=1);if(!visible.length)return;
       const x=(Math.min(...visible.map(p=>p.x))*.5+.5)*stage.clientWidth-16,y=(-visible.reduce((n,p)=>n+p.y,0)/visible.length*.5+.5)*stage.clientHeight;
       node.hidden=false;const w=node.offsetWidth,h=node.offsetHeight,left=x-w,right=x,top=y-h/2,bottom=y+h/2;
-      if(left<8||right>stage.clientWidth-8||top<64||bottom>stage.clientHeight-36||occupied.some(r=>top<r.bottom+5&&bottom>r.top-5)){node.hidden=true;return;}
+      if(left<8||right>stage.clientWidth-8||top<20||bottom>stage.clientHeight-52||occupied.some(r=>top<r.bottom+5&&bottom>r.top-5)){node.hidden=true;return;}
       node.style.transform=`translate(${x}px,${y}px) translate(-100%,-50%)`;occupied.push({top,bottom});
     });
   }
