@@ -69,8 +69,14 @@ F0 ports, with injected implementations for tests:
 | `commitProposal(ctx, command)` | Delegate to existing reviewed draft/commit services under expected revisions; no direct feature write to recorded property rows. |
 | `appendOutbox(tx, event)` | Store a minimal durable event in the same transaction as the mutation. |
 | `modelGateway(ctx, task)` | Invoke only a configured provider allowed by deployment and data classification; return validated output or unavailable. |
+| `scanAsset(ctx, assetRef)` | DEPLOY implementation returns `clean`, `quarantined`, `rejected` or `unavailable`, with exact asset hash/scanner version. CITIZEN must not release unqualified uploads. |
+| `sendReceipt(ctx, messageRef)` | DEPLOY implementation uses an approved transport; CITIZEN supplies minimal content and delivery idempotency. Unavailable mail preserves in-app receipts. |
 
 Optional cross-feature reads (`findings`, `evidenceRequests`, `rightsGraph`, `history`) return `{state:'available', snapshotDigest, data}` or `{state:'not_assessed', reasonCode}`. FND publishes their minimal projection interfaces in `ports.ts`; feature-specific detail schemas belong to their feature contract file. An absent feature is not an empty successful result. Tests may inject unavailable providers without importing unimplemented modules.
+
+FND owns these port **definitions**, default unavailable implementations and application wiring. DEPLOY owns the new model/scanner/mail adapter implementations; ASSIST owns prompts/tool logic and INGEST owns mapping logic. Only FND modifies legacy provider/config files. FIND owns the qualified planar/prism operations consumed by IMPACT; FND owns registration in shared geo/worker entry points. No agent should independently implement another provider client or geometry checker to bypass these seams.
+
+For routes carrying `:ref`, FND supplies one codec: base64url of canonical UTF-8 JSON `{namespace,id}`, with strict schema validation, a 1 KiB decoded limit and round-trip tests. It is an identifier transport, not a secret or an access grant. Preserve existing UUID routes unchanged and use explicit adapters; never treat the encoded reference as a database UUID or parse colon-separated IDs.
 
 ## 4. Access and deployment gates
 
@@ -98,6 +104,8 @@ Public data preparation is an explicit allowlist projection, with field-level om
 ## 5. API and event conventions
 
 **Proposed new mount:** `apps/web/app/api/v1/usp/[...path]/route.ts`, delegating to `apps/web/lib/server/usp/routes.ts`. FND owns both. Features own leaf handlers under `apps/web/lib/server/usp/<feature>/routes.ts` and receive `RequestContext`; they do not edit the central dispatcher.
+
+**Additional proposed mount:** `apps/web/app/mcp/route.ts` is FND-owned for transport/auth integration; ASSIST supplies its adapter from the feature directory. It is not the INGEST SSE endpoint. Public page mounts in `apps/web/app/public/properties/page.tsx` and `apps/web/app/public/submissions/[id]/page.tsx` are UI-owned and consume CITIZEN's released/own-submission projections only. F2 route-policy tests cover all these entry points before activation.
 
 Use `/api/v1/usp/<feature>/...` with feature names `packets`, `readiness`, `findings`, `citizen`, `ingestion`, `history`, `rights`, `impact`, `assistance`, `deployment`. Methods and payloads are defined in each handoff. Mount a module only after its imports and tests exist; disabled modules return a documented unavailable response, not a fake successful payload.
 
@@ -139,13 +147,18 @@ Reuse [useBlock](../../apps/web/features/officer/block/useBlock.ts), [officer st
 | [processing.ts](../../apps/web/lib/server/processing.ts), [dispatcher.ts](../../scripts/dispatcher.ts), [geo/api.py](../../services/geo/geo/api.py), [geo/tasks.py](../../services/geo/geo/tasks.py) | Narrow worker dispatch/result hooks | Preserve the existing queue | FND | INGEST, PACK, FIND, IMPACT |
 | [API catch-all](../../apps/web/app/api/v1/%5B...path%5D/route.ts), [spatial-core-http.ts](../../apps/web/lib/server/spatial-core-http.ts), specialized API families | Mode-aware access and regression coverage | No bypass routes | FND | All |
 | Proposed new `app/api/v1/usp/[...path]/route.ts`, `lib/server/usp/routes.ts` | Mount qualified leaf routes | One API integration point | FND | Feature route modules |
+| Proposed new `apps/web/app/mcp/route.ts` | Mount ASSIST SDK adapter behind mode/access policy | No duplicate transport or auth owner | FND | ASSIST and DEPLOY |
 | [config.ts](../../apps/web/lib/server/config.ts), [package.json](../../package.json), [web package](../../apps/web/package.json), [geo requirements](../../services/geo/requirements.txt), lockfiles | Review required config/dependencies | No conflicting upgrades | FND | DEPLOY and other requests |
+| [compose.yaml](../../compose.yaml), [geo settings](../../services/geo/geo/settings.py), [geo Dockerfile](../../services/geo/Dockerfile), [legacy AI provider](../../apps/web/lib/server/officer-ai-provider.ts) | Apply qualified shared deployment/provider patches only | One writer for existing infrastructure | FND | DEPLOY's new standalone stack and adapters |
 | [Studio route](../../apps/web/app/studio/%5B%5B...view%5D%5D/page.tsx) | UI owns routing; FND supplies access wrapper patch for UI to integrate | One writer even when access is cross-cutting | UI | FND and all features |
+| Proposed new `apps/web/app/public/properties/page.tsx`, `apps/web/app/public/submissions/[id]/page.tsx` | Mount released/own-submission leaf components | Public pages never reuse full officer dossiers | UI | CITIZEN; F2 access wrapper |
 | [Shell](../../apps/web/features/officer/shared/Shell.tsx), [ProductHeader](../../apps/web/features/studio/product/ProductHeader.tsx), [product URLs](../../apps/web/features/studio/product/urls.ts) | Navigation/slots | One product experience | UI | All panels |
 | [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx), [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx), [WorkQueue](../../apps/web/features/officer/work/WorkQueue.tsx) | Mount leaves and preserve scope | Avoid concurrent parent edits | UI | Relevant feature agents |
 | Proposed new `packages/contracts/src/usp/<feature>.ts`, `lib/server/usp/<feature>/`, `features/usp/<feature>/`, `tests/usp-<feature>*` | Feature-local implementation | Bounded independent ownership | Named feature owner | Read-only imports by others |
 
 UI/FND cross-cutting work is delivered as a patch request; the listed sole owner applies it. Do not reformat shared files as part of a feature. No feature may claim independence from an unavailable service simply because a stub compiles.
+
+Cross-document reconciliation: HISTORY's first release is exact-revision read/comparison with available lineage browsing; new split/merge writes remain optional until an atomic reviewed identity adapter is supplied. RIGHTS can show missing historical lineage explicitly and is not blocked from a current relationship workflow. DEPLOY provides a new **standalone** protected compose reference, not an unsafe merge over the existing local stack. UI must use the actual current status dialog and active SavedSceneViewport/MapViewport path; showcase-only rendering is not an integration substitute. See [99 UI/integration](99-ui-ux-and-integration.md) for placement and selection reconciliation.
 
 ## 9. Foundation implementation and acceptance
 
