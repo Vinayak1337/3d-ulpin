@@ -1,5 +1,13 @@
 # Evidence-linked 3D property workflows: agent implementation handoffs
 
+## Readiness audit — read before implementation
+
+The [engineering readiness audit](98-engineering-readiness-audit.md) reviews all 14 original documents against `12b3dcb34fb105991aff87ac864d7b92a0117807` and application baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`. It adds concrete data packs, a feature-to-test matrix, eight visual-result cases, 25 open findings, edge-case tests and a prioritized closure plan.
+
+**The original handoffs are not a blanket go-ahead for a parallel implementation swarm.** First resolve the minimal shared scope/snapshot/transaction contracts and prove a useful active-Studio map → unit → evidence → scoped-packet slice. Real external 3D display and authentic Indian property evidence have separate data/adapter qualifications. A catalogue link, a mock response or a screenshot alone is not feature completion.
+
+The audit contains **proposed remediation**, not silently adopted changes to feature scopes or an application implementation. Original handoffs below remain the reviewed baseline; use the audit's issue IDs and exact edit table to coordinate deliberate corrections and experiments before the affected work starts. No issue is closed simply by proposing a fix. The folder now contains 15 Markdown documents, including the audit; the original delivery history below is preserved.
+
 ## Purpose and planning baseline
 
 **Product promise:** reconcile fragmented source evidence with exact 3D property spaces, explain uncertainty, and help people obtain the evidence needed for review. Adaptive ingestion is an enabling differentiator; a map, dashboard, chatbot, or SSE connection alone is not the USP.
@@ -96,7 +104,7 @@ Each agent returns: changed files and ownership exceptions; migrations/config ad
 
 The initial set excludes official national identity issuance, legal adjudication, automatic enforcement, universal format support, online reinforcement-learning guarantees, a new mobile app, and safety certification for excavation. These are not hidden acceptance obligations.
 
-## Documentation delivery status
+## Original documentation delivery status — before the readiness audit
 
 The completed folder contains **14 Markdown files: this index, shared foundation/ownership, ten feature handoffs (10–19), required human inputs (90), and unified UI/integration (99)**. Each feature includes A–K implementation sections, exact existing/proposed file maps, UI states, dependencies, tests and a copy-paste agent assignment. The UI handoff was written after rereading the feature set; shared ports/ownership, the deployment status entry and optional lineage dependencies were then reconciled individually.
 
