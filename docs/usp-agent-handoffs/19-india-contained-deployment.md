@@ -92,7 +92,7 @@ Proposed `usp_deployment_qualifications` stores policy hashes, non-secret capabi
 
 ## G. UI placement and interaction
 
-Authorized operator opens the existing Studio header's settings menu → **Deployment** → sees profile, capabilities and qualification gaps → opens an actionable configuration reference. This is an advanced contextual surface, not a fourth top-level officer section. Property users see a short local reason such as “AI mapping unavailable; manual mapping is available,” not the provider's raw error.
+The baseline [Shell](../../apps/web/features/officer/shared/Shell.tsx) has a **Local workspace** status action/dialog, not a general deployment settings menu. UI extends that existing action into a capability-aware workspace menu: authorized operator → **Deployment** → profile, capabilities and qualification gaps → actionable configuration reference. This is an advanced contextual surface, not a fourth top-level officer section. Replace unconditional “Your evidence stays here” copy with statements supported by the active profile and qualification results. Property users see a short local reason such as “AI mapping unavailable; manual mapping is available,” not the provider's raw error.
 
 Loading/unknown checks show “Not checked.” Missing credentials show a disabled capability without exposing secret names/values unnecessarily. Failed egress/identity qualification blocks protected-mode release; successful checks say what was tested and when, not “government certified.” An offline basemap has a local fallback/empty base while supplied geometry remains inspectable. DEPLOY owns status content; UI owns the settings entry and visual pattern.
 
