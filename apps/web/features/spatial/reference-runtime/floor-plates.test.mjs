@@ -25,3 +25,19 @@ test('unit outlines require supplied polygons in the same frame; no schedule-onl
 test('missing geometry or placement creates no plate and no invented level',()=>{
  for(const geometry of [null,{...floor,baseElevationM:null}]){const result=buildReferenceFloorPlate(geometry);assert.equal(result.available,false);assert.equal(result.group.children.length,0);}
 });
+
+test('floor selection keeps source coordinates and restores original materials', async()=>{
+ const {styleReferenceFloorPlate}=await import('./map.js');
+ const original=JSON.stringify(floor),plate=buildReferenceFloorPlate(floor,[],{floorId:'f1'});
+ const colors=plate.group.children.map(mesh=>mesh.material.color.getHex());
+ styleReferenceFloorPlate(plate,'f2');
+ assert.ok(plate.group.children.every(mesh=>mesh.material.opacity===.28&&!mesh.material.depthWrite));
+ styleReferenceFloorPlate(plate,'f1');
+ assert.ok(plate.group.children.every(mesh=>mesh.material.opacity===1&&mesh.material.depthWrite));
+ styleReferenceFloorPlate(plate,'all');
+ assert.deepEqual(plate.group.children.map(mesh=>mesh.material.color.getHex()),colors);
+ assert.equal(JSON.stringify(floor),original);
+ const slab=plate.group.children.find(mesh=>mesh.userData.role==='diagram_slab_not_measured_structure');
+ assert.ok(slab?.userData.displayOnly);
+ dispose(plate);
+});

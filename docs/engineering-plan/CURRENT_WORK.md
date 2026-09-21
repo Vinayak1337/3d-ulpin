@@ -1,3 +1,7 @@
+## Current — T093 reference-led floor registry
+
+Clear selectable floor stacks, source boundary walls, compact labels, floor metrics and source access. Local desktop/mobile checks and five geometry tests passed; production build passed. [Result](tasks/T093_RESULT.md). Source geometry remains authoritative; unregistered ML proposals are not shown as registered floors.
+
 ## Current — T092 LiDAR, imagery and elevation views
 
 The existing complete Lake View ZIP now renders its LAS point cloud, orthomosaic GeoTIFF, DEM and DSM in the shared map. Use Map tools → Layers → Map data. Verified original file upload, mobile source controls, alignment, floor-search return and hosted saved data; ten tests and production build passed. [Result](tasks/T092_RESULT.md). Source rendering is implemented; automatic building extraction from point clouds remains separate future work.
