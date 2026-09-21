@@ -71,7 +71,7 @@ A remote client receives the data returned by tools. Therefore, an India-contain
 
 | Existing or proposed file | Required change | Reason | Owner | Shared dependency |
 | --- | --- | --- | --- | --- |
-| [officer-ai-provider.ts](../../apps/web/lib/server/officer-ai-provider.ts), [officer-ai-validation.ts](../../apps/web/lib/server/officer-ai-validation.ts) | Reuse validation principles; FND adapts legacy provider routing through DEPLOY | No uncontrolled fallback | FND/DEPLOY; ASSIST read-only reference | Model gateway |
+| [officer-ai-provider.ts](../../apps/web/lib/server/officer-ai-provider.ts), [officer-ai-validation.ts](../../apps/web/lib/server/officer-ai-validation.ts) | Reuse validation principles; FND alone applies legacy wiring changes using DEPLOY's new adapter | No uncontrolled fallback | FND sole editor; ASSIST/DEPLOY read-only reference | DEPLOY-owned model gateway implementation |
 | Proposed new `packages/contracts/src/usp/assistance.ts` | Tool/answer/citation schemas | Bounded grounded contract | ASSIST | F0 read ports |
 | Proposed new `apps/web/lib/server/usp/assistance/{tools,grounding,service,mcp,routes}.ts`, `migrations/18-assistance.ts` | Native tool executor, answer validation, MCP adapter and minimal audit | One permission-aware implementation | ASSIST | FND principal/access; feature reads |
 | Proposed new `apps/web/app/mcp/route.ts` | Thin SDK transport/auth mount | One cross-cutting endpoint owner | FND | ASSIST adapter; DEPLOY mode |
