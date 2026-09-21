@@ -3,7 +3,7 @@
   "prepared_on": "2026-09-18",
   "plan_version": "1.5",
   "status_authority": "This adopted file is authoritative; historical boards retain traceability only.",
-  "current_action": "T092_render_imported_survey_sources",
+  "current_action": "T092_imported_survey_views_deployed",
   "implementation_modified_this_turn": true,
   "wip_limit": 1,
   "next_task": "T080",
@@ -2692,12 +2692,13 @@
     {
       "id": "T092",
       "title": "Imported LiDAR, orthomosaic and DEM/DSM map views",
-      "status": "In Progress",
+      "status": "Implemented",
       "depends_on": [
         "T091"
       ],
       "plan_path": "tasks/T092_PLAN.md",
-      "execution_state": "implementing_binary_source_views"
+      "execution_state": "binary_source_views_import_mobile_and_hosted_verified",
+      "result_path": "tasks/T092_RESULT.md"
     }
   ],
   "maintenance": [

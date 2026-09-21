@@ -1,3 +1,7 @@
+## Current — T092 LiDAR, imagery and elevation views
+
+The existing complete Lake View ZIP now renders its LAS point cloud, orthomosaic GeoTIFF, DEM and DSM in the shared map. Use Map tools → Layers → Map data. Verified original file upload, mobile source controls, alignment, floor-search return and hosted saved data; ten tests and production build passed. [Result](tasks/T092_RESULT.md). Source rendering is implemented; automatic building extraction from point clouds remains separate future work.
+
 ## Current — T091 mobile scrolling and sidebars
 
 Responsive map, explorer, inspector, register and import dialog fixes are implemented and deployed. Browser verified phone, landscape and short desktop layouts; all property/floor controls remain reachable. [Result](tasks/T091_RESULT.md). Source data and identities are unchanged. Point-cloud generation remains a separate gap: the existing sample LAS/LAZ is retained and does not currently generate the map geometry.
