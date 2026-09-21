@@ -19,6 +19,7 @@
     "cesium": "1.145.0",
     "earcut": "^3.0.2",
     "fflate": "0.8.2",
+    "geotiff": "3.0.5",
     "jspdf": "4.2.1",
     "lucide-react": "1.47.0",
     "next": "16.3.5",

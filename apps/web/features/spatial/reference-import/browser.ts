@@ -1,3 +1,4 @@
+import {readSurveyAssets} from './survey-assets';
 import {adaptReferenceScene} from './adapter';
 import {toReferenceRenderScene} from './render-scene';
 import {readReferencePackage} from './package';
@@ -29,6 +30,7 @@ export async function normalizeReferencePackage(name:string,bytes:Uint8Array){
   const presentation=extent?normalizePresentation(canonical.source.sceneDecoration,canonical.snapshot.manifest.inputDigest,extent,new Set(scene.objects.map(o=>o.id))):undefined;
   const utilityGeometry=new Set(canonical.source.objects.filter(o=>o.type==='utility').map(o=>o.geometryId));
   const displayGeometries=canonical.source.geometries.filter(g=>utilityGeometry.has(g.id)&&g.frameId===scene.frames[0]?.id&&g.type==='LineString'&&Array.isArray(g.coordinates)&&g.coordinates.length>=2&&g.coordinates.length<=1000&&g.coordinates.every((p:unknown)=>Array.isArray(p)&&p.length===3&&p.every((n:unknown)=>typeof n==='number'&&Number.isFinite(n)&&Math.abs(n)<=5000))).map(g=>({...g,displayRole:'display_only' as const,analysisStatus:'unavailable' as const,coordinates:g.coordinates as number[][]}));
-  const data={...scene,displayGeometries,sceneDecoration:presentation?.decoration,objects:scene.objects.map(o=>({...o,attributes:{...o.attributes,appearance:normalizeObjectAppearance(o.attributes?.appearance)}}))};
+  const survey=await readSurveyAssets(receipt.files,scene.frames,scene.sources);
+  const data={...scene,survey,displayGeometries,sceneDecoration:presentation?.decoration,objects:scene.objects.map(o=>({...o,attributes:{...o.attributes,appearance:normalizeObjectAppearance(o.attributes?.appearance)}}))};
   return {receipt,canonical,render:{...render,scene:data},presentation};
 }

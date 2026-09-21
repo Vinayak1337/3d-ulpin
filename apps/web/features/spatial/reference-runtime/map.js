@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createEnvironment } from './environment.js';
 import { buildArchitecture } from './architecture.js';
+import { createSurveyLayers } from './survey-layers';
 import { createSceneRecords } from './records.js';
 
 const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -78,6 +79,8 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
   const boundsFor = geo => { const box=new THREE.Box3(),base=geo?.baseElevationM??0,top=base+(geo?.heightM??0);const points=geo?.type==='LineString'?geo.coordinates:geo?.type==='Point'?[geo.coordinates]:pointsFor(geo);points.forEach(p=>{const lower=Number.isFinite(p[2])?p[2]:base;box.expandByPoint(new THREE.Vector3(p[0],lower,-p[1]));box.expandByPoint(new THREE.Vector3(p[0],Number.isFinite(p[2])?p[2]:top,-p[1]));});return box; };
   const buildings = objects.filter(o => o.type === 'building' && ['Polygon','MultiPolygon'].includes(geometryFor(o)?.type));
   const state = { selectedId: buildings.find(o => o.id === data.metadata?.focalObjectId)?.id || buildings[0]?.id || null, activeConflictId: null, presentation: 'block', railTab: 'layers', railOpen: false, inspectorTab: 'overview', labels: true, inspectorOpen: true, mode: '3d', navigation: 'pan', floor: 'all', space: 'none', floorMode: 'below', floorPlates: false, explode: false, section: false, sectionHeight: 100, underground: false, layers: { buildings: true, parcels: true, roads: true, publicLand: true, trees: true, utilities: true, conflicts: true } };
+  state.sourceView='model';state.sourceModelOverlay=false;
+  const surveyAssets=data.survey?.assets||[];
   let blockViewState=null;
   let disposed = false, frameId, pointerStart, lastPick, renderer, contextLost=false;
   const cleanups = [];
@@ -120,7 +123,7 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
   container.innerHTML = `<button class="bm-rail-backdrop" data-action="close-explorer" aria-label="Close block explorer" hidden></button><aside class="bm-left-rail" aria-label="Block explorer">
     <div class="bm-mobile-rail-heading"><strong>Map tools</strong><button class="bm-icon-button" data-action="close-explorer" aria-label="Close block explorer">${icon('close')}</button></div>
     <div class="bm-mobile-map-actions"><button class="bm-button" data-action="labels" aria-pressed="true">${icon('source')}Labels</button><button class="bm-button" data-action="north">↑ Face north</button></div><div class="bm-rail-tabs" role="tablist" aria-label="Block explorer"><button data-rail-tab="layers" role="tab" aria-selected="true">${icon('layers')}Layers</button><button data-rail-tab="properties" role="tab" aria-selected="false">${icon('building')}Properties</button><button data-rail-tab="findings" role="tab" aria-selected="false">${icon('source')}Findings</button></div>
-    <div class="bm-layers-pop"><div class="bm-pop-heading"><strong>Map layers</strong><button class="bm-text-button" data-action="reset-layers">Reset</button></div>${[['buildings','Buildings','building'],['parcels','Parcels','parcel'],['roads','Roads','layers'],['publicLand','Public land','parcel'],['utilities','Utilities · underground','pipe'],['conflicts','Findings / conflicts','target']].map(([key,label,symbol])=>`<label class="bm-layer-option"><span>${icon(symbol)}${label}</span><input class="bm-switch" type="checkbox" data-layer="${key}" checked/></label>`).join('')}</div>
+    <div class="bm-layers-pop">${surveyAssets.length?`<label class="bm-source-selector">Map data<select aria-label="Map data" data-survey-view><option value="model">Building model</option>${surveyAssets.map(a=>`<option value="${esc(a.id)}">${esc(a.label)}${surveyAssets.filter(b=>b.kind===a.kind).length>1?` · ${esc(a.sourcePath)}`:''}</option>`).join('')}</select></label><div class="bm-survey-details" hidden></div>`:''}<div class="bm-model-layer-options"><div class="bm-pop-heading"><strong>Map layers</strong><button class="bm-text-button" data-action="reset-layers">Reset</button></div>${[['buildings','Buildings','building'],['parcels','Parcels','parcel'],['roads','Roads','layers'],['publicLand','Public land','parcel'],['utilities','Utilities · underground','pipe'],['conflicts','Findings / conflicts','target']].map(([key,label,symbol])=>`<label class="bm-layer-option"><span>${icon(symbol)}${label}</span><input class="bm-switch" type="checkbox" data-layer="${key}" checked/></label>`).join('')}</div></div>
     <div class="bm-property-pop"><div class="bm-pop-heading"><strong>Properties in block <span class="bm-list-count">(${buildings.length})</span></strong></div><label class="bm-search">${icon('search')}<input type="search" placeholder="2D / 3D ULPIN, name, address…" aria-label="Search block properties"/></label><div class="bm-property-list"></div></div>
     <div class="bm-rail-findings" hidden></div><div class="bm-rail-note">Synthetic demonstration · ${objects.length} records</div>
   </aside><section class="bm-stage" aria-label="Interactive neighborhood map">
@@ -226,6 +229,8 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
   const {group:buildingGroup,entries:buildingEntries,pickables}=architecture;scene.add(buildingGroup);
   buildingEntries.forEach(entry=>entry.materials.forEach(({mat})=>{mat.clipShadows=true;}));
   const environment=createEnvironment(data,{THREE,geometryFor,detail:detailMode});scene.add(environment.group);
+  const surveyLayers=createSurveyLayers(surveyAssets);scene.add(surveyLayers.group);
+  const surveyBadge=document.createElement('div');surveyBadge.className='bm-survey-badge';surveyBadge.hidden=true;stage.appendChild(surveyBadge);
   const {parcels:parcelGroup,roads:roadGroup,trees:treeGroup,utilities:utilityGroup}=environment.layerRefs;
   spatialConflicts.forEach(conflict=>{
     const ground=new THREE.Group(),roof=new THREE.Group();conflictGroup.add(ground,roof);
@@ -249,16 +254,19 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
   }
   function fit() {
     if(state.presentation!=='block'){focusSelected();return;}
+    const sourceBounds=surveyAssets.find(a=>a.id===state.sourceView)?.bounds;
+    const sourceBox=sourceBounds?new THREE.Box3(new THREE.Vector3(sourceBounds[0],sourceBounds[2],-sourceBounds[4]),new THREE.Vector3(sourceBounds[3],sourceBounds[5],-sourceBounds[1])):null;
+    const fitCenter=sourceBox?sourceBox.getCenter(new THREE.Vector3()):center,fitSize=sourceBox?sourceBox.getSize(new THREE.Vector3()):size;
     if(camera.isOrthographicCamera){
       const aspect=Math.max(stage.clientWidth,1)/Math.max(stage.clientHeight,1);
-      orthoHalfHeight=Math.max(size.z,size.x/aspect)*.57;planCamera.zoom=1;updatePlanFrustum();
-      camera.position.copy(center).add(new THREE.Vector3(0,planLift,.001));
+      orthoHalfHeight=Math.max(fitSize.z,fitSize.x/aspect)*.57;planCamera.zoom=1;updatePlanFrustum();
+      camera.position.copy(fitCenter).add(new THREE.Vector3(0,planLift,.001));
     }else{
       const verticalHalfFov=THREE.MathUtils.degToRad(camera.fov/2),horizontalHalfFov=Math.atan(Math.tan(verticalHalfFov)*camera.aspect);
-      const distance=Math.max(50,size.length()*.5/Math.sin(Math.min(verticalHalfFov,horizontalHalfFov))*1.08);
-      camera.position.copy(center).add(new THREE.Vector3(.57,.76,.68).normalize().multiplyScalar(distance));
+      const distance=Math.max(50,fitSize.length()*.5/Math.sin(Math.min(verticalHalfFov,horizontalHalfFov))*1.08);
+      camera.position.copy(fitCenter).add(new THREE.Vector3(.57,.76,.68).normalize().multiplyScalar(distance));
     }
-    if(controls){controls.target.copy(center);controls.update();}else camera.lookAt(center);
+    if(controls){controls.target.copy(fitCenter);controls.update();}else camera.lookAt(fitCenter);
     requestRender();
   }
   function openingView() {
@@ -382,6 +390,16 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
     $('.bm-underground').setAttribute('aria-pressed',String(state.underground));
     $('.bm-utility-note').hidden=!state.underground;
     spaceHighlight.visible=state.layers.buildings;
+    const sourceActive=state.presentation==='block'&&state.sourceView!=='model';
+    const asset=surveyLayers.show(sourceActive?state.sourceView:'model');
+    if(asset){
+      environment.group.visible=false;buildingGroup.visible=state.sourceModelOverlay;floorPlateRoot.visible=false;spaceHighlight.visible=false;conflictGroup.visible=false;
+      scene.background.set('#e9eeed');scene.fog.color.copy(scene.background);
+    }
+    surveyBadge.hidden=!asset;
+    if(asset)surveyBadge.textContent=asset.kind==='lidar'?`${asset.displayedPoints.toLocaleString('en-IN')} points · ${asset.minimum}–${asset.maximum} m`:asset.kind==='imagery'?`${asset.sourceWidth} × ${asset.sourceHeight} px · orthomosaic`:asset.minimum===asset.maximum?`${asset.label} · ${asset.minimum} m · flat terrain`:`${asset.label} · ${asset.minimum}–${asset.maximum} m · 1× height`;
+    if(asset&&['dem','dsm'].includes(asset.kind)&&asset.maximum>asset.minimum){const ramp=document.createElement('span');ramp.className='bm-height-ramp';ramp.setAttribute('aria-label','Blue is lower, red is higher');surveyBadge.appendChild(ramp);}
+    container.classList.toggle('bm-source-view',!!asset&&!state.sourceModelOverlay);container.classList.toggle('bm-survey-active',!!asset);
     requestRender();
   }
   function renderList(query='') {
@@ -442,6 +460,17 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
     state.floor=id;state.space='none';state.inspectorTab='floors';if((geometryFor(objectById.get(id))?.baseElevationM??0)<0)state.underground=true;
     renderInspector();renderList($('.bm-search input').value);updateScene();if(notify)onFloorSelect?.(id);live(id==='all'?'Showing all floors.':`Showing ${objectById.get(id)?.label||id}.`);
   }
+  function setSourceView(id,options={}){
+    if(id!=='model'&&!surveyAssets.some(a=>a.id===id))return;
+    state.sourceView=id;
+    const select=container.querySelector('[data-survey-view]');if(select)select.value=id;
+    const asset=surveyAssets.find(a=>a.id===id),details=$('.bm-survey-details'),modelOptions=$('.bm-model-layer-options');
+    if(modelOptions)modelOptions.hidden=!!asset;
+    if(details){details.hidden=!asset;if(asset)details.innerHTML=`<label class="bm-layer-option"><span>Compare building model</span><input class="bm-switch" type="checkbox" data-survey-overlay aria-label="Compare building model" ${state.sourceModelOverlay?'checked':''}/></label><details class="bm-detail"><summary>Source details</summary><p>${esc(asset.sourcePath)}</p><p>${esc(asset.classification)} · ${esc(asset.sourceRevision)}</p><p>${esc(asset.verticalReference)}</p><p>${asset.kind==='lidar'?`${asset.pointCount.toLocaleString('en-IN')} source points · ${asset.displayedPoints.toLocaleString('en-IN')} displayed`: `${asset.sourceWidth} × ${asset.sourceHeight} source pixels`}</p><p>Rendered from the original file. Building records remain a separate supplied model.</p></details>`;}
+    if(asset&&!options.restore){setInspectorOpen(false);setMode(asset.kind==='imagery'?'2d':'3d');fit();}
+    updateScene();
+    if(!options.restore)live(asset?`${asset.label} source view.`:'Building model view.');
+  }
   function setLayer(key,visible){
     if(!(key in state.layers))return;state.layers[key]=Boolean(visible);const input=container.querySelector(`[data-layer="${key}"]`);if(input)input.checked=state.layers[key];updateScene();
   }
@@ -451,6 +480,7 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
   }
   function select(id, notify=true, focus=notify) {
     if(!buildingEntries.has(id))return;
+    if(state.sourceView!=='model')setSourceView('model',{restore:true});
     setInspectorOpen(true);
     state.selectedId=id;state.activeConflictId=null;state.floor='all';state.space='none';
     // Selection changes the subject, not the register's active presentation.
@@ -523,6 +553,8 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
   });
   listen(container,'change',event=>{
     const element=event.target;
+    if(element.hasAttribute('data-survey-view'))setSourceView(element.value);
+    if(element.hasAttribute('data-survey-overlay')){state.sourceModelOverlay=element.checked;updateScene();}
     if(element.dataset.layer){setLayer(element.dataset.layer,element.checked);}
     if(element.dataset.control){state[element.dataset.control]=element.checked;renderInspector();updateScene();}
     if(element.id==='bm-space'){state.space=element.value;renderInspector();updateScene();live(state.space==='none'?'Space selection cleared.':`${objectById.get(state.space)?.label} selected.`);}
@@ -553,7 +585,7 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
     const rect=stage.getBoundingClientRect();perspectiveCamera.aspect=Math.max(rect.width,1)/Math.max(rect.height,1);perspectiveCamera.updateProjectionMatrix();updatePlanFrustum();renderer?.setSize(rect.width,rect.height,false);requestRender();
   }
   const observer=new ResizeObserver(resize);observer.observe(stage);cleanups.push(()=>observer.disconnect());
-  resize();renderList();renderFindings();renderMinimap();renderInspector();select(state.selectedId,false);if(narrowLayout())setInspectorOpen(false);openingView();
+  resize();setRailTab(state.railTab);renderList();renderFindings();renderMinimap();renderInspector();select(state.selectedId,false);if(narrowLayout())setInspectorOpen(false);openingView();
   function requestRender(){needsRender=true;if(!frameId&&!disposed)frameId=requestAnimationFrame(animate);}
   const mapLabels=objects.filter(o=>(['road','open_area','building'].includes(o.type)&&polygonsFor(geometryFor(o)).length)||(o.type==='utility'&&geometryFor(o)?.type==='LineString'))
     .sort((a,b)=>(a.type==='building')-(b.type==='building')||areaFor(geometryFor(b))-areaFor(geometryFor(a))).slice(0,130).map(object=>{
@@ -579,7 +611,7 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
     ordered.forEach(({item,i})=>{
       const projected=item.anchor.clone().project(camera),node=labelNodes[i];
       node.hidden=true;
-      if(!state.labels||state.underground||state.presentation!=='block'||projected.z>1||projected.z< -1||!state.layers[item.object.type==='road'?'roads':item.object.type==='building'?'buildings':item.object.type==='utility'?'utilities':'publicLand'])return;
+      if((state.sourceView!=='model'&&(!state.sourceModelOverlay||item.object.type!=='building'))||!state.labels||state.underground||state.presentation!=='block'||projected.z>1||projected.z< -1||!state.layers[item.object.type==='road'?'roads':item.object.type==='building'?'buildings':item.object.type==='utility'?'utilities':'publicLand'])return;
       if(item.object.type==='building'){
         if(item.object.id===state.selectedId||shownBuildings>=4)return;
         const geo=geometryFor(item.object),top=(geo.baseElevationM??0)+(geo.heightM??0);
@@ -610,7 +642,7 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
     segments.forEach((segment,i)=>{
       const node=nodes[i];node.hidden=true;
       const plate=showingPlates()?floorPlateEntries.get(state.selectedId)?.floors.get(segment.id):null;
-      if(!state.labels||!state.layers.buildings||(!state.explode&&state.floor!==segment.id)||!(plate?plate.group.visible:segment.group.visible))return;
+      if((state.sourceView!=='model'&&!state.sourceModelOverlay)||!state.labels||!state.layers.buildings||(!state.explode&&state.floor!==segment.id)||!(plate?plate.group.visible:segment.group.visible))return;
       const elevation=segment.group.position.y+(plate ? .15 : segment.height*.5),points=pointsFor(segment.geometry).map(p=>new THREE.Vector3(p[0],elevation,-p[1]).project(camera));
       const visible=points.filter(p=>p.z>=-1&&p.z<=1);if(!visible.length)return;
       const x=(Math.min(...visible.map(p=>p.x))*.5+.5)*stage.clientWidth-16,y=(-visible.reduce((n,p)=>n+p.y,0)/visible.length*.5+.5)*stage.clientHeight;
@@ -712,7 +744,8 @@ export function mountMap(container, data, { onSelect, onRegister, onReview, onWo
       camera.position.fromArray(saved.camera.position);if(controls){controls.target.fromArray(saved.camera.target);controls.update();}else camera.lookAt(new THREE.Vector3().fromArray(saved.camera.target));
     }
     state.inspectorTab=['overview','floors','sources'].includes(saved.inspectorTab)?saved.inspectorTab:'overview';state.labels=saved.labels!==false;container.querySelectorAll('[data-action="labels"]').forEach(button=>button.setAttribute('aria-pressed',String(state.labels)));setRailTab(saved.railTab||'layers');
+    state.sourceModelOverlay=saved.sourceModelOverlay===true;setSourceView(saved.sourceView||'model',{restore:true});
     setInspectorOpen(saved.inspectorOpen!==false);renderInspector();renderFindings();renderMinimap();updateScene();
   }
-  return { select, setMode, fit, focusSelected, setFloor, setLayer, setRailTab, setInspectorOpen, setRailOpen, setPresentation, getState, getStats, inspectObject, resetMetrics, measureOrbit, restoreState, dispose(){disposed=true;cancelAnimationFrame(frameId);cleanups.forEach(fn=>fn());controls?.dispose();architecture.dispose?.();environment.dispose?.();const materials=new Set(),textures=new Set();scene.traverse(obj=>{obj.geometry?.dispose();(Array.isArray(obj.material)?obj.material:obj.material?[obj.material]:[]).forEach(mat=>{materials.add(mat);if(mat.map)textures.add(mat.map);});});materials.forEach(mat=>mat.dispose());textures.forEach(texture=>texture.dispose());sun.shadow.dispose?.();renderer?.dispose();container.innerHTML='';container.classList.remove('bm-root','bm-inspector-closed','bm-rail-open','bm-building-view');} };
+  return { select, setSourceView, setMode, fit, focusSelected, setFloor, setLayer, setRailTab, setInspectorOpen, setRailOpen, setPresentation, getState, getStats, inspectObject, resetMetrics, measureOrbit, restoreState, dispose(){disposed=true;cancelAnimationFrame(frameId);cleanups.forEach(fn=>fn());controls?.dispose();architecture.dispose?.();environment.dispose?.();const materials=new Set(),textures=new Set();scene.traverse(obj=>{obj.geometry?.dispose();(Array.isArray(obj.material)?obj.material:obj.material?[obj.material]:[]).forEach(mat=>{materials.add(mat);if(mat.map)textures.add(mat.map);});});materials.forEach(mat=>mat.dispose());textures.forEach(texture=>texture.dispose());sun.shadow.dispose?.();renderer?.dispose();container.innerHTML='';container.classList.remove('bm-root','bm-inspector-closed','bm-rail-open','bm-building-view','bm-source-view','bm-survey-active');} };
 }

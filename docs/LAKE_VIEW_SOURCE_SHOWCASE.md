@@ -31,3 +31,17 @@ This import builds geometry from the declared GeoJSON and schedules. It reads co
 The complete ZIP first opens a draft preview through the shared adapter. **Save dataset** now retains its originals and canonical source snapshot, and makes it reopenable from the dataset directory (T083). Reimporting identical package bytes reuses the existing saved record. Saved-dataset ML runs and reviews are separate retained candidates (T084), not automatic publication or statutory issuance. General raw point-cloud reconstruction, image-to-map discrepancy matching and guarded promotion of new ML proposals into canonical records remain open.
 
 To regenerate the new fixture only, install `scripts/spatial/requirements-complete-showcase.txt` in an isolated Python environment and run `scripts/spatial/generate-complete-showcase.py`. Verify using `scripts/spatial/verify-complete-showcase.py` and `tests/t079-complete-source.test.ts`. These scripts do not seed live services or modify earlier receipts.
+
+## Imported survey views (T092)
+
+The existing `data-source/lake-view-complete.zip` also supplies viewable binary sources. Import this complete ZIP, choose **Review on map**, then **Map tools → Layers → Map data**:
+
+- **LiDAR point cloud**: 62,886 XYZ/RGB points read from the original LAS. This sample contains ground and roof samples, not surveyed facade returns.
+- **Drone imagery**: original 220 × 230 orthomosaic GeoTIFF, aligned by its pixel-area transform. Synthetic imagery, not an actual flight photograph.
+- **DEM**: the sample's flat 0 m terrain.
+- **DSM**: source heights from 0 to 15.5 m, coloured by elevation without vertical exaggeration.
+- **Building model**: the existing vector/floor model. **Compare building model** overlays it on a source view; the source did not generate those building records.
+
+Source details show original path, revision, classification, point/pixel count and benchmark. Reopening the saved complete package provides the same views without resaving or replacing its original bytes. New datasets need the same explicit `canonical.lidar-assets.v1`, `canonical.imagery-assets.v1` or `canonical.elevation-surfaces.v1` sidecar schema, verified member files and matching local metre frame/benchmark. Unsupported alignment is reported in Source receipt.
+
+Bounded profile: uncompressed LAS 1.0–1.4, formats 0–10, at most 1 million input / 200,000 displayed points per asset; RGB and single-band north-up pixel-area GeoTIFF, at most 4 million source pixels, sampled to a maximum 512-pixel dimension; eight assets. Compressed LAZ equivalents remain originals for download; this viewer uses the package's LAS. Geographic/other projected frames require reviewed transformation before this local display profile. This is source rendering, not automatic building extraction.
