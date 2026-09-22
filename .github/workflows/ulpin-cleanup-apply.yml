@@ -8,14 +8,11 @@ on:
     paths:
       - '.github/workflows/ulpin-cleanup-apply.yml'
       - 'docs/cleanup-review/apply_cleanup.py'
-
 permissions:
   contents: read
-
 concurrency:
   group: ulpin-approved-cleanup-${{ github.ref }}
   cancel-in-progress: false
-
 jobs:
   cleanup:
     if: github.repository == 'Vinayak1337/3d-ulpin' && github.ref == 'refs/heads/review/data-transition-cleanup-20260923'
@@ -36,14 +33,12 @@ jobs:
           persist-credentials: false
           lfs: false
           submodules: false
-      - name: Check drift and fetch the exact adopted documentation
+      - name: Check drift and fetch the exact reviewed objects
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
           test "$(git branch --show-current)" = "$CLEANUP_BRANCH"
-          git fetch --no-tags --depth=1 origin e167b1f6c1a830b2b5c6c1708e8f0b0214e4d849
-          git cat-file -e f623cff897f91bb3ebd4c225f700ac263f7beb72^{commit}
-          git cat-file -e a2fb23fb53a92032fb7223a28f633d15dc865697^{commit}
+          git fetch --no-tags --depth=1 origin e167b1f6c1a830b2b5c6c1708e8f0b0214e4d849 f623cff897f91bb3ebd4c225f700ac263f7beb72 a2fb23fb53a92032fb7223a28f633d15dc865697
       - name: Apply only the verified removal and documentation scope
         run: |
           set -euo pipefail
@@ -61,10 +56,24 @@ jobs:
           corepack enable
           corepack prepare pnpm@9.12.0 --activate
           pnpm install --frozen-lockfile
-      - name: Verify preserved sources, pure application contracts and tooling
+      - name: Verify retained sources and tests against the baseline
         run: |
           python3 - <<'PY'
           import json, os, pathlib, subprocess, time
+          baseline_sha = 'f623cff897f91bb3ebd4c225f700ac263f7beb72'
+          logdir = pathlib.Path(os.environ['RUNNER_TEMP']) / 'cleanup-validation'
+          logdir.mkdir(exist_ok=True)
+          baseline_dir = pathlib.Path(os.environ['RUNNER_TEMP']) / 'untouched-plan'
+          baseline_dir.mkdir()
+          archive = subprocess.run(['git', 'archive', baseline_sha, 'docs/engineering-plan'], check=True, stdout=subprocess.PIPE)
+          subprocess.run(['tar', '-xf', '-', '-C', str(baseline_dir)], input=archive.stdout, check=True)
+          baseline = subprocess.run(['python3', str(baseline_dir / 'docs/engineering-plan/tools/validate_plan.py')],
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=60)
+          (logdir / 'untouched-baseline-plan.log').write_text(baseline.stdout)
+          baseline_json = json.loads(baseline.stdout)
+          # This exact failure was reproduced on preserved baseline bytes before this change.
+          # Do not repair/reset old historical task data just to get a green cleanup run.
+          known_legacy = baseline.returncode == 1 and baseline_json.get('error') == "'sequence'"
           checks = [
             ('historical-plan-consistency', 'python3 docs/engineering-plan/tools/validate_plan.py'),
             ('engineering-reference-acceptance', 'node --test tests/engineering-acceptance.test.mjs'),
@@ -77,8 +86,6 @@ jobs:
             ('repository-data-mode', 'node --test tests/repo-data-mode.test.mjs'),
             ('cleanup-python-syntax', 'python3 -m py_compile docs/cleanup-review/apply_cleanup.py scripts/studio/compare.py'),
           ]
-          logdir = pathlib.Path(os.environ['RUNNER_TEMP']) / 'cleanup-validation'
-          logdir.mkdir(exist_ok=True)
           results = []
           for name, command in checks:
               start = time.monotonic()
@@ -89,9 +96,17 @@ jobs:
                       code = result.returncode
                   except subprocess.TimeoutExpired:
                       code = 124
-              results.append({'name': name, 'command': command, 'exit_code': code,
-                              'seconds': round(time.monotonic() - start, 2)})
-              print(name, 'PASS' if code == 0 else 'FAIL', code, flush=True)
+              status = 'pass' if code == 0 else 'failure'
+              extra = {}
+              if name == 'historical-plan-consistency' and code == 1 and known_legacy:
+                  current_json = json.loads((logdir / (name + '.log')).read_text())
+                  if current_json == baseline_json:
+                      status = 'pre_existing_failure'
+                      extra = {'baseline_sha': baseline_sha, 'baseline_exit_code': baseline.returncode,
+                               'identical_baseline_result': True, 'error': baseline_json['error']}
+              results.append({'name': name, 'command': command, 'exit_code': code, 'status': status,
+                              'seconds': round(time.monotonic() - start, 2), **extra})
+              print(name, status.upper(), code, flush=True)
               if code:
                   print((logdir / (name + '.log')).read_text()[-10000:])
           report = {'schemaVersion': 'ulpin-cleanup-verification/1', 'date': '2026-09-23',
@@ -99,19 +114,29 @@ jobs:
                     'node': subprocess.check_output(['node', '--version'], text=True).strip(),
                     'tested_tree': pathlib.Path(os.environ['RUNNER_TEMP'], 'cleanup-tested-tree').read_text().strip(),
                     'workflow_run': os.environ['GITHUB_SERVER_URL'] + '/' + os.environ['GITHUB_REPOSITORY'] + '/actions/runs/' + os.environ['GITHUB_RUN_ID'],
-                    'checks': results,
+                    'checks': results, 'baseline_plan_result': baseline_json,
+                    'qualification': 'Cleanup regression checks only. The historical plan validator is not passed: its exact missing-sequence failure also occurs on the untouched baseline.',
                     'not_run': ['database migrations or live services', 'browser/GPU workflows', 'real-source qualification', 'V0/I1 feature acceptance', 'deployment']}
           pathlib.Path('docs/cleanup-review/verification.json').write_text(json.dumps(report, indent=2) + '\n')
           (logdir / 'verification.json').write_text(json.dumps(report, indent=2) + '\n')
-          if any(r['exit_code'] for r in results):
-              raise SystemExit('Cleanup not published: a verification command failed.')
+          if any(r['status'] == 'failure' for r in results):
+              raise SystemExit('Cleanup not published: a new or unclassified verification failure occurred.')
           PY
-      - name: Confirm test execution did not modify retained files
+      - name: Confirm tests did not modify retained files and record the known limitation
         run: |
           set -euo pipefail
           git diff --exit-code
           test "$(git write-tree)" = "$(cat "$RUNNER_TEMP/cleanup-tested-tree")"
-          git add docs/cleanup-review/verification.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path('docs/cleanup-review/verification.json').read_text())
+          p=Path('docs/cleanup-review/README.md')
+          text=p.read_text()
+          note='## Executed verification\n\nSee [verification.json](verification.json) and [the actual run]('+r['workflow_run']+'). Typecheck and the application/fixture checks passed. The historical planning validator still fails with missing `sequence` metadata; the exact same result was reproduced from the untouched `f623cff` tree. It is recorded as **pre-existing failure**, not a passing test. Its backlog/validator were not rewritten or reset. Live database and browser/GPU tests were not run.\n\n'
+          p.write_text(text.replace('## Historical recovery\n',note+'## Historical recovery\n',1))
+          PY
+          git add docs/cleanup-review/verification.json docs/cleanup-review/README.md
           git diff --cached --check
           git diff --cached --stat > "$RUNNER_TEMP/cleanup-validation/changes.txt"
       - name: Publish the tested cleanup to the review branch only
