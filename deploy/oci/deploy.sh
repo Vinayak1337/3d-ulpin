@@ -26,12 +26,17 @@ COMPOSE=(sudo docker compose -f compose.yaml -f deploy/oci/compose.yaml --profil
 "${COMPOSE[@]}" up -d --no-build --wait
 
 pnpm db:migrate
+if systemctl is-active --quiet ulpin.service; then
+  sudo systemctl stop ulpin.service
+  trap 'sudo systemctl start ulpin.service' EXIT
+fi
 NODE_OPTIONS=--max-old-space-size=4096 pnpm build
 
 sudo install -m 0644 deploy/oci/ulpin.service /etc/systemd/system/ulpin.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now ulpin.service
 sudo systemctl restart ulpin.service
+trap - EXIT
 
 sudo install -m 0644 deploy/oci/ulpin-web-firewall.service /etc/systemd/system/ulpin-web-firewall.service
 sudo systemctl daemon-reload
