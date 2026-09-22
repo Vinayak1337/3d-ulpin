@@ -1,195 +1,178 @@
-# Unified Studio UI/UX and final integration
+# Unified Studio UI/UX, real 3D display and integration
 
-Owner **UI** · Baseline `main@f623cff897f91bb3ebd4c225f700ac263f7beb72`. This handoff was written after rereading the completed [10–19 feature handoffs](00-README.md#execution-matrix), [shared contracts](01-shared-contracts-and-ownership.md) and [necessary human inputs](90-required-human-tasks.md). It specifies future implementation, not a completed visual or runtime audit.
+Owner **UI**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026 after reviewing the revised feature handoffs 10–19 and shared contracts. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), this file and the actual enabled producers. ER-02/03/07/11/17/18/23–25 are incorporated. These are implementation/acceptance requirements, not claims that the UI or datasets have been tested in this documentation task.
 
-## 1. Product experience and existing implementation
+## 1. Product target and actual integration path
 
-The product should feel like one workflow: **receive sources → resolve uncertainty → inspect an exact property → review the proposed change → retrieve its evidence**. Keep the existing three primary sections from [product URLs](../../apps/web/features/studio/product/urls.ts): **Batches, Map, Register**. Features appear at the point of use, not as ten more dashboards or navigation items.
+Deliver a polished, usable semantic 3D workbench: neighbourhood → selected building → supplied floor/unit → exact evidence → useful review/report action → reopen saved state. Photographic context is optional. Do not confuse a textured mesh with legal property geometry, or a satellite background with a complete 3D interface.
 
-The active officer path is [app/studio/[[...view]]/page.tsx](../../apps/web/app/studio/%5B%5B...view%5D%5D/page.tsx), using [Shell](../../apps/web/features/officer/shared/Shell.tsx) and active components under `features/officer`. Do not implement only in the separate [Studio App showcase](../../apps/web/features/studio/App.tsx) and call the officer workflow integrated.
+The active route is [Studio catch-all](../../apps/web/app/studio/%5B%5B...view%5D%5D/page.tsx), using [Shell](../../apps/web/features/officer/shared/Shell.tsx). Active map: [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx) → [SavedSceneViewport](../../apps/web/features/studio/product/SavedSceneViewport.tsx) → [MapViewport](../../apps/web/features/spatial/MapViewport.tsx). Reuse [SpatialDataProvider](../../apps/web/features/spatial/data/Provider.tsx), [map sessions](../../apps/web/features/spatial/data/session.ts), [resource cache](../../apps/web/features/spatial/data/resource-cache.ts) and the appropriate existing renderer/lease path. Improving only [Studio App showcase](../../apps/web/features/studio/App.tsx) is not product integration.
 
-The active map is [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx) → [SavedSceneViewport](../../apps/web/features/studio/product/SavedSceneViewport.tsx) → [MapViewport](../../apps/web/features/spatial/MapViewport.tsx). The project also has [shared viewport leases](../../apps/web/features/studio/scene/SharedViewport.tsx) used by Studio scene surfaces. Reuse the existing source adapters/engine boundary appropriate to the active route; do not add a new provider or move the officer product into the showcase merely because both can display a map.
+Existing [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx) supports floor/unit selection. [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx) needs explicit invalid-record handling rather than broadening to a building. ProductHeader's internal search is not appropriate for public pages. Shell's unconditional local-data wording must become capability-aware. These are baseline code observations to reproduce/test, not previously verified live bugs.
 
-Static integration observations to address:
+## 2. First deliverable and data selection
 
-| Baseline behavior | Required integration change |
+**V0:** one clean D0 neighbourhood loaded through real services, with 3–5 buildings and ≤30 supplied spaces, active selection, unequal levels/basement, exact evidence and a PACK0 text/CSV packet that survives reload. Do not wait for public authentication, online model learning, every modality or a complete real Indian cadastral dataset. Intentionally conflicting D0 geometry may remain a separate draft test so the clean recorded demonstration is not blocked by correct validation.
+
+**D1 real-geometry gate:** separately load one actual external roof-shaped building through this product's shared viewport, preserve geometry/source identity and show unavailable interiors honestly. Then qualify 25–100 buildings. Passing D0 does not pass D1; D1 exterior success does not qualify apartment records. D2 textured Helsinki context is optional and cannot block V0. D3 Delhi provides location context; D4/D5 provide independent record/drawing tests, not automatic geometry joins. See data runbooks and source URLs in section 9 and 00.
+
+## 3. Information architecture and feature matrix
+
+Keep [Batches / Map / Register](../../apps/web/features/studio/product/urls.ts). No separate dashboard/page per USP. Keep known retained-site/dataset routes and legacy redirects.
+
+| Surface | Route and role |
 | --- | --- |
-| [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx) already supports contextual floor/unit inspection | Add bounded feature slots inside that inspector; do not replace it with a new register state tree. |
-| [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx) resolves `requestedRecord` to an existing record or `undefined` | An explicitly invalid unit link must show an invalid-scope state and disable scoped actions, not quietly broaden to a building-level packet/export. |
-| Register sections already include Floors & spaces, Property details, Documents, Checks, History and Investigation | Reuse these categories; make investigation a contextual drill-down rather than adding many more permanent tabs. Preserve old `tab` links. |
-| Shell has a Local workspace dialog with unconditional local-retention wording | Extend this actual dialog for DEPLOY; show only claims supported by profile and qualification. No assumed existing deployment settings page. |
-| ProductHeader searches full internal resolver/dataset endpoints | Public pages need CITIZEN's released projection and their own slim header, not this unrestricted search component. |
+| Batches | `/studio/work`: exact work items/next actions and at most three scope-qualified counts |
+| Intake | `/studio/add-files`: durable receipt, recognized/missing stages and focused mapping questions |
+| Batch review | `/studio/imports/:importPackageId`: resolve bound INGEST batch; draft map plus exceptions; no interchange of batch/package UUIDs |
+| Map | `/studio/areas/:areaId`: shared geometry, classification/revision and selected-property quick register |
+| Directories | `/studio/datasets`, `/studio/registry`: actual selectable datasets and exact/ambiguous identities |
+| Full register | `/studio/properties/:buildingId/register`: persistent selected unit, full evidence/records/history |
+| Preparation | Existing `/studio/properties/:buildingId/workspace` and `/studio/cases/:caseId`: reuse editing/review mechanisms |
+| Public, F2 gated | Proposed `/public/properties`, `/public/submissions/:id`: released lookup and own submission only |
+| Operator capabilities | Extend existing Shell workspace dialog, not an assumed settings page |
 
-These are code observations, not claims of reproduced browser failures. UI must verify them in the isolated running application during implementation.
-
-## 2. Information architecture and surfaces
-
-| Surface | Existing route / proposed route | Purpose and what stays visible |
+| Producer | Entry / surface | Main action → visible complete result |
 | --- | --- | --- |
-| Batches overview | `/studio/work` | Current work and one primary action per item; scope summary and filters, not infrastructure metrics everywhere |
-| Intake | `/studio/add-files` | Upload receipt, recognized/retained/needs-input counts, then focused mapping questions |
-| Batch review | `/studio/imports/:importPackageId` | Draft preview, exceptions, review/record controls; INGEST batch ID is resolved through the package binding |
-| Area map | `/studio/areas/:areaId` | Shared map, selected world/revision, compact contextual quick register and optional findings tray |
-| Dataset chooser | `/studio/datasets` | Select a known area/retained dataset with clear classification; not a second analytics dashboard |
-| Register chooser | `/studio/registry` | Find a property/identifier and handle ambiguous matches |
-| Full property register | `/studio/properties/:buildingId/register` | Full records/evidence/history and reviewed actions with persistent selected floor/unit context |
-| Existing preparation workspace | `/studio/properties/:buildingId/workspace`, `/studio/cases/:caseId` | Existing geometry/preparation/check/record mechanisms, not a newly rebuilt editor |
-| Public property finder | Proposed `/public/properties` | Approved public search/map and entry to own contribution; no officer datasets/party search |
-| Own submission | Proposed `/public/submissions/:id` | Contributor status, clarification and authorized files; login required |
-| Deployment/integration settings | Proposed contextual view in the existing Shell workspace dialog | Authorized profile/capabilities; optional public MCP setup guidance; no new top-level navigation |
+| [PACK 10](10-scoped-evidence-packets.md) | Selected unit Evidence / same quick/full drawer | Confirm plan → actual scoped artifact; PACK0 and PDF capability distinct; Original archive separate |
+| [READY 11](11-evidence-readiness-and-review-queue.md) | Status strip/Batches count | Open exact requirement/selectionToken → same counted target set and working source/request action |
+| [FIND 12](12-rights-aware-spatial-findings.md) | Map/register Checks | Exact result/evidence → saved scoped review case; parcel-only works without fake building; optional existing investigation link |
+| [CITIZEN 13](13-citizen-evidence-and-corrections.md) | Released finder/own receipt; officer request | Submit/clarify → actual draft receipt → separately recorded outcome, never upload=ownership |
+| [INGEST 14](14-adaptive-ingestion-and-progressive-review.md) | Add files / bound import review | Resolve recipe → selectable durable draft manifest → checked coherent review group |
+| [HISTORY 15](15-property-history-and-comparison.md) | Unit History | Choose exact manifests → field/source/difference view and actual old evidence |
+| [RIGHTS 16](16-shared-spaces-and-vertical-rights.md) | Contextual Relations inside existing unit/shared-space detail | Inspect clause/propose/review → one space, beneficiaries and technical receipt |
+| [IMPACT 17](17-infrastructure-impact-screening.md) | Map contextual tool / existing SpatialInquiry | Enter/draw proposed volume → saved affected-space report plus unassessed coverage |
+| [ASSIST 18](18-grounded-assistance-and-mcp.md) | Ask about this property/submission | Typed service facts → exact evidence/action; native local F1, remote public separately gated |
+| [DEPLOY 19](19-india-contained-deployment.md) | Workspace dialog | Inspect profile/capability → tested/unqualified/disabled reason without secret exposure |
 
-Preserve existing retained dataset/site routes and legacy URL translation. An internally recorded registry revision, an observed source world and a synthetic dataset are different concepts; show classification and review status independently. A proposed drawing is not “observed,” and a supplied official parcel ID does not make an app-generated unit ID official.
+Relations and investigation are contextual drill-downs, not another set of permanent top-level tabs. A finding/packet/history panel replaces the foreground inspector with a clear Back action. Do not stack multiple trays over the map. Preserve addressable old register tab/investigation links.
 
-## 3. Feature-to-interface matrix
-
-| Feature | Entry point | Primary surface | Contextual surface | Main action | Visible result |
-| --- | --- | --- | --- | --- | --- |
-| [10 PACK](10-scoped-evidence-packets.md) | Selected property → Documents | Scoped packet preview drawer | Quick/full register Evidence | Review scope and generate | Included/shared/omitted evidence, job status and authorized packet |
-| [11 READY](11-evidence-readiness-and-review-queue.md) | Batches filter or selected target status | Work queue / readiness details | Optional map overlay and register status strip | Open the stated next step | Exact missing fact, evidence/check basis and scoped action |
-| [12 FIND](12-rights-aware-spatial-findings.md) | Map Checks or register Checks | Findings tray | Exact-volume highlight and existing investigation | Inspect evidence / open investigation | Measurement, applicability, coverage and review state |
-| [13 CITIZEN](13-citizen-evidence-and-corrections.md) | Public Find my property; officer Request evidence | Submission/clarification flow | Register request panel and Batches review item | Submit or review a proposal | Own receipt, requested clarification and separate recording outcome |
-| [14 INGEST](14-adaptive-ingestion-and-progressive-review.md) | Add files | Receipt/mapping/batch review | Shared progressive draft preview | Resolve mapping then review coherent group | Placed/needs-input counts, draft objects and retained source links |
-| [15 HISTORY](15-property-history-and-comparison.md) | Register History | Version-pinned comparison | Compact quick-register timeline | Select two explicit versions | Changed fields/source refs and supported overlay; lineage when retained |
-| [16 RIGHTS](16-shared-spaces-and-vertical-rights.md) | Selected unit/shared space → Relations | Contextual relationship panel | Floors & spaces or Property details | Inspect clause / propose relation | Beneficiary/space links with claim and technical-review labels |
-| [17 IMPACT](17-infrastructure-impact-screening.md) | Map tools → Assess proposed work | Proposal editor/results | Existing SpatialInquiry and map overlay | Screen mapped records | Potential interactions plus explicit unassessed coverage |
-| [18 ASSIST](18-grounded-assistance-and-mcp.md) | Ask about this property | Contextual assistant panel | Source citations and native action links | Ask a bounded read question | Grounded answer tied to the selected property; no hidden write |
-| [19 DEPLOY](19-india-contained-deployment.md) | Workspace status → Deployment | Authorized diagnostics view | Local capability warnings | Inspect qualification gap | Tested/disabled/unqualified capabilities without secret exposure |
-
-**Relations** is a contextual subsection, not a seventh permanent register tab. Packet, assistance, comparison and proposed-work modes reuse one foreground detail panel. Findings may replace the inspector temporarily with an explicit Back to property control; do not stack three trays over the map.
-
-## 4. Layout and visual hierarchy
-
-### Map with quick register
+## 4. Layout, visual language and data honesty
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│ 3D ULPIN       Batches  Map  Register        Search       Workspace      │
-├─────────────────────────────────────────────────────────────────────────┤
-│ Area / supplied scope     Observed sources · revision N       Add files │
-├───────────────────────────────────────────┬─────────────────────────────┤
-│ 2D / 3D     Layers     Fit                 │ Building A         Full ↗   │
-│                                           │ Parcel ID / System ID       │
-│               SHARED MAP                  │ First floor › Flat 101      │
-│                                           │ Boundary evidence needed    │
-│ Selected space + relevant overlay         │ Summary  Evidence  More     │
-│                                           │ Relevant facts / next step  │
-│                                           │ Request evidence             │
-│ World · assessment coverage      Checks   │ Relations / History / Ask   │
-└───────────────────────────────────────────┴─────────────────────────────┘
+3D ULPIN       Batches  Map  Register       Search        Workspace
+Area / supplied scope       Source classification · revision       Add files
+┌──────────────────────────────────────────┬─────────────────────────┐
+│ 2D/3D  Layers  Fit                        │ Building A       Full ↗ │
+│                                          │ First floor / Flat 101  │
+│        SHARED INTERACTIVE 3D VIEW         │ Exact ID · draft/rev N  │
+│                                          │ Boundary evidence needed│
+│ selected space + relevant overlay         │ Summary  Evidence  More │
+│                                          │ Linked source / action  │
+│ coverage / reference             Checks   │ History / Relations/Ask │
+└──────────────────────────────────────────┴─────────────────────────┘
 ```
 
-Desktop target: map gets the flexible majority; inspector approximately 360–420 px with resizable/minimum bounds where helpful. No permanent left property tree plus right inspector plus checks tray unless the viewport comfortably supports it and the user explicitly opens the extra context. Move layers/dataset lists into the existing on-demand rail/dialog. Show floor controls only for a selected building with corresponding records; unavailable internal geometry remains a record/evidence view.
+Map gets the flexible majority; desktop inspector approximately 360–420 px. Optional layers/property lists open on demand, not a permanent left tree plus right inspector plus another dock. Selected building/floor/unit, classification/stage/revision and action remain visible while detail scrolls. Full register expands long tables/evidence/history; returning preserves camera and selection.
 
-Keep the selected building/floor/unit, world/classification, relevant revision and main next action visible while drawer content scrolls. Quick register answers “what is this, what is missing, where is its evidence?” Full register handles long tables, investigation history and detailed revision comparison. Preserve map camera when opening full register and returning.
+Reuse restrained sage/green tokens and existing [product](../../apps/web/features/studio/product/product.css), [operations](../../apps/web/features/studio/product/operations.css) and [shared UI](../../apps/web/features/officer/shared/ui.css) styles/icons. Normal task text ≥14 px desktop/16 px mobile, essential metadata ≥12 px, readable line-height, 8/12/16/24 spacing and approximately 44 px primary touch targets. Consolidate tokens rather than stacking global overrides or another component library. One accent action per context. Details may be dense; do not replace necessary labels with tiny icons or tooltips.
 
-### Batches and full register
+For D0 architectural quality, use stable materials, controlled exposure/contact shadows, legible silhouettes, selected-space outlines, depth hierarchy and calm background/context. Authored fixtures may contain detailed roofs/terraces/stairs because their source explicitly defines them. Real geometry retains source shapes; no invented facade/floor/road-width detail enters measured facts. Ornament is display-only. Building height unknown is shown as footprint/unavailable height, not a random attractive extrusion. Roof overhangs and recorded ground footprints remain separate roles.
 
-```text
-BATCHES                            FULL REGISTER
-Needs attention | Ready | History  Building / selected floor / unit
-Scope: received records, digest N  Technical status · source world
-Item             Next action      Floors  Details  Documents  Checks  History
-Unplaced plan    Match building    Selected section; contextual investigation
-Chunk paused     Confirm units    Evidence / scope / source references
-Submission       Review evidence  Prepare update      Property packet
-```
+Approximately 900 px collapses optional rails; approximately 620 px uses one full-height sheet. At 390×844 keep the scope header/action visible, form labels readable and search usable without a hidden placeholder. Long IDs wrap/copy. Use local/approved fonts/textures in private mode. No screenshot or satellite image substituted for an interactive 3D scene.
 
-At most three primary overview counts, all clickable into matching filtered work. Queue health lives behind batch diagnostics. The full register's investigation route remains addressable but normally opens from a finding; do not remove existing review functionality just to simplify navigation. Keep original archive and derived property packet actions visibly distinct.
+## 5. Two geometry lanes, one shared viewport
 
-### Style and accessible density
+### Existing canonical lane
 
-Reuse the current restrained green/sage product palette, light panels, simple borders and existing icons from [product.css](../../apps/web/features/studio/product/product.css), [operations.css](../../apps/web/features/studio/product/operations.css) and [shared ui.css](../../apps/web/features/officer/shared/ui.css). Consolidate shared tokens through UI-owned styles instead of adding feature-specific global overrides or another component library.
+[Compiler](../../apps/web/features/spatial/compiler/compile.ts) already emits 3D Tiles 1.1 and coarse/detail GLBs from its bounded profile. Reuse it for supported canonical exterior geometry and existing selected-space overlays. Respect its one-frame/5 km/2,000-entity/50,000-position/12,000-facade-bay/80 MiB bounds. These are backend ceilings, not client loading targets. Do not claim arbitrary CityJSON/mesh input support by removing a validator.
 
-Proposed target sizing: normal task text at least 14 px desktop/16 px mobile, essential metadata no smaller than 12 px, readable line-height around 1.45, 8/12/16/24 px spacing steps and approximately 44 px primary touch targets. Do not retain tiny 8–10 px essential labels merely to fit more text. Use one accent action per context and a clear type hierarchy; do not put paragraphs of explanations on cards. Details remain available on demand. Use installed/local fonts or approved assets in private mode; no silent remote font requests.
+### External display lane
 
-At approximately 900 px, collapse optional rails and move detail into a single modal sheet while keeping map selection context. At approximately 620 px, use full-height detail sheets, compact labelled navigation and form inputs large enough to read without zoom. Avoid nested horizontal scrolling; long IDs wrap/copy safely. Desktop search stays keyboard-accessible; mobile search opens a labelled input rather than relying on an invisible placeholder. Essential actions must work without hover, colour vision or map dragging.
+Add a typed `external_asset` display adapter under the current MapViewport/runtime boundary. UI owns proposed `apps/web/features/usp/shared/{external-scene,scene-manifest-adapter}.ts` and compatible client layer changes. FND owns source/asset persistence and authorized HTTP serving; DATA acquires originals. No new standalone Cesium/R3F app or route-specific Canvas.
 
-These wireframes prescribe component hierarchy and interaction, not a claim of pixel-perfect matching to an unavailable mockup. Capture baseline and implemented screens during UI work for side-by-side comparison; reference images are optional, not a prerequisite to code.
+First D1 path: parse the full preserved CityJSON/CityJSONFeature sample with its declared metadata/transform, decode scale/translate exactly once, retain building/part hierarchy and semantic IDs, triangulate supported planar surface rings in each face's plane while preserving holes, and produce a display-only mesh with pick identity mapping. Do not flatten roof surfaces into XY footprints. Nonplanar/unsupported surfaces return an explicit adapter limitation; do not silently fill them. Bound one-building input before a wider converter. Use existing triangulation dependency where suitable; FND pins any required codec, never an invented installed library.
 
-## 5. Selection, state and map integration LLD
+Alternatively a separately qualified provider 3D Tiles lane can retain provider geometry/feature metadata through the existing tiles renderer. It must pass actual decoder/metadata/selection tests, not merely load a bounding box. [3DBAG service documentation](https://docs.3dbag.nl/en/delivery/webservices/) distinguishes its API coordinate system from geocentric tile delivery and names required metadata/compression extensions. Read the actual source declarations; do not apply the CityJSON transform a second time to already transformed tiles. Missing meshopt/quantization/metadata support yields explicit unsupported capability until the selected renderer/codec is qualified.
 
-UI implements the `SelectionBridge` described in 01. URL parameters carry restorable selection; server adapters validate them before fetching feature data. Existing physical `feature` ID and registry `record` ID are not interchangeable. A human-readable identifier may resolve to several matches; present ambiguity instead of choosing the first.
+D1 API coordinates with NAP elevations are not automatically ECEF/ellipsoidal. If global transformation resources are unavailable, use an explicitly labelled local engineering display preserving relative roof dimensions; disable unqualified global/measurement joins. Never guess a geoid correction. Full global placement is a separate test. Internal floors remain unavailable unless independently sourced.
 
-| Context | Existing query/route behavior to preserve | Proposed extension |
-| --- | --- | --- |
-| Area map | Area route; `feature`, `record`, `world`, existing finding selection | Allowlisted `panel` for readiness/evidence/packet/relations/history/assistance/impact; server-validated artifact IDs for resume |
-| Full register | Building route; `area` or legacy `areaId`, `record`, `tab`, existing investigation `case` | Same logical panel mapping plus optional comparison/packet ID; no conflicting duplicate values |
-| Source evidence | Existing source/page context | Exact FND evidence pointer and source revision; old links translated without changing their meaning |
-| Batch review | Existing import-package/case route | Resolve linked ingest batch server-side; do not place an ingest UUID in the package route |
-| Public routes | New approved public refs / own submission IDs | No internal private target details or bearer credentials in query strings |
+D2 textures: preserve mesh/MTL/image dependency paths and licence, resolve only registered bounded local assets, reject remote/path-traversal dependencies. Missing texture uses a neutral material and visible asset limitation, not a blank map. An unsegmented photogrammetry mesh is context, not a set of invented legal units. Analytical volume comes only from qualified canonical representations; display meshes remain non-authoritative.
 
-An example desired map URL is `/studio/areas/{areaId}?feature={buildingId}&record={unitId}&world=observed&panel=evidence`; braces denote validated values, not new ID schemes. Full register preserves the same target through `/studio/properties/{buildingId}/register?area={areaId}&record={unitId}&tab=evidence`. FND maps legacy world strings to the canonical world refs; UI must not assume the types are interchangeable.
+Both lanes preserve canonical/source identity maps across LoD, hide/show, selection and refresh. One 3D view can combine appropriately placed context and semantic overlays with explicit provenance; never move Dutch/Helsinki geometry onto Delhi coordinates to fake local evidence.
 
-Explicitly invalid record/area/world/source selection produces a visible mismatch state. The user may deliberately choose a valid parent/area, but the app must not silently broaden an export, query or submission. Disable actions until scope is resolved. Ignore no invalid parameter just to make a page look successful. Preserve recognized legacy routes; reject duplicate ambiguous values through shared request validation.
+## 6. Durable draft consumption, selection and cache rules
 
-Map engine rules:
+Consume INGEST's `usp-scene-manifest/1` from [14](14-adaptive-ingestion-and-progressive-review.md). The outer rendering manifest ID is distinct from its pinned data SnapshotScope.manifestId; do not hash a manifest into itself or interchange scene/data IDs. Common opaque AssetRef belongs to FND; INGEST owns scene descriptors/manifests; UI consumes them. Each asset supplies actual hash/version, frame/bounds, LoD and pick refs. The recorded-only process cache cannot supply a durable draft by pretending its stage changed.
 
-1. Reuse the current `SpatialDataProvider`, `ResourceCache`, `MapSessions`, `useBlock` and MapViewport source union. Feature leaves receive target/callback props, not their own store or renderer.
-2. One active 3D viewport per focused officer workspace. Source panes, 2D plan diagrams and accessible lists can coexist; comparison does not require two WebGL viewers. Pause hidden rendering and dispose owned resources when no longer leased/visible.
-3. Feature overlays carry stable target refs, representation/input revision and a role. They are display projections of accepted analytical results, never a second measurement authority. Preserve the current representation distinction between analytical geometry and display-only decoration/exploded floors.
-4. INGEST applies accepted manifest/tile changes in bounded batches, retaining selected identity and camera. Late network responses for a prior scope cannot replace current data. HISTORY/IMPACT overlays name their explicit world/revision pairing.
-5. Cache keys include scope/world/digest and entitlement view. Clear private responses on sign-out/revocation; no private documents, tokens or generated packets in localStorage. Server checks remain authoritative even after the UI hides a control.
+Fetch consistent batch status+event cursor, replay committed manifest events, and load at most four assets concurrently. Adopt a coherent manifest version; remove/release replaced assets and honor entity removals. Version gaps/expired cursors refresh the complete authoritative manifest. Ready-to-render is not ready-to-record. A failed/denied tile preserves usable remaining context and explicit coverage. Never replay a removed entity from an older late response. SSE unavailable uses the specified polling fallback, not fake streaming timers.
 
-## 6. Shared extension contracts and ownership
+Use 01 SelectionContext states/generation. URL owns restorable feature/record/world/panel and artifact refs; server validates exact area/parent/stage membership. Current `feature` physical ID and `record` registry ID are not interchangeable. No explicitly invalid/retired/unavailable unit request silently broadens PACK, source query or submission to its building. A missing optional parameter differs from an invalid supplied parameter. Reject duplicate/conflicting known parameters, preserve safe legacy URL translation.
 
-Proposed UI registration contract: `FeatureRegistration` has feature ID, allowed surfaces, required capability names, a pure availability function over qualified context, lazy leaf component and supported action kinds. Availability is `available`, `needs_selection`, `unavailable`, `denied` or `not_assessed`; these do not substitute for server authorization. FND publishes common ref/context types; UI owns the component registration mechanics. Register only implemented features, not placeholders returning fake success.
+Example desired context: `/studio/areas/{areaId}?feature={buildingId}&record={unitId}&world=observed&panel=evidence`. Full register carries the same selection with `record` and `tab=evidence`; artifact IDs resume an exact plan/comparison, not whatever unit is selected now. Intake uses workspace/version before a SnapshotScope exists. Unresolved public submissions remain intake-only.
 
-Feature panels receive `selection`, `scope`, `capabilities`, `onSelectTarget`, `onOpenEvidence`, `onNavigateAction` and `onClose`. Async results carry their input pins. Children request navigation with typed actions; they do not directly reset a shared global store. Parent action execution validates scope and preserves the existing [navigation guard](../../apps/web/features/studio/data/navigation-guard.ts) for unsaved work.
+Advance generation on target/world/stage/access changes; abort or suppress old-generation results. Cache keys include method/path, scope/world/stage, manifest/target pin, filter, accessView and entitlement/policy version. Clearing on revocation must also prevent pending reads from repopulating stale private content. Asset-ready invalidates only the relevant manifest/asset consumer; source/record mutations invalidate matching dependency manifests, not every dossier on each tile. Keep private data/tokens/packets out of localStorage.
 
-| Existing or proposed file | UI-owned change | Feature dependency |
-| --- | --- | --- |
-| [Studio layout](../../apps/web/app/studio/layout.tsx), [Studio route](../../apps/web/app/studio/%5B%5B...view%5D%5D/page.tsx) | Preserve provider lifecycle, integrate qualified route mounts and FND-supplied SSR access wrapper | FND/F2; active feature leaves |
-| [Shell](../../apps/web/features/officer/shared/Shell.tsx), [ProductHeader](../../apps/web/features/studio/product/ProductHeader.tsx), [urls.ts](../../apps/web/features/studio/product/urls.ts) | Coherent navigation, workspace/deployment action, scope-safe search/URLs | DEPLOY and FND projections |
-| [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx), [BlockRails](../../apps/web/features/officer/block/BlockRails.tsx), [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx) | Contextual quick-register/feature slots and panel switching | PACK/READY/FIND/RIGHTS/HISTORY/ASSIST |
-| [SavedSceneViewport](../../apps/web/features/studio/product/SavedSceneViewport.tsx), [MapViewport](../../apps/web/features/spatial/MapViewport.tsx), [map sessions](../../apps/web/features/spatial/data/session.ts), [useBlock](../../apps/web/features/officer/block/useBlock.ts) | Typed overlay/selection and camera lifecycle integration | INGEST/FIND/HISTORY/IMPACT |
-| [resource cache](../../apps/web/features/spatial/data/resource-cache.ts), [officer store](../../apps/web/features/officer/shared/store.tsx) | Entitlement-aware invalidation and bounded transient preferences | FND context/access |
-| [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx), [Evidence](../../apps/web/features/officer/register/Evidence.tsx), [History](../../apps/web/features/officer/register/History.tsx), [SpatialInquiry](../../apps/web/features/officer/register/SpatialInquiry.tsx) | Scope validation and feature mounts; preserve existing sections | Relevant leaf owners |
-| [WorkQueue](../../apps/web/features/officer/work/WorkQueue.tsx), [ImportWork](../../apps/web/features/officer/work/ImportWork.tsx), [AddFiles](../../apps/web/features/officer/workspace/AddFiles.tsx) | Real queue/receipt/review integration, no duplicate boards | READY/INGEST/CITIZEN |
-| Proposed new `apps/web/features/usp/shared/{FeatureSlots,SelectionBridge,StatusBadge,EvidenceAction,FeaturePanel}.tsx`, `feature-types.ts`, `shared.css` | Shared slots, status/interaction tokens and selection adapter | F0 types; implemented leaves |
-| Proposed new `apps/web/app/public/properties/page.tsx`, `apps/web/app/public/submissions/[id]/page.tsx`, `apps/web/features/usp/shared/PublicShell.tsx` | Thin safe public mounts and navigation | CITIZEN/F2/DEPLOY |
-| Proposed new `tests/usp-ui-integration.test.ts`, `tests/e2e/usp-product-journey.spec.ts`, `tests/e2e/usp-visual.spec.ts` | Shared selection/navigation and real cross-feature browser verification | Qualified local stack/fixtures |
+Filters hiding the selected object keep an explicit hidden-selection banner with Reveal/Clear, not automatic nearest-object selection. Removed identity gives historical/unavailable context and explicit successors where supplied. Returning from a register/source restores camera within documented tolerance; streamed assets do not auto-fit every time. Pause hidden render loops and dispose owned geometry/material/texture resources when no longer referenced.
 
-UI is sole editor of these shared parents. Feature agents remain sole editors of their leaf components/services/tests unless they explicitly transfer ownership for a narrow integration fix. FND owns API/DB/worker/identity changes; UI must not build a parallel mock backend to make missing features appear connected.
+## 7. Shared slots, ownership and interaction states
 
-## 7. Unified states, content and accessibility
+`FeatureRegistration` contains feature ID, surfaces, required capability, pure availability function and lazy leaf. Available/needs_selection/unavailable/denied/not_assessed is UI state, not authorization. Mount only real implemented producer/leaf combinations. Feature panels receive selection/scope/capabilities and typed onSelectTarget/onOpenEvidence/onNavigateAction/onClose callbacks. Parent verifies scope, routes and [unsaved-work guard](../../apps/web/features/studio/data/navigation-guard.ts). No leaf installs another provider, renderer or selection store.
 
-| State | Shared behavior and wording principle |
+| Shared path / proposed destination | UI responsibility |
 | --- | --- |
-| Loading | Keep valid scope header; show bounded progress/skeleton, never invented percentage |
-| Empty | Name the missing population: no supplied records, no scoped evidence, no earlier revision; not zero risk |
-| Not assessed / incomplete | Explain the absent dependency/input and next action; distinguish from successful no-finding result |
-| Stale | Show pinned result and what changed; disable stale mutation/record actions until revalidated |
-| Error / retry | Preserve draft inputs, use safe reason/action, retry only idempotent operations |
-| Denied / withheld | Hide private details and counts appropriately; do not leak filenames or party names through tooltips/citations |
-| Submitted / accepted / recorded | State the actual workflow step; receipt is not review, accepted proposal is not recorded title |
-| Success | Show exact target/revision and completed action; qualified technical readiness is not legal clearance |
+| [Studio layout](../../apps/web/app/studio/layout.tsx), Studio route, Shell, [ProductHeader](../../apps/web/features/studio/product/ProductHeader.tsx), product URLs | Provider lifecycle, navigation, FND SSR wrapper, actual workspace capabilities |
+| BlockPage, [BlockRails](../../apps/web/features/officer/block/BlockRails.tsx), QuickRecords, RegisterPage | Exact invalid-selection handling and contextual feature mounts |
+| SavedSceneViewport, MapViewport, [useBlock](../../apps/web/features/officer/block/useBlock.ts), map sessions/cache/[store](../../apps/web/features/officer/shared/store.tsx) | Two display adapters, one viewport, generation/access-aware state |
+| [WorkQueue](../../apps/web/features/officer/work/WorkQueue.tsx), [ImportWork](../../apps/web/features/officer/work/ImportWork.tsx), [AddFiles](../../apps/web/features/officer/workspace/AddFiles.tsx) | Actual receipt/draft/review producer integration |
+| Proposed `apps/web/features/usp/shared/{FeatureSlots,SelectionBridge,StatusBadge,EvidenceAction,FeaturePanel,PublicShell}.tsx`, `feature-types.ts`, `shared.css` | Reusable status/content/interaction and safe public layout |
+| Proposed `apps/web/features/usp/shared/{external-scene,scene-manifest-adapter}.ts` | Typed source/display manifest adaptation, no new source authority |
+| Proposed public pages named in section 3 | Thin CITIZEN released/own-data mounts behind F2, never internal search/dossier reuse |
+| Proposed `tests/usp-ui-integration.test.ts`, `tests/usp-external-scene.test.ts`, `tests/e2e/usp-product-journey.spec.ts`, `tests/e2e/usp-visual.spec.ts` | Shared contract, geometry preservation, real interaction and visual acceptance |
 
-Use text + icon + optional colour for status. Keep units next to every measurement and world/classification near every 3D view. Labels “System 3D ID” and “Official parcel ULPIN, supplied” prevent identity confusion. Use “Possible discrepancy” and “Review needed” rather than unreviewed legal verdicts. A generated packet says it is a compilation; a proposal drawing says it is hypothetical/planned.
+FND remains sole shared API/DB/worker/config writer. Feature owners own their leaves. UI requests a concrete backend patch rather than making a mock API to appear complete. DATA owns fixtures and independent expected results. Explicitly transfer ownership before editing another owner's file.
 
-Dialogs have focus trapping, Escape handling, labelled titles and focus return. Replacing the property inspector with a check/packet panel preserves a labelled Back action. Forms expose validation near fields and via an accessible error summary; screen-reader progress uses a polite live region without announcing every SSE event. All map-only selections/actions have a list or numeric-form alternative. Test keyboard navigation, visible focus, contrast, 200% zoom, reduced motion and narrow screens. Do not animate the camera automatically on every streamed tile.
+States: loading retains only matching scope; empty names missing data; incomplete/not_assessed differs from no finding; stale cannot enable a current write; errors retain inputs and bounded retry; denied hides names/counts; submitted/accepted draft/recorded are distinct. Measurements show units/method. Generated packets say compilation, estimates say estimated, hypothetical work says proposed. No legal-clearance or official-issued system ID label.
 
-## 8. Implementation and integration order
+Test keyboard/list/numeric alternatives to map-only actions, focus trap/return, Escape, readable errors, contrast, 200% zoom and reduced motion. Use text/icon as well as colour. Screen reader updates are coalesced, not every SSE event. Hidden overlays must not intercept pointer/touch input; test actual drag/zoom/orbit, not only screenshots.
 
-**UI0 after F0:** establish SelectionBridge, availability/status primitives and leaf slots; preserve all existing routes and test invalid selection/camera navigation. This early integration work can proceed while feature owners build against documented fixtures.
+## 8. Visual and interaction acceptance — V1 through V8
 
-**UI1 after F1:** integrate PACK, READY and FIND first to qualify one selected-unit journey. Add INGEST into actual AddFiles/ImportWork with explicit package/batch binding. Then HISTORY/RIGHTS and IMPACT, only using available qualified ports. Keep unimplemented optional actions hidden or explicitly unavailable; do not ship working-looking buttons wired only to fixtures.
+Retrieve the actual committed reference images via [comparison-manifest.json](../../apps/web/public/studio-review/comparison-manifest.json). Verify hashes/paths and label reference, historical capture and fresh active-product baseline distinctly. A file named current-map from an earlier task is not a current baseline. Use the accessible original reference to guide composition/material/detail; do not fabricate a missing image from its filename. If unavailable, the concrete shot contracts below still apply and visual-reference comparison remains explicitly unqualified.
 
-**UI2 after F2/DEPLOY:** mount safe public finder/submission pages and qualified native assistance. Keep external MCP/profile configuration in the advanced workspace surface, subject to its separate gate. Public views never reuse full internal dossiers/search.
+| Case | Data and action | Pass condition / evidence |
+| --- | --- | --- |
+| V1 neighbourhood | D0 fixed camera; D1 real roof sample separately | Legible depth/silhouettes, coherent material/light scale, actual non-box D1 roof surfaces preserved; pan/orbit/zoom works; no screenshot background substitution |
+| V2 building selection | Click B-A then B-B and a D1 source feature | Highlight, identity, register and evidence all match; no previous-building flash; D1 without interiors stays unavailable |
+| V3 vertical stack | D0 basement, mezzanine, unequal heights, courtyard and supported per-level unit | Correct source levels/outlines; isolate/explode changes presentation only; measures/source hashes unchanged; unsupported compound analysis not hidden |
+| V4 underground/section | D0 negative levels; FIND/IMPACT when enabled | Cutaway shows correct relative vertical separation; actual result/evidence supports highlighted volume; unknown utility depth is a gap. In V0 this tests scene visibility only, not unfinished FIND/IMPACT calculations. |
+| V5 evidence action | U-A101 mixed source and PACK | Exact locator and applicable clause; NEVER_A102 absent from relevant preview/packet; text PACK0 passes only its profile, PDF requires PACK1; invalid unit cannot export building |
+| V6 history | Two actual D0 manifests | Explicit dates/stages, correct old sources and supported overlay, no current-data substitution; one camera/viewer |
+| V7 progressive draft | Three real INGEST chunks with failure/reversed completion | Selectable persisted geometry before batch completion; restart/replay matches fresh manifest; no duplicated/resurrected objects or global scene reload per event |
+| V8 mobile/failure | 390×844, denied source, missing tile, empty record and reconnect | Readable selected-scope sheet and action; focus/touch work; failures do not show another property's private content or erase saved context |
 
-**Final pass:** integrate one owner branch at a time into the agreed feature integration branch. Run shared contracts/migrations first, then relevant feature tests and complete browser journeys. Resolve UI/LLD contradictions by editing the affected handoff individually and notifying its owner, not by silently diverging from the interface. No unauthorized merge into main.
+V0 requires relevant D0 V1–V5/V8 plus the separate D1 geometry/identity gate. V6/V7 and unfinished feature-specific behavior are later gates, not fake screenshots to satisfy V0. Capture V1–V8 for their enabled phases at 1440×900, 1024×768 and 390×844 as appropriate, with fixed pack/hash/camera/fonts and explicit scene-ready condition. Compare fresh baseline/final side by side at the same settings. Record actual interaction/DOM IDs/asset requests, not subjective claims of pixel-perfect generated-image equivalence. Do not claim user approval without it.
 
-## 9. Acceptance criteria and repeatable demonstrations
+### Measured budgets, not invented performance
 
-Primary synthetic journey: import a supported delivery → clarify units/CRS without invented data → see progressive draft geometry → select a unit with missing evidence → request and receive a contributor response → reviewer creates/records the supported proposal → readiness updates for the named step → generate only that unit's scoped packet → inspect exact before/after history. Related actions use the same IDs/worlds/revisions throughout; the citizen sees only their authorized projection.
+Initial workload: 25–100 exterior buildings, ≤30 detailed spaces, ≤25 MiB visible geometry, local ready services. Proposed acceptance targets: first useful local scene ≤8 seconds, cached property-selection feedback ≤100 ms, interactive desktop frame time p95 ≤33 ms on the recorded reference hardware, and no continuing owned-resource growth over ten repeated open/close/scope-switch cycles after expected cache warmup. Record cold/warm, GPU/browser/device pixel ratio, network/cache, data size and actual p50/p95. Software WebGL tests can prove correctness but not desktop-GPU performance.
 
-Additional demonstrations: shared stair relationship opens the same affected units in FIND and PACK; hypothetical excavation reports a basement interaction and unknown utility depth without an all-clear; native assistant cites the selected finding; private deployment disables external MCP and displays manual fallback when its model is unavailable.
+If a budget fails, reduce resident LoD/texture resolution/draw calls within the same geometry fidelity, add bounded loading and retest. Do not drop source objects, replace roofs with boxes or freeze interaction to fabricate a pass. On low-end/mobile devices offer a measured reduced-detail or existing 2D/list fallback; state the unsupported 3D profile. Test active renderer count and disposal; a static screenshot cannot prove memory/performance. Targets are configurable project engineering choices, not provider performance claims.
 
-Required negative cases: invalid record URL cannot trigger a building-wide export; rapid selection changes cannot show the previous unit's documents; switching world cannot reuse incompatible findings; a revoked grant removes cached/downloadable evidence; interrupted SSE resumes without duplicated objects; closing a drawer restores keyboard focus; hidden overlays do not block mouse/touch map controls. Test drag/pan/zoom and pointer events explicitly rather than judging only screenshots.
+## 9. Dataset acquisition, test use and fallback
 
-Run existing `pnpm typecheck`, `pnpm test:studio`, `pnpm test:register-scope`, `pnpm test:register-exports`, `pnpm test:registry`, `pnpm test:api`; run proposed `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-ui-integration.test.ts` and `pnpm exec playwright test tests/e2e/usp-product-journey.spec.ts tests/e2e/usp-visual.spec.ts`. Use [Playwright configuration](../../playwright.config.ts) and the established isolated stack; `pnpm test:e2e` is the full final regression where supported. Respect the [build-server guard](../../scripts/check-build-server.mjs).
+**D0:** DATA prepares the named aliases/sentinels/oracles in 00 from existing authored material without touching populated datasets. Import through actual services; images, plans, records and 3D must share the same fixture truth. Keep intentional invalid draft cases distinct from the clean V0 example.
 
-Capture comparable baseline/final screenshots at 1440×900, 1024×768 and 390×844 for Batches, map quick register, full register/evidence, batch mapping, submission and a failure/incomplete state. Use fixed synthetic data/camera/fonts and wait for explicit scene readiness in tests. Record active WebGL viewport count, selected target attributes and camera return behavior; a screenshot alone cannot prove shared state. Human usability observations are H4, distinct from automated tests. Never commit private source screenshots or generated packets.
+**D1:** [preserve this full 3DBAG response](https://api.3dbag.nl/collections/pand/items/NL.IMBAG.Pand.1655100000500568), read [delivery/CRS/extension documentation](https://docs.3dbag.nl/en/delivery/webservices/), save hash and original metadata, and compare decoded coordinates/source face topology before rendering. One asset must pass roof shape, identity, placement and null-interior handling before a larger sample. External access failure → retain D0 visual work and report D1 unqualified; do not manufacture a replacement source.
 
-## 10. Copy-paste UI/integration assignment
+**D2 optional:** [Helsinki models](https://www.hel.fi/en/decision-making/information-on-helsinki/maps-and-geospatial-data/helsinki-3d) / [mesh directory](https://3d.hel.ninja/data/mesh/). Acquire one small permitted urban crop with textures; archive acquisition/rendering were not completed by planning. Test dependency completeness, missing texture, placement and attribution. It stays geographically separate.
 
-> Implement UI on an isolated `feat/usp-ui-integration` branch. Read root/web AGENTS, `00-README.md`, `01-shared-contracts-and-ownership.md`, all handoffs 10–19 and this integration document. Work in the actual Studio officer route and linked shared parents, not only the showcase. Establish typed selection/feature slots first, then integrate real F1 services and qualified feature leaves in dependency order; F2/DEPLOY gate public surfaces. Preserve one shared map boundary, exact unit/source/world scope, current workflows and accessible alternatives. Do not add a top-level page per feature, broaden invalid record selections, invent readiness, or use mocked APIs as completion. FND owns backend/shared contracts; feature owners own their modules. Run the specified scope/security/browser/visual journeys, compare screenshots at the defined sizes, and return commits, a feature-to-route verification matrix, real UI evidence, active-map/selection checks and explicit remaining gates. Do not merge main without authorization.
+**D3 after V0:** [existing Uttam Nagar acquisition](../GOOGLE_UTTAM_NAGAR.md) and [transfer instructions](../UTTAM_NAGAR_SETUP.md). Do not redownload the giant shard without checking existing files. Display real outlines/uncertain candidates and estimated heights separately; source-only 2D data is not an excuse for a noninteractive UI or invented interiors.
+
+**D4/D5 later:** [DDA inventory](https://dda.gov.in/sites/default/files/Housing_Department/list_of_flats_and_garages_dda_premium_housing_scheme_2026.pdf) for exact source rows; [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831)/[2079](https://haryanarera.gov.in/view_project/project_preview_open/2079) or permitted campus plan/section for an Indian vertical model. Confirm matched building/phase/revision/levels and permission. DDA alone cannot supply geometry; a planned tower is not a surveyed as-built. Named local-frame inspection may precede global placement. Missing authentic data blocks that real-source claim, not D0 development.
+
+## 10. Implementation sequence and final verification
+
+1. UI0: after F0, establish typed selection/slots and source/display adapters; reproduce invalid-record/rapid-switch behavior and capture fresh active-route baseline.
+2. UI1/V0: connect F1-min D0 map/unit/evidence/PACK0 through actual services; qualify D1 single-building roof separately. No F2/model/public workflow prerequisite.
+3. Integrate feature leaves serially after their producer tests: READY/FIND/PACK1, then I1 INGEST durable manifests and HISTORY/RIGHTS/IMPACT according to their dependencies. Native ASSIST0 can run after its F1 producers exist, not only after F2.
+4. UI-public: F2/DEPLOY enables released finder/own-submission routes and separately public MCP settings; never reuse internal search/full dossier on public surfaces.
+5. Run corresponding V shots, negative integration and workload tests, then full regressions. H4 intended-user observation is a separate usability gate, not a substitute for automated verification or a prerequisite to all coding.
+
+Existing commands: `pnpm typecheck`, `pnpm test:studio`, `pnpm test:register-scope`, `pnpm test:register-exports`, `pnpm test:registry`, `pnpm test:api`, `pnpm test:e2e`. Proposed tests after creation: `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-ui-integration.test.ts tests/usp-external-scene.test.ts`; `pnpm exec playwright test tests/e2e/usp-product-journey.spec.ts tests/e2e/usp-visual.spec.ts`. Respect [Playwright config](../../playwright.config.ts), [isolation](../../scripts/engineering/isolation.mjs) and [build-server guard](../../scripts/check-build-server.mjs).
+
+Return route→producer→pack→test evidence matrix, actual SHA/source/artifact hashes, screenshot comparisons, selection/camera IDs, active viewport count, resource/performance measurements and each unqualified profile. Test stale source, invalid deep link, hidden selected entity, duplicate URL parameters, revoked grant/release during pending read, missed/replayed asset event, offline source and nested pointer overlays. No screenshots from a different showcase or mocked successful network responses as completion evidence.
+
+## 11. Copy-paste UI assignment
+
+> Implement UI on feat/usp-ui-integration using 00, 01, this file and enabled feature contracts. Work in the actual Studio route and shared BlockPage/SavedSceneViewport/MapViewport path. Obtain D0 through DATA and attempt D1 one-building roof geometry; complete the live visual map→supplied floor/unit→exact evidence→PACK0→reload slice first. Preserve rich external source shapes through the typed display lane, not generic boxes or another viewer. Follow selection-generation/cache/access rules, durable INGEST manifests and all relevant V1–V8 shot contracts. UI owns shared frontend; FND backend/config, feature owners leaves, DATA fixtures. Use stated no-data/no-model/local-frame fallbacks and continue unaffected work without asking humans to design it. Run section 10 actual service/browser/geometry/performance checks, compare fixed-camera fresh screenshots and return exact evidence and capability gates. Do not call mocked/showcase-only work finished, invent source facts, activate public services or merge main without authorization.
