@@ -1,113 +1,114 @@
 # 11 · Evidence readiness and actionable review queue
 
-Owner **READY** · Priority **P1** · Baseline `main@f623cff897f91bb3ebd4c225f700ac263f7beb72` · Read [shared contracts](01-shared-contracts-and-ownership.md). This extends an existing workflow; all new DTOs/endpoints are proposals.
+Owner **READY**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md) and UI placement in [99](99-ui-ux-and-integration.md). New paths are implementation tasks. ER-05/19/24 are incorporated here; no separate audit interpretation is needed.
 
 ## A. User outcome and product value
 
-Allow an officer to see which exact properties can proceed to a defined review step, which facts remain unsupported, and the smallest useful next action. A floor-level readiness view is more useful than a building-wide average that conceals one disputed unit. The differentiator is evidence-to-action at vertical-space granularity; the dashboard itself is a supporting capability.
-
-Synthetic example: Building A has a supported exterior and three listed floors, but Flat 201 has no placed boundary. The building is not labelled universally “green.” Its exterior task can be ready while Flat 201 says “Boundary placement needed”; selecting that reason opens the correct plan/workspace or evidence request.
+Allow an officer to see whether an exact building/floor/unit can proceed to a named technical step, understand what is missing, and open the right source/request/workspace. A building's usable exterior must not hide a unit's missing internal boundary. The useful feature is evidence-to-action, not an unexplained confidence score.
 
 ## B. Current implementation and gap analysis
 
-[readWorkQueue](../../apps/web/lib/server/work-queue.ts) already combines case/import/saved-dataset metadata, paginates 20 items and distinguishes recorded history from a current recorded fingerprint. It explicitly leaves exact eligibility to the workspace. [workItemAction](../../apps/web/lib/work-queue.ts) maps these states to concrete destinations. [WorkQueue](../../apps/web/features/officer/work/WorkQueue.tsx) polls every 15 seconds while visible. Reuse its purpose; do not replace the existing queue with a second disconnected task board.
+[readWorkQueue](../../apps/web/lib/server/work-queue.ts) combines case/import/dataset metadata, distinguishes recorded history from a current fingerprint and paginates work. [workItemAction](../../apps/web/lib/work-queue.ts) supplies destinations; [WorkQueue](../../apps/web/features/officer/work/WorkQueue.tsx) polls while visible. [Dossiers](../../apps/web/lib/server/officer.ts) expose missing evidence/checks; [core values](../../packages/contracts/src/spatial/core/scalars.ts) preserve unknown/withheld/conflicting. Extend these, not a second task board. A file count or successful extraction is not completeness.
 
-[Building dossiers](../../apps/web/lib/server/officer.ts) expose evidence, missing conditions and checks; [core value states](../../packages/contracts/src/spatial/core/scalars.ts) preserve unknown/withheld/conflicting. [useBlock](../../apps/web/features/officer/block/useBlock.ts) suppresses stale finding geometry. Missing: a versioned evidence-requirement policy, dimension-specific readiness, scope-aware denominators, cross-feature deduplication and precise “what would resolve this?” actions. File count and a successful ML job do not establish evidence completeness.
+Implement the concrete policy below, exact aggregate populations and working next actions. Existing current-only metadata is insufficient for a version-pinned assessment without FND's manifest adapter.
 
 ## C. Scope and non-goals
 
-Implement a read-only computed assessment for building/floor/space targets, one area/batch summary, a filtered review queue and contextual next actions. Assessments must include input pins, policy version and limitations. Start with an explicitly named **technical review policy**; do not invent government documentary requirements.
-
-No opaque combined AI score, owner/household risk ranking, legal safety badge or inferred missing geometry. No new permanent navigation item. CITIZEN evidence requests and FIND results are optional provider ports initially; unavailable providers produce `not_assessed`. Ordinary processing health belongs in batch diagnostics, not the officer's primary property summary.
+READY0 supports per-target reasons for V0. READY1 adds six dimensions, one scope summary and matching filtered queue. No public auth or LLM is needed for local operation. FIND/CITIZEN may be absent, but their absent assessments/actions must remain explicit. No legal safety badge, owner/household risk score, new permanent navigation or source facts inferred from presentation meshes.
 
 ## D. HLD and end-to-end flow
 
-Officer opens batch/map scope → server resolves permitted revision-pinned targets → pure evaluator applies policy to evidence/geometry/check projections → response provides dimensions, blockers and action candidates → map/list shows compact readiness → selecting a reason opens the exact property/source/request → input change invalidates affected assessments.
-
-Use lazy bounded evaluation for a property and resumable/materialized scope evaluation for a large area. Never synchronously scan all documents for every map hover. A stale cached assessment stays visibly stale and cannot enable a recording action.
+Selected target/scope → FND immutable manifest and permitted evidence projections → pure policy evaluator → persisted assessment with dependency pins → strip/detail/queue → open exact missing input or evidence request → new source/review produces a new assessment. Expensive scope aggregation uses bounded durable jobs. Never rescan all documents on each hover. Current mutation eligibility remains the existing server review validator, not this UI score.
 
 ## E. Targeted LLD
 
-### Assessment and policy
+### Demonstration policy `technical-review-v1`
 
-Proposed `ReadinessAssessment` fields: target/scope, policy ID/version, input fingerprint, evaluatedAt, dimension results, required-item results, limitations and `nextActions`. Each required item specifies fact/purpose, applicability rule, minimum source/review condition and a deterministic resolver action. A policy is configuration reviewed for the intended workflow, not inferred per request by an LLM.
+This is an application test policy, not a government documentary rule. Implement these tasks and requirements as versioned data; do not ask a model to invent them per property.
 
-| Dimension | Inputs and interpretation | Missing/limited behavior |
-| --- | --- | --- |
-| Evidence coverage | Required applicable fact items with qualifying source links divided by all applicable required items | Unknown applicability yields partial assessment; zero applicable items is `not_applicable`, not 100% |
-| Geometry completeness | Qualified footprint, named frame, vertical interval and required internal boundary for the selected task | Unplaced or absent boundary is unavailable; illustrative geometry never counts |
-| Association | Exact identifiers/validated part bindings, reviewed matches and unresolved alternatives | Ambiguous source-to-target match remains ambiguous; no invented probability |
-| Consistency | Latest applicable FIND/legacy checks, contradictions and their input pins | Missing checks=`not_assessed`; changed inputs=`stale`; no findings on partial coverage is not clear |
-| Review state | Submitted/checked/recorded projection with exact workflow/revision evidence | A completed extraction is not reviewed; recorded history is not current-record readiness |
-| Freshness | Source/revision supersession and policy age rules, where a dated source exists | Undated evidence=`unknown`; old alone does not imply invalidity |
-
-Each dimension state is `ready`, `needs_input`, `needs_review`, `blocked`, `not_assessed`, `not_applicable` or `withheld`. Return supporting item IDs/reason codes, not only colour. Overall display follows a documented precedence: current blocking finding → blocked; required missing/ambiguous item → needs input/review; incomplete assessment → not assessed; otherwise ready **for the named technical step**. Withheld information must not leak through counts; an authorized aggregate projection may instead report “additional restricted review required.”
-
-Coverage is a descriptive fraction, not legal confidence. Keep `qualifyingCount`, `applicableCount`, `unknownApplicabilityCount`, `policyVersion`; compute the fraction only when its denominator is established. Do not weight 20 duplicates of one deed more highly than one valid fact source.
-
-### Scope summary and next actions
-
-Scope metrics name their population: “received parcels in batch B at digest D,” not “entire ward.” Store/report supplied expected-population count separately if available, with its source. Distinct target count, checked target count, pending submissions and distinct open finding cases use separate units. A finding touching three objects is one case and three affected objects; do not mix these in the same total. Synthetic and observed worlds have separate denominators.
-
-Next-action candidates carry `actionKind`, target/source refs, reason, required capability and estimated effort category (`simple`, `specialist`, `unknown`) with its rule basis. Rank deterministically by blocking prerequisite first, number of **distinct affected targets** the action can unblock second, age of pending action third, stable ID last. These are workflow ordering rules, not property risk scores. Group a coordinate-reference question only across an explicitly shared source family; do not mass-apply it across unrelated sources.
-
-### APIs, storage and recomputation
-
-Proposed under `/api/v1/usp/readiness`:
-
-| Endpoint | Behavior |
+| Requirement | Qualifying input / failure action |
 | --- | --- |
-| `POST /assessments` | Target/scope/policy + idempotency; returns current assessment or 202 scope evaluation job |
-| `GET /assessments/:id` | Authorized, pinned assessment and staleness metadata |
-| `GET /scopes/:scopeId/summary` | Required world/digest/policy; counts and coverage definitions |
-| `GET /scopes/:scopeId/queue` | Cursor, bounded page size ≤100, allowed status/reason filters; deterministic action ordering |
+| R-ID | Stable namespaced target and valid relevant parent relationships; ambiguity → resolve target |
+| R-SOURCE | At least one usable exact source-part link for each required fact; duplicate files do not add facts; absent link → attach/select source |
+| R-XY | Supported valid polygon with a geometry-purpose source, named frame, units and any required placement transform; unsupported/missing → inspect plan or frame |
+| R-Z | Supported lower/upper interval, lower < upper, named vertical reference and exact level evidence; floor label/storey estimate alone fails → supply level schedule |
+| R-LINK | Required building/floor/parcel associations explicitly supplied/reviewed under this task; proximity alone does not establish rights association |
+| R-CHECK | Completed applicable check set for the exact manifest, including required neighbours; absent/partial/stale → run or finish checks |
+| R-REVIEW | Existing preparation/review receipt for exact manifest with blocking findings resolved and warnings acknowledged as required by the existing workflow |
 
-Proposed `usp_readiness_assessments` keyed by target pin + scope digest + policy version + access-view class; `usp_readiness_scope_runs` tracks resumable aggregates. Never use a cache computed under a broader permission set for public output. Event-triggered invalidation may accelerate updates, but exact digest comparison remains the correctness check if an event is missed. Use an injected optional `evidenceRequests` port for a next action; when unavailable, offer an existing workspace destination instead of a dead upload button.
+Task definitions: `inventory_inspection` requires R-ID/R-SOURCE for a source row, not geometry. `exterior_3d_inspection` requires R-ID/R-SOURCE/R-XY/R-Z for a building representation; estimated height may support an explicitly estimated inspection but never a surveyed-height claim. `unit_technical_review` requires R-ID/R-SOURCE/R-XY/R-Z/R-LINK/R-CHECK for the supported unit. `record_submission` adds R-REVIEW and delegates final eligibility to the unchanged server commit checks. Global placement is required only when the selected task is map-relative; a documented local-frame plan can be inspectable without it.
 
-No AI is needed for scoring. An optional plain-language explanation must restate deterministic reasons with references, not generate missing requirements or override state. READY does not record properties; it links to the existing review flow, which revalidates eligibility.
+Rights completeness is not automatically applicable to a geometric inspection. If a particular record task requires a right assertion, use a separately configured named requirement with exact evidence/review criteria; an absent real departmental policy does not get replaced by invented law. Human H2 qualifies real workflow terminology later, not code development.
+
+### Dimensions and result model
+
+`ReadinessAssessment` pins target, SnapshotScope, task, policy/version, required-item results, six dimensions, reasons, nextActions and evaluatedAt. Dimension states: ready, needs_input, needs_review, blocked, not_assessed, not_applicable, withheld; `currency:'current'|'stale'` is independent. Never map missing/denied provider to an empty check list.
+
+| Dimension | Basis |
+| --- | --- |
+| Evidence coverage | Distinct applicable requirements with qualifying linked evidence, not file count |
+| Geometry completeness | Supported XY/Z/reference for the selected task; display-only does not qualify |
+| Association | Exact source/target/parent bindings and unresolved alternatives; no invented probability |
+| Consistency | Current applicable check coverage and explicit contradictions; unknown is not no finding |
+| Review | Exact submitted/checked/recorded receipts; recorded history is not current readiness |
+| Freshness | Known supersession and supplied source dates; undated stays unknown, age alone is not invalidity |
+
+Overall technical state: current blocking condition → blocked; required missing fact → needs_input; ambiguous/conflicting/review-required condition → needs_review; otherwise incomplete assessment → not_assessed; else ready for the task. Stale results cannot enable current record actions. Conflicting evidence is not the same as missing evidence. Withheld details/counts are suppressed unless a separately authorized aggregate policy permits them.
+
+Coverage fields: qualifyingCount, applicableCount, unknownApplicabilityCount, policyVersion, denominatorEstablished. Return a fraction only when applicability is established and denominator > 0; otherwise null with not_applicable or unknown reason. A restricted requirement may produce a safe blocked/unknown status without disclosing its identity. Adding twenty duplicate deeds cannot increase qualifyingCount.
+
+### Immutable aggregate and queue equality
+
+Scope run pins an exact membership manifest, world/stage, access-view, policy, task and filter. Distinguish received targets, assessed targets, qualifying geometries, unresolved submissions, finding cases and affected targets. One finding with two participants is one case/two targets. Observed and synthetic populations are never mixed. Do not claim an entire ward's coverage from a received batch.
+
+Each count returns an opaque `selectionToken` bound to its member set and filter. Clicking the count opens that exact queue; totals cannot be recomputed from newer live data behind the same token. Page size ≤100; bounded evaluation slices ≤100 targets, ≤200 evidence pointers per target. On truncation/budget limit mark incomplete and resume, never count skipped targets as ready. FND cursor/access rules apply; new data offers Refresh to a new manifest.
+
+NextAction has typed actionKind, target/source refs, reasonCode, capability and rule-based effort category. Deterministic order: prerequisite blocking the chosen task, number of distinct targets unblocked, pending age, stable ID. Group a CRS question only for an explicitly shared source family. If CITIZEN is absent, link to the existing workspace rather than a dead Request evidence button.
+
+### Storage/API
+
+Proposed tables `usp_readiness_assessments`, `usp_readiness_scope_runs`; cache key includes manifest, target pin, policy/task, filter and access-view. Event invalidation is an optimization; exact dependency comparison is correctness.
+
+Under `/api/v1/usp/readiness`, `POST /assessments` takes target or scope, task/policy and create guard and returns result or 202 job. `GET /assessments/:id` returns pinned result/currency. `GET /scopes/:scopeId/summary` requires manifest/task/policy. `GET /scopes/:scopeId/queue` requires selectionToken and bounded cursor. Shared envelopes/errors from 01 apply. All reads reauthorize. No scoring AI; explanations use deterministic reason templates or grounded restatement with the same facts.
 
 ## F. Exact implementation map
 
-| Existing or proposed file | Required change | Reason | Owner | Shared dependency |
-| --- | --- | --- | --- | --- |
-| [work-queue.ts](../../apps/web/lib/server/work-queue.ts), [client actions](../../apps/web/lib/work-queue.ts) | Consume preserved metadata through adapter; keep historical/current distinction | Extend existing work model | FND adapter; READY consumer | F1 |
-| [officer.ts](../../apps/web/lib/server/officer.ts), [core scalars](../../packages/contracts/src/spatial/core/scalars.ts) | Read dossiers and reuse explicit missing states | No fake zero/default certainty | READY read-only reuse | Target/evidence ports |
-| Proposed new `packages/contracts/src/usp/readiness.ts` | Policy/result/action schemas | Stable evaluable dimensions | READY | Common refs/ports |
-| Proposed new `apps/web/lib/server/usp/readiness/{policy,evaluate,aggregate,service,routes}.ts` | Pure computation, scoped caching and API | Deterministic ready/unknown results | READY | FND read/access/jobs |
-| Proposed new `apps/web/lib/server/usp/readiness/migrations/11-readiness.ts` | Assessment/run tables | Resumable large-scope work | READY | FND registry |
-| Proposed new `apps/web/features/usp/readiness/{ReadinessStrip,ReadinessDetails,ReviewQueue,ScopeSummary}.tsx` | Compact dimensions and actionable queue | Shared map/register/batch use | READY | UI slots |
-| [WorkQueue.tsx](../../apps/web/features/officer/work/WorkQueue.tsx), [BlockPage.tsx](../../apps/web/features/officer/block/BlockPage.tsx), [RegisterPage.tsx](../../apps/web/features/officer/register/RegisterPage.tsx) | Mount summaries/filters, not duplicate page | Coherent workflow | UI | READY leaves |
-| Proposed new `tests/usp-readiness.test.ts`, `tests/usp-readiness-integration.ts`, `tests/e2e/usp-readiness.spec.ts` | Formulas, permissions, staleness and navigation | Reproducible outcomes | READY | Synthetic fixtures/F1 |
+| File | Change / owner |
+| --- | --- |
+| Existing queue/dossier helpers linked in B | FND exposes exact read projections; READY consumes without replacing queue authority |
+| Proposed `packages/contracts/src/usp/readiness.ts` | READY policy/result/action schemas using F0 types |
+| Proposed `apps/web/lib/server/usp/readiness/{policy,evaluate,aggregate,service,routes}.ts`, `migrations/11-readiness.ts` | READY pure evaluation, manifest-based aggregates and leaf APIs; FND registers |
+| Proposed `apps/web/features/usp/readiness/{ReadinessStrip,ReadinessDetails,ReviewQueue,ScopeSummary}.tsx` | READY leaf content |
+| Existing WorkQueue, BlockPage and RegisterPage | UI sole owner mounts summaries/filters |
+| Proposed `tests/usp-readiness.test.ts`, `tests/usp-readiness-integration.ts`, `tests/e2e/usp-readiness.spec.ts` | READY formulas, access, population equality and navigation |
 
 ## G. UI placement and interaction
 
-Within `/studio/work` show **Needs attention / Ready for review / Recorded history** as contextual filters, preserving existing processing information. A chosen scope can show up to three compact counts with an explicit denominator and a “View work” action. `/studio/areas/:areaId` exposes an optional **Evidence readiness** layer, not an always-on multicolour map.
+Batches uses Needs attention / Ready for review / Recorded history with at most three task-qualified counts. Map has an optional readiness layer. Unit quick register says Boundary needed → detail → exact source/workspace/request. Full register reuses the detail. No universal green property badge. Text/icon distinguish not assessed from blocked. Loading keeps matching scope only; stale results are visibly stale; empty names the missing population; errors retain retryable work; permission failures disclose no hidden filenames. 99 owns camera/selection/focus/mobile sheet.
 
-Select building → quick register → select Flat 201 → readiness strip “Boundary needed” → details show source/placement deficiency → **Open plan** or **Request evidence** → later refresh after review. Full register exposes all dimensions and linked reasons. Gray/patterned “Not assessed” is distinct from red “Blocked”; icons/text supplement colours.
+## H. Ownership and dependencies
 
-Loading shows the previous scope's data only if still matching the selected digest; otherwise show skeleton labels. Empty scope says no received properties, not zero risk. Failed assessment has retry and last-known stale timestamp. Denied dimensions are non-disclosing. Partially processed areas show assessed/received counts; ready is always qualified by its task label. UI owns map legend and parent mounts; READY owns evaluator-driven content.
-
-## H. Agent ownership and dependencies
-
-Use `feat/usp-readiness`. Pure policy/evaluator/leaf components may start after F0 with absent-provider fixtures. F1 is required for actual counts and permissions; FIND/CITIZEN supply enhanced checks/requests when integrated. READY must not write their tables or fabricate substitute results. UI alone changes shared map state, route filters and WorkQueue parents. FND alone modifies existing services/migration registration. A working mocked dashboard is not completion.
+Use `feat/usp-readiness`; own READY contracts/services/migration/leaves/tests. F0 fixtures first, F1-min real target evaluation, V0 before broad aggregate work. FIND and CITIZEN enhance only their actual outputs. No writes to their tables. FND/UI own all shared patches. Source-query policy/data acquisition is agent work; H2 confirms real rules later.
 
 ## I. Implementation sequence
 
-1. Define one named technical policy and synthetic cases with complete, absent, conflicting, unknown and withheld data.
-2. Implement pure dimension evaluation and deterministic actions; lock formulas and denominator tests.
-3. Add target assessment endpoint and scoped caching; test invalidation on source, relationship, geometry and policy changes.
-4. Add scope aggregation with stable pagination and resumable bounded jobs; wire optional ports explicitly.
-5. Deliver quick-register/detail/queue components and UI integration requests.
-6. Run live comparisons between listed targets, aggregate counts and underlying records; verify every actionable item opens the exact object.
+1. Obtain D0 expected requirements from DATA, implement the fixed policy and pure evaluator.
+2. Wire one real target's reasons and working source/workspace destination for V0.
+3. Persist assessments against complete manifests; test source/relationship change without target revision change.
+4. Add bounded scope jobs, frozen membership/selectionTokens and cursor equality.
+5. Integrate optional provider results and UI mounts, preserving not_assessed states.
+6. Recheck D4 missing-geometry inventory and D3 scale only after the exact D0 results pass.
 
-## J. Acceptance criteria and verification
+## J. Data to use and verification
 
-Demonstrate a synthetic batch with ten received parcels, of which six have qualifying geometry, two are missing placement and two are unassessed. Display those counts and an explicitly bounded geometry-completeness measure; do not label the ward 60% mapped. Add one finding shared by two parcels: case count remains one. Add a duplicate source: evidence coverage does not rise. Switch to a unit with missing boundaries: the building's ready exterior cannot make the unit ready.
+**D0:** DATA prepares a ten-parcel assessment variant: six qualifying geometries, two missing placement and two not assessed. This is a dedicated small fixture, not a mandate to enlarge the V0 hero scene. A geometry summary shows 6/10 for the named received population, while overall record readiness may differ. Add one two-parcel case (one case), duplicate evidence (coverage unchanged), a source-only unit, unknown applicability and a restricted part. Card target IDs must equal the full paginated list's IDs, even when a concurrent import adds an eleventh target.
 
-Test zero denominator, unknown applicability, revoked access, mixed worlds, stale findings, provider offline, identity ambiguity, cross-scope IDs, concurrent updates and invalid filter/cursor reuse. Refresh must not briefly show a prior building's readiness as the new selection's state. Existing record actions still perform authoritative server validation.
+**D4:** retrieve/preserve the [DDA inventory](https://dda.gov.in/sites/default/files/Housing_Department/list_of_flats_and_garages_dda_premium_housing_scheme_2026.pdf). Recheck first-page row C-01-3 against visible columns. Inventory inspection may be ready while exterior/unit geometry is unavailable. Do not infer Block C, a polygon, ownership or completeness from it. Unreachable/permission-unclear source → D0 equivalent; leave real-source gate unpassed. **D3 after completion:** use [existing Uttam Nagar inputs](../GOOGLE_UTTAM_NAGAR.md) to test bounded aggregation; unknown heights and low-confidence candidates must not become ready surveyed units.
 
-Run `pnpm typecheck`, `pnpm test:studio`, `pnpm test:registry`; proposed tests via `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-readiness.test.ts`, `pnpm exec tsx tests/usp-readiness-integration.ts` and `pnpm exec playwright test tests/e2e/usp-readiness.spec.ts`. Capture metric inputs/outputs and complete action navigation in isolated services, not only snapshots of a card.
+Test zero/unknown denominator, absent provider, stale check, source supersession, wrong-world/cross-scope cursor, permission revocation, duplicate source, cross-building flat labels, rapid A→B selection, assessment worker restart and aggregate limit. Existing recording checks must still reject stale/invalid work even if an old readiness object says ready.
 
-## K. Copy-paste agent assignment
+Run `pnpm typecheck`, `pnpm test:studio`, `pnpm test:registry`; proposed `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-readiness.test.ts`, `pnpm exec tsx tests/usp-readiness-integration.ts`, `pnpm exec playwright test tests/e2e/usp-readiness.spec.ts`. Return manifests, expected/actual counts, queue target sets, real next-action navigation and screenshots per 00. Test-plan existence is not an assessment pass.
 
-> Implement READY on `feat/usp-readiness`. Read the index, shared contracts, this handoff and linked work-queue/dossier/core-state files. Own the proposed readiness contracts, evaluator/services/migration, leaf UI and tests; request FND/UI changes rather than editing shared parents. Build per-task evidence readiness, honest scope denominators and deterministic next actions, preserving unknown/withheld/stale states. Do not produce one unexplained confidence score or infer legal clearance. Integrate unavailable FIND/CITIZEN ports explicitly and connect real F1 records before claiming completion. Run section J tests, return formula fixtures, live aggregate checks, navigation screenshots, commits and unresolved policy qualifications; do not merge main without authorization.
+## K. Copy-paste assignment
+
+> Implement READY on feat/usp-readiness using 00, 01 and this file. Obtain D0 ten-target truth and attempt D4 real rows; implement technical-review-v1 exactly, then live per-target reasons and matching aggregate/queue membership. Preserve task-specific unknown/withheld/stale states and absent-provider behavior. UI/FND own shared mounts/adapters; do not create another task board or score engine. Complete the visible missing-fact→source/request action and run J through actual services. Return pack/hash, formulas, exact queue/count evidence, screenshots and commits; flag real-domain qualification separately. No legal clearance, guessed geometry, mocked completion or unauthorized main merge.
