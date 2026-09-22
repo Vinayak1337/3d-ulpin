@@ -18,7 +18,6 @@
     "build": "pnpm --filter @ulpin/web build",
     "start": "concurrently -k -n web,dispatcher \"pnpm --filter @ulpin/web start\" \"pnpm dispatcher\"",
     "demo": "bash scripts/demo-start.sh",
-    "guide": "node scripts/guide.mjs",
     "repo:export": "tsx scripts/repo-data.ts export",
     "repo:init": "tsx scripts/repo-data.ts init",
     "repo:check": "tsx scripts/repo-data.ts check",

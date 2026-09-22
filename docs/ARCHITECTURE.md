@@ -1,5 +1,7 @@
 # How the local MVP works
 
+> **Direction note — 23 September 2026:** This is baseline architecture context; adopted shared-contract changes are specified in handoff 01. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 The application owns the case and its history. A private processing service inspects stored originals and computes geometry. The viewer displays persisted results and edits explicit candidate geometry; it does not calculate authoritative model results in the browser.
 
 ```mermaid
