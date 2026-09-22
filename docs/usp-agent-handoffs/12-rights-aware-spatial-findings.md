@@ -1,106 +1,108 @@
-# 12 · Explainable, rights-aware spatial findings
+# 12 · Explainable spatial findings and a complete review action
 
-Owner **FIND** · Priority **P1** · Baseline `main@f623cff897f91bb3ebd4c225f700ac263f7beb72` · Prerequisites [F0/F1](01-shared-contracts-and-ownership.md).
+Owner **FIND**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), the RIGHTS projection in [16](16-shared-spaces-and-vertical-rights.md) when enabled and UI slots in [99](99-ui-ux-and-integration.md). ER-08/11/12/13/24 are incorporated. New code paths below must be implemented.
 
 ## A. User outcome and product value
 
-Allow an officer to inspect a possible parcel, road-boundary or vertical-space discrepancy with its exact affected geometry, sources, uncertainty and review action. This strengthens existing computed checks into a defensible review workflow; it does not automate legal findings.
-
-Synthetic example: two spaces overlap in plan, but one is a basement and the other a first-floor flat. Their volumes do not overlap. A third example places a basement across a parcel boundary with a supporting easement claim: show the geometric crossing and its evidence, rather than calling every intersection encroachment. The vertical distinction is central to the product.
+Allow an officer to inspect a measured parcel/road/vertical-space discrepancy, understand its evidence and uncertainty, then open a saved review case for the actual participants. Identical plan footprints on different floors need not share any positive volume. An easement assertion can provide review context without proving a crossing is lawful. The result is technical screening, never automatic enforcement.
 
 ## B. Current implementation and gap analysis
 
-[geo/registry.py](../../services/geo/geo/registry.py) already distinguishes context from competing spaces, checks explicit containment/floor/crossing links, and appends a no-ownership-conclusion warning to overlaps. It limits registry checks to 2,000 total records and 100 volumetric spaces; its query path rejects some hole-bearing intersections. Do not claim it already implements arbitrary-scale solid geometry.
+[Registry geometry](../../services/geo/geo/registry.py) already distinguishes contextual parents from competing spaces, checks relationships and queries prisms, but limits calls to 100 volumetric spaces and rejects some hole-bearing intersections. [Area semantics](../../services/geo/geo/area_semantics.py) preserves roles, dates and utility/reference metadata. [Core geometry](../../packages/contracts/src/spatial/core/geometry-schema.ts) supports richer representations than every legacy storage path. [Investigations](../../apps/web/lib/server/officer-investigations.ts) are revisioned but start from a building dossier: a parcel-only case cannot use that API unmodified.
 
-[area_semantics.py](../../services/geo/geo/area_semantics.py) preserves geometry roles, source dates, approval text, horizontal uncertainty and explicit vertical references. [core geometry schema](../../packages/contracts/src/spatial/core/geometry-schema.ts) distinguishes recorded road land from road surface and display-only shapes. [officer-investigations.ts](../../apps/web/lib/server/officer-investigations.ts) already stores investigations with pinned snapshots and rejects stale checks. Reuse this case-management path, rather than creating a second investigation system.
-
-Missing: a unified finding projection across existing checks, explicit applicability/coverage, uncertainty-aware classification, rights/context explanations, stable cross-chunk pair deduplication and targeted review at unit/level scope. These are proposed improvements, not evidence that baseline checks determine ownership.
+Implement exact manifest-based findings, explicit applicability/coverage, geometry capability qualification and a minimal scoped-case bridge. Reuse existing algorithms/history where compatible; do not label a code-supported risk a reproduced runtime incident.
 
 ## C. Scope and non-goals
 
-First release supports qualified planar polygons and vertically extruded prisms in compatible frames. Include parcel–parcel overlaps, supported structure–recorded-road-boundary differences, same-space competing claims requiring review, explicit containment/membership errors and vertical crossings with linked rights context. Keep physical geometry findings distinct from documentary contradictions.
+First release: qualified planar Polygon/MultiPolygon and prism analysis, parcel intersections, recorded-road-land comparisons, explicit containment/membership errors, bounded documentary disagreement and saved scoped review. Hole/component support requires actual persistence→worker→result round-trip tests. Unsupported representations remain retained/displayable with analytical capability unavailable.
 
-No automatic enforcement, “illegal building” label, cadastral accuracy inferred from map pixels, general BIM solid intersection, or suppression of a finding simply because a party uploaded a purported easement. Unsupported geometry/uncertainty/reference systems yield an explicit unassessed result. Enhanced rights context waits for RIGHTS; base checks use existing relationships without inventing additional rights.
+No arbitrary triangle-mesh/IFC boolean engine, statutory setback defaults, automatic rights adjudication, false precision from satellite pixels or AI-selected measurements. Enhanced RIGHTS context is optional; absence cannot clear a discrepancy. Local function-level correctness does not establish survey accuracy.
 
 ## D. HLD and end-to-end flow
 
-Officer selects a scope and **Run checks** → API pins geometry/source/relationship revisions → existing job system runs bounded candidate generation and deterministic rule evaluation → persisted findings reference measured shapes and cited evidence → map highlights exact volume/level → officer opens or updates an existing investigation, requests evidence or changes a draft → rerun marks previous findings stale/superseded without deleting history.
-
-Broad-phase spatial candidates may use PostGIS bounding boxes/indexes; narrow-phase computation uses supported local geometry. A candidate pair is not a finding until role, frame, interval and relationship rules are evaluated. Workers must load neighbour/context dependencies before declaring a scope assessed.
+Run checks → pin scope/participants/frames/source/relationship revisions → indexed broad-phase candidate generation → role/reference/applicability tests → deterministic narrow-phase computation → immutable run/results and coverage → exact overlay/evidence → saved scoped case or compatible building investigation → clarification/correction/disposition → rerun with history retained. All accepted worker results use FND fencing and exact input manifest. Partial imports may show provisional findings but never completed coverage prematurely.
 
 ## E. Targeted LLD
 
-### Finding contract and rule applicability
+### Geometry operation contract
 
-Proposed `FindingResult`: `id`, stable `caseKey`, `runId`, rule ID/version, participant target pins, input digest, semantic category (`geometry`, `records`, `relationship`), assessment state, measured result, uncertainty statement, evidence pointers, explanation reasons and next action. Human disposition is separate from the computed result: `open`, `under_review`, `explained`, `correction_proposed`, `resolved`, with actor/reason/revision. A disposition does not change source geometry or rewrite the original computation.
+FIND exports one qualified operation interface for IMPACT/HISTORY: request `{leftComponents,rightComponents,operation,framePins,methodVersion}`; result `{state:'assessed'|'not_assessed',reasonCode?,intersectionComponents,areaM2:number|null,volumeM3:number|null,contact,methodVersion,inputPins}`. Profiles follow 01; values are null when not meaningful, never invented zero. No access to display meshes as analytical input.
 
-| Rule | Required inputs | Result/limitations |
-| --- | --- | --- |
-| Parcel overlap | Two supported recorded-parcel geometries in one qualified analysis frame | Positive-area intersection; boundary contact is separate. Overlap alone does not select the correct boundary. |
-| Structure/road relation | Structure representation role and recorded road-land polygon, applicable date and compatible frame | Report measured crossing of that boundary; observed road surface alone is a different comparison and cannot establish recorded encroachment. |
-| Vertical competing space | Two exclusive-space candidates, compatible vertical benchmark and valid prism geometry | Compute positive shared volume; normal parent/child containment is not competing ownership. Unknown exclusivity remains a review condition. |
-| Shared/right-supported crossing | Crossing plus explicit linked shared-use/easement/restriction assertions and evidence | Show possible explanation and its review state. A claim never automatically clears a finding. |
-| Document disagreement | Explicitly extracted/reviewed assertions about the same identified space and fact | Preserve both source statements; matching aliases alone cannot establish common identity. |
-| Membership/containment | Validated `within`, `floor`, `serves`, `crosses` links | Reuse existing checks; distinguish topology errors from competing rights. |
+Single-prism overlap: `dz=max(0,min(upperA,upperB)-max(lowerA,lowerB))`; positive volume equals intersection area × dz. Boundary contact is distinct. Preserve holes and multipart rings. Compound spaces retain one semantic identity with separate component refs; divide the combined Z endpoints into slabs and union relevant footprints within each slab before intersection/volume summation. This prevents double-counting overlapping components. Alternatively reject invalid internal overlap explicitly; never compute union-footprint × full vertical extent. Only enable the compound profile after persisted round-trip tests pass; keep legacy mirrors unavailable if they cannot represent it losslessly.
 
-For compatible prisms, `zOverlap = max(0, min(upperA,upperB)-max(lowerA,lowerB))`; `volume = area(intersection(footprintA,footprintB)) * zOverlap`. Preserve holes and multipart results through core-compatible geometry; do not flatten them to an exterior ring. If an existing worker cannot represent the result, return `unsupported_geometry` or use the new qualified module. Planar overlap without supplied heights is not positive 3D volume.
+Exact source frame, units, axis meaning and vertical benchmark/transform must be compatible. A visual offset or EPSG number alone is insufficient. Missing height yields planar-only assessment; missing datum prevents 3D comparison. Use existing numerical policy for stable arithmetic, separately reporting supplied positional error bounds. Missing accuracy is uncertainty_unknown; compatible error bounds may support a conservative engineering uncertainty_sensitive flag, not a probability or legal tolerance.
 
-Separate numerical tolerance from survey uncertainty. Keep existing numerical epsilon for stable computation; it does not express measurement confidence. When source positional error bounds exist, report them and classify small-boundary discrepancies as `uncertainty_sensitive`. A conservative horizontal envelope may use the sum of supplied error bounds only when their meanings/units are compatible; call it an engineering bound, not a statistical probability. Missing accuracy metadata produces `uncertainty_unknown`, never assumed zero. Do not invent threshold metres or statutory setbacks.
+### Rule and rights compatibility table
 
-### Persistence, identity and coverage
+| Inputs | Deterministic technical outcome |
+| --- | --- |
+| Two recorded-parcel polygons | Positive area or contact; does not select the correct owner/boundary |
+| Structure and recorded road-land polygon | Role-qualified crossing with supplied validity/reference; source road surface/centreline alone cannot establish this test |
+| Parent building containing its flat/floor | Context relation, not competing ownership |
+| Same XY but separated Z | No positive volume; boundary contact if applicable |
+| Positive shared volume, exclusivity unknown | Geometric discrepancy; rights compatibility not_assessed |
+| Explicit incompatible exclusive assertions over the same supported extent and overlapping supplied validity | possible_incompatibility requiring review, not ownership verdict |
+| Multiple shared-use assertions | Shared use itself is not an exclusive conflict |
+| Easement/restriction claim with unresolved extent or validity | Context retained, compatibility not_assessed; never auto-clear geometry |
+| Two contradictory extracted facts | Only compare if exact semantic target, quantity/definition and evidence are established; alias similarity is insufficient |
 
-Proposed `usp_finding_runs` stores scope/filter/method versions, input manifest, dependency completeness and status. `usp_finding_results` stores deterministic results; `usp_finding_case_links` links a stable case key to existing investigation IDs. Case key hashes rule family + sorted semantic participant refs + spatial component identity where required; result key additionally pins revisions and algorithm version. Reruns can associate history without conflating different floors or different components.
+RIGHTS supplies claim/review/authority separately. Accepted technical assertions are not proof of legal validity. PACK receives only independently reviewed applicable context edges; finding participation does not grant blanket document inheritance.
 
-Never use display mesh IDs or chunk IDs as property identities. Deduplicate boundary-spanning pairs globally for a run. Declare coverage as supplied object count, assessed count, skipped counts by reason and neighbour dependencies. Partial import produces `partial`, not `completed_clear`. A completed check of known inputs still does not establish completeness of real-world records.
+### Findings, case identity and coverage
 
-### Proposed API
+`FindingRun`: scope/selection/filter, method/rule set, full manifest, expected/received/assessed/skipped counts, missing neighbour dependencies, status. `FindingResult`: run ID, stable case key, participant pins with roles, rule/version, geometry/records/relationship category, assessment state, measurements/units, uncertainty, source pointers, reasons and next action. Keep human disposition separate from immutable computation.
 
-Under `/api/v1/usp/findings`: `POST /runs` takes scope, explicit rule set, expected digest and idempotency key; returns 202. `GET /runs/:id` exposes coverage/status. `GET /runs/:id/results` is cursor-paginated with allowed filters. `POST /results/:id/investigation` requires current input pins and creates/links an existing officer investigation through FND. `PATCH /cases/:caseKey/disposition` requires expected case revision, reason and supporting evidence when marking explained/resolved.
+Case key hashes rule family plus semantic participants (sorted for symmetric rules, role-ordered for directional rules). Component IDs belong to result details; do not hash floating-point component geometry into the long-lived case identity. If a component splits/merges and correspondence is uncertain, retain a parent case with new result components rather than silently joining unrelated cases. Result key additionally pins manifest and algorithm version. Deduplicate pairs across chunks for the entire run. Chunk IDs and mesh IDs never identify properties.
 
-Do not add new finding results to an old investigation by rewriting its pinned snapshot. FND supplies a controlled adapter to append a linked assessment reference or create a follow-up investigation; legacy investigation types remain intact. READINESS consumes a minimal permitted projection, not full parties/documents. Public release is off by default.
+Default local qualification workload: D0 ≤30 spaces; existing legacy calls stay ≤100 spaces/2,000 context records. Later 500-exterior scopes use bounded indexed candidate pages and child work ≤5,000 candidate pairs/≤60 seconds under FND budgets, with complete source objects and cross-page dedup. Exceeding a bound returns partial/needs_partition, not no findings. Never remove existing caps without measured qualification. Counts describe loaded/assessed data, not a complete real-world inventory.
 
-AI is optional for explanation of deterministic reasons and supplied evidence. It cannot choose geometry, make legal conclusions or change severity/disposition. A deterministic template remains the fallback. All geometry, frame and source refs are validated before and after worker calls.
+### Parcel-only review bridge
+
+FIND owns proposed `ScopedFindingCase {id,version,scope,participantPins,caseKey,resultRefs,legacyInvestigationId:null|string,disposition,notes,evidenceRequests,history}`. Persist `usp_finding_cases` and revisions plus existing `usp_finding_runs/results/case_links`. A compatible building case links through FND to the existing investigation; parcel-only cases remain valid without a building. This is a minimal review envelope reusing audit/notes/request components, not a second full workflow platform.
+
+Dispositions: open → under_review → explained/correction_proposed/resolved. Each update requires expected case version, current result manifest, reason and evidence when asserting explained/resolved. New evidence never rewrites old run/history; a changed result reopens review via a new event. Geometry correction uses existing draft/review commands, not a finding API write to property rows. A prior case can retain its old snapshot while a new run is linked as a follow-up.
+
+Under `/api/v1/usp/findings`: `POST /runs` (scope/rules/guard → 202), `GET /runs/:id`, `GET /runs/:id/results` (manifest cursor), `POST /results/:id/case` (guard/current pins → scoped case), `GET /cases/:id`, `PATCH /cases/:id/disposition` (expected version/reason/evidence). The former proposed building-only `/investigation` action is replaced by `/case`; UI must use this route. FND mounts/authorizes; source/party disclosure is separately checked. READY receives minimal status/coverage, not full dossiers. AI explanations are optional restatements of deterministic facts.
 
 ## F. Exact implementation map
 
-| Existing or proposed file | Required change | Reason | Owner | Shared dependency |
-| --- | --- | --- | --- | --- |
-| [registry.py](../../services/geo/geo/registry.py), [area_semantics.py](../../services/geo/geo/area_semantics.py), [core_geometry.py](../../services/geo/geo/core_geometry.py) | Reuse proven computations/semantic rules through wrappers | Avoid duplicate unqualified algorithms | FIND read-only reuse; FND shared hooks | Core contracts |
-| [officer-investigations.ts](../../apps/web/lib/server/officer-investigations.ts) | Provide scoped link/follow-up adapter, preserve old snapshots | Reuse existing review history | FND | FIND case references |
-| Proposed new `packages/contracts/src/usp/findings.ts` | Result, applicability, coverage and disposition schemas | Stable downstream projection | FIND | Common refs |
-| Proposed new `services/geo/geo/usp_findings.py` | Qualified role-aware planar/prism rule engine | Handle explicit supported geometries | FIND | FND dispatch registration |
-| Proposed new `apps/web/lib/server/usp/findings/{rules,service,routes}.ts` and `migrations/12-findings.ts` | Runs, fingerprints, dedup and investigation linkage | Recoverable deterministic results | FIND | FND DB/access/job ports |
-| Proposed new `apps/web/features/usp/findings/{FindingPanel,FindingEvidence,CheckCoverage}.tsx` | Explanation, evidence and review actions | Exact-space review | FIND | UI overlay/selection slots |
-| [FindingsTray.tsx](../../apps/web/features/officer/block/FindingsTray.tsx), [Issues.tsx](../../apps/web/features/officer/register/Issues.tsx), [Investigation.tsx](../../apps/web/features/officer/register/Investigation.tsx) | Mount new projections and context | One reviewer workflow | UI | FIND leaves |
-| Proposed new `tests/usp-findings.test.ts`, `tests/usp-findings-integration.ts`, `services/geo/tests/test_usp_findings.py`, `tests/e2e/usp-findings.spec.ts` | Geometry/rights/staleness/flow tests | Observable result correctness | FIND | Fixtures and live services |
+| File | Change / owner |
+| --- | --- |
+| Existing registry/area/core geometry linked in B | Reuse compatible methods; FND alone edits shared entrypoints and representation bridge |
+| Proposed `packages/contracts/src/usp/findings.ts` | FIND rule/result/case/coverage/operation schemas |
+| Proposed `services/geo/geo/usp_findings.py` | FIND qualified planar/prism/slab operations; no arbitrary mesh authority |
+| Proposed `apps/web/lib/server/usp/findings/{rules,service,cases,routes}.ts`, `migrations/12-findings.ts` | FIND run/dedup/scoped-case persistence; FND registration |
+| Proposed `apps/web/features/usp/findings/{FindingPanel,FindingEvidence,CheckCoverage,ScopedCasePanel}.tsx` | FIND evidence/action leaves |
+| [FindingsTray](../../apps/web/features/officer/block/FindingsTray.tsx), [Issues](../../apps/web/features/officer/register/Issues.tsx), [Investigation](../../apps/web/features/officer/register/Investigation.tsx) | UI mounts compatible panels and exact overlays |
+| Proposed `tests/usp-findings.test.ts`, `tests/usp-findings-integration.ts`, `services/geo/tests/test_usp_findings.py`, `tests/e2e/usp-findings.spec.ts` | FIND numeric/persistence/review/permission tests |
 
 ## G. UI placement and interaction
 
-Area map → **Check** → contextual findings tray → choose result → selected property/floor and measured intersection appear → **Evidence** → **Open investigation** or **Request clarification**. Full register's Issues section uses the same finding panel. Show rule name, measurement with units, assessed coverage and one next action before secondary details. Explain “recorded road boundary” versus “observed road surface” in the evidence label, not only a tooltip.
+Map Checks → result → exact participants/level/intersection → Evidence → Open review case. Parcel-only result opens its parcel-scoped case, not a fabricated building. Full register reuses the same panel. Show measurement, applicable source roles, coverage and next action before details. Loading marks old results stale; empty says no finding among assessed inputs; missing Z stays planar; failures allow bounded retry; denied evidence reveals no private filenames. 99 owns map/camera/mobile/focus. Review state never replaces a visible computational limitation.
 
-Loading retains old results as visibly stale, never current. Empty reads “No finding in the assessed scope” with coverage. Missing Z values show a planar-only result, not a fabricated volume. Unavailable/denied source displays an appropriate safe state. Worker failure retains the prior run and supports explicit retry. A resolved investigation remains in history; recalculation may reopen review if new revisions materially change inputs. FIND owns panels; UI owns map overlay registration and shared camera/floor controls.
+## H. Ownership and dependencies
 
-## H. Agent ownership and dependencies
-
-Use `feat/usp-findings`. Work only in FIND modules/tests/migration. F0 supports pure fixtures; F1 is necessary for real scoped runs. RIGHTS can later enrich explanations through its port without changing the base evaluator. FND owns shared worker/API/registry patches; UI owns parent trays/maps. IMPACT may reuse FIND's qualified geometry adapter, but must not edit its code independently. Do not lift baseline geometry limits globally without measured qualification.
+`feat/usp-findings`; own FIND leaves/tests/migration. F0 permits pure cases; F1-feature requires actual geometry, case and job bridges. RIGHTS enrichment can arrive later. INGEST requires this producer only for completed reconciliation, not initial parsing/preview. IMPACT/HISTORY consume the shared qualified operation; they cannot fork it. FND/UI sole owners handle shared code. Real survey/rights qualification is D7, not a prerequisite for D0 implementation.
 
 ## I. Implementation sequence
 
-1. Capture baseline rules and regression fixtures; define supported input matrix and unassessed states.
-2. Build deterministic pair evaluation, role checks, numerical tolerances and explicit uncertainty metadata.
-3. Persist pinned runs/results, deduplicate cross-partition pairs and expose bounded APIs.
-4. Connect existing investigations via FND adapter; keep computed result and human disposition separate.
-5. Provide UI panels/overlay data; integrate READINESS projection and optional RIGHTS context.
-6. Run geometry edge cases plus live repeat/revise/review scenarios before claiming the check complete.
+1. Receive D0 independent oracles and preserve baseline regression cases.
+2. Implement exact role/reference/profile tests and single-prism operations; qualify richer component round trips before enabling them.
+3. Persist manifest-pinned runs with complete pair dedup/coverage and fenced completion.
+4. Complete two-parcel/no-building result → evidence → scoped review → reload.
+5. Link compatible existing building investigations through FND without replacing old snapshots.
+6. Mount UI; connect READY/INGEST/IMPACT consumers and optional RIGHTS context; then measure larger D3 workloads.
 
-## J. Acceptance criteria and verification
+## J. Test data and verification
 
-Demo includes vertically separated identical footprints, positive-volume overlap, boundary-only contact, contained flat/building, basement crossing with unreviewed easement evidence, road-surface-only data and recorded-road-land data. Expected results must differ for the correct reasons. Add holes, multipart shapes, missing benchmark, negative basement levels, absent heights, unknown positional accuracy, duplicate pairs across chunks and a source revised during checking.
+**Before coding:** D0 from [00](00-README.md). O-01 must yield 10 m²/20 m³; O-02 zero positive volume; O-03 courtyard area 96 m² (1e-6 fixture tolerance, not survey accuracy). Include negative basement levels, mezzanine, unequal levels, multiple buildings per parcel, one building across two parcels, holes/multipart and duplex components with an empty intermediate region. Verify complete persistence→worker→API round trips or a lossless retained/explicit unsupported result; a pure core test alone does not qualify legacy storage.
 
-A result must cite exact sources and method, reopen the correct floor/unit, reject stale investigation linkage and preserve historical runs. Missing RIGHTS data cannot clear an overlap. A map colour cannot be the only status cue. No automatic legal conclusion appears in API/UI/report text.
+**After implementation:** use [existing Delhi/OSM inputs](../GOOGLE_UTTAM_NAGAR.md) for source-role/partial-coverage testing. An OSM centreline with no recorded width must not pass a road-land encroachment test. Actual local boundary conclusions require D7 matched survey data via [NAKSHA](https://dolr.gov.in/en/about-naksha/) or [Delhi records](https://dlrc.delhi.gov.in/) and an approved custodian sample. No complete crosswalk is assumed; use D0 while that external gate remains unmet.
 
-Run `pnpm typecheck`, `pnpm test:registry`, `pnpm test:area`, `pnpm test:register-scope`; `python -m pytest services/geo/tests/test_registry.py services/geo/tests/test_usp_findings.py`; proposed TS tests via `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-findings.test.ts`, live integration via `pnpm exec tsx tests/usp-findings-integration.ts`, browser via `pnpm exec playwright test tests/e2e/usp-findings.spec.ts`. Return computed fixture measurements and actual investigation linkage evidence.
+Test unknown accuracy, incompatible datum, missing heights, same label/different building, valid shared use, unresolved easement, contradictory exclusive assertion, stale case link, two concurrent reviewers, duplicate cross-chunk pair, late result, unavailable RIGHTS and parcel-only saved review. Source and relationship updates with unchanged property revision must invalidate old results. Inspect actual selected IDs and saved case history, not merely red pixels.
 
-## K. Copy-paste agent assignment
+Run `pnpm typecheck`, `pnpm test:registry`, `pnpm test:area`, `pnpm test:register-scope`; `python -m pytest services/geo/tests/test_registry.py services/geo/tests/test_usp_findings.py`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-findings.test.ts`; `pnpm exec tsx tests/usp-findings-integration.ts`; `pnpm exec playwright test tests/e2e/usp-findings.spec.ts`. Return numeric expected/actual values, source/manifest/case receipts, coverage and V4 evidence; no real-world accuracy claim from synthetic oracles.
 
-> Implement FIND on `feat/usp-findings`. Read the index/shared contracts, this handoff, the linked registry/area/core geometry and investigation code. Preserve existing context-aware checks and build the proposed bounded findings modules, schemas, migration and tests. Distinguish positive volume, contact, containment, uncertain evidence and claimed rights; never turn overlap into a legal verdict. Consume FND target/access/jobs/investigation ports and provide UI overlay data rather than altering shared maps or routers. Test section J geometry and stale/partial-run cases through actual services. Return commits, method/coverage limitations, numeric fixtures, investigation history evidence and UI captures. No main merge without authorization.
+## K. Copy-paste assignment
+
+> Implement FIND from 00, 01 and this file on feat/usp-findings. Obtain D0 numeric fixtures; build qualified role-aware planar/prism checks, exact run coverage/dedup and the minimal scoped-case action including two parcels with no building. Preserve existing investigations via FND bridges, identities and source history. Qualify holes/components through actual storage before enabling analysis; never fill courtyards or construct a duplex envelope. Use the rights table, unknown states and explicit D7 real-data gate. UI/FND own shared mounts/hooks. Complete J real-service numeric, stale/retry and saved-review tests and return commits/receipts/screenshots. No legal verdict, duplicate geometry service, guessed survey evidence or main merge without authorization.
