@@ -1,85 +1,112 @@
-# Evidence-linked 3D property workflows: agent implementation handoffs
+# Evidence-linked 3D property workflows — start here
 
-## Readiness audit — read before implementation
+## 1. Current assignment and authority
 
-The [engineering readiness audit](98-engineering-readiness-audit.md) reviews all 14 original documents against `12b3dcb34fb105991aff87ac864d7b92a0117807` and application baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`. It adds concrete data packs, a feature-to-test matrix, eight visual-result cases, 25 open findings, edge-case tests and a prioritized closure plan.
+**Product outcome:** a visually strong, persisted Studio in which a user selects a building, supplied floor and unit, inspects the matching evidence, resolves a specific uncertainty and obtains a genuinely scoped property packet. Adaptive ingestion expands this working journey; it must not postpone it.
 
-**The original handoffs are not a blanket go-ahead for a parallel implementation swarm.** First resolve the minimal shared scope/snapshot/transaction contracts and prove a useful active-Studio map → unit → evidence → scoped-packet slice. Real external 3D display and authentic Indian property evidence have separate data/adapter qualifications. A catalogue link, a mock response or a screenshot alone is not feature completion.
+**Revision: 22 September 2026 — audit corrections adopted in the original handoffs.** Read this index, [01 shared contracts](01-shared-contracts-and-ownership.md), your assigned feature's A–K sections, and the relevant sections of [99 UI integration](99-ui-ux-and-integration.md). You do not need the historical audit or previous chat to implement a task. [98](98-engineering-readiness-audit.md) is issue history and a closure ledger, not a second implementation specification.
 
-The audit contains **proposed remediation**, not silently adopted changes to feature scopes or an application implementation. Original handoffs below remain the reviewed baseline; use the audit's issue IDs and exact edit table to coordinate deliberate corrections and experiments before the affected work starts. No issue is closed simply by proposing a fix. The folder now contains 15 Markdown documents, including the audit; the original delivery history below is preserved.
-
-## Purpose and planning baseline
-
-**Product promise:** reconcile fragmented source evidence with exact 3D property spaces, explain uncertainty, and help people obtain the evidence needed for review. Adaptive ingestion is an enabling differentiator; a map, dashboard, chatbot, or SSE connection alone is not the USP.
-
-This folder specifies future implementation. It does **not** claim that its proposed features are built, tested, officially accepted, or unique in the market. The documentation task does not change application code, data, source files, or the default branch.
-
-| Item | Value |
+| Item | Baseline / rule |
 | --- | --- |
-| Repository | `Vinayak1337/3d-ulpin` |
-| Baseline branch | `main` |
-| Baseline commit | `f623cff897f91bb3ebd4c225f700ac263f7beb72` |
-| Baseline commit subject | `Record hosted floor registry verification` |
-| Planning date | 22 September 2026 |
-| Documentation branch | `docs/usp-agent-handoffs` |
-| Inspection method | Static source inspection of the pinned checkout and GitHub repository; selected implementation paths, not every file |
-| Verification boundary | Documentation/link/ownership review only; no application runtime or live AI qualification in this task |
+| Repository and documentation branch | `Vinayak1337/3d-ulpin`, `docs/usp-agent-handoffs`; PR #7 |
+| Application baseline inspected | `f623cff897f91bb3ebd4c225f700ac263f7beb72`, `Record hosted floor registry verification` |
+| Pre-remediation documentation | `22aef05d8597acb326e7ee948451ab517134ceea` |
+| Current scope | Edit implementation instructions; no application implementation, data import, production activation or main merge in this documentation task |
+| Meaning of a new path/type below | Required implementation destination/contract, not a claim it already exists |
+| Meaning of a gate | An implementing agent must produce its evidence. Writing a test plan does not pass it. |
 
-Read [root agent instructions](../../AGENTS.md), [web agent instructions](../../apps/web/AGENTS.md), and [current entry points](../../apps/web/app/studio/%5B%5B...view%5D%5D/page.tsx) before implementation. Their latest steering makes **Studio the sole officer interface**. Many active reusable modules still live under `features/officer`; that directory name does not mean they are unused. Preserve historical URL resolution and unique processing capabilities.
+Before coding, read [root AGENTS](../../AGENTS.md), [web AGENTS](../../apps/web/AGENTS.md), relevant current files and the actual base SHA. Preserve unrelated changes. This revised feature scope replaces contradictory historical handoff sequencing, not source-preservation, local-access or safety requirements. If code has drifted, adapt the narrow integration seam and record the difference; do not rebuild a functioning feature because an old filename or helper changed.
 
-The request represented here expands the earlier local-demo roadmap by **planning** public access, controlled AI interoperability, and deployment hardening. Until their explicit gates below pass, retain the existing local/single-operator restriction. Do not interpret these documents as permission to expose the current API or upload private records to an external model.
+## 2. Existing mechanisms to reuse
 
-## What exists, and what this set must not assume
-
-| Confirmed implementation at the baseline | Consequence for implementation |
+| Existing mechanism | Required use |
 | --- | --- |
-| [Registry records](../../packages/contracts/src/registry.ts), [revision/review storage](../../apps/web/lib/server/registry-db.ts), [review/commit logic](../../apps/web/lib/server/registry.ts) | Extend established IDs, drafts and transactions. Do not create a replacement property database. |
-| [Namespaced core identity](../../packages/contracts/src/spatial/core/identity.ts), [evidence catalog](../../packages/contracts/src/spatial/core/source-schema.ts), [snapshot composition](../../packages/contracts/src/spatial/core/snapshot.ts) | Reuse core concepts through explicit adapters. Pure core helpers do not prove every UI or persistence path implements them. |
-| [Source bundle](../../apps/web/lib/server/source-bundle.ts) includes byte-identical originals that may concern other floors | A strictly property-scoped extract packet is additional work, not a rename of the ZIP download. |
-| [Saved package storage](../../apps/web/lib/server/spatial-dataset-db.ts) constrains its current records to synthetic classification and revision one | Do not turn this showcase store into the production bulk pipeline by removing checks. Use the established case/import workflow and explicit future adapters. |
-| [Durable jobs](../../apps/web/lib/server/processing.ts), [dispatcher](../../scripts/dispatcher.ts), [Python workers](../../services/geo/geo/tasks.py) | Extend these services for progressive work; do not add a competing queue or put durable jobs in React state. |
-| [Shared data provider](../../apps/web/features/spatial/data/Provider.tsx), [map sessions](../../apps/web/features/spatial/data/session.ts), [Studio viewport leases](../../apps/web/features/studio/scene/SharedViewport.tsx) | Integrate through one coordinated selection/viewport contract, not one map per feature. |
-| [Quick register](../../apps/web/features/studio/product/QuickRecords.tsx) and [full register](../../apps/web/features/officer/register/RegisterPage.tsx) | Add contextual panels to these existing surfaces rather than multiplying navigation. |
-| [Local API guard](../../apps/web/app/api/v1/%5B...path%5D/route.ts) and [spatial guard](../../apps/web/lib/server/spatial-core-http.ts) | Host/origin restrictions are not citizen authentication or resource authorization. |
+| [Registry contracts](../../packages/contracts/src/registry.ts), [database](../../apps/web/lib/server/registry-db.ts), [review/commit](../../apps/web/lib/server/registry.ts) | Registry remains the recorded-property authority; preserve IDs and revision checks. |
+| [Core identity](../../packages/contracts/src/spatial/core/identity.ts), [sources](../../packages/contracts/src/spatial/core/source-schema.ts), [snapshot composition](../../packages/contracts/src/spatial/core/snapshot.ts) | Reuse namespaced refs, exact source parts, missing states and representations through explicit persistence adapters. |
+| [Saved synthetic packages](../../apps/web/lib/server/spatial-dataset-db.ts) | Keep `classification='synthetic'` and revision-one constraints; do not turn this store into the new production importer. |
+| [Jobs](../../apps/web/lib/server/processing.ts), [dispatcher](../../scripts/dispatcher.ts), [worker](../../services/geo/geo/tasks.py), [JobStore](../../services/geo/geo/store.py) | Reuse the broker and logical jobs; add the fenced-attempt and receipt contracts in 01. |
+| [Active Studio route](../../apps/web/app/studio/%5B%5B...view%5D%5D/page.tsx) → [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx) → [SavedSceneViewport](../../apps/web/features/studio/product/SavedSceneViewport.tsx) → [MapViewport](../../apps/web/features/spatial/MapViewport.tsx) | Improve this actual product path, not only the separate showcase. |
+| [Compiler](../../apps/web/features/spatial/compiler/compile.ts), [scene service](../../apps/web/lib/server/spatial-core-scene.ts) | Already produce 3D Tiles/GLBs; current scene cache is not durable draft/history storage. Preserve rich external geometry through the separate display adapter in 99. |
+| [Quick register](../../apps/web/features/studio/product/QuickRecords.tsx), [full register](../../apps/web/features/officer/register/RegisterPage.tsx), [data provider](../../apps/web/features/spatial/data/Provider.tsx) | One selection/data/viewport boundary; contextual feature panels, not new maps. |
+| [Source archive](../../apps/web/lib/server/source-bundle.ts), [scope selector](../../apps/web/lib/register-scope.ts) | Keep full-original archival export distinct from the new scoped derivative. |
 
-Source-derived facts are linked locally. New paths, contracts, thresholds, policies, tables, and endpoints in the handoffs are **proposals**, even when their exact implementation shape is specified. Examples are synthetic. Missing official records, survey accuracy, or approved deployment contracts remain missing rather than being replaced with invented evidence.
+Observed geometry, planned drawings, inferred quantities, authored fixtures, technical review and official authority are separate dimensions. Appearance never becomes evidence. Official ULPIN assertions belong to parcels; buildings and spaces keep clearly labelled application identities.
 
-## Execution matrix
+## 3. Execution gates and work allocation
 
-Priorities express implementation order, not legal significance. P0 establishes compatibility; P1 completes the principal officer journey; P2 extends citizen/temporal/rights workflows; P3 adds cross-property screening and interoperability. Deployment controls are P1 because they gate later exposure, not because they replace local feature work.
+| Gate | Owner and bounded deliverable | Acceptance / unlock |
+| --- | --- | --- |
+| F0 | FND: shared schemas and executable request/result fixtures in 01, exact refs, intake/snapshot scopes, job/result/release contracts. DATA can acquire originals before F0. | Producer and consumer parse the same success, pending, unavailable and error fixtures. This permits isolated work, not completion claims. |
+| F1-min | FND: D0 live target/evidence reads, exact manifests, additive metadata stores, local access, shared-client commands and job hooks. | Real DB/storage tests, stale rejection, rollback and replay-safe receipt. No public IdP needed. |
+| V0 | UI + FND with the PACK role: D0 active map → building → supplied floor/unit → evidence → a scoped text/CSV packet → reload. UI separately qualifies one real D1 roof model. | V1–V5/V8 in 99 as applicable, persisted IDs, independent oracles, real network/storage calls. PDF-specific acceptance is a later PACK gate, not falsely passed by text export. |
+| F1-feature | FND registers only ports/migrations actually required by the next feature; feature owners connect them. | Narrow producer/consumer and live integration checks per handoff. |
+| I1 | INGEST produces durable draft manifests; UI consumes them; FIND supplies supported reconciliation checks. | Three chunks including reversed completion/failure, restart/replay and correct final target set. Parsing/preview can work without FIND; completed spatial assessment cannot. |
+| F2 | FND authenticates principals and covers API, assets and server-rendered pages; DEPLOY qualifies the environment. | Real multi-principal tests and approved public release/quarantine boundary. Required for public activation, not V0 or native local assistance. |
 
-| Feature / owner | User value | Handoff | Priority | Dependencies | Owned code areas | Parallel eligibility | Completion evidence |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Shared foundation / FND | Consistent identity, access, revisions and integration | [01 Shared contracts](01-shared-contracts-and-ownership.md) | P0 | Baseline | Shared contracts, target adapters, access layer, migration registry, API mounts | Starts first; publishes F0/F1/F2 gates | Contract fixtures, migration/revision/access tests |
-| Property evidence packets / PACK | Obtain only evidence relevant and permitted for a selected space | [10 Evidence packets](10-scoped-evidence-packets.md) | P1 | F0; F1 for live data | `usp/packets` server/UI/test modules | Pure selector after F0; integration after F1 | Cross-property leakage tests and real generated packet |
-| Evidence readiness and work queue / READY | Understand what is missing and what to do next | [11 Readiness](11-evidence-readiness-and-review-queue.md) | P1 | F0/F1; FIND and CITIZEN ports optional initially | `usp/readiness` modules | Starts with missing-port fixtures; never invents completed checks | Deterministic dimensions, denominator and queue-to-property demo |
-| Rights-aware findings / FIND | Review spatial discrepancies with context and uncertainty | [12 Findings](12-rights-aware-spatial-findings.md) | P1 | F0/F1; RIGHTS enriches relationships later | `usp/findings`, dedicated Python checks | Base rules after F1; richer rights rules wait for RIGHTS | Supported-geometry fixtures, stale-run and review evidence |
-| Citizen evidence and corrections / CITIZEN | Find a property, supply requested evidence and track a proposal | [13 Citizen loop](13-citizen-evidence-and-corrections.md) | P2 | F0/F1; F2 + DEPLOY for public activation | `usp/citizen`, public feature components | State machine/fixtures parallel; public activation gated | Two-principal isolation and full submission/review journey |
-| Adaptive bulk intake / INGEST | Reuse qualified mappings and review progressive results | [14 Adaptive ingestion](14-adaptive-ingestion-and-progressive-review.md) | P1 | F0/F1; DEPLOY for external inference policy | `usp/ingestion`, dedicated worker tasks | Parsing/recipe engine after F0; dispatcher wiring by FND | Interrupted/resumed import with drift and cross-chunk checks |
-| History and comparison / HISTORY | Compare exact recorded, observed and proposed revisions | [15 History](15-property-history-and-comparison.md) | P2 | F0/F1 | `usp/history` modules | Read-only history/available lineage first; new split/merge writes are optional and gated on FND | Live revision-pinned comparison, available lineage reads and clearly labelled optional-write fixtures |
-| Shared spaces and vertical rights / RIGHTS | Explain which spaces serve or cross other spaces | [16 Vertical relationships](16-shared-spaces-and-vertical-rights.md) | P2 | F0/F1; HISTORY read port optional with unavailable state | `usp/rights` modules | Current relationships need not wait for new lineage writes; accepted graph wiring after F1 | Duplex, shared stair and evidenced easement examples |
-| Infrastructure impact screening / IMPACT | Find potentially affected property volumes for proposed work | [17 Impact](17-infrastructure-impact-screening.md) | P3 | F1; FIND result contract; RIGHTS optional with explicit unknowns | `usp/impact`, dedicated Python screening | Geometry module with fixtures; live workflow after FIND | Excavation/overhead scenarios with coverage limitations |
-| Grounded assistance and MCP / ASSIST | Ask permitted questions and navigate to cited evidence | [18 Assistance](18-grounded-assistance-and-mcp.md) | P3 | F1; feature read ports; F2 + DEPLOY + released public projection for remote MCP | `usp/assistance`, MCP adapter | Tool schemas/offline evaluation parallel; native private tools and remote public-only tools stay separate | Grounding, authorization and injection tests; actual client evidence or an explicit unqualified gate |
-| India-contained deployment / DEPLOY | Operate a declared data boundary without silent external fallback | [19 Deployment](19-india-contained-deployment.md) | P1 gate | F0; FND access/config ports; provider evidence for claims | `usp/deployment`, deployment overlays and smoke tests | Policy fixtures/config audit after F0; release gate after F2 | Denied-egress, local fallback and restore evidence |
-| Unified Studio integration / UI | Make features discoverable without a cluttered product | [99 UI/integration](99-ui-ux-and-integration.md) | Continuous/final | F0 early; every enabled feature before final acceptance | Shared shell, routes, map adapters, common widgets, final E2E | Establish extension slots early; integrate feature branches serially | One shared map, scope-preserving navigation and visual evidence |
+**Initial concurrency:** at most two implementation owners plus one DATA/verification task. FND may execute the bounded PACK0 text/CSV slice as the PACK owner; ownership is explicitly transferred before another PACK agent writes those files. UI owns all shared frontend mounts. After V0, at most three integration-dependent feature branches remain unfinished at once. Do not launch all features from main merely because F0 types exist.
 
-`usp/<feature>` is a bounded module family, not an existing path assertion. Each handoff contains full proposed paths and actual existing touchpoints.
+| Owner / handoff | User outcome | Dependencies for live completion | Owns / test data |
+| --- | --- | --- | --- |
+| DATA, section 4 here | Reproducible inputs with independent truth and known absences | Source access; F0 for manifest validation | `fixtures/usp/**`, `scripts/usp/data/**`; D0–D7 acquisition. No application schema ownership. |
+| [FND / 01](01-shared-contracts-and-ownership.md) | Compatible identity, evidence, jobs and commands | Baseline; extend only for present consumers | Shared backend/contracts/config/mounts; D0 plus D1 frame examples |
+| [PACK / 10](10-scoped-evidence-packets.md) | Relevant property-only compilation | F1-min; page renderer qualification for PDF | `usp/packets` leaves; D0 mixed source, D4 real rows |
+| [READY / 11](11-evidence-readiness-and-review-queue.md) | Explain missing evidence and next step | F1-min; unavailable FIND/CITIZEN states allowed | `usp/readiness`; D0 ten-target oracle, D4 missing geometry |
+| [FIND / 12](12-rights-aware-spatial-findings.md) | Measured discrepancy → evidence → saved review | F1-feature geometry/case bridge | `usp/findings`; D0 numeric truth, D7 real-data gate |
+| [CITIZEN / 13](13-citizen-evidence-and-corrections.md) | Own submission → clarification → reviewed proposal | F1 for local test; F2 + DEPLOY for public | `usp/citizen`; D0 two contributors, D5 permitted documents later |
+| [INGEST / 14](14-adaptive-ingestion-and-progressive-review.md) | Receive unfamiliar supported sources and review progressive results | F1; UI draft consumer; FIND for reconciled assessment; gateway only for AI | `usp/ingestion`; D0 then D3/D4, D1 separate adapter |
+| [HISTORY / 15](15-property-history-and-comparison.md) | Exact prior state and source comparison | F1 exact historical manifests | `usp/history`; two D0 revisions, D5 dated pair later |
+| [RIGHTS / 16](16-shared-spaces-and-vertical-rights.md) | Shared-space assertion → review → applicable context | F1-feature accepted assertion store; HISTORY optional | `usp/rights`; D0 stair/duplex, D5 clauses |
+| [IMPACT / 17](17-infrastructure-impact-screening.md) | Saved proposed volume and affected mapped spaces | F1 + qualified FIND geometry; RIGHTS optional | `usp/impact`; D0 trench/overhead, D7 profile later |
+| [ASSIST / 18](18-grounded-assistance-and-mcp.md) | Service-grounded answer → exact evidence/action | F1 native; F2/DEPLOY/released projection for remote MCP | `usp/assistance`; real D0 service facts, D4 extraction tests |
+| [DEPLOY / 19](19-india-contained-deployment.md) | Declared boundary, safe failure and recovery | F0 policy; F2/real environment for deployment qualification | `usp/deployment`, reference stack; non-personal D0 |
+| [UI / 99](99-ui-ux-and-integration.md) | One visually strong connected Studio | F0 early; F1-min for V0; actual feature producers thereafter | Shared routes/cache/viewport/slots; D0/D1 required, D2 optional |
 
-## Start order and dependency gates
+Implement/read-only local assistance may start after its actual service producers exist; F2 is not required for it. New split/merge editing, general mesh measurement, arbitrary IFC/CAD, large-area production, high availability and broad model retraining remain optional. Do not silently omit them while claiming those capabilities are supported.
 
-**F0 — interfaces and fixtures:** FND publishes the versioned contracts, target-resolution mapping, injected port signatures, ownership register and neutral fixtures. Feature agents may then build isolated components and pure services against those fixtures. Mocked consumers are not completed features.
+## 4. Data packs: acquire before implementing against imaginary inputs
 
-**F1 — local end-to-end foundation:** FND connects adapters to existing database/storage/registry services, registers migrations and feature mounting conventions, and tests stale revisions, source access and local compatibility. PACK, READY, FIND, INGEST, HISTORY and RIGHTS may then connect production paths in parallel within their owned modules. UI owns their shared mounts.
+DATA is an AI-agent responsibility. Existing source catalogues are leads, not local datasets. Verification stages are recorded independently: `catalogue_checked`, `bytes_preserved`, `parsed`, `rendered`, `workflow_verified`; attach evidence for each passed stage. Record unavailable/restricted outcomes without fabricating hashes or fields.
 
-**F2 — authenticated deployment boundary:** FND supplies server-derived principals, verified sessions/token boundaries, explicit resource grants and sensitive route/page coverage. DEPLOY qualifies the selected environment. CITIZEN public activation and ASSIST remote MCP must wait. Local fixture implementations may proceed before this gate.
+| Pack | Source and bounded acquisition | Required use / explicit absence |
+| --- | --- | --- |
+| **D0 golden vertical workflow** | Reuse authored material/generator knowledge from [reference seed](../../scripts/reference/seed.ts), [complete-data generator](../../scripts/reference/complete-data.py), [comparison manifest](../../apps/web/public/studio-review/comparison-manifest.json). DATA creates an isolated new fixture namespace, never reseeds populated data. | 3–5 buildings, ≤30 spaces; basement, mezzanine, unequal levels, courtyard, shared stair, two-parcel relation, one duplex with separate components, missing source, two revisions, mixed-property document sentinels. Plans/records/3D share one source of truth. All synthetic, no actual residents/official IDs. |
+| **D1 real roof geometry** | [3DBAG services](https://docs.3dbag.nl/en/delivery/webservices/) and [one-building response](https://api.3dbag.nl/collections/pand/items/NL.IMBAG.Pand.1655100000500568). Save complete response including metadata; preserve hash; then acquire 25–100 buildings following provider pagination. | CityJSONFeature geometry and identifiers; decode declared transform once. Keep sloped roofs and null floor fields. API uses its declared CRS; do not treat NAP height as ellipsoid height. No apartment rights. Earlier payload inspection is not this agent's render pass. |
+| **D2 textured context, optional** | [Helsinki 3D](https://www.hel.fi/en/decision-making/information-on-helsinki/maps-and-geospatial-data/helsinki-3d), [mesh directory](https://3d.hel.ninja/data/mesh/). Choose one small built-up crop; preserve OBJ/MTL/textures or supplied equivalent and dependency paths. | Texture/roof context and missing-texture recovery. No fake selectable legal units in an unsegmented mesh. Catalogue checked previously; archive/render still require acquisition. Keep Helsinki coordinates and attribution. |
+| **D3 Delhi context / scale** | First use [existing acquisition notes](../GOOGLE_UTTAM_NAGAR.md), [transfer instructions](../UTTAM_NAGAR_SETUP.md), and bounded `fixtures/google-uttam`. Larger local extract path is documented, not presumed present. Alternatives: [Google polygons](https://sites.research.google/gr/open-buildings/), [height rasters](https://sites.research.google/gr/open-buildings/temporal/), [OSM extracts](https://download.geofabrik.de/asia/india.html). | Existing block → ~500 exteriors → spatially paged publications. Google outlines are not satellite imagery, cadastral parcels or unit plans. Temporal heights are estimates; OSM centrelines are not legal road width. Preserve low-confidence detections separately. Avoid repeating the multi-GB regional download when local bytes exist. |
+| **D4 Indian document rows** | [DDA inventory PDF](https://dda.gov.in/sites/default/files/Housing_Department/list_of_flats_and_garages_dda_premium_housing_scheme_2026.pdf). Retrieve original once; use first-page table before whole-document extraction; verify its hash and visually recheck the pinned page. | Extract literal identifiers/floor/pocket/block/quantity definitions. Prior inspected row: `C-01-3`, `1st floor`, Block `NA`, Pocket `E`, Loknayakpuram, `Plint Area` 134.259. This is a recheck target, not a fabricated original or proof of units. No polygon, complete-building inventory or current ownership implied. |
+| **D5 matched Indian planned building** | [Haryana RERA project 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831), [project 2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or a permitted campus/known-property plan. Obtain site/building reference + floor plan + section/level schedule + relevant shared clause. | Previous indices were readable but selected attachments failed; no drawing sufficiency claimed. Confirm tower, phase, revision, units, applicable floors and permission. Model supported local geometry first; global placement awaits controls. Promoter plan is not automatically as-built or current rights. Fall back to D0 without pretending the real-data gate passed. |
+| **D6 modality ML** | [CubiCasa5k](https://github.com/CubiCasa/CubiCasa5k) for plans; [UAVPal](https://research.utwente.nl/en/datasets/uavpal/) for imagery/DSM; [IIT Roorkee request page](https://www.iitr.ac.in/uasg2023/sdata.html); [TALD](https://sites.google.com/view/taldiist/home) for LiDAR. | Start one modality, one preserved sample, independent labels and held-out source-family/site split. Verify research/non-commercial/demo terms. No archives or permissions assumed. Room segmentation does not establish legal property boundaries. Does not gate V0. |
+| **D7 authoritative local linkage** | [NAKSHA](https://dolr.gov.in/en/about-naksha/), [Delhi Land Records](https://dlrc.delhi.gov.in/), appropriate survey/revenue/road/utility custodian and consenting record holder. | Request one aligned block's available parcel/recorded-road GIS, controls, dates, identifiers and permitted records; utility profiles/as-builts separately. No complete open Uttam Nagar crosswalk established. Blocks real-world boundary/rights claims, not code or D0 tests. |
 
-**Integration wave:** merge dependency changes before consumers; have UI/FND apply shared-file patches one at a time. Run real service and browser scenarios, not only standalone module tests. IMPACT consumes qualified FIND geometry results. READY treats unavailable providers as `not_assessed`, never zero risk.
+### Acquisition and fixture contract
 
-Do not launch ten agents against `main`. Create `feat/usp-foundation`, then bounded branches/worktrees such as `feat/usp-packets` from the agreed integration base. Record the base SHA in each agent report. Do not force-push, refresh datasets, change `.env`, or merge another agent's work implicitly.
+FND defines `usp-data-pack/1`; DATA creates proposed `fixtures/usp/D0` through `D7` as needed, each with `manifest.json`, `expected.json` and only permitted small originals. Proposed acquisition scripts live in `scripts/usp/data/`. These paths are implementation tasks, not delivered datasets. Large/restricted data lives outside Git; manifests contain non-secret storage references.
 
-## Verification commands and evidence discipline
+Each manifest records pack/version, asset URLs and actual hashes/bytes, media/parser version, licence/permission, source/date/reference metadata, dependencies, source identifiers, verified stages, expected capabilities and explicit missing capabilities. A source family and object ID form the source key; identical flat labels in different buildings do not. Cross-source joins record method, evidence and unresolved alternatives. An estimate remains an estimate even if another dataset derived from the same provider agrees with it.
 
-Commands below exist in [package.json](../../package.json); run them from the repository root with the locked dependencies installed. Service/browser commands require an explicitly isolated local stack and test data. This documentation task has not run them.
+D0 stable aliases: `B-A`, `B-B`, `P-A`, `P-B`, `U-A101`, `U-A102`, `STAIR-S1`, `DUPLEX-D1`; map aliases to server-issued IDs via import receipts. Do not hardcode copied database UUIDs. Embed `ONLY_A101`, `NEVER_A102`, and `SHARED_STAIR_CONTEXT` in deliberately separate regions of the same synthetic page. Expected values are authored independently of the implementation:
+
+* O-01: footprints [0,0]–[10,10] and [9,0]–[19,10], Z [0,3] and [1,4]: intersection 10 m², volume 20 m³.
+* O-02: same footprints, Z [0,3] and [3,6]: positive volume 0 m³; boundary contact is separate.
+* O-03: 10×10 outer square minus 2×2 courtyard: 96 m².
+
+Use exact fixture arithmetic with 1e-6 absolute tolerance for these simple measurements; this is not survey accuracy. Keep conflict fixtures as drafts when existing recording rules correctly reject them. Separate the clean V0 record from deliberately invalid cases so one does not block the entire demonstration.
+
+### Bounded acquisition fallback
+
+Attempt an accessible small source plus its documented alternative, respecting rate limits and at most two retries with backoff per transient failure. Record a terminal access/format/permission failure; do not bypass CAPTCHA, purchase services, send mail or submit applications without separate authorization. Continue with D0 or another explicitly labelled pack. Missing external data cannot silently pass real-source acceptance. DATA supplies the exact pending request to 90 only where a person/account owner is genuinely required.
+
+## 5. Minimal-interruption execution protocol
+
+An agent receives `00 + 01 + its handoff`; UI additionally reads the enabled feature contracts, not every previous chat. Follow the fixed defaults and capability fallbacks. Do not ask the user to select routine parsers, invent fixture records, implement APIs or resolve shared-file conflicts.
+
+Work on `feat/usp-<owner>` from a recorded integration SHA. A shared change request includes exact path, base SHA, contract version, patch, reason, migration impact and reproducer/test. FND or UI, as sole owner, applies it. If an owner is absent, complete isolated allowed work and return that concrete integration patch with blocked status; never fork a second service or call a mocked route complete. No force pushes, implicit snapshot refresh, deployment or main merge.
+
+Completion statuses: `contract_ready`, `local_integrated`, `real_source_qualified`, `deployment_qualified`, or `blocked(reason)`. Report each applicable status separately. A supported text packet can be locally integrated while PDF remains blocked; a reference mesh can render while analytical volume remains unsupported. Preserve these distinctions in UI capability responses.
+
+## 6. Verification and delivered evidence
+
+Use locked dependencies and [isolation helpers](../../scripts/engineering/isolation.mjs); preserve configured ports/volumes and [build-server guard](../../scripts/check-build-server.mjs). Existing [package scripts](../../package.json):
 
 ```sh
 pnpm install --frozen-lockfile
@@ -92,26 +119,12 @@ pnpm test:api
 pnpm test:e2e
 ```
 
-For new TypeScript tests use the repository's installed runner, for example `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-packets.test.ts` once that **proposed test** exists. Do not invent `pnpm test:usp-*` scripts and imply they already exist. Python additions follow [geo test configuration](../../services/geo/pytest.ini); run `python -m pytest services/geo/tests` in an environment with the repo's geo development dependencies.
+Service tests require isolated configured services. New tests are proposed, not pre-existing commands: run them after creation with `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test <unit-test-files>`, `pnpm exec tsx <integration-file>`, `pnpm exec playwright test <spec>` and `python -m pytest <geo-tests>`. Do not invent a `pnpm test:usp-*` script and say it ran. Store sanitized evidence under proposed `docs/evidence/usp/<owner>/` with code SHA, pack/hash, environment, command/exit status, numeric expected/actual values, HTTP/job/DB receipts, artifact hashes and applicable V-shot screenshots. Private originals/results stay out of Git.
 
-Respect the build-server guard in [check-build-server.mjs](../../scripts/check-build-server.mjs). Do not run a production build against another agent's live worktree. Use [isolation helpers](../../scripts/engineering/isolation.mjs) and [Playwright configuration](../../playwright.config.ts); preserve configured ports and `DEMO_BASE_URL`. Never run `repo:init`, reseeding, or snapshot export against somebody else's populated data.
+Every feature tests its named pack before and after integration, then an independent real-source sample when accessible. Keep numerical truth, interaction/visual quality, external-source interpretation and ML generalization as separate checks. No generated result may serve as its own ground-truth oracle. No screenshot, schema validation, catalogue link or mock-only test is sufficient by itself.
 
-Each agent returns: changed files and ownership exceptions; migrations/config additions; test commands and outcomes; actual HTTP/job/DB evidence; desktop/mobile screenshots for UI work; synthetic-fixture labels; unresolved limits; and a reproducible demonstration. A component that renders against a fixture is not a live integration pass.
+## 7. Human inputs and history
 
-## Human work and scope boundaries
+[90](90-required-human-tasks.md) limits human work to unavailable permitted records, accountable review terminology, actual deployment approvals and optional intended-user observations. Automated acquisition, fixture preparation, coding, testing and routine research belong to agents. Unknown input is a supported state; no waiting for people before D0/V0.
 
-[90 Required human tasks](90-required-human-tasks.md) contains only unavailable real-world inputs: permitted sample records, review terminology, intended-user feedback and deployment/identity-provider approvals. Agents own architecture, research from accessible sources, code, fixtures and automated tests. Synthetic fixtures unblock development; they do not qualify real-world accuracy or legal acceptance.
-
-The initial set excludes official national identity issuance, legal adjudication, automatic enforcement, universal format support, online reinforcement-learning guarantees, a new mobile app, and safety certification for excavation. These are not hidden acceptance obligations.
-
-## Original documentation delivery status — before the readiness audit
-
-The completed folder contains **14 Markdown files: this index, shared foundation/ownership, ten feature handoffs (10–19), required human inputs (90), and unified UI/integration (99)**. Each feature includes A–K implementation sections, exact existing/proposed file maps, UI states, dependencies, tests and a copy-paste agent assignment. The UI handoff was written after rereading the feature set; shared ports/ownership, the deployment status entry and optional lineage dependencies were then reconciled individually.
-
-The documentation changes are confined to `docs/usp-agent-handoffs/`. Files were reviewed and committed sequentially; reconciliation edits are separate commits. Relative source/document links were checked against the pinned baseline/new folder, all feature A–K headings and fenced blocks were checked, and `git diff --check` passed. The repository-supported test command names and referenced existing test paths were also checked. **No application test suite, live provider, production deployment, public upload or browser feature journey was executed as part of creating these documents.**
-
-At final documentation validation, remote `main` still matched the pinned baseline. Implementing agents must check for later drift before changing code. Proposed thresholds, parser profiles, policy rules and deployment settings require the qualification described in their handoffs; they are not benchmark results or legal requirements.
-
-Start with FND's F0 interface/fixture gate and UI0 extension slots. Then assign PACK, READY, FIND, INGEST, HISTORY, RIGHTS and DEPLOY to separate bounded branches; CITIZEN/ASSIST/IMPACT can develop fixture-only pieces while their live dependencies are pending. Connect production paths only after the stated gates, and let UI/FND apply shared-file integrations serially. Human inputs do not block synthetic development; they block the specific field/pilot/deployment claims described in 90.
-
-The final delivery is a documentation PR against `main`. No merge into `main` or implementation of the proposed features is authorized by this documentation request.
+All 14 original execution documents are the destinations for current corrections; no new remediation document is required. Audit issue history remains in 98 and its immutable pre-remediation commit. Design instructions may now be ready to execute while implementation tests remain unrun. Do not call the software foolproof or a deployment qualified merely because this documentation revision exists.
