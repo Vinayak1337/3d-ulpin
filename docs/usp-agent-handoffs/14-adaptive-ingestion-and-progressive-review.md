@@ -1,156 +1,154 @@
-# 14 · Adaptive ingestion with progressive, reviewable results
+# 14 · Adaptive ingestion and durable progressive 3D review
 
-Owner **INGEST** · Priority **P1** · Baseline `main@f623cff897f91bb3ebd4c225f700ac263f7beb72` · Consume [F0/F1 contracts](01-shared-contracts-and-ownership.md) and [DEPLOY's model boundary](19-india-contained-deployment.md).
+Owner **INGEST**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [12 FIND](12-rights-aware-spatial-findings.md), [19 gateway](19-india-contained-deployment.md), and display consumer in [99](99-ui-ux-and-integration.md). ER-04/05/07–11/16/21/24/25 are incorporated here. New paths/types remain implementation tasks, not available exports.
 
 ## A. User outcome and product value
 
-Allow an officer to import an unfamiliar **supported** source delivery, clarify its mapping once, and inspect valid draft objects before the entire batch finishes. Reuse the qualified transformation for remaining matching records and later deliveries. This is an enabling differentiator: less repeated AI interpretation and less waiting for useful review, without inventing evidence.
+Allow an officer to receive unfamiliar supported sources, clarify a reusable mapping, see valid selectable draft geometry before the whole batch finishes, resolve exceptions and record a coherent reviewed group. The technical advantage is reusable interpretation plus progressive useful results—not an SSE animation or a model retrained on each upload.
 
-Synthetic example: a department sends buildings with `plot_no`, `roof_ht_ft` and `parent_plot`. A proposed recipe preserves IDs as text, converts explicitly confirmed feet to metres and resolves parent keys. A rare row changes the unit convention: that row is quarantined as drift rather than silently normalized under the earlier mapping. Already accepted draft chunks remain inspectable, but are not automatically recorded.
+Example: source fields plot_no/roof_ht_ft/parent_plot map to preserved string identifiers, explicitly documented feet-to-metres conversion and exact parent keys. A contradictory declared unit enters review; a source-only document can be normalized without having coordinates. No invented floors make the scene look complete.
 
 ## B. Current implementation and gap analysis
 
-[source-normalizer.ts](../../apps/web/features/spatial/reference-import/source-normalizer.ts) currently requires `ulpin-source-package/1`, synthetic classification, declared local frame, fixed role families and source fingerprints. It caps 90 files, 30 MB accumulated source data, 5,000 CSV rows and 1,500 GeoJSON features per relevant file. It retains binary evidence and does not fabricate missing unit polygons. This is a qualified manifest profile, not arbitrary-format ingestion.
+[Source normalizer](../../apps/web/features/spatial/reference-import/source-normalizer.ts) expects a declared synthetic manifest/profile; it is not an arbitrary-schema importer. [Saved datasets](../../apps/web/lib/server/spatial-datasets.ts) persist that synthetic path separately. [Source intake](../../apps/web/lib/server/source-cases.ts) and [area routes](../../apps/web/lib/server/area-routes.ts) are the case/import seams to extend through FND.
 
-[saved spatial datasets](../../apps/web/lib/server/spatial-datasets.ts) validates and persists immutable synthetic packages separately from registry publication. Do not remove that separation. [source-cases.ts](../../apps/web/lib/server/source-cases.ts), [area-routes.ts](../../apps/web/lib/server/area-routes.ts) and existing import packages are the proper production-workflow seams for proposed adaptive intake.
+[Processing](../../apps/web/lib/server/processing.ts), [dispatcher](../../scripts/dispatcher.ts), [tasks](../../services/geo/geo/tasks.py) and [JobStore](../../services/geo/geo/store.py) provide existing job infrastructure but need 01 fencing and new-operation budgets. [Compiler](../../apps/web/features/spatial/compiler/compile.ts) already emits 3D Tiles 1.1/GLBs. [Scene service](../../apps/web/lib/server/spatial-core-scene.ts) compiles current recorded data into a process cache; it is not a durable unrecorded/history producer. [Current AI provider](../../apps/web/lib/server/officer-ai-provider.ts) is Nous-specific; Sarvam is new governed adapter work.
 
-[processing.ts](../../apps/web/lib/server/processing.ts) already dispatches durable application jobs and prevents stale build results replacing current snapshots. [geo/tasks.py](../../services/geo/geo/tasks.py) uses Celery late acknowledgement, bounded execution, lease ownership through JobStore and result persistence. Application dispatch currently polls a bounded selection and has operation-specific timeout behavior; it is not yet a complete large-batch chunk scheduler. [officer-ai-provider.ts](../../apps/web/lib/server/officer-ai-provider.ts) currently targets Nous, uses bounded calls and validated structured proposals. A Sarvam provider is new work, not a switch already present.
-
-Missing: source-family profiling, qualified reusable recipes, independent processing/render partitions, persistent chunk dependency/retry state, resumable upload, SSE replay and final cross-chunk reconciliation. Few initial chunks do not establish ML generalization or reliable online reinforcement learning.
+Required additions are versioned recipes, shared resumable receipts, independent processing/display partitions, immutable draft-scene manifests, fenced result application, actual replay and coherent review. Do not remove current synthetic-store restrictions or present old current-data endpoints as this producer.
 
 ## C. Scope and non-goals
 
-Required first release: resumable intake; deterministic parsing for CSV, JSON/GeoJSON and existing native supported profiles; reusable typed mapping recipes; explicit unknown/unsupported receipts; bounded parallel normalization; progressive draft-map assets; replayable status events; exception handling and scoped reviewed commit.
+INGEST0: deterministic CSV/JSON/GeoJSON intake, typed mappings and explicit missing states. INGEST1: durable chunks, usable draft geometry, restart/pause/replay, and FIND-qualified review groups. INGEST-AI: bounded recipe suggestions through the gateway after deterministic end-to-end success. All require actual case/record integration, not mock queues.
 
-Use existing document/LiDAR/raster/plan processors only where their capability is actually qualified. File retention is not reconstruction. Arbitrary unknown binary formats, general CAD/BIM reconstruction, automatic rights inference, automatic publication, synthetic factual completion and per-import model fine-tuning are out of scope. Optional future work includes additional parser plugins, 3D Tiles delivery and separately evaluated supervised models.
+Reuse existing modality processors only for qualified capabilities. Raw point-cloud/raster/IFC retention does not mean reconstruction. General CAD/BIM conversion, arbitrary binary understanding, per-import fine-tuning/RL, guessed cadastral rights and automatic publication are excluded. Rich D1 exterior geometry uses 99's external display adapter; it must not be flattened into extrusion inputs. Specialist ML and wider formats are separately tested extensions, not prerequisites for V0.
 
 ## D. HLD and end-to-end flow
 
-```mermaid
-flowchart TD
-  U[Resumable original intake] --> P[Parse and profile source families]
-  P --> R{Qualified recipe matches?}
-  R -->|No| A[AI proposes constrained mapping]
-  A --> V[Validate samples and resolve ambiguity]
-  R -->|Yes| C[Create dependency-aware chunks]
-  V --> C
-  C --> Q[Bounded existing worker queues]
-  Q --> N[Normalize observations and evidence]
-  N --> L[Resolve identities and placement]
-  L --> T[Draft render assets and durable events]
-  L --> X[Cross-chunk checks]
-  X --> O[Officer reviews coherent groups]
-  O --> K[Existing reviewed commit]
-  N --> E[Exceptions and drift quarantine]
-```
-
-SSE announces committed progress and asset availability; it is neither the job queue nor the geometry payload. The browser retrieves bounded assets for its viewport and keeps a stable recorded snapshot beside the evolving **draft**. Completing a mapping does not prove entity associations or authorize recording.
+Receive durable original → inspect source family → reuse qualified recipe or propose/clarify one → partition complete records → bounded existing worker queue → normalize observations → resolve identity/reference placement → persist draft assets/manifest → show selectable results and exceptions → FIND reconciles eligible neighbours → officer reviews coherent group → FND prepares/reviews/commits through existing authorities. SSE transports small committed notifications; the queue and geometry assets are separate.
 
 ## E. Targeted LLD
 
-### 1. Receipt, capability and budgets
+### 1. Receipt, stages and workload profiles
 
-Proposed `IngestBatch` pins submitting principal, scope or explicitly unassigned scope, original upload manifest, policy/budget version and status. Store explicit `caseId` and nullable `importPackageId` bindings supplied by FND's intake adapter. An ingest batch ID is not interchangeable with an existing import-package ID. Before that binding exists, show progress in the add-files receipt; afterward open `/studio/imports/{importPackageId}` and resolve its linked batch server-side. Each source has independent capability states: `retained`, `parsed`, `normalized`, `placed`, `validated`; use booleans/results per stage rather than implying one successful file extension means all stages passed.
+`IngestBatch` pins ID/version, actor, IntakeScope initially, original manifest, policy/budget, nullable case/importPackage binding, recipe refs and stage results. The batch ID is never used as an existing import-package UUID. Before binding, progress stays in Add files; after binding `/studio/imports/:importPackageId` resolves the batch server-side. Each source reports retained/parsed/normalized/placed/validated independently with reason/evidence; extraction success does not imply placement or review.
 
-Initial proposed profile: 256 MiB uploaded per batch, 512 MiB total expanded bytes, 100 files, maximum archive depth one, 100,000 structured records total; smaller existing parser/core limits still apply to each invoked unit. These are engineering defaults to benchmark, not performance promises. Enforce bytes, expanded bytes, members, records, vertices, pixels, pages, nesting, worker seconds, model tokens/calls and concurrent jobs independently. Publish the active limits before upload. Pause with a clear budget receipt rather than silently increasing spend or dropping rows.
+Use FND receiveUpload/shared upload state; batch-specific upload rows are bindings only. Persist upload ID/owner/version before bytes; multipart default 4 MiB, sequential part index/hash. Duplicate same part is idempotent, changed bytes for a part is 409. Finalization verifies complete manifest/count/whole-file hash and commits receipt before parsing. Repeated finalize returns receipt. Partial/expired receipts are privately retained or cleaned by policy, never presented as preserved complete originals. Input archives are officer-only, at most one level; reject traversal, symlinks, encrypted unsupported files, excessive members and expansion bombs. Bound streaming actual bytes, not Content-Length alone.
 
-Resumable upload uses server-issued upload ID, numbered parts, part hashes and final whole-file hash. Exact repeated part is idempotent; same part number/different bytes is 409. Finalize only when all expected parts and checksums agree. Bound pending-part storage and expire abandoned uploads without deleting accepted originals. Never trust uploaded filenames as storage paths; reject traversal, symbolic links, encrypted unsupported archives and expansion bombs. Original bytes and provenance survive all later transformations.
+| Profile | Initial bounds / downstream consequence |
+| --- | --- |
+| P0 workflow | D0, ≤30 spaces and three processing chunks; this proves integration before scale |
+| P1 structured batch | ≤64 MiB uploaded, ≤128 MiB expanded, ≤100 members, ≤20,000 structured records; per-member/parser limits may be smaller |
+| P1 child work | ≤500 complete vector/table records, ≤50,000 positions and ≤60-second execution; tune downward before exceeding an existing parser/core limit |
+| Current exterior publication | Existing compiler ≤2,000 visible entities, 50,000 input positions, 12,000 schematic facade bays, 80 MiB assets, one qualified engineering frame within its 5 km bound |
+| Visible client workload | Start 25–100 exteriors, ≤30 detailed spaces, ≤25 MiB visible geometry; viewport loading, not all processed records resident |
+| Optional later bulk profile | 256 MiB upload/512 MiB expanded/100,000 records only after measured partition/recovery tests; not enabled by raising constants alone |
 
-### 2. Source-family profiling and mapping recipes
+Preflight validates every intended stage/profile and reports unsupported paths before expensive work. Parsing 20,000 rows does not authorize one 20,000-object publication or a 20,000-space legacy query. Oversized individual geometry cannot be arbitrarily split into new legal objects; retain and report unsupported or use a separately qualified display derivative. Unknown total uses counts without a percentage. Model calls/tokens, decoded pixels/pages, cumulative work, storage and concurrency have separate caps. Use PACK's page limits for document rendering.
 
-Unknown schema and unknown encoding/format are separate. Deterministic parsers report fields/types, record counts, geometry roles, provided frame/unit metadata, null patterns and candidate identifier keys. Unsupported formats stay retained with an explicit capability explanation. Do not send entire opaque binaries to a language model hoping for coordinates.
+### 2. Qualified recipe, no generated executable code
 
-Proposed `MappingRecipe` includes ID/version, parser/version, schema fingerprint, semantic scope/source-family constraints, target schema version, allowed transforms, unit/CRS decisions with evidence, join rules, null policies, examples, held-out tests, author/reviewer and qualification state `proposed|needs_input|qualified|retired`.
+`MappingRecipe` stores ID/version, parser/version, source-family/provider/version, schema fingerprint, declared semantic/unit/reference metadata fingerprint, target contract version, allowlisted operations, exact-key joins, null handling, evidence/clarification decisions, development examples, held-out tests and proposed/needs_input/qualified/retired state.
 
-The allowed transform language supports explicit field copy/rename, enum mapping, safe numeric/date parsing, named unit conversion, selected nesting and exact-key joins. No arbitrary JS/Python, shell, network fetch, SQL, dynamic module loading or model-provided code execution. Preserve leading zeros and literal identifier values. Geometry transformations use the qualified CRS/vertical-reference adapter, not an LLM formula. Missing CRS/height semantics requires clarification; do not guess from coordinate magnitudes.
+Allowed recipe operations: copy/rename, explicit enum lookup, finite numeric/date parse, named unit conversion, bounded nesting and exact-key lookup. Preserve IDs as strings, Unicode/literal values and leading zeros. Do not run generated JS/Python/SQL, dynamic imports, URLs or shell commands. Coordinates transform only via FND's qualified reference operation; do not guess CRS from magnitudes. Keep original fields and source locators even when normalization rejects a row.
 
-An AI mapper receives bounded source metadata/examples, target schemas and relevant approved recipes through `modelGateway`. Output is a recipe proposal plus unresolved questions and cited sample fields. One bounded repair is allowed; validation failure falls back to manual mapping. Qualification requires deterministic assertions about field meaning, units, ID preservation, relationship keys and geometry validity. Valid JSON alone is insufficient.
+The mapper receives bounded metadata plus representative examples and target schemas through modelGateway. It returns a strict recipe proposal and unresolved questions citing input fields/metadata. One bounded repair; thereafter manual mapping with the same recipe schema. Start with 3–10 representative samples if useful, adding rare/null/outlier cases and an independent holdout. That count is not an accuracy threshold.
 
-Start with representative samples from different source regions/record types, including nulls, rare geometry types and outliers; a suggested 3–10 initial samples is only bootstrap, not an accuracy threshold. Reserve independent held-out examples. Approval can be manual for semantic ambiguities; known mappings can be reused only when fingerprint **and semantic applicability** match. Continue per-record validation and drift checks after qualification. An unchanged header does not guarantee unchanged units or meaning.
+Automatically reuse only a qualified recipe whose source-family/version, schema AND supplied semantics match and invariants pass. Ask an officer only for semantic information unavailable from supplied evidence; group the question for the justified source family. Contradictory declared units, renamed/removed required fields, invalid values or join cardinality changes trigger needs_input. **An undocumented unit change with otherwise identical plausible values cannot always be detected.** Record semantic assurance unknown/provider-confirmation-required when metadata is absent; never promise universal drift detection. Per-record invariant checks continue after reuse. Source observation confidence and mapping confidence are separate.
 
-### 3. Processing chunks versus render tiles
+Entity association follows normalization: exact namespace/source ID and evidenced parent binding first; ambiguous candidates remain unresolved. Flat 101 in two buildings never auto-joins. Duplicate source bytes do not imply duplicate submission intent or one property identity. No AI training during imports: recipe memory is the initial optimization. Later reviewed correction datasets are permission-qualified, versioned and evaluated outside the critical path; own outputs are not ground truth.
 
-Proposed `ChunkManifest`: immutable source revision/hash, parser/recipe versions, source slice locator, complete-record boundaries, schema reference, frame/reference pins, dependency refs, record count, content hash and stable chunk ID. Each chunk must be independently parseable with declared shared context, not necessarily a miniature copy of every whole source file.
+### 3. Processing chunks are not rendering tiles
 
-| Source family | Processing partition | Rendering consequence |
-| --- | --- | --- |
-| Tables / GeoJSON | Complete records/features plus schema; never split a quoted CSV record or polygon ring | Partition normalized representations by spatial index only after placement |
-| Documents | Page/logical section with document context and exact locators | Some chunks have no geometry and remain evidence-only |
-| Point clouds / rasters | Existing qualified spatial tiles/windows with required border overlap | Terrain/height observations only when supported; no internal rights inference |
-| Relationship-rich models | Existing supported elements plus dependency closure | If parser/closure unsupported, retain and report unsupported; do not invent IFC support |
+`ChunkManifest` pins original source/hash, source slice/locator, parser/recipe, schema ref, complete-record boundaries, frame/reference pins, dependency refs, content hash and count. Source key → canonical mapping is independent of chunk order. Tables respect quoted multiline records; vector features keep rings/holes and geometry intact. Document sections/pages can remain evidence-only without coordinates. Raster/point-cloud processing uses qualified windows and required neighbour overlap; relationship-rich models need dependency closure or explicit unsupported status.
 
-Canonical object IDs derive from stable source identity mappings, never chunk order. Render tiles may clip or simplify display geometry but reference the same target/representation IDs. Keep holes, multipart geometry and cross-floor memberships in analytical data. A building crossing two tiles is still one building. Shared context can be referenced once rather than duplicated in every normalized object.
+Normalize observations before constructing geometry; placement/validation are separate outputs. Shared context can be referenced once. Render clipping/LoD is presentation only, with the same canonical object key across tiles. No duplicate property identity on a tile boundary; missing components/dependencies prevent a complete assessment.
 
-### 4. Scheduling, failure recovery and reconciliation
+### 4. Durable draft-scene producer — mandatory for progressive claims
 
-Proposed tables `usp_ingest_batches`, `usp_ingest_uploads`, `usp_ingest_recipes`, `usp_ingest_chunks`, `usp_ingest_dependencies`, `usp_ingest_assets`. Feature-local migration owns these only. FND connects new operation handlers to existing application jobs and Celery; do not introduce a second broker. Use atomic claims, worker lease/heartbeat, bounded retries and idempotent result application. Reuse existing JobStore where compatible rather than replacing it.
+Proposed tables: `usp_ingest_batches`, `usp_ingest_recipes`, `usp_ingest_chunks`, `usp_ingest_dependencies`, `usp_ingest_assets`, `usp_ingest_scene_manifests`, `usp_ingest_review_groups`; batch upload bindings reference shared uploads. Assets and entity-index pages live in existing private object storage. Immutable manifest includes:
 
-Chunk states `pending → eligible → queued → running → normalized | needs_input | failed | cancelled`; placement and validation results remain separately tracked. Pin input hash, recipe and attempt ID. Late results from expired attempts cannot overwrite newer output; acceptance checks current lease/attempt and fingerprint. Acknowledge job completion only after durable result registration. Distinguish queue waiting time from execution budget so a large queue does not time out before it starts.
+```ts
+type DraftSceneManifest = {
+  schemaVersion: 'usp-scene-manifest/1'; kind: 'draft';
+  manifestId: string; version: number; previousManifestId: string | null;
+  batchId: string; scope: SnapshotScope;
+  entityIndexRef: AssetRef;
+  assets: AssetDescriptor[];
+  replacedAssetIds: string[]; removedEntityRefs: CoreRef[];
+  coverage: { received: number | null; placed: number; needsInput: number;
+              expectedDependencies: number | null; completedDependencies: number };
+};
+```
 
-Start with two lightweight workers and one heavy spatial worker as configurable defaults. Process independent chunks concurrently, prioritize one representative visible area for time-to-first-valid-preview, and maintain fairness across batches. “All chunks at once” is not a safe default. Pause/resume stops future claims while retaining accepted output; cancellation is explicit and never removes originals or recorded history.
+AssetRef/descriptor schema is owned by FND/INGEST: opaque asset ID, immutable SHA-256/bytes/media type, geometric frame/bounds, LoD, safe canonical selection refs and dependencies. No raw storage URL or private source text. This new manifest's metadata is not a claim of complete OGC compliance.
 
-Resolve entities after normalization using exact identifiers and evidenced associations. Ambiguous document/property matches enter exception review. Run cross-chunk pair checks through FIND once required neighbour/relationship context is ready. Persist a reconciliation manifest with expected/received/assessed counts and missing dependencies. Coherent commit groups use existing revision-checked review/commit services; do not record one side of a mutually dependent change. Independent valid groups may proceed while others remain unresolved, but global coverage remains explicit.
+Worker stores immutable output and verifies hash first. A same-client SQL transaction conditionally accepts the current attempt, writes manifest/entity-index refs, advances batch pointer and appends `scene.manifest_published`; crash before commit leaves only unreferenced private output. One batch manifest version is serialized/CAS-protected; stale publication retries merge against current accepted chunk set instead of overwriting another chunk. Asset removal/replacement is explicit; complete manifest is authoritative even if deltas are missed.
 
-### 5. SSE and progressive display
+UI consumes this producer through the existing MapViewport/scene adapter, not the recorded-only scene endpoint. Preserve one recorded snapshot alongside a labelled draft; do not auto-record it. Selected entity IDs survive refinement; removed/retired entities become explicit unavailable selection. Old manifests remain retrievable while referenced by review/history/packets; event retention is not asset deletion policy. Missing historical bytes produce unavailable/reset-required, never rebuild current geometry under an old digest. No published manifest may reference an uncommitted/missing asset.
 
-The [HTML server-sent events standard](https://html.spec.whatwg.org/multipage/server-sent-events.html) defines `text/event-stream` and reconnect `Last-Event-ID`. Durability, authorization and replay are application requirements. Use FND's commit-ordered per-stream outbox, not current process memory or Redis pub/sub alone.
+For rich external geometry, invoke the qualified external asset adapter from 99 and keep source shape/metadata; analytical facts are separate. Do not make another viewer or fill missing height/floors merely to render a mesh. Illustrative decorations stay display-only and labelled.
 
-Proposed events: `batch.profiled`, `mapping.needs_input`, `mapping.qualified`, `chunk.normalized`, `chunk.needs_input`, `tile.ready`, `assessment.updated`, `batch.review_ready`, `batch.paused`, `batch.failed`. Common envelope carries schema version, stream/sequence, batch/scope refs, snapshot/manifest version and safe counts. Do not include source text, credentials or full meshes.
+### 5. Jobs, pause and reconciliation
 
-Use same-origin HttpOnly session authentication for browser EventSource; never put access tokens in URLs. Check scope at subscription and replay, periodically recheck grant/session validity, and stop on revocation. Send heartbeat comments, disable proxy buffering for the stream, bound connection duration and support reconnect. A 15-second heartbeat and 10-minute renewable connection are proposed defaults to qualify with DEPLOY.
+Use 01 logical-job/attempt fence for every new worker state/result write, not only lease release. Chunk state pending/eligible/queued/running/normalized/needs_input/failed/cancelled, with independent placement/check outputs. Default two light slots and one heavy slot only if the host supports them; bound total dispatch and fairness by batch. Prioritize a representative visible region without starving other jobs. Queue wait is not execution time. Pause blocks new claims and permits active valid work to finish as retained draft; cancel fences all later result application. Retries do not duplicate accepted outputs.
 
-On initial load, fetch a consistent status snapshot with outbox cursor, then replay strictly after that cursor. Event IDs encode stream plus decimal sequence. Duplicate events are harmless; an expired/unknown cursor emits a `stream.reset_required` control event and closes, prompting a new snapshot. No silent event skipping. Retain a configurable event window (initially seven days) independently of durable batch state. Publish counts only for authorized scopes.
+FIND consumes exact normalized representation and neighbour manifests after dependencies are available. Scope reconciliation records expected/received/assessed/missing counts. A dependency cycle in processing is an explicit error or bounded coherent group, not an endless queue. A partial batch can render, but `review_ready` is per coherent group and only after the group's required checks/evidence complete. If FIND unavailable, use `preview_ready`/`checks_not_assessed`, never `review_ready` for spatial recording. A validated independent group may proceed; mutually dependent updates commit together through FND. Show unresolved global coverage even after one group records.
 
-`tile.ready` names a revision-pinned asset reference and bounding box; client fetches via an access-checked asset endpoint. Batch viewport updates on animation frames, keep selection stable by entity ID, limit in-flight asset fetches and evict out-of-view display resources. Do not fetch/render every completed chunk simultaneously or create a second Canvas. Render coarse supported geometry first and refine details when available, without creating invented heights or analytical shapes. Synthetic decorations are display-only and excluded from checks/evidence.
+### 6. Replay and client application
 
-### 6. Proposed API and learning boundary
+Use [SSE standard](https://html.spec.whatwg.org/multipage/server-sent-events.html) framing with FND's durable commit-ordered outbox, not Redis pub/sub as sole history. `GET /batches/:id` returns status, current manifest and eventCursor from **one repeatable-read transaction**. Then replay strictly after that cursor. Every event names stream/decimal sequence, schema/type, batch/version, manifest ref and safe stage counts. Event types include batch.profiled, mapping.needs_input, mapping.qualified, chunk.normalized, chunk.needs_input, scene.manifest_published, assessment.updated, batch.review_ready, batch.paused and batch.failed. `tile.ready` may be advisory only; manifest is authority.
 
-Under `/api/v1/usp/ingestion`: `POST /batches`; `POST /batches/:id/uploads`; `PUT /uploads/:id/parts/:number`; `POST /uploads/:id/finalize`; `GET /batches/:id`; `POST /batches/:id/profile`; `POST /recipes/:id/qualify`; `POST /batches/:id/start`; explicit `/pause`, `/resume`, `/cancel`; `POST /chunks/:id/retry`; `GET /batches/:id/events`; `GET /assets/:assetId`. Mutations require the shared expected version and idempotency conventions. Start returns 202; invalid/ambiguous mapping returns a typed needs-input receipt rather than apparent success. FND mounts routes; INGEST owns leaf handlers.
+Authenticate browser streams with same-origin HttpOnly session (local operator in local mode), never URL tokens. Reauthorize subscription/replay and at least every 15-second heartbeat; reconnect max 10-minute connection lifetime, tested with proxy buffering disabled. Expired/unknown cursor sends stream.reset_required then closes. Client fetches fresh consistent status; no silent skip. Default replay window seven days, independent of persisted batch/artifacts. Bound event payload to 16 KiB and client pending notifications to 100; overrun coalesces to a fresh manifest, not dropped authoritative state.
 
-Recipe memory is the initial learning mechanism. Later reviewed corrections may form a permission-qualified, versioned evaluation/training set; AI outputs are not automatically ground truth. Fine-tuning/active learning belongs outside the import's critical path, with held-out source-family tests, calibrated error measures, promotion and rollback. Do not promise a model learns alien schemas after a fixed chunk count. Specialist building/plan ML remains separately evaluated through existing reviewable proposal paths.
+Events never carry GLBs or full source rows. Fetch at most four authorized assets concurrently, verify version/hash metadata, apply one coherent manifest transaction on an animation frame, dispose replaced resources and ignore old-generation responses. On a version gap reload the complete manifest. Counts reflect durable accepted stages. Old A responses cannot replace current B; per-asset arrival does not trigger global dossier reload. Denied/missing asset is explicit and cannot expose broader source data. Polling durable status every 2–5 seconds is the defined fallback when SSE is unavailable; report streaming qualification unmet, not fake live success.
+
+### 7. APIs
+
+Prefix `/api/v1/usp/ingestion`; 01 guards/envelopes. `POST /batches` creates IntakeScope; `POST /batches/:id/uploads`, `PUT /uploads/:id/parts/:number`, `POST /uploads/:id/finalize` use shared receipt primitives. `POST /batches/:id/profile` returns profile/job; `POST /recipes/:id/qualify` requires recipe/version/evidenced decisions; `POST /batches/:id/start` returns 202. Explicit POST pause/resume/cancel and `/chunks/:id/retry` require expected versions. GET batch, `/batches/:id/events`, `/manifests/:id`, `/assets/:id` are current-access checked. POST `/batches/:id/review-groups` pins chosen targets/dependencies; POST `/review-groups/:id/prepare` creates an existing draft/review via FND after reconciliation. Recording remains the separate established commit action.
 
 ## F. Exact implementation map
 
-| Existing or proposed file | Required change | Reason | Owner | Shared dependency |
-| --- | --- | --- | --- | --- |
-| [source-normalizer.ts](../../apps/web/features/spatial/reference-import/source-normalizer.ts), [browser.ts](../../apps/web/features/spatial/reference-import/browser.ts) | Preserve qualified package path; reuse known validation recipes only | Do not weaken synthetic showcase contract | INGEST read-only reuse | FND adapter |
-| [source-cases.ts](../../apps/web/lib/server/source-cases.ts), [area-routes.ts](../../apps/web/lib/server/area-routes.ts), [spatial-datasets.ts](../../apps/web/lib/server/spatial-datasets.ts) | Add narrow intake/review bridge via FND; no global rewrite | Explicit workflow authorities | FND | INGEST manifests |
-| [processing.ts](../../apps/web/lib/server/processing.ts), [dispatcher.ts](../../scripts/dispatcher.ts), [geo/tasks.py](../../services/geo/geo/tasks.py), [geo/store.py](../../services/geo/geo/store.py) | Register operations, attempt fencing and appropriate deadlines | Existing queue/recovery remains canonical | FND | INGEST worker interface |
-| Proposed new `packages/contracts/src/usp/ingestion.ts` | Batch/upload/recipe/chunk/event schemas | Compatible stages | INGEST | Common/outbox contracts |
-| Proposed new `apps/web/lib/server/usp/ingestion/{uploads,profile,recipes,chunks,reconcile,events,assets,routes}.ts`, `migrations/14-ingestion.ts` | Adaptive intake/scheduler/replay services | Durable progressive processing | INGEST | FND jobs/access; DEPLOY gateway |
-| Proposed new `services/geo/geo/usp_ingestion.py` | Deterministic parser/transform operations with bounded inputs | No arbitrary generated code | INGEST | Existing parsers/FND hooks |
-| Proposed new `apps/web/features/usp/ingestion/{BatchReceipt,MappingReview,ProgressiveReview,useBatchEvents}.tsx` | Needs-input mapping and progressive review UI | Time-to-useful-result | INGEST | UI shared viewport/selection |
-| [ImportWork.tsx](../../apps/web/features/officer/work/ImportWork.tsx), [AddFiles.tsx](../../apps/web/features/officer/workspace/AddFiles.tsx) | Mount progressive receipt/review leaves | Preserve Batches workflow | UI | INGEST components |
-| Proposed new `tests/usp-ingestion.test.ts`, `tests/usp-ingestion-integration.ts`, `tests/usp-ingestion-stream.test.ts`, `services/geo/tests/test_usp_ingestion.py`, `tests/e2e/usp-ingestion.spec.ts` | Mapping/drift/resume/events/browser tests | No fake streaming completion | INGEST | Isolated services |
+| File | Required change / owner |
+| --- | --- |
+| Existing source-normalizer/browser/synthetic saved-dataset path | Preserve qualified behavior; read-only reuse by INGEST |
+| Existing source-cases/area-routes/processing/dispatcher/geo tasks/store | FND narrow receipt, draft-preparation, operation and fence hooks |
+| Proposed `packages/contracts/src/usp/ingestion.ts` | INGEST batch/recipe/chunk/scene/review-group schemas; FND common refs |
+| Proposed `apps/web/lib/server/usp/ingestion/{uploads,profile,recipes,chunks,reconcile,events,assets,manifests,routes}.ts`, `migrations/14-ingestion.ts` | INGEST durable producer and leaf APIs |
+| Proposed `services/geo/geo/usp_ingestion.py` | INGEST deterministic parsers/transforms; no generated-code execution |
+| Proposed `apps/web/features/usp/ingestion/{BatchReceipt,MappingReview,ProgressiveReview,useBatchEvents}.tsx` | INGEST leaf state/content; shared scene and selection remain UI-owned |
+| [ImportWork](../../apps/web/features/officer/work/ImportWork.tsx), [AddFiles](../../apps/web/features/officer/workspace/AddFiles.tsx), shared viewport/cache | UI mounts actual draft producer and bounded manifest consumer |
+| Proposed `tests/usp-ingestion.test.ts`, `tests/usp-ingestion-stream.test.ts`, `tests/usp-ingestion-integration.ts`, `tests/usp-draft-scene-integration.ts`, `services/geo/tests/test_usp_ingestion.py`, `tests/e2e/usp-ingestion.spec.ts` | INGEST producer/recovery/consumer acceptance with UI integration |
 
 ## G. UI placement and interaction
 
-`/studio/add-files` → receipt with Retained / Recognized / Needs input counts → one mapping question when needed → start → `/studio/imports/:id` shows draft objects and an exception queue beside the existing map → select a chunk's issue → source and proposed mapping → review coherent selection → existing Check & record.
+Add files → durable receipt → concise mapping comparison/question → bound import review with draft map and exception list → select actual object/source → prepare coherent review group. Show placed/received and needs-input counts; total unknown is not 0%/100%. Source-only records remain visible in a list. Loading/reconnect preserves selected identity and recorded state; failed chunks do not erase accepted tiles. Draft/current distinction is visible, not hidden in a tooltip. Mobile has one contextual sheet; logs remain expandable diagnostics. UI owns scene/camera/query and must not animate camera per event.
 
-Do not create a developer-style log console as the primary UI. Show “38 of 120 records placed; 4 need input,” plus a small expandable diagnostics view. When total is unknown, say so instead of a fake percentage. Missing coordinates remain in a list. Failed chunks do not erase successful draft tiles. Reconnection shows “Reconnecting; recorded data unchanged”; resetting replay reloads authoritative state. Unknown mapping uses a source-to-target comparison, not an empty 3D map. UI owns map/route changes; INGEST owns receipt/review/event hook contents.
+## H. Ownership and dependencies
 
-## H. Agent ownership and dependencies
+`feat/usp-ingestion`; own INGEST files/migration/tests only. F0 fixtures, F1-min real receipt/job/storage, then I1 with UI producer/consumer test. FIND is mandatory only for completed spatial reconciliation. DEPLOY/modelGateway is mandatory for any AI network call; no key → deterministic/manual recipe remains usable. FND owns shared worker/provider/API hooks, DATA pack bytes/oracles and UI renderer/cache. No synthetic-store weakening, duplicate queue or alternate registry.
 
-Use `feat/usp-ingestion`. F0 unlocks deterministic recipes, chunk manifests and tests; F1 unlocks real uploads/jobs/review. DEPLOY must authorize any external AI; no key means manual mapping remains functional. FIND provides cross-chunk check projection. FND alone changes shared dispatch/DB/provider wiring; UI alone changes map/parent components. Do not change `classification='synthetic'` or revision-one constraints in saved-package tables to satisfy production intake.
+## I. Implementation sequence and bounded decisions
 
-## I. Implementation sequence
+1. Import D0 CSV/GeoJSON through real receipt→mapping→normalized candidate, no AI.
+2. Implement shared resumable upload, exact source slices/recipe reuse and stage/budget reporting.
+3. Complete three fenced worker chunks and durable draft manifest; UI selects unrecorded geometry and reloads it after restart.
+4. Test outbox/status race, reversed completion, tombstone and cursor reset; enable SSE only when this matches authoritative fresh state.
+5. Add FIND dependency/review-group bridge and existing record workflow.
+6. Add gateway recipe suggestion, representative/held-out tests and truthful semantic assurance; one bounded repair, then manual fallback.
+7. Increase D3 workload only within measured profiles; D1 rich geometry uses the separately qualified asset lane. Add one D6 modality only after this journey passes.
 
-1. Qualify one CSV/GeoJSON end-to-end path with exact source retention, receipt and deterministic mapping before adding AI.
-2. Add resumable uploads, per-stage budget enforcement, immutable chunks and source-family mapping reuse.
-3. Implement constrained AI recipe proposal through gateway, independent validation and needs-input fallback.
-4. Register bounded workers, attempt fencing, restart/pause/retry and accepted-result persistence.
-5. Add commit-ordered SSE replay and access-checked draft assets; UI integrates progressive rendering into the shared viewport.
-6. Reconcile neighbouring/relationship dependencies; connect scoped review/commit and stale-result handling.
-7. Benchmark and document actual time-to-first-valid-preview, total time, cost, peak memory and mapping error, then extend supported profiles cautiously.
+## J. Data to use, expected outcomes and verification
 
-## J. Acceptance criteria and verification
+**Before coding:** DATA supplies chunked D0 with three chunks, one unknown CRS, leading-zero IDs, quoted multiline CSV, a cross-chunk building/parent, one malformed row and contradictory declared unit. Assert accepted IDs/values against independent expected.json. First visible output must be a selectable persisted draft, not a progress counter.
 
-Repeatable synthetic demo: import multiple source families containing preserved leading-zero IDs, feet/metres with explicit metadata, an unknown CRS, one malformed record, a cross-chunk building and one contradictory parent link. Observe valid draft tiles before the final chunk; unresolved rows stay visible and unrecorded. Approve a mapping and reuse it on matching records without per-record model calls. Change semantics with the same header and verify drift/qualification rules prevent silent misuse.
+**After core integration:** use [D3 existing Delhi inputs](../GOOGLE_UTTAM_NAGAR.md) for GeoJSON/WKT/CSV and [D4 DDA inventory](https://dda.gov.in/sites/default/files/Housing_Department/list_of_flats_and_garages_dda_premium_housing_scheme_2026.pdf) for independently structured document rows. Preserve source and page metadata; DDA rows must not produce invented polygons. Use [D1 complete sample](https://api.3dbag.nl/collections/pand/items/NL.IMBAG.Pand.1655100000500568) for a different asset family through [provider instructions](https://docs.3dbag.nl/en/delivery/webservices/); preserve roof surfaces and null floor count. Record source version/hash and access failure fallback per 00. Different cities remain different datasets.
 
-Kill/restart a worker, repeat an upload part, disconnect/reconnect SSE, expire its cursor, revoke access, return a stale attempt late and exhaust a budget. Final records and event replay must have no duplicates or lost accepted results. Unknown frames never receive guessed coordinates; synthetic appearance never changes analytical measurements. Recording waits for coherent dependencies and preserves partial-batch limitations.
+Tests: reused recipe needs no per-record model calls; unit metadata contradiction is needs_input; deliberately undetectable semantic change is unknown assurance, not claimed detected. Hold out whole source layouts/families for adaptation evaluation, not adjacent chunks of the same CSV. Authored perturbations are labelled authored.
 
-Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:studio`; existing normalizer regression via `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/t076-source-normalizer.test.ts`; proposed tests similarly with `tests/usp-ingestion.test.ts tests/usp-ingestion-stream.test.ts`; integration via `pnpm exec tsx tests/usp-ingestion-integration.ts`; Python via `python -m pytest services/geo/tests/test_jobs.py services/geo/tests/test_usp_ingestion.py`; browser via `pnpm exec playwright test tests/e2e/usp-ingestion.spec.ts`. Return timings with dataset/hardware/method, not an unmeasured “faster” claim.
+Kill worker, return old attempt after retry/cancel, disconnect SSE, race state/cursor reads, replace/remove tile, expire cursor, revoke access, exhaust byte/CPU/model budget and restart the application. Assert final entity set equals fresh manifest with no duplicate/lost/resurrected objects; missing neighbour prevents completed assessment; one valid group records without publishing unresolved data. Measure first-valid-preview, total time, calls/tokens, peak memory, resident bytes and request counts; do not assert speedup without measurement.
 
-## K. Copy-paste agent assignment
+Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:studio`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/t076-source-normalizer.test.ts tests/usp-ingestion.test.ts tests/usp-ingestion-stream.test.ts`; `pnpm exec tsx tests/usp-ingestion-integration.ts`; `pnpm exec tsx tests/usp-draft-scene-integration.ts`; `python -m pytest services/geo/tests/test_jobs.py services/geo/tests/test_usp_ingestion.py`; `pnpm exec playwright test tests/e2e/usp-ingestion.spec.ts`. Return real receipts/manifests and V7 evidence, not timer mocks. Tests listed as new must be created first.
 
-> Implement INGEST on `feat/usp-ingestion`. Read the index/shared contracts, this handoff and linked source-normalizer, intake, processing, JobStore and AI provider code. Build deterministic resumable intake and qualified recipe reuse first, then bounded AI suggestions and durable progressive events/assets in the proposed INGEST files. Preserve original bytes, declared frames, existing synthetic-package restrictions and separate reviewed recording. FND owns shared job/API/migration hooks; UI owns the map and route mounts; DEPLOY governs external inference. Do not train a model during each import, execute generated code, fabricate heights or send all finished geometry at once. Run section J mapping/drift/restart/replay/live-review tests and return measured performance, fixture truth, commits and explicit supported/unsupported capability matrix. No main merge without authorization.
+## K. Copy-paste assignment
+
+> Implement INGEST using 00, 01, this file and the FIND/UI producer-consumer contracts. On feat/usp-ingestion obtain chunked D0, then attempt D3/D4 real source families and one D1 asset separately. Complete deterministic receipt→qualified mapping→fenced chunks→durable selectable draft→review-group→existing record workflow before AI or scale. Build immutable manifests/tombstones and consistent status+cursor replay; use 01 guards and 99's one shared viewport. Preserve original bytes, source meanings, unknowns and current recorded data. FND/UI own shared hooks; no alternate queue/renderer or per-import training. Execute J real-service failure/stream/geometry tests and return pack hashes, actual assets/receipts/timings and explicit unqualified capabilities. Use the stated fallbacks, not invented values or repeated human clarification. No deployment or main merge without authorization.
