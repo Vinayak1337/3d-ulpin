@@ -1,116 +1,116 @@
 # 13 · Citizen evidence, corrections and scoped notifications
 
-Owner **CITIZEN** · Priority **P2** · Baseline `main@f623cff897f91bb3ebd4c225f700ac263f7beb72` · [F0/F1](01-shared-contracts-and-ownership.md) for local implementation; **F2 and DEPLOY are mandatory before public activation**.
+Owner **CITIZEN**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), DEPLOY ports in [19](19-india-contained-deployment.md) and UI slots in [99](99-ui-ux-and-integration.md). ER-04/06/15/16/22 are incorporated. Local synthetic integration can precede F2; public activation cannot.
 
 ## A. User outcome and product value
 
-Allow a person to find the correct property space, contribute requested evidence or propose a correction, and see what happened to their submission. Allow an officer to request a particular missing fact rather than ask citizens to upload every document they possess. This is a supporting participation workflow that makes evidence-linked mapping useful to the public.
-
-Synthetic example: a resident identifies Building A, chooses the second floor and reports that Flat 201 is mapped to the first floor. They submit a relevant plan excerpt. The system shows the proposed target and extracted fact for confirmation; an officer reviews it against existing records. The upload does not immediately move the flat or grant the submitter access to other residents' records.
+Allow a person to find an explicitly released property, submit missing evidence or propose a correction, receive precise clarification and track a reviewed outcome. Allow an officer to request the particular fact needed. A citizen saying Flat 201 belongs on a different floor creates a reviewable proposal, not an immediate geometry change or ownership entitlement.
 
 ## B. Current implementation and gap analysis
 
-[source-cases.ts](../../apps/web/lib/server/source-cases.ts) can receive unassigned documents, retain original bytes, deduplicate request keys and keep native text without inventing placement. [area-resolver.ts](../../apps/web/lib/server/area-resolver.ts) resolves identifiers and explicitly distinguishes suggested spatial neighbours from confirmed associations. [search-targets.ts](../../apps/web/features/officer/shared/search-targets.ts) avoids arbitrary parent/area pairing. Reuse these semantics behind protected adapters.
+[source-cases](../../apps/web/lib/server/source-cases.ts) retains unassigned sources but extracts before its final receipt; wrap the new durable upload lifecycle rather than exposing it unchanged. [area-resolver](../../apps/web/lib/server/area-resolver.ts) performs identifier synchronization writes; public lookup must use a separate read-only released projection. [search-targets](../../apps/web/features/officer/shared/search-targets.ts) distinguishes area/parent relationships. [Investigations](../../apps/web/lib/server/officer-investigations.ts) already have requests and history; link them instead of creating a duplicate officer portal. [Current API guards](../../apps/web/app/api/v1/%5B...path%5D/route.ts) are local restrictions, not production authentication.
 
-The existing identifier resolver performs `syncLegacyIdentifiers` writes while resolving; a public read endpoint must not simply expose that routine. FND must separate read-only permitted projections from internal synchronization. [officer investigations](../../apps/web/lib/server/officer-investigations.ts) already support requests and revisioned review notes. Existing [API access](../../apps/web/app/api/v1/%5B...path%5D/route.ts) is local-demo access, not citizen authentication.
-
-Missing: publicly releasable field projections, authenticated personal submissions, quarantined public upload intake, explicit evidence-request lifecycle, correction review, secure receipt/status links and scoped change subscriptions. Email/QR delivery is not existing ownership verification and must not be presented as such.
+Implement durable targetless intake, hash-bound quarantine/source promotion, explicit review/withdrawal commands, restricted personal submissions and notification delivery semantics. An email/QR never verifies ownership or issues official ULPIN.
 
 ## C. Scope and non-goals
 
-First release: approved public property lookup/map, exact-space selection with “not listed” fallback, signed-in contribution/correction, officer evidence requests, own-submission tracking, in-app notifications and optional policy-qualified email receipt. Local synthetic multi-principal tests can proceed before F2; deployment is disabled until the access and infrastructure gates pass.
+First complete local path: D0 contributors A/B and reviewer → released-property lookup → own upload/statement → clarification → accepted draft proposal → existing separate review/record → own receipt. Public mode additionally requires F2, approved release policy and live scanner qualification. Email is optional; in-app status is required.
 
-No direct citizen writes to registry identities, rights or geometry; no open directory of occupants; no ownership verification from email or document possession; no unrestricted bulk downloads or public source search. Do not request Aadhaar, bank details or whole household documents merely to identify a building. Offline/mobile-app synchronization and legal dispute adjudication are optional future work.
+No public occupant directory, unrestricted original lookup, automatic cadastral changes, Aadhaar/bank-data collection just to find a building, legal adjudication or new mobile/offline synchronization platform. First public upload profile permits PDF, PNG/JPEG, CSV and UTF-8 text only; archives, DOCX and arbitrary binaries remain disabled until separately qualified.
 
 ## D. HLD and end-to-end flow
 
-Public lookup → choose approved building/floor/unit or mark unresolved → authenticate → start submission → bounded upload into quarantine → scan and safe extraction → show candidate association/facts → submit → officer reviews against pinned records → request clarification or create a reviewed proposal → existing commit workflow records accepted changes → contributor receives a minimal status update.
-
-An officer may start the loop from READY's missing-evidence action or an existing investigation. Requests cite the missing fact and target, not a generic demand for every registry source. Closing a request means its question was handled; it does not mean the underlying property has legal clearance.
+Find released building → select released floor/unit or Not listed → sign in → create private intake receipt → upload/finalize → scan → safe extraction → confirm candidate target/facts → submit → reviewer checks current and submitted evidence → clarification/rejection/accepted-for-proposal → existing proposal/review/commit flow → durable outcome link and notification. Missing target remains an intake matching task; it never fabricates a SnapshotScope or property ID.
 
 ## E. Targeted LLD
 
-### Identity, data and state
+### Data and states
 
-Proposed `EvidenceRequest`: target/scope, requirement ID or investigation link, question, accepted input types, creator, due date optional, revision, status `open|answered|reviewed|closed|cancelled`, and review outcome. Attach typed source pointers after review; never count an upload as satisfying a request automatically.
+`Submission` stores ID/version, server subject, IntakeScope, nullable target pin + optional submitted SnapshotScope, request ID, purpose (evidence/correction/missing_space), statement, proposed changes, upload/source refs, candidate alternatives and downstream proposal/commit receipts. Target confirmation is separate from officer association review.
 
-Proposed `Submission`: server-derived subject, target pin or unresolved area/building selection, request ID optional, purpose (`evidence`, `correction`, `missing_space`), statement, proposed field changes, source revision references, version and status. State machine: `draft → scanning → ready_to_submit → submitted → under_review → clarification_required | accepted_for_proposal | rejected | withdrawn`. A response to clarification creates a new submission version; preserve the old one. `recorded` is a linked downstream outcome only after the existing reviewed commit succeeds, not a synonym for submission acceptance.
+Submission states: draft → scanning → ready_to_submit → submitted → under_review → clarification_required / accepted_for_proposal / rejected. Withdrawal is permitted before accepted_for_proposal. Clarification creates a new immutable version and repeats file safety checks; no editing the submitted old version. Text-only clarification may return directly to ready_to_submit if no file change. At least a nonempty statement or qualifying evidence is required. Accepted-for-proposal means a real draft was created; recorded outcome appears only from an actual commit receipt. A post-acceptance withdrawal request is recorded for reviewer handling and cannot delete already recorded history.
 
-Proposed tables `usp_citizen_requests`, `usp_citizen_submissions`, `usp_citizen_submission_versions`, `usp_citizen_notifications`, `usp_citizen_subscriptions`. Private upload blobs live in the existing object store under quarantine access. A clean accepted source is passed to the existing receipt service through FND; preserve its original bytes/hash and mark its provenance as citizen-submitted. Do not write directly into `sources` from feature code or invent a confirmed association before review.
+`EvidenceRequest` pins target/scope, requirement or scoped/legacy case, question, allowed input types, optional due date, version, status open/answered/reviewed/closed/cancelled and outcome. Upload does not satisfy a fact. Reviewer explicitly marks answered evidence sufficient/insufficient for the requirement; READY consumes that status with current pins. A closed request does not mean property legal clearance.
 
-### Upload and review controls
+Tables: `usp_citizen_requests`, `usp_citizen_submissions`, `usp_citizen_submission_versions`, `usp_citizen_promotions`, `usp_citizen_notifications`, `usp_citizen_subscriptions`, `usp_citizen_deliveries`. Upload primitives are shared FND storage metadata, not a second upload engine.
 
-Use the existing [document format limits](../../apps/web/lib/document-formats.ts) as an upper bound and a stricter public policy where appropriate. First release accepts explicitly configured PDF, PNG/JPEG and structured/text documents; no public archives or arbitrary executable files. Validate actual file type, decoded size/page count, document active content, antivirus/quarantine verdict and extraction runtime. Rejected/unsafe content is not served inline. Scanner unavailable means remain quarantined; no “assume safe” fallback. DOCX requires safe archive-member and macro/relationship handling before activation.
+### Receipt first, quarantine and promotion
 
-Persist a receipt before extraction and survive browser closure. Failed scanning/extraction preserves the user's draft and gives a safe status. A normalized extraction must quote a bounded source location and pass validators; model text is untrusted input. Let the user correct the proposed association, but do not convert their confirmation into officer review or an ownership assertion. Matching “Flat 101” in two buildings produces explicit alternatives.
+Create server-issued upload metadata/owner/version before receiving bytes; acknowledge finalized durable bytes/hash before extraction. Store untrusted files in private quarantine. Check streamed byte count, MIME signature, safe filename, decoded pixel/page limits and parser deadline. Initial public caps: 10 MiB/file, five files/submission, 20 PDF pages and 12 million pixels per rendered page, always constrained further by existing parser limits. These are engineering defaults to test, not proof of safety. Denied/unsafe/quarantined originals are never served inline.
 
-Officer review uses current target revision plus submitted base revision. If the target changed, return a stale-review conflict and show a difference; never silently rebase the correction. `accepted_for_proposal` calls FND's proposal adapter with exact fields/evidence and preserves the existing separate review/commit mechanism. Rejections require a reason visible to the contributor unless a separately documented restricted reason must remain internal.
+DEPLOY's scanner receipt binds exact asset hash and scanner/version/signature status. Scanner unavailable or signature policy failure keeps quarantine; no assume-clean fallback. Structural/active-content validation and isolated extraction remain necessary even with a clean antivirus verdict. Rendering uses PACK's qualified page pipeline where needed; no unrestricted file-to-HTML serving or remote conversion.
 
-### Public projection and API
+`promoteUpload` in 01 takes upload/hash/clean receipt/destination case/intent key and returns a source-revision receipt. Same promotion intent returns the same linkage; equal bytes submitted by different users or for different purposes do not silently share ownership, permissions or target association. Preserve original hash and citizen-submitted provenance. Extraction and promotion can be retried without duplicate sources; cross-store failures leave unreferenced quarantined objects for delayed cleanup, never delete referenced originals.
 
-Public view fields are allowlisted: public identifier assertions, approved address/building label, released geometry/general status and public actions. Exclude recorded parties, contacts, internal findings, source URLs and confidential unit details unless separately released. A floor list itself requires a release policy; do not assume every interior layout is public.
+### Reviewer and proposal transaction
 
-Proposed under `/api/v1/usp/citizen`:
+Review command pins submission version, exact target/base manifest, current evidence and actor. Changed target/relationships produce 409 and an explicit rebase/review step. Confirming a document match cannot approve its contents or rights. An unresolved match returns clarification or matching work, not an invented building.
 
-| Endpoint | Behavior |
+FND supplies the bounded draft-preparation bridge over existing registry/case services: `prepareProposal(ctx,{kind,target,scope,changes,evidence,guard}) → {proposalId,version,state:'draft'}`. Its same-client implementation creates the draft and links the citizen acceptance receipt/audit/outbox together; register this F1-feature port before enabling acceptance. Later `commitProposal` from 01 records only after the existing review checks, using the same-client receipt contract. No direct CITIZEN write to recorded registry rows and no independently committing nested wrapper. A failed draft creation cannot leave accepted_for_proposal with no proposal. Rejection/clarification needs a safe contributor-visible reason; restricted review notes stay separate.
+
+### Explicit API
+
+Proposed prefix `/api/v1/usp/citizen`; use 01 strict schemas/guards/errors:
+
+| Route | Behavior |
 | --- | --- |
-| `GET /public/properties` | Bounded query/address/identifier or bbox over released records only; max 20 results and rate limits; no side-effect synchronization |
-| `GET /public/properties/:publicRef` | Approved summary and selection references, not a full dossier |
-| `POST /submissions` | Authenticated draft with target/request/purpose and idempotency key |
-| `POST /submissions/:id/files` | Own draft only; bounded binary upload and private quarantine receipt |
-| `POST /submissions/:id/submit` | Expected submission version, confirmed association/statement; cannot bypass quarantine |
-| `GET /submissions/:id` | Own submission or scoped reviewer; safe version/history projection |
-| `POST /submissions/:id/review` | Scoped reviewer, expected target/submission revisions, disposition/reason; delegates accepted proposal |
-| `POST /requests` | Scoped reviewer creates exact evidence request; optional READY requirement ID |
-| `GET /requests/:id` | Request-specific authorized detail; no guessable private evidence |
-| `POST /subscriptions` | Own subject + permitted target/event types; confirm and allow revoke |
-| `GET /notifications` | Own in-app status notifications with cursor and unread state |
+| `GET /public/properties`, `GET /public/properties/:publicRef` | Read-only released identifier/address/bbox search, max 20 results, rate limit; no private resolver fallback |
+| `POST /submissions` | authenticated create guard; target may be null → durable draft/intake scope |
+| `POST /submissions/:id/files` | own mutable version → shared upload receipt and bounded binary intake |
+| `POST /submissions/:id/files/:uploadId/finalize` | expected version/hash → durable received state, scan queued |
+| `POST /submissions/:id/submit` | expected version, confirmed candidate/statement; safety gate enforced |
+| `POST /submissions/:id/clarify` | own clarification-required version → new version with response/evidence |
+| `POST /submissions/:id/withdraw` | own pre-acceptance version + reason → withdrawn; post-acceptance returns review-required, no silent reversal |
+| `POST /submissions/:id/review` | reviewer, expected submission/target manifest + disposition/reason → clarification/rejection/real draft receipt |
+| `GET /submissions/:id` | own or assigned-reviewer projection including exact downstream outcome |
+| `POST /requests`, `GET /requests/:id`, `POST /requests/:id/close` | scoped request creation/read and explicit reviewed outcome/version |
+| `POST /subscriptions`, `DELETE /subscriptions/:id` | own permitted target/events, create/update guard; revocation effective for later delivery |
+| `GET /notifications`, `POST /notifications/:id/read` | own cursor-paginated inbox and versioned read acknowledgement |
 
-Status/withdraw/clarification commands use explicit expected-version mutations in the feature routes; no generic arbitrary-field PATCH. FND supplies session/capability validation and non-enumerable errors. Unresolved target submissions remain an officer matching task; they do not auto-create a property.
+Released fields: approved public ref, identifier assertion, address/label, released geometry/status and actions. Interior layouts/floor lists require release too. Private parties, contacts, source URLs and internal findings never reach a public response by default. FND's ReleaseDecision can authorize sanitized output without granting private original access; public projection changes/version/revocation are explicit. Errors, search totals and pagination must not enumerate hidden objects.
 
-Notifications consume committed outbox events, deduplicated by subscription/event ID. Recheck subscription and grants at delivery. Prefer in-app messages; email is optional and requires an approved deployment mail transport. Emails contain only a minimal receipt/status link, not raw deeds, owner names or a newly “issued” official ULPIN. Receipt IDs are references, not bearer authorization; login still applies. Link tokens, if needed for contact verification, are short-lived, one-purpose and stored hashed. Email verification establishes contact control only.
+### Notifications
+
+Consume committed outbox events at least once; unique `(subscription,event)` creates one in-app notification. Recheck current grants and subscription before delivery. Email contains only minimal status/receipt link; login still required. No owner names, deeds or supposed issued ULPIN. Provider idempotency is used when available. On ambiguous timeout record delivery_unknown and reconcile provider status before retry where possible; do not promise universal exactly-once email. In-app status remains authoritative. Contact-verification tokens are hashed, short-lived, single-purpose and confer no property grant.
 
 ## F. Exact implementation map
 
-| Existing or proposed file | Required change | Reason | Owner | Shared dependency |
-| --- | --- | --- | --- | --- |
-| [source-cases.ts](../../apps/web/lib/server/source-cases.ts), [areas.ts](../../apps/web/lib/server/areas.ts) | FND exposes access-qualified receipt/proposal adapters | Reuse originals and extraction | FND | CITIZEN request context |
-| [area-resolver.ts](../../apps/web/lib/server/area-resolver.ts) | Separate synchronization from public read projection | Public lookup must be read-only and scoped | FND | F2 public release policy |
-| [officer-investigations.ts](../../apps/web/lib/server/officer-investigations.ts) | Link requests/reviews without duplicating existing investigation history | One officer review path | FND | Request references |
-| Proposed new `packages/contracts/src/usp/citizen.ts` | Request/submission/review/public DTOs | Strict permission-dependent contracts | CITIZEN | F0/F2 |
-| Proposed new `apps/web/lib/server/usp/citizen/{service,public-projection,uploads,notifications,routes}.ts`, `migrations/13-citizen.ts` | State machine, quarantine integration and notifications | Durable participation loop | CITIZEN | FND storage/outbox/access; DEPLOY mail/scan |
-| Proposed new `apps/web/features/usp/citizen/{PropertyFinder,SubmissionForm,SubmissionStatus,EvidenceRequestPanel,ReviewSubmission}.tsx` | Public and officer leaf experiences | One target-specific workflow | CITIZEN | UI selection/access widgets |
-| Proposed new `apps/web/app/public/properties/page.tsx`, `apps/web/app/public/submissions/[id]/page.tsx` | Thin gated route mounts | Separate public projection from officer shell | UI | F2 and CITIZEN leaves |
-| [WorkQueue](../../apps/web/features/officer/work/WorkQueue.tsx), [register Evidence](../../apps/web/features/officer/register/Evidence.tsx) | Mount submission/request entry points | Avoid separate officer portal | UI | CITIZEN and READY |
-| Proposed new `tests/usp-citizen.test.ts`, `tests/usp-citizen-integration.ts`, `tests/e2e/usp-citizen.spec.ts` | Multi-principal workflow/security/recovery tests | Verify actual privacy boundaries | CITIZEN | Isolated auth/scan/mail fixtures |
+| File | Change / owner |
+| --- | --- |
+| Existing source/case/registry/resolver/investigation helpers linked in B | FND narrow receipt/read-only projection/prepareProposal adapters, same-client transactions |
+| Proposed `packages/contracts/src/usp/citizen.ts` | CITIZEN submission/request/public/review/delivery schemas |
+| Proposed `apps/web/lib/server/usp/citizen/{service,public-projection,uploads,notifications,routes}.ts`, `migrations/13-citizen.ts` | CITIZEN lifecycle and leaf routes; shared receipt/scan/mail via ports |
+| Proposed `apps/web/features/usp/citizen/{PropertyFinder,SubmissionForm,SubmissionStatus,EvidenceRequestPanel,ReviewSubmission}.tsx` | CITIZEN leaf UX |
+| Proposed `apps/web/app/public/properties/page.tsx`, `apps/web/app/public/submissions/[id]/page.tsx`; existing WorkQueue/register parents | UI mounts; FND supplies SSR access wrapper; never full officer header/search on public page |
+| Proposed `tests/usp-citizen.test.ts`, `tests/usp-citizen-integration.ts`, `tests/e2e/usp-citizen.spec.ts` | CITIZEN multi-principal, restart, review and delivery tests |
 
 ## G. UI placement and interaction
 
-Public entry **Find my property** provides identifier/address search and map selection; location permission is optional, not required. Confirm visible building context, then select an available released floor/unit or **My space is not listed**. Show one upload/request step at a time with an explicit “You are submitting information for review” label. The final receipt shows the chosen property, submitted items and review status—not a success badge suggesting ownership.
+Public Find my property supports identifier/address/map with optional location permission. Show building context and released floor/unit or My space is not listed. One form step at a time, with an explicit submitting-for-review label. Receipt distinguishes uploaded, submitted, accepted draft and recorded outcome. Studio missing-evidence action opens a request; Batches opens exact submission alongside property/source context. Scanning/loading persists across reload; empty search permits bounded unresolved submission; bad files retain form state; denied data is non-disclosing; clarification lists the exact fact needed. Mobile file/photo controls obey the same limits. UI owns sheets/focus/navigation; CITIZEN owns content.
 
-In Studio, READY's **Request evidence** opens EvidenceRequestPanel within the selected register. `/studio/work` can filter incoming submissions; an item opens ReviewSubmission beside the existing property/source context. Loading/scanning has persisted progress; empty lookup offers a bounded unresolved request; invalid files have actionable type/size errors; permission denial hides other submissions; clarification shows exactly what is needed; accepted shows the proposal link and whether recording remains pending. Mobile forms support camera/photo inputs only when type limits pass; essential actions are not hover-only. UI owns page/layout integration; CITIZEN owns forms and state-machine content.
+## H. Ownership and dependencies
 
-## H. Agent ownership and dependencies
-
-Use `feat/usp-citizen`. CITIZEN owns its new contracts/services/migration/components/tests; FND owns identity/session/grants and existing receipt/review adaptations; UI owns routes and parents; DEPLOY owns approved transports and boundary validation. F0 permits isolated state-machine/fixture work. F1 connects local synthetic workflows. F2 plus scanner/transport policy gates public activation. Email absence does not block the in-app MVP; public authentication/quarantine absence does block public uploads.
+`feat/usp-citizen`, only feature files/tests/migration. F0 enables fixtures; F1-feature enables real local synthetic workflow with explicit test identities; F2/DEPLOY and live scanner are mandatory for public activation. Email outage does not block completion of in-app workflow. UI/FND shared changes are patch requests. Public external records are not required for D0 testing; H1 supplies permitted D5 only for real-data qualification.
 
 ## I. Implementation sequence
 
-1. Build two-person and reviewer fixtures, exact target selection and private submission state machine.
-2. Implement read-only released-property projection; test that the original resolver's synchronization is not exposed publicly.
-3. Add quarantine intake, persistent receipts, safe extraction and confirmed-target submission.
-4. Connect reviewer decisions to existing proposal/commit adapters; add stale-review handling.
-5. Add evidence requests and in-app notifications; integrate optional email only after DEPLOY qualification.
-6. Mount public/officer leaves through UI and run complete authenticated isolation/recovery tests before enabling deployment.
+1. Receive D0 A/B/reviewer and not-listed-space cases; implement explicit states and private ownership checks.
+2. Build read-only released projection without resolver synchronization side effects.
+3. Add receipt-before-extraction, scanner/hash-bound promotion and crash recovery.
+4. Connect accepted draft creation and separate actual commit receipt; inject failures between steps.
+5. Add requests, in-app notification/revocation, then optional qualified email.
+6. Mount UI and run multi-principal real-service journeys; leave public routes disabled until F2 passes.
 
-## J. Acceptance criteria and verification
+## J. Test data and acceptance
 
-Demonstrate resident A finding a synthetic building, choosing a unit, submitting a plan, receiving clarification and obtaining a linked recorded outcome only after officer review/commit. Resident B cannot read A's receipt, original, preview, notification or derived packet by changing IDs. A public caller cannot see private parties or trigger identifier synchronization. A correctly delivered email gives no property entitlement.
+**D0 before/after:** A selects B-A/U-A101, uploads a synthetic mixed-page plan, receives clarification and a linked draft. B cannot read A's submission/upload/preview/notification/packet by changing any ID. Officer records through normal review; only then does A see recorded. Test same Flat 101 in B-B, missing ULPIN, absent unit, two-parcel building and incomplete target. A contact-verified email yields no ownership grant.
 
-Test unlisted unit, ambiguous building, missing official ULPIN, duplicate upload/request key, source hash mismatch, malicious or oversized file, scan outage, interrupted upload, stale target, double reviewer action, withdrawal, revoked subscription and retry without duplicate mail. An uploaded claim cannot silently modify canonical geometry or rights. In-app operation remains usable with email disabled.
+**D5 after local completion:** attempt one permitted plan/section/related clause from [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) or [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or consenting campus/property source. These are acquisition leads; previous attachments failed. Preserve matched drawing metadata and de-identify permitted fixture. No sensitive original in public Git. If blocked, continue D0 and report real-source gate unmet, not ask teammates to implement the workflow.
 
-Run `pnpm typecheck`, `pnpm test:case-document-copy`, `pnpm test:api`; proposed tests via `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-citizen.test.ts`, `pnpm exec tsx tests/usp-citizen-integration.ts`, and `pnpm exec playwright test tests/e2e/usp-citizen.spec.ts`. Record F0/F1 results separately from F2 deployment qualification. Do not use real personal records for automated fixtures.
+Interrupt before/after final upload receipt, scan, promotion, submission and draft creation. Test unavailable scanner, active content, byte/pixel overflow, same bytes/different intent, hash mismatch, stale target, simultaneous reviewers, withdrawal, clarification resubmission, revoked release and mail acknowledgement loss. Accepted-state rollback must leave no orphan draft/link/event. Public projection must not execute database synchronization. Inspect actual records/receipt IDs, not just mocked status messages.
 
-## K. Copy-paste agent assignment
+Run `pnpm typecheck`, `pnpm test:case-document-copy`, `pnpm test:api`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-citizen.test.ts`; `pnpm exec tsx tests/usp-citizen-integration.ts`; `pnpm exec playwright test tests/e2e/usp-citizen.spec.ts`. Keep local auth fixtures, real scanner qualification and real deployment tests as separate results. Return sanitized receipts, isolation proofs, recovery/delivery states and screenshots.
 
-> Implement CITIZEN on `feat/usp-citizen`. Read the index/shared contracts, this handoff and linked source-receipt, resolver and investigation files. Build the proposed private submission/request/review/notification modules and public-projection leaves; do not expose the existing full resolver or dossier. Use FND authentication, grants and reviewed proposal adapters; UI owns route/parent mounts. Email/QR confirms a contact or opens a record, never proves ownership or issues an official identifier. Keep public activation gated on F2/DEPLOY and safe upload quarantine. Run section J multi-principal and live workflow tests; return commits, privacy/retry evidence, screenshots and explicit unresolved deployment gates. No direct registry publication or main merge without authorization.
+## K. Copy-paste assignment
+
+> Implement CITIZEN from 00, 01 and this handoff on feat/usp-citizen. Obtain D0 two-person/reviewer data, attempt permitted D5 only for later real-source testing. Build public-release-only lookup, durable targetless receipts, hash-bound quarantine/promotion, explicit submit/clarify/withdraw/review commands and in-app notifications. FND supplies prepareProposal/commit/identity adapters; UI owns mounts; DEPLOY supplies scanner/mail. Complete the real submission→reviewed draft→separate recorded-receipt path, not fake acceptance. Run J crash/isolation/stale/delivery tests and return commits, pack/receipt evidence, screenshots and separate F2 gates. No direct registry writes, private-source public fallback, ownership-by-email, external activation or main merge without authorization.
