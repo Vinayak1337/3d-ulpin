@@ -1,92 +1,97 @@
-# 15 · Property history and revision-pinned comparison
+# 15 · Exact-space history and revision comparison
 
-Owner **HISTORY** · Priority **P2** · Baseline `main@f623cff897f91bb3ebd4c225f700ac263f7beb72` · Consume [F0/F1](01-shared-contracts-and-ownership.md).
+Owner **HISTORY**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), geometry contract in [12](12-rights-aware-spatial-findings.md) and [99](99-ui-ux-and-integration.md). ER-05/20/24 are incorporated. New files are implementation destinations.
 
 ## A. User outcome and product value
 
-Allow an officer or authorized property user to understand **what changed, in which space, when the system recorded it and what evidence supports each version**. Compare observed geometry, recorded representations and a proposal without treating them as interchangeable. This strengthens existing history into a vertical-property audit capability.
-
-Synthetic example: a first-floor unit was later split into two units. An old identifier still opens the retired record and its successors. Comparing its old boundary with the two reviewed successor boundaries explains the change; the old deed is not silently reassigned to both children as proof of their current rights.
+Allow an authorized user to see what changed in an exact property space, when the application recorded it, and which source supports each version. Compare supplied observed/planned representations and recorded revisions without conflating them. A retired space can expose recorded successors without silently reassigning its old evidence as proof of their current rights.
 
 ## B. Current implementation and gap analysis
 
-[History.tsx](../../apps/web/features/officer/register/History.tsx) already shows source, review, association and investigation events. [RevisionCompare.tsx](../../apps/web/features/officer/register/RevisionCompare.tsx) compares retained physical-feature versions and refuses overlay when frame checks fail. [RecordHistory.tsx](../../apps/web/features/officer/register/RecordHistory.tsx) opens stored registry revisions and their evidence. [registry-db.ts](../../apps/web/lib/server/registry-db.ts) retains record revisions; [core identity](../../packages/contracts/src/spatial/core/identity.ts) contains pure split/merge validation and lineage planning.
+[History](../../apps/web/features/officer/register/History.tsx), [RevisionCompare](../../apps/web/features/officer/register/RevisionCompare.tsx) and [RecordHistory](../../apps/web/features/officer/register/RecordHistory.tsx) already expose retained events/revisions. [Registry storage](../../apps/web/lib/server/registry-db.ts) keeps record history. [Core identity](../../packages/contracts/src/spatial/core/identity.ts) has pure lineage validation, not a fully persisted split/merge workflow. [Scene cache](../../apps/web/lib/server/spatial-core-scene.ts) is current-data/process-local and cannot supply missing historical source/geometry versions by assertion.
 
-Missing: one exact-space comparison model spanning these sources, explicit recorded-time versus valid-time labels, consistent historical source authorization, a complete persisted lineage adapter and scope-preserving shared-map comparison. A pure core split/merge helper is not a working database/API/UI lineage workflow. Do not rebuild the existing timeline from scratch.
+Implement exact historical composition adapters, unit-specific comparisons, permission-safe source links and shared-map overlays. Preserve the existing timeline purpose, IDs and review history.
 
 ## C. Scope and non-goals
 
-First release: paginated exact-target history, explicit two-revision comparison for geometry/rights/links/evidence, source and frame pins, stable historical URLs, and read-only lineage browsing. Add validated lineage receipts only through FND's reviewed identity-change adapter; the first useful read/comparison path must not wait for a new geometry editor.
+Required: exact-target paginated history, explicit two-manifest field/evidence/relationship comparison, supported geometry difference, historical URLs and available lineage browsing. Read-only comparison must not wait for new split/merge editing. New lineage writes remain optional until a same-client reviewed identity operation is implemented and tested by FND.
 
-No invented pre-survey history, automatic temporal interpolation, prediction of construction dates, automatic title transfer, or classification of newer observations as approved changes. Split/merge editing is optional until the existing review/commit adapter supports it; if absent, clearly show “No recorded lineage,” not a fake split workflow. Do not add an editable general event log.
+No inferred pre-survey state, guessed construction dates, interpolation between missing revisions, automatic title transfer, generic editable event log, arbitrary mesh booleans or current-source substitution. One retained revision is a valid single-version view, not proof of no historic change.
 
 ## D. HLD and end-to-end flow
 
-Open selected unit's History → request a permission-filtered timeline at pinned revisions → choose Before and After → resolve exact source/geometry/relationship revisions → compute supported differences → display fields and optional shared-map overlay → open cited evidence or a linked reviewed proposal. A retired record can navigate to explicitly recorded predecessors/successors without changing its identity.
-
-History reads must not update current records or trigger source reprocessing. Derived comparison caches are keyed by both revision manifests, method and access view. A current revision change does not rewrite a historical comparison; it adds a “Newer version available” notice.
+Selected unit History → permission-filtered revision list → choose explicit Before/After manifests → resolve exact constituents → compute supported differences → show fields and one shared-map comparison → open cited historical source or existing update workflow. Reads cannot alter current records or trigger source reprocessing. A newer current revision only offers a new comparison; it never rewrites a saved comparison.
 
 ## E. Targeted LLD
 
-Proposed `HistoryEntry`: event ID, target pin(s), event kind, recordedAt, optional validFrom/validTo, actor display permitted by policy, reason, change ID, source pins and outcome. Distinguish receipt time, review time and source-stated validity. Unknown validity remains null with a reason. Sort timeline by recordedAt plus a stable event ID; never infer factual order from file modification times alone.
+### Historical composition contract
 
-Proposed `ComparisonRequest`: left/right target+revision+world manifests, requested fields and geometry mode. Same-object comparisons require matching semantic identities; split/merge comparison requires an explicit lineage group. Cross-world observed/recorded/proposed comparison is an explicit action with both world labels, never an implicit mix inside a single scope. Rights are not classified as “observed geometry”; keep record state and observation classification orthogonal.
+Consume FND SnapshotManifest from 01, including immutable membership, target/geometry/quantity/source-part/link/relationship/transform/review pins and policy/as-of context. `readHistoricalTarget(ctx,{target,scope})` is implemented through `resolveTarget` with the historical SnapshotScope, not a second current resolver. Missing exact source, representation or transform produces unavailable_revision for that constituent. A complete comparison cannot silently borrow a current value.
 
-| Difference | Computation and limitation |
+Where baseline data lacks a historic constituent, label it not retained. New immutable captures may preserve the actual current state at feature introduction, but may not backdate invented snapshots. Historical/current source-family membership is not enough: an exact source revision/hash is required. A relationship change with unchanged property revision must still alter the composition manifest.
+
+`HistoryEntry` contains event/ref, participant target pins, recordedAt, separately nullable source-stated validFrom/validTo, permitted actor display, reason, outcome, source pins and optional actual change/commit receipt. Sort recordedAt plus stable event key; preserve source validity separately. Do not infer chronology from filesystem modification dates.
+
+`ComparisonRequest` contains left/right `{target,scope:SnapshotScope}`, field selection and geometry mode. Same-object comparison requires stable semantic identity. Multi-object predecessor/successor comparisons need an explicit recorded lineage group. Cross-world comparison names both classifications/stages; do not squeeze them into one misleading single-world snapshot. Comparison result includes each constituent's available/unavailable/withheld state and currency relative to current data.
+
+### Difference definitions
+
+| Item | Required calculation / boundary |
 | --- | --- |
-| Field/quantity | Compare values with their definitions and units; convert only through a qualified unit operation. Unknown-to-known is an availability change, not a zero-based numerical increase. |
-| Footprint | Supported compatible polygons: added=`after minus before`, removed=`before minus after`, unchanged=`intersection`; preserve holes/multipart. |
-| Prism | Compute supported interval/footprint differences using qualified local geometry; missing Z or datum prevents volume claims. |
-| Rights/relationships | Compare stable assertion/link identity and exact evidence/review pins, not only party-name text. A renamed party is not automatically a transfer. |
-| Evidence | Added/removed/unlinked source-part refs with immutable source revision; current source contents cannot substitute for an old revision. |
+| Quantity | Compare only matching definitions with qualified unit conversion. Unknown→known is availability change, not increase from zero. Plinth area is not carpet area. |
+| Polygon | Added=after minus before, removed=before minus after, unchanged=intersection; retain holes/multipart. |
+| Prism/components | Use FIND's qualified operation/slab representation. Missing Z/datum prevents volume difference; never compare bounding envelopes as exact geometry. |
+| Rights/links | Compare stable assertion/link revisions and evidence. Changed party text alone is not a legal transfer. |
+| Evidence | Added/removed/unlinked exact source-part/link versions. Preserve the old source bytes and association. |
 
-Frame equivalence needs horizontal reference, transformation version, axis/unit metadata and vertical benchmark where relevant. The baseline component's local overlay check is not a universal CRS equivalence test. Use FND/core frame adapters; with incompatible frames retain side-by-side field/source comparison and explain why overlay is disabled. If fewer than two revisions exist, display the one available version without implying historical change.
+Overlay compatibility checks horizontal CRS, axes/units, anchor/transform version and vertical benchmark/operation. A matching string alone does not prove equivalence. If overlay is unsupported, retain field/source side-by-side comparison and explicit limitation. External D1 roof meshes may have display comparison only; no arbitrary mesh-volume claim. The first useful field comparison remains available when FIND geometry is not yet qualified.
 
-Proposed `usp_history_lineage` stores reviewed change ID, type (`split`, `merge`), predecessor/successor pins, evidence, reviewer/commit receipt and recordedAt. No fabricated backfill: historical data without recorded lineage stays unlinked. An accepted lineage group must be acyclic, same namespace/kind, satisfy cardinalities and preserve retired identities. Core planning results are persisted only atomically with the actual reviewed identity change through FND; failed commits leave no apparent lineage. HISTORY does not allocate new registry IDs.
+### Persistence, APIs and lineage
 
-Optional `usp_history_comparisons` caches manifests/results without copying original assets. Historical permissions are evaluated using current grants plus explicit release policy; “it was once visible” is not permanent entitlement. Redacted public history uses a separate projection; it does not expose old owners through an otherwise sanitized current property page.
+Proposed `usp_history_comparisons` stores immutable input manifests/result refs/method versions/access-view. Cache key includes both full manifests, requested fields, geometry method and entitlement/policy. Small field differences execute inline within a bounded request; geometry work uses FND fenced jobs, ≤60-second child tasks and the qualified profile limits. API never synchronously scans every historical source for a timeline page.
 
-Proposed APIs under `/api/v1/usp/history`: `GET /targets/:ref/history` (scope, cursor, bounded page); `GET /targets/:ref/lineage`; `POST /comparisons` with revision manifests/idempotency; `GET /comparisons/:id`. Encode refs using the FND route codec; do not parse IDs at colon boundaries. Expensive comparisons may return 202 via existing jobs; small field diffs can complete inline under a measured bound. Missing exact historical assets produces `unavailable_revision`, not a current-version fallback. Invalid pairing/stale proposal is 409/422 according to shared conventions.
+Proposed `usp_history_lineage` records actual reviewed change ID, split/merge kind, predecessor/successor pins, evidence, post-commit receipt and dates. Writes, when enabled, occur atomically with actual identity retirement/allocation through FND; lineage alone cannot create property identities. Enforce same namespace/kind, acyclicity, correct split/merge cardinality and non-reused IDs. Missing recorded lineage remains absent; authored lineage fixtures do not prove the production write path.
+
+Prefix `/api/v1/usp/history`: `GET /targets/:ref/history` with exact scope/cursor/limit≤100; `GET /targets/:ref/lineage`; `POST /comparisons` with request/create guard → result or 202; `GET /comparisons/:id`. Use FND reference codec and envelopes. Invalid pairs/unsupported operation are 409/422 as appropriate. Historical permission checks use current grants or an explicit active release decision for those exact derivative bytes. Previously visible does not mean permanently authorized. Public history cannot expose former owners through a sanitized current page.
 
 ## F. Exact implementation map
 
-| Existing or proposed file | Required change | Reason | Owner | Shared dependency |
-| --- | --- | --- | --- | --- |
-| [registry.ts](../../apps/web/lib/server/registry.ts), [registry-db.ts](../../apps/web/lib/server/registry-db.ts) | Supply exact recorded revisions through FND adapter | Preserve current registry authority | FND | HISTORY read model |
-| [core identity](../../packages/contracts/src/spatial/core/identity.ts), [snapshot.ts](../../packages/contracts/src/spatial/core/snapshot.ts) | Reuse lineage/validity validators and source pins | No reinvention of identity | HISTORY read-only reuse | F0 |
-| Proposed new `packages/contracts/src/usp/history.ts` | Timeline/comparison/lineage DTOs | Stable typed comparisons | HISTORY | Common refs |
-| Proposed new `apps/web/lib/server/usp/history/{timeline,compare,lineage,routes}.ts`, `migrations/15-history.ts` | Read composition, qualified differences and lineage receipts | Persisted traceability | HISTORY | FND exact reads/commit adapter |
-| Proposed new `apps/web/features/usp/history/{PropertyTimeline,ComparisonPanel,LineageStrip}.tsx` | Exact-space history and compare controls | Reuse quick/full register | HISTORY | UI shared selection/overlays |
-| [History.tsx](../../apps/web/features/officer/register/History.tsx), [RevisionCompare.tsx](../../apps/web/features/officer/register/RevisionCompare.tsx), [RecordHistory.tsx](../../apps/web/features/officer/register/RecordHistory.tsx) | Mount compatible new leaves and avoid duplicate histories | One timeline experience | UI | HISTORY leaves |
-| Proposed new `tests/usp-history.test.ts`, `tests/usp-history-integration.ts`, `tests/e2e/usp-history.spec.ts` | Exact revision, permission, lineage and overlay tests | No fabricated timeline | HISTORY | Isolated revisions/frames |
+| File | Change / owner |
+| --- | --- |
+| Existing registry/history/core/scene files linked in B | FND exact historical read and optional same-client lineage adapters; UI retains old routes |
+| Proposed `packages/contracts/src/usp/history.ts` | HISTORY entry/comparison/lineage schemas using F0 refs |
+| Proposed `apps/web/lib/server/usp/history/{timeline,compare,lineage,routes}.ts`, `migrations/15-history.ts` | HISTORY bounded read/comparison and actual receipt links |
+| Proposed `apps/web/features/usp/history/{PropertyTimeline,ComparisonPanel,LineageStrip}.tsx` | HISTORY leaf UI |
+| Existing History/RevisionCompare/RecordHistory and shared map | UI mounts leaves; no duplicate timeline/map engine |
+| Proposed `tests/usp-history.test.ts`, `tests/usp-history-integration.ts`, `tests/e2e/usp-history.spec.ts` | HISTORY old/current composition, no-write, geometry and permission tests |
 
 ## G. UI placement and interaction
 
-Map quick register → unit → **History** compact strip → **Compare versions** opens the full register's History context with the same target and chosen pins. The main comparison shows two labelled revision selectors, compact changed-field summary and a single map overlay mode: Before / After / Difference. Do not create two permanent WebGL viewers. Two source excerpts may be shown side by side without duplicating the map.
+Quick register → selected unit History → Compare versions → full register with same target and explicit left/right pins. One map offers Before/After/Difference; two source panes do not require two WebGL viewers. Keep both source dates, record dates, stage and classification visible. Loading does not display another unit's old content; empty says no earlier retained revision; incompatible frame/missing source yields field-only limitation; denied details are not leaked. Retired record has an explicit retired banner and successor links, not an automatic redirect hiding it. UI owns query, camera, focus and mobile sheet; HISTORY owns comparison content.
 
-Loading retains selection but not stale comparison content from another unit. Empty says no earlier revision retained. Missing old source or incompatible frame is explicit with field-only fallback. Denied old evidence cannot be downloaded through comparison links. Success displays both revision dates, world/classification and source buttons. Retired identities show a non-dismissable retired label and explicit successor links; no automatic redirect that hides history. UI owns scene/route integration; HISTORY owns timeline/selector contents.
+## H. Ownership and dependencies
 
-## H. Agent ownership and dependencies
-
-Use `feat/usp-history`. F0 allows pure differences and lineage tests; F1 is needed for stored revisions and source access. HISTORY exposes a read-only minimal port to RIGHTS/ASSIST. It must not independently rewrite registry commit/ID allocation, shared viewport or route state. FND applies lineage persistence hooks; if not available, deliver real read-only history and report the write path as gated optional work, not implemented. UI integrates shared parents serially.
+Use `feat/usp-history`, own HISTORY paths/tests/migration. F0 permits oracle tests; F1 exact reads required for live history. FIND is required for the requested analytical differences, not text history. RIGHTS/ASSIST consume available read projections; no circular dependency on optional split/merge editing. FND owns registry IDs/transactions, DATA shared packs, UI all shared map/parent changes. A missing adapter is a declared capability gate, not permission to create substitute history.
 
 ## I. Implementation sequence
 
-1. Inventory available historical record/physical/source revisions and define exact read projections.
-2. Implement timeline and two-version field/evidence diff with missing-state tests.
-3. Add qualified polygon/prism overlays through existing geometry services and explicit frame gating.
-4. Add lineage read model; connect actual reviewed identity receipts only when FND provides atomic persistence.
-5. Deliver reusable timeline/comparison UI and UI integration patches; test historical URLs and source permissions.
-6. Run live recorded-revision comparisons and regression cases without modifying current records.
+1. DATA supplies D0 version pair and independent expected differences; inventory actual retained source/geometry/link history.
+2. Connect exact-manifest reads and field/evidence differences before overlays.
+3. Add qualified FIND polygon/prism operations and per-constituent unavailable states.
+4. Add available lineage browsing; consume actual commit receipts only when the optional write path exists.
+5. Mount reusable UI and historical URLs, preserving current records and camera.
+6. Change current data and reopen the old comparison to prove its independence; then attempt a permitted real dated pair.
 
-## J. Acceptance criteria and verification
+## J. Datasets, tests and commands
 
-Synthetic demo retains two unit revisions, an observed survey and a proposed boundary. Compare each explicit pair and show their classifications; only the recorded pair represents recorded history. A missing height remains unknown, not a numeric gain from zero. An incompatible vertical reference prevents volume comparison. The current property remains unchanged after every read.
+**D0 before/after:** import/record one clean unit through real services, preserve manifest A, update its source/geometry/relationship through normal review and preserve B. DATA supplies a separate expected.json with exact changed fields and source hashes. Include a source-link-only update with unchanged logical property identity, one unknown→known quantity, a shared clause change and incompatible vertical reference. Reopen A after B and after application restart; every constituent must still match A or explicitly report not retained. Hash/current revision checks prove reads did not mutate records.
 
-Test a single retained revision, retired identifier, valid split/merge fixture, cycle/cardinality failure, same label in another building, missing old original, same source family/new revision, historical private-party leakage and cross-scope access. When lineage writes are enabled, kill the transaction before commit and verify no orphan successor/receipt. Do not claim that fixture lineage proves the optional production write integration.
+**D5 later real-source gate:** obtain a permitted revision pair for the same tower/unit from [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) or [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or a known-property/campus drawing pair. Previously only indices were verified; do not assume two downloadable versions exist. Check matching identity, drawing purpose, date, units and permission. If only one exists, show one, do not synthesize an earlier real version. D0 remains the implementation fallback.
 
-Run `pnpm typecheck`, `pnpm test:registry`, `pnpm test:studio`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-identity.test.ts tests/usp-history.test.ts`; `pnpm exec tsx tests/usp-history-integration.ts`; `pnpm exec playwright test tests/e2e/usp-history.spec.ts`. Return revision manifests, computed differences, source-link/permission checks and screenshots with clear before/after labels.
+Test missing old original, current family/new source revision, same flat name in another building, hidden past parties, revoked source/release, cursor membership change, invalid lineage/cardinality, component holes and late geometry result. If lineage writes are enabled, rollback between identity update and receipt must leave neither apparent successor nor orphan lineage. V6 screenshot must name actual manifest refs and preserve one camera; a mock before/after is insufficient.
 
-## K. Copy-paste agent assignment
+Run `pnpm typecheck`, `pnpm test:registry`, `pnpm test:studio`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-identity.test.ts tests/usp-history.test.ts`; `pnpm exec tsx tests/usp-history-integration.ts`; `pnpm exec playwright test tests/e2e/usp-history.spec.ts`. Return pack/source/manifest hashes, exact before/after expected/actual values, no-write/permission proofs and V6 screenshots. Separate read history, supported geometry and optional lineage-write qualification.
 
-> Implement HISTORY on `feat/usp-history`. Read the index/shared contracts, this handoff and existing History/RevisionCompare/RecordHistory/core identity code. Extend the real exact-revision read path through the proposed HISTORY modules and tests, preserving current IDs and source revisions. Keep recorded time, source validity, world classification and technical review state distinct. UI owns map/parent mounts; FND owns registry/identity persistence. Build read-only comparison first; do not claim optional split/merge writes without the atomic reviewed adapter. Run section J and return manifests, numeric/source difference evidence, permissions tests, screenshots, commits and remaining gates. Do not fabricate history or merge main without authorization.
+## K. Copy-paste assignment
+
+> Implement HISTORY on feat/usp-history using 00, 01 and this handoff. Obtain two real-service D0 revisions and later attempt one permitted D5 pair. Build exact historical manifests/constituents, field/source/relationship diff, supported FIND overlays and stable old-record navigation. Never substitute current sources/placement, infer history, turn unknown into zero or block basic read history on a new split/merge editor. FND owns immutable-read/identity adapters, UI shared mounts and DATA pack files. Execute J by modifying current data while reopening old manifests and testing access/no-write behavior. Return commits, hashes, numerical/source evidence, V6 images and explicit optional gates. No unauthorized merge or official-history claim from fixtures.
