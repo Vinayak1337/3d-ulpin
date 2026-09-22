@@ -1,0 +1,139 @@
+name: Apply approved data-transition cleanup
+
+# One-time branch-scoped operation authorized by the user on 23 September 2026.
+# Never runs on main or PRs. Never starts data services or rewrites history.
+on:
+  push:
+    branches: ['review/data-transition-cleanup-20260923']
+    paths:
+      - '.github/workflows/ulpin-cleanup-apply.yml'
+      - 'docs/cleanup-review/apply_cleanup.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ulpin-approved-cleanup-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    if: github.repository == 'Vinayak1337/3d-ulpin' && github.ref == 'refs/heads/review/data-transition-cleanup-20260923'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      EXPECTED_HEAD: ${{ github.sha }}
+      CLEANUP_BRANCH: review/data-transition-cleanup-20260923
+    steps:
+      - name: Checkout the exact approved branch without retained credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: review/data-transition-cleanup-20260923
+          fetch-depth: 8
+          persist-credentials: false
+          lfs: false
+          submodules: false
+      - name: Check drift and fetch the exact adopted documentation
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test "$(git branch --show-current)" = "$CLEANUP_BRANCH"
+          git fetch --no-tags --depth=1 origin e167b1f6c1a830b2b5c6c1708e8f0b0214e4d849
+          git cat-file -e f623cff897f91bb3ebd4c225f700ac263f7beb72^{commit}
+          git cat-file -e a2fb23fb53a92032fb7223a28f633d15dc865697^{commit}
+      - name: Apply only the verified removal and documentation scope
+        run: |
+          set -euo pipefail
+          python3 docs/cleanup-review/apply_cleanup.py --apply
+          git add -A
+          git diff --cached --check
+          git write-tree > "$RUNNER_TEMP/cleanup-tested-tree"
+      - name: Select the repository runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Install locked dependencies without a service or data reset
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@9.12.0 --activate
+          pnpm install --frozen-lockfile
+      - name: Verify preserved sources, pure application contracts and tooling
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess, time
+          checks = [
+            ('historical-plan-consistency', 'python3 docs/engineering-plan/tools/validate_plan.py'),
+            ('engineering-reference-acceptance', 'node --test tests/engineering-acceptance.test.mjs'),
+            ('source-collector-tests', "python3 -m unittest discover -s docs/engineering-plan/tools/tests -p 'test_*.py'"),
+            ('typecheck', 'pnpm typecheck'),
+            ('studio-contracts', 'pnpm test:studio'),
+            ('register-scope', 'pnpm test:register-scope'),
+            ('uttam-data-and-provenance', 'pnpm test:uttam'),
+            ('core-spatial-contracts', 'pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-*.test.ts'),
+            ('repository-data-mode', 'node --test tests/repo-data-mode.test.mjs'),
+            ('cleanup-python-syntax', 'python3 -m py_compile docs/cleanup-review/apply_cleanup.py scripts/studio/compare.py'),
+          ]
+          logdir = pathlib.Path(os.environ['RUNNER_TEMP']) / 'cleanup-validation'
+          logdir.mkdir(exist_ok=True)
+          results = []
+          for name, command in checks:
+              start = time.monotonic()
+              with (logdir / (name + '.log')).open('w') as output:
+                  try:
+                      result = subprocess.run(['bash', '-o', 'pipefail', '-c', command], stdout=output,
+                                              stderr=subprocess.STDOUT, timeout=240)
+                      code = result.returncode
+                  except subprocess.TimeoutExpired:
+                      code = 124
+              results.append({'name': name, 'command': command, 'exit_code': code,
+                              'seconds': round(time.monotonic() - start, 2)})
+              print(name, 'PASS' if code == 0 else 'FAIL', code, flush=True)
+              if code:
+                  print((logdir / (name + '.log')).read_text()[-10000:])
+          report = {'schemaVersion': 'ulpin-cleanup-verification/1', 'date': '2026-09-23',
+                    'input_sha': os.environ['EXPECTED_HEAD'], 'runner': 'ubuntu-24.04',
+                    'node': subprocess.check_output(['node', '--version'], text=True).strip(),
+                    'tested_tree': pathlib.Path(os.environ['RUNNER_TEMP'], 'cleanup-tested-tree').read_text().strip(),
+                    'workflow_run': os.environ['GITHUB_SERVER_URL'] + '/' + os.environ['GITHUB_REPOSITORY'] + '/actions/runs/' + os.environ['GITHUB_RUN_ID'],
+                    'checks': results,
+                    'not_run': ['database migrations or live services', 'browser/GPU workflows', 'real-source qualification', 'V0/I1 feature acceptance', 'deployment']}
+          pathlib.Path('docs/cleanup-review/verification.json').write_text(json.dumps(report, indent=2) + '\n')
+          (logdir / 'verification.json').write_text(json.dumps(report, indent=2) + '\n')
+          if any(r['exit_code'] for r in results):
+              raise SystemExit('Cleanup not published: a verification command failed.')
+          PY
+      - name: Confirm test execution did not modify retained files
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test "$(git write-tree)" = "$(cat "$RUNNER_TEMP/cleanup-tested-tree")"
+          git add docs/cleanup-review/verification.json
+          git diff --cached --check
+          git diff --cached --stat > "$RUNNER_TEMP/cleanup-validation/changes.txt"
+      - name: Publish the tested cleanup to the review branch only
+        env:
+          PUSH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin "refs/heads/$CLEANUP_BRANCH" | cut -f1)" = "$EXPECTED_HEAD"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore: remove verified duplicates and retire obsolete documentation and galleries'
+          git -c 'credential.helper=!f() { echo username=x-access-token; echo "password=$PUSH_TOKEN"; }; f' push origin "HEAD:refs/heads/$CLEANUP_BRANCH"
+          git rev-parse HEAD > "$RUNNER_TEMP/cleanup-validation/published-commit.txt"
+      - name: Retain actual verification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: cleanup-apply-verification-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/cleanup-validation/
+            docs/cleanup-review/applied-cleanup.json
+            docs/cleanup-review/verification.json
+          if-no-files-found: warn
+          retention-days: 7
+          include-hidden-files: false
