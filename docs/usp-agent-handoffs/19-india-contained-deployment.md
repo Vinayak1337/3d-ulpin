@@ -1,122 +1,123 @@
-# 19 · India-contained deployment and provider-controlled processing
+# 19 · Governed AI and India-contained deployment
 
-Owner **DEPLOY** · Priority **P1 deployment gate** · Baseline `main@f623cff897f91bb3ebd4c225f700ac263f7beb72` · Consume [F0/F2 contracts](01-shared-contracts-and-ownership.md). This handoff plans controls; it does not certify the existing application or any provider.
+Owner **DEPLOY**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), consumers [13](13-citizen-evidence-and-corrections.md), [14](14-adaptive-ingestion-and-progressive-review.md), [18](18-grounded-assistance-and-mcp.md) and UI slot in [99](99-ui-ux-and-integration.md). ER-16/22/23 are incorporated. No provider, infrastructure or application certification is claimed by this plan.
 
 ## A. User outcome and product value
 
-Allow a deployment operator to run the property/evidence workflows within an explicitly approved data boundary, understand which capabilities the server supports, and prevent an unavailable model or service from silently exporting records elsewhere. This is an enabling deployment capability, not proof of data truth or a unique mapping algorithm.
-
-Example: an officer imports a restricted registry PDF. Its original, extracted text, packet derivatives, model requests, logs and backups must all follow the deployment policy. If the approved inference service is unavailable, the officer can continue manual mapping; the system must not fall back to the existing external Nous route or an external ChatGPT connection.
+Allow an operator to run evidence workflows within a declared processing boundary, see which capabilities actually work and stop unavailable services from silently exporting data elsewhere. With the approved model offline, manual mapping and typed service answers remain useful. Residency, confidentiality and integrity are separate: storage region, access controls and checksums do not prove one another or document truth.
 
 ## B. Current implementation and gap analysis
 
-[compose.yaml](../../compose.yaml) already runs local PostGIS, private MinIO, Redis and private geo/Celery services with loopback host ports and persistent volumes. It does not containerize the full web/dispatcher deployment or establish a production identity/egress boundary. Preserve this local demo configuration rather than silently exposing its ports.
+[compose.yaml](../../compose.yaml) includes local PostGIS/MinIO/Redis/geo/Celery but not a complete protected web/dispatcher deployment. [storage](../../apps/web/lib/server/storage.ts) preserves original bytes; [config](../../apps/web/lib/server/config.ts) and [geo settings](../../services/geo/geo/settings.py) use an S3 region string that does not establish actual geography for a local compatible endpoint. [Legacy Nous](../../apps/web/lib/server/officer-ai-provider.ts) is an external call path that must also be governed.
 
-[storage.ts](../../apps/web/lib/server/storage.ts) preserves originals with conditional writes and hash/readback checks. These help integrity, not geographical residency. [config.ts](../../apps/web/lib/server/config.ts) and [geo/settings.py](../../services/geo/geo/settings.py) default an S3 region string to `us-east-1`; with a local S3-compatible endpoint that string alone neither proves US storage nor proves Indian storage. Actual infrastructure and provider contracts must establish location.
-
-[officer-ai-provider.ts](../../apps/web/lib/server/officer-ai-provider.ts) explicitly calls an external Nous endpoint. New features cannot claim a contained boundary while leaving this existing path ungoverned. The application also needs a complete browser/server external-resource inventory, including map tiles, fonts, model downloads, notification services and observability. No complete inventory or denied-egress runtime test is claimed by this documentation inspection.
-
-Vendor context checked on 22 September 2026: [Sarvam's Trust Center](https://www.sarvam.ai/trust-center) states India-only residency for Indian deployments and offers managed, on-premises and air-gapped models. These are vendor statements, not an application deployment audit. The deployment owner must confirm the specific endpoint/service, retention, backups and processing terms before approving restricted data. [Sarvam's chat overview](https://docs.sarvam.ai/api/api-guides-tutorials/chat-completion/overview) documents its current chat API; implementation must recheck supported models and capabilities instead of copying obsolete model names.
+Implement actual gateway/scanner/mail adapters, capability policy, complete ingress/egress inventory, reproducible service entrypoints and environment tests. A standalone compose filename, region setting or vendor claim is not operational qualification. Preserve the existing local stack and volumes.
 
 ## C. Scope and non-goals
 
-First release: typed deployment policy and capability manifest; governed model gateway with an approved Sarvam adapter and optional configured local adapter; explicit local/private/public modes; safe failure behavior; reference protected deployment manifest; egress/restore qualification scripts and an administrator status surface. Local no-AI workflows must remain functional.
+DEPLOY0: policy schemas, disabled/unavailable states and no-AI local operation. DEPLOY1: governed Sarvam/local adapters and scanner/mail integration with measured synthetic tests. DEPLOY2: standalone protected stack, F2 route/page coverage, denied-egress and isolated backup/restore qualification. These gates are separate; none delays the local V0 map→unit→evidence slice.
 
-No universal “runs on any server” promise, residency certification inferred from a hostname, blanket regulatory compliance claim, automatic purchase/provisioning, secret collection in Git, or production launch during this implementation task. Full air-gap qualification and high availability are separate profiles requiring actual infrastructure evidence. An Indian inference provider does not automatically make unrelated email, logging or external AI services India-contained.
+No automatic cloud purchase/provisioning, secret collection in Git/chat, production launch, universal hardware support, blanket regulatory compliance or high-availability platform. Full air-gap operation is optional and needs disconnected tests with preloaded dependencies, not a checkbox.
 
 ## D. HLD and end-to-end flow
 
-Operator configures a policy using secret references and approved service endpoints → startup validates required identity/storage/service configuration → policy evaluates each requested capability and data class → authorized feature calls pass through the appropriate gateway → network controls enforce the configured destination boundary → response/output validators apply → safe operational status reports capability availability and unmet gates.
-
-A policy change has a version and audit record. It takes effect for new jobs immediately; running jobs are checked before the next external operation or output publication. Revoking a destination stops future calls and marks affected work paused/needs input, without deleting retained evidence.
+Load policy and secret references → validate configured service capabilities → derive destination/purpose from server policy → enforce boundary before every external call → bounded provider response validation → feature-specific semantic validation → persist safe receipt → display actual capability. Policy revision/revocation applies to new work and before each subsequent external operation/result publication; do not delete retained evidence when a capability is revoked.
 
 ## E. Targeted LLD
 
-### Deployment profiles and capability truth
+### Profiles and truthful status
 
-| Proposed profile | Allowed processing | Required boundary |
-| --- | --- | --- |
-| `local_demo` | Current loopback-only services and labelled fixtures; separately opted-in existing AI under explicit policy | No claim of production authentication or India-only residency |
-| `india_private` | Private records in approved Indian infrastructure; only approved local/India-hosted services | F2 identity/resource authorization; default-deny egress; external public MCP disabled |
-| `public_interoperability` | Released public projection may be returned to external clients; private native workflows remain separately protected | Explicit public-release boundary; no claim that exported public responses stay in India |
+| Mode | Permitted behavior |
+| --- | --- |
+| local_demo | Existing loopback workflow and labelled fixtures; optional explicitly configured AI. No production residency/auth claim. |
+| india_private | Approved Indian infrastructure and providers, F2 resource permissions, default-deny egress and disabled external MCP. |
+| public_interoperability | Separately released public projections may leave through approved external clients; private native data remains protected. Do not claim public responses stay in India. |
 
-An optional `air_gapped` capability is not automatically true for `india_private`. It requires preloaded pinned models/assets/images, internal identity/time/update procedures and a successful disconnected operation test. Public/private services may be separate deployments; do not switch a running private service to public mode without an explicit reviewed configuration change.
+`DeploymentPolicy`: version, mode, data classes/purposes, approved service IDs/endpoints, secret-reference names, budget limits, retention/backup/location evidence refs, allowed features and release policy. `CapabilityStatus`: disabled/configured/unqualified/available/unavailable with safe reason, tested version/environment/time. Configuration alone is not available; no secrets/full provider bodies in HTTP status.
 
-Proposed `DeploymentPolicy` contains version, profile, data classifications, service IDs, allowed purposes, endpoint allowlists, secret-reference names, processing-location evidence references, retention/backup policy references, budget profile and enabled features. Never store credential values or private contracts in this public repository. Proposed `CapabilityStatus` uses `configured`, `available`, `disabled`, `unqualified`, `unavailable`, with safe reason codes and last check; configuration is not successful runtime qualification.
+[Sarvam Trust Center](https://www.sarvam.ai/trust-center) states India-only residency for Indian deployments. This is vendor context, not proof of this installation's full data flow; H3 confirms the selected service contract and backup/log/subprocessor arrangements. The application must govern every path, not just the model call.
 
-Residency, confidentiality and integrity are separate assessment dimensions. Hash validation cannot determine truth, TLS cannot establish storage location, and a country-code DNS name cannot prove where logs/backups reside. Human-confirmed provider/infrastructure evidence is a release gate; automated checks establish configured destinations and observed behavior only.
+### Model gateway: one network owner
 
-### Model gateway and Sarvam adapter
+Implement modelGateway as defined in 01 for schema_mapping, document_extraction and grounded_answer tasks. Derive endpoint/model from policy, never model/user-supplied URLs. Validate task schema, authorized input, response bytes/tokens/time and result type; return structured metadata or unavailable. INGEST/ASSIST still validate semantic correctness.
 
-DEPLOY implements the FND `modelGateway` port in proposed `apps/web/lib/server/usp/deployment/model-gateway.ts`. Inputs include task kind (`schema_mapping`, `document_extraction`, `grounded_answer`), bounded authorized evidence, requested output schema, data classification, deployment policy version and budget. The gateway derives its destination from server configuration, not user/model-supplied URLs. It returns structured output plus provider/model/version and bounded usage metadata, or a typed unavailable/error result.
+Planning reference checked 22 September 2026: [Sarvam V1 API](https://docs.sarvam.ai/api-reference/chat/chat-completions-v1) and [authentication](https://docs.sarvam.ai/api-reference/authentication). Initial adapter targets `POST /v1/chat/completions` with server-side `api-subscription-key`, configured approved model (currently documented `sarvam-105b`); do not use deprecated model IDs, assume free access or switch to beta V2 implicitly. Recheck exact model and schema support before live qualification. Credentials are secret references only.
 
-The proposed Sarvam adapter uses the documented `/v1/chat/completions` contract and server-side `api-subscription-key` authentication. Configure the approved model rather than hardcode an assumption of free usage or support. Qualify required structured-output/image capabilities separately; schema mapping and grounded text answers do not imply the model can reconstruct LiDAR or interpret arbitrary plans. Enforce response byte/token/time limits, cancellation and strict output validation. Reject truncated, malformed or tool-invoking responses when the task does not authorize tools. No upstream response bodies or secrets enter errors/logs.
+Default task response is nonstreamed strict structured JSON, parsed and validated; provider token streaming is not the application's durable geometry SSE. Preserve finish reason and reject truncation/empty content. Count reasoning/completion usage where reported and bound total attempts, not just successful calls. Start with at most two calls including one repair, 45-second task deadline and 1 MiB response cap, constrained by each consumer's budget. Retry documented transient failure only within that same total budget. No paid/provider/model/geography fallback without an explicit policy change. Qualify image input separately; text schema support does not establish arbitrary-plan or LiDAR reconstruction.
 
-Use one bounded repair only when the feature budget permits. Count attempted calls against the budget even when output validation fails. Retry only documented transient failures within an explicit cap; never choose a different provider/model, paid tier or geographical endpoint implicitly. FND must route the existing Nous extraction entry through the same policy decision or disable it under `india_private`; a newly governed gateway cannot coexist with a bypassing legacy call path.
+FND routes or disables the existing Nous entry through the same policy. A local adapter accepts only an explicitly configured compatible internal service and reports measured requirements. It does not imply a 105B model fits a desktop GPU. With no key/model, return unavailable and keep manual recipes/template answers. No model-training job starts during an import; later training needs its own allowed data/purpose/budget.
 
-The local adapter supports an explicitly configured compatible local service; its presence does not claim that any model fits the available CPU/GPU. Publish measured memory/hardware/model requirements and an unavailable state when unmet. No AI credentials means deterministic ingestion/manual mapping and verified template answers remain available; features must not show an AI success badge.
+### Scanner and mail adapters
 
-### Service and network coverage
+Default scanner implementation is a private ClamAV/clamd service with pinned image and signature database/version. [Official scanning guidance](https://docs.clamav.net/manual/Usage/Scanning.html) notes the TCP interface is not authenticated; expose it only through an isolated internal socket/network, never public ingress. Precheck upload sizes and configure scanner limits consistently: a skipped/limit-exceeded file is quarantined/unavailable, never clean. A stale/missing signature policy or scanner outage blocks public release. Use immutable uploaded bytes and return `{uploadId,assetHash,verdict,engineVersion,signatureVersion,scannedAt,limitStatus}`. Clean antivirus does not remove structural/active-content validation or isolated rendering requirements. Do not delete originals automatically on an alert.
 
-Inventory every data path: web/dispatcher/geo/worker, database, originals/derivatives, Redis, session/identity provider, scanner, model endpoint, backups, monitoring/error reports, email/SMS, browser tiles/fonts and model/package downloads. Classify coordinates, search queries and logs as possible disclosures rather than considering only uploaded files.
+Mail uses an operator-approved configured transport; absent transport is unavailable, with in-app status intact. Request follows 01 notificationId/deliveryKey/audience/template. Return accepted with provider receipt, rejected, or unknown acknowledgement; CITIZEN owns reconciliation and dedup. Never promise exactly-once delivery or email actual deeds/party information by default. Scanner/model/mail network clients live here, not independently inside feature modules.
 
-For `india_private`, enforce network default deny at the deployment boundary in addition to application allowlists. Allow only approved internal or qualified service destinations. Deny unexpected redirects and unapproved DNS/address changes; internal/private addresses are allowed only as explicitly configured service endpoints, never as request-supplied URLs. Do not implement a generic URL-fetch proxy. TLS/certificate validation is required for non-loopback transport; local development exceptions must not leak into protected mode.
+### Inventory, build and network enforcement
 
-Use local/approved basemap and font assets in private mode, or disable those optional layers with an understandable state. Do not silently request third-party tiles containing the officer's viewed coordinates. Disable external telemetry and raw document logging. Preflight can identify unapproved destinations, but only a real network test can qualify enforcement. Preserve source attribution/license metadata while replacing delivery paths; do not strip attribution to claim offline capability.
+Produce a machine-readable inventory as implementation evidence, listing path/route/process, audience, data types, destination, policy decision and test. Cover:
 
-Provide explicit ports for CITIZEN: `scanAsset(ctx,assetRef)` returns `clean|quarantined|rejected|unavailable` with scanner/version and hash; `sendReceipt(ctx,messageRef)` uses an approved configured transport. Scanner unavailable blocks public file release. Email unavailable does not block in-app receipts. DEPLOY owns adapters/configuration; CITIZEN owns message content, subscriptions and submission logic. No public service is activated without F2, scanner qualification and required endpoint policy.
+| Surface | Must be checked |
+| --- | --- |
+| Main API catch-all | Cases, registry, resolve, work queue, source file/export and health paths |
+| Specialized API routes | Spatial datasets/search, ML/source, core scene descriptors/GLBs, calibration and Studio source assets |
+| SSR pages and static assets | Studio catch-all, property/register/workspace pages, public routes, cached/derived files and public-directory fixture contents |
+| Server processes | Web, dispatcher, geo, worker, database, objects, Redis, scanner, provider and backups |
+| Browser calls | Basemap/tiles, fonts, textures, analytics/error reporting, external links and MCP responses |
 
-### Packaging, storage and recovery
+FND supplies authentication/access wrappers; DEPLOY verifies every ingress path and trusted proxy assumption. Unknown route is denied externally until qualified. Do not globally remove localhost guards or expose an internal resolver through a new public wrapper.
 
-Proposed `infra/deployment/compose.india-private.yaml` is a **standalone reference stack**, not an unchecked overlay whose port merges might retain unwanted exposure. Include web/dispatcher plus existing service roles, private networks, health checks, resource limits, pinned images and approved ingress. FND owns required dependency/Dockerfile/root-config changes; DEPLOY supplies narrowly reviewed patches. Do not deploy or replace the user's existing volumes as part of preparing this feature.
+Proposed `infra/deployment/compose.india-private.yaml` is standalone, not an overlay retaining old port mappings. Web and dispatcher use the same pinned build artifact but separate processes: web invokes the configured `@ulpin/web` production server; dispatcher invokes `pnpm dispatcher`. The existing root `pnpm start` already launches both, so do not also start a duplicate dispatcher. Existing web script binds loopback; FND must supply a container-only entrypoint binding the internal service interface while approved ingress remains the only public listener. Preserve local developer scripts.
 
-Secrets are injected through the operator's secret system or untracked deployment configuration; provide only placeholder names in `infra/deployment/policy.example.json`. Keep database/object-store consoles off public ingress. Reuse immutable originals and per-asset permission checks. Derived files and model caches have separate retention rules; deleting a derivative must not remove its original.
+FND owns proposed `infra/deployment/Dockerfile.web` and any shared package/config changes requested by DEPLOY. Build context is repository root with the lockfile/workspace, packages/contracts, apps/web, required scripts and traced static/runtime assets. Use frozen install and a tested production build; missing build-time secrets must not be solved by baking credentials into the image. Qualify launch, health and source/PDF assets in a clean isolated stack. Do not claim a reference YAML runs until these images/entrypoints pass.
 
-Backup qualification must restore a consistent database, referenced immutable objects, encryption/access configuration and job/outbox positions into **new isolated volumes**. Verify source hashes and record/revision links; resume idempotent work without duplicate commits or notifications. Document measured recovery time and any unsent-event recovery, not an invented recovery SLA. Never run `repo:init` or overwrite populated snapshot volumes for a restore test.
+Default-deny network policy applies to runtime egress in addition to application allowlists, including redirects/DNS changes and model/scanner updates. Approved internal addresses are allowed only by configuration, never request-supplied fetch targets. Require validated TLS on protected external transport. No third-party basemap/font/telemetry call in India-private mode unless specifically approved; local assets or disabled optional context are the fallback. Preserve attribution/licences. Air-gapped mode additionally preloads packages, images, model weights, scanner signatures and local identity/time infrastructure, then tests disconnected operation.
 
-Proposed `usp_deployment_qualifications` stores policy hashes, non-secret capability/check results and evidence references; full network logs/contracts remain in restricted operator storage. Proposed read-only `/api/v1/usp/deployment/status` requires `deployment.inspect` and returns safe checks, not environment-variable dumps. Ordinary users see only relevant unavailable-feature reasons. New qualification operations run via an explicit operator CLI, not an unauthenticated endpoint that probes internal networks.
+### Recovery and status
+
+Restore a consistent database, referenced immutable objects, permission/release policy, encryption/secrets configuration and logical job/outbox positions into new isolated volumes. Verify original hashes, target/source revisions and manifest dependencies. Reconcile pending jobs against durable accepted receipts and current fences; consumed notifications stay deduplicated. Do not blindly restore old Redis state over newer SQL. Expired leases are retried through the logical job contract, not marked succeeded. Report measured recovery, not an invented SLA.
+
+`usp_deployment_qualifications` stores non-secret policy/config hashes, test outcomes and restricted evidence references. GET `/api/v1/usp/deployment/status` requires deployment.inspect. Qualification is an explicit operator CLI targeting an isolated environment, not a public endpoint that probes arbitrary network addresses. Feature users see safe capability reasons only.
 
 ## F. Exact implementation map
 
-| Existing or proposed file | Required change | Reason | Owner | Shared dependency |
-| --- | --- | --- | --- | --- |
-| [compose.yaml](../../compose.yaml), [geo Dockerfile](../../services/geo/Dockerfile) | Preserve local stack; request only reviewed shared build hooks | Avoid accidental exposure/replacement | FND shared changes; DEPLOY reference | Existing service roles |
-| [config.ts](../../apps/web/lib/server/config.ts), [geo/settings.py](../../services/geo/geo/settings.py) | Inject strict policy/service config, keep secrets server-side | One configuration authority | FND | DEPLOY policy schema |
-| [storage.ts](../../apps/web/lib/server/storage.ts), [officer-ai-provider.ts](../../apps/web/lib/server/officer-ai-provider.ts) | Preserve integrity behavior and govern legacy external calls | Close bypass paths | FND | DEPLOY adapters |
-| Proposed new `packages/contracts/src/usp/deployment.ts` | Policy/capability/qualification schemas | Explicit deployability and limits | DEPLOY | Common refs/context |
-| Proposed new `apps/web/lib/server/usp/deployment/{policy,capabilities,model-gateway,scan,mail,routes}.ts`, `providers/{sarvam,local}.ts`, `migrations/19-deployment.ts` | Govern services and store safe qualification receipts | Approved processing path | DEPLOY | FND principal/config/mount |
-| Proposed new `infra/deployment/{compose.india-private.yaml,policy.example.json,README.md}` | Standalone deployment specification and required controls | Reproducible private profile | DEPLOY | FND build artifacts; operator infrastructure |
-| Proposed new `scripts/usp/deployment-check.ts` | Explicit non-destructive preflight/network/restore verification orchestration | Measured qualification | DEPLOY | Isolated target and operator permission |
-| Proposed new `apps/web/features/usp/deployment/DeploymentStatus.tsx` | Safe administrator diagnostics | Visible unmet gates without clutter | DEPLOY | UI settings slot |
-| Proposed new `tests/usp-deployment.test.ts`, `tests/usp-deployment-integration.ts`, `tests/e2e/usp-deployment.spec.ts` | Policy, legacy bypass, denied egress and status tests | No assertion-only residency claim | DEPLOY | Isolated infrastructure/F2 fixtures |
+| File | Change / owner |
+| --- | --- |
+| Existing compose/config/storage/Nous/geo settings and package/lock files | FND sole editor applies narrow DEPLOY patches; original local setup preserved |
+| Proposed `packages/contracts/src/usp/deployment.ts` | DEPLOY policy/capability/scan/mail/model result schemas, FND port compatibility |
+| Proposed `apps/web/lib/server/usp/deployment/{policy,capabilities,model-gateway,scan,mail,routes}.ts`, `providers/{sarvam,local}.ts`, `migrations/19-deployment.ts` | DEPLOY adapters/status; FND mounts/migrates |
+| Proposed `infra/deployment/{compose.india-private.yaml,policy.example.json,README.md}` | DEPLOY standalone reference, operational instructions and safe placeholders |
+| Proposed `infra/deployment/Dockerfile.web` and shared service entrypoints | FND build artifact owner, DEPLOY tests/consumes |
+| Proposed `scripts/usp/deployment-check.ts` | DEPLOY non-destructive inventory/preflight/isolated test orchestration |
+| Proposed `apps/web/features/usp/deployment/DeploymentStatus.tsx` | DEPLOY leaf; UI extends actual Shell workspace dialog |
+| Proposed `tests/usp-deployment.test.ts`, `tests/usp-deployment-integration.ts`, `tests/e2e/usp-deployment.spec.ts` | DEPLOY policy, real destination, scanner, launch and recovery tests |
 
 ## G. UI placement and interaction
 
-The baseline [Shell](../../apps/web/features/officer/shared/Shell.tsx) has a **Local workspace** status action/dialog, not a general deployment settings menu. UI extends that existing action into a capability-aware workspace menu: authorized operator → **Deployment** → profile, capabilities and qualification gaps → actionable configuration reference. This is an advanced contextual surface, not a fourth top-level officer section. Replace unconditional “Your evidence stays here” copy with statements supported by the active profile and qualification results. Property users see a short local reason such as “AI mapping unavailable; manual mapping is available,” not the provider's raw error.
+The existing [Shell](../../apps/web/features/officer/shared/Shell.tsx) Local workspace dialog is the integration point; no assumed deployment settings page. UI extends it to show authorized profile/capability/qualification details and actionable missing configuration. Remove unconditional data-stays-here copy unless the tested profile supports it. Loading says not checked; missing service says unavailable; failed qualification blocks protected activation; successful status states exactly what was tested. No government-certified/India-only badge from a config variable. Ordinary users keep a brief manual-fallback explanation.
 
-Loading/unknown checks show “Not checked.” Missing credentials show a disabled capability without exposing secret names/values unnecessarily. Failed egress/identity qualification blocks protected-mode release; successful checks say what was tested and when, not “government certified.” An offline basemap has a local fallback/empty base while supplied geometry remains inspectable. DEPLOY owns status content; UI owns the settings entry and visual pattern.
+## H. Ownership and dependencies
 
-## H. Agent ownership and dependencies
-
-Use `feat/usp-deployment`. Policy and adapter tests start after F0. Native local no-AI integration can proceed before F2; public/private production release cannot. FND owns identity, shared config/dependencies, legacy-call shims and API mounts; DEPLOY owns the bounded gateway/provider/scan/mail implementations and infrastructure reference. ASSIST/INGEST consume modelGateway without adding their own network clients. Human tasks supply provider/IdP/infrastructure approvals, not architecture or code.
+Use `feat/usp-deployment`; own DEPLOY new adapters/reference/test files only. F0 policy/fixture work can run alongside local V0. F2 and accountable H3 approval are required only for protected/public activation claims. FND owns auth/shared configuration/build/legacy hooks; UI workspace mount. Technical defaults, open-source acquisition, inventory and tests are agent work; people provide permissions/actual accounts, not architecture.
 
 ## I. Implementation sequence
 
-1. Inventory actual server/browser destinations and classify data exposure; record unknowns rather than claiming containment.
-2. Implement strict policy/capability schemas and denied-by-default gateway; preserve local no-AI operation.
-3. Add and qualify Sarvam/local adapters with synthetic requests; wire existing Nous through FND's policy gate.
-4. Add scanner/mail contracts and a standalone protected stack reference; coordinate F2 route/page coverage.
-5. Run isolated denied-egress, SSE reconnect/proxy and multi-principal tests; verify optional assets/telemetry behavior.
-6. Test backup/restore in new volumes and publish qualification receipts plus honest resource requirements.
+1. Inventory actual routes/destinations and build requirements; keep unknown entries unqualified.
+2. Implement default-deny policy and local no-AI capability behavior.
+3. Implement Sarvam/local/scanner/mail adapters and synthetic tests; govern legacy Nous through FND.
+4. Produce and launch standalone images/entrypoints in isolated volumes; prove no duplicated dispatcher and no accidental service ingress.
+5. Test F2 and all source/scene/SSR/public routes, browser egress, SSE proxy/reconnect and provider outages.
+6. Restore new volumes and validate hashes/manifests/jobs/events; report environment-specific qualification separately.
 
-## J. Acceptance criteria and verification
+## J. Dataset and operational verification
 
-Synthetic restricted-data demo performs source intake, mapping, evidence preview and packet generation in the selected profile. Capture destination metadata at the boundary; no unapproved call occurs from either new or legacy provider paths. Deny the approved model endpoint: native manual workflows still work and no fallback request goes elsewhere. Public MCP remains disabled in `india_private`.
+Use D0 non-personal fixtures from [00](00-README.md), labelled restricted for policy testing: original upload, exact property, source preview, PACK derivative and INGEST draft asset. Source data need not be truly sensitive to test denial. Add one separately released sanitized derivative and verify public access without private originals. D1/D2 external fetching is an explicit allowed acquisition task, not an unapproved runtime tile dependency; cache/preserve permitted small assets for private-mode tests.
 
-Test bad policy version, unknown destination, endpoint redirect, missing/expired credential, wrong IdP audience, scanner outage, email outage, unsafe diagnostics, third-party tile attempt, response truncation, exhausted model budget, revoked capability, worker restart and interrupted restore. A status page cannot mark residency qualified using configuration alone. Restored original hashes and registry revisions must match; outstanding job/event recovery must be duplicate-safe.
+Live provider qualification uses only bounded synthetic fields through a separately configured approved key. No key means adapter mocks plus deterministic operation, not a live Sarvam pass. Verify structured output, truncation, tool attempts, response limit, quota/timeout, missing key and model unavailable; deny the approved endpoint and assert no legacy/alternative call. No automatic credit purchase or model switch.
 
-Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:ai`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-deployment.test.ts`; `pnpm exec tsx tests/usp-deployment-integration.ts`; `pnpm exec playwright test tests/e2e/usp-deployment.spec.ts`. Once created, run `pnpm exec tsx scripts/usp/deployment-check.ts` against an explicitly isolated configured target. Use existing `pnpm platform:health` for the unchanged local stack. Do not claim protected deployment or live Sarvam qualification when only fixtures ran; return exact model/service/config versions and unresolved provider evidence separately.
+Scanner tests include a benign permitted test fixture, known antivirus test artifact under isolated test policy, scan-size limit, stale signatures and unavailable daemon; skipped work must never return clean. Email acknowledgement loss becomes unknown/reconciled, not claimed exactly once. Check wrong IdP audience, unguarded SSR, direct asset URLs, cached revocation, third-party browser tile request, secret-safe errors and blocked redirects. Kill a worker and interrupt restore, then resume idempotently with no duplicated records/notifications.
 
-## K. Copy-paste agent assignment
+Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:ai`, existing `pnpm platform:health`; proposed `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-deployment.test.ts`, `pnpm exec tsx tests/usp-deployment-integration.ts`, `pnpm exec playwright test tests/e2e/usp-deployment.spec.ts`, and `pnpm exec tsx scripts/usp/deployment-check.ts` only after creation and against an explicitly isolated target. Return code/pack/image/provider versions, inventory, actual calls denied/allowed, launch/restore receipts and unresolved H3 evidence. Configuration tests cannot prove residency.
 
-> Implement DEPLOY on `feat/usp-deployment`. Read the index/shared contracts, this handoff, existing compose/config/storage/Nous code and current official provider documentation. Build the proposed policy, model gateway, approved Sarvam/local adapters, scanner/mail interfaces, safe status and standalone deployment reference. FND owns shared config/dependencies/auth/mounts and legacy provider patches; UI owns settings placement. Govern every data path, not only new AI calls, and preserve manual local operation. Do not infer geography from a region string, silently fall back to an external provider, commit secrets or deploy over existing volumes. Run section J against fixtures and explicitly isolated infrastructure as available; return commits, destination inventory, measured checks/restore evidence, resource requirements and human approval gaps. No main merge or public activation without authorization.
+## K. Copy-paste assignment
+
+> Implement DEPLOY using 00, 01 and this handoff on feat/usp-deployment. Use non-personal D0 to build default-deny policy, governed Sarvam/local adapters, hash-bound scanner and honest mail outcomes; keep no-AI local operation usable. FND owns shared config/build/auth/legacy patches and UI the existing workspace dialog. Inventory all routes/SSR/assets/browser calls, not just new model traffic. Build/test the standalone stack with correct web/dispatcher entrypoints in new isolated volumes, then run J egress/scanner/recovery tests. Actual approved service/account evidence is a separate gate; do not ask humans to code/provision by default, collect secrets in Git/chat, buy credits, claim configuration proves residency or launch/merge main without authorization.
