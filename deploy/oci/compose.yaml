@@ -1,0 +1,6 @@
+services:
+  postgres:
+    image: ulpin-postgis:17-arm64
+    platform: linux/arm64
+    build:
+      context: ./deploy/oci/postgis

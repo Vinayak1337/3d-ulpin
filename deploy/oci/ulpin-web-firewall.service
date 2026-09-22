@@ -1,0 +1,12 @@
+[Unit]
+Description=Allow HTTP and HTTPS ingress for ULPIN Studio
+After=network-pre.target
+Before=caddy.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c '/usr/sbin/iptables -C INPUT -p tcp -m multiport --dports 80,443 -j ACCEPT || /usr/sbin/iptables -I INPUT 1 -p tcp -m multiport --dports 80,443 -j ACCEPT'
+
+[Install]
+WantedBy=multi-user.target
