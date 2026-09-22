@@ -1,90 +1,100 @@
 # 16 · Shared spaces, access relationships and vertical rights
 
-Owner **RIGHTS** · Priority **P2** · Baseline `main@f623cff897f91bb3ebd4c225f700ac263f7beb72` · Read [F0/F1 contracts](01-shared-contracts-and-ownership.md) and [history boundaries](15-property-history-and-comparison.md).
+Owner **RIGHTS**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), compatibility rules in [12](12-rights-aware-spatial-findings.md), packet applicability in [10](10-scoped-evidence-packets.md), and [99](99-ui-ux-and-integration.md). ER-05/06/11/13/24 are incorporated. New code paths are implementation tasks.
 
 ## A. User outcome and product value
 
-Allow an officer or authorized property user to inspect which defined spaces have recorded or claimed shared-use/access relationships, and the evidence behind them. Show a staircase, corridor, terrace, parking bay or underground crossing as an identified space with relationships—not merely an unlabelled building mesh. This is a vertical-mapping differentiator when backed by source evidence.
-
-Synthetic example: Flat 101 and Flat 201 use Stair S1. A submitted document claims S1 belongs exclusively to Flat 101. Show the shared-use assertions, conflicting exclusive claim, affected units and source clauses. Do not decide which claim is legally correct. A duplex may relate to two floors while retaining one space identity.
+Allow an authorized user to inspect which defined stairs/corridors/terraces/basements serve which units, view the supporting clause and propose/review a correction. One shared stair is one space with multiple beneficiaries, not duplicated geometry. A duplex remains one identity across floors even when its per-floor outlines differ. Conflicting claims remain reviewable rather than silently replacing one another.
 
 ## B. Current implementation and gap analysis
 
-[registry contracts](../../packages/contracts/src/registry.ts) already include space use, `ownership_claim`, `shared_use`, `easement` and relationship types `within`, `floor`, `serves`, `crosses`. However, [registry evidenceChecks](../../apps/web/lib/server/registry.ts) currently permits `serves` from a space **to a building**, not arbitrary space-to-space access graphs. A new stair-to-flat relationship cannot simply be written into that legacy enum without coordinated validation changes.
+[Registry contracts](../../packages/contracts/src/registry.ts) contain ownership_claim/shared_use/easement and within/floor/serves/crosses. [Registry validation](../../apps/web/lib/server/registry.ts) currently allows serves from a space to a building, not arbitrary stair-to-unit relations. [Geometry checks](../../services/geo/geo/registry.py), [core identity](../../packages/contracts/src/spatial/core/identity.ts) and [source-link policy](../../packages/contracts/src/spatial/core/source-schema.ts) supply reusable constraints, not a complete reviewed access graph.
 
-[geo/registry.py](../../services/geo/geo/registry.py) treats parent context separately from competing volumes and checks membership/crossings. [core identity](../../packages/contracts/src/spatial/core/identity.ts) validates typed relations and lineage; [core source policy](../../packages/contracts/src/spatial/core/source-schema.ts) limits evidence inheritance. These concepts are present; a complete reviewed, permission-aware shared-access graph is not confirmed.
-
-Missing: explicit assertion identity/revisions, evidence-backed unit-level access relationships, conflicting assertions without destructive replacement, full inspection UI and downstream scoped context projections. Existing party strings should not become a new verified-person registry.
+Implement an additive versioned assertion/context store with exact geometry/evidence references and atomic technical acceptance receipts. Do not expand a legacy enum independently, treat party strings as a verified-person registry or infer rights from physical adjacency.
 
 ## C. Scope and non-goals
 
-First release: read existing rights/relationships; propose and review explicit shared-use/access/restriction assertions among supported existing spaces within one qualified site/scope; inspect linked clauses and affected units; expose a minimal relationship projection to FIND, PACK and IMPACT. Preserve existing registry links without broad semantic reinterpretation.
+Required: read compatible existing relations, propose/review named new assertions among existing supported spaces within one site, preserve conflicts/history, inspect evidence, and supply explicit context projections to FIND/PACK/IMPACT. Current relations do not wait for optional split/merge writes or full HISTORY integration.
 
-No automatic ownership adjudication, legal entitlement inferred from physical accessibility, emergency egress certification, automatic share percentages, navigation through private interiors or cross-site title consolidation. Cross-site tunnels and complex non-prismatic rights require separate adapter/geometry qualification. Missing internal geometry stays unresolved and can receive an evidence request; it is not generated from the exterior.
+No legal adjudication, emergency-egress certification, inferred equal ownership shares, private indoor navigation, cross-site title consolidation or measured easement corridor from text alone. General solids/federated scopes are separate qualification. Unknown extent remains a retained claim with no analytical geometry.
 
 ## D. HLD and end-to-end flow
 
-Select unit/shared space → inspect current relationships and their sources → propose an explicit relationship/right assertion → validate endpoints/scope/evidence and geometric applicability → reviewer accepts for technical recording or requests clarification → FND records through a revision-checked adapter → graph projection and affected-property views update → linked FIND checks and PACK context plans become stale/recompute.
-
-The graph is an evidence-backed read model, not another spatial database. It can display unreviewed assertions as such, but only the explicit reviewed selection participates in a downstream “recorded relationship” projection.
+Select unit/shared space → read exact relationship manifest → inspect cited source → propose assertion with endpoint pins/extent/validity → validate and review → FND same-client technical acceptance → store immutable assertion revision/receipt/outbox → dependent views refresh → open same affected spaces and scoped clauses. Compatibility finding and accepted-record status are separate results.
 
 ## E. Targeted LLD
 
-Proposed `RightsAssertion`: stable ID/revision, source/target pins, assertion kind (`shared_use`, `access_via`, `easement_claim`, `restriction_claim`), evidence pointers, origin/classification, stated validity interval or unknown, party reference/display only when authorized, scope, review state and supersededBy. Existing `RegistryRight` values are adapted as source assertions, preserving their original meaning and status.
+### Assertion and spatial representation
 
-Use distinct relations for physical containment, level occupancy, access and rights. A common-space geometry can serve multiple units; do not clone its geometry per beneficiary. A duplex has one ID and explicit links to multiple applicable floors. An easement claim references a defined affected space or explicit unresolved extent; a text-only claim does not create a measured corridor. Fractions/share weights are included only if supplied with definition and evidence; do not divide equally by resident count.
+`RightsAssertion`: stable ID/revision, SnapshotScope, endpoint target pins, kind (ownership_claim/shared_use/access_via/easement_claim/restriction_claim), stated exclusivity (exclusive/shared/unspecified), evidence pointers, exact extent representation refs or unresolved extent, stated validity interval or unknown, origin/classification, permitted party reference/display, proposed/under_review/accepted/rejected/clarification_required state, supersedes/supersededBy and actual receipt. Default legacy exclusivity to unspecified unless the source explicitly states it. Do not infer exclusive title merely from a category label.
 
-Proposed `usp_rights_assertions`, `usp_rights_reviews`, `usp_rights_commit_links` store additive assertion history and accepted receipt references. FND supplies a mapping adapter: compatible building-level `serves`/existing rights can flow through existing draft/commit validation; new space-to-space assertions stay in their separately versioned, technically reviewed relation store. They do not silently mutate the meaning of `RegistryLink`. Both paths share access checks, expected revisions, audit and atomic accepted-receipt publication.
+Keep containment, floor occupancy, physical access and rights assertions separate. Cardinalities allow many beneficiaries and multiple parcels/floors with explicit relations. A duplex references distinct per-level components with real lower/upper limits; no union-footprint × full height or connecting volume through a void. FND's geometry bridge must preserve every component in exact snapshots; incompatible simple-ring legacy mirrors stay unavailable. Before qualified component analysis, show the supplied identity/relations/source and analytical capability unsupported. Never give each component a new ownership identity just to fit storage.
 
-States: `proposed → under_review → accepted | rejected | clarification_required`; accepted assertions are superseded or withdrawn by a new reviewed revision, never deleted to erase history. “Accepted” means accepted into the application's technical relationship record. Authority/official acceptance remains a separate evidence assertion. An accepted claim may still conflict with another claim; review state does not prove truth.
+Fractions are represented only when supplied with definition and source. Unknown validity cannot be assumed always current. Self edges and incompatible endpoint kinds fail. Containment must be acyclic; access graphs may legitimately cycle. Context traversal is bounded to 200 visited nodes and depth 8; report incomplete coverage rather than silently truncating affected units. Initial cross-site endpoint requests return unsupported_scope; no fabricated common site.
 
-Validation requires endpoint existence, same allowed scope/world, expected revisions, non-self edges, compatible kinds, exact source association and supported validity. Containment edges must remain acyclic. Access graphs may contain legitimate cycles; do not incorrectly apply a global DAG constraint to all relationship types. Limit traversal to explicit paths, maximum 200 visited nodes per contextual request; report truncation rather than silently omitting affected spaces. Cross-scope endpoints require a future approved federation adapter and are initially rejected.
+### Authority and same-client acceptance
 
-FIND consumes `{relationships, assertedRights, unresolved, inputPins}` and must distinguish claim/review status. PACK receives only explicit allowed context edges and evidence pointers applicable to its selected target; the whole building's rights do not automatically propagate to a unit. IMPACT can identify affected relationship endpoints but cannot infer legal compensation or clearance. HISTORY supplies prior revisions when available; absent lineage is shown as unknown.
+Tables `usp_rights_assertions`, `usp_rights_reviews`, `usp_rights_commit_links`, `usp_rights_applicability` store versioned claims/review receipts, not copied property geometry. Existing compatible relations flow through existing registry draft/commit validation. New space-to-space assertions use the separately versioned technical assertion store; they do not masquerade as supported legacy RegistryLink values. One projection indicates each assertion's authority origin to avoid double-counting a compatible migrated relation.
 
-Proposed APIs under `/api/v1/usp/rights`: `GET /targets/:ref/relationships` with scope/digest; `POST /assertions` with target/source pins, kind, evidence and idempotency key; `POST /assertions/:id/review` with expected assertion/endpoints revisions and reason; `GET /assertions/:id/history`. An accepted review publishes a minimal outbox event and link to its actual commit receipt in one transaction. Reads and derived diagrams apply source/party permissions; do not reveal hidden parties through tooltips, graph labels or downloadable JSON.
+Review checks expected assertion/endpoints/full dependency manifest and source association. Accepted technical revision, receipt with post-write pins, audit and outbox commit on the same PoolClient through `commitProposal(kind:'relationship')` in 01. FND registers the transaction handler; RIGHTS supplies feature-local transaction logic. A feature cannot call an independently committing registry wrapper inside its outer transaction. Failed writes leave no accepted receipt. Accepted assertions are changed/withdrawn through a new reviewed revision, not erased.
 
-AI can suggest a relationship only from an exact authorized clause and existing endpoint IDs; it cannot infer shared rights from adjacency, stair geometry or owner names. Validators and reviewer confirmation remain required. Deterministic forms work with AI disabled.
+### Compatibility and document applicability
+
+| Condition | Required treatment |
+| --- | --- |
+| Multiple shared-use assertions on one stair | Not inherently exclusive conflict; show beneficiaries and evidence |
+| Exclusive assertion overlaps another explicitly incompatible assertion in the same defined extent and overlapping supplied validity | possible_incompatibility for review, not legal verdict |
+| Different supplied non-overlapping validity periods | Temporal context, not assumed simultaneous conflict |
+| Missing exclusivity/extent/validity | compatibility not_assessed; do not auto-clear or accuse |
+| Purported easement supplied | Preserve claim/review status; cannot automatically clear a geometric crossing |
+| Parent clause has no unit-applicability decision | Not automatically inherited into a unit packet |
+
+`ApplicabilityDecision` pins clause/source part, selected target, relation path, purpose, validity, reviewer, policy and active/superseded state. PACK includes shared context only when this decision is current and authorized. A stair related to two units does not authorize either unit to receive the other's deed. AI may suggest a clause/link citing exact authorized text and existing endpoints; it may not approve applicability or release.
+
+Downstream port returns `ServiceResult<{inputManifestId,relationships,assertedRights,applicableContext,unresolved,coverage}>`. FIND consumes claims and supplied compatibility inputs; PACK consumes reviewed applicableContext; IMPACT consumes allowed affected endpoint refs. Missing port is not empty graph. A relationship/applicability change invalidates their complete dependency manifest even without geometry/property revision change. HISTORY contributes prior revisions when available, not an invented timeline.
+
+### API and access
+
+Prefix `/api/v1/usp/rights`: `GET /targets/:ref/relationships` with SnapshotScope; `POST /assertions` with create guard, endpoints/kind/evidence/extent; `POST /assertions/:id/review` with update guard/current manifest/reason; `POST /assertions/:id/withdraw` creates reviewed superseding state; `GET /assertions/:id/history`; `POST /applicability` with reviewer/target/clause/path/purpose/version guard. Use 01 envelopes and exact reference codec. Source, party, diagram labels and downloads all reauthorize. Public output requires an explicit ReleaseDecision; a technically accepted claim is not automatically public.
 
 ## F. Exact implementation map
 
-| Existing or proposed file | Required change | Reason | Owner | Shared dependency |
-| --- | --- | --- | --- | --- |
-| [registry.ts contracts](../../packages/contracts/src/registry.ts), [registry service](../../apps/web/lib/server/registry.ts) | Preserve existing allowed relation kinds; expose compatible reviewed-write adapter | Avoid semantic corruption | FND | RIGHTS assertions |
-| [core identity](../../packages/contracts/src/spatial/core/identity.ts), [core source schema](../../packages/contracts/src/spatial/core/source-schema.ts) | Reuse reference validation/evidence inheritance boundaries | Stable graph semantics | RIGHTS read-only reuse | F0 |
-| Proposed new `packages/contracts/src/usp/rights.ts` | Assertion/review/context-edge DTOs | Explicit semantics and states | RIGHTS | Common/port projection |
-| Proposed new `apps/web/lib/server/usp/rights/{graph,assertions,review,routes}.ts`, `migrations/16-rights.ts` | Additive reviewed assertion store and graph projection | Unit-level relationships without duplicate geometry | RIGHTS | FND commit/access/audit |
-| Proposed new `apps/web/features/usp/rights/{RelationshipsPanel,AssertionForm,RelationshipEvidence}.tsx` | Inspect/propose/review contextual relations | Exact-space UX | RIGHTS | UI selection/evidence slots |
-| [QuickRecords.tsx](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage.tsx](../../apps/web/features/officer/register/RegisterPage.tsx) | Mount Relations context | One register | UI | RIGHTS leaves |
-| Proposed new `tests/usp-rights.test.ts`, `tests/usp-rights-integration.ts`, `tests/e2e/usp-rights.spec.ts` | Graph, evidence and reviewed-record tests | No inferred rights | RIGHTS | FND/FIND fixtures |
+| File | Change / owner |
+| --- | --- |
+| Existing registry contracts/validator and core references linked in B | FND compatible same-client mapping/geometry bridge, never independent enum change |
+| Proposed `packages/contracts/src/usp/rights.ts` | RIGHTS assertion, applicability, review and downstream projection schemas |
+| Proposed `apps/web/lib/server/usp/rights/{graph,assertions,review,applicability,routes}.ts`, `migrations/16-rights.ts` | RIGHTS additive versioned store and leaf handlers; FND registers |
+| Proposed `apps/web/features/usp/rights/{RelationshipsPanel,AssertionForm,RelationshipEvidence}.tsx` | RIGHTS relation/evidence/forms |
+| [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx), shared map | UI mounts Relations within existing context, no permanent extra app |
+| Proposed `tests/usp-rights.test.ts`, `tests/usp-rights-integration.ts`, `tests/e2e/usp-rights.spec.ts` | RIGHTS cardinality, component, clause, transaction and disclosure tests |
 
 ## G. UI placement and interaction
 
-Quick register → choose Stair S1 → **Relations** → see “Serves Flat 101 and Flat 201” with claim/review labels → open supporting clause → **Propose correction** or **Request evidence**. Full register gives the same relationship list plus versioned review history and a small accessible relationship diagram/list. Selecting a beneficiary highlights its exact space in the existing map; camera remains under the shared controller.
+Quick register → Stair S1 → Relations → beneficiaries → cited clause → propose correction/request evidence. Show short readable relationships before any graph. Selecting a beneficiary highlights its exact ID; one stair mesh remains. Full register expands evidence/history in the same contextual section. Missing graph says no relationships supplied, not private ownership. Unknown extent, conflicting claim, denied source, partial traversal and superseded revision have different labels. Review errors retain the draft. UI owns camera, focus and sheet; RIGHTS owns leaf contents.
 
-Default view shows a short human-readable relation, not a dense graph. Expand evidence/party details only when permitted. Empty says “No relationships supplied,” not “Private space.” Unknown geometry, conflicting claims and incomplete traversal have distinct labels. Loading/review failures preserve the draft form. Denied evidence is not exposed through graph export. Accepted review shows its technical receipt and any still-open conflict. RIGHTS owns leaf content; UI owns parent tabs, map highlights and mobile drawer layout.
+## H. Ownership and dependencies
 
-## H. Agent ownership and dependencies
-
-Use `feat/usp-rights`. F0 permits graph/validation fixtures; F1 is required for real assertions and review receipts. HISTORY read port is consumed when available; absence does not justify invented old relations. FND owns changes to existing registry enums/validators/transactions and any shared adapter. UI owns shared map and parents. FIND/PACK/IMPACT consume documented projections, not direct writes into RIGHTS tables. Keep cross-site/general-solid work outside the initial scope.
+Use `feat/usp-rights`; own RIGHTS modules/migration/tests only. F0 fixtures then F1-feature actual acceptance/geometry references. Current relationships work without new lineage editing. FIND/PACK/IMPACT read documented ports, not mutate this store. FND owns shared transaction/registry/geometry adapters; DATA packs; UI parents. Real clause applicability H2 is a pilot qualification, not a blocker for explicitly authored demonstration policy.
 
 ## I. Implementation sequence
 
-1. Adapt existing shared-use/easement/serves/floor relationships without changing their meaning.
-2. Define supported new assertion kinds and endpoint/evidence rules; add same-site fixtures including duplex and access cycles.
-3. Implement additive assertion/review storage and atomic accepted receipt through FND.
-4. Expose minimal downstream context ports; test that unreviewed claims cannot clear findings or broaden packets automatically.
-5. Build Relations UI and exact-space highlight callbacks; UI mounts them.
-6. Run live proposal/review/revision scenarios with party/source restrictions and conflicting claims.
+1. Adapt existing relation semantics and source IDs; create explicit unknowns where metadata is missing.
+2. Obtain D0 stair/duplex/claim fixtures; implement endpoint, validity, exclusivity and cycle rules.
+3. Persist assertion/review with FND same-client receipt; test rollback and concurrent reviews.
+4. Implement reviewed applicability decision and downstream projections, invalidating dependent manifests.
+5. Mount exact-space/evidence UX via UI; demonstrate one geometry serving multiple units.
+6. Test qualified per-level components through actual persistence; then attempt permitted D5 clauses for real-source evaluation.
 
-## J. Acceptance criteria and verification
+## J. Data and acceptance tests
 
-Demo a shared stair serving two floors, one duplex spanning two floors, a terrace restriction claim and a basement crossing with unresolved extent. All use stable spatial identities and cited clauses. A conflicting exclusive claim remains visible beside shared-use evidence. Reviewing it cannot alter geometry or confer official ownership. The same stair appears once, not once per linked flat.
+**D0 from 00:** STAIR-S1 serves U-A101 and another supplied floor's unit. Include shared clause SHARED_STAIR_CONTEXT, an unrelated sibling deed, conflicting explicit exclusive claim, missing validity, access cycle and invalid containment cycle. DUPLEX-D1 has unequal per-floor outlines and an empty region between them. Assert one semantic ID and exact components retained; either qualified compound analysis or explicit unsupported result, never a filled envelope. A text-only basement crossing retains unresolved extent.
 
-Test unauthorized source/party details, cross-site endpoints, stale review, duplicate relation, valid access cycle, invalid containment cycle, missing evidence, superseded assertion, failed transaction and packet-context expansion. An accepted relationship update invalidates dependent FIND/PACK projections by their input digest; no event-only assumption.
+**After local completion, D5:** obtain permitted matching plan/section/shared clauses from [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) or [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or a consenting institution. Previous attachment access was not qualified. Recheck tower/unit, clause applicability, dates, geometry and permissions; do not collect unrelated personal data. Missing clauses → D0 fallback and unpassed real-rights qualification.
 
-Run `pnpm typecheck`, `pnpm test:registry`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-identity.test.ts tests/usp-rights.test.ts`; `pnpm exec tsx tests/usp-rights-integration.ts`; `pnpm exec playwright test tests/e2e/usp-rights.spec.ts`. Return exact before/after assertion/receipt evidence, negative authorization tests and UI captures.
+Test stale endpoint/source/applicability, duplicate command, superseded/withdrawn assertion, two reviewers, cross-site request, private parties in graph/tooltips/JSON, unavailable HISTORY, and failed transaction before receipt. PACK must exclude the sibling deed even after an accepted shared relation; FIND must not clear overlap merely because an easement was accepted technically. Reopen the same relation and sources after restart; dependent results must become stale on relation-only change.
 
-## K. Copy-paste agent assignment
+Run `pnpm typecheck`, `pnpm test:registry`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-identity.test.ts tests/usp-rights.test.ts`; `pnpm exec tsx tests/usp-rights-integration.ts`; `pnpm exec playwright test tests/e2e/usp-rights.spec.ts`. Return assertion/receipt before-after pins, component round-trip, packet-inclusion and permission evidence plus actual UI captures. No synthetic clause proves legal applicability.
 
-> Implement RIGHTS on `feat/usp-rights`. Read the index/shared contracts, this handoff and the existing registry relation validators/core evidence rules. Build the proposed additive assertion/review/graph modules and tests; preserve the current `serves` semantics rather than expanding legacy enums independently. Reuse spatial IDs, require exact cited clauses and keep claim/review/authority distinct. FND owns reviewed registry adapters; UI owns shared register/map mounts. Supply documented context projections to FIND/PACK/IMPACT and consume real HISTORY only when available. Run section J including access-cycle versus containment-cycle cases and live reviewed receipts. Return commits, schema/adapter needs, test evidence and limitations; no main merge without authorization.
+## K. Copy-paste assignment
+
+> Implement RIGHTS using 00, 01 and this A–K file on feat/usp-rights. Obtain D0 stair/duplex/claim truth and later attempt permitted D5 clauses. Preserve legacy relation meanings and one identity across component geometries. Build versioned assertions, exact evidence/validity/exclusivity, reviewed applicability and same-client technical acceptance via FND. Supply FIND/PACK/IMPACT projections with unknown states; no blanket inheritance or ownership inference. UI owns shared scene/parents, DATA pack files. Complete J real-service rollback/stale/component/clause/access tests and return commits, receipts and screenshots with capability limits. Do not ask humans to design the graph, invent legal rights or merge main without authorization.
