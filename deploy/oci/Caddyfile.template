@@ -1,0 +1,17 @@
+__PUBLIC_HOST__ {
+    @foreign_origin {
+        header Origin *
+        not header Origin https://__PUBLIC_HOST__
+    }
+    respond @foreign_origin "Forbidden" 403
+
+    @cross_site header Sec-Fetch-Site cross-site
+    respond @cross_site "Forbidden" 403
+
+    reverse_proxy 127.0.0.1:3000 {
+        header_up Host 127.0.0.1:3000
+        header_up Origin http://127.0.0.1:3000
+        header_up X-Forwarded-Host 127.0.0.1:3000
+        header_up X-Forwarded-Proto http
+    }
+}

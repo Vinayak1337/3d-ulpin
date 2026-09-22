@@ -1,0 +1,20 @@
+[Unit]
+Description=3D ULPIN web and dispatcher
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/ulpin/app
+Environment=NODE_ENV=production
+Environment=NODE_OPTIONS=--max-old-space-size=4096
+ExecStart=/usr/local/bin/pnpm start
+Restart=always
+RestartSec=5
+UMask=0077
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

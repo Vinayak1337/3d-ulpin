@@ -1,0 +1,59 @@
+name: Deploy OCI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ulpin-oci-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test:studio
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy the verified main revision
+        env:
+          OCI_HOST: ${{ secrets.OCI_HOST }}
+          OCI_SSH_USER: ${{ secrets.OCI_SSH_USER }}
+          OCI_SSH_PRIVATE_KEY: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          OCI_SSH_KNOWN_HOSTS: ${{ secrets.OCI_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          [[ "$OCI_HOST" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$OCI_SSH_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$OCI_SSH_PRIVATE_KEY" > "$HOME/.ssh/ulpin-oci"
+          printf '%s\n' "$OCI_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/ulpin-oci" "$HOME/.ssh/known_hosts"
+          public_host="${OCI_HOST}.sslip.io"
+          ssh -i "$HOME/.ssh/ulpin-oci" -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$OCI_SSH_USER@$OCI_HOST" bash -s -- "$public_host" <<'REMOTE'
+          set -euo pipefail
+          public_host="$1"
+          cd /opt/ulpin/app
+          test -z "$(git status --porcelain --untracked-files=no)"
+          git fetch origin main
+          git merge --ff-only origin/main
+          bash deploy/oci/deploy.sh "$public_host"
+          REMOTE
