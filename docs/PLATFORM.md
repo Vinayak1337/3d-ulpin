@@ -168,4 +168,4 @@ and findings. The same IPv4 localhost web listener survived both the worker-only
 launcher recovery and the full Docker restart. All five application service
 flags returned true. Evidence is in
 [platform-restart-verification.json](../test-results/platform-restart-verification.json)
-and the broader release gate is in [HACKATHON_STATUS.md](HACKATHON_STATUS.md).
+and the broader release gate is in [HACKATHON_STATUS.md](https://github.com/Vinayak1337/3d-ulpin/blob/f623cff897f91bb3ebd4c225f700ac263f7beb72/docs/HACKATHON_STATUS.md).

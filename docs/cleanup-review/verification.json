@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "ulpin-cleanup-verification/1",
+  "date": "2026-09-23",
+  "input_sha": "cc154f7c1c42f0f1668b6a8885c88257c7a8ee96",
+  "runner": "ubuntu-24.04",
+  "node": "v24.20.0",
+  "tested_tree": "0ffd97f4c84cca299fb21871511dd3e9658a545d",
+  "workflow_run": "https://github.com/Vinayak1337/3d-ulpin/actions/runs/35784882920",
+  "checks": [
+    {
+      "name": "historical-plan-consistency",
+      "command": "python3 docs/engineering-plan/tools/validate_plan.py",
+      "exit_code": 1,
+      "status": "pre_existing_failure",
+      "seconds": 0.06,
+      "baseline_sha": "f623cff897f91bb3ebd4c225f700ac263f7beb72",
+      "baseline_exit_code": 1,
+      "identical_baseline_result": true,
+      "error": "'sequence'"
+    },
+    {
+      "name": "engineering-reference-acceptance",
+      "command": "node --test tests/engineering-acceptance.test.mjs",
+      "exit_code": 0,
+      "status": "pass",
+      "seconds": 0.22
+    },
+    {
+      "name": "source-collector-tests",
+      "command": "python3 -m unittest discover -s docs/engineering-plan/tools/tests -p 'test_*.py'",
+      "exit_code": 0,
+      "status": "pass",
+      "seconds": 1.57
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exit_code": 0,
+      "status": "pass",
+      "seconds": 14.72
+    },
+    {
+      "name": "studio-contracts",
+      "command": "pnpm test:studio",
+      "exit_code": 0,
+      "status": "pass",
+      "seconds": 5.73
+    },
+    {
+      "name": "register-scope",
+      "command": "pnpm test:register-scope",
+      "exit_code": 0,
+      "status": "pass",
+      "seconds": 0.72
+    },
+    {
+      "name": "uttam-data-and-provenance",
+      "command": "pnpm test:uttam",
+      "exit_code": 0,
+      "status": "pass",
+      "seconds": 3.13
+    },
+    {
+      "name": "core-spatial-contracts",
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-*.test.ts",
+      "exit_code": 0,
+      "status": "pass",
+      "seconds": 4.1
+    },
+    {
+      "name": "repository-data-mode",
+      "command": "node --test tests/repo-data-mode.test.mjs",
+      "exit_code": 0,
+      "status": "pass",
+      "seconds": 0.11
+    },
+    {
+      "name": "cleanup-python-syntax",
+      "command": "python3 -m py_compile docs/cleanup-review/apply_cleanup.py scripts/studio/compare.py",
+      "exit_code": 0,
+      "status": "pass",
+      "seconds": 0.06
+    }
+  ],
+  "baseline_plan_result": {
+    "status": "FAIL",
+    "kind": "planning_record_consistency_only",
+    "error": "'sequence'",
+    "checks_before_failure": [
+      "Execution and maintenance IDs are unique",
+      "Edge-case IDs are unique",
+      "Task statuses use the declared workflow",
+      "Active implementation WIP does not exceed its declared limit",
+      "All dependencies resolve",
+      "Dependency graph is acyclic"
+    ]
+  },
+  "qualification": "Cleanup regression checks only. The historical plan validator is not passed: its exact missing-sequence failure also occurs on the untouched baseline.",
+  "not_run": [
+    "database migrations or live services",
+    "browser/GPU workflows",
+    "real-source qualification",
+    "V0/I1 feature acceptance",
+    "deployment"
+  ]
+}

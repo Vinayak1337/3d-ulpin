@@ -12,7 +12,6 @@ data-bundles/**/README.md text eol=lf diff
 data-bundles/**/manifest.json -text diff
 apps/web/public/datasets/** -text
 fixtures/**/*.csv whitespace=cr-at-eol
-Astra_MVP_Handoff_Pack/** -text
 
 # Keep verified CSV source/export bytes, including CRLF, unchanged on checkout.
 demo-data/synthetic-officer/*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

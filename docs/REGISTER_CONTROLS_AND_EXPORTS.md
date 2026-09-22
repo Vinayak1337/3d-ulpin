@@ -1,5 +1,7 @@
 # Register controls and scoped downloads
 
+> **Direction note — 23 September 2026:** Preserve baseline controls and original archives. The new property-only packet has separate scope/permission tests in handoff 10. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 Verified locally on 15 September 2026 on `feat/reference-ui-rebuild`, extending `643c44f`. This change does not mutate stored geometry, source originals, identities or review history.
 
 ## Use it

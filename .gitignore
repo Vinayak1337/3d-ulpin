@@ -24,3 +24,6 @@ apps/web/public/pdf.worker.min.mjs
 fixtures/reference-neighborhood/installed.json
 
 .venv-reference/
+
+# Reproducible historical comparison output is not a public runtime asset.
+output/studio-review/

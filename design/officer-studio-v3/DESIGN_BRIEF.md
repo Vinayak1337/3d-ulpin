@@ -1,5 +1,7 @@
 # Officer Studio — revised reference design
 
+> **Direction note — 23 September 2026:** Historical visual brief retained with its unique references; it does not override the active-Studio acceptance in handoff 99. Current implementation and data/testing assignments are in [USP handoff 00](../../docs/usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 User steering, 20 September 2026: correct the supplied reference designs first, then continue product implementation. Original images remain unchanged at `/Users/vinayak/Downloads/3D_ULPIN_V2_REDESIGN_PACK_FINAL/images`.
 
 ## Reference audit

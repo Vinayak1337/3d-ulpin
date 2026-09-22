@@ -1,4 +1,74 @@
-# Data-transition cleanup review — recommendations only
+# Data-transition cleanup — applied on the review branch
+
+**23 September 2026.** The user approved cleanup. This branch removes **231**
+verified redundant or retired paths, totaling **74,317,749 logical bytes**.
+The [machine-readable receipt](applied-cleanup.json) lists every deletion, its
+baseline blob, all 91 retained duplicate counterparts, the copied handoff hashes,
+and the still-deferred dependency-gated groups. This is working-tree cleanup;
+Git history and local data volumes were not changed.
+
+Current implementation starts at [handoff 00](../usp-agent-handoffs/00-README.md),
+then [01](../usp-agent-handoffs/01-shared-contracts-and-ownership.md), the feature
+A–K file and [99](../usp-agent-handoffs/99-ui-ux-and-integration.md). The complete
+15-file handoff tree is copied byte-for-byte from `e167b1f6c1a830b2b5c6c1708e8f0b0214e4d849`; PR #7 is not merged
+into main by this operation. Planned capabilities remain planned.
+
+## Applied changes
+
+91 duplicate files were removed only after matching the retained originals.
+Retired orchestration plans and selected historical walkthrough/result documents
+now resolve to pinned history. Obsolete public galleries, old annotated tutorials
+and generated explainer captures no longer ship in the active tree. `pnpm guide`
+was retired with its server. The comparison generator now writes to ignored
+`output/studio-review/`, not public assets or the protected reference manifest.
+
+README, AGENTS, current-work/engineering entry points and affected data/operation
+guides distinguish baseline behavior from new implementation and data plans.
+Historical design and CI-dependent material that remains has explicit steering
+notes. The existing docs Word-guide copy is retained as the duplicate's historical
+counterpart, not an active tutorial. Three API report paths remain because the
+existing regression script still writes them.
+
+## Preserved and deferred
+
+Canonical sources, upload ZIPs, repo-data, Uttam Nagar transfer packs, source IDs,
+scene assets and all reference images named by comparison-manifest.json remain.
+Application TypeScript/Python services, tests, dependencies/lockfile and old
+runtime donors are unchanged. F0/V0/I1 are not claimed complete. Retirements
+requiring replacement browser/CI/geometry coverage are **deferred**, not an
+instruction to recursively delete the remaining historical candidates.
+
+Structural checks verify protected file hashes, 91 duplicate counterparts,
+reference-image hashes, exact handoff copies and newly broken Markdown targets.
+The branch-scoped apply workflow runs pure repository tests before pushing the
+cleanup commit. Its actual result is in GitHub Actions, not presumed by this text.
+No database, GPU/browser journey, local-PC or real-source qualification is implied.
+
+## Executed verification
+
+See [verification.json](verification.json) and [the actual run](https://github.com/Vinayak1337/3d-ulpin/actions/runs/35784882920). Typecheck and the application/fixture checks passed. The historical planning validator still fails with missing `sequence` metadata; the exact same result was reproduced from the untouched `f623cff` tree. It is recorded as **pre-existing failure**, not a passing test. Its backlog/validator were not rewritten or reset. Live database and browser/GPU tests were not run.
+
+## Historical recovery
+
+| Retired material | Immutable source |
+| --- | --- |
+| Original MVP mandate, source basis and agent pack | [Astra pack](https://github.com/Vinayak1337/3d-ulpin/tree/f623cff897f91bb3ebd4c225f700ac263f7beb72/Astra_MVP_Handoff_Pack/) |
+| Earlier root implementation handoff | [GPT_6_PRO_HANDOFF.md](https://github.com/Vinayak1337/3d-ulpin/blob/f623cff897f91bb3ebd4c225f700ac263f7beb72/GPT_6_PRO_HANDOFF.md) |
+| Earlier block, parcel and deep-review plans | [BLOCK_DEMO_PLAN](https://github.com/Vinayak1337/3d-ulpin/blob/f623cff897f91bb3ebd4c225f700ac263f7beb72/BLOCK_DEMO_PLAN.md), [PARCEL_TO_3D_PLAN](https://github.com/Vinayak1337/3d-ulpin/blob/f623cff897f91bb3ebd4c225f700ac263f7beb72/PARCEL_TO_3D_PLAN.md), [DEEP_REVIEW](https://github.com/Vinayak1337/3d-ulpin/blob/f623cff897f91bb3ebd4c225f700ac263f7beb72/DEEP_REVIEW.md) |
+| Dated operational/verification reports | [Baseline docs](https://github.com/Vinayak1337/3d-ulpin/tree/f623cff897f91bb3ebd4c225f700ac263f7beb72/docs/); exact paths are in the receipt |
+| Annotated tutorial and guide source | [Tutorial](https://github.com/Vinayak1337/3d-ulpin/tree/f623cff897f91bb3ebd4c225f700ac263f7beb72/docs/tutorial-images/), [guide server](https://github.com/Vinayak1337/3d-ulpin/blob/f623cff897f91bb3ebd4c225f700ac263f7beb72/scripts/guide.mjs) |
+| Previous public comparison galleries | [Studio gallery](https://github.com/Vinayak1337/3d-ulpin/tree/f623cff897f91bb3ebd4c225f700ac263f7beb72/apps/web/public/studio-review/), [reference review](https://github.com/Vinayak1337/3d-ulpin/tree/f623cff897f91bb3ebd4c225f700ac263f7beb72/apps/web/public/reference/review/), [T079 review](https://github.com/Vinayak1337/3d-ulpin/tree/f623cff897f91bb3ebd4c225f700ac263f7beb72/apps/web/public/reference/review-t079/) |
+| Previous ML explainer captures and harness | [Explainer output](https://github.com/Vinayak1337/3d-ulpin/tree/f623cff897f91bb3ebd4c225f700ac263f7beb72/outputs/ml-explainer/) |
+
+For an exact path, recover with `git show f623cff897f91bb3ebd4c225f700ac263f7beb72:<path>` in an isolated destination.
+Do not restore an entire obsolete instruction pack as current policy. No second
+large archive is copied into the repository. Do not rewrite history to shrink
+these historical blobs. The original rule generator remains a read-only classifier
+of the original baseline, **not** an executable current deletion allowlist.
+
+---
+
+# Pre-cleanup inventory — historical review
 
 **Date:** 23 September 2026 (India). **Repository:** `Vinayak1337/3d-ulpin`. **Branch:** `review/data-transition-cleanup-20260923`.
 

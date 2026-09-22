@@ -1,5 +1,7 @@
 # Hackathon contract v1
 
+> **Direction note — 23 September 2026:** This describes baseline API behavior; new USP contracts are requirements, not already implemented endpoints. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 The shared TypeScript shapes are in packages/contracts/src/index.ts. The app API is JSON, with the successful object returned directly (no data wrapper); errors are ApiError with appropriate HTTP status.
 
 ## Application API for the workbench

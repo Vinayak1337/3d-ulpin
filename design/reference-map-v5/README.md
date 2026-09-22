@@ -1,5 +1,7 @@
 # Dense block map reference
 
+> **Direction note — 23 September 2026:** Prototype code and its data/reference donors remain where generators/tests depend on them. Do not remove the data or use this standalone page as product completion. Current implementation and data/testing assignments are in [USP handoff 00](../../docs/usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 Open `http://127.0.0.1:3013/?scene=dense#map`. This fictional Delhi-style plotted block has 82 tightly packed buildings, shared walls, narrow galis and computed building/road/parcel findings. `comparison.html` shows the supplied reference, previous spacious scene and actual browser captures.
 
 ```sh

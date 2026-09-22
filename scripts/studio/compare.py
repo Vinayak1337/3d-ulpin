@@ -7,7 +7,10 @@ ROOT=Path(__file__).resolve().parents[2]
 CAPTURE=ROOT/os.environ.get('STUDIO_CAPTURE_DIR','docs/evidence/t058/final')
 BASE=ROOT/'docs/evidence/t058/baseline'
 MOCK=ROOT/'docs/evidence/reference/references'
-OUT=ROOT/'apps/web/public/studio-review'
+# Retained historical utility; never overwrite the public source-reference manifest.
+OUT=(ROOT/os.environ.get('STUDIO_REVIEW_OUTPUT','output/studio-review')).resolve()
+if OUT == (ROOT/'apps/web/public').resolve() or (ROOT/'apps/web/public').resolve() in OUT.parents:
+ raise ValueError('Comparison output must stay outside apps/web/public')
 OUT.mkdir(parents=True,exist_ok=True)
 font_path=Path('C:/Windows/Fonts/segoeui.ttf')
 font=ImageFont.truetype(str(font_path),24) if font_path.exists() else ImageFont.load_default()
@@ -63,5 +66,5 @@ page='''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewpor
 <h2>05 / Alternate operating views</h2><section class="comparison"><figure><img src="current-close.png"><figcaption>Actual building inspection.</figcaption></figure><figure><img src="current-utilities.png"><figcaption>Utility depths and horizontal clearance remain separate.</figcaption></figure><figure><img src="current-plan.png"><figcaption>Top-down view from the same scene.</figcaption></figure></section>
 <h2>06 / Responsive implementation</h2><section class="mobile"><img src="current-mobile-map.png"><img src="current-mobile-inspector.png"></section><h2 id="review">Review and boundaries</h2><section class="notes">'''+text+'''</section><p class="caption">Viewport: 1672 × 941 for desktop; 390 × 844 for mobile. Mobile is browser emulation, not a physical-device test. Original and current image checksums are in comparison-manifest.json.</p></main><dialog><button>Close</button><img></dialog><script>const d=document.querySelector('dialog');document.querySelectorAll('main img').forEach(i=>i.addEventListener('click',()=>{d.querySelector('img').src=i.src;d.showModal()}));d.querySelector('button').onclick=()=>d.close();d.addEventListener('click',e=>{if(e.target===d)d.close()});</script></html>'''
 (OUT/'index.html').write_text(page,encoding='utf-8')
-(OUT/'comparison-manifest.json').write_text(json.dumps({'kind':'labelled-original-and-runtime-comparison','images':records,'reviewNotes':notes},indent=2)+'\n',encoding='utf-8')
+(OUT/'comparison-manifest.json').write_text(json.dumps({'kind':'historical-reference-comparison-not-current-acceptance','images':records,'reviewNotes':notes},indent=2)+'\n',encoding='utf-8')
 print(json.dumps({'gallery':str(OUT.relative_to(ROOT)),'images':len(records),'comparisons':5,'notClaimed':'Pixel equivalence, original user approval or photogrammetric accuracy'}))

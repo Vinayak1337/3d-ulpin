@@ -1,5 +1,7 @@
 # Studio officer workflow — SIH 26011
 
+> **Direction note — 23 September 2026:** This earlier execution sequence is historical; preserve useful requirements and CI inputs, but follow handoffs 00/99 for new implementation. Current implementation and data/testing assignments are in [USP handoff 00](../usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 20 September 2026. User-authorized replacement of redundant interfaces and simplification of Studio. This supersedes the earlier instruction to keep duplicate presentation screens. Preserve all processing capabilities, identities, original bytes, revisions and historical URL resolution. Current implementation branch: `feat/visual-ml-completion`.
 
 ## Intended officer journey
