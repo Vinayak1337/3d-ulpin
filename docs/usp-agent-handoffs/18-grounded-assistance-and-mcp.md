@@ -1,111 +1,113 @@
-# 18 · Grounded property assistance and optional MCP access
+# 18 · Grounded property assistance and optional public MCP
 
-Owner **ASSIST** · Priority **P3** · Baseline `main@f623cff897f91bb3ebd4c225f700ac263f7beb72` · Native integration needs [F1](01-shared-contracts-and-ownership.md); remote/private-user access additionally needs F2 and [DEPLOY](19-india-contained-deployment.md).
+Owner **ASSIST**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), gateway in [19](19-india-contained-deployment.md) and [99](99-ui-ux-and-integration.md). ER-15/21/22/25 are incorporated. New paths below are implementation tasks, not available functionality.
 
 ## A. User outcome and product value
 
-Allow an authorized user to ask a practical question about an exact property, evidence requirement, submission or finding and receive a short answer with source references and a useful next action. MCP exposes a bounded subset of these existing services to compatible clients; it is an access channel, not the main USP.
-
-Examples: a contributor asks “What is still needed for my submission?”; an officer asks “Why is this basement crossing flagged?”; a public visitor asks “Which released property matches this identifier?” Answers must stay within the caller's records and the permitted deployment boundary. “Who owns every flat in this block?” is not an authorized public query merely because a model can phrase it.
+Allow an authorized user to ask why an exact property has a finding, what evidence is missing, or what happened to their submission, then open the actual evidence or next screen. MCP is an optional access channel over the same bounded services, not the main USP. A source-linked explanation must communicate the service's real result, not merely look convincing because it has citations.
 
 ## B. Current implementation and gap analysis
 
-[officer-ai-provider.ts](../../apps/web/lib/server/officer-ai-provider.ts) currently implements bounded Nous-backed extraction, explicitly treating source text as untrusted evidence and forbidding generated identifiers, geometry inference and publication actions. [officer-ai-validation.ts](../../apps/web/lib/server/officer-ai-validation.ts) and [grounding tests](../../tests/ai-extraction/grounding.test.ts) are useful validation precedents. These extraction mechanisms are not a complete conversational agent or an MCP server.
+[Nous extraction](../../apps/web/lib/server/officer-ai-provider.ts), [validation](../../apps/web/lib/server/officer-ai-validation.ts) and [grounding tests](../../tests/ai-extraction/grounding.test.ts) provide precedents for constrained extraction. They are not a conversational agent or MCP server. [Internal resolver](../../apps/web/lib/server/area-resolver.ts) has synchronization side effects and cannot be exposed as an unrestricted read tool. Use FND's read-only projections and enabled feature ports.
 
-[area resolver](../../apps/web/lib/server/area-resolver.ts), dossiers and the proposed feature read ports supply useful domain answers. The resolver has synchronization side effects, so ASSIST must consume FND's read-only target projection, not invoke that mutating resolver as an allegedly read-only tool. Missing: scoped tool contracts, grounded answer validation, multi-turn scope controls, native assistance UI, MCP transport/auth integration and injection/data-exposure tests.
+Implement strict tool schemas, typed fact assembly, exact citations, scope/permission isolation and a native useful answer flow. Citation-ID membership alone cannot establish that generated prose correctly describes the cited evidence; the first release therefore uses the deterministic fact-rendering contract below.
 
 ## C. Scope and non-goals
 
-First release: native read-only assistant for selected property/workflow and a separately disabled-by-default **public-projection-only remote MCP**. Private officer/contributor tools may run inside the approved native/private environment. Broader remote private-data exposure is outside the initial scope and cannot be enabled merely by supplying an OAuth token.
+ASSIST0: native local read-only tools and deterministic answers from real F1 service facts; no model or F2 required for this local path. ASSIST1: optional bounded model routing and separately evaluated paraphrasing through the permitted gateway. ASSIST-MCP: public-projection-only remote server, disabled until F2/DEPLOY and released-data qualification. A private native contributor session still requires its real authentication boundary; local fixture identities do not qualify public accounts.
 
-No unrestricted SQL, arbitrary URL fetch, filesystem tools, whole-database export, autonomous registry writes, ownership determinations or generated surveys. Packet creation, evidence requests and review actions remain explicit native UI confirmations; read tools may return links to those screens, not perform hidden mutations. Voice, automatic form submission and custom ChatGPT map widgets are optional extensions after the read path qualifies.
+No SQL, arbitrary URL fetch, filesystem access, whole-database queries, ownership decisions, autonomous registry writes or hidden creation of packets/comparison jobs. Read tools return native action links; the user performs write confirmation in the existing interface. General chat, voice, model training and custom ChatGPT map widgets are optional later work. No private records returned to external ChatGPT in India-private mode.
 
 ## D. HLD and end-to-end flow
 
-User opens **Ask about this property** → client sends question plus explicit selection → server derives principal and resolves permitted target → deterministic intent/tool router or bounded model chooses from allowed read tools → services return exact structured facts and evidence pointers → answer validator checks every claim/reference → response shows concise explanation and scoped navigation links.
+Ask about selected property → server derives principal and validates selection → bounded intent/target resolution → authorized read tool → typed service facts with exact manifest/citations → deterministic answer blocks → exact evidence/next-action link. Optional model may choose an allowed intent or fact IDs, but cannot author arbitrary authoritative measurements/status. Remote MCP uses the same executor with a narrower released-only tool registry.
 
-MCP calls reuse the same server tool executor and access checks, with a narrower public release projection. They do not forward unrestricted native assistant state or conversation history. A question that changes scope requires explicit target resolution; ambiguous results ask for selection instead of choosing the first match.
+A scope-changing question resolves a new target explicitly. Ambiguous identifiers produce choices; they do not silently select the first match. Old conversation context cannot preserve a revoked grant or overwrite current selection.
 
 ## E. Targeted LLD
 
-### Tool inventory and data boundary
+### Tool contracts and availability
 
-Proposed schemas use FND `TargetPin`, `UspScope`, cursor limits and current server principal. Tool output includes `state`, exact input pins, bounded facts, evidence refs, limitations and app action links. The model never supplies an authoritative role or entitlement.
+All tools receive RequestContext from the server and validated arguments. Results contain ServiceResult state, exact target/manifest pins, bounded facts, limitations and safe native actions. No caller/model role string confers authority.
 
-| Tool | Inputs and permitted outcome | Availability in first release |
+| Tool | Required source / outcome | First-release audience |
 | --- | --- | --- |
-| `search_public_properties` | Bounded identifier/address query → approved public matches, no private party search | Native public and remote public MCP |
-| `get_public_property` | Public ref → released summary, source/revision labels and safe app URL | Native public and remote public MCP |
-| `explain_public_status` | Public ref → already released status reasons only | Native public and remote public MCP |
-| `get_my_submission_status` | Submission ID → caller's status and requested next evidence | Authenticated native/private client only |
-| `get_property_readiness` | Scoped target pin → READY dimensions, missing inputs and limitations | Authorized native/private client only |
-| `explain_finding` | Finding ID/run pin → FIND facts, measurements and permitted evidence | Authorized native/private client only |
-| `compare_property_revisions` | Explicit left/right manifests → existing HISTORY comparison/read result | Authorized native/private client only; no hidden comparison job creation |
-| `get_packet_options` | Target pin → available packet action link and scoped prerequisites | Native/private only; creates no packet or signed download token |
+| `search_public_properties` | CITIZEN released query → at most 20 public matches | Native public and remote public MCP |
+| `get_public_property` | Active released projection → approved summary/ref | Native public and remote public MCP |
+| `explain_public_status` | Released reason codes → deterministic status explanation | Native public and remote public MCP |
+| `get_my_submission_status` | CITIZEN own-submission version → exact status/required evidence | Authenticated native/private only |
+| `get_property_readiness` | READY target/task/manifest → requirements, reasons and available action | Scoped native/private only |
+| `explain_finding` | FIND result/case/manifest → measurement, coverage, uncertainty and evidence | Scoped native/private only |
+| `compare_property_revisions` | Existing HISTORY comparison ID and its two manifests → retained result | Scoped native/private only; no hidden new job |
+| `get_packet_options` | PACK target projection → capability/prerequisites/native action | Scoped native/private only; no packet generation or unrestricted signed token |
 
-Remote public tools must only read CITIZEN's approved public projection. If that feature is unavailable or a record is not released, return unavailable/not found; do not fall back to an officer dossier. Private MCP clients, if implemented for government use, must remain within DEPLOY's approved boundary and use F2 resource grants. They are not the same release as public ChatGPT connectivity.
+A missing producer is not_assessed/unavailable and the tool is not advertised as working. Public tools never fall back to internal dossiers or the mutating resolver. A released derivative may be readable under its ReleaseDecision without access to its private original, but only its approved output facts may be returned. Revoked releases are unavailable on the next call.
 
-### Grounding, state and limits
+### Typed facts and factual correctness
 
-Proposed `Answer` contains intent, resolved target(s), short response blocks, fact references, limitations and next-action URLs. Each factual block references service-returned fact IDs or evidence pointers. Validate references belong to the permitted request/result set; reject invented pages, URLs, IDs or numerical values. Measurements come from deterministic services. Where no evidence exists, return “Not available in the supplied records,” not an inferred answer from model memory.
+Proposed `Fact` union: measurement `{factId,target,manifest,quantityDefinition,value,unit,method,evidenceRefs}`, status `{factId,target,manifest,state,reasonCodes,coverage}`, source_assertion `{factId,target,sourcePart,exactQuote,reviewState}`, and action `{actionKind,target,routeTemplate,arguments}`. Only actual service responses create these objects. Schema rejects non-finite values, incompatible units and invented pointers. Source quotes are bounded extracts, not authoritative interpretations.
 
-Sources, filenames, quoted clauses and previous assistant responses are untrusted data. Do not concatenate them into privileged tool instructions. Disallow tools outside the registry, reauthorize each call, bound recursion and validate all arguments/results. No model-produced URL may be fetched or opened server-side. App links are built from allowlisted route templates and validated refs; source links require access again when opened.
+`Answer` contains resolved scope, intent, ordered fact IDs, deterministic explanation template IDs, limitations and permitted action IDs. Templates render measurements/status/negation directly from the Fact union. The model may suggest ordering/intent within the allowlist; it cannot replace 20 m³ with 200 m³, turn not_assessed into clear, change the subject or manufacture a page citation. Unsupported intent returns a useful native navigation alternative, not background model knowledge about the property.
 
-Initial proposed limits: 1,000 characters/question, six domain tool calls, 20 result items/call, 24 KiB total authorized evidence text, two model calls including repair and a 45-second request budget. Provider/model capability limits may be lower. A timeout or model outage falls back to deterministic status templates and existing navigation, not a different external provider. Never place secret tokens, original documents or private prompts in client analytics/logs.
+Optional free-form paraphrase is a separately disabled capability until evaluation covers entailment, negation, unit conversion, subject swaps, partial coverage and unknown states. A second model's approval is not proof. Keep typed factual blocks authoritative and label any optional explanatory text appropriately. A wrong-but-cited sentence fails acceptance even when its citation exists. Source/definition conflicts must be displayed, not reconciled by a language model without evidence.
 
-Keep native conversation state bounded and server-scoped. A target change clears incompatible evidence context; prior permissions are not cached as permanent grants. Persist only optional minimal audit/feedback metadata in `usp_assist_runs`/`usp_assist_feedback`, not full transcripts by default. Any retained transcript requires an explicit retention/access policy. Feedback is not automatically model-training consent or ground truth.
+Sources, filenames, clauses, tool output text and previous assistant turns are untrusted data. They cannot change tool instructions or permissions. Validate every argument/result, reauthorize every tool call and reject tool names not in the current registry. No model-generated URL is fetched. Routes are built from allowlisted templates and server-validated refs; opening evidence rechecks permissions.
 
-### APIs and MCP
+### Limits, state and API
 
-Proposed native API `/api/v1/usp/assistance/query` accepts question, selected context and optional bounded conversation reference; `/capabilities` returns allowed tool names and deployment availability without secrets. Read-only tool execution is shared through `executeTool(ctx,name,args)`. Feature services remain responsible for their own access checks even after ASSIST validates the request.
+Default request profile: 1,000 question characters, six tool reads, 20 results/read, 24 KiB total evidence text, at most two model calls including one repair, and 45-second overall budget. Lower provider limits prevail. Model failure or budget exhaustion falls back to deterministic available facts and native links, never another unapproved provider. Cancellation stops further model/tool work and does not modify records.
 
-Proposed MCP server module uses the maintained official TypeScript SDK, pinned by FND, with a dedicated Streamable HTTP route at `/mcp`. FND owns the Next route/auth wrapper; ASSIST owns tool registration/transport adapter. Do not implement JSON-RPC or OAuth cryptography from scratch, or confuse MCP transport with INGEST's browser-progress SSE endpoint. Handle request/session isolation, initialized protocol version, disconnects and malformed methods through SDK conventions.
+Keep bounded server-side conversation context keyed by subject, selection generation, access view and policy version. Target/entitlement change invalidates incompatible evidence. Minimal proposed `usp_assist_runs`/`usp_assist_feedback` records contain request/manifest/tool/version/outcome metadata, not full transcripts by default. Feedback does not automatically authorize model training. Do not log raw deeds, tokens, prompts or private source text.
 
-For authenticated private clients use the [MCP authorization security requirements](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/security-considerations): validate tokens for this resource/audience; never pass upstream bearer tokens through as another service's credentials. Tool annotations describe actual behavior, not authorization. The [OpenAI MCP server guide](https://developers.openai.com/plugins/build/mcp-server) describes maintained SDK/transport and tool annotations; qualify the chosen SDK version and client during implementation. Anonymous public tools still need rate limits and a strict public projection.
+Proposed `/api/v1/usp/assistance/query` accepts question, selected context and optional bounded conversation reference. `/capabilities` returns actually enabled tools. `executeTool(ctx,name,args)` is the shared executor. Query does not mutate domain records; audit metadata is separate and must not create hidden packets, proposals or comparison jobs. Shared envelopes and error/non-enumeration rules are in 01.
 
-The [OpenAI security/privacy guide](https://developers.openai.com/plugins/guides/security-privacy) and [MCP app help](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt) are integration references checked during planning on 22 September 2026. Client availability, account permissions and publication mechanisms can change; recheck before an actual release. No ChatGPT account or external connection was configured by this documentation task.
+### MCP transport and deployment
 
-A remote client receives the data returned by tools. Therefore, an India-contained private deployment must disable external ChatGPT/MCP for private records. An outbound tunnel does not remove this data-transfer boundary. Public-projection release is an explicit exception/profile with no promise that exported public responses remain in India.
+FND owns proposed `app/mcp/route.ts`, authentication and dependency pins; ASSIST owns the official TypeScript SDK adapter/tool registrations. Use SDK Streamable HTTP, protocol negotiation and session isolation; do not handwrite JSON-RPC/OAuth or reuse the browser progress-SSE endpoint as MCP. Public tools still require rate limits and release checks. Authenticated private clients, if later enabled inside the approved boundary, validate resource audience/issuer/expiry and never pass a client's bearer token to another provider.
+
+Implementation references: [OpenAI MCP server guide](https://developers.openai.com/plugins/build/mcp-server), [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization). Recheck the negotiated version and current supported SDK when implementing; a dated reference is not a claim that every client supports the latest protocol. Documentation was checked for planning; no client/account has been configured by this task.
+
+Native local assistance needs F1 and its real producers, not F2. Remote public MCP needs F2, DEPLOY public_interoperability mode and an approved released projection. India-private mode disables external MCP/private-data transfer. An outbound tunnel or an OAuth token does not change where the returned data goes. Do not claim exported public responses remain inside India.
 
 ## F. Exact implementation map
 
-| Existing or proposed file | Required change | Reason | Owner | Shared dependency |
-| --- | --- | --- | --- | --- |
-| [officer-ai-provider.ts](../../apps/web/lib/server/officer-ai-provider.ts), [officer-ai-validation.ts](../../apps/web/lib/server/officer-ai-validation.ts) | Reuse validation principles; FND alone applies legacy wiring changes using DEPLOY's new adapter | No uncontrolled fallback | FND sole editor; ASSIST/DEPLOY read-only reference | DEPLOY-owned model gateway implementation |
-| Proposed new `packages/contracts/src/usp/assistance.ts` | Tool/answer/citation schemas | Bounded grounded contract | ASSIST | F0 read ports |
-| Proposed new `apps/web/lib/server/usp/assistance/{tools,grounding,service,mcp,routes}.ts`, `migrations/18-assistance.ts` | Native tool executor, answer validation, MCP adapter and minimal audit | One permission-aware implementation | ASSIST | FND principal/access; feature reads |
-| Proposed new `apps/web/app/mcp/route.ts` | Thin SDK transport/auth mount | One cross-cutting endpoint owner | FND | ASSIST adapter; DEPLOY mode |
-| Proposed new `apps/web/features/usp/assistance/{PropertyAssistant,AnswerEvidence,AssistantActions}.tsx` | Contextual native assistant | Useful without external apps | ASSIST | UI selected-target slots |
-| [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx) | Mount contextual entry and scope header | No new dashboard/chat island | UI | ASSIST leaves |
-| Proposed new `tests/usp-assistance.test.ts`, `tests/usp-assistance-integration.ts`, `tests/usp-mcp.test.ts`, `tests/e2e/usp-assistance.spec.ts` | Grounding, injection, principal isolation and actual transport tests | No mocked-only connector claim | ASSIST | Isolated auth/provider/client fixtures |
+| File | Change / owner |
+| --- | --- |
+| Existing extraction/validation/resolver files linked in B | Read-only precedents; FND alone governs legacy calls and read projections |
+| Proposed `packages/contracts/src/usp/assistance.ts` | ASSIST tool/Fact/Answer/template schemas |
+| Proposed `apps/web/lib/server/usp/assistance/{tools,grounding,templates,service,mcp,routes}.ts`, `migrations/18-assistance.ts` | ASSIST executor, typed rendering, optional model routing and MCP adapter |
+| Proposed `apps/web/app/mcp/route.ts` | FND sole transport/auth mount; DEPLOY mode gate |
+| Proposed `apps/web/features/usp/assistance/{PropertyAssistant,AnswerEvidence,AssistantActions}.tsx` | ASSIST native leaf UI |
+| [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx), public submission parents | UI exact selected-context mounts |
+| Proposed `tests/usp-assistance.test.ts`, `tests/usp-assistance-integration.ts`, `tests/usp-mcp.test.ts`, `tests/e2e/usp-assistance.spec.ts` | ASSIST fact correctness, injection, permissions and real transport tests |
 
 ## G. UI placement and interaction
 
-Quick register → **Ask about this property** → compact panel with current building/floor/unit header → suggested questions based on available tools → answer with **Evidence** and one concrete next action. Full register uses the same panel. A native contributor question opens their submission context, not the officer shell. External ChatGPT setup belongs in an optional integrations/settings surface, not public onboarding's mandatory path.
+Quick/full register → Ask about this property → persistent building/floor/unit header → questions drawn from available producers → concise typed facts with Evidence and one next action. Own-submission assistance stays in the contributor surface, not the officer shell. Loading is bounded; unknown intent points to a real workflow; absent evidence stays unavailable; denied data is not summarized from cache. Ambiguity displays target choices. Scope changes are explicit. UI owns navigation/focus/mobile sheet, ASSIST content. No mandatory external ChatGPT setup for ordinary users.
 
-Loading describes the bounded read operation; cancellation aborts model work without altering records. Empty/unsupported intent points to a relevant native workflow. Denied data is not summarized from cached content. Ambiguous identity shows selectable results. Model failure returns verified template facts where possible. Success citations open the exact source/revision with current permission checks. Scope changes are conspicuous; no invisible carry-over from another flat. ASSIST owns panel contents; UI owns scope/route/state integration.
+## H. Ownership and dependencies
 
-## H. Agent ownership and dependencies
-
-Use `feat/usp-assistance`. F0 enables schemas/offline tool evaluation; F1 enables real native reads. READY/FIND/HISTORY/CITIZEN/PACK ports can individually be unavailable; advertise only working tools. F2/DEPLOY and approved public projections gate remote MCP. FND owns SDK dependencies, endpoint auth and shared routes; DEPLOY owns provider client/egress policy; ASSIST owns prompts/tool validation. No feature service or canonical database rewrite.
+`feat/usp-assistance`; own feature code/tests/migration. F0 schemas first, F1 real-service ASSIST0 as soon as those producers exist. F2 applies only to actual authenticated public/private deployments and remote MCP, not the local operator. DEPLOY is the only model-network client; FND defines/wires ports and pins SDK; UI mounts; DATA prepares shared oracles. Do not create an alternative RAG/property database to mask unavailable producers.
 
 ## I. Implementation sequence
 
-1. Implement deterministic tool registry and useful template answers before adding model routing.
-2. Add bounded grounded generation through modelGateway and citation validation.
-3. Connect native selected-property UI with exact-source links and permission changes.
-4. Implement remote public-only MCP through the official SDK, sharing the same executor/public projection.
-5. Qualify actual client handshake, tool schema/annotations and isolation; keep disabled until deployment gates pass.
-6. Run adversarial source/argument tests, unavailable-provider cases and realistic questions in both public/native modes.
+1. Obtain real D0 service outputs and expected questions/facts; implement deterministic tools/templates.
+2. Complete finding/readiness answer → exact evidence/native action in active Studio without a model.
+3. Add bounded model intent selection through gateway and strict fact-ID/template validation.
+4. Evaluate optional paraphrase separately; retain deterministic output on any unsupported fact.
+5. Add public-only MCP after released projections and F2/DEPLOY pass; qualify real handshake/tool behavior.
+6. Test permission changes, hostile source instructions and incorrect-but-cited answers, not just valid JSON.
 
-## J. Acceptance criteria and verification
+## J. Test datasets and verification
 
-Native demo asks why a known basement finding exists and what evidence is missing; answers cite the exact result/source and open that target. Public MCP lookup returns only a released summary. A prompt inside a document saying to reveal all owners or call an external URL must not change tool permissions or produce a network request. No source output may invent a fact, ID or page reference.
+**D0:** actual FIND O-01 result (10 m²/20 m³), READY missing-boundary result, CITIZEN own submission and PACK options. Ask why the basement is flagged, what evidence is needed and whether the submission is recorded. Match exact subject, units, state, coverage and evidence against independent expected.json. Inject an uploaded instruction to reveal other owners, an invented URL, an existing citation attached to the wrong claim, negated status and a delayed previous-target result. None may alter permission, generate a network fetch or become a factual answer.
 
-Test wrong OAuth audience, forged principal headers, cross-submission IDs, hidden party/source data, stale citation, ambiguous identifier, malformed tool output, rate limit, session reuse across users, model outage and exhausted budget. Packet options must not generate files or issue unrestricted links. India-private mode must make external MCP unavailable. MCP Inspector/SDK tests alone qualify protocol behavior, not every ChatGPT account's access; report an actual client test separately.
+**D4 after integration:** preserve/recheck the [DDA inventory PDF](https://dda.gov.in/sites/default/files/Housing_Department/list_of_flats_and_garages_dda_premium_housing_scheme_2026.pdf) and normalized selected row. Questions about C-01-3 must preserve Block NA, Pocket E and source quantity meaning; no inferred owner, Block C, unit polygon or complete-building coverage. If actual bytes are unavailable, use D0 equivalent and mark real-source evaluation unpassed. DDA answers require the normalized source producer, not model memory.
 
-Run `pnpm typecheck`, `pnpm test:ai`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-assistance.test.ts tests/usp-mcp.test.ts`; `pnpm exec tsx tests/usp-assistance-integration.ts`; `pnpm exec playwright test tests/e2e/usp-assistance.spec.ts`. Pin any Inspector dependency through FND rather than running an unreviewed latest package. Return approved tool inventory, grounding/injection failures and fixes, actual protocol/client evidence, screenshots and unresolved deployment/account gates.
+Test cross-submission IDs, wrong token audience, forged principal, revoked source/release, hidden party/filename, ambiguous property, exhausted limits, malformed output, false unit conversion and model outage. Native fallback must work without remote MCP. Verify read-only tools do not create packets/jobs/proposals. MCP SDK/Inspector tests qualify protocol only; actual external-client account availability is a separate recorded test. No live credentials or account setup is assumed.
 
-## K. Copy-paste agent assignment
+Run `pnpm typecheck`, `pnpm test:ai`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-assistance.test.ts tests/usp-mcp.test.ts`; `pnpm exec tsx tests/usp-assistance-integration.ts`; `pnpm exec playwright test tests/e2e/usp-assistance.spec.ts`. Return service/pack hashes, expected/actual factual blocks, rejected adversarial cases, exact navigation and protocol evidence. Report ASSIST0/optional paraphrase/remote qualification separately.
 
-> Implement ASSIST on `feat/usp-assistance`. Read the index/shared contracts, this handoff, DEPLOY and linked extraction/grounding code. Build bounded native read tools and verified answers first; add an optional public-projection-only MCP adapter through the official pinned SDK. FND owns auth/dependencies/route mounts, DEPLOY owns provider/egress and UI owns shared panels. Never expose full dossiers, unrestricted SQL/URLs, private data to external clients or hidden packet/registry writes. Keep tool arguments, source content and model output untrusted; validate references and scope on every call. Run section J native, injection, authorization and actual MCP tests, return commits and precise evidence/gates. No external setup or main merge without authorization.
+## K. Copy-paste assignment
+
+> Implement ASSIST on feat/usp-assistance using 00, 01 and this handoff. Start with actual D0 service facts and deterministic templates, then attempt normalized D4 rows for independent source testing. Build useful native answers with exact citations/actions before optional model routing or remote MCP. Citation membership alone is not truth: preserve subject, units, negation, unknown state and coverage mechanically. Use DEPLOY's gateway, FND auth/SDK/mounts and UI selection slots; do not add SQL, URL fetching, hidden writes or a separate data authority. Run J real-service injection/permission/semantic tests, return commits, fact outputs, screenshots and separate client gates. Local F1 assistance must not wait for public F2. No external activation or main merge without authorization.
