@@ -6,10 +6,10 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { assertIsolation } from '../engineering/isolation.mjs';
-import { registerUspJobInputTx, claimUspJobAttempt, heartbeatUspJobAttempt,
-  acceptUspJobAttempt, cancelUspJob, readUspJob } from '../../apps/web/lib/server/usp/jobs';
 
 assertIsolation(process.env);
+const { registerUspJobInputTx, claimUspJobAttempt, heartbeatUspJobAttempt,
+  acceptUspJobAttempt, cancelUspJob, readUspJob } = await import('../../apps/web/lib/server/usp/jobs');
 const require = createRequire(resolve('apps/web/package.json'));
 const { Pool } = require('pg');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 5000, max: 2 });
