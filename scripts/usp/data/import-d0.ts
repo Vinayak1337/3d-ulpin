@@ -234,6 +234,10 @@ async function apply() {
       }
       await api(`/registry-reviews/${finalReview.id}/commit`, { acknowledgement: reason });
       const recorded = await api<any>(`/buildings/${feature.id}/dossier`);
+      // Recording adds the reviewed detail derivative to this preparation.
+      // First apply and replay must describe the same final retained history.
+      const committedPackage = await api<ImportPackage>(`/import-packages/${pkg.id}`);
+      for (const id of committedPackage.sourceRevisionIds) retainedSourceIds.add(id);
       retainRecordIds(recorded.records, building.alias, records);
       if (building.alias === 'B-A') {
         for (const alias of ['U-A101', 'U-A102']) {

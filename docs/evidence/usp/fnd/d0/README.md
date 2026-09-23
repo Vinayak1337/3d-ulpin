@@ -86,3 +86,8 @@ The first combined D0/D1 live attempt failed at D0 replay: preparation packages
 share the original dataset namespace, so the corrected namespace lookup also
 matched child preparations. The failed run cleaned its owned disposable project;
 no data was reset. Corrections and fresh integrated evidence are required.
+
+The next combined attempt reached replay but found that the first D0 receipt
+omitted the three reviewed detail derivatives created during recording. Replay
+reported those existing sources. Refresh the committed preparation before saving
+the first receipt and compare all public-table digests across both D0/D1 replays.
