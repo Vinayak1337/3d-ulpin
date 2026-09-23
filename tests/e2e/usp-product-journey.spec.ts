@@ -112,11 +112,12 @@ test('D0 map navigation, supplied levels and building switches preserve exact re
     if (level === 'Basement') {
       await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'true');
       await expect(page.getByRole('status')).toContainText('recorded levels unchanged');
+      const basementUnit = receipt.records['U-AB01'];
+      // This floor's supplied geometry is its unit; the floor has no separate solid.
       await expect.poll(async () => JSON.parse((await scene.getAttribute('data-ready-overlay-ids')) || '[]'))
-        .toContain(`record:${id}`);
+        .toContain(`record:${basementUnit}`);
       await expect(scene).toHaveAttribute('data-scene-ready', 'true');
       await page.screenshot({ path: info.outputPath('d0-level-basement.png') });
-      const basementUnit = receipt.records['U-AB01'];
       await page.locator(`[data-record-id="${basementUnit}"]`).click();
       await expect(page).toHaveURL(new RegExp(`record=${basementUnit}`));
       // A floor covers the building; its supplied unit is off-centre. Focus the
