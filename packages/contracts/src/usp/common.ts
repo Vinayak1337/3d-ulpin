@@ -118,6 +118,7 @@ export const UspReadScopeRequestSchema = z.strictObject({
 
 /** Use for untrusted JSON; rejects cycles, accessors, non-finite numbers and reserved keys. */
 export const parseUsp = parseCore;
+export { CoreContractError } from '../spatial/core/scalars';
 export type TargetPin = z.infer<typeof UspTargetPinSchema>;
 export type IntakeScope = z.infer<typeof UspIntakeScopeSchema>;
 export type SnapshotScope = z.infer<typeof UspSnapshotScopeSchema>;

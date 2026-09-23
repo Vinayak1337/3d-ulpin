@@ -1,0 +1,687 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D0",
+  "version": 1,
+  "profile": "golden-v1",
+  "description": "Isolated synthetic D0 recorded simple-outline workflow with separate preserved courtyard draft. Exact source bytes and independent oracles; live import and rendering require executed evidence.",
+  "assets": [
+    {
+      "id": "scenario.json",
+      "mediaType": "application/json",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "D0-LOCAL-METRES",
+        "verticalReference": "BM-D0-SYNTHETIC",
+        "horizontalUnit": "m",
+        "verticalUnit": "m",
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "scenario.json",
+        "sha256": "89e63c8f551570bac2b496cea02898803c4cca1d74766e0a7cf724f2ada2b7be",
+        "bytes": 12796
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "buildings.arcgis.json",
+      "mediaType": "application/json",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:32643",
+        "verticalReference": null,
+        "horizontalUnit": "m",
+        "verticalUnit": null,
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "buildings.arcgis.json",
+        "sha256": "8e8048356c8f1142a183d6e1d2ec6ee6cb779805d3010870bd5e67d15b550f0a",
+        "bytes": 1770
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "parcels.arcgis.json",
+      "mediaType": "application/json",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:32643",
+        "verticalReference": null,
+        "horizontalUnit": "m",
+        "verticalUnit": null,
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "parcels.arcgis.json",
+        "sha256": "385f6265c815dfb570aebb035ce8031785bc50aafa9152606d47e954aad651db",
+        "bytes": 2198
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "spaces-B-A.csv",
+      "mediaType": "text/csv",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "D0-LOCAL-METRES",
+        "verticalReference": "BM-D0-SYNTHETIC",
+        "horizontalUnit": "m",
+        "verticalUnit": "m",
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "spaces-B-A.csv",
+        "sha256": "d0c2fb5c727d140639bd591045921ab883923b47365d6ce4bb754af6e3559d0e",
+        "bytes": 736
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "spaces-B-B.csv",
+      "mediaType": "text/csv",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "D0-LOCAL-METRES",
+        "verticalReference": "BM-D0-SYNTHETIC",
+        "horizontalUnit": "m",
+        "verticalUnit": "m",
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "spaces-B-B.csv",
+        "sha256": "ac63417f2d33f288f1f9fc003d6b4c2bf894a6755f67635a4802593191611887",
+        "bytes": 395
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "spaces-B-C.csv",
+      "mediaType": "text/csv",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "D0-LOCAL-METRES",
+        "verticalReference": "BM-D0-SYNTHETIC",
+        "horizontalUnit": "m",
+        "verticalUnit": "m",
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "spaces-B-C.csv",
+        "sha256": "6efcbe6a46d38eb742f4aea00b997271b08ef99e72a6232847e6f6e39839ba80",
+        "bytes": 280
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "mixed-page-r1.txt",
+      "mediaType": "text/plain",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "mixed-page-r1.txt",
+        "sha256": "eed2ba2e905c1c6981067eb41dc89479d7f81bc3ee2d4e53fb78c523ea10a655",
+        "bytes": 390
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "mixed-page-r2.txt",
+      "mediaType": "text/plain",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "2",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "mixed-page-r2.txt",
+        "sha256": "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8",
+        "bytes": 390
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "mixed-rows-r1.csv",
+      "mediaType": "text/csv",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "mixed-rows-r1.csv",
+        "sha256": "f83b1077fc11d07bf6b7bf4e25e2f11ae073a97302e5d04b1f4e41c4d2524e26",
+        "bytes": 154
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "mixed-rows-r2.csv",
+      "mediaType": "text/csv",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "2",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "mixed-rows-r2.csv",
+        "sha256": "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2",
+        "bytes": 156
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "expected.json",
+      "mediaType": "application/json",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "D0 golden-v1 authored fixture, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "expected.json",
+        "sha256": "e036fa601994d28035d10527ab565c079c9f97ed4ac10180dcbd93daf68a2154",
+        "bytes": 3760
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "buildings-courtyard-draft.arcgis.json",
+      "mediaType": "application/json",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "Preserved authored courtyard draft from D0 golden-v1, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:32643",
+        "verticalReference": null,
+        "horizontalUnit": "m",
+        "verticalUnit": null,
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "buildings-courtyard-draft.arcgis.json",
+        "sha256": "99ec4e3acf6133294b50cc86feb3ad2abd72d7374f2d73e4957d5d3423dba79a",
+        "bytes": 2156
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "scenario-courtyard-draft.json",
+      "mediaType": "application/json",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "Preserved authored courtyard draft from D0 golden-v1, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "D0-LOCAL-METRES",
+        "verticalReference": "BM-D0-SYNTHETIC",
+        "horizontalUnit": "m",
+        "verticalUnit": "m",
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "scenario-courtyard-draft.json",
+        "sha256": "26bd19cb5af77b2206a3ee20c2453ea6b40d53920a5c2fb9b8c2f77b918719d0",
+        "bytes": 12755
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    }
+  ],
+  "expectedPath": "expected.json",
+  "expectedCapabilities": [
+    "three_building_authored_truth",
+    "supplied_floor_space_aliases",
+    "two_source_revisions",
+    "exact_mixed_text_csv_parts",
+    "independent_geometry_oracles"
+  ],
+  "missingCapabilities": [
+    "live_registry_import",
+    "rendered_3D",
+    "live_packet_generation",
+    "real_source_qualification",
+    "official_identity_issuance"
+  ]
+}

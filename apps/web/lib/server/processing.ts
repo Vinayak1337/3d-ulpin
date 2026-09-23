@@ -165,7 +165,7 @@ export async function ingestJob(id: string, result: unknown) {
 
 export async function dispatchTick(): Promise<number> {
   const pending = await query(
-    "SELECT * FROM jobs WHERE status IN ('queued','running') AND next_attempt_at<=now() ORDER BY created_at LIMIT 12",
+    "SELECT * FROM jobs WHERE status IN ('queued','running') AND operation NOT LIKE 'usp:%' AND next_attempt_at<=now() ORDER BY created_at LIMIT 12",
   );
   await Promise.all(
     pending.rows.map(async (job) => {
