@@ -46,14 +46,16 @@ jobs:
           printf '%s\n' "$OCI_SSH_PRIVATE_KEY" > "$HOME/.ssh/ulpin-oci"
           printf '%s\n' "$OCI_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/ulpin-oci" "$HOME/.ssh/known_hosts"
-          public_host="${OCI_HOST}.sslip.io"
+          public_host="bhuaayam.tech"
+          legacy_host="${OCI_HOST}.sslip.io"
           ssh -i "$HOME/.ssh/ulpin-oci" -o BatchMode=yes -o StrictHostKeyChecking=yes \
-            "$OCI_SSH_USER@$OCI_HOST" bash -s -- "$public_host" <<'REMOTE'
+            "$OCI_SSH_USER@$OCI_HOST" bash -s -- "$public_host" "$legacy_host" <<'REMOTE'
           set -euo pipefail
           public_host="$1"
+          legacy_host="$2"
           cd /opt/ulpin/app
           test -z "$(git status --porcelain --untracked-files=no)"
           git fetch origin main
           git merge --ff-only origin/main
-          bash deploy/oci/deploy.sh "$public_host"
+          bash deploy/oci/deploy.sh "$public_host" "$legacy_host"
           REMOTE
