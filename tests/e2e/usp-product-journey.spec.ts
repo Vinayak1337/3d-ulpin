@@ -109,6 +109,14 @@ test('D0 map navigation, supplied levels and building switches preserve exact re
     await page.locator(`[data-record-id="${id}"]`).click();
     await expect(page).toHaveURL(new RegExp(`record=${id}`));
     await expect(page.locator('.quick-unit-card')).toContainText(level);
+    if (level === 'Basement') {
+      await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'true');
+      await expect(page.getByRole('status')).toContainText('recorded levels unchanged');
+      const focused = (await canvas.boundingBox())!;
+      await page.mouse.click(focused.x + focused.width * .5, focused.y + focused.height * .5);
+      const basementIds = [`record:${id}`, `record:${receipt.records['U-AB01']}`];
+      await expect.poll(async () => basementIds.includes((await scene.getAttribute('data-picked-entity-id')) || '')).toBe(true);
+    } else await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'false');
     await page.screenshot({ path: info.outputPath(`d0-level-${level.toLowerCase()}.png`) });
   }
   await page.getByRole('button', { name: 'Separate floors', exact: true }).click();

@@ -94,6 +94,19 @@ test('real D1 roof keeps source identity and absent interiors in the shared Stud
   }, { intervals: [100, 200, 400] }).toBe(true);
   await page.getByRole('button', { name: 'Inspector', exact: true }).click();
   await expect.poll(async () => cameraDelta(settled, await readCamera(scene))).toBeLessThan(1);
+  await page.getByRole('button', { name: 'Documents', exact: true }).click();
+  await page.getByRole('button', { name: /3dbag-cityjsonfeature-original\.json/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Original property evidence', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+  await expect.poll(async () => cameraDelta(settled, await readCamera(scene))).toBeLessThan(1);
+  await page.getByRole('link', { name: 'Open property register', exact: true }).click();
+  await expect(page.locator('[data-register-building]')).toBeVisible();
+  expect([receipt.featureId, dossier.canonicalBuildingId]).toContain(await page.locator('[data-register-building]').getAttribute('data-register-building'));
+  await page.getByRole('link', { name: '3DBAG single roof · real source map', exact: true }).click();
+  await expect(scene).toHaveAttribute('data-scene-ready', 'true');
+  await expect(page).toHaveURL(new RegExp(`feature=${receipt.featureId}`));
+  await expect.poll(async () => cameraDelta(settled, await readCamera(scene))).toBeLessThan(1);
+  await page.getByRole('button', { name: 'Floors', exact: true }).click();
   await page.getByRole('button', { name: 'Close inspector', exact: true }).click();
   await expect.poll(async () => cameraDelta(settled, await readCamera(scene))).toBeLessThan(1);
   await page.reload();
@@ -107,6 +120,18 @@ test('real D1 roof keeps source identity and absent interiors in the shared Stud
   await page.getByRole('button', { name: 'Fit block', exact: true }).click();
   await page.getByRole('link', { name: '© 3DBAG by tudelft3d and 3DGI · CC BY 4.0', exact: true }).click({ trial: true });
   await page.screenshot({ path: info.outputPath('d1-mobile-roof.png') });
+  await expect(page.locator('.ui-map-status')).toContainText('Area CRS:');
+  const sourcePath = `**${path}**`;
+  await page.route(sourcePath, route => route.abort('connectionfailed'));
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Retry source', exact: true })).toBeVisible();
+  await expect(page.locator('[data-map-runtime-id]')).toHaveCount(0);
+  await expect(page).toHaveURL(new RegExp(`feature=${receipt.featureId}`));
+  await page.getByRole('button', { name: 'Close inspector', exact: true }).click();
+  await page.unroute(sourcePath);
+  await page.getByRole('button', { name: 'Retry source', exact: true }).click();
+  await expect(scene).toHaveAttribute('data-scene-ready', 'true');
+  await expect(page.locator('[data-map-runtime-id]')).toHaveCount(1);
   expect(errors).toEqual([]);
   await info.attach('d1-lineage-and-capability', { body: JSON.stringify({ receipt, resource,
     rendering: 'local engineering display; software WebGL is not a GPU performance qualification' }, null, 2), contentType: 'application/json' });

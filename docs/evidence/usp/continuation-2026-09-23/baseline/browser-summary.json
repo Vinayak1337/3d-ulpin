@@ -1,0 +1,12 @@
+{
+  "codeSha": "c81ce5de3e07773d4dcc5030e571e75bb16dec50",
+  "stats": {
+    "startTime": "2026-09-23T16:09:19.402Z",
+    "duration": 45731.544,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "profile": "Chromium software WebGL; local isolated production server"
+}
