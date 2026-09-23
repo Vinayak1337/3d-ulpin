@@ -83,6 +83,10 @@ async function sourceIdByHash(pkg: ImportPackage, filename: string): Promise<str
 
 function bodyOnly(record: any) {
   const { id: _id, siteId: _siteId, identifier: _identifier, revision: _revision, ...body } = record;
+  if (body.geometry) {
+    const { area: _area, height: _height, volume: _volume, ...editableGeometry } = body.geometry;
+    body.geometry = editableGeometry;
+  }
   return body;
 }
 
