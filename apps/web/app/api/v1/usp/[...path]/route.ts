@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { ZodError } from 'zod';
+import { z, ZodError } from 'zod';
 import { CoreContractError, parseUsp, UspPacket0RequestSchema, UspReadEvidenceRequestSchema,
   UspReadScopeRequestSchema, UspResolveTargetRequestSchema, UspSnapshotScopeSchema,
   UspPrepareProposalSchema, UspCommitProposalSchema, UspCaptureSnapshotRequestSchema,
@@ -39,7 +39,7 @@ async function handle(request: Request, context: Context) {
     const ctx = localRequestContext(requestId);
     const path = (await context.params).path;
     if (request.method === 'GET' && path[0] === 'packets' && path.length === 2) {
-      const { bytes, receipt } = await readPacket0(ctx, path[1]);
+      const { bytes, receipt } = await readPacket0(ctx, z.uuid().parse(path[1]));
       return new Response(new Uint8Array(bytes), { headers: { ...headers,
         'Content-Type': receipt.contentType,
         'Content-Disposition': `attachment; filename="packet-${receipt.packetId}.${receipt.format === 'csv' ? 'csv' : 'txt'}"`,

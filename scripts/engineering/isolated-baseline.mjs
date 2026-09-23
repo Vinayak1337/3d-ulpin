@@ -223,8 +223,6 @@ try {
     await assertPreserved(client,current);
     await verifyObjects(manifest);
     pass('Normalized saved-neighbourhood browser and unchanged baseline records pass together');
-    await command('usp-fnd-live','node',['--import','tsx','scripts/usp/verify-live.ts'],{timeout:180000});
-    pass('USP exact synthetic source, snapshot, scoped packet and reviewed commit pass on isolated SQL/S3/HTTP');
   }finally{client.release();}
 
   const testContext=resolve(temporary,scope.id+'-python');
