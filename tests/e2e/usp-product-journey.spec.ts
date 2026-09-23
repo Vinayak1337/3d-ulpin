@@ -34,7 +34,8 @@ test("D0 Studio selection compiles exact PACK0 and reopens its saved receipt", a
   await expect(panel).toContainText("ONLY_A101");
   await expect(panel).not.toContainText("NEVER_A102");
   await expect(panel).toContainText("line 3");
-  await page.screenshot({ path: info.outputPath("d0-exact-evidence.png") });
+  await panel.locator(".usp-packet-source").filter({ hasText: "ONLY_A101" }).first()
+    .screenshot({ path: info.outputPath("d0-exact-evidence.png") });
 
   await panel.getByRole("button", { name: "Compile scoped packet" }).click();
   await expect(panel).toContainText("Scoped packet saved");
@@ -51,11 +52,12 @@ test("D0 Studio selection compiles exact PACK0 and reopens its saved receipt", a
   await page.reload();
   await expect(page.locator(`[data-usp-packet="${packetId}"]`)).toContainText("Scoped packet saved");
   await expect(page).toHaveURL(new RegExp(`packet=${packetId}`));
-  await page.screenshot({ path: info.outputPath("d0-packet-reloaded.png") });
+  await page.locator(`[data-usp-target="${spaceId}"] .usp-packet-receipt`)
+    .screenshot({ path: info.outputPath("d0-packet-reloaded.png") });
 
   const invalid = randomUUID();
   await page.goto(`/studio/areas/${encodeURIComponent(receipt.areaId)}?feature=${encodeURIComponent(buildingId)}&record=${invalid}`);
-  await expect(page.getByRole("alert")).toContainText("not part of this building");
+  await expect(page.locator(".quick-warning[role=alert]")).toContainText("not part of this building");
   await expect(page.locator(".usp-packet-action")).toHaveCount(0);
   expect(errors).toEqual([]);
 });

@@ -4,9 +4,9 @@ import { createHash, randomUUID } from 'node:crypto';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
-import { assertIsolation } from '../engineering/isolation.mjs';
+import { assertUspIsolation } from './local-isolation.mjs';
 
-assertIsolation(process.env);
+assertUspIsolation(process.env);
 const receiptPath = process.env.ULPIN_D0_RECEIPT_FILE;
 assert(receiptPath && resolve(receiptPath).startsWith(resolve('.runtime/engineering') + '/'));
 const importReceipt = JSON.parse(await readFile(receiptPath, 'utf8'));

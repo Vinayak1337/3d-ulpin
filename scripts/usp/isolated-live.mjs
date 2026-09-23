@@ -1,21 +1,25 @@
-/** Focused hosted-only FND integration, using the established T001 isolation profile. */
+/** Focused FND integration against a fresh, explicitly isolated Compose project. */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import { mkdir, readFile, writeFile, lstat, realpath } from 'node:fs/promises';
 import { resolve, relative, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertIsolation, redact, testProcessEnvironment } from '../engineering/isolation.mjs';
+import { redact } from '../engineering/isolation.mjs';
+import { assertUspIsolation, uspProcessEnvironment } from './local-isolation.mjs';
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const scope = assertIsolation(process.env);
-assert.equal(process.platform, 'linux');
+const scope = assertUspIsolation(process.env);
+const local = ['local-colima', 'local-docker'].includes(process.env.ULPIN_ISOLATION_PROFILE);
+const colima = process.env.ULPIN_ISOLATION_PROFILE === 'local-colima';
+if (!local) assert.equal(process.platform, 'linux');
 await assert.rejects(lstat(resolve(root, '.env')), { code: 'ENOENT' });
-const temporary = await realpath(process.env.RUNNER_TEMP);
-const envFile = await realpath(process.env.ULPIN_BASELINE_ENV_FILE);
-assert.equal(relative(temporary, envFile), 'ulpin-t001.env');
-const childEnv = testProcessEnvironment(process.env, root);
+const temporary = await realpath(local ? resolve(process.env.ULPIN_LOCAL_ENV_FILE, '..') : process.env.RUNNER_TEMP);
+const envFile = await realpath(local ? process.env.ULPIN_LOCAL_ENV_FILE : process.env.ULPIN_BASELINE_ENV_FILE);
+assert.equal(relative(temporary, envFile), local ? 'ulpin-local.env' : 'ulpin-t001.env');
+const childEnv = uspProcessEnvironment(process.env, root);
 const out = resolve(root, '.runtime/usp-live');
 await mkdir(out, { recursive: true });
 const report = { schemaVersion: 'usp-isolated-live/1', codeSha: null, scopeId: scope.id,
@@ -28,7 +32,9 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 2, conn
 const s3 = new S3Client({ endpoint: process.env.S3_ENDPOINT, region: process.env.S3_REGION,
   forcePathStyle: true, credentials: { accessKeyId: process.env.S3_ACCESS_KEY,
     secretAccessKey: process.env.S3_SECRET_KEY }, maxAttempts: 2 });
-const composeArgs = ['--context', 'default', 'compose', '--project-directory', root,
+const dockerContext = colima ? 'colima-ulpin' : 'default';
+const composeExecutable = colima ? 'docker-compose' : 'docker';
+const composeArgs = [...(colima ? [] : ['--context', 'default', 'compose']), '--project-directory', root,
   '--env-file', envFile, '-p', scope.project, '-f', resolve(root, 'compose.yaml')];
 let ownsProject = false;
 let server;
@@ -52,7 +58,16 @@ async function command(label, executable, args, { input, timeout = 600000, env =
   if (code !== 0) throw new Error(`${label} failed (${code}): ${output.slice(-1800)}`);
   return output;
 }
-const compose = (label, args, options) => command(label, 'docker', [...composeArgs, ...args], options);
+const compose = (label, args, options) => command(label, composeExecutable, [...composeArgs, ...args], options);
+
+async function assertLoopbackPortFree(port) {
+  const server = createServer();
+  await new Promise((done, fail) => {
+    server.once('error', fail);
+    server.listen(port, '127.0.0.1', done);
+  });
+  await new Promise((done, fail) => server.close(error => error ? fail(error) : done()));
+}
 
 async function verifiedBytes(base, name, expected) {
   assert.equal(typeof name, 'string');
@@ -72,7 +87,7 @@ async function waitServer() {
   for (let i = 0; i < 90; i++) {
     assert(server.exitCode === null, 'Production server exited before readiness');
     try {
-      const response = await fetch('http://127.0.0.1:3000/api/v1/health', { signal: AbortSignal.timeout(3000) });
+      const response = await fetch(`${process.env.ULPIN_TEST_URL}/api/v1/health`, { signal: AbortSignal.timeout(3000) });
       const data = await response.json();
       if (response.ok && data.ok && data.dataMode === 'linked') return;
     } catch { /* wait */ }
@@ -88,12 +103,17 @@ try {
   const repo = resolve(root, 'repo-data');
   const database = await verifiedBytes(repo, manifest.database.file, manifest.database);
   for (const asset of manifest.assets) await verifiedBytes(root, asset.file, asset);
-  assert.equal((await command('docker-default', 'docker', ['context', 'inspect', 'default', '--format', '{{.Endpoints.docker.Host}}'])).trim(),
-    'unix:///var/run/docker.sock');
-  assert.equal((await command('existing-project', 'docker', ['--context', 'default', 'ps', '-a',
+  const contextEndpoint = (await command('docker-context', 'docker', ['context', 'inspect', dockerContext,
+    '--format', '{{.Endpoints.docker.Host}}'])).trim();
+  if (colima) assert.equal(contextEndpoint, `unix://${process.env.HOME}/.colima/ulpin/docker.sock`);
+  else assert.equal(contextEndpoint, 'unix:///var/run/docker.sock');
+  assert.equal((await command('existing-project', 'docker', ['--context', dockerContext, 'ps', '-a',
     '--filter', `label=com.docker.compose.project=${scope.project}`, '--format', '{{.ID}}'])).trim(), '');
-  assert.equal((await command('existing-volumes', 'docker', ['--context', 'default', 'volume', 'ls',
+  assert.equal((await command('existing-volumes', 'docker', ['--context', dockerContext, 'volume', 'ls',
     '--filter', `label=com.docker.compose.project=${scope.project}`, '--format', '{{.Name}}'])).trim(), '');
+  for (const port of [25432, 29000, 29001, 26379, 28000, Number(new URL(process.env.ULPIN_TEST_URL).port)])
+    await assertLoopbackPortFree(port);
+  report.checks.push({ name: 'dedicated-loopback-ports' });
   ownsProject = true;
   await compose('services-start', ['--profile', 'app', 'up', '-d', '--build', '--wait']);
   const client = await pool.connect();
@@ -127,7 +147,7 @@ try {
     report.checks.push({ name: 'additive-migration-replay' });
   } finally { client.release(); }
   server = spawn(process.execPath, ['apps/web/node_modules/next/dist/bin/next', 'start', 'apps/web',
-    '--hostname', '127.0.0.1', '--port', '3000'],
+    '--hostname', '127.0.0.1', '--port', new URL(process.env.ULPIN_TEST_URL).port],
     { cwd: root, env: childEnv, detached: true, stdio: 'ignore' });
   await waitServer();
   await command('usp-verify-live', 'node', ['--import', 'tsx', 'scripts/usp/verify-live.ts'], { timeout: 180000 });
@@ -138,7 +158,7 @@ try {
     0, 'Retained baseline jobs must be terminal before the dispatcher starts');
   dispatcher = spawn(process.execPath, ['--import', 'tsx', 'scripts/dispatcher.ts'],
     { cwd: root, env: childEnv, detached: true, stdio: 'ignore' });
-  const d0ReceiptFile = resolve(root, '.runtime/engineering/usp-d0-import.json');
+  const d0ReceiptFile = resolve(root, `.runtime/engineering/usp-d0-import-${scope.id}.json`);
   const d0Env = { ...childEnv, ULPIN_TEST_BASE_URL: childEnv.ULPIN_TEST_URL,
     ULPIN_D0_RECEIPT_FILE: d0ReceiptFile, DEMO_BASE_URL: childEnv.ULPIN_TEST_URL };
   await command('d0-authored-pack', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/verify-d0.ts'], { env: d0Env });
@@ -169,7 +189,7 @@ try {
   }
   await pool.end(); s3.destroy();
   if (ownsProject) try {
-    assertIsolation(process.env);
+    assertUspIsolation(process.env);
     await compose('owned-services-cleanup', ['--profile', 'app', 'down', '--volumes', '--remove-orphans'], { timeout: 120000 });
   } catch (error) {
     report.result = 'FAIL'; report.cleanupError = redact(String(error), process.env); process.exitCode = 1;
