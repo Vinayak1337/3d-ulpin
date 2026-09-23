@@ -17,3 +17,7 @@ Executed hosted commands (exit 0): `docker ... compose up --wait`, `pg_restore -
 Independent local commands passed: `pnpm typecheck`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-contract-producers.test.ts tests/usp-foundation.test.ts tests/usp-data-pack.test.ts` (69); `pnpm test:studio` (55); `pnpm test:register-scope` (3); `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-*.test.ts` (296); `pnpm test:repo-data` (2); `pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D0/contract-smoke/manifest.json`; and `pnpm build`. The contract-smoke pack checked 1,182 declared bytes only.
 
 **Open gates:** DATA's complete D0 pack and exact part locators, UI's live Studio mount/reload/browser V0, real D1 roof render, Redis/worker delivery for `usp:` jobs, multipart upload promotion, private derivative grants and release revocation, and F2/public deployment. The separate inherited `ulpin-integration-baseline` check stops before services at the historical planning validator's missing `sequence`; an earlier baseline attempt also exposed a pre-existing `jobs.started_at` mismatch in the Uttam Nagar bundle installer. Neither check is used as evidence for this FND receipt.
+
+For the subsequent synthetic D0 local pass and the hosted D0 failures, see the
+[D0 verification record](d0/README.md). That later result does not change the
+scope of this hosted FND receipt.
