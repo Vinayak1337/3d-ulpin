@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "usp-d0-live/1",
+  "status": "passed",
+  "packProfile": "golden-v1",
+  "areaId": "54b514a6-7590-489c-a0e5-a7de7a800762",
+  "siteId": "54b514a6-7590-489c-a0e5-a7de7a800762",
+  "manifestId": "5844607b-ce2c-4e5e-ac9c-6ffcd92c7419",
+  "manifestDigest": "f1cc73d7556e3adc71f89428a98b9a5e913e8c303e64471ad2f3da589909bd76",
+  "targetId": "746f1cdd-da3b-421a-ab92-e9dd8f26e71c",
+  "targetRevision": 1,
+  "sourceOriginalSha256": [
+    "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8",
+    "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2"
+  ],
+  "selectedLocators": [
+    "line 3",
+    "line 5",
+    "CSV row 2",
+    "CSV row 4"
+  ],
+  "packetId": "3c363cca-14be-499f-a9b7-abc0e0ef8d35",
+  "packetSha256": "d13f21280c118c82881d62b123019fd9b285396f842c44fb6f611d2e64cb8df9",
+  "packetStatus": "complete",
+  "artifactBytes": 1301,
+  "crossBuilding": "invalid_vertical_membership"
+}

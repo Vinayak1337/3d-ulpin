@@ -1,0 +1,340 @@
+{
+  "schemaVersion": "usp-isolated-live/1",
+  "codeSha": "5f1a0e787baed4a57ef56911e9217c38e52227f4",
+  "scopeId": "local-708d82eaf767b105",
+  "result": "PASS",
+  "checks": [
+    {
+      "name": "dedicated-loopback-ports"
+    },
+    {
+      "name": "restored-db-and-originals",
+      "tables": 44,
+      "objects": 497
+    },
+    {
+      "name": "additive-migration-replay"
+    },
+    {
+      "name": "fnd-live-receipt",
+      "receipt": {
+        "schemaVersion": "usp-fnd-live/1",
+        "codeSha": "5f1a0e787baed4a57ef56911e9217c38e52227f4",
+        "environment": "local-disposable-isolation",
+        "data": "retained synthetic Nandan baseline; not full D0",
+        "status": "passed",
+        "siteId": "c65e220d-bb6c-4bb0-9fff-8c140789602b",
+        "sourceSha256": "56a25a4b687876612d2367afe3032562e91ababd6302cb6f8fd606041f64972a",
+        "manifestId": "fddc4931-3cfb-47a6-8791-b3dd8a06698c",
+        "manifestDigest": "6084ff0580419006a7fa867307fe6fb660eb5fee90b80b2bd67de98d129269e8",
+        "targetId": "3588021e-af7b-457c-8bdb-5c6f849c027e",
+        "targetRevisionBefore": 1,
+        "targetRevisionAfter": 2,
+        "packetId": "403ecaa9-cf99-4499-8286-7cc5bed603d7",
+        "packetSha256": "fcaaeaccb58a32419c5732edbbdc9012431a787860113556577d6430a0257942",
+        "packetStatus": "incomplete",
+        "commitReceiptId": "902df953-b0c1-4001-bbc8-aa3ce3a682fe",
+        "event": {
+          "streamId": "registry:c65e220d-bb6c-4bb0-9fff-8c140789602b",
+          "sequence": "2"
+        },
+        "originalBytes": 6228,
+        "fencedJobId": "85f93f39-b133-47e6-a844-4186a8fcfaca",
+        "fences": [
+          1,
+          2
+        ],
+        "cancelledJobId": "a5270741-5f0d-41ad-844a-17ac1fc34744"
+      }
+    },
+    {
+      "name": "d0-v0-live-receipts",
+      "import": {
+        "schemaVersion": "usp-d0-import-receipt/1",
+        "packProfile": "golden-v1",
+        "areaId": "54b514a6-7590-489c-a0e5-a7de7a800762",
+        "siteId": "54b514a6-7590-489c-a0e5-a7de7a800762",
+        "physicalFeatures": {
+          "B-A": "e1d1521c-5df7-45ef-adf7-94da8c851167",
+          "B-B": "1f6e4c26-0e99-4396-91fe-0d817c24b163",
+          "B-C": "5512c9f7-75ea-4cd1-a47a-a5c7d76c3962",
+          "P-A": "7b531e98-de41-4b01-8a00-898856ad82d2",
+          "P-B": "2fcbf82f-f7df-47ae-bac0-38cf72f15df5",
+          "P-C": "104ce86c-07c4-47f8-a3ee-3884537c1d61",
+          "P-D": "a4598b13-69f3-4fce-836c-8b071cdbca11"
+        },
+        "records": {
+          "B-A": "e1d1521c-5df7-45ef-adf7-94da8c851167",
+          "property / B-A / Ground": "fad3579f-dd87-4c2e-9b42-f86a4d179782",
+          "property / B-A / Mezzanine": "54bc57a2-4627-44a8-93ac-b864af5b5d6a",
+          "property / B-A / First": "6220a5c3-8895-4c51-b446-80d524b34156",
+          "property / B-A / Basement": "4b569d6e-c297-47c4-9250-560cec305fcf",
+          "DUPLEX-D1-1": "3294700c-114d-4e93-a1a6-4c02c2c9f514",
+          "DUPLEX-D1-2": "67b6872c-9d1e-427d-8c8e-e38b765c4d49",
+          "U-A001": "ac6ef6cf-6d3c-46b2-9a90-85a14cf75516",
+          "U-A101": "746f1cdd-da3b-421a-ab92-e9dd8f26e71c",
+          "U-A102": "4bb8fed1-0e15-4a39-8b98-2a5e305e876a",
+          "U-AB01": "0c940a79-d2e9-4db9-973d-2e17efbf93e4",
+          "B-B": "1f6e4c26-0e99-4396-91fe-0d817c24b163",
+          "property / B-B / Ground": "bfca50a5-3922-4203-894c-c6caf7c296fd",
+          "property / B-B / First": "d19a875f-95ad-40ba-953b-0cb45dc22642",
+          "property / B-B / Second": "faf685d2-394d-42e9-b602-afb8e1e26abc",
+          "U-B001": "715501bd-4805-41db-84a9-ceecbdff920b",
+          "U-B101": "bc27b781-71d2-441f-8a82-a60c60caa7d4",
+          "U-B201": "37461167-e0b6-4b21-88ea-8586e96308ec",
+          "B-C": "5512c9f7-75ea-4cd1-a47a-a5c7d76c3962",
+          "property / B-C / Ground": "55b9a4bc-7ff8-4fe8-bab9-a3abd99d73f8",
+          "property / B-C / First": "a11fb325-ca43-46b8-9275-a3042b7c02d3",
+          "U-C001": "906431f9-d8c9-4a2c-800c-cf583871c254",
+          "U-C101": "dafd2f84-9c17-44e2-a72f-d56a0f204ed4"
+        },
+        "sourceParts": {
+          "U-A101": [
+            {
+              "sourceRevisionId": "c60eace8-3db7-412b-b940-e85542a5a39c",
+              "locator": "line 3",
+              "partId": "6107ac16-aa44-413d-9990-661c18b4e72b"
+            },
+            {
+              "sourceRevisionId": "c60eace8-3db7-412b-b940-e85542a5a39c",
+              "locator": "line 5",
+              "partId": "aa356cbc-61eb-4300-8f89-5f74780dc0f9"
+            },
+            {
+              "sourceRevisionId": "378f944d-442c-4e71-a3e6-fce41116c14e",
+              "locator": "CSV row 2",
+              "partId": "f80faa64-40e6-47b0-9623-087039cbe8e2"
+            },
+            {
+              "sourceRevisionId": "378f944d-442c-4e71-a3e6-fce41116c14e",
+              "locator": "CSV row 4",
+              "partId": "4ec2f948-ceb4-481e-886a-27b9a29471bc"
+            }
+          ],
+          "U-A102": [
+            {
+              "sourceRevisionId": "c60eace8-3db7-412b-b940-e85542a5a39c",
+              "locator": "line 4",
+              "partId": "479ed8c0-b96c-4c84-8ae5-a954d2ca521c"
+            },
+            {
+              "sourceRevisionId": "c60eace8-3db7-412b-b940-e85542a5a39c",
+              "locator": "line 5",
+              "partId": "aa356cbc-61eb-4300-8f89-5f74780dc0f9"
+            },
+            {
+              "sourceRevisionId": "378f944d-442c-4e71-a3e6-fce41116c14e",
+              "locator": "CSV row 3",
+              "partId": "7bad2ebb-4c23-4aee-854a-dd42f74f2f9b"
+            },
+            {
+              "sourceRevisionId": "378f944d-442c-4e71-a3e6-fce41116c14e",
+              "locator": "CSV row 4",
+              "partId": "4ec2f948-ceb4-481e-886a-27b9a29471bc"
+            }
+          ]
+        },
+        "originalHashes": {
+          "scenario.json": "89e63c8f551570bac2b496cea02898803c4cca1d74766e0a7cf724f2ada2b7be",
+          "buildings.arcgis.json": "8e8048356c8f1142a183d6e1d2ec6ee6cb779805d3010870bd5e67d15b550f0a",
+          "scenario-courtyard-draft.json": "26bd19cb5af77b2206a3ee20c2453ea6b40d53920a5c2fb9b8c2f77b918719d0",
+          "buildings-courtyard-draft.arcgis.json": "99ec4e3acf6133294b50cc86feb3ad2abd72d7374f2d73e4957d5d3423dba79a",
+          "parcels.arcgis.json": "385f6265c815dfb570aebb035ce8031785bc50aafa9152606d47e954aad651db",
+          "spaces-B-A.csv": "d0c2fb5c727d140639bd591045921ab883923b47365d6ce4bb754af6e3559d0e",
+          "spaces-B-B.csv": "ac63417f2d33f288f1f9fc003d6b4c2bf894a6755f67635a4802593191611887",
+          "spaces-B-C.csv": "6efcbe6a46d38eb742f4aea00b997271b08ef99e72a6232847e6f6e39839ba80",
+          "mixed-page-r1.txt": "eed2ba2e905c1c6981067eb41dc89479d7f81bc3ee2d4e53fb78c523ea10a655",
+          "mixed-page-r2.txt": "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8",
+          "mixed-rows-r1.csv": "f83b1077fc11d07bf6b7bf4e25e2f11ae073a97302e5d04b1f4e41c4d2524e26",
+          "mixed-rows-r2.csv": "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2"
+        },
+        "sourceHashesByRevisionId": {
+          "cfd33b30-48ed-43b2-a177-e5b71541510c": "8e8048356c8f1142a183d6e1d2ec6ee6cb779805d3010870bd5e67d15b550f0a",
+          "78690813-8505-4f32-8d52-1cc10ae8581c": "eed2ba2e905c1c6981067eb41dc89479d7f81bc3ee2d4e53fb78c523ea10a655",
+          "c60eace8-3db7-412b-b940-e85542a5a39c": "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8",
+          "556aadce-e20f-4011-858b-aaae9f0f1592": "f83b1077fc11d07bf6b7bf4e25e2f11ae073a97302e5d04b1f4e41c4d2524e26",
+          "378f944d-442c-4e71-a3e6-fce41116c14e": "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2",
+          "6ce39928-eb35-4d30-9303-464a33c647c3": "385f6265c815dfb570aebb035ce8031785bc50aafa9152606d47e954aad651db",
+          "54bd94c2-8ffb-4445-b97d-17b4675aaa8e": "d0c2fb5c727d140639bd591045921ab883923b47365d6ce4bb754af6e3559d0e",
+          "e8e65905-e981-48c8-9679-7e58be8fc6b6": "ac63417f2d33f288f1f9fc003d6b4c2bf894a6755f67635a4802593191611887",
+          "55570f74-d3e3-451b-b460-6ffc4de004e7": "6efcbe6a46d38eb742f4aea00b997271b08ef99e72a6232847e6f6e39839ba80"
+        },
+        "sources": [
+          {
+            "sourceRevisionId": "cfd33b30-48ed-43b2-a177-e5b71541510c",
+            "familyId": "cfd33b30-48ed-43b2-a177-e5b71541510c",
+            "revision": 1,
+            "name": "buildings.arcgis.json",
+            "sha256": "8e8048356c8f1142a183d6e1d2ec6ee6cb779805d3010870bd5e67d15b550f0a"
+          },
+          {
+            "sourceRevisionId": "78690813-8505-4f32-8d52-1cc10ae8581c",
+            "familyId": "78690813-8505-4f32-8d52-1cc10ae8581c",
+            "revision": 1,
+            "name": "mixed-page-r1.txt",
+            "sha256": "eed2ba2e905c1c6981067eb41dc89479d7f81bc3ee2d4e53fb78c523ea10a655"
+          },
+          {
+            "sourceRevisionId": "c60eace8-3db7-412b-b940-e85542a5a39c",
+            "familyId": "78690813-8505-4f32-8d52-1cc10ae8581c",
+            "revision": 2,
+            "name": "mixed-page-r2.txt",
+            "sha256": "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8"
+          },
+          {
+            "sourceRevisionId": "556aadce-e20f-4011-858b-aaae9f0f1592",
+            "familyId": "556aadce-e20f-4011-858b-aaae9f0f1592",
+            "revision": 1,
+            "name": "mixed-rows-r1.csv",
+            "sha256": "f83b1077fc11d07bf6b7bf4e25e2f11ae073a97302e5d04b1f4e41c4d2524e26"
+          },
+          {
+            "sourceRevisionId": "378f944d-442c-4e71-a3e6-fce41116c14e",
+            "familyId": "556aadce-e20f-4011-858b-aaae9f0f1592",
+            "revision": 2,
+            "name": "mixed-rows-r2.csv",
+            "sha256": "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2"
+          },
+          {
+            "sourceRevisionId": "6ce39928-eb35-4d30-9303-464a33c647c3",
+            "familyId": "6ce39928-eb35-4d30-9303-464a33c647c3",
+            "revision": 1,
+            "name": "parcels.arcgis.json",
+            "sha256": "385f6265c815dfb570aebb035ce8031785bc50aafa9152606d47e954aad651db"
+          },
+          {
+            "sourceRevisionId": "54bd94c2-8ffb-4445-b97d-17b4675aaa8e",
+            "familyId": "54bd94c2-8ffb-4445-b97d-17b4675aaa8e",
+            "revision": 1,
+            "name": "spaces-B-A.csv",
+            "sha256": "d0c2fb5c727d140639bd591045921ab883923b47365d6ce4bb754af6e3559d0e"
+          },
+          {
+            "sourceRevisionId": "e8e65905-e981-48c8-9679-7e58be8fc6b6",
+            "familyId": "e8e65905-e981-48c8-9679-7e58be8fc6b6",
+            "revision": 1,
+            "name": "spaces-B-B.csv",
+            "sha256": "ac63417f2d33f288f1f9fc003d6b4c2bf894a6755f67635a4802593191611887"
+          },
+          {
+            "sourceRevisionId": "55570f74-d3e3-451b-b460-6ffc4de004e7",
+            "familyId": "55570f74-d3e3-451b-b460-6ffc4de004e7",
+            "revision": 1,
+            "name": "spaces-B-C.csv",
+            "sha256": "6efcbe6a46d38eb742f4aea00b997271b08ef99e72a6232847e6f6e39839ba80"
+          }
+        ],
+        "limitations": [
+          "Synthetic source only",
+          "Courtyard source retained as an unrecorded draft because the registry accepts one simple ring",
+          "Compound duplex and shared stair remain authored source truth; native preparation currently records separate schedule components"
+        ]
+      },
+      "live": {
+        "schemaVersion": "usp-d0-live/1",
+        "status": "passed",
+        "packProfile": "golden-v1",
+        "areaId": "54b514a6-7590-489c-a0e5-a7de7a800762",
+        "siteId": "54b514a6-7590-489c-a0e5-a7de7a800762",
+        "manifestId": "5844607b-ce2c-4e5e-ac9c-6ffcd92c7419",
+        "manifestDigest": "f1cc73d7556e3adc71f89428a98b9a5e913e8c303e64471ad2f3da589909bd76",
+        "targetId": "746f1cdd-da3b-421a-ab92-e9dd8f26e71c",
+        "targetRevision": 1,
+        "sourceOriginalSha256": [
+          "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8",
+          "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2"
+        ],
+        "selectedLocators": [
+          "line 3",
+          "line 5",
+          "CSV row 2",
+          "CSV row 4"
+        ],
+        "packetId": "3c363cca-14be-499f-a9b7-abc0e0ef8d35",
+        "packetSha256": "d13f21280c118c82881d62b123019fd9b285396f842c44fb6f611d2e64cb8df9",
+        "packetStatus": "complete",
+        "artifactBytes": 1301,
+        "crossBuilding": "invalid_vertical_membership"
+      },
+      "browser": "tests/e2e/usp-product-journey.spec.ts passed against production server"
+    }
+  ],
+  "commands": [
+    {
+      "label": "source-sha",
+      "exitCode": 0,
+      "durationMs": 5
+    },
+    {
+      "label": "docker-context",
+      "exitCode": 0,
+      "durationMs": 10
+    },
+    {
+      "label": "existing-project",
+      "exitCode": 0,
+      "durationMs": 11
+    },
+    {
+      "label": "existing-volumes",
+      "exitCode": 0,
+      "durationMs": 12
+    },
+    {
+      "label": "services-start",
+      "exitCode": 0,
+      "durationMs": 12633
+    },
+    {
+      "label": "database-restore",
+      "exitCode": 0,
+      "durationMs": 820
+    },
+    {
+      "label": "migration",
+      "exitCode": 0,
+      "durationMs": 312
+    },
+    {
+      "label": "repeat-migration",
+      "exitCode": 0,
+      "durationMs": 252
+    },
+    {
+      "label": "usp-verify-live",
+      "exitCode": 0,
+      "durationMs": 11167
+    },
+    {
+      "label": "d0-authored-pack",
+      "exitCode": 0,
+      "durationMs": 385
+    },
+    {
+      "label": "d0-import-plan",
+      "exitCode": 0,
+      "durationMs": 447
+    },
+    {
+      "label": "d0-import-apply",
+      "exitCode": 0,
+      "durationMs": 7661
+    },
+    {
+      "label": "d0-live-verify",
+      "exitCode": 0,
+      "durationMs": 651
+    },
+    {
+      "label": "d0-studio-browser",
+      "exitCode": 0,
+      "durationMs": 12332
+    },
+    {
+      "label": "owned-services-cleanup",
+      "exitCode": 0,
+      "durationMs": 3396
+    }
+  ],
+  "limitation": "Synthetic D0 and retained Nandan baseline; real D1 and public deployment remain separate"
+}
