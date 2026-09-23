@@ -1,6 +1,6 @@
 # Ordered task backlog
 
-Generated from `backlog.json`, plan version 1.3. Accepted execution tasks: 9/58. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
+Generated from `backlog.json`, plan version 1.5. Accepted execution tasks: 9/93. A mapping or detailed plan is not implementation evidence. Future plan paths are reserved until authored.
 
 ## E01 — Baseline and operating contract
 Exit: A reproducible starting point and bounded first-slice requirements.
@@ -22,6 +22,12 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 
 **Detailed plan:** `tasks/T001_BASELINE_PLAN.md` — authored; inspect its status before execution.
 
+**Recorded sequence:** `1`.
+
+**Recorded execution state:** `completed`.
+
+**Recorded evidence:** `tasks/T001_RESULT.md`, `evidence/T001-hosted-35354159342.json`, `evidence/T001-fixture-references.json`.
+
 ### T002 — Reference, requirements and fixture acceptance contract
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Product/visual lead.
 
@@ -39,6 +45,12 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 
 **Detailed plan:** `tasks/T002_PLAN.md` — authored; inspect its status before execution.
 
+**Recorded sequence:** `2`.
+
+**Recorded execution state:** `completed`.
+
+**Recorded evidence:** `tasks/T002_RESULT.md`, `references/catalog.json`, `references/acceptance-contract.json`.
+
 ### T003 — Architecture decisions and smallest proving experiments
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
@@ -55,6 +67,12 @@ Exit: A reproducible starting point and bounded first-slice requirements.
 **Earlier references:** schema:U15, schema:U21, renderer:R03, renderer:R06.
 
 **Detailed plan:** `tasks/T003_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `3`.
+
+**Recorded execution state:** `completed`.
+
+**Recorded evidence:** `tasks/T003_RESULT.md`, `decisions/ADR-001-schema-authority.md`.
 
 ## E14 — User-prioritized 3D visual milestone
 Exit: Supported normalized neighbourhoods use an improved common visual/inspection system before ML expansion.
@@ -76,8 +94,14 @@ Exit: Supported normalized neighbourhoods use an improved common visual/inspecti
 
 **Detailed plan:** `tasks/T057_PLAN.md` — authored; inspect its status before execution.
 
+**Recorded sequence:** `10`.
+
+**Recorded execution state:** `superseded_by_user_rejected_visuals`.
+
+**Recorded evidence:** `tasks/T057_RESULT.md`, `../evidence/t057/README.md`.
+
 ### T058 — Studio-based interface, prepared sources and reference-matched neighbourhood
-**Status:** Review. **Release:** R1-renderer. **Suggested owner:** Architecture and visual lead.
+**Status:** Implemented. **Release:** R1-renderer. **Suggested owner:** Architecture and visual lead.
 
 **Dependencies:** T009.
 
@@ -92,6 +116,58 @@ Exit: Supported normalized neighbourhoods use an improved common visual/inspecti
 **Earlier references:** New explicit user/architecture requirement.
 
 **Detailed plan:** `tasks/T058_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `58`.
+
+**Recorded execution state:** `continuation_implemented_production_verified`.
+
+**Recorded evidence:** `tasks/T058_RESULT.md`, `../evidence/t058/REVIEW.md`, `../evidence/t058/verification/results.json`, `tasks/T058_CONTINUATION_RESULT.md`, `../evidence/t058/continuation/verification/summary.json`, `../evidence/t058/continuation/REVIEW.md`.
+
+### T059 — Unified Studio frontend completion and acceptance evidence
+**Status:** Implemented. **Release:** R1-renderer. **Suggested owner:** Frontend / visual / QA.
+
+**Dependencies:** T058.
+
+**Scope:** Finish FE-A01?14: one Studio shell for prepared and saved data, same-page quick register, complete register/workspace/export paths, responsive behavior and current evidence.
+
+**Outputs:** Unified routes and components; FE coverage ledger; current fixture and saved-data browser evidence; responsive captures.
+
+**Acceptance:** FE-A01?14 implemented and current browser/build checks pass; source geometry remains honest; physical-device verification and user visual approval are recorded separately.
+
+**Excluded:** ML, official identity issuance, production multi-user rollout and reshaping imported real geometry to imitate the synthetic reference.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T059_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `59`.
+
+**Recorded execution state:** `implemented_current_browser_verified`.
+
+**Recorded evidence:** `tasks/T059_RESULT.md`, `../frontend-completion/coverage.json`, `../evidence/t059/final/results.json`, `../evidence/t059/final/saved-data-results.json`, `../evidence/t059/final/capture.json`.
+
+### T060 — Close reproduced Studio defects and refine reference visuals
+**Status:** Implemented. **Release:** R1-renderer. **Suggested owner:** Frontend / visual / QA.
+
+**Dependencies:** T059.
+
+**Scope:** Reconcile both project chats, fix quick units/documents/shared navigation and scoped SVG, refine scene and tablet interaction, verify current application.
+
+**Outputs:** Correctness fixes, scoped export regression, reference comparison, current saved/fixture browser checks.
+
+**Acceptance:** Reproduced defects are fixed in current browser; supported source bytes and geometry remain unchanged; real-device and user acceptance are recorded separately.
+
+**Excluded:** ML, official identity issuance, production multi-user rollout and reshaping imported real geometry to imitate the synthetic reference.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T060_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `60`.
+
+**Recorded execution state:** `implemented_browser_verified_final_follow_up_recorded`.
+
+**Recorded evidence:** `tasks/T060_RESULT.md`, `../evidence/t060/verification-summary.json`, `../evidence/t060/correctness-final/results.json`, `../evidence/t060/studio-original/results.json`, `../evidence/t060/studio-continuation/results.json`, `../evidence/t060/saved-final/results.json`, `../evidence/t060/visual-metal/capture.json`, `../evidence/t060/uttam-final/results.json`.
 
 ## E02 — Thin unified model
 Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
@@ -113,6 +189,12 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Detailed plan:** `tasks/T004_PLAN.md` — authored; inspect its status before execution.
 
+**Recorded sequence:** `4`.
+
+**Recorded execution state:** `completed`.
+
+**Recorded evidence:** `tasks/T004_RESULT.md`.
+
 ### T005 — Reusable sources, original assets and exact evidence links
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Data/backend.
 
@@ -129,6 +211,12 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 **Earlier references:** schema:U05, schema:U11, schema:U12, renderer:D04.
 
 **Detailed plan:** `tasks/T005_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `5`.
+
+**Recorded execution state:** `completed`.
+
+**Recorded evidence:** `tasks/T005_RESULT.md`.
 
 ### T006 — Frames, transforms and vertical-reference semantics
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Geometry lead.
@@ -147,6 +235,12 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Detailed plan:** `tasks/T006_PLAN.md` — authored; inspect its status before execution.
 
+**Recorded sequence:** `6`.
+
+**Recorded execution state:** `completed`.
+
+**Recorded evidence:** `tasks/T006_RESULT.md`.
+
 ### T007 — Geometry representations, quantities and capability checks
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Geometry lead.
 
@@ -164,6 +258,12 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 
 **Detailed plan:** `tasks/T007_PLAN.md` — authored; inspect its status before execution.
 
+**Recorded sequence:** `7`.
+
+**Recorded execution state:** `completed`.
+
+**Recorded evidence:** `tasks/T007_RESULT.md`.
+
 ### T008 — Observations, source composition and coherent snapshots
 **Status:** Accepted. **Release:** R1-renderer. **Suggested owner:** Architecture lead.
 
@@ -180,6 +280,12 @@ Exit: Runtime-checked core contracts exercised by fixtures, not 53 new tables.
 **Earlier references:** schema:U08, schema:U13, schema:U14, renderer:D05, renderer:C01.
 
 **Detailed plan:** `tasks/T008_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `8`.
+
+**Recorded execution state:** `completed`.
+
+**Recorded evidence:** `tasks/T008_RESULT.md`.
 
 ## E03 — Compatibility and first normalization
 Exit: Existing records and named input profiles use the new boundary without loss.
@@ -201,6 +307,12 @@ Exit: Existing records and named input profiles use the new boundary without los
 
 **Detailed plan:** `tasks/T009_PLAN.md` — authored; inspect its status before execution.
 
+**Recorded sequence:** `9`.
+
+**Recorded execution state:** `completed`.
+
+**Recorded evidence:** `tasks/T009_RESULT.md`, `evidence/T009-live-read.json`.
+
 ### T010 — Minimal additive storage and one-writer migration rehearsal
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/backend.
 
@@ -218,6 +330,10 @@ Exit: Existing records and named input profiles use the new boundary without los
 
 **Detailed plan:** `tasks/T010_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `11`.
+
+**Recorded execution state:** `not_started`.
+
 ### T011 — First supported input profiles and retry-safe normalization
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/geometry.
 
@@ -234,6 +350,10 @@ Exit: Existing records and named input profiles use the new boundary without los
 **Earlier references:** schema:U02, schema:U08, schema:U17, schema:U19, renderer:D06.
 
 **Detailed plan:** `tasks/T011_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `12`.
+
+**Recorded execution state:** `not_started`.
 
 ## E04 — Mixed-source proving slice
 Exit: The persisted two-block demonstration and negative tests pass.
@@ -255,6 +375,10 @@ Exit: The persisted two-block demonstration and negative tests pass.
 
 **Detailed plan:** `tasks/T012_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `13`.
+
+**Recorded execution state:** `not_started`.
+
 ### T013 — Foundation negatives, compatibility and acceptance gate
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Independent reviewer/QA.
 
@@ -271,6 +395,10 @@ Exit: The persisted two-block demonstration and negative tests pass.
 **Earlier references:** schema:U16, schema:U20, schema:U21, renderer:D07, renderer:D08.
 
 **Detailed plan:** `tasks/T013_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `14`.
+
+**Recorded execution state:** `not_started`.
 
 ## E05 — Shared data/session/viewport architecture
 Exit: One consistent selection/data boundary with independently releasable render resources.
@@ -292,6 +420,10 @@ Exit: One consistent selection/data boundary with independently releasable rende
 
 **Detailed plan:** `tasks/T014_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `15`.
+
+**Recorded execution state:** `not_started`.
+
 ### T015 — One map and inspection session
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Frontend.
 
@@ -309,6 +441,10 @@ Exit: One consistent selection/data boundary with independently releasable rende
 
 **Detailed plan:** `tasks/T015_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `16`.
+
+**Recorded execution state:** `not_started`.
+
 ### T016 — Reusable viewport/controller and resource lifecycle boundary
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering/frontend.
 
@@ -325,6 +461,10 @@ Exit: One consistent selection/data boundary with independently releasable rende
 **Earlier references:** renderer:C06.
 
 **Detailed plan:** `tasks/T016_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `17`.
+
+**Recorded execution state:** `not_started`.
 
 ## E06 — Scene compiler and first streamed renderer
 Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the pinned engine.
@@ -346,6 +486,10 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 
 **Detailed plan:** `tasks/T017_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `18`.
+
+**Recorded execution state:** `not_started`.
+
 ### T018 — Road, ground and utility compiler profiles
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Geometry/rendering.
 
@@ -362,6 +506,10 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 **Earlier references:** schema:U10, renderer:C03.
 
 **Detailed plan:** `tasks/T018_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `19`.
+
+**Recorded execution state:** `not_started`.
 
 ### T019 — Deterministic materials and reusable architectural recipes
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering/technical art.
@@ -380,6 +528,10 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 
 **Detailed plan:** `tasks/T019_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `20`.
+
+**Recorded execution state:** `not_started`.
+
 ### T020 — First multi-tile delivery and stable feature metadata
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Streaming/rendering.
 
@@ -396,6 +548,10 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 **Earlier references:** schema:U14, renderer:C05.
 
 **Detailed plan:** `tasks/T020_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `21`.
+
+**Recorded execution state:** `not_started`.
 
 ### T021 — Pinned renderer integration and compatibility qualification
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering lead.
@@ -414,6 +570,10 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 
 **Detailed plan:** `tasks/T021_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `22`.
+
+**Recorded execution state:** `not_started`.
+
 ### T022 — Measurement probes and render-foundation gate
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Geometry/QA.
 
@@ -430,6 +590,10 @@ Exit: A small real tiled viewport qualifies IDs, geometry, measurements and the 
 **Earlier references:** schema:U07, schema:U20, renderer:C07, renderer:C08.
 
 **Detailed plan:** `tasks/T022_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `23`.
+
+**Recorded execution state:** `not_started`.
 
 ## E07 — Complete-neighbourhood visual quality
 Exit: Full-map and diverse dataset views pass correctness and user visual acceptance.
@@ -451,6 +615,10 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 
 **Detailed plan:** `tasks/T023_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `24`.
+
+**Recorded execution state:** `not_started`.
+
 ### T024 — Architecture, facade and material fidelity refinement
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering/technical art.
 
@@ -467,6 +635,10 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 **Earlier references:** renderer:V02, renderer:V04.
 
 **Detailed plan:** `tasks/T024_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `25`.
+
+**Recorded execution state:** `not_started`.
 
 ### T025 — Grounding, lighting and alternate-view fidelity
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Rendering/technical art.
@@ -485,6 +657,10 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 
 **Detailed plan:** `tasks/T025_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `26`.
+
+**Recorded execution state:** `not_started`.
+
 ### T026 — Dense, sloped, sparse and held-out visual transfer
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Data/QA.
 
@@ -502,6 +678,10 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 
 **Detailed plan:** `tasks/T026_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `27`.
+
+**Recorded execution state:** `not_started`.
+
 ### T027 — Full-map visual acceptance checkpoint
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** User visual review + QA.
 
@@ -518,6 +698,10 @@ Exit: Full-map and diverse dataset views pass correctness and user visual accept
 **Earlier references:** renderer:R02, renderer:V07, renderer:V08.
 
 **Detailed plan:** `tasks/T027_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `28`.
+
+**Recorded execution state:** `not_started`.
 
 ## E08 — Cross-area reliability and bounded resources
 Exit: R1: reusable renderer foundation with measured delivery and recovery.
@@ -539,6 +723,10 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 
 **Detailed plan:** `tasks/T028_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `29`.
+
+**Recorded execution state:** `not_started`.
+
 ### T029 — Bounded loading, cancellation and CPU/GPU release
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Streaming/rendering.
 
@@ -555,6 +743,10 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 **Earlier references:** renderer:S02.
 
 **Detailed plan:** `tasks/T029_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `30`.
+
+**Recorded execution state:** `not_started`.
 
 ### T030 — Cross-area seam, topology and precision qualification
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Geometry/QA.
@@ -573,6 +765,10 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 
 **Detailed plan:** `tasks/T030_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `31`.
+
+**Recorded execution state:** `not_started`.
+
 ### T031 — Incremental rebuilds and atomic publication recovery
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** Backend/streaming.
 
@@ -590,6 +786,10 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 
 **Detailed plan:** `tasks/T031_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `32`.
+
+**Recorded execution state:** `not_started`.
+
 ### T032 — Resource/failure benchmarks and renderer release gate
 **Status:** Planned. **Release:** R1-renderer. **Suggested owner:** QA/performance.
 
@@ -606,6 +806,10 @@ Exit: R1: reusable renderer foundation with measured delivery and recovery.
 **Earlier references:** renderer:R05, renderer:S05, renderer:S06.
 
 **Detailed plan:** `tasks/T032_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `33`.
+
+**Recorded execution state:** `not_started`.
 
 ## E09 — Map interface rebuild
 Exit: Map workflows meet the shared visual and state contract.
@@ -627,6 +831,10 @@ Exit: Map workflows meet the shared visual and state contract.
 
 **Detailed plan:** `tasks/T033_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `34`.
+
+**Recorded execution state:** `not_started`.
+
 ### T034 — Camera, layers and global-search interface
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend.
 
@@ -643,6 +851,10 @@ Exit: Map workflows meet the shared visual and state contract.
 **Earlier references:** renderer:U02.
 
 **Detailed plan:** `tasks/T034_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `35`.
+
+**Recorded execution state:** `not_started`.
 
 ### T035 — Property inspector, findings and utility inspection
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/geometry.
@@ -661,6 +873,10 @@ Exit: Map workflows meet the shared visual and state contract.
 
 **Detailed plan:** `tasks/T035_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `36`.
+
+**Recorded execution state:** `not_started`.
+
 ### T036 — Map history, exports and responsive panels
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend.
 
@@ -678,6 +894,10 @@ Exit: Map workflows meet the shared visual and state contract.
 
 **Detailed plan:** `tasks/T036_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `37`.
+
+**Recorded execution state:** `not_started`.
+
 ### T037 — Map interface acceptance gate
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** QA + user visual review.
 
@@ -694,6 +914,10 @@ Exit: Map workflows meet the shared visual and state contract.
 **Earlier references:** renderer:U06.
 
 **Detailed plan:** `tasks/T037_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `38`.
+
+**Recorded execution state:** `not_started`.
 
 ## E10 — Building, floor, unit and evidence interfaces
 Exit: Plan/model/table/source views agree on the same records and quantities.
@@ -715,6 +939,10 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 
 **Detailed plan:** `tasks/T038_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `39`.
+
+**Recorded execution state:** `not_started`.
+
 ### T039 — Floor/unit plans, shared spaces and section interactions
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/geometry.
 
@@ -731,6 +959,10 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 **Earlier references:** schema:U09, schema:U20, renderer:V05, renderer:I02, renderer:I03.
 
 **Detailed plan:** `tasks/T039_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `40`.
+
+**Recorded execution state:** `not_started`.
 
 ### T040 — Optional evidence viewers and access scopes
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/backend.
@@ -749,6 +981,10 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 
 **Detailed plan:** `tasks/T040_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `41`.
+
+**Recorded execution state:** `not_started`.
+
 ### T041 — Record history, issues and investigations
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/backend.
 
@@ -766,6 +1002,10 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 
 **Detailed plan:** `tasks/T041_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `42`.
+
+**Recorded execution state:** `not_started`.
+
 ### T042 — Inspection and zero-document acceptance gate
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** QA + user visual review.
 
@@ -782,6 +1022,10 @@ Exit: Plan/model/table/source views agree on the same records and quantities.
 **Earlier references:** renderer:I06.
 
 **Detailed plan:** `tasks/T042_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `43`.
+
+**Recorded execution state:** `not_started`.
 
 ## E11 — Import, preparation, editing and review interfaces
 Exit: A live source-to-record-to-finding journey and correction workflow pass.
@@ -803,6 +1047,10 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 
 **Detailed plan:** `tasks/T043_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `44`.
+
+**Recorded execution state:** `not_started`.
+
 ### T044 — Source workspace calibration and placement
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Frontend/geometry.
 
@@ -819,6 +1067,10 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 **Earlier references:** renderer:E02.
 
 **Detailed plan:** `tasks/T044_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `45`.
+
+**Recorded execution state:** `not_started`.
 
 ### T045 — Versioned geometry edits, undo and conflict handling
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Full-stack/geometry.
@@ -837,6 +1089,10 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 
 **Detailed plan:** `tasks/T045_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `46`.
+
+**Recorded execution state:** `not_started`.
+
 ### T046 — Compare, build, review and publish workflow
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Full-stack.
 
@@ -854,6 +1110,10 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 
 **Detailed plan:** `tasks/T046_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `47`.
+
+**Recorded execution state:** `not_started`.
+
 ### T047 — End-to-end import/edit/workflow acceptance
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** QA.
 
@@ -870,6 +1130,10 @@ Exit: A live source-to-record-to-finding journey and correction workflow pass.
 **Earlier references:** renderer:E06.
 
 **Detailed plan:** `tasks/T047_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `48`.
+
+**Recorded execution state:** `not_started`.
 
 ## E12 — Integrated product qualification
 Exit: R2: reproducible supported product, not universal data-format or national coverage.
@@ -891,6 +1155,10 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 
 **Detailed plan:** `tasks/T048_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `49`.
+
+**Recorded execution state:** `not_started`.
+
 ### T049 — Security, input safety and source-use qualification
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Backend/security.
 
@@ -907,6 +1175,10 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 **Earlier references:** schema:U12, renderer:Q03.
 
 **Detailed plan:** `tasks/T049_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `50`.
+
+**Recorded execution state:** `not_started`.
 
 ### T050 — Real device, browser and accessibility qualification
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** QA/accessibility.
@@ -925,6 +1197,10 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 
 **Detailed plan:** `tasks/T050_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `51`.
+
+**Recorded execution state:** `not_started`.
+
 ### T051 — Reproducible startup, restore and additive transfer
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Platform/QA.
 
@@ -942,6 +1218,10 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 
 **Detailed plan:** `tasks/T051_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `52`.
+
+**Recorded execution state:** `not_started`.
+
 ### T052 — Integrated product release and next backlog
 **Status:** Planned. **Release:** R2-product. **Suggested owner:** Architecture lead + user.
 
@@ -958,6 +1238,10 @@ Exit: R2: reproducible supported product, not universal data-format or national 
 **Earlier references:** renderer:Q06.
 
 **Detailed plan:** `tasks/T052_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `53`.
+
+**Recorded execution state:** `not_started`.
 
 ## E13 — Optional expansion track
 Exit: R3 increments are elected later; they do not block R1/R2.
@@ -979,6 +1263,10 @@ Exit: R3 increments are elected later; they do not block R1/R2.
 
 **Detailed plan:** `tasks/T053_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `54`.
+
+**Recorded execution state:** `not_started`.
+
 ### T054 — Terrain, point-cloud and survey/bulk increments
 **Status:** Deferred. **Release:** R3-optional. **Suggested owner:** Data/geometry.
 
@@ -995,6 +1283,10 @@ Exit: R3 increments are elected later; they do not block R1/R2.
 **Earlier references:** schema:U07, schema:U11, schema:U19, renderer:E05, renderer:E06.
 
 **Detailed plan:** `tasks/T054_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `55`.
+
+**Recorded execution state:** `not_started`.
 
 ### T055 — Private parties, official integrations and multi-user expansion
 **Status:** Deferred. **Release:** R3-optional. **Suggested owner:** Architecture/security.
@@ -1013,6 +1305,10 @@ Exit: R3 increments are elected later; they do not block R1/R2.
 
 **Detailed plan:** `tasks/T055_PLAN.md` — write just before execution.
 
+**Recorded sequence:** `56`.
+
+**Recorded execution state:** `not_started`.
+
 ### T056 — Measured capacity and large-catalog expansion
 **Status:** Deferred. **Release:** R3-optional. **Suggested owner:** Streaming/performance.
 
@@ -1029,6 +1325,538 @@ Exit: R3 increments are elected later; they do not block R1/R2.
 **Earlier references:** renderer:S05, renderer:Q05, renderer:Q06.
 
 **Detailed plan:** `tasks/T056_PLAN.md` — write just before execution.
+
+**Recorded sequence:** `57`.
+
+**Recorded execution state:** `not_started`.
+
+### T061 — Local spatial extraction and reviewed bulk handoff
+**Status:** Implemented. **Release:** R3-assistance. **Suggested owner:** Codex.
+
+**Dependencies:** None; environment and authorization requirements still apply.
+
+**Scope:** Pinned local building and floor-plan models, persisted per-source batches, exact raster review, calibrated candidates and ordinary preparation/area review handoff.
+
+**Outputs:** Actual model evaluation, private inference runtime, immutable receipts and artifacts, review UI and source-to-draft verification.
+
+**Acceptance:** Actual inference runs through retained originals and private jobs; masks and failures persist; calibration and review remain required; retry and replay preserve originals and identities.
+
+**Excluded:** Paid provider fallback, legal or statutory acceptance, ownership prediction, national data coverage and universal input formats.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T061_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `61`.
+
+**Recorded execution state:** `implemented_actual_model_workflow_browser_verified`.
+
+**Recorded evidence:** `tasks/T061_RESULT.md`, `../evidence/t061/verification-summary.json`, `../evidence/t061/WORKFLOW_RESULT.md`, `../evidence/t061/workflow-result.json`, `../evidence/t061/atomic-footprint.json`, `../evidence/t061/models/evaluation.md`.
+
+## E15 — Officer workflow simplification and Studio-only UI
+Exit: Supported source-to-record journey is simple, resumable and uses only Studio presentation.
+
+### T062 — Audit officer workflow and plan Studio-only simplification
+**Status:** Implemented. **Release:** R2-officer-ux. **Suggested owner:** Fresh Astra 6 High worker; parent review.
+
+**Dependencies:** None; environment and authorization requirements still apply.
+
+**Scope:** Audit rendered workflow and all route/capability families against SIH 26011; document safe automation and ordered migration.
+
+**Outputs:** Audit rendered workflow and all route/capability families against SIH 26011; document safe automation and ordered migration.
+
+**Acceptance:** Planning record consistency and truthful requirement coverage.
+
+**Excluded:** Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T062_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `62`.
+
+**Recorded execution state:** `audit_complete`.
+
+**Recorded evidence:** `tasks/T062_RESULT.md`.
+
+### T063 — Unify Studio entry points and officer directories
+**Status:** Implemented. **Release:** R2-officer-ux. **Suggested owner:** Fresh Astra 6 High worker; parent review.
+
+**Dependencies:** T062.
+
+**Scope:** Make Studio default and sole normal route family; replace duplicate pages with compatibility redirects; improve default landing and searchable directories.
+
+**Outputs:** Make Studio default and sole normal route family; replace duplicate pages with compatibility redirects; improve default landing and searchable directories.
+
+**Acceptance:** Route/context tests including legacy aliases, fixture/canonical separation and duplicate query values; focused typecheck/build; browser default, directory search and Back/reload.
+
+**Excluded:** Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T063_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `63`.
+
+**Recorded execution state:** `implemented_reviewed_browser_verified`.
+
+**Recorded evidence:** `tasks/T063_RESULT.md`, `tasks/T063_WORKER_RESULT.md`, `../evidence/t063/results.json`.
+
+### T064 — Inspect files and simplify GIS intake
+**Status:** Implemented. **Release:** R2-officer-ux. **Suggested owner:** Fresh Astra 6 High worker; parent review.
+
+**Dependencies:** T063.
+
+**Scope:** Replace front-loaded technical GIS form with file-first inspection and safe metadata defaults.
+
+**Outputs:** Replace front-loaded technical GIS form with file-first inspection and safe metadata defaults.
+
+**Acceptance:** Projected native files, multiple layers, missing/conflicting CRS, malformed files and ID ambiguity; original-byte preservation; browser file-to-draft review; typecheck/build.
+
+**Excluded:** Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T064_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `64`.
+
+**Recorded execution state:** `implemented_reviewed_browser_verified`.
+
+**Recorded evidence:** `tasks/T064_RESULT.md`, `tasks/T064_WORKER_RESULT.md`, `../evidence/t064/results.json`.
+
+### T065 — Resume and guide preparation from saved state
+**Status:** Implemented. **Release:** R2-officer-ux. **Suggested owner:** Fresh Astra 6 High worker; parent review.
+
+**Dependencies:** T064.
+
+**Scope:** Persist continuation and show one useful next action; compact source-linked fact review and placement.
+
+**Outputs:** Persist continuation and show one useful next action; compact source-linked fact review and placement.
+
+**Acceptance:** Reload after upload/extraction/placement/build; stale/failed job; no duplicate model/record; browser Build-to-review and keyboard; targeted tests/build.
+
+**Excluded:** Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T065_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `65`.
+
+**Recorded execution state:** `implemented_reviewed_browser_verified`.
+
+**Recorded evidence:** `tasks/T065_RESULT.md`, `tasks/T065_WORKER_RESULT.md`, `../evidence/t065/results.json`, `../evidence/t065/worker-state.json`.
+
+### T066 — Unify source intake and source-led extraction
+**Status:** Implemented. **Release:** R2-officer-ux. **Suggested owner:** Fresh Astra 6 High worker; parent review.
+
+**Dependencies:** T065.
+
+**Scope:** Offer supported document uploads consistently and allow aerial building extraction before any building exists.
+
+**Outputs:** Offer supported document uploads consistently and allow aerial building extraction before any building exists.
+
+**Acceptance:** No existing building source-led journey, floor-plan path, partial/empty/error/retry/cancel, source/placement mismatch, idempotence and originals; actual local inference/browser; focused tests/build.
+
+**Excluded:** Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T066_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `66`.
+
+**Recorded execution state:** `implemented_reviewed_browser_verified`.
+
+**Recorded evidence:** `tasks/T066_RESULT.md`, `tasks/T066_WORKER_RESULT.md`, `../evidence/t066/browser/results.json`, `../evidence/t066/workflow/state.json`.
+
+### T067 — Declutter Studio map register and workspace
+**Status:** Implemented. **Release:** R2-officer-ux. **Suggested owner:** Fresh Astra 6 High worker; parent review.
+
+**Dependencies:** T066.
+
+**Scope:** Create consistent visual hierarchy and officer wording across maps, register, retained records and workspace.
+
+**Outputs:** Create consistent visual hierarchy and officer wording across maps, register, retained records and workspace.
+
+**Acceptance:** Desktop/tablet and keyboard/focus captures; floor/unit selection, findings, source/history/exports, advanced correction access; affected regression tests/build.
+
+**Excluded:** Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T067_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `67`.
+
+**Recorded execution state:** `implemented`.
+
+**Recorded evidence:** `tasks/T067_RESULT.md`, `tasks/T067_WORKER_RESULT.md`, `../../evidence/t067/results.json`, `../../evidence/t067/queue-state.json`.
+
+### T068 — Delete obsolete presentations and qualify complete journey
+**Status:** Implemented. **Release:** R2-officer-ux. **Suggested owner:** Fresh Astra 6 High worker; parent review.
+
+**Dependencies:** T067.
+
+**Scope:** Remove proven-unused presentation code and verify the integrated officer journey.
+
+**Outputs:** Remove proven-unused presentation code and verify the integrated officer journey.
+
+**Acceptance:** Production build; supported GIS/source-to-extraction-to-review-to-record-to-export journey, refresh and errors; original/identity preservation; route scan; final browser captures; record actual results and unqualified acceptance gates.
+
+**Excluded:** Official issuance, multi-user rollout, paid fallback, unsupported survey input expansion, deletion of source data.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T068_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `68`.
+
+**Recorded execution state:** `implemented`.
+
+**Recorded evidence:** `tasks/T068_RESULT.md`, `tasks/T068_WORKER_RESULT.md`, `../../evidence/t068/journey.json`, `../../evidence/t068/preservation.json`, `../STUDIO_DEMO_GUIDE.md`.
+
+### T069 — Correct supplied UI references before continuing implementation
+**Status:** Implemented. **Release:** R2-officer-ux. **Suggested owner:** Parent design and review.
+
+**Dependencies:** T063.
+
+**Scope:** Audit the supplied image pack and produce coherent simplified reference mockups first, then update remaining implementation tasks.
+
+**Outputs:** Corrected screen set and interaction specification with consistent fictional specimen.
+
+**Acceptance:** Each generated design is visually reviewed against hierarchy, automation, truthful state and consistent workflow; originals remain untouched.
+
+**Excluded:** Further app implementation until reference pass is complete; official issuance or survey claims.
+
+**Earlier references:** New explicit user/architecture requirement.
+
+**Detailed plan:** `tasks/T069_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `69`.
+
+**Recorded execution state:** `six_reference_mockups_reviewed_and_viewer_verified`.
+
+**Recorded evidence:** `tasks/T069_RESULT.md`, `../../design/officer-studio-v3/DESIGN_BRIEF.md`, `../../design/officer-studio-v3/REVIEW.md`.
+
+## Historical tasks without an epic assignment
+
+These records retain their supplied metadata; no epic or acceptance is inferred.
+
+### T070 — Clear application data and built-in demo entry points
+**Status:** Implemented.
+
+**Dependencies:** None; environment and authorization requirements still apply.
+
+**Scope:** User-authorized local linked application reset; verified private database and object backup, clear saved data and job queue, remove hardcoded demo navigation, verify empty app.
+
+**Detailed plan:** `tasks/T070_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `70`.
+
+**Recorded execution state:** `clean_local_app_verified`.
+
+**Recorded evidence:** `tasks/T070_RESULT.md`, `../evidence/t070/verification.json`.
+
+### T071 — Bulk-first UI references and normalized demo data contract
+**Status:** Implemented.
+
+**Dependencies:** T070.
+
+**Scope:** Reference audit, Drive source inventory, canonical schema and isolated fictional fixture, interactive UI reference set with highly usable 3D map.
+
+**Detailed plan:** `tasks/T071_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `71`.
+
+**Recorded execution state:** `isolated_reference_prototype_verified_pending_user_visual_review`.
+
+**Recorded evidence:** `tasks/T071_RESULT.md`, `../../design/bulk-studio-v4/README.md`, `../../design/bulk-studio-v4/REFERENCE_AUDIT.md`, `../evidence/t071/verification.json`.
+
+### T072 — Recreate reference-quality 3D neighbourhood map
+**Status:** Implemented.
+
+**Dependencies:** T071.
+
+**Scope:** Build separate synthetic reference neighbourhood, detailed renderer, uploadable source package and browser-verified usable map.
+
+**Detailed plan:** `tasks/T072_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `72`.
+
+**Recorded execution state:** `verified_local_prototype_visual_acceptance_pending`.
+
+**Recorded result:** `tasks/T072_RESULT.md`.
+
+**Recorded evidence:** `evidence/t072/map/results.json`, `evidence/t072/map/context-loss.json`, `evidence/t072/upload-results.json`, `evidence/t072/upload-contract-results.json`, `evidence/t072/reference-comparison.png`, `../../design/reference-map-v5/data/validation-report.json`.
+
+### T073 — Dense plotted block and computed spatial conflicts
+**Status:** Implemented.
+
+**Dependencies:** T072.
+
+**Scope:** Correct the isolated map with attached/overlapping buildings, dense streets and computed building/road/parcel conflicts.
+
+**Detailed plan:** `tasks/T073_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `73`.
+
+**Recorded execution state:** `dense_arrangements_verified_visual_review_pending`.
+
+**Recorded result:** `tasks/T073_RESULT.md`.
+
+**Recorded evidence:** `evidence/t073/map/results.json`, `evidence/t073/spatial-browser-results.json`, `evidence/t073/spatial-runtime-results.txt`, `evidence/t073/upload-results.json`, `evidence/t073/reference-comparison.png`.
+
+### T074 — Audit all reference images and plan complete shared-schema replication
+**Status:** Implemented.
+
+**Dependencies:** T073.
+
+**Scope:** Reference review and plan only: 35 paths / 17 unique images, current renderer/schema audit, interactive review gallery and sequential acceptance gates.
+
+**Detailed plan:** `tasks/T074_REFERENCE_REPLICATION_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `74`.
+
+**Recorded execution state:** `audit_complete_replication_not_implemented`.
+
+**Recorded result:** `tasks/T074_RESULT.md`.
+
+**Recorded evidence:** `evidence/t074/reference-image-inventory.json`, `evidence/t074/verification.json`, `tasks/T074_MAP_IMAGE_AUDIT.md`, `tasks/T074_REGISTER_WORKSPACE_AUDIT.md`, `tasks/T074_BOARD_IMAGE_AUDIT.md`, `tasks/T074_SCHEMA_RENDERER_AUDIT.md`.
+
+### T075 — Unify reference import compatibility with canonical scene contract
+**Status:** Implemented.
+
+**Dependencies:** T074.
+
+**Scope:** Pin adapters and renderer profiles at existing canonical boundary; test source-preserving import for independent fixtures including multipart, holes, rotated frames and nonzero elevations. No live demo seeding.
+
+**Detailed plan:** `tasks/T075_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `75`.
+
+**Planning reference:** `tasks/T074_REFERENCE_REPLICATION_PLAN.md`.
+
+**Recorded execution state:** `canonical_adapter_verified`.
+
+**Recorded result:** `tasks/T075_RESULT.md`.
+
+**Recorded evidence:** `../../tests/t075-reference-adapter.test.ts`, `../../tests/t075-package.test.ts`, `../../tests/t075-presentation.test.ts`.
+
+### T076 — Shared reference viewport and exact Block Map composition
+**Status:** Implemented.
+
+**Dependencies:** T075.
+
+**Detailed plan:** `tasks/T076_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `76`.
+
+**Recorded execution state:** `shared_runtime_verified_visual_superseded`.
+
+**Recorded result:** `tasks/T076_RESULT.md`.
+
+### T077 — Searchable identities, source normalization and shared register
+**Status:** Implemented.
+
+**Dependencies:** T076.
+
+**Detailed plan:** `tasks/T077_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `77`.
+
+**Recorded execution state:** `register_accepted_map_rejected_by_user`.
+
+**Recorded result:** `tasks/T077_RESULT.md`.
+
+### T078 — Reconstruct reference neighbourhood and remove map lag
+**Status:** Implemented.
+
+**Dependencies:** T077.
+
+**Detailed plan:** `tasks/T078_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `78`.
+
+**Recorded execution state:** `browser_verified_visual_review_open`.
+
+**Recorded result:** `tasks/T078_RESULT.md`.
+
+### T079 — Declutter map and generate complete reference-city source package
+**Status:** Implemented.
+
+**Dependencies:** T078.
+
+**Detailed plan:** `tasks/T079_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `79`.
+
+**Recorded execution state:** `source_draft_verified_recording_gap_open`.
+
+**Recorded result:** `tasks/T079_RESULT.md`.
+
+### T080 — Connect mixed-source receipts to durable batch review and scoped recording
+**Status:** Planned.
+
+**Dependencies:** T079.
+
+**Scope note:** Use existing source storage/canonical services. Qualify frame mapping, source readback, resume/reimport identity and independent recording scope. See T079_WORKFLOW_AUDIT.md.
+
+**Detailed plan:** No path recorded.
+
+**Recorded sequence:** `80`.
+
+**Recorded execution state:** `not_started`.
+
+### T081 — Fix map navigation, import Shiv Vihar and audit statement coverage
+**Status:** Implemented.
+
+**Dependencies:** T079.
+
+**Detailed plan:** `tasks/T081_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `81`.
+
+**Recorded execution state:** `browser_verified_preview_and_coverage_limits_documented`.
+
+**Recorded result:** `tasks/T081_RESULT.md`.
+
+### T082 — List and directly reopen Lake View and Shiv Vihar
+**Status:** Implemented.
+
+**Dependencies:** T081.
+
+**Detailed plan:** `tasks/T082_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `82`.
+
+**Recorded execution state:** `directory_and_named_reload_browser_verified`.
+
+**Recorded result:** `tasks/T082_RESULT.md`.
+
+### T083 — Persist Lake View and Shiv Vihar with immutable originals and canonical snapshots
+**Status:** Implemented.
+
+**Dependencies:** T082.
+
+**Detailed plan:** `tasks/T083_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded sequence:** `83`.
+
+**Recorded execution state:** `database_object_storage_and_ui_save_verified`.
+
+**Recorded result:** `tasks/T083_RESULT.md`.
+
+### T084 — Saved-dataset ML processing and live hackathon walkthrough
+**Status:** Implemented.
+
+**Dependencies:** T083.
+
+**Detailed plan:** `tasks/T084_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `real_inference_review_calibration_and_live_walkthrough_verified`.
+
+**Recorded result:** `tasks/T084_RESULT.md`.
+
+### T085 — Visual-only hackathon presentation
+**Status:** Implemented.
+
+**Dependencies:** T084.
+
+**Detailed plan:** `tasks/T085_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `superseded_by_T086_actual_ml_presentation`.
+
+**Recorded result:** `tasks/T085_RESULT.md`.
+
+### T086 — Actual ML input, pixel mask and outline presentation
+**Status:** Implemented.
+
+**Dependencies:** T085.
+
+**Detailed plan:** `tasks/T086_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `actual_artifacts_and_browser_visuals_verified`.
+
+**Recorded result:** `tasks/T086_RESULT.md`.
+
+### T087 — Label ML source purposes and simplify processing UI
+**Status:** Implemented.
+
+**Dependencies:** T086.
+
+**Detailed plan:** `tasks/T087_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `source_routing_guards_and_browser_ui_verified`.
+
+**Recorded result:** `tasks/T087_RESULT.md`.
+
+### T088 — PDF page controls, result arrows and complete Lake View demo package
+**Status:** Implemented.
+
+**Dependencies:** T087.
+
+**Detailed plan:** `tasks/T088_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `pdf_bounds_result_navigation_and_full_import_verified`.
+
+**Recorded result:** `tasks/T088_RESULT.md`.
+
+### T089 — Publish main and import fresh hosted demo through UI
+**Status:** Implemented.
+
+**Dependencies:** T088.
+
+**Detailed plan:** `tasks/T089_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `main_deployed_fresh_browser_imports_and_actual_ml_verified`.
+
+**Recorded result:** `tasks/T089_RESULT.md`.
+
+### T090 — Source ULPIN mapping, persisted 3D identity and map clarity
+**Status:** Implemented.
+
+**Dependencies:** T089.
+
+**Detailed plan:** `tasks/T090_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `persisted_identifiers_global_search_and_hosted_map_verified`.
+
+**Recorded result:** `tasks/T090_RESULT.md`.
+
+### T091 — Mobile scrolling and reachable map sidebars
+**Status:** Implemented.
+
+**Dependencies:** T090.
+
+**Detailed plan:** `tasks/T091_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `responsive_browser_verified_and_hosted_build_deployed`.
+
+**Recorded result:** `tasks/T091_RESULT.md`.
+
+### T092 — Imported LiDAR, orthomosaic and DEM/DSM map views
+**Status:** Implemented.
+
+**Dependencies:** T091.
+
+**Detailed plan:** `tasks/T092_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `binary_source_views_import_mobile_and_hosted_verified`.
+
+**Recorded result:** `tasks/T092_RESULT.md`.
+
+### T093 — Clear selectable 3D floor registry
+**Status:** Implemented.
+
+**Dependencies:** T092.
+
+**Detailed plan:** `tasks/T093_PLAN.md` — authored; inspect its status before execution.
+
+**Recorded execution state:** `local_mobile_geometry_tests_and_hosted_render_verified`.
+
+**Recorded result:** `tasks/T093_RESULT.md`.
 
 ## Separate maintenance
 
