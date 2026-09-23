@@ -147,10 +147,14 @@ export default function TileLayer(props: TileLayerProps) {
             position: Cesium.Cartesian2;
         }) => {
             const picked = viewer.scene.pick(event.position);
+            delete currentHost.dataset.pickedEntityId;
+            currentHost.dataset.pickKind = !picked ? 'none' : typeof picked.getProperty === 'function' ? 'tile' : picked.id ? 'entity' : 'other';
             if (picked && typeof picked.getProperty === "function") {
                 const entityId = picked.getProperty("entityId"), representationId = picked.getProperty("representationId");
-                if (typeof entityId === "string" && typeof representationId === "string")
+                if (typeof entityId === "string" && typeof representationId === "string") {
+                    currentHost.dataset.pickedEntityId=entityId;
                     latest.current.onSelect({ entityId, representationId });
+                }
             }
             else if (picked?.id) {
                 const time=Cesium.JulianDate.now();
