@@ -1,5 +1,13 @@
 # 3D ULPIN — current agent entry point
 
+## Branch flow
+
+`main` retains the previous implementation. `staging` is the integration branch
+for the current USP work. Start new implementation branches from `staging` and
+target their pull requests to `staging`; reconcile and verify there. Do not merge
+`staging` into `main` without a separate user request. The merged historical
+Studio branch `feat/studio-reference-rebuild` is retained as an archive.
+
 ## Adopted direction and what to read
 
 Effective 23 September 2026, follow `docs/usp-agent-handoffs/00-README.md`,
