@@ -33,7 +33,6 @@ jobs:
           python3 - <<'PY'
           import pathlib, re, subprocess, json, os, hashlib, posixpath
           from urllib.parse import unquote, urlsplit
-          root = pathlib.Path('.')
           folder = 'docs/usp-agent-handoffs/'
           names = {
             '00': '00-README.md', '01': '01-shared-contracts-and-ownership.md',
@@ -85,17 +84,13 @@ jobs:
           start='### Model gateway: one network owner'
           end='### Scanner and mail adapters'
           i=texts[get('19')].index(start); j=texts[get('19')].index(end,i)
-          texts[get('19')]=texts[get('19')][:i]+'''### Model gateway: one network owner
-
-Implement the existing FND gateway using [H20](20-model-gateway-and-budget-pools.md), which is the detailed adapter specification for this DEPLOY workstream. It defines selected models/prices, organisation wallets, per-key attribution, bounded calls, shared rate limits, atomic reservations, ambiguous billing, permanent credential retirement and the operator settings tests. Do not duplicate those mechanisms in consumers or create a separate gateway.
-
-The initial model set is Sarvam 105B V1 for bounded schema mapping/extracted text, and separately qualified Vision document digitisation for scans. ASSIST0 stays deterministic. Managed 30B is deprecated. No LLM reads raw point-cloud arrays into invented cadastral geometry. Check the exact endpoint/price/capability against H20's dated sources and actual live qualification before use. Keys enter through secret references, not Git/chat/browser configuration.
-
-Sarvam's introductory credit is per new user, while organisation balances and account rate limits are shared by keys. Authorised rollover must not multiply the shared balance or bypass throttling. Retired credentials never resume after restart/re-enrolment; draining admitted document jobs and transient cooldown are distinct states. Unknown provider charge is retained as exposure, not silently refunded. A funded key is not proof of data-transfer permission.
-
-Keep the current synchronous two-attempt/45-second/1 MiB caps as total task bounds, including retries and repair; asynchronous document jobs use existing durable jobs and their own qualified page budget. Count reasoning inside completion usage once. Provider token streaming is not geometry SSE. FND routes or disables the legacy Nous path; no unapproved paid/model/geography fallback. No-key and exhausted-budget modes keep manual mapping and typed answers useful. Later training stays outside live ingestion.
-
-'''+texts[get('19')][j:]
+          paragraphs=[start,
+            'Implement the existing FND gateway using [H20](20-model-gateway-and-budget-pools.md), which is the detailed adapter specification for this DEPLOY workstream. It defines selected models/prices, organisation wallets, per-key attribution, bounded calls, shared rate limits, atomic reservations, ambiguous billing, permanent credential retirement and the operator settings tests. Do not duplicate those mechanisms in consumers or create a separate gateway.',
+            'The initial model set is Sarvam 105B V1 for bounded schema mapping/extracted text, and separately qualified Vision document digitisation for scans. ASSIST0 stays deterministic. Managed 30B is deprecated. No LLM reads raw point-cloud arrays into invented cadastral geometry. Check the exact endpoint/price/capability against H20\'s dated sources and actual live qualification before use. Keys enter through secret references, not Git/chat/browser configuration.',
+            'Sarvam\'s introductory credit is per new user, while organisation balances and account rate limits are shared by keys. Authorised rollover must not multiply the shared balance or bypass throttling. Retired credentials never resume after restart/re-enrolment; draining admitted document jobs and transient cooldown are distinct states. Unknown provider charge is retained as exposure, not silently refunded. A funded key is not proof of data-transfer permission.',
+            'Keep the current synchronous two-attempt/45-second/1 MiB caps as total task bounds, including retries and repair; asynchronous document jobs use existing durable jobs and their own qualified page budget. Count reasoning inside completion usage once. Provider token streaming is not geometry SSE. FND routes or disables the legacy Nous path; no unapproved paid/model/geography fallback. No-key and exhausted-budget modes keep manual mapping and typed answers useful. Later training stays outside live ingestion.'
+          ]
+          texts[get('19')]=texts[get('19')][:i]+'\n\n'.join(paragraphs)+'\n\n'+texts[get('19')][j:]
           before_heading(get('19'),'## K. Copy-paste assignment','**H20 is part of DEPLOY acceptance:** execute its G-01 through G-24 tests as applicable. Qualify local ledger/fake-provider behavior separately from live chat, live document billing and deployment residency. No public balance API, real key pool or permanent post-restore memory is assumed. Operator account evidence is required before funded calls, not before fixture implementation.')
           replace(get('19'),'No automatic credit purchase or model switch.','No automatic credit purchase or unapproved model/funding/geography switch; only pre-authorised H20 rollover is permitted.')
           notice(get('90'),'**Account/delegation update, 23 September 2026:** '+leader+' keeps engineering with agents; '+gateway+' defines the narrow runtime credential/funding prerequisites. Never request raw keys in chat or Git.')
@@ -115,8 +110,7 @@ Keep the current synchronous two-attempt/45-second/1 MiB caps as total task boun
           for path in new:
             text=pathlib.Path(path).read_text(); assert text.count('```')%2==0
           for key in ['14','18','19']:
-            text=texts[get(key)]
-            for ch in 'ABCDEFGHIJK': assert len(re.findall(r'^## '+ch+r'\.',text,re.M))==1
+            for ch in 'ABCDEFGHIJK': assert len(re.findall(r'^## '+ch+r'\.',texts[get(key)],re.M))==1
           def broken(path,text):
             found=set()
             for url in re.findall(r'\]\(([^\s)]+)\)',text):
