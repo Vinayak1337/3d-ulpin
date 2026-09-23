@@ -1,5 +1,7 @@
 # Hosting the workbench
 
+> **Direction note — 23 September 2026:** This is a retained hosting assessment, not proof of a qualified deployment. Follow the separate environment gates in handoff 19. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 The complete application currently runs as a local stack. **It cannot be deployed unchanged to Vercel alone**, including its free Hobby plan.
 
 Vercel can host the Next.js web application. The application also requires PostgreSQL/PostGIS, private S3-compatible object storage, Redis, the Python geometry service, a Celery worker and the application dispatcher. The dispatcher continuously polls every 750 ms. The current addresses refer to services on the local computer and are not reachable from a Vercel deployment.

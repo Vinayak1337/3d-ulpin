@@ -80,7 +80,7 @@ The private Python routes are `POST /internal/area/normalize`, `/check` and `/ex
 
 ## Verification and remaining scope
 
-The area adapter regression suite covers source geometry preservation, shared origins, actual projection, holes/multiparts, contact versus positive overlap, unknown heights, utility vertical gaps, field allowlists, malformed documents, source locators, private endpoint authentication and the actual 62-feature NYC snapshot. On 14 September 2026, the complete Python service suite passed **115 tests**, and `pnpm typecheck` passed with the scenario helper. The subsequent [area release verification](AREA_VERIFICATION.md) records the production build, service integration and browser checks.
+The area adapter regression suite covers source geometry preservation, shared origins, actual projection, holes/multiparts, contact versus positive overlap, unknown heights, utility vertical gaps, field allowlists, malformed documents, source locators, private endpoint authentication and the actual 62-feature NYC snapshot. On 14 September 2026, the complete Python service suite passed **115 tests**, and `pnpm typecheck` passed with the scenario helper. The subsequent [area release verification](https://github.com/Vinayak1337/3d-ulpin/blob/f623cff897f91bb3ebd4c225f700ac263f7beb72/docs/AREA_VERIFICATION.md) records the production build, service integration and browser checks.
 
 Useful verification commands, from the repository root:
 

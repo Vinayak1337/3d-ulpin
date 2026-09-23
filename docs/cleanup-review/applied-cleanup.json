@@ -1,0 +1,2201 @@
+{
+  "schemaVersion": "ulpin-applied-cleanup/1",
+  "date": "2026-09-23",
+  "branch": "review/data-transition-cleanup-20260923",
+  "baseline": "f623cff897f91bb3ebd4c225f700ac263f7beb72",
+  "review": "a2fb23fb53a92032fb7223a28f633d15dc865697",
+  "handoffs_copied_from": "e167b1f6c1a830b2b5c6c1708e8f0b0214e4d849",
+  "deletions": [
+    {
+      "path": "3D_ULPIN_UI_Demo_Guide.docx",
+      "rule": "D01",
+      "blob": "93988331588b1a36440b444be8f4a4def7fc6849",
+      "bytes": 1097027,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/00_START_HERE.md",
+      "rule": "A04",
+      "blob": "c44b3a1099fa67026d89e8cc608d4d8b19617c53",
+      "bytes": 5413,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/01_ASTRA_MASTER_HANDOFF.md",
+      "rule": "A04",
+      "blob": "1b4a095295ef83f058d27fea1f042ed3832c743e",
+      "bytes": 38762,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/02_AGENT_CARDS.md",
+      "rule": "A04",
+      "blob": "eb069f5b7a14754e4d360110aea6bbd1332034c8",
+      "bytes": 23615,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/03_MVP_TASK_GRAPH.md",
+      "rule": "A04",
+      "blob": "b46eb3b921401a70aea8855d56b3f49f0e5bc0b4",
+      "bytes": 12943,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/04_ACCEPTANCE_MATRIX.md",
+      "rule": "A04",
+      "blob": "56561af534dbf43125452677343f1690a1ec6841",
+      "bytes": 12438,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/05_BUDGET_AND_RUNTIME.md",
+      "rule": "A04",
+      "blob": "1e735523d44c4a8d7a6b74ac8f59002f1adafdb5",
+      "bytes": 10598,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/06_TEAM_CONTINUATION.md",
+      "rule": "A04",
+      "blob": "2a671811296c2b7ac2e7e919bbae9eb11d29b3b3",
+      "bytes": 8806,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/07_SOURCE_BASIS.md",
+      "rule": "A04",
+      "blob": "8d386118affa178b534ad103ea0386d3e60781c9",
+      "bytes": 4677,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/ASTRA_MVP_HANDOFF_FULL.md",
+      "rule": "A04",
+      "blob": "ca51f957302e9c9c15bc28183ad5215f64576b98",
+      "bytes": 121372,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/FILE_MANIFEST.json",
+      "rule": "A04",
+      "blob": "0091995445beeecc1ffcfd753b71644e7b266200",
+      "bytes": 7710,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/PACK_VALIDATION.md",
+      "rule": "A04",
+      "blob": "92b69c25ae24008f7d84308d65f99cc1d27a7bd7",
+      "bytes": 821,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/C-GEOMETRY.md",
+      "rule": "A04",
+      "blob": "a97e523664fdd2c5b5d236be999fc058c02e4ada",
+      "bytes": 4259,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/C-INTAKE.md",
+      "rule": "A04",
+      "blob": "c2faba2f16fddc1b2e73a65f2e48b15156dc31b7",
+      "bytes": 3891,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/C-LIFECYCLE.md",
+      "rule": "A04",
+      "blob": "5f633de7a60fda451940ce2f3f95dad95cb20702",
+      "bytes": 4341,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/C-MOBILE.md",
+      "rule": "A04",
+      "blob": "afe256f75e6e43be53eba9022ea8cb6b18d70a8b",
+      "bytes": 4053,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/C-PLATFORM.md",
+      "rule": "A04",
+      "blob": "bee70a5f86ae008815fbd003bffbf9b838d1fbbc",
+      "bytes": 3964,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/C-VERIFY.md",
+      "rule": "A04",
+      "blob": "a5be88594795b81d00eb4dc9bd7397a20eca4e3d",
+      "bytes": 4051,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/C-WEB.md",
+      "rule": "A04",
+      "blob": "73658656aa17b6563818593f17c470c924c66fa6",
+      "bytes": 4013,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/R-EXTRACT.md",
+      "rule": "A04",
+      "blob": "a705f6097c418055fcc364876c96177238593dfa",
+      "bytes": 2961,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/R-RESEARCH.md",
+      "rule": "A04",
+      "blob": "0695a7ec2a2c3c3edd40bb26fb9fb22b5e2454c7",
+      "bytes": 3673,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/agents/R-RESOLVE.md",
+      "rule": "A04",
+      "blob": "5f1d8caa2ee6b31dec5426da1f3a3294572c98f0",
+      "bytes": 3167,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/orchestration/agent_profiles.json",
+      "rule": "A04",
+      "blob": "5ea3df74e6c6c709576d1ec4f7352e2223db283e",
+      "bytes": 1901,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/orchestration/synthetic_fixture_spec.json",
+      "rule": "A04",
+      "blob": "358b5df28de97d94bdc856fbb3e5d933549f0ca1",
+      "bytes": 3776,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/orchestration/task_graph.json",
+      "rule": "A04",
+      "blob": "1474f723efe0707b272e288b8ac03760746835cd",
+      "bytes": 12098,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/00_READ_ME_FIRST.md",
+      "rule": "A04",
+      "blob": "3476f578f80c847d72f5c44ec64bfb532fc8a345",
+      "bytes": 2630,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/03_Three_Person_Implementation_Plan_REVISED.md",
+      "rule": "A04",
+      "blob": "e8c38138a325285c6dae34d02ab9aeaf9de6a0ad",
+      "bytes": 64726,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/04_Teammate_A_Start_Now_and_Later.md",
+      "rule": "A04",
+      "blob": "42eeb2653211fae21f92ee2b8ff6b8eb2bd830c5",
+      "bytes": 28151,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/05_Teammate_B_Start_Now_and_Later.md",
+      "rule": "A04",
+      "blob": "df9d42168a0278f915b3fa262a452801cb229d2a",
+      "bytes": 30223,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/START_NOW_Teammate_A.md",
+      "rule": "A04",
+      "blob": "7860a08847ec7c2b9a3b3e0f69663fbfa77b8f12",
+      "bytes": 6735,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/START_NOW_Teammate_B.md",
+      "rule": "A04",
+      "blob": "54388f84476915cc0feb28dc6233886c4ad9efe8",
+      "bytes": 4491,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/reference/01_Product_Problem_and_Solution.md",
+      "rule": "A04",
+      "blob": "1493efdeedba6d117058691a96f557fb029f42f4",
+      "bytes": 42409,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/reference/02_Modules_and_Architecture.md",
+      "rule": "A04",
+      "blob": "a8ad75806392d8c300f1a482c6558fa22ee9a96f",
+      "bytes": 34357,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/reference/Reviewed_Additions_and_Guardrails.md",
+      "rule": "A04",
+      "blob": "3940d1db0e63fd7130b23f8364b8381e9af03f5f",
+      "bytes": 15530,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/templates/ACCEPTANCE_SCENARIOS.md",
+      "rule": "A04",
+      "blob": "f0832348bbccfde3cada5646c62366d5e8024fc4",
+      "bytes": 5245,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/templates/SOURCE_REGISTER_TEMPLATE.md",
+      "rule": "A04",
+      "blob": "b517f5258f20a567fbe3fcb876a90438697c52ee",
+      "bytes": 1699,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/reference/three_person_implementation_plan/templates/TASK_HANDOFF_TEMPLATE.md",
+      "rule": "A04",
+      "blob": "b5b8d72030076a35cd37d250c1a5d5b6ac51d667",
+      "bytes": 1624,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/templates/AGENTS.md",
+      "rule": "A04",
+      "blob": "48a993ba323c433213a227136c7e5ff4940fa6a1",
+      "bytes": 1686,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/templates/DELIVERY_REPORT.md",
+      "rule": "A04",
+      "blob": "48712d6fc8c2fbcb732b709e1331a455b01f4d6f",
+      "bytes": 837,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/templates/PATH_LEASES.csv",
+      "rule": "A04",
+      "blob": "21920014cca20102de0de6cfc45e74601a414e03",
+      "bytes": 115,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/templates/RESEARCH_RESULT.md",
+      "rule": "A04",
+      "blob": "e95581845f27edad8654dad271ded596f0b9be82",
+      "bytes": 828,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/templates/SESSION_STATE.json",
+      "rule": "A04",
+      "blob": "5913acc3e6b987f6d516f477397e9676cf3d8138",
+      "bytes": 1662,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/templates/TASK_BOARD.csv",
+      "rule": "A04",
+      "blob": "51e010c2f8cb6dd4bdd30b14f0ac46b472f559a8",
+      "bytes": 1386,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/templates/TEST_EVIDENCE.csv",
+      "rule": "A04",
+      "blob": "69e156dc930e49d880d4b19243c6092069bd0f8a",
+      "bytes": 6705,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/templates/USAGE_LEDGER.csv",
+      "rule": "A04",
+      "blob": "5645d094eb895d09dfbc21e81c6f44a644782dbe",
+      "bytes": 172,
+      "mode": "100644"
+    },
+    {
+      "path": "Astra_MVP_Handoff_Pack/templates/WORK_TICKET.md",
+      "rule": "A04",
+      "blob": "72fb663f75b704396dc453acf86f6e82aed9aafd",
+      "bytes": 1511,
+      "mode": "100644"
+    },
+    {
+      "path": "BLOCK_DEMO_PLAN.md",
+      "rule": "A04",
+      "blob": "307333f843f9b0bf6b1a5ab4ff416b72db12f7d7",
+      "bytes": 12183,
+      "mode": "100644"
+    },
+    {
+      "path": "DEEP_REVIEW.md",
+      "rule": "A04",
+      "blob": "23413347c12235df44851bf6e64817bf3395b6ee",
+      "bytes": 14646,
+      "mode": "100644"
+    },
+    {
+      "path": "GPT_6_PRO_HANDOFF.md",
+      "rule": "A04",
+      "blob": "2c4f033dd15fc87d8f52c358f880f7c3d465488e",
+      "bytes": 40506,
+      "mode": "100644"
+    },
+    {
+      "path": "PARCEL_TO_3D_PLAN.md",
+      "rule": "A04",
+      "blob": "1ec2b7f685d6308adb7a98b6fdbc9aa8924e76a0",
+      "bytes": 17647,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/reference/review-t079/after.png",
+      "rule": "A01",
+      "blob": "8a89e4ed4f9b6969b1c5098b70f70bbd5bf8ea2c",
+      "bytes": 191405,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/reference/review-t079/before.png",
+      "rule": "A01",
+      "blob": "e17ff96659b0860bad37e08481ec6cb66cbaf855",
+      "bytes": 288094,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/reference/review-t079/index.html",
+      "rule": "A01",
+      "blob": "815d8b2fdf4165642071b7da75f6a446809977b4",
+      "bytes": 1329,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/reference/review/index.html",
+      "rule": "A01",
+      "blob": "e913ecfd8354cdfaefcab952e49144c42de1c4f9",
+      "bytes": 651,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/reference/review/product.png",
+      "rule": "A01",
+      "blob": "e17ff96659b0860bad37e08481ec6cb66cbaf855",
+      "bytes": 288094,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/reference/review/reference.png",
+      "rule": "A01",
+      "blob": "4bde76459078fa2f44c22e1d8a84ebca20c71e0b",
+      "bytes": 2324065,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/continuation-before-after.png",
+      "rule": "D04",
+      "blob": "dfc0329e59e145c3a2a81ba5ed23504686c73e10",
+      "bytes": 1710362,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/current-close.png",
+      "rule": "D04",
+      "blob": "264dab62b2c1e4826aa7ef00125fc14daa51e39b",
+      "bytes": 1550184,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/current-map.png",
+      "rule": "D04",
+      "blob": "642d11b466fbad2f1b09eb30936e2c9430cfb645",
+      "bytes": 1385741,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/current-mobile-inspector.png",
+      "rule": "D04",
+      "blob": "d60e185e7ee467a92d3c0aa5944da76e84682de3",
+      "bytes": 257823,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/current-mobile-map.png",
+      "rule": "D04",
+      "blob": "38edbf911b0b0dc19a508bc23c6dcb52e8d29aa5",
+      "bytes": 414946,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/current-plan.png",
+      "rule": "D04",
+      "blob": "becc50e8060954e4af77b71044e65a42c8a19649",
+      "bytes": 1251828,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/current-register.png",
+      "rule": "D04",
+      "blob": "8c52e260b70de72533f69288547d307794dd754f",
+      "bytes": 271113,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/current-utilities.png",
+      "rule": "D04",
+      "blob": "c8205721b68083e62b62eb4a6cf2ca954a6fbce6",
+      "bytes": 1493824,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/current-workspace.png",
+      "rule": "D04",
+      "blob": "fc567d260adcec3cb6e473d8e8c91e70422028fb",
+      "bytes": 174871,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/index.html",
+      "rule": "D04",
+      "blob": "40f42cf5deef83ff1966a3b1740284e5afc49039",
+      "bytes": 7872,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/map-comparison.png",
+      "rule": "D04",
+      "blob": "d5fc3fb51300c8d85dda638a783920de3444d522",
+      "bytes": 3175519,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/mock-map.png",
+      "rule": "D04",
+      "blob": "4bde76459078fa2f44c22e1d8a84ebca20c71e0b",
+      "bytes": 2324065,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/mock-register.png",
+      "rule": "D04",
+      "blob": "22b00789ab0d36e27f621d6f7d220df51a88135e",
+      "bytes": 1719965,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/mock-workspace.png",
+      "rule": "D04",
+      "blob": "69dfd2c46d3daf116e74dcae8b5f52374e91e930",
+      "bytes": 1789202,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/original-map.png",
+      "rule": "D04",
+      "blob": "d73ffeab89147e2516b9834a6aca027ac4127f86",
+      "bytes": 1332347,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/original-register.png",
+      "rule": "D04",
+      "blob": "9783e47318386290e38d529b55678fa9088fb26d",
+      "bytes": 274179,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/previous-map.png",
+      "rule": "D04",
+      "blob": "fe4b888496e4e2fa316b63bc84c7ed8d14e573da",
+      "bytes": 1362166,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/register-comparison.png",
+      "rule": "D04",
+      "blob": "9c77258af6250c7b12c97c50798363c649753d6b",
+      "bytes": 1711271,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/scene-comparison.png",
+      "rule": "D04",
+      "blob": "09d2a0271b15c3aaf4362971b83317a825931291",
+      "bytes": 2737195,
+      "mode": "100644"
+    },
+    {
+      "path": "apps/web/public/studio-review/workspace-comparison.png",
+      "rule": "D04",
+      "blob": "19a3f08122f295a60ed8be724630abc092a440cd",
+      "bytes": 1315969,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/Lake_View_3D_ULPIN_Dataset_Report.docx",
+      "rule": "D03",
+      "blob": "fec400451867a949cdd70854094b07e1062a61b7",
+      "bytes": 37061,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/MASTER_SCENE.json",
+      "rule": "D03",
+      "blob": "0b653fe52bbbf7b7e9f381a317fe05caeef0ec28",
+      "bytes": 63624,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/README.md",
+      "rule": "D03",
+      "blob": "ebc820f4f686b0cc5546b929e8a82ac769522136",
+      "bytes": 1156,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/buildings.geojson",
+      "rule": "D03",
+      "blob": "8406806620308b9ea685079fb41cf14513599779",
+      "bytes": 70936,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/elevation/lake-view-dem.tif",
+      "rule": "D03",
+      "blob": "06e691a470b7a18f785749e37705574013636785",
+      "bytes": 2119,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/elevation/lake-view-dsm.tif",
+      "rule": "D03",
+      "blob": "474e9998aef1d124a94cd33842c20d8f98dcbab8",
+      "bytes": 3793,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/fictional-residents.csv",
+      "rule": "D03",
+      "blob": "a6288a46625f2ff46a4e693da44462fea79761a7",
+      "bytes": 43385,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/floor-schedule.csv",
+      "rule": "D03",
+      "blob": "528fd65ab1d06d463108dc1bde12ab0673bc8fc1",
+      "bytes": 45969,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/floors.geojson",
+      "rule": "D03",
+      "blob": "49762079fc0d8664e1812fc80ea8fff91a4937c9",
+      "bytes": 245891,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/gnss-cors-survey-control.csv",
+      "rule": "D03",
+      "blob": "97b8872b6cc56d31c3ba59a68b1e2df60e5ba17a",
+      "bytes": 2030,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/gnss-cors-survey-control.gpkg",
+      "rule": "D03",
+      "blob": "f089fa7c50918bd6feb7ea4a85558a22fc3e7237",
+      "bytes": 98304,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/imagery/lake-view-orthomosaic-preview.jpg",
+      "rule": "D03",
+      "blob": "4e307ad4733f193d24750c611053a38e30176fbe",
+      "bytes": 12169,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/imagery/lake-view-orthomosaic.tif",
+      "rule": "D03",
+      "blob": "47ea59e2fa7cc536d480e9133f489fba0f579e89",
+      "bytes": 4077,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/lake-view-parcels.gpkg",
+      "rule": "D03",
+      "blob": "94dd5c29bafc682771a5de333591990b961fa542",
+      "bytes": 106496,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/lake-view-survey-control-report.pdf",
+      "rule": "D03",
+      "blob": "d92cf5e7a6ef2a75e62071de0e9d1ba07e7806d3",
+      "bytes": 1827,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/lidar/lake-view-pointcloud-manifest.json",
+      "rule": "D03",
+      "blob": "029b2b25a890a406af6a253e6cc6872682a8931b",
+      "bytes": 570,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/lidar/lake-view-pointcloud.las",
+      "rule": "D03",
+      "blob": "eb56bec2892ea6ad04fe6e36449250ce73aad960",
+      "bytes": 2264271,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/lidar/lake-view-pointcloud.laz",
+      "rule": "D03",
+      "blob": "4358ef64a3755ac2d4be8fa2de55bc5983f03643",
+      "bytes": 6288,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/manifest.json",
+      "rule": "D03",
+      "blob": "b81202c467412c098fe0d7322f9cf7d1e8176812",
+      "bytes": 8299,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/README.md",
+      "rule": "D03",
+      "blob": "61470261650c16b4f3b25477cc73e0ba31ca47a8",
+      "bytes": 217,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/buildings.json",
+      "rule": "D03",
+      "blob": "708bdadfac051cdba4cc5bcf9331eb164a45ca31",
+      "bytes": 94432,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/control_points.json",
+      "rule": "D03",
+      "blob": "ef137a40493f9b92193419d20fb5136d3074df90",
+      "bytes": 8422,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/dataset-links.json",
+      "rule": "D03",
+      "blob": "34382a1a8f142c326fb119bd7531e45668dd74e4",
+      "bytes": 35013,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/elevation_surfaces.json",
+      "rule": "D03",
+      "blob": "070bb11941c6781b0688aaf99a12ac654b6201fa",
+      "bytes": 1606,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/floor_spaces.json",
+      "rule": "D03",
+      "blob": "d3ce5702130b3cc90879866662a1161d91152ad9",
+      "bytes": 193776,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/imagery_assets.json",
+      "rule": "D03",
+      "blob": "095ae1b573220af1799e46ea63a7a577924c05b1",
+      "bytes": 1358,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/lidar_assets.json",
+      "rule": "D03",
+      "blob": "57482217dfbbb7f76d3b67740d11135c28b398be",
+      "bytes": 1658,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/normalization-report.json",
+      "rule": "D03",
+      "blob": "35fda7dbe1258658151a5e007181d8ac67dee3ec",
+      "bytes": 691,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/parcels.json",
+      "rule": "D03",
+      "blob": "53d79a135d6120b477e7e22aa284b03bc6bf9f73",
+      "bytes": 65838,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/roads.json",
+      "rule": "D03",
+      "blob": "3eefcafd3eb887e685c9e92afd1688d22093560e",
+      "bytes": 4625,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/normalized/source_assets.json",
+      "rule": "D03",
+      "blob": "ce3f3b54e4573045dac80f5a507a84934ca030d0",
+      "bytes": 27625,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/parcels.geojson",
+      "rule": "D03",
+      "blob": "7cb0f6807b3884896af2a7cc193d3d2facac916c",
+      "bytes": 54562,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/plans/B01-floor-plans.svg",
+      "rule": "D03",
+      "blob": "ed60ca11ce46a1a0d4a72bff6a1363fd3f272bdd",
+      "bytes": 348,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/plans/B01-level--1.pdf",
+      "rule": "D03",
+      "blob": "567ea1db3beb3608d8c5d52e2ed2ee7baa1e7070",
+      "bytes": 1821,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/plans/B01-level-0.pdf",
+      "rule": "D03",
+      "blob": "0552e4027f842b0f3d126067ab4ebe1171491865",
+      "bytes": 1910,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/plans/B01-level-1.pdf",
+      "rule": "D03",
+      "blob": "e2b4445824062ad3a9f8b00d986bfc7780b8e4bc",
+      "bytes": 1894,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/plans/B01-level-2.pdf",
+      "rule": "D03",
+      "blob": "4934ed2a21703a3b501d3f2f0cfac42f27ed8502",
+      "bytes": 1897,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/plans/B01-level-3.pdf",
+      "rule": "D03",
+      "blob": "e3e41a5f8e8aa7da1f936a36f09367b4ebeb1f85",
+      "bytes": 1897,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/plans/B01-level-4.pdf",
+      "rule": "D03",
+      "blob": "86c71ffd984f7731c8fd0fa71bb677031c5178c0",
+      "bytes": 1897,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/plans/floor-plan-manifest.json",
+      "rule": "D03",
+      "blob": "6692133a58754451f1560a5b8579125b12a3bab6",
+      "bytes": 1231,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/public_land.geojson",
+      "rule": "D03",
+      "blob": "6bdd08fdbbaef90c5ae367f22d9dd06cf65b282f",
+      "bytes": 1257,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/records/fictional-property-schedule.pdf",
+      "rule": "D03",
+      "blob": "7c492d716cb55ab0369a44f91766a62ac2e56471",
+      "bytes": 7519,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/records/parties.csv",
+      "rule": "D03",
+      "blob": "a8e1a7762db496f4795a679051ac3ba72e7dc0c5",
+      "bytes": 15512,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/records/rights.csv",
+      "rule": "D03",
+      "blob": "7c47ecec3b6233197ed0b33df1dc4c0931251c8e",
+      "bytes": 26875,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/roads.geojson",
+      "rule": "D03",
+      "blob": "f05cb0f9b01b9d652d25099596d4722b1739bd41",
+      "bytes": 5497,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/source-manifest.json",
+      "rule": "D03",
+      "blob": "158f26a0146e6409fe5d18b4184a5f897619f814",
+      "bytes": 61878,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/spaces.geojson",
+      "rule": "D03",
+      "blob": "5908571dfd821ef510399b0c829cf6ae41c5cfc2",
+      "bytes": 13507,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/utilities.geojson",
+      "rule": "D03",
+      "blob": "f608f2e1ddeab500ea0b0fd3eaa4a37b748e15e5",
+      "bytes": 1137,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/validation/conflict-summary.json",
+      "rule": "D03",
+      "blob": "909cc052857e362f20867fff813419192cbae711",
+      "bytes": 1393,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/validation/final-consistency-report.json",
+      "rule": "D03",
+      "blob": "afa1f314e2f6cb08a0d1d6c3ef86a5a5d0d8590e",
+      "bytes": 267,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/validation/final-report.md",
+      "rule": "D03",
+      "blob": "0c022c9a25bbae3833291d4f1ab1ef3a1733eb54",
+      "bytes": 179,
+      "mode": "100644"
+    },
+    {
+      "path": "data-source/lake-view-files/validation/floor-plan-validation.json",
+      "rule": "D03",
+      "blob": "dcd440594e2e38a89ac2a3ed3a69d002cd1704f9",
+      "bytes": 177,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/AREA_VERIFICATION.md",
+      "rule": "A05",
+      "blob": "4e22475db7df3ea55e3621f5c1dcaba12f33d0fd",
+      "bytes": 4257,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/BROWSER_TEST_EVIDENCE.md",
+      "rule": "A05",
+      "blob": "4124edf532fd19032f8c0bbfcee9b1a75fa3bb63",
+      "bytes": 11490,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/CITY_STUDIO.md",
+      "rule": "A05",
+      "blob": "44bef3cf31bef609aef24e01e072553b088ba31e",
+      "bytes": 7002,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/DEMO_SCRIPT.md",
+      "rule": "A05",
+      "blob": "bed683b62e718e35b0732d12b26fd243c417adfa",
+      "bytes": 6521,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/FRESH_INSTALL_VERIFICATION.md",
+      "rule": "A05",
+      "blob": "58ac16ceb783956fc634ba8661b9966fbd419563",
+      "bytes": 4745,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/HACKATHON_PLAN.md",
+      "rule": "A05",
+      "blob": "988536497300add6a4d0b3d504eb95274a7ab1e8",
+      "bytes": 1672,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/HACKATHON_STATUS.md",
+      "rule": "A05",
+      "blob": "822ce8c806d175d535d9eef1db2fdeca6c14621a",
+      "bytes": 5615,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/IDENTIFIER_TEST_EVIDENCE.md",
+      "rule": "A05",
+      "blob": "e2920c31256b6462656cea176a94b75453d2ee17",
+      "bytes": 3410,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/OFFICER_API_EVIDENCE.md",
+      "rule": "A05",
+      "blob": "ff492945b3459250d9aeb6a2a90513893cf039e8",
+      "bytes": 2274,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/OFFICER_DELIVERY.md",
+      "rule": "A05",
+      "blob": "eaf0d3a8936cb1f7d6637fd118f0a96e676c49db",
+      "bytes": 12336,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/OFFICER_GEOMETRY_VERIFICATION.md",
+      "rule": "A05",
+      "blob": "ba7952fcd0e514ee415325e363085460b7619527",
+      "bytes": 13878,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/OFFICER_INDEPENDENT_VERIFICATION.md",
+      "rule": "A05",
+      "blob": "800534feca1a5012b5b60abf53f9118cf46cb296",
+      "bytes": 5870,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/OFFICER_UI_VERIFICATION.md",
+      "rule": "A05",
+      "blob": "f871d39bda4192bc0cc5eb3ac326b0571a603398",
+      "bytes": 13075,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/REAL_BLOCK_EXECUTION.md",
+      "rule": "A05",
+      "blob": "f7838499b8b3a3c16939c5225249c432021ca05a",
+      "bytes": 5300,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/REFERENCE_REBUILD_ARCHITECTURE.md",
+      "rule": "A05",
+      "blob": "7d1ce7d13a76e2409171db9a587273a87477e26a",
+      "bytes": 5831,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/REFERENCE_REBUILD_DELIVERY.md",
+      "rule": "A05",
+      "blob": "f4e5d819e411938eb0a24ddcc4da2cbc97d477c7",
+      "bytes": 9569,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/REGISTRY_TEST_EVIDENCE.md",
+      "rule": "A05",
+      "blob": "efedabc2cdacb5fd64a2b390b141b0a31bc12d35",
+      "bytes": 5341,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/SOURCE_PREVIEW_EVIDENCE.md",
+      "rule": "A05",
+      "blob": "b7eb7c0e6d216e4e1c7d2ec02fce5aec069e529b",
+      "bytes": 2548,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/UI_REDESIGN.md",
+      "rule": "A05",
+      "blob": "0bfac9278d10e4433b745c1120e6148f97a762cd",
+      "bytes": 5733,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/UTTAM_NAGAR_TRANSFER_VALIDATION.md",
+      "rule": "A05",
+      "blob": "966d658bb5487f96ccd50c92e4d77d8719ae6304",
+      "bytes": 3003,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/V2_ARCHITECTURE.md",
+      "rule": "A05",
+      "blob": "893cd50bbff27263fc6cbf35f0559852b829ab36",
+      "bytes": 7231,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/V2_DELIVERY.md",
+      "rule": "A05",
+      "blob": "372273eb52f2fa02cd4842bffb6960851badae5c",
+      "bytes": 11068,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/V2_LEGACY_AND_DOCUMENT_ASSIGNMENT_VERIFICATION.md",
+      "rule": "A05",
+      "blob": "ee9bc196074baaff721be7b7cf1130e453166e0b",
+      "bytes": 2728,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/V2_REGISTER_VERIFICATION.md",
+      "rule": "A05",
+      "blob": "b72e20de3513110cfe05b60497f611c6dd385f36",
+      "bytes": 9614,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/V2_WORKSPACE_VERIFICATION.md",
+      "rule": "A05",
+      "blob": "f9a8330ffb7a35da6a036ea0552937d480085382",
+      "bytes": 9591,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/01-start.png",
+      "rule": "A03",
+      "blob": "3945f3c164d2b3d5a4bd078e2b347a3afccf85f5",
+      "bytes": 1159751,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/02-block-map.png",
+      "rule": "A03",
+      "blob": "73bbe6c301898ee4b8c0efbc3b39465f4114f4a4",
+      "bytes": 1773696,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/03-import.png",
+      "rule": "A03",
+      "blob": "33796a272864f93647e72080f17f513166df4f3f",
+      "bytes": 1370783,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/04-register-floors.png",
+      "rule": "A03",
+      "blob": "b1e1cefbbca5cede6488bf962f668015301aa029",
+      "bytes": 1317055,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/05-calibrate.png",
+      "rule": "A03",
+      "blob": "921021245d573766b3953de18924e6c3c6ac3fa9",
+      "bytes": 1250766,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/06-measure-clear.png",
+      "rule": "A03",
+      "blob": "1f5f905c7d044853c3df0ac72ec99fc755b57c7f",
+      "bytes": 1444217,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/07-compare.png",
+      "rule": "A03",
+      "blob": "9f2f9af2026525b75d1921ecccda5468955f5faa",
+      "bytes": 1250602,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/08-build-review.png",
+      "rule": "A03",
+      "blob": "24c038c8121dde1e175840c11295dad3d9063502",
+      "bytes": 1514951,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/09-evidence-history.png",
+      "rule": "A03",
+      "blob": "9ac4a8f71679ce04208e76753fe56bbd20fa14b9",
+      "bytes": 1091021,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/10-investigation.png",
+      "rule": "A03",
+      "blob": "7aaccefdbb9b02a7bb5a9a883c87313f18c5564a",
+      "bytes": 1449999,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/11-downloads.png",
+      "rule": "A03",
+      "blob": "29ec651bd45d07a0ff252472ad0fb18240965384",
+      "bytes": 1211352,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/12-workspace-start.png",
+      "rule": "A03",
+      "blob": "045280000d869db3905d172b3eaf19e12655d576",
+      "bytes": 1368333,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/13-parcels.png",
+      "rule": "A03",
+      "blob": "4128ecc0a7ffe150afd15025140e9137b18334e5",
+      "bytes": 1390545,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/3D-ULPIN-step-by-step.zip",
+      "rule": "A03",
+      "blob": "3b8c3abfbd9faa891fa97f7ddca0511e831dd076",
+      "bytes": 16550831,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/README.md",
+      "rule": "A03",
+      "blob": "066138a909e974d820e55ff0ca6f813267752820",
+      "bytes": 8895,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/chapters.json",
+      "rule": "A03",
+      "blob": "14c3fe11d3faf31b93191f68cab1369631034155",
+      "bytes": 7927,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/generation-manifest.json",
+      "rule": "A03",
+      "blob": "51daa9d4525ccc351e2f6dbad963f74fd5d379c6",
+      "bytes": 22792,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/index.html",
+      "rule": "A03",
+      "blob": "f90af1723db41b3421d6e8daffdad5ba489f590c",
+      "bytes": 28122,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/build-action.png",
+      "rule": "A03",
+      "blob": "cc55a43fbd0702437306be2a0356d12e2979153f",
+      "bytes": 84684,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/build-facts.png",
+      "rule": "A03",
+      "blob": "c46e682267a7a9d9d5eb3d9f1cde9e42904553a1",
+      "bytes": 78126,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/calibrate.png",
+      "rule": "A03",
+      "blob": "fe392ecc6702acc9bf23df5c0276174ad5fe58bd",
+      "bytes": 78831,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/compare.png",
+      "rule": "A03",
+      "blob": "84b14a0e84b11089a0ae3a96c5742eda18b3c251",
+      "bytes": 80711,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/evidence.png",
+      "rule": "A03",
+      "blob": "7a936e938ad33ace45442fcff5ee90c9e775c06f",
+      "bytes": 50600,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/import.png",
+      "rule": "A03",
+      "blob": "f770aafd8da4e18463ab0d58b18a14761b5f895f",
+      "bytes": 47082,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/investigation.png",
+      "rule": "A03",
+      "blob": "c1e3f3c50a4e8abfd78afeb8071bcdcef90ea84c",
+      "bytes": 59981,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/start.png",
+      "rule": "A03",
+      "blob": "005fc4b5c696460db08c9ce98f8ddb29471d5dfd",
+      "bytes": 52644,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/workspace-create.png",
+      "rule": "A03",
+      "blob": "73c7e1790016a59bfddf5d20c747571cca83fbe7",
+      "bytes": 28141,
+      "mode": "100644"
+    },
+    {
+      "path": "docs/tutorial-images/screens/workspace-start.png",
+      "rule": "A03",
+      "blob": "2514ec1fa468104d367910882e9bf75ac18c3642",
+      "bytes": 45810,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/complete-demo/kiosk.glb",
+      "rule": "D02",
+      "blob": "6944a156a6d47166209f31a57764a78fe56d3fea",
+      "bytes": 9452,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/A.glb",
+      "rule": "D02",
+      "blob": "2f26c76d171723019fc86b8d8ba8a202eca1df9d",
+      "bytes": 156564,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/B.glb",
+      "rule": "D02",
+      "blob": "c22161f996a2c83a79e460f2b10c4ae07719831f",
+      "bytes": 104512,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/C.glb",
+      "rule": "D02",
+      "blob": "f6d5bb383ffd2dc0cc6167adda89094ecd53e66c",
+      "bytes": 191948,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/D.glb",
+      "rule": "D02",
+      "blob": "3a0a54742a5b91e791ec194183c51f5a4448a2c3",
+      "bytes": 104508,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/E.glb",
+      "rule": "D02",
+      "blob": "04f746d3c366cf7545a8eebc7c9cb2f553dfd7e0",
+      "bytes": 69008,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/F.glb",
+      "rule": "D02",
+      "blob": "1380a2367f0fa31ab853526a8dc3f35aed0eb032",
+      "bytes": 163472,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/G.glb",
+      "rule": "D02",
+      "blob": "8f88767d40f6946c52b611dd9e4a6d9d0acd9726",
+      "bytes": 105560,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/H.glb",
+      "rule": "D02",
+      "blob": "2ae83b700f5a303a07cab7fb4e03fbc3bd7da5d2",
+      "bytes": 136496,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/landscape.glb",
+      "rule": "D02",
+      "blob": "4b80d2a34756dbcbac2d1d795b20b77dcb379f89",
+      "bytes": 566556,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/K1.arcgis.json",
+      "rule": "D02",
+      "blob": "e512898caf6f5152890c3d83dc29c09752ce0d61",
+      "bytes": 583,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/R3.arcgis.json",
+      "rule": "D02",
+      "blob": "e6ceeea114a2d101e54fb564c1d2d137c1386ded",
+      "bytes": 562,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/README.md",
+      "rule": "D02",
+      "blob": "e634effbad2233c48b1e1cc4aec6565169db9613",
+      "bytes": 2344,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/parcel-identifiers.csv",
+      "rule": "D02",
+      "blob": "68298b8452eb50ee06a670828acfcca74892ecd9",
+      "bytes": 620,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/site-and-identity-schedule.pdf",
+      "rule": "D02",
+      "blob": "8d253fc7fd192b692510cfd2a08e8afa7a0fec11",
+      "bytes": 2624,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/spec.json",
+      "rule": "D02",
+      "blob": "d7009a73c4896734ca0d4870ab0b3f83a4e7a771",
+      "bytes": 1630,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-0.png",
+      "rule": "D02",
+      "blob": "73d44722803f9613fff99d4d94f985c7e9ce7389",
+      "bytes": 55839,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-1.png",
+      "rule": "D02",
+      "blob": "be72ed73a546f2dc02586fca01fc2a353c611d83",
+      "bytes": 55636,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-2.png",
+      "rule": "D02",
+      "blob": "68137e47756049a544d77b9de1734518faae72ca",
+      "bytes": 55779,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-3.png",
+      "rule": "D02",
+      "blob": "dadc889d86a0dfe7a7c8e68ae5210fc5055cdfa7",
+      "bytes": 56084,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-plans.pdf",
+      "rule": "D02",
+      "blob": "36b33cf3070af5c861eee09e5d369315f778f366",
+      "bytes": 7872,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/B-floor-0.png",
+      "rule": "D02",
+      "blob": "d1514d74bc2c4f6c2f2e2563ebdc10b213aef559",
+      "bytes": 52281,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/B-floor-1.png",
+      "rule": "D02",
+      "blob": "f39195f5a67c86f6a623cf118c9a2035a53d2762",
+      "bytes": 52082,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/B-floor-2.png",
+      "rule": "D02",
+      "blob": "bc6b445790e59a48e8948b69d03fc9ccad14c17c",
+      "bytes": 52279,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/B-floor-plans.pdf",
+      "rule": "D02",
+      "blob": "3703e30edabd5d7cf54bf169405f0f562ad77e53",
+      "bytes": 5686,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-0.png",
+      "rule": "D02",
+      "blob": "dce8aca534aa607edc9190c0390d1e17c4b62384",
+      "bytes": 56047,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-1.png",
+      "rule": "D02",
+      "blob": "4d46ef591d9af257501cf95326cbb5e0071146c3",
+      "bytes": 55839,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-2.png",
+      "rule": "D02",
+      "blob": "a001eec0d2a2dfb7849c8a4b2899fb60e2bd0817",
+      "bytes": 56031,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-3.png",
+      "rule": "D02",
+      "blob": "6e7bc3972ae587ffa80dfdf29c306a6f3a89e9fb",
+      "bytes": 56332,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-4.png",
+      "rule": "D02",
+      "blob": "e7c2fe453a49589116f131db0a78a2c5ab285b69",
+      "bytes": 56329,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-plans.pdf",
+      "rule": "D02",
+      "blob": "cc6e005d1a6e832fa61a8e0cc22e38d77979e99d",
+      "bytes": 9581,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-0.png",
+      "rule": "D02",
+      "blob": "e4d4a41eea1b1592b3fd6818ef11f8511c56f302",
+      "bytes": 50802,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-1.png",
+      "rule": "D02",
+      "blob": "73dfe4e776f04aabd7b71a245e65b0eab374be5b",
+      "bytes": 50167,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-2.png",
+      "rule": "D02",
+      "blob": "404762e801eeec5103a55e622e2f6fd8e126b061",
+      "bytes": 50359,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-plans-revision-2.pdf",
+      "rule": "D02",
+      "blob": "eeefff25d9adf3fc88463b01f6f6025dae1cc27f",
+      "bytes": 5653,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-plans.pdf",
+      "rule": "D02",
+      "blob": "95c5733f58fe7b2b9e71c1d94d192e1fcd9bfffa",
+      "bytes": 5652,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/README.md",
+      "rule": "D02",
+      "blob": "18f3d3a3261825efd63be6954a03e9513c3a29b2",
+      "bytes": 470,
+      "mode": "100644"
+    },
+    {
+      "path": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/spec.json",
+      "rule": "D02",
+      "blob": "5754bd7bc570ac85db7859e710b3d746310b77ab",
+      "bytes": 9049,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/actual-ml-results.html",
+      "rule": "A02",
+      "blob": "cf96d41bb660c90882096e5b2ec4ed5e3005cd82",
+      "bytes": 676671,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/architecture-desktop.png",
+      "rule": "A02",
+      "blob": "2b3dc9372a772e7c5bdeb45389ba2d349c72f8ca",
+      "bytes": 153704,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/architecture-mobile.png",
+      "rule": "A02",
+      "blob": "2a395a43b5a2f96a5fc65bbcb6947db3ee591035",
+      "bytes": 51643,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/build-desktop.png",
+      "rule": "A02",
+      "blob": "46196ecda87524111d7fe14da7998001afea5403",
+      "bytes": 180149,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/evidence-desktop.png",
+      "rule": "A02",
+      "blob": "9afc228bb4bcfad33c3b5bd619fd6300106d45e0",
+      "bytes": 185772,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/extraction-desktop.png",
+      "rule": "A02",
+      "blob": "a9fa669adc75484fdf9ba7cc28dd73ed2a8e9aab",
+      "bytes": 339887,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/extraction-mobile.png",
+      "rule": "A02",
+      "blob": "643df33c29edf6e8062da16e507dc31b02184183",
+      "bytes": 183971,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/interaction-check.js",
+      "rule": "A02",
+      "blob": "30d4d392a3b032a2c5792ee457dc9fbcd3459933",
+      "bytes": 2208,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/verification.json",
+      "rule": "A02",
+      "blob": "7e3a74cd57df54d22d00788b6deb6a9fcb42e9f0",
+      "bytes": 553,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/verify.mjs",
+      "rule": "A02",
+      "blob": "bef3e51d82555c49f92f34d0385d095aded33ec2",
+      "bytes": 5368,
+      "mode": "100644"
+    },
+    {
+      "path": "outputs/ml-explainer/walkthrough-desktop.png",
+      "rule": "A02",
+      "blob": "5f88dc6dd3c432e7c3f9384ed816979513b4a63c",
+      "bytes": 326611,
+      "mode": "100644"
+    },
+    {
+      "path": "scripts/guide.mjs",
+      "rule": "A03",
+      "blob": "840b36bebceb664dfee3c31bc10953b23a0f5ea7",
+      "bytes": 2679,
+      "mode": "100644"
+    }
+  ],
+  "deleted_files": 231,
+  "deleted_logical_bytes": 74317749,
+  "by_rule": {
+    "A01": 6,
+    "A02": 11,
+    "A03": 29,
+    "A04": 49,
+    "A05": 25,
+    "D01": 1,
+    "D02": 38,
+    "D03": 52,
+    "D04": 20
+  },
+  "verified_duplicate_pairs": [
+    {
+      "deleted": "3D_ULPIN_UI_Demo_Guide.docx",
+      "retained": "docs/3D_ULPIN_UI_Demo_Guide.docx",
+      "blob": "93988331588b1a36440b444be8f4a4def7fc6849"
+    },
+    {
+      "deleted": "data-source/lake-view-files/Lake_View_3D_ULPIN_Dataset_Report.docx",
+      "retained": "design/reference-map-v5/data/lake-view-complete/Lake_View_3D_ULPIN_Dataset_Report.docx",
+      "blob": "fec400451867a949cdd70854094b07e1062a61b7"
+    },
+    {
+      "deleted": "data-source/lake-view-files/MASTER_SCENE.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/MASTER_SCENE.json",
+      "blob": "0b653fe52bbbf7b7e9f381a317fe05caeef0ec28"
+    },
+    {
+      "deleted": "data-source/lake-view-files/README.md",
+      "retained": "design/reference-map-v5/data/lake-view-complete/README.md",
+      "blob": "ebc820f4f686b0cc5546b929e8a82ac769522136"
+    },
+    {
+      "deleted": "data-source/lake-view-files/buildings.geojson",
+      "retained": "design/reference-map-v5/data/lake-view-complete/buildings.geojson",
+      "blob": "8406806620308b9ea685079fb41cf14513599779"
+    },
+    {
+      "deleted": "data-source/lake-view-files/elevation/lake-view-dem.tif",
+      "retained": "design/reference-map-v5/data/lake-view-complete/elevation/lake-view-dem.tif",
+      "blob": "06e691a470b7a18f785749e37705574013636785"
+    },
+    {
+      "deleted": "data-source/lake-view-files/elevation/lake-view-dsm.tif",
+      "retained": "design/reference-map-v5/data/lake-view-complete/elevation/lake-view-dsm.tif",
+      "blob": "474e9998aef1d124a94cd33842c20d8f98dcbab8"
+    },
+    {
+      "deleted": "data-source/lake-view-files/fictional-residents.csv",
+      "retained": "design/reference-map-v5/data/lake-view-complete/fictional-residents.csv",
+      "blob": "a6288a46625f2ff46a4e693da44462fea79761a7"
+    },
+    {
+      "deleted": "data-source/lake-view-files/floor-schedule.csv",
+      "retained": "design/reference-map-v5/data/lake-view-complete/floor-schedule.csv",
+      "blob": "528fd65ab1d06d463108dc1bde12ab0673bc8fc1"
+    },
+    {
+      "deleted": "data-source/lake-view-files/floors.geojson",
+      "retained": "design/reference-map-v5/data/lake-view-complete/floors.geojson",
+      "blob": "49762079fc0d8664e1812fc80ea8fff91a4937c9"
+    },
+    {
+      "deleted": "data-source/lake-view-files/gnss-cors-survey-control.csv",
+      "retained": "design/reference-map-v5/data/lake-view-complete/gnss-cors-survey-control.csv",
+      "blob": "97b8872b6cc56d31c3ba59a68b1e2df60e5ba17a"
+    },
+    {
+      "deleted": "data-source/lake-view-files/gnss-cors-survey-control.gpkg",
+      "retained": "design/reference-map-v5/data/lake-view-complete/gnss-cors-survey-control.gpkg",
+      "blob": "f089fa7c50918bd6feb7ea4a85558a22fc3e7237"
+    },
+    {
+      "deleted": "data-source/lake-view-files/imagery/lake-view-orthomosaic-preview.jpg",
+      "retained": "design/reference-map-v5/data/lake-view-complete/imagery/lake-view-orthomosaic-preview.jpg",
+      "blob": "4e307ad4733f193d24750c611053a38e30176fbe"
+    },
+    {
+      "deleted": "data-source/lake-view-files/imagery/lake-view-orthomosaic.tif",
+      "retained": "design/reference-map-v5/data/lake-view-complete/imagery/lake-view-orthomosaic.tif",
+      "blob": "47ea59e2fa7cc536d480e9133f489fba0f579e89"
+    },
+    {
+      "deleted": "data-source/lake-view-files/lake-view-parcels.gpkg",
+      "retained": "design/reference-map-v5/data/lake-view-complete/lake-view-parcels.gpkg",
+      "blob": "94dd5c29bafc682771a5de333591990b961fa542"
+    },
+    {
+      "deleted": "data-source/lake-view-files/lake-view-survey-control-report.pdf",
+      "retained": "design/reference-map-v5/data/lake-view-complete/lake-view-survey-control-report.pdf",
+      "blob": "d92cf5e7a6ef2a75e62071de0e9d1ba07e7806d3"
+    },
+    {
+      "deleted": "data-source/lake-view-files/lidar/lake-view-pointcloud-manifest.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/lidar/lake-view-pointcloud-manifest.json",
+      "blob": "029b2b25a890a406af6a253e6cc6872682a8931b"
+    },
+    {
+      "deleted": "data-source/lake-view-files/lidar/lake-view-pointcloud.las",
+      "retained": "design/reference-map-v5/data/lake-view-complete/lidar/lake-view-pointcloud.las",
+      "blob": "eb56bec2892ea6ad04fe6e36449250ce73aad960"
+    },
+    {
+      "deleted": "data-source/lake-view-files/lidar/lake-view-pointcloud.laz",
+      "retained": "design/reference-map-v5/data/lake-view-complete/lidar/lake-view-pointcloud.laz",
+      "blob": "4358ef64a3755ac2d4be8fa2de55bc5983f03643"
+    },
+    {
+      "deleted": "data-source/lake-view-files/manifest.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/manifest.json",
+      "blob": "b81202c467412c098fe0d7322f9cf7d1e8176812"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/README.md",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/README.md",
+      "blob": "61470261650c16b4f3b25477cc73e0ba31ca47a8"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/buildings.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/buildings.json",
+      "blob": "708bdadfac051cdba4cc5bcf9331eb164a45ca31"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/control_points.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/control_points.json",
+      "blob": "ef137a40493f9b92193419d20fb5136d3074df90"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/dataset-links.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/dataset-links.json",
+      "blob": "34382a1a8f142c326fb119bd7531e45668dd74e4"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/elevation_surfaces.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/elevation_surfaces.json",
+      "blob": "070bb11941c6781b0688aaf99a12ac654b6201fa"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/floor_spaces.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/floor_spaces.json",
+      "blob": "d3ce5702130b3cc90879866662a1161d91152ad9"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/imagery_assets.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/imagery_assets.json",
+      "blob": "095ae1b573220af1799e46ea63a7a577924c05b1"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/lidar_assets.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/lidar_assets.json",
+      "blob": "57482217dfbbb7f76d3b67740d11135c28b398be"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/normalization-report.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/normalization-report.json",
+      "blob": "35fda7dbe1258658151a5e007181d8ac67dee3ec"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/parcels.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/parcels.json",
+      "blob": "53d79a135d6120b477e7e22aa284b03bc6bf9f73"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/roads.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/roads.json",
+      "blob": "3eefcafd3eb887e685c9e92afd1688d22093560e"
+    },
+    {
+      "deleted": "data-source/lake-view-files/normalized/source_assets.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/normalized/source_assets.json",
+      "blob": "ce3f3b54e4573045dac80f5a507a84934ca030d0"
+    },
+    {
+      "deleted": "data-source/lake-view-files/parcels.geojson",
+      "retained": "design/reference-map-v5/data/lake-view-complete/parcels.geojson",
+      "blob": "7cb0f6807b3884896af2a7cc193d3d2facac916c"
+    },
+    {
+      "deleted": "data-source/lake-view-files/plans/B01-floor-plans.svg",
+      "retained": "design/reference-map-v5/data/lake-view-complete/plans/B01-floor-plans.svg",
+      "blob": "ed60ca11ce46a1a0d4a72bff6a1363fd3f272bdd"
+    },
+    {
+      "deleted": "data-source/lake-view-files/plans/B01-level--1.pdf",
+      "retained": "design/reference-map-v5/data/lake-view-complete/plans/B01-level--1.pdf",
+      "blob": "567ea1db3beb3608d8c5d52e2ed2ee7baa1e7070"
+    },
+    {
+      "deleted": "data-source/lake-view-files/plans/B01-level-0.pdf",
+      "retained": "design/reference-map-v5/data/lake-view-complete/plans/B01-level-0.pdf",
+      "blob": "0552e4027f842b0f3d126067ab4ebe1171491865"
+    },
+    {
+      "deleted": "data-source/lake-view-files/plans/B01-level-1.pdf",
+      "retained": "design/reference-map-v5/data/lake-view-complete/plans/B01-level-1.pdf",
+      "blob": "e2b4445824062ad3a9f8b00d986bfc7780b8e4bc"
+    },
+    {
+      "deleted": "data-source/lake-view-files/plans/B01-level-2.pdf",
+      "retained": "design/reference-map-v5/data/lake-view-complete/plans/B01-level-2.pdf",
+      "blob": "4934ed2a21703a3b501d3f2f0cfac42f27ed8502"
+    },
+    {
+      "deleted": "data-source/lake-view-files/plans/B01-level-3.pdf",
+      "retained": "design/reference-map-v5/data/lake-view-complete/plans/B01-level-3.pdf",
+      "blob": "e3e41a5f8e8aa7da1f936a36f09367b4ebeb1f85"
+    },
+    {
+      "deleted": "data-source/lake-view-files/plans/B01-level-4.pdf",
+      "retained": "design/reference-map-v5/data/lake-view-complete/plans/B01-level-4.pdf",
+      "blob": "86c71ffd984f7731c8fd0fa71bb677031c5178c0"
+    },
+    {
+      "deleted": "data-source/lake-view-files/plans/floor-plan-manifest.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/plans/floor-plan-manifest.json",
+      "blob": "6692133a58754451f1560a5b8579125b12a3bab6"
+    },
+    {
+      "deleted": "data-source/lake-view-files/public_land.geojson",
+      "retained": "design/reference-map-v5/data/lake-view-complete/public_land.geojson",
+      "blob": "6bdd08fdbbaef90c5ae367f22d9dd06cf65b282f"
+    },
+    {
+      "deleted": "data-source/lake-view-files/records/fictional-property-schedule.pdf",
+      "retained": "design/reference-map-v5/data/lake-view-complete/records/fictional-property-schedule.pdf",
+      "blob": "7c492d716cb55ab0369a44f91766a62ac2e56471"
+    },
+    {
+      "deleted": "data-source/lake-view-files/records/parties.csv",
+      "retained": "design/reference-map-v5/data/lake-view-complete/records/parties.csv",
+      "blob": "a8e1a7762db496f4795a679051ac3ba72e7dc0c5"
+    },
+    {
+      "deleted": "data-source/lake-view-files/records/rights.csv",
+      "retained": "design/reference-map-v5/data/lake-view-complete/records/rights.csv",
+      "blob": "7c47ecec3b6233197ed0b33df1dc4c0931251c8e"
+    },
+    {
+      "deleted": "data-source/lake-view-files/roads.geojson",
+      "retained": "design/reference-map-v5/data/lake-view-complete/roads.geojson",
+      "blob": "f05cb0f9b01b9d652d25099596d4722b1739bd41"
+    },
+    {
+      "deleted": "data-source/lake-view-files/source-manifest.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/source-manifest.json",
+      "blob": "158f26a0146e6409fe5d18b4184a5f897619f814"
+    },
+    {
+      "deleted": "data-source/lake-view-files/spaces.geojson",
+      "retained": "design/reference-map-v5/data/lake-view-complete/spaces.geojson",
+      "blob": "5908571dfd821ef510399b0c829cf6ae41c5cfc2"
+    },
+    {
+      "deleted": "data-source/lake-view-files/utilities.geojson",
+      "retained": "design/reference-map-v5/data/lake-view-complete/utilities.geojson",
+      "blob": "f608f2e1ddeab500ea0b0fd3eaa4a37b748e15e5"
+    },
+    {
+      "deleted": "data-source/lake-view-files/validation/conflict-summary.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/validation/conflict-summary.json",
+      "blob": "909cc052857e362f20867fff813419192cbae711"
+    },
+    {
+      "deleted": "data-source/lake-view-files/validation/final-consistency-report.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/validation/final-consistency-report.json",
+      "blob": "afa1f314e2f6cb08a0d1d6c3ef86a5a5d0d8590e"
+    },
+    {
+      "deleted": "data-source/lake-view-files/validation/final-report.md",
+      "retained": "design/reference-map-v5/data/lake-view-complete/validation/final-report.md",
+      "blob": "0c022c9a25bbae3833291d4f1ab1ef3a1733eb54"
+    },
+    {
+      "deleted": "data-source/lake-view-files/validation/floor-plan-validation.json",
+      "retained": "design/reference-map-v5/data/lake-view-complete/validation/floor-plan-validation.json",
+      "blob": "dcd440594e2e38a89ac2a3ed3a69d002cd1704f9"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/complete-demo/kiosk.glb",
+      "retained": "apps/web/public/scene-assets/complete-demo/kiosk.glb",
+      "blob": "6944a156a6d47166209f31a57764a78fe56d3fea"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/A.glb",
+      "retained": "apps/web/public/scene-assets/reference/A.glb",
+      "blob": "2f26c76d171723019fc86b8d8ba8a202eca1df9d"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/B.glb",
+      "retained": "apps/web/public/scene-assets/reference/B.glb",
+      "blob": "c22161f996a2c83a79e460f2b10c4ae07719831f"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/C.glb",
+      "retained": "apps/web/public/scene-assets/reference/C.glb",
+      "blob": "f6d5bb383ffd2dc0cc6167adda89094ecd53e66c"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/D.glb",
+      "retained": "apps/web/public/scene-assets/reference/D.glb",
+      "blob": "3a0a54742a5b91e791ec194183c51f5a4448a2c3"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/E.glb",
+      "retained": "apps/web/public/scene-assets/reference/E.glb",
+      "blob": "04f746d3c366cf7545a8eebc7c9cb2f553dfd7e0"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/F.glb",
+      "retained": "apps/web/public/scene-assets/reference/F.glb",
+      "blob": "1380a2367f0fa31ab853526a8dc3f35aed0eb032"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/G.glb",
+      "retained": "apps/web/public/scene-assets/reference/G.glb",
+      "blob": "8f88767d40f6946c52b611dd9e4a6d9d0acd9726"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/H.glb",
+      "retained": "apps/web/public/scene-assets/reference/H.glb",
+      "blob": "2ae83b700f5a303a07cab7fb4e03fbc3bd7da5d2"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/apps/web/public/scene-assets/reference/landscape.glb",
+      "retained": "apps/web/public/scene-assets/reference/landscape.glb",
+      "blob": "4b80d2a34756dbcbac2d1d795b20b77dcb379f89"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/K1.arcgis.json",
+      "retained": "fixtures/complete-demo/K1.arcgis.json",
+      "blob": "e512898caf6f5152890c3d83dc29c09752ce0d61"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/R3.arcgis.json",
+      "retained": "fixtures/complete-demo/R3.arcgis.json",
+      "blob": "e6ceeea114a2d101e54fb564c1d2d137c1386ded"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/README.md",
+      "retained": "fixtures/complete-demo/README.md",
+      "blob": "e634effbad2233c48b1e1cc4aec6565169db9613"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/parcel-identifiers.csv",
+      "retained": "fixtures/complete-demo/parcel-identifiers.csv",
+      "blob": "68298b8452eb50ee06a670828acfcca74892ecd9"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/site-and-identity-schedule.pdf",
+      "retained": "fixtures/complete-demo/site-and-identity-schedule.pdf",
+      "blob": "8d253fc7fd192b692510cfd2a08e8afa7a0fec11"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/complete-demo/spec.json",
+      "retained": "fixtures/complete-demo/spec.json",
+      "blob": "d7009a73c4896734ca0d4870ab0b3f83a4e7a771"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-0.png",
+      "retained": "fixtures/reference-neighborhood/A-floor-0.png",
+      "blob": "73d44722803f9613fff99d4d94f985c7e9ce7389"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-1.png",
+      "retained": "fixtures/reference-neighborhood/A-floor-1.png",
+      "blob": "be72ed73a546f2dc02586fca01fc2a353c611d83"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-2.png",
+      "retained": "fixtures/reference-neighborhood/A-floor-2.png",
+      "blob": "68137e47756049a544d77b9de1734518faae72ca"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-3.png",
+      "retained": "fixtures/reference-neighborhood/A-floor-3.png",
+      "blob": "dadc889d86a0dfe7a7c8e68ae5210fc5055cdfa7"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/A-floor-plans.pdf",
+      "retained": "fixtures/reference-neighborhood/A-floor-plans.pdf",
+      "blob": "36b33cf3070af5c861eee09e5d369315f778f366"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/B-floor-0.png",
+      "retained": "fixtures/reference-neighborhood/B-floor-0.png",
+      "blob": "d1514d74bc2c4f6c2f2e2563ebdc10b213aef559"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/B-floor-1.png",
+      "retained": "fixtures/reference-neighborhood/B-floor-1.png",
+      "blob": "f39195f5a67c86f6a623cf118c9a2035a53d2762"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/B-floor-2.png",
+      "retained": "fixtures/reference-neighborhood/B-floor-2.png",
+      "blob": "bc6b445790e59a48e8948b69d03fc9ccad14c17c"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/B-floor-plans.pdf",
+      "retained": "fixtures/reference-neighborhood/B-floor-plans.pdf",
+      "blob": "3703e30edabd5d7cf54bf169405f0f562ad77e53"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-0.png",
+      "retained": "fixtures/reference-neighborhood/C-floor-0.png",
+      "blob": "dce8aca534aa607edc9190c0390d1e17c4b62384"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-1.png",
+      "retained": "fixtures/reference-neighborhood/C-floor-1.png",
+      "blob": "4d46ef591d9af257501cf95326cbb5e0071146c3"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-2.png",
+      "retained": "fixtures/reference-neighborhood/C-floor-2.png",
+      "blob": "a001eec0d2a2dfb7849c8a4b2899fb60e2bd0817"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-3.png",
+      "retained": "fixtures/reference-neighborhood/C-floor-3.png",
+      "blob": "6e7bc3972ae587ffa80dfdf29c306a6f3a89e9fb"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-4.png",
+      "retained": "fixtures/reference-neighborhood/C-floor-4.png",
+      "blob": "e7c2fe453a49589116f131db0a78a2c5ab285b69"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/C-floor-plans.pdf",
+      "retained": "fixtures/reference-neighborhood/C-floor-plans.pdf",
+      "blob": "cc6e005d1a6e832fa61a8e0cc22e38d77979e99d"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-0.png",
+      "retained": "fixtures/reference-neighborhood/D-floor-0.png",
+      "blob": "e4d4a41eea1b1592b3fd6818ef11f8511c56f302"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-1.png",
+      "retained": "fixtures/reference-neighborhood/D-floor-1.png",
+      "blob": "73dfe4e776f04aabd7b71a245e65b0eab374be5b"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-2.png",
+      "retained": "fixtures/reference-neighborhood/D-floor-2.png",
+      "blob": "404762e801eeec5103a55e622e2f6fd8e126b061"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-plans-revision-2.pdf",
+      "retained": "fixtures/reference-neighborhood/D-floor-plans-revision-2.pdf",
+      "blob": "eeefff25d9adf3fc88463b01f6f6025dae1cc27f"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/D-floor-plans.pdf",
+      "retained": "fixtures/reference-neighborhood/D-floor-plans.pdf",
+      "blob": "95c5733f58fe7b2b9e71c1d94d192e1fcd9bfffa"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/README.md",
+      "retained": "fixtures/reference-neighborhood/README.md",
+      "blob": "18f3d3a3261825efd63be6954a03e9513c3a29b2"
+    },
+    {
+      "deleted": "fixtures/lake-view-complete-inputs/fixtures/reference-neighborhood/spec.json",
+      "retained": "fixtures/reference-neighborhood/spec.json",
+      "blob": "5754bd7bc570ac85db7859e710b3d746310b77ab"
+    }
+  ],
+  "handoffs_imported": [
+    {
+      "path": "docs/usp-agent-handoffs/00-README.md",
+      "blob": "d3513adbe73ad812ea07da8a7d48a1424ce191d2"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md",
+      "blob": "6c5bb7c408b98e6814ad99fb37c520d06d11a723"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/10-scoped-evidence-packets.md",
+      "blob": "e20d151b100f7504a08b14b503f7aa919637d4a2"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/11-evidence-readiness-and-review-queue.md",
+      "blob": "40628622fcf685395004a1b2b1092e0869b30568"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/12-rights-aware-spatial-findings.md",
+      "blob": "adba9301d37292a614e7e5dd9949feb5f0ee048d"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/13-citizen-evidence-and-corrections.md",
+      "blob": "f30c1e06c07dcce200b750c3efd07ea6ff0a17b7"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
+      "blob": "4b422cef70f9609bfb38f59ea7c8db2e4564e975"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/15-property-history-and-comparison.md",
+      "blob": "529eeae14e2fb354fcb2d95417088011461f478a"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/16-shared-spaces-and-vertical-rights.md",
+      "blob": "7cca65973aad21dbd29b17e870ff1e80a9369247"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/17-infrastructure-impact-screening.md",
+      "blob": "c256f0a9016496d91f01e8aa44d795798d987e57"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/18-grounded-assistance-and-mcp.md",
+      "blob": "91c82b959ec812d828220d6cf65d013d39838110"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/19-india-contained-deployment.md",
+      "blob": "2184b04c08ccaccfd03f5bad5d57c75d6da4ede0"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/90-required-human-tasks.md",
+      "blob": "c38c771a617b55513891c18a607cf498cccda861"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/98-engineering-readiness-audit.md",
+      "blob": "f51d08e1b9e332c1d9cbf89774864dcef0f3b0b1"
+    },
+    {
+      "path": "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
+      "blob": "ba1a8bc29f67d6cb298165a6b8c3a2c6d25c3d55"
+    }
+  ],
+  "protected_files_hash_checked": 1975,
+  "visual_reference_sources_hash_checked": [
+    "docs/evidence/reference/references/block.png",
+    "docs/evidence/reference/references/register.png",
+    "docs/evidence/reference/references/workspace.png",
+    "docs/evidence/t058/baseline/studio-map.png",
+    "docs/evidence/t058/baseline/studio-register.png",
+    "docs/evidence/t058/continuation/final/map.png",
+    "docs/evidence/t058/continuation/final/register.png",
+    "docs/evidence/t058/continuation/final/workspace.png",
+    "docs/evidence/t058/continuation/final/building-close.png",
+    "docs/evidence/t058/continuation/final/utilities.png",
+    "docs/evidence/t058/continuation/final/top-down.png",
+    "docs/evidence/t058/continuation/final/mobile-map.png",
+    "docs/evidence/t058/continuation/final/mobile-inspector.png",
+    "docs/evidence/t058/final/map.png"
+  ],
+  "retargeted_markdown": [
+    "docs/AREA_WORKFLOW.md",
+    "docs/OFFICER_STARTUP.md",
+    "docs/PLATFORM.md"
+  ],
+  "new_broken_local_markdown_links": [],
+  "deferred": [
+    "R01 older UI: V0/replacement browser gate not passed",
+    "R02 donor/render/fixture dependencies",
+    "R03/R04 test-target replacements",
+    "A06 historical evidence still referenced or not separately qualified",
+    "A07 CI-dependent plan retirement",
+    "A08/A09 unique design references",
+    "A10 generator/test-dependent prototype"
+  ],
+  "not_performed": [
+    "dataset import/reset/reseed",
+    "database migration",
+    "application feature implementation",
+    "new V0/I1 qualification",
+    "production deployment",
+    "main merge",
+    "history rewrite"
+  ],
+  "test_results": "See the linked GitHub Actions run; this file records structural checks, not future test success."
+}

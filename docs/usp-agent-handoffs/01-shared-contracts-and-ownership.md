@@ -1,0 +1,176 @@
+# Shared contracts, ownership and foundation implementation
+
+Owner **FND**. Application baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md). These are adopted implementation requirements, not existing exports or passed tests. The historical audit is not required reading. Implement F0 → F1-min → V0 before broad F1-feature/F2 work. This revision incorporates the actual producers/consumers specified in the rewritten feature handoffs.
+
+## 1. Existing authorities and invariants
+
+Keep Next.js, PostgreSQL/PostGIS, private S3-compatible storage, dispatcher and Python/Celery. Registry remains recorded-property authority; cases/import packages remain draft authorities. [Saved spatial datasets](../../apps/web/lib/server/spatial-dataset-db.ts) retain immutable synthetic/revision-one constraints. No second property master, queue or ORM.
+
+Reuse [core refs/values](../../packages/contracts/src/spatial/core/scalars.ts), [identity](../../packages/contracts/src/spatial/core/identity.ts), [sources](../../packages/contracts/src/spatial/core/source-schema.ts), [frames](../../packages/contracts/src/spatial/core/frame-schema.ts), [geometry](../../packages/contracts/src/spatial/core/geometry-schema.ts), [snapshots](../../packages/contracts/src/spatial/core/snapshot.ts) and [legacy adapter](../../apps/web/features/spatial/data/core-legacy-adapter.ts). Preserve literal IDs/leading zeros, source versions, locators, units/quantity definitions and classification. Unknown, withheld, not_applicable and conflicting never become zero/empty success.
+
+Official parcel ULPIN, physical building, level and independent space differ. One building may span parcels; one parcel may contain buildings; one space may occupy floors. Mesh ID, floor label, party name and row position are not property identity. Preserve namespace/source-key→canonical mappings and ambiguity. Do not allocate official identifiers or merge records merely to satisfy a DTO.
+
+## 2. F0 common types and explicit service contracts
+
+Proposed FND files: `packages/contracts/src/usp/{common,ports,index}.ts`; `apps/web/lib/server/usp/{targets,snapshots,commands,jobs,uploads,access,principal,audit,outbox,migrations,routes}.ts`; `tests/fixtures/usp-common.ts`. Publish strict Zod schemas, inferred TS types and serialized producer/consumer fixtures together. Export only implemented modules; unavailable adapters return explicit states, not fake successful data.
+
+```ts
+type TargetPin = CoreRevisionRef;
+type IntakeScope = { kind: 'intake'; workspaceId: string; version: number };
+type SnapshotScope = {
+  kind: 'snapshot'; scopeId: string; world: CoreRef;
+  manifestId: string; snapshotDigest: string;
+  stage: 'draft' | 'recorded' | 'retained';
+};
+type UspScope = IntakeScope | SnapshotScope;
+type Principal = {
+  subject: string; roles: string[]; entitlementVersion: string;
+  mode: 'local_demo' | 'india_private' | 'public_interoperability';
+};
+type RequestContext = {
+  requestId: string; principal: Principal; accessViewId: string; policyVersion: string;
+};
+type MutationGuard =
+  | { mode: 'create'; requestKey: string }
+  | { mode: 'update'; requestKey: string; expectedVersion: number; expectedManifestId?: string };
+type ServiceResult<T> =
+  | { state: 'available'; data: T }
+  | { state: 'pending'; jobId: string }
+  | { state: 'not_assessed'; reasonCode: string }
+  | { state: 'unavailable'; reasonCode: string };
+type AssetRef = { assetId: string; version: number; sha256: string };
+type ProposalSelection =
+  | { target: TargetPin; targets?: never }
+  | { targets: TargetPin[]; target?: never };
+```
+
+All principal/access context is server-derived. Caller scope is a request, not a grant. Intake permits target:null for unassigned sources/submissions; no fake world/digest. Spatial calculations require SnapshotScope. Creation uses a create guard, not fabricated revision zero. Updates require actual resource version; property-dependent actions additionally require current data manifest and target pins. Intake job inputManifestId refers to an immutable upload/input manifest, not an invented spatial snapshot.
+
+`ResolvedTarget` contains exact pin/scope, backing, kind, label, identifier assertions, representation refs, evidence pointers, record state and capabilities. Backing union: registry `{siteId,recordId}`, area_feature `{areaId,featureId}`, retained_dataset `{datasetId,objectId}`, case_draft `{caseId,candidateId}`. Validate against the actual authority. Source-only rows may be retained draft candidates without geometry, not recorded registry units.
+
+`EvidencePointer` pins source revision, nullable asset/source-part revision, typed locator, purpose, direct/inherited origin and target. Keep original legacy locator text alongside any validated typed derivative. Whole-source/verbatim locators do not authorize arbitrary extracts. Identifier assertions retain scheme, literal value, known issuer, source and review/assertion state.
+
+**Schema ownership:** FND owns common opaque AssetRef and SnapshotScope; INGEST owns its scene AssetDescriptor/DraftSceneManifest; UI owns the renderer adapter, not a competing manifest schema. A render-manifest ID and its underlying data SnapshotScope.manifestId are distinct. Use namespaced/branded ID types in implementation to prevent accidental interchange. Hash canonical manifest content excluding its own ID/digest fields; do not create self-referential hashes.
+
+| Port (context first, Promise result) | Request → result | Sole implementation/wiring rule |
+| --- | --- | --- |
+| resolveTarget | `{pin,scope:SnapshotScope}` → ServiceResult<ResolvedTarget> | FND exact membership/revision/access, no latest fallback |
+| captureSnapshot | `{scopeId,world,stage,selection}` → ServiceResult<SnapshotManifest> | FND consistent membership/constituents |
+| readScope | `{scope,cursor,limit:1..100}` → `{items,nextCursor,manifestId,coverage}` | FND frozen population and current access |
+| readEvidence | `{pointer,action:'preview'|'extract'|'original',scope}` → ServiceResult<AuthorizedAsset> | FND target AND source/part/asset checks |
+| receiveUpload | `{scope:IntakeScope,name,mediaType,expectedBytes,guard}` → `{uploadId,version}` | FND durable receipt before bytes/extraction |
+| writeUploadPart / finalizeUpload | `{uploadId,partNumber,partHash,bytes,guard}` / `{uploadId,parts,wholeHash,guard}` → receipt | FND shared bounded primitives; INGEST/CITIZEN expose their leaf routes |
+| readUpload | `{uploadId,action:'status'|'safe_preview'|'download'}` → authorized projection/asset | FND ownership/policy; unsafe/quarantined originals never served inline; safe preview only after qualification |
+| promoteUpload | `{uploadId,hash,scanReceiptId,destinationCaseId,intentKey,guard}` → `{sourceRevision,receiptId}` | FND same bytes, intent-idempotent linkage; no association approval |
+| prepareProposal | `{kind:'registry'|'relationship',scope:SnapshotScope,changes,evidence,guard} & ProposalSelection` → `{proposalId,version,state:'draft'}` | FND registered draft-preparation bridge; same-client helper for coordinated acceptance |
+| commitProposal | `{kind,proposalId,reviewId,scope,guard}` → CommitReceipt | FND reviewed same-client command, never automatic from upload |
+| enqueueJob | `{operation,scope,inputManifestId,payloadRef,budgetProfile,guard}` → `{jobId,version}` | FND registered immutable input and operation |
+| readJob / controlJob | `{jobId}` / `{jobId,action:'pause'|'resume'|'cancel'|'retry',guard}` → JobProjection | FND logical state/fencing |
+| appendOutbox | `(tx,event)` → `{streamId,sequence}` | FND same transaction, decimal sequence |
+| modelGateway | `{taskKind,evidenceRefs,input,outputSchemaId,budget,policyVersion}` → ServiceResult<ModelResult> | DEPLOY adapter; FND port/wiring; consumer semantic validation |
+| scanAsset | `{uploadId,assetHash}` → hash-bound scan receipt | DEPLOY clean/rejected/quarantined/unavailable |
+| sendReceipt | `{notificationId,deliveryKey,audience,templateId}` → accepted/rejected/unknown | DEPLOY transport; CITIZEN content/reconciliation |
+
+ProposalSelection requires exactly one target or nonempty bounded targets (initial max 100); reject duplicates/mixed scopes. CITIZEN uses target; INGEST coherent groups use targets. An unresolved intake cannot prepare a spatial proposal. `changes` is a strict kind-discriminated command schema published by FND, not arbitrary JSON patch to database rows. Reuse existing validated draft inputs; unsupported geometry/relationship operations return 422. A new unidentified space remains a missing-space proposal until the qualified identity-allocation workflow exists; do not invent a target pin.
+
+FND's public preparation wrapper opens a transaction; its `prepareProposalTx(client,ctx,command)` helper lets CITIZEN acceptance or INGEST group linkage occur on the same client with draft receipt/outbox. Do not call an independently committing wrapper inside another transaction. The analogous reviewed commit is defined in section 4. A draft receipt is never a recorded receipt.
+
+Optional findings/rightsGraph/evidenceRequests/history ports use ServiceResult plus inputManifestId, version pins and coverage. Feature producers own detail schemas; FND registers them without circular imports into common.ts. An empty available list means an actual bounded completed read. Missing producer means not_assessed. Model, scanner and mail clients are DEPLOY-owned, not reimplemented per consumer.
+
+HTTP success: `{data,meta:{schemaVersion:'usp/1',requestId,scope}}`; intake legitimately has no snapshotDigest. Pending →202/job ref. Errors: `{error:{code,message,retryable,requestId,details?}}`, with 400 malformed,401 unauthenticated, non-enumerable404 for inaccessible resources,403 where safe,409 stale/idempotency conflict,413 limit,422 unsupported semantics,429 throttled,503 unavailable. No raw provider body/private filename/stack trace in errors. Permission denial must not leak hidden records via a not_assessed payload.
+
+Idempotency key is `(subject,scope identity,operation,requestKey)` with canonical payload hash and durable receipt. Same payload returns original receipt after current authorization; changed payload is409. Hash verified binary content hashes instead of copying entire files into commands. Body actor/role is rejected. Route ref codec: base64url canonical UTF-8 `{namespace,id}` JSON, max1 KiB decoded, strict round-trip validation; not a bearer secret. Preserve existing UUID routes.
+
+## 3. Immutable snapshots and historical reads
+
+SnapshotManifest pins immutable sorted membership, target/geometry/quantity/source/source-part/link/relationship/review versions, frames/transforms, scope/world/stage, policies, validity/as-of context, selection definition and coverage. Property revision alone is insufficient. Source classification and recording state are independent.
+
+Capture members and their exact bodies/pointers under one repeatable-read transaction. Where baseline history is absent, retain the actual captured body in a private immutable snapshot blob; do not invent backdated history or create a new mutable master. Bound capture using the selected feature profile. Do not hold a transaction across parsing/model/rendering/user review. Store actual manifest bytes/hash with deterministic ordering of set-like collections; preserve ordered coordinates/locators unchanged.
+
+Cursor authenticates manifest, filters/sort, last key, access-view version and expiry. Page two reads the same frozen membership, not newer live records. Missing manifest/expired cursor returns409 with explicit refresh; revoked access denies or requires a fresh authorized projection. Public manifests are separately scoped projections, not private member IDs/counts. Current state changes invalidate dependent results by full manifest comparison even if an event was missed.
+
+Exact historical reads never substitute current source bytes, transforms or rights. Missing constituent is unavailable_revision; PACK/HISTORY can present an explicitly incomplete result, never complete-looking reconstructed history. Immutable scene/assets referenced by history are retained independently of event replay/cache expiry.
+
+## 4. Same-client commands, receipts and outbox
+
+Baseline [commitRegistryReview](../../apps/web/lib/server/registry.ts) opens its own transaction. FND extracts `commitRegistryReviewTx(client,id,acknowledgement)` retaining the current wrapper, locks, evidence checks, warning acknowledgements and expected revisions. Preserve compatible old callers and tests.
+
+Coordinated command: one transaction → existing recording lock → site/draft/review locks in established order, sorted IDs for multiple resources → validate guard and full dependencies → registered transaction helper → query actual post-write pins → insert immutable CommitReceipt/audit/outbox → commit. All helpers use the same PoolClient; no hidden pool reads escape. Receipt pins command/hash, proposal/review, before/after revisions, resulting snapshot and event cursor. Pre-commit payload revisions are not new revisions.
+
+Object storage is outside SQL: write/verify immutable provisional bytes first, then register accepted refs in SQL. Failed transaction leaves an unreferenced private orphan for delayed cleanup, never a partial published record. Do not delete an object referenced by any committed manifest. Upload/source promotion is intent-idempotent; identical bytes across users/intents do not merge ownership or permissions.
+
+Registered handlers cover compatible registry proposals and RIGHTS' technical assertion acceptance. Unsupported operations fail explicitly. FIND owns its minimal participant-scoped case with optional legacy building-investigation link; no fabricated building for parcel-only results and no duplicate general case platform.
+
+Outbox uses per-stream row-locked sequence held until commit; lock multiple streams in sorted order. Store minimal event schema/type, scope, manifest, correlation and decimal sequence. A global sequence allocated before commit or legacy UUID activity ID is not an ordered replay cursor. Consumers deduplicate `(streamId,sequence)`. State+manifest+initial replay cursor are read in one repeatable-read transaction; INGEST owns delivery, CITIZEN notification consumption.
+
+## 5. Logical jobs and fenced recovery
+
+Keep existing jobs/broker; add operation metadata and `usp_job_attempts`, not another queue. Register input/result schemas, deadlines, resource needs and completion handlers. Large inputs use private immutable payloadRef. Unknown operation rejects. JobProjection separates queued/running/needs_input/succeeded/failed/paused/cancelled with nullable total/progress, input pins, attempt metadata and safe error/result refs.
+
+Claim atomically advances fence and binds owner/lease/input hash. Heartbeat and completion require current active fence/owner and unexpired lease. SQL result acceptance is authoritative; Redis claim/release alone is not enough. Recheck logical status/dependencies/fence, register output and append event in one transaction. Duplicate accepted completion returns its receipt. Stale/superseded output may be retained as history but never replace current results.
+
+Pause stops new claims; valid running work may finish as a retained draft but not auto-record. Cancel advances fence and prevents later application while retaining originals/history. Retry after exhausted attempts is an explicit expected-version command with new fence. Resume does not resurrect cancelled jobs. Default child execution≤60sec under existing110/120sec worker caps;180sec lease and≤30sec heartbeat, configured/tested together. Queue wait, download, model and execution clocks are separate. Default transient retry ceiling three attempts with bounded backoff; semantic failures require input, not endless repair.
+
+## 6. Geometry and display capability boundaries
+
+| Profile | Accepted behavior |
+| --- | --- |
+| Retained asset | Original bytes/metadata only; no implied geometry |
+| External display mesh/tiles | Source surfaces/transforms/LoD/identity preserved by UI adapter; not analytical volume/rights |
+| Planar Polygon/MultiPolygon | Holes and named metric frame; measure after qualified topology |
+| Prism | Qualified polygon + lower/upper + exact vertical reference |
+| Compound space | One semantic ID references multiple exact components; never union footprint × full height |
+
+Current simple-ring registry storage does not prove holes/compound persistence. V0 uses supported clean simple units; richer test cases must round-trip losslessly or return explicit unsupported analytical state. FND's qualified representation-reference bridge preserves existing property IDs, with incompatible legacy mirrors unavailable rather than lossy. FIND owns the shared planar/prism/slab operations used by IMPACT/HISTORY. No substitute per-feature boolean engine.
+
+Missing CRS/axes/units/ground reference/vertical datum/grid → needs_input/unsupported_transform. Local-frame inspection can precede global placement. A display-only alignment is not a surveyed measurement transform. Numerical epsilon is not survey uncertainty. Ornament, screen-space road strokes and exploded-floor offsets cannot alter geometry quantities/evidence/readiness/checks.
+
+## 7. Access and explicit derivative release
+
+F1-min preserves loopback/Origin restrictions with a server-derived local operator. F2 separately uses maintained pinned OIDC/session implementation, authorization code+PKCE, validated issuer/audience/signature/expiry, exact redirects, CSRF protection and Secure HttpOnly sessions. No custom password/crypto. Missing config fails closed; fixture identities do not become publicly trusted headers.
+
+Anonymous: released projections only. Contributor: own submissions/files. Reviewer/recorder: separately scoped grants. Administrator: configuration, not automatic source rights. Worker: bounded resource/action. Capabilities include property.read, evidence.preview/extract/original, proposal.create/review, record.commit, scope.assess, release.approve, deployment.inspect.
+
+Private derivatives require current target AND contributing source/part/asset grants plus purpose/policy at preview/execution/download. Separately released derivatives use ReleaseDecision pinning exact output AssetRef/hash, source lineage, reviewed redaction/applicability, audience, reviewer, policy, expiry and active/revoked state. Releasing actor needs relevant source rights and release.approve; a later public viewer needs only the active approved release/audience, not private original access. An AI summary or public parent does not declassify data. Source supersession flags review without rewriting bytes; access/legal revocation invalidates affected releases. Recheck service/cache downloads; already delivered bytes cannot be recalled.
+
+Inventory main/specialized API, ML/scene/source assets, SSR pages and static files before F2. Guarding the new route does not protect old downloads. Keep unqualified routes externally inaccessible, preserve trusted-proxy boundary and never remove localOnly globally. Public search/MCP uses explicit released projections, not a full dossier with a few fields removed.
+
+## 8. Selection, caches and UI boundary
+
+UI owns URL/transient state; server snapshots own facts. SelectionContext: none/pending/valid/invalid, each with generation; valid carries scope,target, optional building/floor/space refs and evidence. Invalid carries requested context and safe reason. Every selection/world/stage/entitlement change advances generation. Supplied invalid unit/area/source cannot silently broaden an action; retired IDs show explicit historic/unavailable context.
+
+Cache key includes method/path, scope/stage/world, manifest/target pin, parameters, accessView/entitlement/policy. Intake reads use workspace/version. Abort or suppress old-generation responses; revoked pending reads cannot repopulate cleared caches. Asset events invalidate targeted consumers, not every dossier. Source/relationship/record changes invalidate dependency-matching manifests. Hidden selection stays explicit with reveal/clear action. Never store private records/tokens/packets in localStorage.
+
+Reuse [resource cache](../../apps/web/features/spatial/data/resource-cache.ts), [sessions](../../apps/web/features/spatial/data/session.ts), [store](../../apps/web/features/officer/shared/store.tsx), [useBlock](../../apps/web/features/officer/block/useBlock.ts) and existing viewport. One active3D viewport/focused workspace; no feature-owned global provider/Canvas. UI owns renderer/slots and query translation; features supply typed callbacks/results.
+
+## 9. Sole ownership and migrations
+
+| Paths / seam | Sole writer |
+| --- | --- |
+| Proposed common/ports/index schemas and [contracts exports](../../packages/contracts/src/index.ts) | FND; feature detail schemas owned by producer |
+| Proposed server USP shared helpers listed in section2; [db](../../apps/web/lib/server/db.ts), [registry](../../apps/web/lib/server/registry.ts), legacy receipt/resolver/investigation adapters | FND |
+| [Processing](../../apps/web/lib/server/processing.ts), [dispatcher](../../scripts/dispatcher.ts), [geo API](../../services/geo/geo/api.py), [tasks](../../services/geo/geo/tasks.py), [JobStore](../../services/geo/geo/store.py) | FND; registered leaf tasks remain feature-owned |
+| Proposed `app/api/v1/usp/[...path]/route.ts`, `app/mcp/route.ts`, existing API guards | FND |
+| Existing config/compose/Dockerfiles/geo settings/legacy provider/package/requirements/locks; proposed `infra/deployment/Dockerfile.web` | FND applies bounded patches; DEPLOY owns new policy/provider/standalone reference files |
+| Studio routes/layout/Shell/ProductHeader/map/cache/store/parent widgets and public page mounts | UI; integrates FND SSR wrapper |
+| Proposed `contracts/src/usp/<feature>.ts`, `lib/server/usp/<feature>/**`, `features/usp/<feature>/**`, leaf tests/migration | Named feature owner |
+| Proposed `fixtures/usp/**`, `scripts/usp/data/**` | DATA; FND data-pack schema, feature owners submit expected cases |
+
+Reuse one pool and existing `pnpm db:migrate`; add named migration ledger/advisory-lock protection. Failed migration not applied. FND registers feature-owned migrations in dependency order, not just file numbering. Prefixes: usp_packet,usp_readiness,usp_finding,usp_citizen,usp_ingest,usp_history,usp_rights,usp_impact,usp_assist,usp_deployment. Stores contain feature state, exact manifests/receipts/bindings, not duplicate mutable property truth. Test clean, populated baseline, rerun and partial feature upgrade. Recovery disables feature routes/workers and preserves originals; no destructive down-migration or snapshot refresh default. Shared patches follow 00 and explicit role transfer, not concurrent silent edits.
+
+## 10. Datasets, ordered implementation and acceptance
+
+Use DATA's D0 and one D1 reference/geometry example from [00](00-README.md). FND defines `usp-data-pack/1` including actual assets/hash/bytes/source/licence/reference/stage verification and independent expected values. DATA creates packs; no existing PC path or unacquired archive is presumed available.
+
+1. F0 fixtures must cover unassigned intake, valid/historical snapshot, invalid cross-building unit, distinct namespaces, unknown quantity, pending job, unavailable producer, create/update guards, one-target/multi-target proposal and released derivative from restricted source. Producers and consumers parse the same bytes. Proposed `tests/usp-contract-producers.test.ts`.
+2. F1-min exact D0 live reads/snapshot capture; source/relationship/membership changes and page-two stability in `tests/usp-snapshot-consistency.test.ts`.
+3. Same-client prepare/commit: inject failures before/after draft, record, receipt and outbox; assert all or none and actual post-write pins in `tests/usp-command-atomicity-integration.ts`.
+4. Real SQL/Redis fencing/cancel/retry/expired old completion in `tests/usp-job-fencing-integration.ts`; no duplicated accepted output.
+5. Connect V0 with UI/PACK; test migration reruns, source authorization, invalid selection and deterministic local no-AI behavior.
+6. Extend only needed F1-feature adapters; F2/environment claims remain separately qualified.
+
+Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:registry`, `pnpm test:register-scope`, applicable core tests and proposed tests with runners in 00 after creation. Include forged principal/scope headers, revoked permission during pending reads, public released asset without original grant, release revocation, storage/SQL failure, old cursor and nested transaction regression. Report actual pack/source hashes, requests/DB receipts and unqualified capabilities. F0 types passing does not pass live F1 or browser V0.
+
+## 11. Copy-paste FND assignment
+
+> Read 00, this handoff, root/web AGENTS and the linked actual services; check branch drift. Implement F0 then F1-min on feat/usp-foundation using D0 and one D1 frame sample. Own FND shared schemas/ports, exact intake/snapshot/asset refs, bounded uploads, same-client prepare/commit receipts, fenced jobs, access/release rules and additive migration registration. Keep source IDs/bytes, current wrappers and local restrictions. UI owns frontend/SSR mounts, DATA pack files, feature owners leaves; send concrete patches, not duplicate services. Complete the live V0 seam before a broad foundation/auth platform. Run section10 producer/consumer and real-service rollback/replay/access tests and return commits, schemas, pack hashes and actual receipts. Do not ask humans to invent engineering defaults, claim mocks prove integration, activate public services or merge main without authorization.

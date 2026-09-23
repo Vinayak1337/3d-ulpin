@@ -1,0 +1,122 @@
+name: ULPIN read-only data-transition inventory
+
+# Review tooling only: no application execution, database access, deletion or publication.
+# Deliberately branch-scoped. Does not run on main or arbitrary pull requests.
+on:
+  push:
+    branches: ['review/data-transition-cleanup-20260923']
+    paths: ['.github/workflows/ulpin-cleanup-review.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Read the exact main baseline without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: f623cff897f91bb3ebd4c225f700ac263f7beb72
+          path: baseline
+          persist-credentials: false
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+      - name: Read adopted handoffs without merging them
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: e167b1f6c1a830b2b5c6c1708e8f0b0214e4d849
+          path: plans
+          sparse-checkout: docs/usp-agent-handoffs
+          persist-credentials: false
+          fetch-depth: 1
+          lfs: false
+          submodules: false
+      - name: Inventory all tracked paths and retain bounded source text for review
+        shell: bash
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 - <<'PY'
+          import collections, hashlib, json, os, pathlib, subprocess, zipfile
+          root = pathlib.Path(os.environ['GITHUB_WORKSPACE'])
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'ulpin-cleanup-review'
+          out.mkdir(parents=True, exist_ok=True)
+          source = root / 'baseline'
+          actual = subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip()
+          assert actual == 'f623cff897f91bb3ebd4c225f700ac263f7beb72'
+          raw = subprocess.check_output(['git', '-C', str(source), 'ls-tree', '-r', '-l', '-z', 'HEAD'])
+          entries = []
+          allowed = {'.md','.txt','.json','.geojson','.csv','.ts','.tsx','.js','.jsx','.mjs','.cjs','.py','.sql','.sh','.command','.ps1','.css','.scss','.html','.xml','.yaml','.yml','.toml','.ini','.cfg','.conf','.svg','.map','.example','.gitattributes','.gitignore'}
+          names = {'Dockerfile','LICENSE','TASTE_LICENSE','.gitignore','.gitattributes','.dockerignore','.npmrc','.nvmrc','.env.example','requirements.txt','requirements-dev.txt'}
+          total_text = 0
+          with zipfile.ZipFile(out / 'review-source.zip', 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as bundle:
+              for item in raw.split(b'\0'):
+                  if not item:
+                      continue
+                  head, name = item.split(b'\t', 1)
+                  mode, kind, sha, size = head.decode().split()
+                  path = name.decode('utf-8')
+                  entry = {'path':path,'mode':mode,'type':kind,'git_blob_sha':sha,'bytes':None if size == '-' else int(size),'review_source':'metadata_only'}
+                  entries.append(entry)
+                  if kind != 'blob' or mode == '120000':
+                      continue
+                  file = source / path
+                  if not file.is_file():
+                      entry['review_source'] = 'working_file_unavailable'
+                      continue
+                  if pathlib.PurePosixPath(path).name.startswith('.env') and pathlib.PurePosixPath(path).name != '.env.example':
+                      entry['review_source'] = 'sensitive_config_not_exported'
+                      continue
+                  if file.stat().st_size > 16 * 1024 * 1024:
+                      entry['review_source'] = 'large_blob_metadata_only'
+                      continue
+                  suffix = pathlib.PurePosixPath(path).suffix.lower()
+                  if suffix in allowed or pathlib.PurePosixPath(path).name in names:
+                      data = file.read_bytes()
+                      try:
+                          text = data.decode('utf-8')
+                      except UnicodeDecodeError:
+                          entry['review_source'] = 'non_utf8_metadata_only'
+                          continue
+                      if '\0' in text:
+                          entry['review_source'] = 'binary_metadata_only'
+                          continue
+                      if total_text + len(data) > 160 * 1024 * 1024:
+                          entry['review_source'] = 'aggregate_text_cap'
+                          continue
+                      entry['review_source'] = 'full_text_preserved'
+                      entry['sha256'] = hashlib.sha256(data).hexdigest()
+                      entry['lines'] = len(text.splitlines())
+                      entry['lfs_pointer'] = text.startswith('version https://git-lfs.github.com/spec/v1')
+                      bundle.writestr('baseline/' + path, data)
+                      total_text += len(data)
+              for file in sorted((root / 'plans' / 'docs' / 'usp-agent-handoffs').glob('*.md')):
+                  bundle.write(file, 'plans/docs/usp-agent-handoffs/' + file.name)
+          groups = collections.defaultdict(list)
+          by_root = collections.defaultdict(lambda: {'files':0,'bytes':0})
+          for entry in entries:
+              if entry['type'] == 'blob':
+                  groups[entry['git_blob_sha']].append(entry['path'])
+                  key = entry['path'].split('/')[0] if '/' in entry['path'] else '[root files]'
+                  by_root[key]['files'] += 1
+                  by_root[key]['bytes'] += entry['bytes'] or 0
+          duplicates = [{'git_blob_sha':sha,'paths':paths} for sha,paths in groups.items() if len(paths)>1]
+          summary = {'baseline':actual,'handoffs':'e167b1f6c1a830b2b5c6c1708e8f0b0214e4d849','entries':len(entries),'tracked_blobs':sum(e['type']=='blob' for e in entries),'tracked_blob_bytes':sum(e['bytes'] or 0 for e in entries),'source_text_bytes':total_text,'review_methods':dict(collections.Counter(e['review_source'] for e in entries)),'duplicate_blob_groups':len(duplicates),'root_groups':dict(sorted(by_root.items())),'limits':'No application/tests/data services executed. Binary payloads are inventoried by Git metadata, not visually/content validated. Dependency analysis is subsequent review work. No tracked source deleted or modified.'}
+          for name, value in [('inventory.json',entries),('duplicate-blobs.json',duplicates),('summary.json',summary)]:
+              (out/name).write_text(json.dumps(value,indent=2),encoding='utf-8')
+          print(json.dumps(summary,indent=2))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+              f.write('## Read-only cleanup inventory\n\n'+str(summary['tracked_blobs'])+' tracked files inventoried. No project commands, database access, deletions, deployments or main changes.\n')
+          PY
+      - name: Retain source review and inventory in this repository's artifact storage
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ulpin-cleanup-review-${{ github.run_id }}
+          path: ${{ runner.temp }}/ulpin-cleanup-review/
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: false
