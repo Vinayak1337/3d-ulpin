@@ -1,13 +1,13 @@
-/** Runs only inside the hosted disposable isolation profile, against real HTTP, SQL and S3. */
+/** Runs only inside disposable isolation, against real HTTP, SQL and S3. */
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { assertIsolation } from '../engineering/isolation.mjs';
+import { assertUspIsolation } from './local-isolation.mjs';
 
-assertIsolation(process.env);
+assertUspIsolation(process.env);
 const { registerUspJobInputTx, claimUspJobAttempt, heartbeatUspJobAttempt,
   acceptUspJobAttempt, cancelUspJob, readUspJob } = await import('../../apps/web/lib/server/usp/jobs');
 const require = createRequire(resolve('apps/web/package.json'));
@@ -16,11 +16,13 @@ const { UspVerticalSelectionSchema } = await import('../../packages/contracts/sr
 const { resolveRegistryTarget, resolveRegistryVerticalContext } = await import('../../apps/web/lib/server/usp/snapshots');
 const { localRequestContext } = await import('../../apps/web/lib/server/usp/principal');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 5000, max: 2 });
-const base = 'http://127.0.0.1:3000/api/v1';
+const base = `${process.env.ULPIN_TEST_URL}/api/v1`;
 const hash = (value: Uint8Array | string) => createHash('sha256').update(value).digest('hex');
 const report: Record<string, unknown> = { schemaVersion: 'usp-fnd-live/1',
   codeSha: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
-  environment: 'hosted-disposable-isolation', data: 'retained synthetic Nandan baseline; not full D0' };
+  environment: process.env.ULPIN_ISOLATION_PROFILE?.startsWith('local-')
+    ? 'local-disposable-isolation' : 'hosted-disposable-isolation',
+  data: 'retained synthetic Nandan baseline; not full D0' };
 
 async function api(path: string, payload?: unknown, expected = 200) {
   const response = await fetch(base + path, { method: payload === undefined ? 'GET' : 'POST',

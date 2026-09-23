@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { areaContext, commitPackage, getArea, ingestArea, reviewPackage } from '../../../apps/web/lib/server/areas';
 import { pool, query } from '../../../apps/web/lib/server/db';
 import type { ImportPackage } from '../../../packages/contracts/src';
-import { assertIsolation } from '../../engineering/isolation.mjs';
+import { assertUspIsolation } from '../local-isolation.mjs';
 import { verifyD0 } from './verify-d0';
 
 const root = path.resolve('fixtures/usp/D0/golden-v1');
@@ -90,6 +90,13 @@ function bodyOnly(record: any) {
   return body;
 }
 
+function retainRecordIds(records: any[], buildingAlias: string, output: Record<string, string>) {
+  const buildingRecords = records.filter(record => record.kind === 'building');
+  if (buildingRecords.length !== 1) throw Error(`${buildingAlias}: expected one recorded building identity`);
+  output[buildingAlias] = buildingRecords[0].id;
+  for (const record of records) if (record.kind === 'space' || record.kind === 'floor') output[record.alias] = record.id;
+}
+
 async function sourcePart(pkg: ImportPackage, filename: string, locator: string, token: string) {
   const sourceRevisionId = await sourceIdByHash(pkg, filename);
   const part = pkg.parts.find(p => p.sourceRevisionId === sourceRevisionId && p.locator === locator && p.text.includes(token));
@@ -115,7 +122,7 @@ async function exactMixedBindings(pkg: ImportPackage) {
 }
 
 async function apply() {
-  assertIsolation(process.env);
+  assertUspIsolation(process.env);
   if (apiBase.href !== new URL(process.env.ULPIN_TEST_URL!).href) throw Error('D0 API URL differs from the isolated runner endpoint');
   const lock = await pool().connect();
   try {
@@ -146,7 +153,7 @@ async function apply() {
       const feature = context.features.find(f => f.id === physicalFeatures[building.alias])!;
       const dossier = await api<any>(`/buildings/${feature.id}/dossier`);
       if (dossier.records.some((record: any) => record.kind === 'space')) {
-        for (const record of dossier.records) if (record.kind === 'space' || record.kind === 'floor' || record.kind === 'building') records[record.alias] = record.id;
+        retainRecordIds(dossier.records, building.alias, records);
         const existing = (await query('SELECT body FROM building_preparations WHERE building_id=$1', [feature.id])).rows[0]?.body;
         if (existing?.packageId) {
           const prior = await api<ImportPackage>(`/import-packages/${existing.packageId}`);
@@ -227,7 +234,7 @@ async function apply() {
       }
       await api(`/registry-reviews/${finalReview.id}/commit`, { acknowledgement: reason });
       const recorded = await api<any>(`/buildings/${feature.id}/dossier`);
-      for (const record of recorded.records) if (record.kind === 'space' || record.kind === 'floor' || record.kind === 'building') records[record.alias] = record.id;
+      retainRecordIds(recorded.records, building.alias, records);
       if (building.alias === 'B-A') {
         for (const alias of ['U-A101', 'U-A102']) {
           const record = recorded.records.find((item: any) => item.alias === alias);

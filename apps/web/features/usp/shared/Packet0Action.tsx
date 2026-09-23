@@ -152,14 +152,15 @@ export default function Packet0Action({ dossier, record }: { dossier: BuildingDo
   }, [packetId, duplicatePacket, record.id, dossier.area.siteId]);
 
   const generate = async () => {
-    if (state.kind !== "ready" || busy || !state.value.vertical.space.evidence.length) return;
+    const exactPointers = parts.filter(part => part.value).map(part => part.pointer);
+    if (state.kind !== "ready" || busy || !exactPointers.length) return;
     const controller = new AbortController();
     setBusy(true);
     setReceiptError("");
     try {
       const result = await uspPost<Packet0Receipt>("packets", {
         scope: state.value.scope, target: state.value.vertical.space.pin,
-        evidence: state.value.vertical.space.evidence, format,
+        evidence: exactPointers, format,
         guard: { mode: "create", requestKey: crypto.randomUUID() },
       }, UspPacket0ReceiptSchema, controller.signal);
       setReceipt(result);
@@ -190,7 +191,7 @@ export default function Packet0Action({ dossier, record }: { dossier: BuildingDo
       })}
       {!!state.value.vertical.space.evidence.length && <div className="usp-packet-controls">
         <label>Format <select value={format} onChange={event => setFormat(event.target.value as "text" | "csv")}><option value="text">Text</option><option value="csv">CSV</option></select></label>
-        <Button disabled={busy} onClick={() => void generate()}>{busy ? "Compiling…" : "Compile scoped packet"}</Button>
+        <Button disabled={busy || !parts.some(part => part.value)} onClick={() => void generate()}>{busy ? "Compiling…" : "Compile scoped packet"}</Button>
       </div>}
     </>}
     {duplicatePacket && <p role="alert">This link has conflicting packet identifiers.</p>}
