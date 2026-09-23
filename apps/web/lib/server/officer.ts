@@ -306,7 +306,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
   ).rows.map((r) => r.body as PropertyAssociation);
   const parcelRows = (
     await query(
-      `SELECT DISTINCT p.body FROM physical_features p,physical_features b WHERE b.id=$1 AND p.revision>0 AND p.body->>'kind'='parcel' AND (p.id IN (SELECT to_id FROM property_associations WHERE from_id=$1 AND relationship='occupies_parcel' AND status<>'rejected') OR ST_Intersects(p.geographic_geometry,b.geographic_geometry)) LIMIT 100`,
+      `SELECT DISTINCT p.body FROM physical_features p,physical_features b WHERE b.id=$1 AND p.revision>0 AND p.body->>'kind'='parcel' AND (p.id IN (SELECT to_id FROM property_associations WHERE from_id=$1 AND relationship='occupies_parcel' AND status<>'rejected') OR (p.area_id=b.area_id AND p.body->>'worldStatus'=b.body->>'worldStatus' AND ST_Intersects(p.geographic_geometry,b.geographic_geometry))) LIMIT 100`,
       [id],
     )
   ).rows;

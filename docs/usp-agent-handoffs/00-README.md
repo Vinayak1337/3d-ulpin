@@ -1,6 +1,8 @@
 # Evidence-linked 3D property workflows — start here
 
-**Execution/provider update, 23 September 2026:** use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) and [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md). These are supporting instructions for existing roles, not additional independent USPs. The gateway is planned, not live-qualified. Reconcile older starter status below against current code and FND evidence; the inspected implementation base for this update is `codex/fnd-f0-f1@97146d6`.
+**Execution/provider update, 23 September 2026:** use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) and [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md). These are supporting instructions for existing roles, not additional independent USPs. The gateway is planned, not live-qualified. Reconcile historical starter status below against current code and executed FND evidence. Full D0 already has a local integration/browser result.
+
+**Current branch flow:** PRs #8–#11 and FND D0 are merged into `staging`; starter/cleanup branches below are historical. The present continuation is `codex/usp-staging-continuation-20260923` from `origin/staging@2838e798af838d7646ff92b1120c62c8458103da`, targeting staging in [draft PR #13](https://github.com/Vinayak1337/3d-ulpin/pull/13). It preserves main's deployment/API-index fixes without authorizing deployment or a main merge. See [current receipts and limitations](../evidence/usp/fnd/d0/README.md).
 
 ## 1. Current assignment and authority
 
@@ -11,7 +13,7 @@
 | Item | Baseline / rule |
 | --- | --- |
 | Repository / original handoffs | `Vinayak1337/3d-ulpin`; original adopted handoffs `e167b1f` on `docs/usp-agent-handoffs`, PR #7 |
-| Starter implementation branch | `feat/usp-foundation-f0`, based on cleaned `d6fa4602c0fb85eae71d7e3f63fb42a2684aa1b8`; cleanup PR #8 remains separate |
+| Historical starter branch | `feat/usp-foundation-f0`, based on cleaned `d6fa4602c0fb85eae71d7e3f63fb42a2684aa1b8`; cleanup PR #8 and later foundation work are now merged into `staging` |
 | Application baseline inspected for the plans | `f623cff897f91bb3ebd4c225f700ac263f7beb72`, `Record hosted floor registry verification` |
 | Tested starter code | `1894f2e94e3f4f113fb4431afaf69018dcb730c3`; [actual verification run](https://github.com/Vinayak1337/3d-ulpin/actions/runs/35796807605) |
 | Historical starter scope | F0a common validation/data-pack starter implemented; remaining F0 domain contracts/ports and F1/V0 work are not implemented by this starter |
@@ -87,7 +89,7 @@ DATA is an AI-agent responsibility. Existing source catalogues are leads, not lo
 
 ### Acquisition and fixture contract
 
-FND now provides the initial `usp-data-pack/1` schema in [data-pack.ts](../../packages/contracts/src/usp/data-pack.ts). DATA creates `fixtures/usp/D0` through `D7` as needed, each with `manifest.json`, `expected.json` and only permitted small originals. Acquisition scripts live in `scripts/usp/data/`. The only starter pack delivered here is `D0/contract-smoke`; other paths remain implementation/acquisition tasks. Large/restricted data lives outside Git. The first verifier handles bounded contained local files only; add an explicit qualified private-storage adapter for larger/restricted packs instead of putting credentials in a manifest.
+FND now provides the initial `usp-data-pack/1` schema in [data-pack.ts](../../packages/contracts/src/usp/data-pack.ts). DATA creates `fixtures/usp/D0` through `D7` as needed, each with `manifest.json`, `expected.json` and only permitted small originals. Acquisition scripts live in `scripts/usp/data/`. The original starter delivered only `D0/contract-smoke`. Current `D0/golden-v1` and `D1/single-roof` packs have retained bytes and independent expected cases; use the executed receipts for their qualification status. Other packs remain separate acquisition/qualification tasks. Large/restricted data lives outside Git. The first verifier handles bounded contained local files only; add an explicit qualified private-storage adapter for larger/restricted packs instead of putting credentials in a manifest.
 
 Each manifest records pack/version, asset URLs and actual hashes/bytes, media/parser version, licence/permission, source/date/reference metadata, dependencies, source identifiers, verified stages, expected capabilities and explicit missing capabilities. A source family and object ID form the source key; identical flat labels in different buildings do not. Cross-source joins record method, evidence and unresolved alternatives. An estimate remains an estimate even if another dataset derived from the same provider agrees with it. The F0a manifest deliberately does not yet implement all parser/join metadata; extend it with the actual producer and shared tests before claiming a full normalized dataset. Supplied stage assertions are not trusted evidence by themselves.
 
