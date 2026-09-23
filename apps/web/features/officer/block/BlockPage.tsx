@@ -91,6 +91,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
           retry={block.context.reload}
         />
       )}
+      {block.selectionError && <p className="ui-stale-check" role="alert">{block.selectionError}</p>}
       <div
         className={`ui-block-grid ui-focused-map ${block.preferences.findingsOpen || (inspectorOpen && block.selected) ? "" : "ui-inspector-closed"}`}
       >

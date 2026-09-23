@@ -31,6 +31,7 @@ import Issues from "./Issues";
 import History from "./History";
 import styles from "./register.module.css";
 import ScopedExport from "../shared/ScopedExport";
+import Packet0Action from "../../usp/shared/Packet0Action";
 
 const tabs = [
   "overview",
@@ -57,8 +58,9 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
     search = useSearchParams(),
     router = useRouter();
   const requestedArea = search.get("area") || search.get("areaId");
-  const requestedRecord = search.get("record");
-  const validRequestedRecord = resource.data?.records.some(
+  const duplicateRecord = search.getAll("record").length > 1;
+  const requestedRecord = duplicateRecord ? null : search.get("record");
+  const validRequestedRecord = !duplicateRecord && resource.data?.records.some(
     (item) => item.id === requestedRecord,
   )
     ? requestedRecord
@@ -134,7 +136,9 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
     routes.block(backArea?.id, buildingId) +
     (validRequestedRecord
       ? `&record=${encodeURIComponent(validRequestedRecord)}`
-      : "");
+      : "") +
+    (validRequestedRecord && search.getAll("packet").length === 1 && search.get("packet")
+      ? `&packet=${encodeURIComponent(search.get("packet")!)}` : "");
   const onMap = (finding?: AreaFinding) => {
     let url = backUrl;
     if (finding)
@@ -149,6 +153,7 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
     if (id && !dossier.records.some((r) => r.id === id)) return;
     setSelectedRecord(id);
     const query = new URLSearchParams(search.toString());
+    query.delete("packet");
     if (id) query.set("record", id);
     else {
       query.delete("record");
@@ -229,6 +234,11 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
           retry={() => void resource.reload()}
         />
       )}
+      {(duplicateRecord || (requestedRecord && !validRequestedRecord)) && (
+        <p className={styles.warning} role="alert">
+          The supplied unit is not part of this property. Select a recorded unit before opening its evidence or packet.
+        </p>
+      )}
       {requestedArea &&
         requestedArea !== dossier.area.id &&
         !membership.loading &&
@@ -286,7 +296,10 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
             />
           )}
           {tab === "evidence" && (
-            <Evidence dossier={dossier} initialSourceId={sourceId} />
+            <>
+              {selected?.kind === "space" && <Packet0Action key={`${dossier.area.siteId}:${selected.id}@${selected.revision}`} dossier={dossier} record={selected} />}
+              <Evidence dossier={dossier} initialSourceId={sourceId} />
+            </>
           )}
           {tab === "issues" && (
             <Issues

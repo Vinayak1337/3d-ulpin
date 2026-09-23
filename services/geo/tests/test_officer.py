@@ -304,3 +304,14 @@ def test_existing_levels_csv_method_is_retained_as_text_without_becoming_authori
     assert {c["property"] for c in result["candidates"]} == {"space.lower", "space.upper"}
     assert all(c["method"] == "native_parse" and c["evidenceState"] == "source_supported" for c in result["candidates"])
     assert [c["value"] for c in result["candidates"]] == [-3, 0]
+
+
+def test_csv_reference_rows_keep_logical_records_and_headers_without_geometry_candidates():
+    raw = b'alias,note,evidence_token\nU-A101,"first line\nsecond line",ONLY_A101\nU-A102,private,NEVER_A102\n'
+    result = extract_document({"format": "csv_reference", "base64": base64.b64encode(raw).decode()})
+    assert result["status"] == "needs_input"
+    assert result["candidates"] == []
+    assert [part["locator"]["label"] for part in result["parts"]] == ["CSV row 2", "CSV row 3"]
+    assert "first line\nsecond line" in result["parts"][0]["text"]
+    assert "ONLY_A101" in result["parts"][0]["text"]
+    assert "NEVER_A102" not in result["parts"][0]["text"]

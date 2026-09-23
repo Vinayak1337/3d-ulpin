@@ -1,0 +1,6 @@
+D0 SYNTHETIC MIXED SOURCE PAGE, REVISION 1. NOT A TITLE OR SURVEY.
+HEADER | Building B-A, first floor schedule.
+A101 | ONLY_A101 | Unit U-A101 is on supplied level F-A1.
+A102 | NEVER_A102 | Unit U-A102 is a separate space.
+SHARED | SHARED_STAIR_CONTEXT | Stair STAIR-S1 is shared context, not exclusive area.
+NOTE | Revision 1: authored schedule annotation; recorded identity is unchanged.

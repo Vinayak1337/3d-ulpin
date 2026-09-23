@@ -9,7 +9,7 @@ import { assertLocalRequest, localRequestContext } from '@/lib/server/usp/princi
 import { captureRegistrySnapshot, readManifest, readRegistryScope, resolveRegistryTarget,
   readRegistryEvidenceBytes, resolveRegistryVerticalContext } from '@/lib/server/usp/snapshots';
 import { prepareProposal, commitProposal } from '@/lib/server/usp/commands';
-import { createPacket0, readPacket0 } from '@/lib/server/usp/packet0';
+import { createPacket0, readExactPart, readPacket0, readPacket0Receipt } from '@/lib/server/usp/packet0';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -38,6 +38,10 @@ async function handle(request: Request, context: Context) {
     assertLocalRequest(request);
     const ctx = localRequestContext(requestId);
     const path = (await context.params).path;
+    if (request.method === 'GET' && path[0] === 'packets' && path.length === 3 && path[2] === 'receipt') {
+      const receipt = await readPacket0Receipt(ctx, z.uuid().parse(path[1]));
+      return Response.json({ data: receipt, meta: { schemaVersion: 'usp/1', requestId, scope: receipt.scope } }, { headers });
+    }
     if (request.method === 'GET' && path[0] === 'packets' && path.length === 2) {
       const { bytes, receipt } = await readPacket0(ctx, z.uuid().parse(path[1]));
       return new Response(new Uint8Array(bytes), { headers: { ...headers,
@@ -78,6 +82,11 @@ async function handle(request: Request, context: Context) {
       return new Response(new Uint8Array(bytes), { headers: { ...headers,
         'Content-Type': authorization.mediaType, 'Content-Disposition': 'attachment',
         'X-Source-SHA256': authorization.asset.sha256 } });
+    } else if (path.join('/') === 'evidence/part') {
+      const input = parseUsp(UspReadEvidenceRequestSchema, body);
+      if (input.action !== 'extract') throw new AppError(422, 'USP_EVIDENCE_ACTION', 'Choose the extract action.');
+      scope = input.scope;
+      data = await readExactPart(ctx, input.scope, input.pointer);
     } else if (path.join('/') === 'proposals/prepare') {
       const input = parseUsp(UspPrepareProposalSchema, body);
       scope = input.scope;

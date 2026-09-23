@@ -1,0 +1,45 @@
+.ulpin-app .usp-packet-action {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--ui-divider);
+  border-radius: 10px;
+  background: #f8faf7;
+  color: var(--ui-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ulpin-app .usp-packet-heading,
+.ulpin-app .usp-packet-controls,
+.ulpin-app .usp-packet-source > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ulpin-app .usp-packet-heading small,
+.ulpin-app .usp-packet-source small,
+.ulpin-app .usp-packet-receipt small {
+  color: var(--ui-muted);
+  overflow-wrap: anywhere;
+}
+.ulpin-app .usp-packet-scope { margin: 0; font-weight: 600; }
+.ulpin-app .usp-packet-source {
+  padding: 12px;
+  border: 1px solid var(--ui-divider);
+  border-radius: 8px;
+  background: white;
+}
+.ulpin-app .usp-packet-source > div { align-items: flex-start; flex-direction: column; }
+.ulpin-app .usp-packet-source p { margin: 8px 0 0; overflow-wrap: anywhere; }
+.ulpin-app .usp-packet-excerpt { white-space: pre-wrap; }
+.ulpin-app .usp-packet-unavailable { color: var(--ui-muted); }
+.ulpin-app .usp-packet-controls label { display: flex; align-items: center; gap: 8px; }
+.ulpin-app .usp-packet-controls select { min-height: 40px; }
+.ulpin-app .usp-packet-receipt { display: grid; gap: 8px; }
+.ulpin-app .usp-packet-receipt .ui-button { justify-self: start; min-height: 44px; }
+@media (max-width: 640px) {
+  .ulpin-app .usp-packet-heading,
+  .ulpin-app .usp-packet-controls { align-items: stretch; flex-direction: column; }
+  .ulpin-app .usp-packet-controls .ui-button { min-height: 44px; }
+}

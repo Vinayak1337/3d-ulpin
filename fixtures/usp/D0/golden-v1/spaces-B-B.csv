@@ -1,0 +1,4 @@
+alias,lower,upper,unit,benchmark,label,level,footprint_wkt,frame
+U-B001,0,3,m,BM-D0-SYNTHETIC,U-B001,B-B / Ground,"POLYGON ((35 1, 43 1, 43 9, 35 9, 35 1))",D0-LOCAL-METRES
+U-B101,3,6.7,m,BM-D0-SYNTHETIC,U-B101,B-B / First,"POLYGON ((35 1, 43 1, 43 9, 35 9, 35 1))",D0-LOCAL-METRES
+U-B201,6.7,10.1,m,BM-D0-SYNTHETIC,U-B201,B-B / Second,"POLYGON ((35 1, 43 1, 43 9, 35 9, 35 1))",D0-LOCAL-METRES

@@ -19,7 +19,7 @@ const childEnv = testProcessEnvironment(process.env, root);
 const out = resolve(root, '.runtime/usp-live');
 await mkdir(out, { recursive: true });
 const report = { schemaVersion: 'usp-isolated-live/1', codeSha: null, scopeId: scope.id,
-  result: 'RUNNING', checks: [], commands: [], limitation: 'Synthetic Nandan baseline, not full D0 or Studio V0' };
+  result: 'RUNNING', checks: [], commands: [], limitation: 'Synthetic D0 and retained Nandan baseline; real D1 and public deployment remain separate' };
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const require = createRequire(resolve(root, 'apps/web/package.json'));
 const { Pool } = require('pg');
@@ -133,6 +133,22 @@ try {
   const receipt = JSON.parse(await readFile(resolve(root, '.runtime/engineering/usp-fnd-live.json'), 'utf8'));
   assert.equal(receipt.status, 'passed');
   report.checks.push({ name: 'fnd-live-receipt', receipt });
+  const d0ReceiptFile = resolve(root, '.runtime/engineering/usp-d0-import.json');
+  const d0Env = { ...childEnv, ULPIN_TEST_BASE_URL: childEnv.ULPIN_TEST_URL,
+    ULPIN_D0_RECEIPT_FILE: d0ReceiptFile, DEMO_BASE_URL: childEnv.ULPIN_TEST_URL };
+  await command('d0-authored-pack', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/verify-d0.ts'], { env: d0Env });
+  await command('d0-import-plan', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/import-d0.ts'], { env: d0Env });
+  await command('d0-import-apply', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/import-d0.ts',
+    '--apply', '--receipt', d0ReceiptFile], { env: d0Env, timeout: 900000 });
+  const d0Import = JSON.parse(await readFile(d0ReceiptFile, 'utf8'));
+  assert.equal(d0Import.schemaVersion, 'usp-d0-import-receipt/1');
+  await command('d0-live-verify', 'pnpm', ['exec', 'tsx', 'scripts/usp/verify-d0-live.ts'], { env: d0Env, timeout: 180000 });
+  const d0Live = JSON.parse(await readFile(resolve(root, '.runtime/engineering/usp-d0-live.json'), 'utf8'));
+  assert.equal(d0Live.status, 'passed');
+  await command('d0-studio-browser', 'pnpm', ['exec', 'playwright', 'test',
+    'tests/e2e/usp-product-journey.spec.ts'], { env: d0Env, timeout: 180000 });
+  report.checks.push({ name: 'd0-v0-live-receipts', import: d0Import, live: d0Live,
+    browser: 'tests/e2e/usp-product-journey.spec.ts passed against production server' });
   report.result = 'PASS';
 } catch (error) {
   report.result = 'FAIL';

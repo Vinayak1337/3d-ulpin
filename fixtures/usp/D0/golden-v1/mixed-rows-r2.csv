@@ -1,0 +1,4 @@
+alias,building,level,schedule_area_m2,evidence_token
+U-A101,B-A,F-A1,49.5,ONLY_A101
+U-A102,B-A,F-A1,49,NEVER_A102
+STAIR-S1,B-A,F-A1,28,SHARED_STAIR_CONTEXT

@@ -428,6 +428,8 @@ export async function areaRoutes(
               bytes: new Uint8Array(await file.arrayBuffer()),
               name: file.name,
               requestKey: sourceOnly && input.get("requestKey") ? uuid.parse(input.get("requestKey")) : undefined,
+              familyId: input.get("familyId") ? uuid.parse(input.get("familyId")) : undefined,
+              referenceOnly: input.get("referenceOnly") ? z.enum(["true"]).parse(input.get("referenceOnly")) === "true" : false,
               format: z
                 .enum(["pdf", "docx", "text", "csv", "png", "jpeg"])
                 .parse(input.get("format")),

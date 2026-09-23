@@ -18,7 +18,7 @@ import { syncLegacyIdentifiers } from "./area-resolver";
 import { settings } from "./config";
 import { AppError, conflict, notFound } from "./errors";
 import { assertRegistrySourceFrame } from './registry-import-evidence';
-import { permitsReferenceRightSource } from './registry-reference-policy';
+import { permitsReferenceRecordSource, permitsReferenceRightSource } from './registry-reference-policy';
 import { propertyIdentifier } from "../identifiers";
 import { fingerprint, sourceFrom } from "./domain";
 import {
@@ -502,7 +502,7 @@ async function evidenceChecks(
           );
       }
     const references = [
-      ...r.evidence.map((binding) => ({ binding, purpose: "geometry" as const })),
+      ...r.evidence.map((binding) => ({ binding, purpose: "record" as const })),
       ...r.rights.map((x) => ({ binding: x.evidence, purpose: "right" as const })),
       ...Object.values(r.geometry?.bindings ?? {}).map((binding) => ({ binding, purpose: "geometry" as const })),
     ];
@@ -520,18 +520,19 @@ async function evidenceChecks(
           [b.sourceId, site.id],
         )
       ).rows[0];
-      const retainedRightPart = source && permitsReferenceRightSource(source, purpose)
+      const retainedPart = source && (permitsReferenceRightSource(source, purpose)
+        || permitsReferenceRecordSource(source, purpose))
         ? Boolean((await client.query(
           `SELECT 1 FROM import_packages p, jsonb_array_elements(COALESCE(p.body->'parts','[]'::jsonb)) part
            WHERE p.case_id=$1 AND part->>'sourceRevisionId'=$2
-           AND ($3=part->>'locator' OR starts_with($3,(part->>'locator')||':')) LIMIT 1`,
-          [source.case_id, b.sourceId, b.locator],
+           AND ($3=part->>'locator' OR ($4='right' AND starts_with($3,(part->>'locator')||':'))) LIMIT 1`,
+          [source.case_id, b.sourceId, b.locator, purpose],
         )).rowCount)
         : false;
       if (
         !source ||
         !(
-          retainedRightPart || source.status === "ready" ||
+          retainedPart || source.status === "ready" ||
           (source.status === "needs_input" &&
             (source.inspection?.image ||
               source.inspection?.levels?.length ||

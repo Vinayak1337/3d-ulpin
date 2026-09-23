@@ -55,11 +55,29 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
      WHERE c.site_id=$1 ORDER BY s.id LIMIT 2001`, [siteId],
   )).rows;
   if (sources.length > 2000) throw new AppError(413, 'USP_SCOPE_LIMIT', 'Select a smaller property scope.');
+  const caseIds = [...new Set(sources.map(row => row.case_id as string))];
+  const packages = caseIds.length ? (await client.query(
+    `SELECT case_id,body->'parts' AS parts FROM import_packages WHERE case_id = ANY($1::uuid[])`,
+    [caseIds],
+  )).rows : [];
+  const packageParts = new Map<string, Record<string, unknown>[]>();
+  for (const pkg of packages) {
+    if (!Array.isArray(pkg.parts)) continue;
+    for (const part of pkg.parts) {
+      if (!part || typeof part !== 'object' || typeof part.sourceRevisionId !== 'string') continue;
+      const parts = packageParts.get(part.sourceRevisionId) ?? [];
+      if (parts.length >= 10000) throw new AppError(413, 'USP_SOURCE_PART_LIMIT', 'Select a smaller source scope.');
+      parts.push(part);
+      packageParts.set(part.sourceRevisionId, parts);
+    }
+  }
   return ([
     { namespace: 'registry_site', object_id: site.id, revision: Number(site.revision), body: site },
     ...records.map(row => ({ namespace: 'registry_record', object_id: row.id, revision: Number(row.revision), body: row })),
     ...features.map(row => ({ namespace: 'area_feature', object_id: row.id, revision: Number(row.revision), body: row })),
-    ...sources.map(row => ({ namespace: 'source_revision', object_id: row.id, revision: Number(row.revision), body: row })),
+    ...sources.map(row => ({ namespace: 'source_revision', object_id: row.id, revision: Number(row.revision),
+      body: { ...row, inspection: { ...(row.inspection ?? {}),
+        referenceParts: [...(row.inspection?.referenceParts ?? []), ...(packageParts.get(row.id) ?? [])] } } })),
   ] as BodyRow[]).map(row => ({ ...row, body: JSON.parse(JSON.stringify(row.body)) }))
     .sort((a, b) => `${a.namespace}:${a.object_id}@${a.revision}`.localeCompare(`${b.namespace}:${b.object_id}@${b.revision}`));
 }
