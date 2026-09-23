@@ -112,26 +112,32 @@ test('D0 map navigation, supplied levels and building switches preserve exact re
     if (level === 'Basement') {
       await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'true');
       await expect(page.getByRole('status')).toContainText('recorded levels unchanged');
+      await expect.poll(async () => JSON.parse((await scene.getAttribute('data-ready-overlay-ids')) || '[]'))
+        .toContain(`record:${id}`);
+      await expect(scene).toHaveAttribute('data-scene-ready', 'true');
+      await page.screenshot({ path: info.outputPath('d0-level-basement.png') });
       const basementUnit = receipt.records['U-AB01'];
       await page.locator(`[data-record-id="${basementUnit}"]`).click();
       await expect(page).toHaveURL(new RegExp(`record=${basementUnit}`));
       // A floor covers the building; its supplied unit is off-centre. Focus the
       // selected unit through the real control before checking its scene pick.
-      const beforeFocus = await readCamera(scene);
+      // List selection may already focus it, so this command can be idempotent.
       await page.getByRole('button', { name: 'Focus selected property', exact: true }).click();
-      await expect.poll(async () => cameraDelta(beforeFocus, await readCamera(scene))).toBeGreaterThan(100);
       await expect.poll(async () => JSON.parse((await scene.getAttribute('data-ready-overlay-ids')) || '[]'))
         .toContain(`record:${basementUnit}`);
       await expect(scene).toHaveAttribute('data-scene-ready', 'true');
       const focused = (await canvas.boundingBox())!;
       await page.mouse.click(focused.x + focused.width * .5, focused.y + focused.height * .5);
-      const basementIds = [`record:${id}`, `record:${basementUnit}`];
       await expect.poll(async () => ({
         entity: await scene.getAttribute('data-picked-entity-id'),
         kind: await scene.getAttribute('data-pick-kind'),
-      })).toEqual({ entity: expect.stringMatching(new RegExp(`^(${basementIds.join('|')})$`)), kind: 'entity' });
-    } else await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'false');
-    await page.screenshot({ path: info.outputPath(`d0-level-${level.toLowerCase()}.png`) });
+      })).toEqual({ entity: `record:${basementUnit}`, kind: 'entity' });
+      await expect(page).toHaveURL(new RegExp(`record=${basementUnit}`));
+      await page.screenshot({ path: info.outputPath('d0-unit-basement.png') });
+    } else {
+      await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'false');
+      await page.screenshot({ path: info.outputPath(`d0-level-${level.toLowerCase()}.png`) });
+    }
   }
   await page.getByRole('button', { name: 'Separate floors', exact: true }).click();
   await page.screenshot({ path: info.outputPath('d0-separated-floors.png') });

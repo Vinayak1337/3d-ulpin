@@ -135,7 +135,7 @@ export default function TileLayer(props: TileLayerProps) {
             if (disposed || state?.viewer !== viewer)
                 return;
             const tileset = state.tileset;
-            const overlaysReady = entityGeometryReady(viewer.dataSourceDisplay, overlayEntities.current);
+            const overlaysReady = entityGeometryReady(viewer.dataSourceDisplay, overlayEntities.current, viewer.scene);
             const sceneReady = tileset.tilesLoaded && overlaysReady;
             currentHost.dataset.readyOverlayIds = JSON.stringify(overlaysReady ? overlayIds.current : []);
             const now = performance.now();
