@@ -91,3 +91,9 @@ The next combined attempt reached replay but found that the first D0 receipt
 omitted the three reviewed detail derivatives created during recording. Replay
 reported those existing sources. Refresh the committed preparation before saving
 the first receipt and compare all public-table digests across both D0/D1 replays.
+
+The next run passed both imports/replays and both D0 browser journeys. D1 reached
+its real mesh and exact-byte checks, then the test omitted the Layers tab inside
+the opened dialog. Correct that actual interaction. Visual inspection also found
+the initial roof framing cropped the building and the attribution overlapped
+Checks: use the runtime's aspect-aware sphere fit and reserve control space.
