@@ -209,7 +209,7 @@
         "P-A",
         "P-B"
       ],
-      "courtyardAreaM2": 4
+      "activeOutlineAreaM2": 400
     },
     {
       "target": "F-AB",
@@ -250,5 +250,12 @@
       "state": "unknown"
     }
   ],
-  "qualification": "Independent authored values; not measured outputs or a live import receipt."
+  "qualification": "Independent authored values; not measured outputs or a live import receipt.",
+  "courtyardDraft": {
+    "sourceBuildingAlias": "B-A",
+    "expectedOuterAreaM2": 400,
+    "expectedVoidAreaM2": 4,
+    "expectedNetAreaM2": 396,
+    "state": "retained_unrecorded"
+  }
 }

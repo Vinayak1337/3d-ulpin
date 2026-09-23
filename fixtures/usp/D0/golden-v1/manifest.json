@@ -3,7 +3,7 @@
   "packId": "D0",
   "version": 1,
   "profile": "golden-v1",
-  "description": "Isolated synthetic D0 three-building vertical workflow. Exact byte-pinned source originals and independent oracles; no live import or rendering claim.",
+  "description": "Isolated synthetic D0 recorded simple-outline workflow with separate preserved courtyard draft. Exact source bytes and independent oracles; live import and rendering require executed evidence.",
   "assets": [
     {
       "id": "scenario.json",
@@ -34,8 +34,8 @@
       "content": {
         "state": "available",
         "path": "scenario.json",
-        "sha256": "26bd19cb5af77b2206a3ee20c2453ea6b40d53920a5c2fb9b8c2f77b918719d0",
-        "bytes": 12755
+        "sha256": "89e63c8f551570bac2b496cea02898803c4cca1d74766e0a7cf724f2ada2b7be",
+        "bytes": 12796
       },
       "dependencies": [],
       "verification": {
@@ -85,8 +85,8 @@
       "content": {
         "state": "available",
         "path": "buildings.arcgis.json",
-        "sha256": "99ec4e3acf6133294b50cc86feb3ad2abd72d7374f2d73e4957d5d3423dba79a",
-        "bytes": 2156
+        "sha256": "8e8048356c8f1142a183d6e1d2ec6ee6cb779805d3010870bd5e67d15b550f0a",
+        "bytes": 1770
       },
       "dependencies": [],
       "verification": {
@@ -544,8 +544,110 @@
       "content": {
         "state": "available",
         "path": "expected.json",
-        "sha256": "fbe91cb0395c4aa3be5e1d0a14ed23f21e7d9ef1db5092ee4224d1c83abab5d0",
-        "bytes": 3567
+        "sha256": "e036fa601994d28035d10527ab565c079c9f97ed4ac10180dcbd93daf68a2154",
+        "bytes": 3760
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "buildings-courtyard-draft.arcgis.json",
+      "mediaType": "application/json",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "Preserved authored courtyard draft from D0 golden-v1, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:32643",
+        "verticalReference": null,
+        "horizontalUnit": "m",
+        "verticalUnit": null,
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "buildings-courtyard-draft.arcgis.json",
+        "sha256": "99ec4e3acf6133294b50cc86feb3ad2abd72d7374f2d73e4957d5d3423dba79a",
+        "bytes": 2156
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_run"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "scenario-courtyard-draft.json",
+      "mediaType": "application/json",
+      "classification": "synthetic",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "Preserved authored courtyard draft from D0 golden-v1, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN team, fictional D0 test data",
+      "permission": {
+        "state": "documented",
+        "reference": "User-authorized synthetic project test data",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "D0-LOCAL-METRES",
+        "verticalReference": "BM-D0-SYNTHETIC",
+        "horizontalUnit": "m",
+        "verticalUnit": "m",
+        "sourceDate": "2026-09-23"
+      },
+      "content": {
+        "state": "available",
+        "path": "scenario-courtyard-draft.json",
+        "sha256": "26bd19cb5af77b2206a3ee20c2453ea6b40d53920a5c2fb9b8c2f77b918719d0",
+        "bytes": 12755
       },
       "dependencies": [],
       "verification": {

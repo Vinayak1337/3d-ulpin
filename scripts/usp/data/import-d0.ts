@@ -93,6 +93,23 @@ async function sourcePart(pkg: ImportPackage, filename: string, locator: string,
   return { sourceRevisionId, sourceId: sourceRevisionId, partId: part.id, locator };
 }
 
+async function exactMixedBindings(pkg: ImportPackage) {
+  return {
+    'U-A101': [
+      await sourcePart(pkg, 'mixed-page-r2.txt', 'line 3', 'ONLY_A101'),
+      await sourcePart(pkg, 'mixed-page-r2.txt', 'line 5', 'SHARED_STAIR_CONTEXT'),
+      await sourcePart(pkg, 'mixed-rows-r2.csv', 'CSV row 2', 'ONLY_A101'),
+      await sourcePart(pkg, 'mixed-rows-r2.csv', 'CSV row 4', 'SHARED_STAIR_CONTEXT'),
+    ],
+    'U-A102': [
+      await sourcePart(pkg, 'mixed-page-r2.txt', 'line 4', 'NEVER_A102'),
+      await sourcePart(pkg, 'mixed-page-r2.txt', 'line 5', 'SHARED_STAIR_CONTEXT'),
+      await sourcePart(pkg, 'mixed-rows-r2.csv', 'CSV row 3', 'NEVER_A102'),
+      await sourcePart(pkg, 'mixed-rows-r2.csv', 'CSV row 4', 'SHARED_STAIR_CONTEXT'),
+    ],
+  };
+}
+
 async function apply() {
   assertIsolation(process.env);
   if (apiBase.href !== new URL(process.env.ULPIN_TEST_URL!).href) throw Error('D0 API URL differs from the isolated runner endpoint');
@@ -130,6 +147,15 @@ async function apply() {
         if (existing?.packageId) {
           const prior = await api<ImportPackage>(`/import-packages/${existing.packageId}`);
           for (const id of prior.sourceRevisionIds) retainedSourceIds.add(id);
+          if (building.alias === 'B-A') {
+            const expected = await exactMixedBindings(prior);
+            for (const [alias, parts] of Object.entries(expected)) {
+              const recorded = dossier.records.find((record: any) => record.alias === alias);
+              sourceParts[alias] = recorded ? parts.filter(part => recorded.evidence.some((binding: any) =>
+                binding.sourceId === part.sourceId && binding.locator === part.locator))
+                .map(({ sourceRevisionId, locator, partId }) => ({ sourceRevisionId, locator, partId })) : [];
+            }
+          }
         }
         continue; // Keep every previous user edit, identity, source and recorded revision.
       }
@@ -181,20 +207,7 @@ async function apply() {
       const firstReview = await api<any>(`/buildings/${feature.id}/detail-review`, { expectedRevision: detail.case.revision });
       let finalReview = firstReview;
       if (building.alias === 'B-A') {
-        const bindings = {
-          'U-A101': [
-            await sourcePart(pkg, 'mixed-page-r2.txt', 'line 3', 'ONLY_A101'),
-            await sourcePart(pkg, 'mixed-page-r2.txt', 'line 5', 'SHARED_STAIR_CONTEXT'),
-            await sourcePart(pkg, 'mixed-rows-r2.csv', 'CSV row 2', 'ONLY_A101'),
-            await sourcePart(pkg, 'mixed-rows-r2.csv', 'CSV row 4', 'SHARED_STAIR_CONTEXT'),
-          ],
-          'U-A102': [
-            await sourcePart(pkg, 'mixed-page-r2.txt', 'line 4', 'NEVER_A102'),
-            await sourcePart(pkg, 'mixed-page-r2.txt', 'line 5', 'SHARED_STAIR_CONTEXT'),
-            await sourcePart(pkg, 'mixed-rows-r2.csv', 'CSV row 3', 'NEVER_A102'),
-            await sourcePart(pkg, 'mixed-rows-r2.csv', 'CSV row 4', 'SHARED_STAIR_CONTEXT'),
-          ],
-        };
+        const bindings = await exactMixedBindings(pkg);
         let draft = await api<any>(`/registry-drafts/${firstReview.draftId}`);
         for (const [alias, refs] of Object.entries(bindings)) {
           const record = draft.records.find((item: any) => item.alias === alias);
@@ -224,14 +237,18 @@ async function apply() {
       }
     }
     const area = await getArea(areaId);
-    const originalHashes = Object.fromEntries((await Promise.all(['scenario.json','buildings.arcgis.json','parcels.arcgis.json','spaces-B-A.csv','spaces-B-B.csv','spaces-B-C.csv','mixed-page-r1.txt','mixed-page-r2.txt','mixed-rows-r1.csv','mixed-rows-r2.csv'].map(async filename => [filename, sha256(await bytes(filename))]))));
+    const originalHashes = Object.fromEntries((await Promise.all(['scenario.json','buildings.arcgis.json',
+      'scenario-courtyard-draft.json','buildings-courtyard-draft.arcgis.json','parcels.arcgis.json',
+      'spaces-B-A.csv','spaces-B-B.csv','spaces-B-C.csv','mixed-page-r1.txt','mixed-page-r2.txt',
+      'mixed-rows-r1.csv','mixed-rows-r2.csv'].map(async filename => [filename, sha256(await bytes(filename))]))));
     const sourceRows = (await query('SELECT id,name,sha256,family_id,revision FROM sources WHERE id=ANY($1::uuid[]) ORDER BY name,revision', [[...retainedSourceIds]])).rows;
     if (sourceRows.length !== retainedSourceIds.size) throw Error('A retained D0 source revision is missing');
     const sourceHashesByRevisionId = Object.fromEntries(sourceRows.map(row => [row.id, row.sha256]));
     return { schemaVersion: 'usp-d0-import-receipt/1', packProfile: 'golden-v1', areaId, siteId: area.siteId,
       physicalFeatures, records, sourceParts, originalHashes, sourceHashesByRevisionId,
       sources: sourceRows.map(row => ({ sourceRevisionId: row.id, familyId: row.family_id, revision: row.revision, name: row.name, sha256: row.sha256 })),
-      limitations: ['Synthetic source only', 'Compound duplex and shared stair remain authored source truth; native preparation currently records separate schedule components'],
+      limitations: ['Synthetic source only', 'Courtyard source retained as an unrecorded draft because the registry accepts one simple ring',
+        'Compound duplex and shared stair remain authored source truth; native preparation currently records separate schedule components'],
     };
   } finally {
     await lock.query("SELECT pg_advisory_unlock(hashtext('usp-d0-golden-v1-import'))").catch(() => {});
