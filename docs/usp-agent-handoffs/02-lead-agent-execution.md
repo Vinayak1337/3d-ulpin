@@ -91,7 +91,7 @@ Use separately pinned roles/configs for XHigh implementation and read-only revie
 
 ## 5. Continue the existing implementation, not the old starter
 
-The inspected current implementation head is `codex/fnd-f0-f1@97146d62d7e64c946abfc98b0d7e670845b17857`. The original `feat/usp-foundation-f0@777c978` is earlier. The current tree contains additional FND domain/port code and DATA/PACK0 work; inspect [FND interfaces](../evidence/usp/fnd/INTERFACES.md), [retained live receipt](../evidence/usp/fnd/HOSTED_RECEIPT_2026-09-23.md), current code and new test outputs before deciding what remains.
+The former `codex/fnd-f0-f1@97146d62d7e64c946abfc98b0d7e670845b17857` work is merged into `staging`. The present continuation is `codex/usp-staging-continuation-20260923` from `origin/staging@2838e798af838d7646ff92b1120c62c8458103da`, targeting staging in PR #13. It preserves main's deployment/API-index fixes. The original `feat/usp-foundation-f0@777c978` is historical. Inspect [FND interfaces](../evidence/usp/fnd/INTERFACES.md), [current D0 evidence](../evidence/usp/fnd/d0/README.md), current code and new test outputs before deciding what remains.
 
 Those source/receipt reads are not a new end-to-end verification by this document author. Older H00/H01 starter-status prose is historical when current code has advanced. Do not regenerate implemented contracts because that paragraph says they were once missing. Recheck branch drift and preserve main's separate deployment work during later integration.
 
@@ -111,11 +111,12 @@ Do not regenerate the plans or treat the historical audit as another spec.
 
 First inspect worktree changes, running writers, Git ancestry and actual
 interfaces/tests. Continue the latest established implementation, not an
-older starter. Last inspected: codex/fnd-f0-f1 at 97146d6. Recheck live head.
-This prompt/adapter update is on docs/ai-gateway-orchestration-20260923;
-ensure the adopted documentation changes are available in your worktree
-without overwriting newer application work. Use an isolated continuation
-branch; no implicit merge into main or blanket replacement of files.
+older starter. Fetch origin/staging and recheck its live head; the last base
+was 2838e798af838d7646ff92b1120c62c8458103da. PRs 8–11 and the adopted
+documentation are merged into staging; former branch names are historical.
+Inspect PR 13's continuation before duplicating work. Use a new isolated
+continuation branch and target staging, preserving newer application and
+main-only deployment changes. No implicit deployment or main merge.
 
 Take explicit FND/UI/PACK0 ownership for the critical path as appropriate.
 Preserve the existing registry, jobs, source storage, renderer, IDs,
