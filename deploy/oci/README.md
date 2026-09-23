@@ -17,8 +17,14 @@ the OCI subnet security list must allow those two ports separately.
 On the VM, clone the repository to `/opt/ulpin/app`, then run:
 
 ```sh
-bash deploy/oci/deploy.sh 80.225.204.171.sslip.io
+bash deploy/oci/deploy.sh bhuaayam.tech 80.225.204.171.sslip.io
 ```
+
+Set the apex `A` record for `bhuaayam.tech` to the VM's public IPv4 address
+before deployment. Caddy serves the Next.js app at `https://bhuaayam.tech`,
+including its API index at `/api` and versioned routes under `/api/v1`.
+The former `sslip.io` hostname remains available. The Python geometry
+service stays on loopback and is called by the Next.js backend, not by browsers.
 
 The script creates `.env` only if absent, preserves Docker volumes, starts all
 private services, applies schema migrations, builds the web app, and installs

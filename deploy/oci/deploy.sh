@@ -2,7 +2,9 @@
 set -euo pipefail
 
 PUBLIC_HOST="${1:?Pass the HTTPS hostname, such as 80-225-204-171.sslip.io}"
-if [[ ! "$PUBLIC_HOST" =~ ^[a-z0-9.-]+$ ]]; then
+LEGACY_HOST="${2:-}"
+if [[ ! "$PUBLIC_HOST" =~ ^[a-z0-9.-]+$ ]] || \
+   { [[ -n "$LEGACY_HOST" ]] && [[ ! "$LEGACY_HOST" =~ ^[a-z0-9.-]+$ ]]; }; then
   echo 'Invalid public hostname.' >&2
   exit 1
 fi
@@ -45,6 +47,10 @@ sudo systemctl enable --now ulpin-web-firewall.service
 CADDY_TMP="$(mktemp)"
 trap 'rm -f "$CADDY_TMP"' EXIT
 sed "s/__PUBLIC_HOST__/$PUBLIC_HOST/g" deploy/oci/Caddyfile.template > "$CADDY_TMP"
+if [[ -n "$LEGACY_HOST" && "$LEGACY_HOST" != "$PUBLIC_HOST" ]]; then
+  printf '\n' >> "$CADDY_TMP"
+  sed "s/__PUBLIC_HOST__/$LEGACY_HOST/g" deploy/oci/Caddyfile.template >> "$CADDY_TMP"
+fi
 sudo caddy validate --config "$CADDY_TMP" --adapter caddyfile >/dev/null
 sudo install -m 0644 "$CADDY_TMP" /etc/caddy/Caddyfile
 sudo systemctl reload caddy.service
