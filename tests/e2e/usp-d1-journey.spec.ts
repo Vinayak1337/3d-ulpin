@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { test, expect } from '@playwright/test';
+import { cameraDelta, readCamera } from './usp-camera';
 
 const receiptFile = process.env.ULPIN_D1_RECEIPT_FILE;
 test.skip(!receiptFile, 'Requires the real byte-pinned D1 import and isolated services');
@@ -46,14 +47,14 @@ test('real D1 roof keeps source identity and absent interiors in the shared Stud
   await page.screenshot({ path: info.outputPath('d1-roof-desktop.png') });
   const canvas = scene.locator('canvas'), box = (await canvas.boundingBox())!;
   const visibleImage = await canvas.screenshot();
-  const beforeLayers = await scene.getAttribute('data-camera');
+  const beforeLayers = await readCamera(scene);
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
   await page.getByLabel('Map layers and properties', { exact: true }).getByRole('button', { name: 'Layers', exact: true }).click();
   await page.getByLabel('Show buildings', { exact: true }).uncheck();
   await expect(scene).toHaveAttribute('data-visible', 'false');
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
   expect((await canvas.screenshot()).equals(visibleImage)).toBe(false);
-  await expect(scene).toHaveAttribute('data-camera', beforeLayers!);
+  await expect.poll(async () => cameraDelta(beforeLayers, await readCamera(scene))).toBeLessThan(1);
   await expect(page.locator('[data-map-runtime-id]')).toHaveCount(1);
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
   await page.getByLabel('Map layers and properties', { exact: true }).getByRole('button', { name: 'Layers', exact: true }).click();
@@ -65,7 +66,7 @@ test('real D1 roof keeps source identity and absent interiors in the shared Stud
   await expect(scene).toHaveAttribute('data-opacity', '1');
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
   await expect(scene).toHaveAttribute('data-visible', 'true');
-  await expect(scene).toHaveAttribute('data-camera', beforeLayers!);
+  await expect.poll(async () => cameraDelta(beforeLayers, await readCamera(scene))).toBeLessThan(1);
   await page.mouse.click(box.x + box.width * .5, box.y + box.height * .5);
   await expect(page).toHaveURL(new RegExp(`feature=${receipt.featureId}`));
   const picked = JSON.parse((await scene.getAttribute('data-picked-surface'))!);
@@ -77,24 +78,24 @@ test('real D1 roof keeps source identity and absent interiors in the shared Stud
   await page.screenshot({ path: info.outputPath('d1-unavailable-interiors.png') });
   await page.getByRole('button', { name: 'Close inspector', exact: true }).click();
   await page.getByRole('button', { name: 'Fit block', exact: true }).click();
-  const movedBox = (await canvas.boundingBox())!, camera = await scene.getAttribute('data-camera');
+  const movedBox = (await canvas.boundingBox())!, camera = await readCamera(scene);
   await page.mouse.move(movedBox.x + movedBox.width * .5, movedBox.y + movedBox.height * .5);
   await page.mouse.down({ button: 'right' });
   await page.mouse.move(movedBox.x + movedBox.width * .6, movedBox.y + movedBox.height * .56, { steps: 12 });
   await page.mouse.up({ button: 'right' });
-  await expect.poll(() => scene.getAttribute('data-camera')).not.toBe(camera);
-  const orbited = await scene.getAttribute('data-camera');
+  await expect.poll(async () => cameraDelta(camera, await readCamera(scene))).toBeGreaterThan(100);
+  const orbited = await readCamera(scene);
   await page.mouse.wheel(0, -100);
-  await expect.poll(() => scene.getAttribute('data-camera')).not.toBe(orbited);
-  let settled: string | null = null;
+  await expect.poll(async () => cameraDelta(orbited, await readCamera(scene))).toBeGreaterThan(100);
+  let settled = await readCamera(scene);
   await expect.poll(async () => {
-    const current = await scene.getAttribute('data-camera'), stable = current === settled;
+    const current = await readCamera(scene), stable = cameraDelta(settled, current) < 1;
     settled = current; return stable;
   }, { intervals: [100, 200, 400] }).toBe(true);
   await page.getByRole('button', { name: 'Inspector', exact: true }).click();
-  await expect(scene).toHaveAttribute('data-camera', settled!);
+  await expect.poll(async () => cameraDelta(settled, await readCamera(scene))).toBeLessThan(1);
   await page.getByRole('button', { name: 'Close inspector', exact: true }).click();
-  await expect(scene).toHaveAttribute('data-camera', settled!);
+  await expect.poll(async () => cameraDelta(settled, await readCamera(scene))).toBeLessThan(1);
   await page.reload();
   await expect(scene).toHaveAttribute('data-scene-ready', 'true');
   await expect(page).toHaveURL(new RegExp(`feature=${receipt.featureId}`));
