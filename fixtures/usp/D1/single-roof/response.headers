@@ -1,0 +1,9 @@
+HTTP/2 200 
+access-control-allow-origin: *
+alt-svc: h3=":443"; ma=2592000
+content-crs: <http://www.opengis.net/def/crs/EPSG/0/7415>
+content-type: application/json
+via: 1.1 Caddy
+content-length: 6783
+date: Wed, 23 Sep 2026 15:21:30 GMT
+

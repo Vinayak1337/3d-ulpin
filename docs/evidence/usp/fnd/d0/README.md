@@ -48,3 +48,41 @@ attempts failed during import/apply:
 The final local result followed those attempts. There is no recorded hosted D0
 pass for that final patch. Real D1 source qualification and public deployment
 are separate gates.
+
+## Continuation started 23 September 2026
+
+The lead fetched `origin/staging` at `2838e798af838d7646ff92b1120c62c8458103da`
+and created `codex/usp-staging-continuation-20260923` in an isolated worktree.
+The original main checkout was clean; no unpushed commits or competing active
+writer were found. Commit `b3fb0607ab05fbe6e329223131c3dc351c397041` preserves
+the main-only `4551ef7` deployment/API-index changes by exact cherry-pick; no
+deployment was run. The fresh D0 reproduction at that commit passed all 15
+recorded commands, including original checks, migration replay, live D0,
+browser PACK0 reload and cleanup. Expanded V0/D1 acceptance remains in progress.
+
+Requested lead Astra Max and inventory worker Sol Medium were confirmed from
+local session `turn_context` metadata. Bundle implementation used explicit Sol
+High spawn settings; independent baseline review used explicit Sol XHigh.
+
+Independent read-only baseline review reported these findings before correction:
+
+- P2: original bundle column type drift could pass the initial compatibility
+  patch and be hidden by PostgreSQL's current-type JSON conversion. Pin original
+  definitions and add a narrowing-type regression before acceptance.
+- P3: the historical renderer omitted T075's supplied `planning_reference`.
+  Preserve that reference and recorded sequence without changing `backlog.json`.
+
+These findings and the expanded live checks are not a V0 acceptance statement.
+
+Fresh read-only milestone review reported these D1 findings before correction:
+
+- P2: navigation depended on a newly allocated object, so inspector rerenders
+  could replay a consumed Fit/zoom command and reset a manually adjusted camera.
+- P2: display faces retained semantic type but omitted the original semantic
+  index and source face index needed for exact surface picking.
+- P2: the external adapter ignored shared building visibility and opacity.
+
+The first combined D0/D1 live attempt failed at D0 replay: preparation packages
+share the original dataset namespace, so the corrected namespace lookup also
+matched child preparations. The failed run cleaned its owned disposable project;
+no data was reset. Corrections and fresh integrated evidence are required.

@@ -319,6 +319,10 @@ export function BlockInspector({
           ),
         )}
       </nav>
+      {selected && <div className="ui-inspector-selection" aria-label="Selected scope">
+        <strong>{selected.name}</strong>
+        <span>{block.selectedRecord?.name ?? (selected.kind === 'building' ? 'Whole building' : selected.kind)}</span>
+      </div>}
       <div className="ui-inspector-content">
         {mode === "property" &&
           (!selected ? (

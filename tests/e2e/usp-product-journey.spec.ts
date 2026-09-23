@@ -26,6 +26,9 @@ test("D0 Studio selection compiles exact PACK0 and reopens its saved receipt", a
   page.on("pageerror", error => errors.push(error.message));
 
   await page.goto(`/studio/areas/${encodeURIComponent(receipt.areaId)}?feature=${encodeURIComponent(buildingId)}`);
+  await expect(page.locator('[data-tile-canvas]')).toHaveAttribute('data-scene-ready', 'true');
+  await expect(page.locator('[data-map-runtime-id]')).toHaveCount(1);
+  await page.screenshot({ path: info.outputPath('d0-neighbourhood-desktop.png') });
   await page.getByRole("button", { name: "Inspect floors & units" }).click();
   await expect(page.locator(`[data-quick-register="${buildingId}"]`)).toBeVisible();
   await page.locator(`[data-record-id="${spaceId}"]`).click();
@@ -34,6 +37,7 @@ test("D0 Studio selection compiles exact PACK0 and reopens its saved receipt", a
   await expect(panel).toContainText("ONLY_A101");
   await expect(panel).not.toContainText("NEVER_A102");
   await expect(panel).toContainText("line 3");
+  await page.screenshot({ path: info.outputPath('d0-unit-desktop.png') });
   await panel.locator(".usp-packet-source").filter({ hasText: "ONLY_A101" }).first()
     .screenshot({ path: info.outputPath("d0-exact-evidence.png") });
 
@@ -55,9 +59,77 @@ test("D0 Studio selection compiles exact PACK0 and reopens its saved receipt", a
   await page.locator(`[data-usp-target="${spaceId}"] .usp-packet-receipt`)
     .screenshot({ path: info.outputPath("d0-packet-reloaded.png") });
 
+  for (const viewport of [{ width: 1024, height: 768 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    if (viewport.width === 390) {
+      await expect(page.getByLabel('Selected scope')).toContainText('Cross Parcel House');
+      await expect(page.getByLabel('Selected scope')).toContainText('A101');
+    }
+    const action = page.locator(`[data-usp-packet="${packetId}"]`);
+    await action.scrollIntoViewIfNeeded();
+    await expect(action).toContainText('Scoped packet saved');
+    const bounds = await action.boundingBox();
+    expect(bounds).toBeTruthy();
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(viewport.width + 1);
+    await page.screenshot({ path: info.outputPath(`d0-packet-${viewport.width}.png`) });
+  }
+
   const invalid = randomUUID();
   await page.goto(`/studio/areas/${encodeURIComponent(receipt.areaId)}?feature=${encodeURIComponent(buildingId)}&record=${invalid}`);
   await expect(page.locator(".quick-warning[role=alert]")).toContainText("not part of this building");
   await expect(page.locator(".usp-packet-action")).toHaveCount(0);
   expect(errors).toEqual([]);
+});
+
+test('D0 map navigation, supplied levels and building switches preserve exact records', async ({ page, request }, info) => {
+  const receipt = JSON.parse(await readFile(receiptFile!, 'utf8')) as D0Receipt;
+  const buildingId = receipt.physicalFeatures['B-A'];
+  const dossierBefore = await (await request.get(`/api/v1/buildings/${buildingId}/dossier`)).json();
+  await page.goto(`/studio/areas/${receipt.areaId}?feature=${buildingId}`);
+  const scene = page.locator('[data-tile-canvas]');
+  await expect(scene).toHaveAttribute('data-scene-ready', 'true');
+  const canvas = scene.locator('canvas');
+  const cameraBefore = await scene.getAttribute('data-camera');
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.move(box.x + box.width * .5, box.y + box.height * .5);
+  await page.mouse.down({ button: 'right' });
+  await page.mouse.move(box.x + box.width * .62, box.y + box.height * .56, { steps: 12 });
+  await page.mouse.up({ button: 'right' });
+  await expect.poll(() => scene.getAttribute('data-camera')).not.toBe(cameraBefore);
+  const orbited = await scene.getAttribute('data-camera');
+  await page.mouse.wheel(0, -140);
+  await expect.poll(() => scene.getAttribute('data-camera')).not.toBe(orbited);
+  await page.getByRole('button', { name: 'Fit block', exact: true }).click();
+  await page.getByRole('button', { name: 'Inspect floors & units' }).click();
+  for (const level of ['Basement', 'Mezzanine', 'First']) {
+    const id = receipt.records[`property / B-A / ${level}`];
+    expect(id).toBeTruthy();
+    await page.locator(`[data-record-id="${id}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`record=${id}`));
+    await expect(page.locator('.quick-unit-card')).toContainText(level);
+    await page.screenshot({ path: info.outputPath(`d0-level-${level.toLowerCase()}.png`) });
+  }
+  await page.getByRole('button', { name: 'Separate floors', exact: true }).click();
+  await page.screenshot({ path: info.outputPath('d0-separated-floors.png') });
+  await page.getByRole('button', { name: 'Stack floors', exact: true }).click();
+  await page.getByRole('button', { name: '2D Map', exact: true }).click();
+  await page.getByRole('button', { name: 'Fit block', exact: true }).click();
+  const map = page.getByRole('group', { name: '2D block map', exact: true });
+  const area = await (await request.get(`/api/v1/areas/${receipt.areaId}/context`)).json();
+  for (const alias of ['B-B', 'B-A']) {
+    const id = receipt.physicalFeatures[alias];
+    const name = area.features.find((feature: { id: string }) => feature.id === id).name;
+    await map.getByRole('button', { name, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`feature=${id}`));
+    expect(new URL(page.url()).searchParams.has('record')).toBe(false);
+    await expect(page.locator('.usp-packet-action')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Inspect floors & units' }).click();
+    await expect(page.locator(`[data-quick-register="${id}"]`)).toBeVisible();
+  }
+  const dossierAfter = await (await request.get(`/api/v1/buildings/${buildingId}/dossier`)).json();
+  expect(dossierAfter.records).toEqual(dossierBefore.records);
+  expect(dossierAfter.sources).toEqual(dossierBefore.sources);
+  await page.getByRole('button', { name: '3D', exact: true }).click();
+  await expect(page.locator('[data-map-runtime-id]')).toHaveCount(1);
 });

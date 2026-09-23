@@ -7,6 +7,7 @@ import {displayProjector,type NeighbourhoodView} from '../../spatial/data/core-d
 import type {MapSelection} from '../../spatial/data/session';
 import type {TileNavigation,TileOverlay,TileTelemetry} from '../../spatial/layers/TileLayer';
 import type {BlockController} from '../../officer/block/useBlock';
+import ExternalSceneViewport from '../../usp/shared/ExternalSceneViewport';
 const MapViewport=dynamic(()=>import('../../spatial/MapViewport').then(m=>m.MapViewport),{ssr:false});
 type Saved=NeighbourhoodView&{manifestUrl:string;publicationId:string};
 function geometryParts(g:AreaGeometry):SpatialGeometry[]{
@@ -26,7 +27,15 @@ function projectGeometry(g:SpatialGeometry,project:(xy:readonly[number,number])=
  if(g.type==='Polygon')return {...g,coordinates:g.coordinates.map(r=>r.map(point))};
  return {...g,coordinates:g.coordinates.map(p=>p.map(r=>r.map(point)))};
 }
-export default function SavedSceneViewport({block,world,recordId,onRecord,explode=0,opacityByKind}:{block:BlockController;world:WorldState;recordId:string|null;onRecord:(id:string)=>void;explode?:number;opacityByKind?:Readonly<Record<string,number>>}){
+type SavedSceneProps={block:BlockController;world:WorldState;recordId:string|null;onRecord:(id:string)=>void;explode?:number;opacityByKind?:Readonly<Record<string,number>>};
+export default function SavedSceneViewport(props:SavedSceneProps){
+ const visible=props.block.features.filter(feature=>feature.worldStatus===props.world);
+ const external=visible.filter(feature=>feature.kind==='building'&&typeof feature.properties.external_cityjson_sha256==='string');
+ const feature=external.find(item=>item.id===props.block.selectedId)??(visible.length===1&&external.length===1?external[0]:null);
+ if(feature)return <ExternalSceneViewport key={`${feature.id}:${feature.revision}`} feature={feature} block={props.block} opacity={props.opacityByKind?.building}/>;
+ return <CanonicalSavedSceneViewport {...props}/>;
+}
+function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,opacityByKind}:SavedSceneProps){
  const areaId=block.context.data!.area.id;
  const resource=useSharedResource<Saved>(`/spatial/core/areas/${areaId}/scene/${world}/descriptor.json`);
  const loadedRevision=useRef(block.context.data!.area.revision);

@@ -29,6 +29,15 @@ async function api(route: string, body?: unknown, expected = 200) {
 }
 
 try {
+  const dossierResponse = await fetch(`${process.env.ULPIN_TEST_URL}/api/v1/buildings/${importReceipt.physicalFeatures['B-A']}/dossier`);
+  assert.equal(dossierResponse.status, 200);
+  const dossier = await dossierResponse.json();
+  assert(dossier.parcels.length >= 2, 'D0 building spans its two supplied parcels');
+  assert(dossier.parcels.every((parcel: any) => parcel.feature.areaId === importReceipt.areaId),
+    'Implicit overlap must not import parcels from another synthetic dataset');
+  assert(!dossier.parcelIdentifiers.some((identifier: any) => identifier.value.startsWith('DEMO-LV-')),
+    'Unrelated Lake View identifiers must not appear on D0');
+  report.parcelScope = 'same-area-and-world-suggestions; explicit associations retained';
   const textSources = importReceipt.sources.filter((source: any) => /^mixed-page-r[12]\.txt$/.test(source.name));
   const csvSources = importReceipt.sources.filter((source: any) => /^mixed-rows-r[12]\.csv$/.test(source.name));
   for (const family of [textSources, csvSources]) {

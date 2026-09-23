@@ -4,6 +4,8 @@
 
 Owner **UI**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026 after reviewing the revised feature handoffs 10–19 and shared contracts. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), this file and the actual enabled producers. ER-02/03/07/11/17/18/23–25 are incorporated. These are implementation/acceptance requirements, not claims that the UI or datasets have been tested in this documentation task.
 
+**Current continuation, 23 September 2026:** shared Studio work proceeds on `codex/usp-staging-continuation-20260923` from staging `2838e798af838d7646ff92b1120c62c8458103da`. The baseline below is historical. See [executed D0/D1 evidence](../evidence/usp/fnd/d0/README.md) before claiming a gate.
+
 ## 1. Product target and actual integration path
 
 Deliver a polished, usable semantic 3D workbench: neighbourhood → selected building → supplied floor/unit → exact evidence → useful review/report action → reopen saved state. Photographic context is optional. Do not confuse a textured mesh with legal property geometry, or a satellite background with a complete 3D interface.

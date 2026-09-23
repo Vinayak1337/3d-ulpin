@@ -32,7 +32,7 @@ async function importLayer(kind: 'building' | 'parcel', areaId?: string): Promis
   const original = await bytes(filename);
   const sourceNamespace = `${namespace}:${kind}`;
   const previous = (await query(
-    "SELECT body FROM import_packages WHERE body->>'namespace'=$1 ORDER BY created_at DESC LIMIT 2",
+    "SELECT p.body FROM import_packages p WHERE p.body->>'datasetNamespace'=$1 AND NOT EXISTS (SELECT 1 FROM building_preparations b WHERE b.package_id=p.id) ORDER BY p.created_at DESC LIMIT 2",
     [sourceNamespace],
   )).rows;
   if (previous.length > 1) throw Error(`${sourceNamespace}: multiple packages require manual review`);

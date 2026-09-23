@@ -9,6 +9,7 @@ import { resolve, relative, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { redact } from '../engineering/isolation.mjs';
 import { assertUspIsolation, uspProcessEnvironment } from './local-isolation.mjs';
+import { loadBundle, installBundle, verifyBundle } from '../datasets/bundle.mjs';
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const scope = assertUspIsolation(process.env);
@@ -23,11 +24,12 @@ const childEnv = uspProcessEnvironment(process.env, root);
 const out = resolve(root, '.runtime/usp-live');
 await mkdir(out, { recursive: true });
 const report = { schemaVersion: 'usp-isolated-live/1', codeSha: null, scopeId: scope.id,
-  result: 'RUNNING', checks: [], commands: [], limitation: 'Synthetic D0 and retained Nandan baseline; real D1 and public deployment remain separate' };
+  result: 'RUNNING', checks: [], commands: [], limitation: 'Synthetic D0 and retained Nandan baseline; one real D1 exterior in a local engineering display. Global placement, interior records, analytical mesh volume and public deployment are unqualified.' };
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const require = createRequire(resolve(root, 'apps/web/package.json'));
 const { Pool } = require('pg');
 const { S3Client, PutObjectCommand, ListObjectsV2Command, GetObjectCommand } = require('@aws-sdk/client-s3');
+const bundleSdk = require('@aws-sdk/client-s3');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 2, connectionTimeoutMillis: 5000 });
 const s3 = new S3Client({ endpoint: process.env.S3_ENDPOINT, region: process.env.S3_REGION,
   forcePathStyle: true, credentials: { accessKeyId: process.env.S3_ACCESS_KEY,
@@ -145,6 +147,32 @@ try {
     await command('repeat-migration', 'node', ['--import', 'tsx', 'scripts/migrate.ts']);
     assert.equal((await client.query("SELECT count(*)::int AS n FROM usp_migration_ledger WHERE name='usp_f1_min_001'")).rows[0].n, 1);
     report.checks.push({ name: 'additive-migration-replay' });
+    // Exercise the same migrated-schema install/replay as the hosted baseline.
+    // Compare every pre-existing row after migration, including new columns.
+    const fingerprint = async () => {
+      const result = new Map();
+      for (const table of manifest.tables) {
+        const rows = (await client.query(`SELECT row_to_json(t)::text AS body FROM public.${table.name} t`)).rows;
+        const counts = new Map();
+        for (const { body } of rows) counts.set(body, (counts.get(body) ?? 0) + 1);
+        result.set(table.name, counts);
+      }
+      return result;
+    };
+    const prior = await fingerprint();
+    const bundle = await loadBundle(resolve(root, 'data-bundles/uttam-nagar'));
+    const installed = await installBundle(client, s3, bundleSdk, process.env, bundle);
+    assert.equal(installed.alreadyInstalled, false);
+    const after = await fingerprint();
+    for (const [table, rows] of prior) for (const [row, count] of rows)
+      assert.equal(after.get(table).get(row), count, `Bundle changed an existing ${table} row`);
+    const replay = await installBundle(client, s3, bundleSdk, process.env, bundle);
+    assert.equal(replay.alreadyInstalled, true);
+    assert.deepEqual(await fingerprint(), after, 'Bundle replay changed saved rows');
+    await verifyBundle(client, s3, bundleSdk, process.env, bundle, true);
+    report.checks.push({ name: 'migrated-bundle-preservation-and-replay',
+      bundleSha256: bundle.manifest.database.sha256, insertedRows: installed.insertedRows,
+      uploadedObjects: installed.uploadedObjects });
   } finally { client.release(); }
   server = spawn(process.execPath, ['apps/web/node_modules/next/dist/bin/next', 'start', 'apps/web',
     '--hostname', '127.0.0.1', '--port', new URL(process.env.ULPIN_TEST_URL).port],
@@ -167,13 +195,27 @@ try {
     '--apply', '--receipt', d0ReceiptFile], { env: d0Env, timeout: 900000 });
   const d0Import = JSON.parse(await readFile(d0ReceiptFile, 'utf8'));
   assert.equal(d0Import.schemaVersion, 'usp-d0-import-receipt/1');
+  const replayReceiptFile = d0ReceiptFile.replace(/\.json$/, '-replay.json');
+  await command('d0-import-replay', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/import-d0.ts',
+    '--apply', '--receipt', replayReceiptFile], { env: d0Env, timeout: 180000 });
+  assert.deepEqual(JSON.parse(await readFile(replayReceiptFile, 'utf8')), d0Import, 'D0 replay changed pinned identities or source history');
   await command('d0-live-verify', 'pnpm', ['exec', 'tsx', 'scripts/usp/verify-d0-live.ts'], { env: d0Env, timeout: 180000 });
   const d0Live = JSON.parse(await readFile(resolve(root, '.runtime/engineering/usp-d0-live.json'), 'utf8'));
   assert.equal(d0Live.status, 'passed');
-  await command('d0-studio-browser', 'pnpm', ['exec', 'playwright', 'test',
-    'tests/e2e/usp-product-journey.spec.ts'], { env: d0Env, timeout: 180000 });
+  await command('d1-import-plan', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/import-d1.ts'], { env: d0Env });
+  await command('d1-import-apply', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/import-d1.ts', '--apply'], { env: d0Env });
+  const d1ReceiptFile = resolve(root, `.runtime/engineering/usp-d1-import-${scope.id}.json`);
+  const d1Import = JSON.parse(await readFile(d1ReceiptFile, 'utf8'));
+  await command('d1-import-replay', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/import-d1.ts', '--apply'], { env: d0Env });
+  assert.deepEqual(JSON.parse(await readFile(d1ReceiptFile, 'utf8')), d1Import);
+  await command('d0-d1-studio-browser', 'pnpm', ['exec', 'playwright', 'test',
+    'tests/e2e/usp-product-journey.spec.ts', 'tests/e2e/usp-d1-journey.spec.ts'],
+    { env: { ...d0Env, ULPIN_D1_RECEIPT_FILE: d1ReceiptFile }, timeout: 300000 });
   report.checks.push({ name: 'd0-v0-live-receipts', import: d0Import, live: d0Live,
     browser: 'tests/e2e/usp-product-journey.spec.ts passed against production server' });
+  report.checks.push({ name: 'd1-local-source-display', import: d1Import,
+    browser: 'tests/e2e/usp-d1-journey.spec.ts passed against production server',
+    limitations: ['Local engineering display only; no qualified global NAP transform', 'No supplied interiors or analytical volume'] });
   report.result = 'PASS';
 } catch (error) {
   report.result = 'FAIL';
