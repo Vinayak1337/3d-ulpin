@@ -1,5 +1,7 @@
 # Unified Studio UI/UX, real 3D display and integration
 
+**AI settings/delegation update, 23 September 2026:** use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) for worker ownership and [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) for the DEPLOY settings leaf. These are not new top-level product screens or a reason to delay the existing V0 scene.
+
 Owner **UI**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026 after reviewing the revised feature handoffs 10–19 and shared contracts. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), this file and the actual enabled producers. ER-02/03/07/11/17/18/23–25 are incorporated. These are implementation/acceptance requirements, not claims that the UI or datasets have been tested in this documentation task.
 
 ## 1. Product target and actual integration path
@@ -126,6 +128,10 @@ States: loading retains only matching scope; empty names missing data; incomplet
 
 Test keyboard/list/numeric alternatives to map-only actions, focus trap/return, Escape, readable errors, contrast, 200% zoom and reduced motion. Use text/icon as well as colour. Screen reader updates are coalesced, not every SSE event. Hidden overlays must not intercept pointer/touch input; test actual drag/zoom/orbit, not only screenshots.
 
+### Governed AI settings in the existing workspace dialog
+
+Mount DEPLOY's H20 settings leaf only for permitted operators. Show per-task model profile, organisation-shared funding, local spend/reserved/uncertain amounts, last verified balance observation and safe credential state/history. Distinguish active, draining, cooldown, retired and unqualified; terminal retirement has no reactivate control. Do not show raw keys, fingerprints or billing metadata in the quick/full property register, public pages, tooltips or API errors. Ordinary workflows retain their selected property, useful drafts, manual mapping and typed answers when AI is unavailable. A settings save cannot enable an unqualified provider or override deployment boundaries.
+
 ## 8. Visual and interaction acceptance — V1 through V8
 
 Retrieve the actual committed reference images via [comparison-manifest.json](../../apps/web/public/studio-review/comparison-manifest.json). Verify hashes/paths and label reference, historical capture and fresh active-product baseline distinctly. A file named current-map from an earlier task is not a current baseline. Use the accessible original reference to guide composition/material/detail; do not fabricate a missing image from its filename. If unavailable, the concrete shot contracts below still apply and visual-reference comparison remains explicitly unqualified.
@@ -172,6 +178,8 @@ If a budget fails, reduce resident LoD/texture resolution/draw calls within the 
 Existing commands: `pnpm typecheck`, `pnpm test:studio`, `pnpm test:register-scope`, `pnpm test:register-exports`, `pnpm test:registry`, `pnpm test:api`, `pnpm test:e2e`. Proposed tests after creation: `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-ui-integration.test.ts tests/usp-external-scene.test.ts`; `pnpm exec playwright test tests/e2e/usp-product-journey.spec.ts tests/e2e/usp-visual.spec.ts`. Respect [Playwright config](../../playwright.config.ts), [isolation](../../scripts/engineering/isolation.mjs) and [build-server guard](../../scripts/check-build-server.mjs).
 
 Return route→producer→pack→test evidence matrix, actual SHA/source/artifact hashes, screenshot comparisons, selection/camera IDs, active viewport count, resource/performance measurements and each unqualified profile. Test stale source, invalid deep link, hidden selected entity, duplicate URL parameters, revoked grant/release during pending read, missed/replayed asset event, offline source and nested pointer overlays. No screenshots from a different showcase or mocked successful network responses as completion evidence.
+
+**Additional settings verification:** use fake credentials and ledger receipts to exercise shared-wallet display, permanent retirement after reload, pending/unknown cost, cooldown and access denial at desktop/mobile sizes. Prove expired/revoked operator grants clear settings and suppress late responses. Do not treat these screens as live provider/residency qualification.
 
 ## 11. Copy-paste UI assignment
 

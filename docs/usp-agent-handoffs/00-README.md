@@ -1,5 +1,7 @@
 # Evidence-linked 3D property workflows — start here
 
+**Execution/provider update, 23 September 2026:** use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) and [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md). These are supporting instructions for existing roles, not additional independent USPs. The gateway is planned, not live-qualified. Reconcile older starter status below against current code and FND evidence; the inspected implementation base for this update is `codex/fnd-f0-f1@97146d6`.
+
 ## 1. Current assignment and authority
 
 **Product outcome:** a visually strong, persisted Studio in which a user selects a building, supplied floor and unit, inspects the matching evidence, resolves a specific uncertainty and obtains a genuinely scoped property packet. Adaptive ingestion expands this working journey; it must not postpone it.
@@ -12,13 +14,13 @@
 | Starter implementation branch | `feat/usp-foundation-f0`, based on cleaned `d6fa4602c0fb85eae71d7e3f63fb42a2684aa1b8`; cleanup PR #8 remains separate |
 | Application baseline inspected for the plans | `f623cff897f91bb3ebd4c225f700ac263f7beb72`, `Record hosted floor registry verification` |
 | Tested starter code | `1894f2e94e3f4f113fb4431afaf69018dcb730c3`; [actual verification run](https://github.com/Vinayak1337/3d-ulpin/actions/runs/35796807605) |
-| Current scope | F0a common validation/data-pack starter implemented; remaining F0 domain contracts/ports and F1/V0 work are not implemented by this starter |
+| Historical starter scope | F0a common validation/data-pack starter implemented; remaining F0 domain contracts/ports and F1/V0 work are not implemented by this starter |
 | Meaning of a new path/type below | Required implementation destination unless explicitly identified as implemented in the current 01 status note |
 | Meaning of a gate | Required executed evidence, not existence of a plan, type, placeholder or filename |
 
 **What to reuse now:** [USP module](../../packages/contracts/src/usp/index.ts), [common schemas](../../packages/contracts/src/usp/common.ts), [reference codec](../../packages/contracts/src/usp/reference-codec.ts), [data-pack schema](../../packages/contracts/src/usp/data-pack.ts), [offline byte verifier](../../scripts/usp/data/verify-pack.ts) and their 64 passing tests. Root package exports and existing runtime authorities were not changed. F0a is a bounded contract-ready slice, not the full F0 acceptance gate. H01 enumerates the remaining result/manifest/command/job/release contracts and actual producers.
 
-**What to do next:** one FND owner completes remaining F0 then F1-min; DATA prepares full D0 and attempts bounded D1/D4 acquisition. Add the UI owner for the shared live V0 integration once the necessary interfaces exist. Do not rebuild the master index, reinterpret the historical audit or launch ten feature agents. `fixtures/usp/D0/contract-smoke` is only a tiny authored integrity/contract test; it is not the 3–5-building demonstration and has no rendered or recorded result.
+**What to do next:** one FND owner first inspects current implementations and receipts, then completes only remaining foundation/integration gaps; DATA verifies existing D0/D1/D4 work before preparing or acquiring anything missing. Add the UI owner for the shared live V0 integration once the necessary interfaces exist. Do not rebuild the master index, reinterpret the historical audit or launch ten feature agents. `fixtures/usp/D0/contract-smoke` is only a tiny authored integrity/contract test; it is not the 3–5-building demonstration and has no rendered or recorded result.
 
 Before coding, read [root AGENTS](../../AGENTS.md), [web AGENTS](../../apps/web/AGENTS.md), relevant current files and the actual base SHA. Preserve unrelated changes. In particular, main has separate later OCI deployment changes; this starter does not overwrite or merge them. Reconcile branch ancestry before integration rather than assuming this branch is latest main. This revised feature scope replaces contradictory historical handoff sequencing, not source-preservation, local-access or safety requirements. If code has drifted, adapt the narrow integration seam and record the difference; do not rebuild a functioning feature because an old filename or helper changed.
 
@@ -105,7 +107,7 @@ Attempt an accessible small source plus its documented alternative, respecting r
 
 An agent receives `00 + 01 + its handoff`; UI additionally reads the enabled feature contracts, not every previous chat. Follow the fixed defaults and capability fallbacks. Do not ask the user to select routine parsers, invent fixture records, implement APIs or resolve shared-file conflicts.
 
-**Recommended model routing, not a measured project benchmark:** Sol XHigh for FND, UI and integration-heavy feature work; Sol High for bounded DATA preparation, READY evaluation and ASSIST0 typed templates. Do not assign complete handoffs to Low or buy Max effort by default. Reserve Astra High for a specific difficult cross-cutting review or reproducible blocker, not every file. Model choice never changes ownership, permissions or acceptance. Exact settings/prices must be checked in the execution surface; the user's external benchmarks are not measured ULPIN completion rates.
+**Current model routing (23 September 2026):** Astra Max is the hands-on integration lead. Spawn only GPT-6 Sol or GPT-6 Astra workers when independent work benefits: Sol Medium for bounded read-only exploration, Sol High for DATA/ordinary leaves, Sol XHigh for integration-heavy leaves, Astra High for specific high-risk diagnosis and Astra Max for a persistent hard blocker. Use H02 for exact assignment, settings verification and ownership. Default to at most two spawned threads, no nested spawning, and preserve existing total ownership limits. Do not infer quality or cost from an effort label. Runtime Sarvam profiles/billing are separate and follow H20; no per-key free-credit assumption.
 
 Work on `feat/usp-<owner>` from a recorded integration SHA. A shared change request includes exact path, base SHA, contract version, patch, reason, migration impact and reproducer/test. FND or UI, as sole owner, applies it. If an owner is absent, complete isolated allowed work and return that concrete integration patch with blocked status; never fork a second service or call a mocked route complete. No force pushes, implicit snapshot refresh, deployment or main merge.
 
