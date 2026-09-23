@@ -67,7 +67,7 @@ jobs:
           if-no-files-found: warn
   isolated-live:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 45
     env:
       NEXT_TELEMETRY_DISABLED: '1'
       REPO_DATA: 'false'
@@ -90,7 +90,7 @@ jobs:
         run: pnpm build
       - name: Create unique isolated service credentials
         run: node scripts/engineering/isolation.mjs --prepare
-      - name: Preserve baseline and verify real USP SQL S3 HTTP receipts
+      - name: Preserve baseline and verify real USP D0 SQL S3 HTTP browser receipts
         run: node scripts/usp/isolated-live.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
@@ -100,6 +100,8 @@ jobs:
             .runtime/engineering/*.json
             .runtime/engineering/*.log
             .runtime/usp-live/*.json
+            test-results/browser-report.json
+            test-results/browser/**
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 5

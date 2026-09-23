@@ -102,6 +102,10 @@ test('cross-building supplied unit is rejected and packet bytes contain only sel
   ];
   assert.equal(selectExactPart(mixedParts, { kind: 'verbatim', locator: 'A101 region' }), 'ONLY_A101');
   assert.equal(selectExactPart(mixedParts, { kind: 'verbatim', locator: 'whole page' }), null);
+  assert.equal(selectExactPart([{ locator: 'line 3', text: 'ONLY_A101' },
+    { locator: 'line 4', text: 'NEVER_A102' }], { kind: 'verbatim', locator: 'line 3' }), 'ONLY_A101');
+  assert.equal(selectExactPart([{ locator: 'line 3', text: 'ONLY_A101' },
+    { locator: 'line 3', text: 'NEVER_A102' }], { kind: 'verbatim', locator: 'line 3' }), null);
   const rendered = renderPacket0({ id: pin.ref.id, label: 'A101' }, [
     { pointer: source as any, sourceSha256: 'd'.repeat(64),
       excerpt: selectExactPart(mixedParts, { kind: 'verbatim', locator: 'A101 region' }), reasonCode: null },
