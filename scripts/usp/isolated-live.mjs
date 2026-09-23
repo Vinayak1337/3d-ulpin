@@ -32,6 +32,7 @@ const composeArgs = ['--context', 'default', 'compose', '--project-directory', r
   '--env-file', envFile, '-p', scope.project, '-f', resolve(root, 'compose.yaml')];
 let ownsProject = false;
 let server;
+let dispatcher;
 
 async function command(label, executable, args, { input, timeout = 600000, env = childEnv } = {}) {
   const start = Date.now(), chunks = [];
@@ -133,6 +134,10 @@ try {
   const receipt = JSON.parse(await readFile(resolve(root, '.runtime/engineering/usp-fnd-live.json'), 'utf8'));
   assert.equal(receipt.status, 'passed');
   report.checks.push({ name: 'fnd-live-receipt', receipt });
+  assert.equal((await pool.query("SELECT count(*)::int AS n FROM jobs WHERE status NOT IN ('succeeded','failed','stale','cancelled')")).rows[0].n,
+    0, 'Retained baseline jobs must be terminal before the dispatcher starts');
+  dispatcher = spawn(process.execPath, ['--import', 'tsx', 'scripts/dispatcher.ts'],
+    { cwd: root, env: childEnv, detached: true, stdio: 'ignore' });
   const d0ReceiptFile = resolve(root, '.runtime/engineering/usp-d0-import.json');
   const d0Env = { ...childEnv, ULPIN_TEST_BASE_URL: childEnv.ULPIN_TEST_URL,
     ULPIN_D0_RECEIPT_FILE: d0ReceiptFile, DEMO_BASE_URL: childEnv.ULPIN_TEST_URL };
@@ -158,6 +163,9 @@ try {
 } finally {
   if (server?.pid && server.exitCode === null) {
     try { process.kill(-server.pid, 'SIGTERM'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
+  }
+  if (dispatcher?.pid && dispatcher.exitCode === null) {
+    try { process.kill(-dispatcher.pid, 'SIGTERM'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
   }
   await pool.end(); s3.destroy();
   if (ownsProject) try {

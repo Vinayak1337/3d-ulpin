@@ -200,7 +200,7 @@ async function apply() {
         if (detail.jobs[0]?.status === 'failed') throw Error(`${building.alias}: build failed: ${JSON.stringify(detail.jobs[0])}`);
         await new Promise(resolve => setTimeout(resolve, 500));
       }
-      if (detail.model?.revision !== detail.case.revision) throw Error(`${building.alias}: build timed out`);
+      if (detail.model?.revision !== detail.case.revision) throw Error(`${building.alias}: build timed out; caseRevision=${detail.case.revision} modelRevision=${detail.model?.revision ?? 'none'} jobStates=${JSON.stringify(detail.jobs.map((job: any) => ({ operation: job.operation, status: job.status, error: job.error?.code ?? null })))}`);
       const expectedComponents = scenario.spaces.filter((space: any) => space.building === building.alias && space.type === 'unit')
         .reduce((sum: number, space: any) => sum + space.components.length, 0);
       if (detail.model.units.length !== expectedComponents) throw Error(`${building.alias}: built ${detail.model.units.length}, expected ${expectedComponents} native schedule components`);
