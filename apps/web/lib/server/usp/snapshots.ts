@@ -22,7 +22,18 @@ export function assertLocalUsp(ctx: RequestContext) {
 }
 
 function recordPin(row: BodyRow): TargetPin {
-  return { ref: { namespace: row.namespace, id: row.object_id }, revision: Number(row.revision) };
+  return { ref: { namespace: row.namespace, id: row.object_id }, revision: storedRevision(row.revision) };
+}
+
+export function storedRevision(value: unknown): number {
+  if (typeof value !== 'number' && (typeof value !== 'string' || !/^(0|[1-9][0-9]*)$/.test(value))) {
+    throw new AppError(503, 'USP_STORED_REVISION', 'A stored revision is unavailable.');
+  }
+  const revision = Number(value);
+  if (!Number.isSafeInteger(revision) || revision < 0) {
+    throw new AppError(503, 'USP_STORED_REVISION', 'A stored revision is unavailable.');
+  }
+  return revision;
 }
 
 async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow[]> {
@@ -140,7 +151,7 @@ export async function readSnapshotBody(ctx: RequestContext, scope: SnapshotScope
 
 function pointerFor(source: BodyRow, target: TargetPin, locator: string): EvidencePointer {
   return {
-    sourceRevision: { ref: { namespace: 'source_revision', id: source.object_id }, revision: source.revision },
+    sourceRevision: { ref: { namespace: 'source_revision', id: source.object_id }, revision: storedRevision(source.revision) },
     assetRevision: null, partRevision: null,
     locator: { kind: 'verbatim', locator }, legacyLocator: locator,
     purpose: 'record', origin: 'direct', target: target.ref,
@@ -268,7 +279,7 @@ export async function readRegistryEvidence(ctx: RequestContext, scope: SnapshotS
      ORDER BY revision DESC LIMIT 1`, [scope.manifestId, pointer.target.namespace, pointer.target.id],
   )).rows[0]))?.revision;
   if (targetPin === undefined) return { state: 'unavailable' as const, reasonCode: 'target_not_in_snapshot' };
-  const target = await resolveRegistryTarget(ctx, scope, { ref: pointer.target, revision: Number(targetPin) });
+  const target = await resolveRegistryTarget(ctx, scope, { ref: pointer.target, revision: storedRevision(targetPin) });
   if (target.state !== 'available' || !target.data.evidence.some(e => canonical(e) === canonical(pointer))) {
     return { state: 'unavailable' as const, reasonCode: 'evidence_not_linked' };
   }

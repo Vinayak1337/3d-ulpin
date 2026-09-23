@@ -6,7 +6,7 @@ import {
   UspPacket0ReceiptSchema, UspErrorEnvelopeSchema, uspServiceResultSchema,
   parseUsp,
 } from '../packages/contracts/src/usp/index';
-import { hasVerticalMembership } from '../apps/web/lib/server/usp/snapshots';
+import { hasVerticalMembership, storedRevision } from '../apps/web/lib/server/usp/snapshots';
 import { renderPacket0, selectExactPart } from '../apps/web/lib/server/usp/packet0';
 import { uspFixtures } from './fixtures/usp-common';
 
@@ -80,6 +80,8 @@ test('job and release consumers preserve pending state, source lineage and revoc
 });
 
 test('cross-building supplied unit is rejected and packet bytes contain only selected exact part', () => {
+  assert.equal(storedRevision('1'), 1);
+  assert.throws(() => storedRevision('9007199254740992'));
   const buildingA = { kind: 'building', pin: { ref: { namespace: 'registry_record', id: 'building-a' }, revision: 1 } };
   const buildingB = { kind: 'building', pin: { ref: { namespace: 'registry_record', id: 'building-b' }, revision: 1 } };
   const floor = { kind: 'floor', pin: { ref: { namespace: 'registry_record', id: 'floor-a1' }, revision: 1 },
