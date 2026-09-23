@@ -1,0 +1,568 @@
+{
+  "position": {
+    "x": 550,
+    "y": 368.75
+  },
+  "canvas": {
+    "clientWidth": 1100,
+    "clientHeight": 738,
+    "width": 1100,
+    "height": 738,
+    "rect": {
+      "x": 0,
+      "y": 129,
+      "width": 1100,
+      "height": 737.5,
+      "top": 129,
+      "right": 1100,
+      "bottom": 866.5,
+      "left": 0
+    }
+  },
+  "camera": {
+    "position": {
+      "x": 1432824.1023280493,
+      "y": 5424725.412520135,
+      "z": 3023021.0303604077
+    },
+    "direction": {
+      "x": 0.032748449298172215,
+      "y": -0.9833514626789175,
+      "z": 0.17873846792394346
+    },
+    "near": 0.1,
+    "far": 10000000000
+  },
+  "entities": [
+    {
+      "id": "4c657573-e352-4432-a7bf-81fa5f76bce9",
+      "record": "record:ebd700a1-8351-4a06-8427-c134bf0b9653",
+      "state": 0,
+      "sphere": {
+        "center": {
+          "x": 1432825,
+          "y": 5424698,
+          "z": 3023026
+        },
+        "radius": 5.203826904296875
+      },
+      "screen": {
+        "x": 550.3184716222888,
+        "y": 369.59806756488706
+      },
+      "polygon": [
+        {
+          "screen": {
+            "x": 391.93939186142495,
+            "y": 447.87165061232133
+          },
+          "height": -3.199861149822134
+        },
+        {
+          "screen": {
+            "x": 611.5862061711227,
+            "y": 534.532211035814
+          },
+          "height": -3.1999023069304364
+        },
+        {
+          "screen": {
+            "x": 696.2998556017615,
+            "y": 363.2766515290479
+          },
+          "height": -3.1999088932604276
+        },
+        {
+          "screen": {
+            "x": 500.2894322720892,
+            "y": 298.5369519377026
+          },
+          "height": -3.1998677359823633
+        },
+        {
+          "screen": {
+            "x": 391.93939186142495,
+            "y": 447.87165061232133
+          },
+          "height": -3.199861149822134
+        }
+      ],
+      "extrudedHeight": 0.0001388510103378561
+    },
+    {
+      "id": "1ff9f6de-1e53-4d9a-b8c7-778bb723c652",
+      "record": "record:ebd700a1-8351-4a06-8427-c134bf0b9653",
+      "state": 0,
+      "sphere": {
+        "center": {
+          "x": 1432825.375,
+          "y": 5424699.5,
+          "z": 3023026.75
+        },
+        "radius": 4.951736927032471
+      },
+      "screen": {
+        "x": 549.819699044373,
+        "y": 330.520989176152
+      }
+    },
+    {
+      "id": "d0b7c4d8-20da-436d-8fa6-f6b621391bea",
+      "state": 0,
+      "sphere": {
+        "center": {
+          "x": 1432824.25,
+          "y": 5424697,
+          "z": 3023031.75
+        },
+        "radius": 13.897934913635254
+      },
+      "screen": {
+        "x": 639.4714072676736,
+        "y": 217.00551696048706
+      }
+    }
+  ],
+  "before": [
+    {
+      "owner": "Model",
+      "pass": 6,
+      "cull": false,
+      "allowPicking": true,
+      "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+      "ids": [],
+      "bounds": {
+        "center": {
+          "x": 1432788.3837026937,
+          "y": 5424706.118091958,
+          "z": 3023032.0043407935
+        },
+        "radius": 45.79221823193611
+      },
+      "renderState": {
+        "cull": {
+          "enabled": true,
+          "face": 1029
+        },
+        "depthTest": {
+          "enabled": true,
+          "func": 515
+        },
+        "depthMask": true,
+        "colorMask": {
+          "red": true,
+          "green": true,
+          "blue": true,
+          "alpha": true
+        }
+      }
+    },
+    {
+      "owner": "Model",
+      "pass": 6,
+      "cull": false,
+      "allowPicking": true,
+      "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+      "ids": [],
+      "bounds": {
+        "center": {
+          "x": 1432788.319728923,
+          "y": 5424705.875879703,
+          "z": 3023031.8684526756
+        },
+        "radius": 55.95013918527063
+      },
+      "renderState": {
+        "cull": {
+          "enabled": true,
+          "face": 1029
+        },
+        "depthTest": {
+          "enabled": true,
+          "func": 515
+        },
+        "depthMask": true,
+        "colorMask": {
+          "red": true,
+          "green": true,
+          "blue": true,
+          "alpha": true
+        }
+      }
+    },
+    {
+      "owner": "Model",
+      "pass": 10,
+      "cull": false,
+      "allowPicking": true,
+      "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+      "ids": [],
+      "bounds": {
+        "center": {
+          "x": 1432820.3775015082,
+          "y": 5424701.887207641,
+          "z": 3023033.7431456023
+        },
+        "radius": 14.827332568022232
+      },
+      "renderState": {
+        "cull": {
+          "enabled": false,
+          "face": 1029
+        },
+        "depthTest": {
+          "enabled": true,
+          "func": 515
+        },
+        "depthMask": false,
+        "colorMask": {
+          "red": true,
+          "green": true,
+          "blue": true,
+          "alpha": true
+        }
+      }
+    },
+    {
+      "owner": "Model",
+      "pass": 10,
+      "cull": false,
+      "allowPicking": true,
+      "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+      "ids": [],
+      "bounds": {
+        "center": {
+          "x": 1432821.3651676471,
+          "y": 5424705.626628345,
+          "z": 3023035.8410609746
+        },
+        "radius": 14.171866152355543
+      },
+      "renderState": {
+        "cull": {
+          "enabled": false,
+          "face": 1029
+        },
+        "depthTest": {
+          "enabled": true,
+          "func": 515
+        },
+        "depthMask": false,
+        "colorMask": {
+          "red": true,
+          "green": true,
+          "blue": true,
+          "alpha": true
+        }
+      }
+    }
+  ],
+  "after": [
+    {
+      "owner": "Model",
+      "pass": 6,
+      "cull": false,
+      "allowPicking": true,
+      "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+      "ids": [],
+      "bounds": {
+        "center": {
+          "x": 1432788.3837026937,
+          "y": 5424706.118091958,
+          "z": 3023032.0043407935
+        },
+        "radius": 45.79221823193611
+      },
+      "renderState": {
+        "cull": {
+          "enabled": true,
+          "face": 1029
+        },
+        "depthTest": {
+          "enabled": true,
+          "func": 515
+        },
+        "depthMask": true,
+        "colorMask": {
+          "red": true,
+          "green": true,
+          "blue": true,
+          "alpha": true
+        }
+      }
+    },
+    {
+      "owner": "Model",
+      "pass": 6,
+      "cull": false,
+      "allowPicking": true,
+      "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+      "ids": [],
+      "bounds": {
+        "center": {
+          "x": 1432788.319728923,
+          "y": 5424705.875879703,
+          "z": 3023031.8684526756
+        },
+        "radius": 55.95013918527063
+      },
+      "renderState": {
+        "cull": {
+          "enabled": true,
+          "face": 1029
+        },
+        "depthTest": {
+          "enabled": true,
+          "func": 515
+        },
+        "depthMask": true,
+        "colorMask": {
+          "red": true,
+          "green": true,
+          "blue": true,
+          "alpha": true
+        }
+      }
+    },
+    {
+      "owner": "Model",
+      "pass": 10,
+      "cull": false,
+      "allowPicking": true,
+      "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+      "ids": [],
+      "bounds": {
+        "center": {
+          "x": 1432820.3775015082,
+          "y": 5424701.887207641,
+          "z": 3023033.7431456023
+        },
+        "radius": 14.827332568022232
+      },
+      "renderState": {
+        "cull": {
+          "enabled": false,
+          "face": 1029
+        },
+        "depthTest": {
+          "enabled": true,
+          "func": 515
+        },
+        "depthMask": false,
+        "colorMask": {
+          "red": true,
+          "green": true,
+          "blue": true,
+          "alpha": true
+        }
+      }
+    },
+    {
+      "owner": "Model",
+      "pass": 10,
+      "cull": false,
+      "allowPicking": true,
+      "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+      "ids": [],
+      "bounds": {
+        "center": {
+          "x": 1432821.3651676471,
+          "y": 5424705.626628345,
+          "z": 3023035.8410609746
+        },
+        "radius": 14.171866152355543
+      },
+      "renderState": {
+        "cull": {
+          "enabled": false,
+          "face": 1029
+        },
+        "depthTest": {
+          "enabled": true,
+          "func": 515
+        },
+        "depthMask": false,
+        "colorMask": {
+          "red": true,
+          "green": true,
+          "blue": true,
+          "alpha": true
+        }
+      }
+    }
+  ],
+  "frustums": [
+    {
+      "near": 0.1,
+      "far": 76.68615132863734,
+      "counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "commands": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "owner": "Model",
+            "pass": 6,
+            "cull": false,
+            "allowPicking": true,
+            "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+            "ids": [],
+            "bounds": {
+              "center": {
+                "x": 1432788.3837026937,
+                "y": 5424706.118091958,
+                "z": 3023032.0043407935
+              },
+              "radius": 45.79221823193611
+            },
+            "renderState": {
+              "cull": {
+                "enabled": true,
+                "face": 1029
+              },
+              "depthTest": {
+                "enabled": true,
+                "func": 515
+              },
+              "depthMask": true,
+              "colorMask": {
+                "red": true,
+                "green": true,
+                "blue": true,
+                "alpha": true
+              }
+            }
+          },
+          {
+            "owner": "Model",
+            "pass": 6,
+            "cull": false,
+            "allowPicking": true,
+            "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+            "ids": [],
+            "bounds": {
+              "center": {
+                "x": 1432788.319728923,
+                "y": 5424705.875879703,
+                "z": 3023031.8684526756
+              },
+              "radius": 55.95013918527063
+            },
+            "renderState": {
+              "cull": {
+                "enabled": true,
+                "face": 1029
+              },
+              "depthTest": {
+                "enabled": true,
+                "func": 515
+              },
+              "depthMask": true,
+              "colorMask": {
+                "red": true,
+                "green": true,
+                "blue": true,
+                "alpha": true
+              }
+            }
+          }
+        ],
+        [],
+        [],
+        [],
+        [
+          {
+            "owner": "Model",
+            "pass": 10,
+            "cull": false,
+            "allowPicking": true,
+            "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+            "ids": [],
+            "bounds": {
+              "center": {
+                "x": 1432821.3651676471,
+                "y": 5424705.626628345,
+                "z": 3023035.8410609746
+              },
+              "radius": 14.171866152355543
+            },
+            "renderState": {
+              "cull": {
+                "enabled": false,
+                "face": 1029
+              },
+              "depthTest": {
+                "enabled": true,
+                "func": 515
+              },
+              "depthMask": false,
+              "colorMask": {
+                "red": true,
+                "green": true,
+                "blue": true,
+                "alpha": true
+              }
+            }
+          },
+          {
+            "owner": "Model",
+            "pass": 10,
+            "cull": false,
+            "allowPicking": true,
+            "pickId": "((selectedFeature.id < int(model_featuresLength)) ? texture(model_pickTexture, selectedFeature.st) : vec4(0.0))",
+            "ids": [],
+            "bounds": {
+              "center": {
+                "x": 1432820.3775015082,
+                "y": 5424701.887207641,
+                "z": 3023033.7431456023
+              },
+              "radius": 14.827332568022232
+            },
+            "renderState": {
+              "cull": {
+                "enabled": false,
+                "face": 1029
+              },
+              "depthTest": {
+                "enabled": true,
+                "func": 515
+              },
+              "depthMask": false,
+              "colorMask": {
+                "red": true,
+                "green": true,
+                "blue": true,
+                "alpha": true
+              }
+            }
+          }
+        ],
+        [],
+        [],
+        [],
+        []
+      ]
+    }
+  ]
+}

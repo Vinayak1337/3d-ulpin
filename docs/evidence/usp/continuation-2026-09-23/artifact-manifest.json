@@ -1,0 +1,207 @@
+{
+  "schemaVersion": "usp-continuation-evidence/1",
+  "codeSha": "304725d67e928f064d3951c3781592c3d706e377",
+  "baselineSha": "c81ce5de3e07773d4dcc5030e571e75bb16dec50",
+  "reference": {
+    "path": "docs/evidence/reference/references/block.png",
+    "sha256": "648c967166d8f8d95f4ffd059c333c0aab5d0e03a9702cb3bf50071eb64f5ff1",
+    "width": 1672,
+    "height": 941
+  },
+  "files": [
+    {
+      "path": "baseline/browser-summary.json",
+      "bytes": 297,
+      "sha256": "e9824fde387ac0d4fbc6aa1e80e7aa83f8fae8eb00a881d79a99aa067ac5adbc"
+    },
+    {
+      "path": "baseline/d0-level-basement.png",
+      "bytes": 485086,
+      "sha256": "7fa5f99953366bfbe6842c9c9ba017313da0c608ff593bfb73b9ac2bf482e109",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "baseline/d0-neighbourhood-desktop.png",
+      "bytes": 252529,
+      "sha256": "8b4e9fe44faeeab350837002847e3b893ebe2e2a52de75e04197f06310a8a02b",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "baseline/d0-packet-390.png",
+      "bytes": 53860,
+      "sha256": "13f435e69a994a2daf017b3d896d983c81bf99af2a1b27e0df775cd586679452",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "baseline/d1-mobile-roof.png",
+      "bytes": 49431,
+      "sha256": "75dd02372f41ae41d5d23c277b474825db8df7896a5efb848f8d80400537aa99",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "baseline/d1-roof-desktop.png",
+      "bytes": 77114,
+      "sha256": "b9a990db54f994794427140568664c396c9cdc5e378e572aa338ff5ed3675bdc",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "baseline/isolated-live-receipt.json",
+      "bytes": 35760,
+      "sha256": "245332dd07722b61ce3122f100ea7f0432003cc334085c2cdf4b584817b88e53"
+    },
+    {
+      "path": "failures/diagnostic-context.json",
+      "bytes": 584,
+      "sha256": "537db36e07c4b8dcb2a24a3475276ec141525806bd2377f54b30c025e4e05a94"
+    },
+    {
+      "path": "failures/pick-before-draw-diagnostics.json",
+      "bytes": 13623,
+      "sha256": "3224d7266756a34abc959b3ad69ec6cb5d6e75386455763f18b7aab7f65586b6"
+    },
+    {
+      "path": "failures/pick-before-draw.png",
+      "bytes": 301033,
+      "sha256": "0359eb00d2c632fe95dd933fd7129f298d36e7eb031c4fbb223a1342ceffd2a7",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "failures/pick-not-ready-browser.json",
+      "bytes": 321,
+      "sha256": "4c058eeec339941db87e827b6f636d137c89dd688b6f29e3803437e70236e39f"
+    },
+    {
+      "path": "failures/pick-not-ready-receipt.json",
+      "bytes": 25135,
+      "sha256": "3b86110afa6b981c56b757aba13902ad2566f0d97025d7f82568c465da0f0a39"
+    },
+    {
+      "path": "failures/pick-not-ready.png",
+      "bytes": 301033,
+      "sha256": "0359eb00d2c632fe95dd933fd7129f298d36e7eb031c4fbb223a1342ceffd2a7",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/browser-summary.json",
+      "bytes": 1210,
+      "sha256": "27eb5b5770cbd45a19dd035d6f6d74b52c688515977c671a6d22611a883fbbeb"
+    },
+    {
+      "path": "final/d0-exact-evidence.png",
+      "bytes": 15704,
+      "sha256": "bf563dc836ab69de3210f62280fa7f2c85a61bf71e29360fc3e6eee2b0c33474",
+      "width": 289,
+      "height": 187
+    },
+    {
+      "path": "final/d0-level-basement.png",
+      "bytes": 260786,
+      "sha256": "ad43910b198451b101a9884e67ee8adc0b1612d27341790621bdb828e3eed962",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/d0-level-first.png",
+      "bytes": 487929,
+      "sha256": "794664f013c92a4222fb57571810e5ea953fd4df8406896a7b722f192974795c",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/d0-level-mezzanine.png",
+      "bytes": 766337,
+      "sha256": "4b1ec4cb7b18f5b33b6a6854f5ed9b4a774f1b489a97bc180246b186891ec9ec",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/d0-neighbourhood-desktop.png",
+      "bytes": 249237,
+      "sha256": "1745ec67e32e9f7afa7c16a6160bc5284c88a185273c86ca6742d079e15ff560",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/d0-packet-1024.png",
+      "bytes": 150229,
+      "sha256": "6e50a756d54c89bc3dde10e156566b083f96de657eafa59ea20b545944491265",
+      "width": 1024,
+      "height": 768
+    },
+    {
+      "path": "final/d0-packet-390.png",
+      "bytes": 53862,
+      "sha256": "f6f25620cccdb42ec283f5908691c782e8f96954ffebd7694be2bd48b4b28735",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "final/d0-packet-reloaded.png",
+      "bytes": 14940,
+      "sha256": "5946e81eff57f5013f1c3f8cbdd5955ac5fac7eed7755d4e5adb78beea44a8b8",
+      "width": 289,
+      "height": 165
+    },
+    {
+      "path": "final/d0-separated-floors.png",
+      "bytes": 247075,
+      "sha256": "b929e94a75b7b5921e5554db096d3494bc0296ca48c3162e6e94b05485976f04",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/d0-unit-basement.png",
+      "bytes": 301278,
+      "sha256": "3c6f3056e67460cabf23826bd6b8c70e43169007301bf9dd2961954d8ae55f8c",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/d0-unit-desktop.png",
+      "bytes": 479718,
+      "sha256": "3d453b3f8f8cf396966d0dbeabb1ef2a7d80c6a49711f4784f9e78297b63ac73",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/d1-mobile-interiors.png",
+      "bytes": 37966,
+      "sha256": "f24681f764d0f60c758acbf30b43ac78f552e517b340ff8955887b04edb14521",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "final/d1-mobile-roof.png",
+      "bytes": 49493,
+      "sha256": "1785daa62bf658b408c19a8944e88b6c313a4509ee52a69ed39f08a1e5184c48",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "path": "final/d1-roof-desktop.png",
+      "bytes": 77687,
+      "sha256": "2172e22b009b0aee60e651b8834a75db6840e9d40aeb36b87dd05fea0c17f40c",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/d1-unavailable-interiors.png",
+      "bytes": 99943,
+      "sha256": "cf9341b3dab3418c2c8ae213d20495b996c4e5830c4ea4675b8b110839764245",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "path": "final/isolated-live-receipt.json",
+      "bytes": 35760,
+      "sha256": "3af28ca8b23f459de01bfee522776e86042b5594fe4025bbf46ed2587d8dc7ac"
+    }
+  ]
+}

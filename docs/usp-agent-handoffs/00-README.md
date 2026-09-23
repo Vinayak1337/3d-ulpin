@@ -4,6 +4,12 @@
 
 **Current branch flow:** PRs #8–#11 and FND D0 are merged into `staging`; starter/cleanup branches below are historical. The present continuation is `codex/usp-staging-continuation-20260923` from `origin/staging@2838e798af838d7646ff92b1120c62c8458103da`, targeting staging in [draft PR #13](https://github.com/Vinayak1337/3d-ulpin/pull/13). It preserves main's deployment/API-index fixes without authorizing deployment or a main merge. See [current receipts and limitations](../evidence/usp/fnd/d0/README.md).
 
+**Current checkpoint:** `304725d` passed the local D0/PACK0 and single-real-D1
+journeys with independent review (19 commands, three browser tests). D1 is
+qualified for local exterior shape/identity only. The user requested stopping
+after pushing this milestone; later feature work is not part of this checkpoint.
+See the [captured evidence and comparison](../evidence/usp/continuation-2026-09-23/README.md).
+
 ## 1. Current assignment and authority
 
 **Product outcome:** a visually strong, persisted Studio in which a user selects a building, supplied floor and unit, inspects the matching evidence, resolves a specific uncertainty and obtains a genuinely scoped property packet. Adaptive ingestion expands this working journey; it must not postpone it.
