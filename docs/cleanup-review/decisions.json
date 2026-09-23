@@ -1,0 +1,406 @@
+{
+  "schemaVersion": "ulpin-cleanup-rules/1",
+  "baseline": "f623cff897f91bb3ebd4c225f700ac263f7beb72",
+  "handoff_commit": "e167b1f6c1a830b2b5c6c1708e8f0b0214e4d849",
+  "decision_date": "2026-09-23",
+  "mode": "historical_recommendations_not_executable_allowlist",
+  "inventory_metadata_sha256": "07d6f5786c412bae7155561d77f2a8adde9189054ad6900ba9a197b6c7fab2ad",
+  "ordered_rules": [
+    {
+      "id": "D01",
+      "action": "DELETE_DUPLICATE",
+      "reason": "Byte-identical second copy of the historical demo Word guide; retain the docs copy as the historical reference.",
+      "gate": "Verify retained blob and update any newly introduced links before an approved deletion.",
+      "paths": [
+        "3D_ULPIN_UI_Demo_Guide.docx"
+      ]
+    },
+    {
+      "id": "D02",
+      "action": "DELETE_DUPLICATE",
+      "reason": "Expanded legacy transfer-kit copy; all 38 blobs also exist at their canonical fixture or presentation-asset paths. This is not a new dataset.",
+      "gate": "Every proposed removal must retain an outside identical blob; do not remove the canonical inputs, scene assets, or ZIP in this operation.",
+      "prefixes": [
+        "fixtures/lake-view-complete-inputs/"
+      ]
+    },
+    {
+      "id": "D03",
+      "action": "DELETE_AFTER_REFERENCE_FIXUP",
+      "reason": "Redundant unpacked Lake View originals; all 52 blobs match other tracked originals. Keep the source-of-record generator tree and both currently tested upload ZIP entry paths until separately migrated.",
+      "gate": "Retarget data-source/README.md to one browsable original tree; preserve design/reference-map-v5/data/lake-view-complete and verify outside blob equality.",
+      "prefixes": [
+        "data-source/lake-view-files/"
+      ],
+      "canonical_prefix": "design/reference-map-v5/data/lake-view-complete/"
+    },
+    {
+      "id": "K01",
+      "action": "KEEP_REFERENCE",
+      "reason": "This is the explicit historical-to-original image manifest referenced by the adopted UI/data handoffs.",
+      "gate": "Relocation requires updating H00/H99 and source links together; not a fresh runtime result.",
+      "paths": [
+        "apps/web/public/studio-review/comparison-manifest.json"
+      ]
+    },
+    {
+      "id": "D04",
+      "action": "DELETE_OR_ARCHIVE_GALLERY_AFTER_FIXUP",
+      "reason": "Old public comparison gallery, not the operative 3D map. Duplicated images can be dropped; unique composites are derived from retained source captures and need no second active copy.",
+      "gate": "Retire gallery index plus links and scripts/studio/compare.py public-output assumption together. Preserve K01 and original reference/capture provenance in pinned history.",
+      "prefixes": [
+        "apps/web/public/studio-review/"
+      ]
+    },
+    {
+      "id": "A01",
+      "action": "ARCHIVE_REFERENCE",
+      "reason": "Historical before/after screenshots and comparison HTML; useful only as dated review evidence, not new datasets or runtime property sources.",
+      "gate": "Preserve one provenance/index entry at the baseline commit; remove active-public links or replace with a dated documentation link.",
+      "prefixes": [
+        "apps/web/public/reference/review/",
+        "apps/web/public/reference/review-t079/"
+      ]
+    },
+    {
+      "id": "A02",
+      "action": "ARCHIVE_REFERENCE",
+      "reason": "Generated ML presentation captures, results HTML and one-off verification harness. Current /explain source and its public ML assets are separate and remain active.",
+      "gate": "Retain the compact verification/result reference; remove these from the working product only after preserving baseline links. Do not remove apps/web/features/explainer or apps/web/public/explainer.",
+      "prefixes": [
+        "outputs/ml-explainer/"
+      ]
+    },
+    {
+      "id": "A03",
+      "action": "ARCHIVE_REFERENCE",
+      "reason": "Old annotated tutorial presentation is explicitly superseded by docs/STUDIO_DEMO_GUIDE.md; keep it only as dated historical material.",
+      "gate": "Retire pnpm guide, scripts/guide.mjs and README tutorial links together. Preserve current Studio guide and operational launchers.",
+      "prefixes": [
+        "docs/tutorial-images/"
+      ],
+      "paths": [
+        "docs/3D_ULPIN_UI_Demo_Guide.docx",
+        "scripts/guide.mjs"
+      ]
+    },
+    {
+      "id": "A04",
+      "action": "ARCHIVE_REFERENCE",
+      "reason": "Earlier MVP orchestration, agent cards and combined/reference plans are superseded as execution directions. Preserve source basis and original acceptance traceability in immutable history, not another active instruction pack.",
+      "gate": "Adopt the revised handoffs from PR #7 on the implementation branch first; retarget README/AGENTS/source links and keep the original requirements accessible.",
+      "prefixes": [
+        "Astra_MVP_Handoff_Pack/"
+      ],
+      "paths": [
+        "GPT_6_PRO_HANDOFF.md",
+        "BLOCK_DEMO_PLAN.md",
+        "PARCEL_TO_3D_PLAN.md",
+        "DEEP_REVIEW.md"
+      ]
+    },
+    {
+      "id": "A05",
+      "action": "ARCHIVE_REFERENCE",
+      "reason": "Earlier UI architecture/delivery walkthrough or completed test report; retains historical evidence but is not current product direction.",
+      "gate": "Retarget current guides to live handoffs/current operations; leave immutable baseline citations for past evidence. Do not discard uncovered regression requirements.",
+      "prefixes": [
+        "docs/v2-design/"
+      ],
+      "paths": [
+        "docs/API_CLOSED_RING_EVIDENCE.md",
+        "docs/API_STALE_RESULT_EVIDENCE.md",
+        "docs/API_TEST_EVIDENCE.md",
+        "docs/AREA_VERIFICATION.md",
+        "docs/BROWSER_TEST_EVIDENCE.md",
+        "docs/CITY_STUDIO.md",
+        "docs/DEMO_SCRIPT.md",
+        "docs/FRESH_INSTALL_VERIFICATION.md",
+        "docs/HACKATHON_PLAN.md",
+        "docs/HACKATHON_STATUS.md",
+        "docs/IDENTIFIER_TEST_EVIDENCE.md",
+        "docs/OFFICER_API_EVIDENCE.md",
+        "docs/OFFICER_DELIVERY.md",
+        "docs/OFFICER_GEOMETRY_VERIFICATION.md",
+        "docs/OFFICER_INDEPENDENT_VERIFICATION.md",
+        "docs/OFFICER_UI_VERIFICATION.md",
+        "docs/REAL_BLOCK_EXECUTION.md",
+        "docs/REFERENCE_REBUILD_ARCHITECTURE.md",
+        "docs/REFERENCE_REBUILD_DELIVERY.md",
+        "docs/REGISTRY_TEST_EVIDENCE.md",
+        "docs/SOURCE_PREVIEW_EVIDENCE.md",
+        "docs/UI_REDESIGN.md",
+        "docs/UTTAM_NAGAR_TRANSFER_VALIDATION.md",
+        "docs/V2_ARCHITECTURE.md",
+        "docs/V2_DELIVERY.md",
+        "docs/V2_LEGACY_AND_DOCUMENT_ASSIGNMENT_VERIFICATION.md",
+        "docs/V2_REGISTER_VERIFICATION.md",
+        "docs/V2_WORKSPACE_VERIFICATION.md"
+      ]
+    },
+    {
+      "id": "K02",
+      "action": "KEEP_REFERENCE",
+      "reason": "Original supplied visual reference images and their source family are required by H99 and reference-acceptance tests; unique views must not be lost.",
+      "gate": "Any deduplication must preserve all unique originals, their hashes and image-to-state mapping.",
+      "prefixes": [
+        "docs/evidence/reference/references/",
+        "design/reference-map-v5/reference-audit/"
+      ]
+    },
+    {
+      "id": "K03",
+      "action": "KEEP_TEST_INPUT",
+      "reason": "An existing verifier consumes this saved state or snapshot; it is not safely disposable just because it is under evidence.",
+      "gate": "First make the corresponding harness self-contained using new run receipts/pack IDs; then archive the old machine-specific state with its harness.",
+      "paths": [
+        "docs/evidence/reference/persistence-snapshot.json",
+        "docs/evidence/t061/workflow/state.json",
+        "docs/evidence/t066/workflow/state.json",
+        "docs/evidence/t066/browser/receipt-checkpoint.json"
+      ]
+    },
+    {
+      "id": "A06",
+      "action": "ARCHIVE_REFERENCE",
+      "reason": "Dated run evidence, screenshots, exports or diagnostic output. Keep compact provenance/results and necessary representative comparisons in immutable history, not as current datasets or completed new-feature proof.",
+      "gate": "Audit dynamic reads and output-directory conventions; migrate old harness state dependencies before removal. Keep K02/K03 exceptions and preserve cited old results.",
+      "prefixes": [
+        "docs/evidence/",
+        "docs/engineering-plan/evidence/",
+        "docs/images/",
+        "docs/frontend-completion/"
+      ]
+    },
+    {
+      "id": "U01",
+      "action": "KEEP_AND_UPDATE",
+      "reason": "Current entry instructions/status conflict with later adopted handoffs or need a dated baseline/new-direction split; deleting these would remove the entry point.",
+      "gate": "Point to current H00/H01/H99; retain startup, source-preservation and historical test boundaries. Do not copy the old backlog as the new task authority.",
+      "paths": [
+        "AGENTS.md",
+        "README.md",
+        "docs/engineering-plan/CURRENT_WORK.md",
+        "docs/engineering-plan/00_START_HERE.md",
+        "docs/engineering-plan/STUDIO_UX_PLAN.md",
+        "docs/STUDIO_DEMO_GUIDE.md",
+        "docs/OFFICER_STARTUP.md",
+        "docs/ARCHITECTURE.md",
+        "docs/IMPLEMENTATION_CONTRACT.md",
+        "docs/OFFICER_AI.md",
+        "docs/HOSTING.md",
+        "docs/HACKATHON_BRIEFING.md",
+        "docs/HACKATHON_DEMO.md",
+        "docs/REGISTER_CONTROLS_AND_EXPORTS.md",
+        "fixtures/README.md",
+        "data-source/README.md"
+      ]
+    },
+    {
+      "id": "K04",
+      "action": "KEEP_CI_DEPENDENCY",
+      "reason": "Existing CI/engineering tests consume legacy backlog, acceptance data and validator files. They are not current USP sequencing, but deleting them now breaks verification tooling.",
+      "gate": "Migrate CI/acceptance checks and preserve original coverage before archiving this historical test-input set.",
+      "prefixes": [
+        "docs/engineering-plan/tools/",
+        "docs/engineering-plan/references/",
+        "docs/engineering-plan/legacy/"
+      ],
+      "paths": [
+        "docs/engineering-plan/backlog.json",
+        "docs/engineering-plan/acceptance_traceability.json",
+        "docs/engineering-plan/edge_cases.json",
+        "docs/engineering-plan/input_support_plan.json",
+        "docs/engineering-plan/legacy_task_crosswalk.json"
+      ]
+    },
+    {
+      "id": "A07",
+      "action": "ARCHIVE_AFTER_CI_MIGRATION",
+      "reason": "Historical detailed plans, task results, templates and status-generated files should not compete with H00-H99. Some are checked by the legacy validator.",
+      "gate": "Change dependent validation/README/AGENTS links atomically; preserve task/result traceability at baseline. No blanket removal of tools/backlog/references.",
+      "prefixes": [
+        "docs/engineering-plan/"
+      ]
+    },
+    {
+      "id": "A08",
+      "action": "ARCHIVE_REFERENCE",
+      "reason": "Standalone bulk Studio v4 prototype with its own browser-state model; not a production source-to-record implementation. Useful design history only.",
+      "gate": "Preserve its source inventory and selected interaction reference in pinned history. Product uses existing Studio/services, not this parallel schema/map.",
+      "prefixes": [
+        "design/bulk-studio-v4/"
+      ]
+    },
+    {
+      "id": "A09",
+      "action": "ARCHIVE_REFERENCE",
+      "reason": "Earlier image-design and comparison pack; useful for design history but not the current execution entry.",
+      "gate": "Retarget root steering; preserve all distinct supplied references and source image hashes. Keep original reference family K02.",
+      "prefixes": [
+        "design/officer-studio-v3/"
+      ]
+    },
+    {
+      "id": "K05",
+      "action": "KEEP_DATA_DEPENDENCY",
+      "reason": "Runtime package generators and t075-t077 tests read these source scenes, archives, or normalized golden data. The word design/archive does not make them unused.",
+      "gate": "May relocate to a fixture-owned directory only with all generator/test/source manifests updated and byte preservation checked.",
+      "prefixes": [
+        "design/reference-map-v5/data/",
+        "design/reference-map-v5/dataset/"
+      ],
+      "paths": [
+        "design/reference-map-v5/generate-data.py",
+        "design/reference-map-v5/validate-data.py",
+        "design/reference-map-v5/DATA_PACKAGE.md",
+        "design/reference-map-v5/ASSETS.md"
+      ]
+    },
+    {
+      "id": "A10",
+      "action": "ARCHIVE_AFTER_REFERENCE_EXTRACTION",
+      "reason": "Standalone reference-map v5 application, generated browser bundles, vendored prototype runtime or screen captures; not the main product entry.",
+      "gate": "Preserve K02/K05 input/reference exceptions; migrate scripts/reference/build-shared.mjs and standalone tests together. Keep the active apps/web/features/spatial/reference-runtime copy and its licences.",
+      "prefixes": [
+        "design/reference-map-v5/"
+      ]
+    },
+    {
+      "id": "R01",
+      "action": "RETIRE_AFTER_REFERENCE_EXTRACTION",
+      "reason": "Disconnected older Studio presentation shell/leaf UI, not the current /studio/showcase implementation. Static import tracing found no current Next entry reaching this shell.",
+      "gate": "Extract any required V0 interactions, then remove the closed legacy UI set; port old browser assertions. Typecheck/current route tests and D0 V0 must pass. No blanket features/studio deletion.",
+      "paths": [
+        "apps/web/features/studio/App.tsx",
+        "apps/web/features/studio/StudioApp.tsx",
+        "apps/web/features/studio/StudioEntry.tsx",
+        "apps/web/features/studio/useStudioRoute.ts",
+        "apps/web/features/studio/styles.css",
+        "apps/web/features/studio/refinements.css",
+        "apps/web/features/studio/integration.css",
+        "apps/web/features/studio/hierarchy.css",
+        "apps/web/features/studio/data/mapScale.ts",
+        "apps/web/features/studio/data/property-upload.ts",
+        "apps/web/features/studio/data/usePropertyPreview.ts",
+        "apps/web/features/studio/data/useWorkspaceDraft.ts"
+      ],
+      "prefixes": [
+        "apps/web/features/studio/components/"
+      ]
+    },
+    {
+      "id": "R02",
+      "action": "KEEP_DONOR_UNTIL_V0",
+      "reason": "Older renderer and fixture logic has generator/test or adopted-handoff consumers, or provides reference implementation material. Not an active-page dependency is insufficient proof of uselessness.",
+      "gate": "Move reusable fixture/geometry helpers to one DATA/test home; qualify replacement view/lease and migrate tests/handoff links before archiving obsolete remainder.",
+      "prefixes": [
+        "apps/web/features/studio/scene/"
+      ],
+      "paths": [
+        "apps/web/features/studio/data/district.ts",
+        "apps/web/features/studio/data/documents.ts",
+        "apps/web/features/studio/data/floorLayout.ts",
+        "apps/web/features/studio/data/display-geometry.ts",
+        "apps/web/features/studio/data/verify-property-source.ts",
+        "apps/web/features/studio/data/workspace-draft.ts",
+        "apps/web/features/studio/data/useSources.ts",
+        "apps/web/features/studio/routing.ts",
+        "apps/web/features/studio/types.ts"
+      ]
+    },
+    {
+      "id": "R03",
+      "action": "RETIRE_AFTER_TEST_REPLACEMENT",
+      "reason": "Old browser harness targets /studio/map/BLD-0413 or __CITY_DEBUG__, unlike the current Studio routes. This is a code-supported target mismatch, not a runtime test result.",
+      "gate": "Replace package test:studio:browser/test:studio:continuation/studio:capture with actual-route V0/V-shot tests before retiring old assertions; archive dated harness evidence.",
+      "paths": [
+        "scripts/spatial/studio-baseline.mjs",
+        "scripts/spatial/studio-capture.mjs",
+        "scripts/spatial/studio-continuation-verify.mjs",
+        "scripts/spatial/studio-correctness-verify.mjs",
+        "scripts/spatial/studio-port-check.mjs",
+        "scripts/spatial/studio-verify.mjs"
+      ]
+    },
+    {
+      "id": "R04",
+      "action": "RETIRE_AFTER_TEST_REPLACEMENT",
+      "reason": "Test-only old global navigation list duplicates current productNavigation with superseded labels/destinations.",
+      "gate": "Retarget the relevant v2-state test to the actual Batches/Map/Register navigation, preserve scope invariants, then remove this obsolete helper.",
+      "paths": [
+        "apps/web/features/officer/shared/navigation.ts"
+      ]
+    },
+    {
+      "id": "U02",
+      "action": "KEEP_AND_UPDATE",
+      "reason": "Active package/scripts/CI/runtime configuration must be reconciled with the cleanup; names alone do not justify removal.",
+      "gate": "Remove stale script/dependency entries only with their consumers; retain pinned dependencies/locks and operational startup/isolation.",
+      "paths": [
+        "package.json",
+        "apps/web/package.json",
+        "apps/web/next.config.ts"
+      ],
+      "prefixes": [
+        ".github/workflows/"
+      ]
+    },
+    {
+      "id": "K06",
+      "action": "KEEP_DATA_DEPENDENCY",
+      "reason": "Existing saved database, content-addressed originals, source packages and fixture families are still required by restoration, tests or the D0/D3 strategy. New data does not supersede retained source identity/history.",
+      "gate": "No deletion/reset/reseed in cleanup. Content deduplication cannot remove manifest-bound object keys or arbitrary ZIP members.",
+      "prefixes": [
+        "repo-data/",
+        "data-bundles/",
+        "fixtures/",
+        "data-source/",
+        "demo-data/",
+        "apps/web/public/scene-assets/",
+        "apps/web/public/reference/",
+        "apps/web/public/datasets/"
+      ]
+    },
+    {
+      "id": "K07",
+      "action": "KEEP_RUNTIME",
+      "reason": "Current app/worker/contracts, live renderer/adapters, public explainer, source views and compatibility URL resolvers remain connected or provide required input capabilities.",
+      "gate": "Retain unless a separate exact replacement and regression proves removal safe; do not remove by officer/v2/reference/ML naming.",
+      "prefixes": [
+        "apps/",
+        "packages/",
+        "services/"
+      ]
+    },
+    {
+      "id": "K08",
+      "action": "KEEP_TEST_OR_TOOL",
+      "reason": "Existing test, source acquisition/generation, schema parity, launch, storage/DB migration and isolation tools remain reusable or operational.",
+      "gate": "Historical or machine-specific harnesses may need input/output parameterization; do not run mutating scripts against user data during this review.",
+      "prefixes": [
+        "tests/",
+        "scripts/"
+      ]
+    },
+    {
+      "id": "K09",
+      "action": "KEEP_DOCUMENTATION",
+      "reason": "Dataset provenance, input/API/registry/startup and licensing documentation remains useful; dates/claims should stay scoped to evidence.",
+      "gate": "Update affected links after any approved archive; do not replace implementation facts with planned features.",
+      "prefixes": [
+        "docs/",
+        "deploy/",
+        "infra/",
+        ".agents/"
+      ]
+    },
+    {
+      "id": "K99",
+      "action": "KEEP_UNCLASSIFIED",
+      "reason": "No supported deletion/archival case established. Retain root configuration/licence/workspace file by default.",
+      "gate": "A more specific dependency/content review is required before removal."
+    }
+  ],
+  "execution_receipt": "applied-cleanup.json"
+}

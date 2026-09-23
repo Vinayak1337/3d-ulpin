@@ -1,6 +1,8 @@
 # Lake View — complete import demo
 
-Import **lake-view-complete.zip**. Leave it zipped. `lake-view-files/` contains the same originals unpacked for inspection; do not upload that directory as a second dataset.
+> **Direction note — 23 September 2026:** These are existing labelled source packages, not the newly prepared D0–D7 packs. Keep their originals, ZIPs and identities; do not reseed or reset data for cleanup. Current implementation and data/testing assignments are in [USP handoff 00](../docs/usp-agent-handoffs/00-README.md) and the assigned feature file.
+
+Import **lake-view-complete.zip**. Leave it zipped. [The canonical unpacked originals](../design/reference-map-v5/data/lake-view-complete/) are available for inspection. The redundant `lake-view-files/` copy was removed; do not upload the originals again as a second dataset.
 
 This is an authored fictional neighbourhood, not real survey evidence or official ULPIN issuance. The package is byte-identical to the complete Lake View source package already used by the app.
 
@@ -12,7 +14,7 @@ This is an authored fictional neighbourhood, not real survey evidence or officia
 4. The receipt should show **49 buildings, 184 floors, 189 units/spaces and 50 source files**. Its two geometry findings are intentional.
 5. Click **Review on map**. The complete Lake View scene is rendered from the normalized supplied geometry.
 6. Click **Save dataset** to keep it in the dataset list. The same package fingerprint reuses the existing saved Lake View record, preserving its original files, IDs and history. Saving is separate from approving property geometry or issuing official IDs.
-7. Use the **Map** navigation to open the dataset directory and reopen Lake View. The saved map is also available at http://127.0.0.1:3000/studio/showcase?saved=22b196c2-b467-4f38-9252-5b4c5e3a2f14 on this machine.
+7. Use the **Map** navigation to open the dataset directory and reopen Lake View. Use the saved ID returned by this environment; do not copy a historical machine-specific dataset UUID.
 
 ## What to demonstrate
 

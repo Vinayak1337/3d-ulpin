@@ -1,49 +1,88 @@
-# 3D ULPIN hackathon implementation
+# 3D ULPIN — current agent entry point
 
-Latest steering: first correct the reference image pack UX (T069), then resume
-T064–T068 app changes. See design/officer-studio-v3/DESIGN_BRIEF.md.
+## Adopted direction and what to read
 
-Latest user priority (20 September 2026): Studio is the sole officer interface.
-Audit and simplify the complete source-to-record workflow for SIH 26011, safely
-automating source metadata and removing redundant presentation. Preserve all
-originals, identities, revision history and unique processing capabilities.
-Replace old pages with thin Studio URL resolvers; delete proven-unused UI code.
-Execute T062–T068 one bounded task at a time with fresh Astra 6 High workers and
-parent review. See docs/engineering-plan/STUDIO_UX_PLAN.md and CURRENT_WORK.md.
-This supersedes historical instructions to retain duplicate compatibility UIs.
+Effective 23 September 2026, follow `docs/usp-agent-handoffs/00-README.md`,
+`01-shared-contracts-and-ownership.md`, the assigned feature's complete A–K
+sections, relevant `99-ui-ux-and-integration.md`, and current code. The handoffs
+are copied without semantic changes from `e167b1f`; new paths/types in them are
+implementation requirements, not existing capabilities. Read `apps/web/AGENTS.md`
+and the installed framework documentation before applicable web changes.
 
-Historical user priority (T058): T057 was rejected visually. First copy the actual
-`E:/Projects/ulpin-city-studio` design and interactions into the product with
-working routes; then improve that Studio against the original image mockups.
-Prepare consistent synthetic records/documents first where needed. Compare actual
-browser captures side by side before claiming completion. See T058_PLAN.md.
-This authorizes the Studio's shared Three/R3F viewport; retain existing Cesium
-and backend workflows as compatibility paths, not discarded implementations.
-ML follows this visual milestone. Do not replace real source shapes with boxes.
+Deliver the active **Studio** product: one shared map/data/selection boundary,
+Batches / Map / Register, contextual quick register and full register. First prove
+F0 → F1-min → V0: supplied building/floor/unit → exact evidence → scoped PACK0
+artifact → reopen saved state; separately qualify D1 real roof geometry. Follow
+I1 and feature/F2 gates afterwards. Do not make local V0 wait for public identity,
+all ML modalities, live Sarvam, remote MCP or an authentic complete cadastral set.
+Do not substitute a beautiful isolated showcase or mock APIs for integration.
 
-Execution policy (18 September 2026): `docs/engineering-plan/backlog.json` is the
-adopted task/status authority on `feat/unified-spatial-foundation`. Continue one
-bounded task at a time, with its detailed plan, tests, review and recorded result.
-The branch preserves the inherited `feat/reusable-spatial-map-core` implementation;
-assess its coverage rather than rebuilding it. A task is not accepted merely
-because its types compile or an earlier branch contains related code. Keep
-private-PC data and isolated hosted-fixture verification explicitly distinct.
+Old T-number plans, the engineering backlog, dated screenshots and prototype
+readmes are historical/test/reference material, not the current execution order.
+`docs/engineering-plan/tools` and its required records remain CI inputs. Do not
+reset their history or delete tests to make a new task appear complete. The old
+orchestration pack is preserved in pinned Git history through the cleanup index.
 
-Current branch implementation scope (18 September 2026): build the authorized reusable renderer-first and unified-schema foundation on a separate branch. All pages delegate to the shared MapViewport/runtime; source-specific adapters may remain during compatibility migration. Use one layout-scoped resource cache and view-session service rather than page-specific copies. Canonical data remains in existing services. Establish and test the shared contract, compiler and streamed calibration maps before claiming visual acceptance or expanding all later UIs. See docs/SHARED_MAP_IMPLEMENTATION.md. Earlier dated presentation scopes below are historical and do not override this instruction.
+## Preserve data, identities and existing mechanisms
 
+Keep Next.js/TypeScript, the existing shared Three/Cesium runtime boundaries,
+PostgreSQL/PostGIS, private S3-compatible originals, Redis/Celery, dispatcher and
+private Python processing. Extend the recorded registry and case/import draft
+services, not another property database, map or job broker. Keep compatible legacy
+URLs and unique document/GIS/raster/point-cloud/ML inspection capabilities.
 
-Current scope (15 September 2026): replace the previous presentation with the reference-led officer interface on unversioned Block Map, Property Register and Plan Workspace routes. Match the supplied reference header and panels. Main navigation always opens directories; contextual property actions preserve canonical identity and the surrounding block. Build a clearly labeled persisted fictional demonstration neighborhood through real ingestion, processing and review, alongside separately selectable real datasets. Extract required capabilities before deleting obsolete screens; retain historical URL resolution, all originals and revision history. Use reusable feature modules, focused hooks and transient Zustand state. No version branding in the interface. The T00–T10 evidence and unresolved real Indian data/free-route Nous gates remain historical acceptance obligations.
+Preserve original bytes/hashes, source and geometry revisions, exact locators,
+reference systems, quantity definitions, attribution, identities and review
+history. Official supplied parcel ULPIN is distinct from system building/floor/space
+IDs. A floor is not necessarily a unit; one building can span parcels and one unit
+can span floors. Never fabricate ownership, official issuance, heights, floors,
+control points or positive-volume conflicts. Display-only decorations/exploded
+floors are not measurement/evidence authority. Unknown/withheld/conflicting is
+not zero. Keep observed, planned, estimated and synthetic information explicit.
 
+Use the DATA role's named D0–D7 runbooks. Check actual bytes before claiming a
+local path or external archive exists. Preserve D0 donors and D3 Google/OSM packs.
+Acquire small permitted samples, retain hashes, test independent expected outputs,
+and use the stated fallback when access fails. Do not send private records to an
+external model. Live provider/account/real-source qualification stays separate.
 
-The active demonstration is Lake View. Extend its existing canonical properties with fictional parcel IDs, visible parcels/roads, computed conflict examples and property PDF exports. Keep real datasets separate. Remove only the two user-selected redundant demonstrations from active directories by reversible archival; retain originals and historical access. Seed reruns must preserve user changes and history. Register scenes support circular orbit controls and Ctrl-drag. Workspace Clear/Ctrl+Q cancels only the current drawing. Block/building/floor/unit downloads keep canonical 3D ULPINs, linked parcel 2D ULPIN assertions and byte-identical source revisions; missing geometry remains explicitly unavailable.
+`REPO_DATA=true` selects isolated repository services; false preserves the linked
+environment. Never reset populated volumes, run implicit `repo:init`/reseeding,
+export a replacement committed snapshot or overwrite `.env`/credentials. Dataset
+cleanup permits only the exact verified redundant copies recorded in
+`docs/cleanup-review/applied-cleanup.json`, not a general data purge. Canonical
+originals, upload ZIPs and manifest-bound scene assets remain protected.
 
-- Keep Next.js, CesiumJS, PostgreSQL/PostGIS, S3-compatible storage, Redis/Celery, and private Python processing.
-- Keep this release local and single-operator. Defer production authentication/multiple users, Android, formal statutory acceptance, official identity issuance, field synchronization and exchange. AI extraction is in current scope as reviewed assistance, never spatial authority or direct publication; no paid fallback.
-- Never fabricate computed results or treat generated synthetic files as real survey evidence.
-- Canonical units are local metres in a named frame and vertical benchmark. Display transformations are not measurements.
-- Source receipt, suitability, draft geometry, and validation are distinct.
-- Preserve originals, source revisions, geometry revisions, and input fingerprints.
-- No private secrets in committed files or tool output. Services stay local.
-- `REPO_DATA=true` selects the isolated `ulpin-repo` services and committed snapshot; false preserves the linked environment. Never overwrite populated repository volumes or refresh the committed snapshot implicitly. Preserve original object bytes, source attribution, identities and revision history; run `repo:check` before publishing a snapshot.
-- Limit command output aggressively; never inspect binary files as text.
-- You are working alongside other agents. Respect assigned files and coordinate shared-contract changes with the lead. Do not revert another agent's work. No recursive agent spawning.
+## Ownership and execution
+
+Use an isolated branch/worktree and record its base SHA. FND owns shared backend,
+contracts, migrations, configuration, dependencies and API/worker wiring. UI owns
+shared frontend parents, route state, caches and map/runtime integration. DATA owns
+fixture/acquisition directories and independent expected cases. Feature agents
+own their bounded leaves/tests; transfer ownership explicitly. Submit a narrow
+patch with reproducer to a shared owner rather than writing a competing service.
+
+Start with at most two implementation owners plus DATA; after V0 keep at most
+three unfinished integration-dependent workstreams. FND may explicitly hold PACK0
+initially. No recursive agent spawning, force push, unrelated reformatting,
+implicit main merge, public activation, credit purchase or secret commits.
+
+Keep local/single-operator restrictions until F2 and DEPLOY qualify every relevant
+API, asset, SSR and public path. Do not globally remove local guards. Sarvam is
+planned governed processing; integrity, confidentiality and residency need separate
+evidence. Manual mapping and deterministic answers remain valid fallbacks.
+
+## Verification and cleanup discipline
+
+Read the task's named tests and data before editing. Use locked dependencies,
+`scripts/engineering/isolation.mjs`, existing runners and the build-server guard.
+Never build against another agent's live worktree. Report actual commands, exit
+status, code/data hashes, saved receipts, exact expected/actual results and relevant
+fresh browser captures. Separate contract, local integration, real-source, visual
+and deployment results. A file named final/current or a test-plan document is not
+proof. Do not print secrets or binary contents; bound command output.
+
+This branch's cleanup removes only approved redundancies and retired reference
+material after checks. Remaining runtime/CI-dependent candidates in the review
+are **not** an executable deletion list. Keep donors, unique visual inputs,
+working originals and regression coverage until a tested replacement exists.

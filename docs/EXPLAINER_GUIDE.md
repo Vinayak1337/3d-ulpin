@@ -45,5 +45,4 @@ attachments. See `LAKE_VIEW_SOURCE_SHOWCASE.md` for that separate walkthrough.
 
 The UI has been checked at desktop, tablet and phone widths, including source
 switching, overlays, calibration markers, 2D/3D projection, component selection,
-report downloads and full-screen presentation. Run
-`node outputs/ml-explainer/verify.mjs` against the local app to repeat the checks.
+report downloads and full-screen presentation. Those historical checks and their one-off harness are retained in [the pinned output directory](https://github.com/Vinayak1337/3d-ulpin/tree/f623cff897f91bb3ebd4c225f700ac263f7beb72/outputs/ml-explainer/). They were not re-run by cleanup. Do not use that removed working-tree command as a current acceptance gate; use the assigned feature and active-Studio tests for new work.
