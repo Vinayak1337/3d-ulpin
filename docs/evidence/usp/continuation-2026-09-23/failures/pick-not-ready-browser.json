@@ -1,0 +1,12 @@
+{
+  "codeSha": "27c67126c17d9347e69354c1c02511928243935f",
+  "stats": {
+    "startTime": "2026-09-23T16:33:25.843Z",
+    "duration": 58617.344,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "reason": "Real click returned no hit before asynchronous selected Entity geometry was ready."
+}

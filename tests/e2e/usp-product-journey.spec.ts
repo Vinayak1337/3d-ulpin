@@ -120,6 +120,9 @@ test('D0 map navigation, supplied levels and building switches preserve exact re
       const beforeFocus = await readCamera(scene);
       await page.getByRole('button', { name: 'Focus selected property', exact: true }).click();
       await expect.poll(async () => cameraDelta(beforeFocus, await readCamera(scene))).toBeGreaterThan(100);
+      await expect.poll(async () => JSON.parse((await scene.getAttribute('data-ready-overlay-ids')) || '[]'))
+        .toContain(`record:${basementUnit}`);
+      await expect(scene).toHaveAttribute('data-scene-ready', 'true');
       const focused = (await canvas.boundingBox())!;
       await page.mouse.click(focused.x + focused.width * .5, focused.y + focused.height * .5);
       const basementIds = [`record:${id}`, `record:${basementUnit}`];
