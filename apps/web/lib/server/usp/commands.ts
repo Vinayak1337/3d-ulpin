@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
+import { z } from 'zod';
 import {
   UspCommitProposalSchema, UspCommitReceiptSchema, UspPrepareProposalSchema,
   UspSnapshotManifestSchema, type RequestContext, type PrepareProposal, type CommitProposal,
@@ -11,6 +12,8 @@ import { commitRegistryReviewTx } from '../registry';
 import { assertLocalUsp, captureRegistrySnapshotTx } from './snapshots';
 
 async function scopedManifestTx(client: PoolClient, ctx: RequestContext, scope: CommitProposal['scope']) {
+  z.uuid().parse(scope.scopeId);
+  z.uuid().parse(scope.manifestId);
   const row = (await client.query('SELECT body FROM usp_snapshots WHERE id=$1 AND digest=$2',
     [scope.manifestId, scope.snapshotDigest])).rows[0] ?? notFound('The exact snapshot is unavailable.');
   const manifest = UspSnapshotManifestSchema.parse(row.body);
@@ -59,6 +62,7 @@ export async function prepareProposalTx(client: PoolClient, ctx: RequestContext,
   const current = await captureRegistrySnapshotTx(client, ctx, command.scope.scopeId, manifest.selection);
   if (current.digest !== manifest.digest) conflict('Source or property revisions changed. Review a fresh snapshot.');
   const change = command.changes[0];
+  z.uuid().parse(change.draftId);
   const draft = (await client.query('SELECT * FROM registry_drafts WHERE id=$1 AND site_id=$2 FOR UPDATE',
     [change.draftId, command.scope.scopeId])).rows[0] ?? notFound();
   if (draft.status !== 'draft' || draft.revision !== change.expectedDraftRevision) conflict('The draft changed.');
@@ -96,6 +100,8 @@ export async function commitProposalTx(client: PoolClient, ctx: RequestContext, 
     throw new AppError(422, 'USP_COMMIT_UNSUPPORTED', 'This reviewed commit operation is not supported.');
   }
   const hash = fingerprint(command), scopeKey = command.scope.scopeId, operation = 'commit_registry';
+  z.uuid().parse(command.proposalId);
+  z.uuid().parse(command.reviewId);
   await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
   const previous = await requestReceiptTx(client, ctx, scopeKey, operation, command.guard.requestKey, hash);
   if (previous) return UspCommitReceiptSchema.parse(previous);

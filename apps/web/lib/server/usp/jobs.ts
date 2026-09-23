@@ -14,7 +14,7 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
   scope: UspScope, inputManifestId: string, inputSha256: string) {
   UspScopeSchema.parse(scope);
   const job = (await client.query('SELECT id,operation FROM jobs WHERE id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
-  if (!String(job.operation).startsWith('usp:')) {
+  if (job.operation !== 'usp:packet0') {
     throw new AppError(422, 'USP_JOB_OPERATION', 'Only registered USP jobs can use fenced attempts.');
   }
   const prior = (await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1', [job.id])).rows[0];

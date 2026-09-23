@@ -1,5 +1,6 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { PoolClient } from 'pg';
+import { z } from 'zod';
 import {
   UspSnapshotManifestSchema, UspResolvedTargetSchema, UspScopePageSchema,
   UspAuthorizedAssetSchema, UspVerticalContextSchema, type RequestContext, type SnapshotScope, type EvidencePointer,
@@ -54,6 +55,7 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
 
 export async function captureRegistrySnapshot(ctx: RequestContext, siteId: string, selection: { kind: 'site' } | { kind: 'targets'; pins: readonly TargetPin[] }) {
   assertLocalUsp(ctx);
+  z.uuid().parse(siteId);
   return transaction(async client => {
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
     return captureRegistrySnapshotTx(client, ctx, siteId, selection);
@@ -104,6 +106,8 @@ export async function captureRegistrySnapshotTx(client: PoolClient, ctx: Request
 
 export async function readManifest(ctx: RequestContext, scope: SnapshotScope) {
   assertLocalUsp(ctx);
+  z.uuid().parse(scope.scopeId);
+  z.uuid().parse(scope.manifestId);
   const row = (await transaction(async client => (await client.query(
     'SELECT body FROM usp_snapshots WHERE id=$1 AND scope_id=$2 AND digest=$3',
     [scope.manifestId, scope.scopeId, scope.snapshotDigest],
