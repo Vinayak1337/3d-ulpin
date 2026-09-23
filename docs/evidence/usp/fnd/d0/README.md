@@ -111,3 +111,9 @@ off-centre supplied basement unit. The actual failure capture shows the unit
 visible below ground. Correct the test to select and focus U-AB01 using the
 real controls, then require an actual Cesium pick; keep the visibility and
 record-preservation assertions.
+
+The focused `9a87498` rerun again passed PACK0/D1, but the real basement pick
+remained unproven. Its capture shows the selected unit centred and unobscured;
+the focus-movement check passes. Independent review identified incomplete pick
+telemetry (only the Entity branch was recorded). Inspect the actual pick branch
+and identity before another correction; do not weaken the geometry assertion.

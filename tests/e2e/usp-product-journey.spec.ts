@@ -123,7 +123,10 @@ test('D0 map navigation, supplied levels and building switches preserve exact re
       const focused = (await canvas.boundingBox())!;
       await page.mouse.click(focused.x + focused.width * .5, focused.y + focused.height * .5);
       const basementIds = [`record:${id}`, `record:${basementUnit}`];
-      await expect.poll(async () => basementIds.includes((await scene.getAttribute('data-picked-entity-id')) || '')).toBe(true);
+      await expect.poll(async () => ({
+        entity: await scene.getAttribute('data-picked-entity-id'),
+        kind: await scene.getAttribute('data-pick-kind'),
+      })).toEqual({ entity: expect.stringMatching(new RegExp(`^(${basementIds.join('|')})$`)), kind: 'entity' });
     } else await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'false');
     await page.screenshot({ path: info.outputPath(`d0-level-${level.toLowerCase()}.png`) });
   }
