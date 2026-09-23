@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { cameraDelta, readCamera } from './usp-camera';
 
 type D0Receipt = {
   schemaVersion: "usp-d0-import-receipt/1";
@@ -90,16 +91,16 @@ test('D0 map navigation, supplied levels and building switches preserve exact re
   const scene = page.locator('[data-tile-canvas]');
   await expect(scene).toHaveAttribute('data-scene-ready', 'true');
   const canvas = scene.locator('canvas');
-  const cameraBefore = await scene.getAttribute('data-camera');
+  const cameraBefore = await readCamera(scene);
   const box = (await canvas.boundingBox())!;
   await page.mouse.move(box.x + box.width * .5, box.y + box.height * .5);
   await page.mouse.down({ button: 'right' });
   await page.mouse.move(box.x + box.width * .62, box.y + box.height * .56, { steps: 12 });
   await page.mouse.up({ button: 'right' });
-  await expect.poll(() => scene.getAttribute('data-camera')).not.toBe(cameraBefore);
-  const orbited = await scene.getAttribute('data-camera');
+  await expect.poll(async () => cameraDelta(cameraBefore, await readCamera(scene))).toBeGreaterThan(100);
+  const orbited = await readCamera(scene);
   await page.mouse.wheel(0, -140);
-  await expect.poll(() => scene.getAttribute('data-camera')).not.toBe(orbited);
+  await expect.poll(async () => cameraDelta(orbited, await readCamera(scene))).toBeGreaterThan(100);
   await page.getByRole('button', { name: 'Fit block', exact: true }).click();
   await page.getByRole('button', { name: 'Inspect floors & units' }).click();
   for (const level of ['Basement', 'Mezzanine', 'First']) {
