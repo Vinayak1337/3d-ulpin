@@ -62,6 +62,17 @@ async function command(label, executable, args, { input, timeout = 600000, env =
 }
 const compose = (label, args, options) => command(label, composeExecutable, [...composeArgs, ...args], options);
 
+async function savedTableDigests() {
+  const tables = (await pool.query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")).rows;
+  const result = {};
+  for (const { tablename } of tables) {
+    const quoted = '"' + tablename.replaceAll('"', '""') + '"';
+    const rows = (await pool.query(`SELECT row_to_json(t)::text AS body FROM public.${quoted} t`)).rows.map(row => row.body).sort();
+    result[tablename] = { rows: rows.length, sha256: hash(rows.join('\n')) };
+  }
+  return result;
+}
+
 async function assertLoopbackPortFree(port) {
   const server = createServer();
   await new Promise((done, fail) => {
@@ -196,9 +207,12 @@ try {
   const d0Import = JSON.parse(await readFile(d0ReceiptFile, 'utf8'));
   assert.equal(d0Import.schemaVersion, 'usp-d0-import-receipt/1');
   const replayReceiptFile = d0ReceiptFile.replace(/\.json$/, '-replay.json');
+  const beforeD0Replay = await savedTableDigests();
   await command('d0-import-replay', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/import-d0.ts',
     '--apply', '--receipt', replayReceiptFile], { env: d0Env, timeout: 180000 });
   assert.deepEqual(JSON.parse(await readFile(replayReceiptFile, 'utf8')), d0Import, 'D0 replay changed pinned identities or source history');
+  assert.deepEqual(await savedTableDigests(), beforeD0Replay, 'D0 replay mutated saved data');
+  report.checks.push({ name: 'd0-replay-preservation', tables: beforeD0Replay });
   await command('d0-live-verify', 'pnpm', ['exec', 'tsx', 'scripts/usp/verify-d0-live.ts'], { env: d0Env, timeout: 180000 });
   const d0Live = JSON.parse(await readFile(resolve(root, '.runtime/engineering/usp-d0-live.json'), 'utf8'));
   assert.equal(d0Live.status, 'passed');
@@ -206,8 +220,11 @@ try {
   await command('d1-import-apply', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/import-d1.ts', '--apply'], { env: d0Env });
   const d1ReceiptFile = resolve(root, `.runtime/engineering/usp-d1-import-${scope.id}.json`);
   const d1Import = JSON.parse(await readFile(d1ReceiptFile, 'utf8'));
+  const beforeD1Replay = await savedTableDigests();
   await command('d1-import-replay', 'pnpm', ['exec', 'tsx', 'scripts/usp/data/import-d1.ts', '--apply'], { env: d0Env });
   assert.deepEqual(JSON.parse(await readFile(d1ReceiptFile, 'utf8')), d1Import);
+  assert.deepEqual(await savedTableDigests(), beforeD1Replay, 'D1 replay mutated saved data');
+  report.checks.push({ name: 'd1-replay-preservation', tables: beforeD1Replay });
   await command('d0-d1-studio-browser', 'pnpm', ['exec', 'playwright', 'test',
     'tests/e2e/usp-product-journey.spec.ts', 'tests/e2e/usp-d1-journey.spec.ts'],
     { env: { ...d0Env, ULPIN_D1_RECEIPT_FILE: d1ReceiptFile }, timeout: 300000 });
