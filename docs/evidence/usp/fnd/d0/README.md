@@ -117,3 +117,12 @@ remained unproven. Its capture shows the selected unit centred and unobscured;
 the focus-movement check passes. Independent review identified incomplete pick
 telemetry (only the Entity branch was recorded). Inspect the actual pick branch
 and identity before another correction; do not weaken the geometry assertion.
+
+The diagnostic `27c6712` run confirmed `pickKind:none` at the first click.
+Independent source/trace diagnosis found that selected Entity primitives are
+asynchronous, but readiness covered only the map tiles. The screenshot was
+captured 15 seconds after that early miss. Add a version-pinned, fail-closed
+Entity readiness adapter for the locked Cesium engine, expose ready overlay
+identities and await the selected unit's actual geometry before the single pick.
+Cesium's public `DataSourceDisplay.ready` is latched and cannot qualify later
+selections; the isolated adapter's private method must be requalified on upgrade.
