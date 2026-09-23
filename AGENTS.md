@@ -54,6 +54,16 @@ Acquire small permitted samples, retain hashes, test independent expected output
 and use the stated fallback when access fails. Do not send private records to an
 unapproved external model. Live provider/account/real-source qualification stays separate.
 
+Dataset policy, 24 September 2026: general map, load and ingestion tests are
+geography-independent; no Uttam Nagar, Delhi or India-only dataset is mandatory.
+H00 section 4 defines the real 3D corpus and 10k/100k/1M aggregate load ladder;
+H14 J defines unfamiliar supported-schema adaptation and naturally sparse inputs.
+Preserve existing locality fixtures as regressions/provenance, not the required
+starting point. Do not clone records to claim real scale, pre-normalize holdouts
+to hide schema differences, invent missing geometry, or raise per-job/scene limits
+without partition/recovery tests. New native formats need separately qualified
+adapters. No new benchmark or format support is implied by this policy update.
+
 `REPO_DATA=true` selects isolated repository services; false preserves the linked
 environment. Never reset populated volumes, run implicit `repo:init`/reseeding,
 export a replacement committed snapshot or overwrite `.env`/credentials. Dataset

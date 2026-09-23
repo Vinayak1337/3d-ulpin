@@ -34,11 +34,11 @@ Agent first checks [RERA project 2831](https://haryanarera.gov.in/view_project/p
 
 ### H1b — D7 one aligned authoritative block
 
-For actual boundary/rights screening, request the available aligned subset through the problem-statement/nodal contact, appropriate survey/revenue office, [NAKSHA](https://dolr.gov.in/en/about-naksha/), [Delhi Land Records](https://dlrc.delhi.gov.in/) or the responsible road/utility custodian. Request one small block, not an entire city: parcel/recorded-road GIS, source identifiers, control/reference metadata, acquisition dates and permitted record links. Point cloud, ORI, DEM/DSM and underground profile/as-built data are separate optional items; unavailable layers should be explicitly marked unavailable.
+For actual boundary/rights screening, request the available aligned subset for any selected pilot area through the appropriate survey/revenue office or road/utility custodian. The problem-statement/nodal contact, [NAKSHA](https://dolr.gov.in/en/about-naksha/) and [Delhi Land Records](https://dlrc.delhi.gov.in/) remain optional Indian routes, not mandatory locality choices. Request one small aligned area, not an entire city: parcel/recorded-road GIS, source identifiers, control/reference metadata, acquisition dates and permitted record links. Point cloud, ORI, DEM/DSM and underground profile/as-built data are separate optional items; unavailable layers should be explicitly marked unavailable.
 
 **Output:** same manifest plus `layer_role,identifier_scheme,coordinate_reference,vertical_reference,accuracy_statement,acquisition_date,association_evidence,inventory_completeness`. Agents convert it to the pack schema and tests. A building outline cannot be substituted for a parcel; an OSM centreline is not a recorded road-land boundary.
 
-**Dependent outcome / fallback:** authentic FIND/IMPACT boundary or utility claims. No complete public Uttam Nagar crosswalk is assumed. D0 numeric tests and D3 contextual map work proceed; missing D7 blocks only the corresponding real-world claim.
+**Dependent outcome / fallback:** authentic FIND/IMPACT boundary or utility claims. No complete public crosswalk is presumed for the selected area. Under the 24 September 2026 dataset policy, D3 real 3D, high-load and unfamiliar/sparse-source acquisition is geography-independent and remains agent work; it does not wait for this human request. Missing D7 blocks only the corresponding real-world claim, not D0 or map/load/adaptation tests.
 
 ## H2. Qualify real workflow terminology and shared-clause applicability
 

@@ -35,12 +35,18 @@ legal title, an enforcement decision or excavation clearance.
 
 ## Data: preserve the existing packs; acquire new ones explicitly
 
+**Dataset policy, 24 September 2026:** any suitable geography is eligible.
+Use large real 3D sources for a faithful usable map, and independent unfamiliar
+source layouts with naturally missing/fragmented attributes for adaptive intake.
+No Uttam Nagar/Delhi acquisition is required. Handoff 00 section 4 defines the
+real 10k/100k/1M aggregate load targets; these are not passed capacity claims.
+
 | Pack | Role and availability boundary |
 | --- | --- |
 | D0 | New bounded authored workflow fixture derived from existing reference material; not a real survey and not created by this cleanup |
 | D1 | Small real 3DBAG roof-model sample; preserve original shapes, IDs and missing interiors; acquisition/rendering require evidence |
 | D2 | Optional Helsinki textured context, geographically separate |
-| D3 | Existing Delhi/Uttam Nagar Google/OSM inputs; estimates/scenarios remain distinct from observed outlines and recorded boundaries |
+| D3 | Geography-independent real scale and unfamiliar/sparse-source tests: 3DBAG/PDOK, Overture and Swiss 3D candidates; qualified bounded jobs and spatial paging, not all records in one scene |
 | D4 | DDA document rows for extraction/scoped reporting; no automatic geometry or ownership |
 | D5 | Matched permitted Indian building plan, section and evidence; availability must be confirmed |
 | D6 | Separate modality-specific ML evaluation data; not a prerequisite to the first useful UI |
@@ -55,6 +61,8 @@ Existing inputs remain available: [fixture guide](fixtures/README.md),
 [upload packages](data-source/README.md), [repository snapshot](repo-data/README.md),
 [Uttam Nagar provenance](docs/GOOGLE_UTTAM_NAGAR.md) and
 [additive transfer instructions](docs/UTTAM_NAGAR_SETUP.md).
+These locality-specific materials are optional preserved sources/regressions,
+not a requirement for new map, scale or adaptation qualification.
 The canonical source tree, ZIP entry points and manifest-bound scene assets are
 retained. Duplicate unpacked convenience copies are not separate datasets.
 
@@ -90,8 +98,10 @@ separate additive operation, not an instruction to refresh the base snapshot.
 pnpm typecheck
 pnpm test:studio
 pnpm test:register-scope
-pnpm test:uttam
 ```
+
+`pnpm test:uttam` remains a compatibility regression for the retained importer;
+it neither requires new local-area acquisition nor qualifies new real-data scale.
 
 Registry/API/export/browser tests require their documented isolated services and
 fixtures; see handoff 00 and the assigned feature. Pure tests, application integration,
