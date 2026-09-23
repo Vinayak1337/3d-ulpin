@@ -121,7 +121,7 @@
   "buildings": [
     {
       "alias": "B-A",
-      "name": "Cross Parcel House",
+      "name": "Courtyard House",
       "outer": [
         [
           0,
@@ -144,7 +144,30 @@
           0
         ]
       ],
-      "holes": [],
+      "holes": [
+        [
+          [
+            9,
+            9
+          ],
+          [
+            11,
+            9
+          ],
+          [
+            11,
+            11
+          ],
+          [
+            9,
+            11
+          ],
+          [
+            9,
+            9
+          ]
+        ]
+      ],
       "parcels": [
         "P-A",
         "P-B"
@@ -770,12 +793,5 @@
       "state": "unknown",
       "reason": "Only synthetic parcel aliases supplied"
     }
-  ],
-  "courtyardDraft": {
-    "source": "buildings-courtyard-draft.arcgis.json",
-    "scenario": "scenario-courtyard-draft.json",
-    "buildingAlias": "B-A",
-    "state": "retained_unrecorded",
-    "reason": "The current recorded-detail prism authority supports only a simple outline; no courtyard was flattened into registry geometry."
-  }
+  ]
 }

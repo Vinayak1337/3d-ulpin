@@ -41,7 +41,7 @@ function assertPart(lines: string[], line: number, token: string, alias: string)
 /** Authored D0 truth checks; byte checks alone do not qualify a live service or renderer. */
 export async function verifyD0() {
   const bytes = await verifyUspPack(path.join(root, 'manifest.json'));
-  assert.equal(bytes.profile, 'golden-v1'); assert.equal(bytes.checked.length, 11);
+  assert.equal(bytes.profile, 'golden-v1'); assert.equal(bytes.checked.length, 13);
   const scenario = await readJson('scenario.json');
   const expected = await readJson('expected.json');
   assert.equal(scenario.classification, 'synthetic');
@@ -88,7 +88,15 @@ export async function verifyD0() {
     }
   }
   const area = ringArea(buildings.get('B-A').outer) - buildings.get('B-A').holes.reduce((sum: number, hole: number[][]) => sum + ringArea(hole), 0);
-  assert.equal(area, 396); // 20 x 20 outer with 2 x 2 authored courtyard.
+  assert.equal(area, 400); // Clean recorded outline; the source courtyard remains a separate draft.
+  assert.equal(scenario.courtyardDraft.state, 'retained_unrecorded');
+  const draftScenario = await readJson('scenario-courtyard-draft.json');
+  const draftGis = await readJson('buildings-courtyard-draft.arcgis.json');
+  const draft = draftScenario.buildings.find((item: any) => item.alias === 'B-A');
+  assert.equal(draft.holes.length, 1);
+  assert.equal(draftGis.features.find((item: any) => item.attributes.id === 'B-A').geometry.rings.length, 2);
+  assert.equal(ringArea(draft.outer) - ringArea(draft.holes[0]), expected.courtyardDraft.expectedNetAreaM2);
+  assert.equal(expected.courtyardDraft.state, 'retained_unrecorded');
   const [o1, o2, o3] = expected.geometryOracles;
   for (const oracle of [o1, o2]) {
     assert.equal(overlapArea(oracle.leftXY, oracle.rightXY), 10);
