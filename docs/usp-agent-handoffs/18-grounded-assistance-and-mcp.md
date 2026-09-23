@@ -1,5 +1,7 @@
 # 18 · Grounded property assistance and optional public MCP
 
+**Provider-plan update, 23 September 2026:** [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) is required for this feature's model integration. Use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) for development-worker selection. These instructions do not claim a live provider, funded account or passing new tests.
+
 Owner **ASSIST**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), gateway in [19](19-india-contained-deployment.md) and [99](99-ui-ux-and-integration.md). ER-15/21/22/25 are incorporated. New paths below are implementation tasks, not available functionality.
 
 ## A. User outcome and product value
@@ -69,6 +71,10 @@ Implementation references: [OpenAI MCP server guide](https://developers.openai.c
 
 Native local assistance needs F1 and its real producers, not F2. Remote public MCP needs F2, DEPLOY public_interoperability mode and an approved released projection. India-private mode disables external MCP/private-data transfer. An outbound tunnel or an OAuth token does not change where the returned data goes. Do not claim exported public responses remain inside India.
 
+### Runtime gateway and billing boundary
+
+ASSIST0 remains deterministic and requires no model wallet. Optional routing uses H20's authorised Sarvam profile through the existing gateway, with typed factual blocks retaining H18 authority. Do not expose key aliases, billing-pool identifiers, balances or provider error bodies to a property user. Budget exhaustion, cooldown or an unqualified provider falls back to available typed service facts and native actions, not another model provider. Result reuse still requires current source/target grants. Development GPT workers in H02 are not runtime property processors. Optional paraphrase remains separately evaluated and is never enabled merely because a key is funded.
+
 ## F. Exact implementation map
 
 | File | Change / owner |
@@ -107,6 +113,8 @@ Quick/full register → Ask about this property → persistent building/floor/un
 Test cross-submission IDs, wrong token audience, forged principal, revoked source/release, hidden party/filename, ambiguous property, exhausted limits, malformed output, false unit conversion and model outage. Native fallback must work without remote MCP. Verify read-only tools do not create packets/jobs/proposals. MCP SDK/Inspector tests qualify protocol only; actual external-client account availability is a separate recorded test. No live credentials or account setup is assumed.
 
 Run `pnpm typecheck`, `pnpm test:ai`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-assistance.test.ts tests/usp-mcp.test.ts`; `pnpm exec tsx tests/usp-assistance-integration.ts`; `pnpm exec playwright test tests/e2e/usp-assistance.spec.ts`. Return service/pack hashes, expected/actual factual blocks, rejected adversarial cases, exact navigation and protocol evidence. Report ASSIST0/optional paraphrase/remote qualification separately.
+
+**Additional H20 acceptance:** zero-key, exhausted-wallet and 429 scenarios still return correct available typed facts without leaking settings. Revoke evidence access during a pending answer and verify neither cached model text nor a fallback discloses it. Any optional model call shares H20's two-attempt and money caps; no hidden second client.
 
 ## K. Copy-paste assignment
 

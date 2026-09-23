@@ -5,7 +5,7 @@
 Effective 23 September 2026, follow `docs/usp-agent-handoffs/00-README.md`,
 `01-shared-contracts-and-ownership.md`, the assigned feature's complete A–K
 sections, relevant `99-ui-ux-and-integration.md`, and current code. The handoffs
-are copied without semantic changes from `e167b1f`; new paths/types in them are
+originate at `e167b1f` and include explicitly dated updates; new paths/types are
 implementation requirements, not existing capabilities. Read `apps/web/AGENTS.md`
 and the installed framework documentation before applicable web changes.
 
@@ -44,7 +44,7 @@ Use the DATA role's named D0–D7 runbooks. Check actual bytes before claiming a
 local path or external archive exists. Preserve D0 donors and D3 Google/OSM packs.
 Acquire small permitted samples, retain hashes, test independent expected outputs,
 and use the stated fallback when access fails. Do not send private records to an
-external model. Live provider/account/real-source qualification stays separate.
+unapproved external model. Live provider/account/real-source qualification stays separate.
 
 `REPO_DATA=true` selects isolated repository services; false preserves the linked
 environment. Never reset populated volumes, run implicit `repo:init`/reseeding,
@@ -71,6 +71,22 @@ Keep local/single-operator restrictions until F2 and DEPLOY qualify every releva
 API, asset, SSR and public path. Do not globally remove local guards. Sarvam is
 planned governed processing; integrity, confidentiality and residency need separate
 evidence. Manual mapping and deterministic answers remain valid fallbacks.
+
+### Current worker and runtime-provider rules
+
+Read `docs/usp-agent-handoffs/02-lead-agent-execution.md`: Astra Max is the
+hands-on lead; only GPT-6 Sol/Astra workers may be spawned with explicit,
+verified model/effort settings. Spawn useful independent work within existing
+ownership limits, at most two child threads initially; only the lead spawns.
+Unsupported model selection means explicit serial fallback, not another family.
+
+Read `docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md` for runtime
+Sarvam integration. DEPLOY owns provider clients, shared organisation wallets,
+per-key usage, exact cost reservations, account throttles and retirement memory.
+Rs100 signup credit is not per key. Never revive retired keys, bypass account
+limits, farm signup credits, purchase funding or expose secrets. Use fake
+providers/no-AI paths until authorised account and live-call gates are met.
+These runtime budgets and data permissions are separate from coding-agent usage.
 
 ## Verification and cleanup discipline
 
