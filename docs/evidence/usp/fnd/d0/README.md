@@ -104,3 +104,10 @@ acceptance: the selected basement geometry was hidden by the parcel fills at
 basement is `−3.2…0 m`. Correct only display visibility for overlapping surface
 context; retain source coordinates, records and measurements. The reviewer also
 requested a clear active D1 frame label and an unobscured mobile roof.
+
+The `2801893` run passed PACK0 and the expanded D1 journey. Its new basement
+pick assertion failed because it clicked the floor's centre, outside the
+off-centre supplied basement unit. The actual failure capture shows the unit
+visible below ground. Correct the test to select and focus U-AB01 using the
+real controls, then require an actual Cesium pick; keep the visibility and
+record-preservation assertions.

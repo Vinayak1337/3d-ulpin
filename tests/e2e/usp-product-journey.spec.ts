@@ -112,9 +112,17 @@ test('D0 map navigation, supplied levels and building switches preserve exact re
     if (level === 'Basement') {
       await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'true');
       await expect(page.getByRole('status')).toContainText('recorded levels unchanged');
+      const basementUnit = receipt.records['U-AB01'];
+      await page.locator(`[data-record-id="${basementUnit}"]`).click();
+      await expect(page).toHaveURL(new RegExp(`record=${basementUnit}`));
+      // A floor covers the building; its supplied unit is off-centre. Focus the
+      // selected unit through the real control before checking its scene pick.
+      const beforeFocus = await readCamera(scene);
+      await page.getByRole('button', { name: 'Focus selected property', exact: true }).click();
+      await expect.poll(async () => cameraDelta(beforeFocus, await readCamera(scene))).toBeGreaterThan(100);
       const focused = (await canvas.boundingBox())!;
       await page.mouse.click(focused.x + focused.width * .5, focused.y + focused.height * .5);
-      const basementIds = [`record:${id}`, `record:${receipt.records['U-AB01']}`];
+      const basementIds = [`record:${id}`, `record:${basementUnit}`];
       await expect.poll(async () => basementIds.includes((await scene.getAttribute('data-picked-entity-id')) || '')).toBe(true);
     } else await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'false');
     await page.screenshot({ path: info.outputPath(`d0-level-${level.toLowerCase()}.png`) });
