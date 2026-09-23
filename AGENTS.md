@@ -1,122 +1,41 @@
 # 3D ULPIN — current agent entry point
 
-## Branch flow
+## Adopted direction, 24 September 2026
 
-`main` retains the previous implementation. `staging` is the integration branch
-for the current USP work. Start new implementation branches from `staging` and
-target their pull requests to `staging`; reconcile and verify there. Do not merge
-`staging` into `main` without a separate user request. The merged historical
-Studio branch `feat/studio-reference-rebuild` is retained as an archive.
+Read `docs/usp-agent-handoffs/00-README.md`, revised H14, new H21/H22/H23, the assigned feature's existing detailed handoff, applicable H01/H99 and current code. H24 is presentation wording. Read `apps/web/AGENTS.md` before web changes.
 
-## Adopted direction and what to read
+The product is an India-focused evidence-linked 3D property platform. Large inputs are split into source-preserving complete chunks before semantic conversion. Familiar mappings, the learned converter and Sarvam-assisted interpretation feed one executor, validator, durable queue and progressive map. A real smaller model trains alongside imports on eligible checked examples, is independently evaluated and can take over pending compatible chunks in the same import. Recipe reuse remains an optimization, not a substitute for this learning milestone. Known schemas and post-handover work remain chunked.
 
-Effective 23 September 2026, follow `docs/usp-agent-handoffs/00-README.md`,
-`01-shared-contracts-and-ownership.md`, the assigned feature's complete A–K
-sections, relevant `99-ui-ux-and-integration.md`, and current code. The handoffs
-originate at `e167b1f` and include explicitly dated updates; new paths/types are
-implementation requirements, not existing capabilities. Read `apps/web/AGENTS.md`
-and the installed framework documentation before applicable web changes.
+H21 replaces any earlier prohibition on learning during imports. H22 permits clearly labelled estimated/illustrative display derivatives, never fabricated evidence. H23 replaces locality-specific or unrestricted operational-data defaults: operational geography is India-only, data.gov.in is the first source preference, tests may use any permitted geography, and existing datasets are preserved. A distinct public dashboard supports released-property lookup, private document/discrepancy submission and tracked review. Registry/plan evidence can arrive later without rebuilding the map.
 
-Deliver the active **Studio** product: one shared map/data/selection boundary,
-Batches / Map / Register, contextual quick register and full register. First prove
-F0 → F1-min → V0: supplied building/floor/unit → exact evidence → scoped PACK0
-artifact → reopen saved state; separately qualify D1 real roof geometry. Follow
-I1 and feature/F2 gates afterwards. Do not make local V0 wait for public identity,
-all ML modalities, live Sarvam, remote MCP or an authentic complete cadastral set.
-Do not substitute a beautiful isolated showcase or mock APIs for integration.
+This revision plans future work; it does not implement or qualify the learner, renderer changes, high-load operation, public deployment or Sarvam. Reuse the recorded D0/PACK0 and single-real-D1 milestone; do not rebuild it because historical starter prose says it once did not exist. See `docs/evidence/usp/continuation-2026-09-23/README.md`.
 
-Old T-number plans, the engineering backlog, dated screenshots and prototype
-readmes are historical/test/reference material, not the current execution order.
-`docs/engineering-plan/tools` and its required records remain CI inputs. Do not
-reset their history or delete tests to make a new task appear complete. The old
-orchestration pack is preserved in pinned Git history through the cleanup index.
+## Branch and implementation discipline
 
-## Preserve data, identities and existing mechanisms
+Current documentation continuation is `codex/usp-staging-continuation-20260923`, based on the inspected `36385b1`. Fetch and reconcile the actual current head before work. New implementation branches use the current verified integration base and target `staging`. Do not merge into `main`, activate public services or deploy without explicit authorization. No force push.
 
-Keep Next.js/TypeScript, the existing shared Three/Cesium runtime boundaries,
-PostgreSQL/PostGIS, private S3-compatible originals, Redis/Celery, dispatcher and
-private Python processing. Extend the recorded registry and case/import draft
-services, not another property database, map or job broker. Keep compatible legacy
-URLs and unique document/GIS/raster/point-cloud/ML inspection capabilities.
+Keep Next.js/TypeScript, existing Three/Cesium runtime boundaries, PostgreSQL/PostGIS, private source/object storage, Redis/Celery, dispatcher and Python processing. Use one canonical registry, one job authority, one provider gateway, one conversion/validation contract and one active shared map runtime. Extend actual existing services rather than inventing competing databases, uploaders, brokers or per-page maps. Preserve compatible legacy URLs and unique document/GIS/raster/point-cloud inspection capabilities.
 
-Preserve original bytes/hashes, source and geometry revisions, exact locators,
-reference systems, quantity definitions, attribution, identities and review
-history. Official supplied parcel ULPIN is distinct from system building/floor/space
-IDs. A floor is not necessarily a unit; one building can span parcels and one unit
-can span floors. Never fabricate ownership, official issuance, heights, floors,
-control points or positive-volume conflicts. Display-only decorations/exploded
-floors are not measurement/evidence authority. Unknown/withheld/conflicting is
-not zero. Keep observed, planned, estimated and synthetic information explicit.
+## Data and evidence invariants
 
-Use the DATA role's named D0–D7 runbooks. Check actual bytes before claiming a
-local path or external archive exists. Preserve D0 donors and D3 Google/OSM packs.
-Acquire small permitted samples, retain hashes, test independent expected outputs,
-and use the stated fallback when access fails. Do not send private records to an
-unapproved external model. Live provider/account/real-source qualification stays separate.
+Preserve originals/hashes, source and geometry revisions, identifiers, locators, reference frames/units, attribution, permissions and review history. Unknown, absent, null, withheld and conflicting remain distinct. Official supplied parcel ULPINs differ from application building/floor/space IDs. A floor is not necessarily a unit; one building can span parcels and one unit can span floors. Source or display geometry does not grant ownership or official issuance.
 
-Dataset policy, 24 September 2026: general map, load and ingestion tests are
-geography-independent; no Uttam Nagar, Delhi or India-only dataset is mandatory.
-H00 section 4 defines the real 3D corpus and 10k/100k/1M aggregate load ladder;
-H14 J defines unfamiliar supported-schema adaptation and naturally sparse inputs.
-Preserve existing locality fixtures as regressions/provenance, not the required
-starting point. Do not clone records to claim real scale, pre-normalize holdouts
-to hide schema differences, invent missing geometry, or raise per-job/scene limits
-without partition/recovery tests. New native formats need separately qualified
-adapters. No new benchmark or format support is implied by this policy update.
+Never fabricate recorded heights, floors, control points, ownership or analytical conflicts. Enhanced preview may use explicitly labelled estimates and illustrative massing/materials, with separate provenance and capability restrictions. These cannot affect measurement, evidence coverage, readiness, rights, property packets or training ground truth. Insufficient geometry/reference data is flagged, not filled into an apparently complete cadastre. Distinct source geographies remain separate; foreign tests are not moved onto Indian coordinates.
 
-`REPO_DATA=true` selects isolated repository services; false preserves the linked
-environment. Never reset populated volumes, run implicit `repo:init`/reseeding,
-export a replacement committed snapshot or overwrite `.env`/credentials. Dataset
-cleanup permits only the exact verified redundant copies recorded in
-`docs/cleanup-review/applied-cleanup.json`, not a general data purge. Canonical
-originals, upload ZIPs and manifest-bound scene assets remain protected.
+`REPO_DATA=true` selects isolated repository services; false preserves the linked environment. Never reset populated volumes, implicitly reseed, export a replacement snapshot or overwrite `.env`/credentials. Existing datasets, canonical originals, upload ZIPs and manifest-bound scene assets remain protected. Historic cleanup records are not permission for a new data purge. Old locality packs remain provenance/regression material, not mandatory acquisition targets. Large/restricted new inputs stay outside Git.
 
-## Ownership and execution
+## Ownership and bounded agents
 
-Use an isolated branch/worktree and record its base SHA. FND owns shared backend,
-contracts, migrations, configuration, dependencies and API/worker wiring. UI owns
-shared frontend parents, route state, caches and map/runtime integration. DATA owns
-fixture/acquisition directories and independent expected cases. Feature agents
-own their bounded leaves/tests; transfer ownership explicitly. Submit a narrow
-patch with reproducer to a shared owner rather than writing a competing service.
+FND owns shared schemas, backend hooks, migrations, configuration/dependencies, transactions and model-dispatch epochs. INGEST owns profiling/partition/conversion/draft leaves. LEARN owns eligible examples, candidate training/inference/evaluation, not queue or registry writes. UI owns shared routes/selection/cache/renderer and public mounts. DATA owns acquisition/fixtures/independent truth. DEPLOY owns provider calls, data/training/egress policy, billing and credentials. Existing feature owners retain their bounded leaves. Transfer shared ownership explicitly; one writer per shared seam.
 
-Start with at most two implementation owners plus DATA; after V0 keep at most
-three unfinished integration-dependent workstreams. FND may explicitly hold PACK0
-initially. No recursive agent spawning, force push, unrelated reformatting,
-implicit main merge, public activation, credit purchase or secret commits.
+Use an isolated worktree and record base SHA. Keep at most two implementation owners plus bounded DATA/review initially and at most three unfinished integration-dependent streams later. Only the lead spawns; no recursive workers. Follow H02's user-selected GPT-6 Sol/Astra-only development-worker policy and verify actual model/effort settings. Unsupported selection uses an explicit serial fallback, not another family. Coding agents are not runtime processors for private operational records.
 
-Keep local/single-operator restrictions until F2 and DEPLOY qualify every relevant
-API, asset, SSR and public path. Do not globally remove local guards. Sarvam is
-planned governed processing; integrity, confidentiality and residency need separate
-evidence. Manual mapping and deterministic answers remain valid fallbacks.
+## Sarvam and learning gates
 
-### Current worker and runtime-provider rules
+Use H20's single governed model gateway and existing budgets, account scopes, reservations, shared throttles, drain/retirement state and recovery. Supplied independent accounts do not establish verified remaining balances or unrestricted permissions. Never reuse retired credentials, farm grants, evade throttles, buy credits or expose keys.
 
-Read `docs/usp-agent-handoffs/02-lead-agent-execution.md`: Astra Max is the
-hands-on lead; only GPT-6 Sol/Astra workers may be spawned with explicit,
-verified model/effort settings. Spawn useful independent work within existing
-ownership limits, at most two child threads initially; only the lead spawns.
-Unsupported model selection means explicit serial fallback, not another family.
+Sarvam residency, application residency, confidentiality and correctness are separate qualifications. H21/H23 require applicable written permission before using Sarvam-derived outputs for training/testing/improving ML. Independent permitted labels have a separate provenance route. No permission is not permission to hide the learner or use restricted outputs. Fake-provider/no-key tests precede permitted live calls. Keep manual/exact conversion useful during outages.
 
-Read `docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md` for runtime
-Sarvam integration. DEPLOY owns provider clients, shared organisation wallets,
-per-key usage, exact cost reservations, account throttles and retirement memory.
-Rs100 signup credit is not per key. Never revive retired keys, bypass account
-limits, farm signup credits, purchase funding or expose secrets. Use fake
-providers/no-AI paths until authorised account and live-call gates are met.
-These runtime budgets and data permissions are separate from coding-agent usage.
+## Verification
 
-## Verification and cleanup discipline
-
-Read the task's named tests and data before editing. Use locked dependencies,
-`scripts/engineering/isolation.mjs`, existing runners and the build-server guard.
-Never build against another agent's live worktree. Report actual commands, exit
-status, code/data hashes, saved receipts, exact expected/actual results and relevant
-fresh browser captures. Separate contract, local integration, real-source, visual
-and deployment results. A file named final/current or a test-plan document is not
-proof. Do not print secrets or binary contents; bound command output.
-
-This branch's cleanup removes only approved redundancies and retired reference
-material after checks. Remaining runtime/CI-dependent candidates in the review
-are **not** an executable deletion list. Keep donors, unique visual inputs,
-working originals and regression coverage until a tested replacement exists.
+Read the assigned test data, use locked dependencies and existing isolation/build-server guards, and preserve current test histories. Test source integrity, semantic errors/abstention, real parameter updates, same-import handover/rollback, partial publication, stale events, sparse display separation, later evidence, public isolation, India policy and bounded resources. Record executed commands, exit statuses, code/source/model hashes, actual receipts and fresh active-product screenshots. Separate plan readiness, code tests, local integration, learning qualification, real-source accuracy, GPU performance and deployment. A document, mock or screenshot alone cannot pass a runtime gate.

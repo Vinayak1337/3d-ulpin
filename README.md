@@ -1,75 +1,37 @@
-# 3D ULPIN — evidence-linked 3D property workbench
+# 3D ULPIN — adaptive, evidence-linked 3D property platform
 
-**Current execution and runtime AI:** [Astra Max lead with explicit Sol/Astra workers](docs/usp-agent-handoffs/02-lead-agent-execution.md); [planned Sarvam gateway, shared credits and permanent key retirement](docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md). These dated additions are implementation instructions, not a claim that provider accounts or live inference are configured.
+**Current plan: [start here](docs/usp-agent-handoffs/00-README.md). Revised 24 September 2026.**
 
-**Start implementation with [the adopted handoffs](docs/usp-agent-handoffs/00-README.md).**
-The direction is a visually strong, persisted Studio: select a building, inspect its
-supplied floors and units, open the matching evidence, resolve uncertainty, and
-produce a genuinely property-scoped compilation. Adaptive bulk ingestion extends
-that working journey rather than delaying it.
+Build a useful map while a large dataset is still processing. Source-preserving chunks feed one conversion and validation pipeline. Sarvam assists with unfamiliar structures; a smaller schema model trains alongside the import on eligible checked examples and can take over pending compatible work after independent qualification. Familiar mappings remain the fastest path when already known. Every large input remains chunked, including familiar schemas.
 
-## Current direction versus existing software
+Operational/pilot geography is **India-only**, with **data.gov.in first**. Tests may use any permitted geography. No particular locality is mandatory. Existing datasets and source history remain; foreign test assets are not relocated or published as Indian operational data.
 
-The handoffs were imported unchanged from `docs/usp-agent-handoffs@e167b1f` for
-local discovery on this cleanup branch. They define planned implementation and
-acceptance, not completed new features. The application baseline inspected by
-those plans is `f623cff`. Check current code and actual test receipts before
-claiming a capability works. This cleanup does not import new datasets, run
-migrations, enable public services, or implement F0/V0/I1.
+## Read the plan
 
-| Need | Read |
+| Topic | Handoff |
 | --- | --- |
-| Build order, agent ownership and D0–D7 acquisition/test runbooks | [00 — Start here](docs/usp-agent-handoffs/00-README.md) |
-| Shared identities, snapshots, jobs, access and transactions | [01 — Shared contracts](docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md) |
-| Feature implementation | Assigned file 10–19, including its data/tests in J and assignment in K |
-| Active 3D UI, quick/full register and visual acceptance | [99 — UI and integration](docs/usp-agent-handoffs/99-ui-ux-and-integration.md) |
-| Current application operation | [Studio guide](docs/STUDIO_DEMO_GUIDE.md), [startup](docs/OFFICER_STARTUP.md), [platform](docs/PLATFORM.md) |
-| Cleanup, retained dependencies and historical recovery | [Cleanup record](docs/cleanup-review/README.md) |
+| Product scope, authority and next milestone | [00](docs/usp-agent-handoffs/00-README.md) |
+| Source chunks, saved progressive map and queue handover | [14](docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md) |
+| Real concurrent ML, evaluation and promotion; why no initial RL | [21](docs/usp-agent-handoffs/21-concurrent-schema-learning.md) |
+| Three/R3F direction, sparse-data visuals and late evidence | [22](docs/usp-agent-handoffs/22-rendering-and-sparse-data.md) |
+| Indian sources, Sarvam policy, modular ownership and build gates | [23](docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md) |
+| Plain-language value and copy-ready PPT page | [24](docs/usp-agent-handoffs/24-product-method-and-ppt.md) |
 
-Studio remains the officer interface with **Batches / Map / Register**. Improve
-the actual route and shared map, not a disconnected showcase. Preserve legacy URL
-resolution, canonical identities, evidence and existing processing capabilities.
-The application remains local/single-operator until the separate F2 and deployment
-gates pass. A technical record or system identifier is not official ULPIN issuance,
-legal title, an enforcement decision or excavation clearance.
+The product retains one shared map and register, source-linked property packets, readiness/discrepancy review, history, shared/underground spaces and a distinct public evidence/correction dashboard. Registry documents and other evidence can be attached later without replacing physical identities or rebuilding the whole map.
 
-## Data: preserve the existing packs; acquire new ones explicitly
+Enhanced preview may add labelled estimated or illustrative detail. It never changes evidence, measurements, readiness, rights or official identifiers. Too little geometry/reference evidence is flagged rather than disguised as a complete cadastre.
 
-**Dataset policy, 24 September 2026:** any suitable geography is eligible.
-Use large real 3D sources for a faithful usable map, and independent unfamiliar
-source layouts with naturally missing/fragmented attributes for adaptive intake.
-No Uttam Nagar/Delhi acquisition is required. Handoff 00 section 4 defines the
-real 10k/100k/1M aggregate load targets; these are not passed capacity claims.
+Sarvam is the selected runtime AI path for a designed India-resident deployment, not a guarantee of factual correctness or an already certified hosting boundary. Applicable permission is required before Sarvam-derived outputs are used to train/test/improve ML. Independent eligible labels provide a separate learning route. Live calls, balances, model quality and deployment are separately qualified.
 
-| Pack | Role and availability boundary |
-| --- | --- |
-| D0 | New bounded authored workflow fixture derived from existing reference material; not a real survey and not created by this cleanup |
-| D1 | Small real 3DBAG roof-model sample; preserve original shapes, IDs and missing interiors; acquisition/rendering require evidence |
-| D2 | Optional Helsinki textured context, geographically separate |
-| D3 | Geography-independent real scale and unfamiliar/sparse-source tests: 3DBAG/PDOK, Overture and Swiss 3D candidates; qualified bounded jobs and spatial paging, not all records in one scene |
-| D4 | DDA document rows for extraction/scoped reporting; no automatic geometry or ownership |
-| D5 | Matched permitted Indian building plan, section and evidence; availability must be confirmed |
-| D6 | Separate modality-specific ML evaluation data; not a prerequisite to the first useful UI |
-| D7 | Approved same-area cadastral/road/utility and rights evidence; missing access gates only the corresponding real-world claim |
+## Existing software and evidence
 
-Exact sources, caps, fallbacks and expected tests are in handoff 00 and each
-feature's J section. **A source catalogue is not an acquired dataset.** Do not
-replace original data with attractive invented heights, units or road widths.
-Do not create a second mutable property database for a new format.
+The [recorded local milestone](docs/evidence/usp/continuation-2026-09-23/README.md) covers the bounded D0/PACK0 workflow and one real D1 exterior's local geometry/identity. It does not establish the revised learner, high-load operation, intelligent visual completion, public deployment or live Sarvam. This revision changes plans, not application implementation.
 
-Existing inputs remain available: [fixture guide](fixtures/README.md),
-[upload packages](data-source/README.md), [repository snapshot](repo-data/README.md),
-[Uttam Nagar provenance](docs/GOOGLE_UTTAM_NAGAR.md) and
-[additive transfer instructions](docs/UTTAM_NAGAR_SETUP.md).
-These locality-specific materials are optional preserved sources/regressions,
-not a requirement for new map, scale or adaptation qualification.
-The canonical source tree, ZIP entry points and manifest-bound scene assets are
-retained. Duplicate unpacked convenience copies are not separate datasets.
+Use current code and [AGENTS.md](AGENTS.md). Reuse existing Next.js/TypeScript, shared Three/Cesium runtime, PostGIS, private originals and Python/Celery/Redis services. H00 explicitly resolves conflicting older training/data/visual instructions while preserving detailed feature safeguards and regressions.
 
-## Run the existing local application
+## Existing local operation
 
-Use an already configured environment and the [startup guide](docs/OFFICER_STARTUP.md).
-With locked dependencies installed, the existing developer commands are:
+Follow the [startup guide](docs/OFFICER_STARTUP.md) and [repository-data instructions](repo-data/README.md). Use isolated services for tests. Do not overwrite `.env`, reset populated volumes, reseed implicitly or export a replacement snapshot.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -78,46 +40,4 @@ pnpm db:migrate
 pnpm dev
 ```
 
-These commands act on the configured services; choose an isolated environment for
-tests. The launcher `pnpm demo` and `Start Demo.command` remain available for their
-documented setups. Do not build over another agent's running worktree.
-
-Open **http://127.0.0.1:3000/studio/work**. Use **Add files → Review details →
-Check & record**, or open saved datasets. Map quick inspection and the full register
-must preserve the same selected property and evidence context.
-
-`REPO_DATA=true` selects the separate repository snapshot services; false preserves
-the linked environment. Follow [repo-data/README.md](repo-data/README.md) rather
-than changing credentials or resetting volumes. Do not run `repo:init`, reseeding,
-snapshot export or restore over populated data. `pnpm data:uttam:install` is a
-separate additive operation, not an instruction to refresh the base snapshot.
-
-## Verify according to the work performed
-
-```sh
-pnpm typecheck
-pnpm test:studio
-pnpm test:register-scope
-```
-
-`pnpm test:uttam` remains a compatibility regression for the retained importer;
-it neither requires new local-area acquisition nor qualifies new real-data scale.
-
-Registry/API/export/browser tests require their documented isolated services and
-fixtures; see handoff 00 and the assigned feature. Pure tests, application integration,
-real-source accuracy, visual quality and deployment qualification are distinct.
-Do not report a historical screenshot or a successful inventory as a new runtime pass.
-
-The retained [architecture](docs/ARCHITECTURE.md),
-[API contract](docs/IMPLEMENTATION_CONTRACT.md), [registry](docs/REGISTRY.md),
-[local spatial extraction](docs/local-spatial-extraction.md), and
-[hosting assessment](docs/HOSTING.md) describe baseline mechanisms. New Sarvam,
-public contribution and MCP work follows handoffs 13/18/19 and is not assumed live.
-
-## Historical material
-
-Superseded orchestration packs, old walkthroughs and duplicated public galleries
-are referenced through the [pinned historical index](docs/cleanup-review/README.md#historical-recovery).
-The remaining engineering-plan data/tools and design donors are retained where
-CI, generators or visual references still use them. They do not override current
-handoff sequencing. Cleanup never rewrites Git history or deletes local database volumes.
+Run only applicable configured checks, such as `pnpm typecheck` and `pnpm test:studio`; service/browser tests need their documented isolation. The documentation revision itself is not a runtime test pass. Preserve [fixtures](fixtures/README.md), [source upload packages](data-source/README.md), snapshots and retained originals. No implicit deployment or merge to main.
