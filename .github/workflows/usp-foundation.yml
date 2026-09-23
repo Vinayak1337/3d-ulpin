@@ -32,7 +32,7 @@ jobs:
           import json, os, pathlib, subprocess, time
           out = pathlib.Path('.runtime/usp-f0'); out.mkdir(parents=True, exist_ok=True)
           commands = [
-            ('contract-tests', 'pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-foundation.test.ts tests/usp-data-pack.test.ts tests/usp-contract-producers.test.ts'),
+            ('contract-tests', 'pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-*.test.ts'),
             ('starter-types', 'pnpm exec tsc --noEmit --target ES2022 --module esnext --moduleResolution bundler --strict --skipLibCheck --types node tests/usp-foundation.test.ts tests/usp-data-pack.test.ts tests/fixtures/usp-common.ts'),
             ('pack-bytes', 'pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D0/contract-smoke/manifest.json'),
             ('typecheck', 'pnpm typecheck'),

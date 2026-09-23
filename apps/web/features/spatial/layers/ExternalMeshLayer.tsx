@@ -74,7 +74,7 @@ export default function ExternalMeshLayer(props: ExternalMeshProps) {
       viewer.camera.frustum.far = 10000;
       const saved = sessions.get(props.sessionKey).camera;
       if (saved) viewer.camera.setView({ destination: Cesium.Cartesian3.fromRadians(saved.longitude, saved.latitude, saved.height), orientation: saved });
-      else viewer.camera.viewBoundingSphere(sphere, new Cesium.HeadingPitchRange(-.5, -.65, Math.max(8, sphere.radius * 2.8)));
+      else viewer.camera.viewBoundingSphere(sphere, new Cesium.HeadingPitchRange(-.5, -.65, 0));
       viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
       viewer.scene.screenSpaceCameraController.tiltEventTypes = [Cesium.CameraEventType.RIGHT_DRAG, Cesium.CameraEventType.PINCH];
       viewer.scene.screenSpaceCameraController.lookEventTypes = [];
@@ -141,7 +141,7 @@ export default function ExternalMeshLayer(props: ExternalMeshProps) {
     else if (action === 'zoom_out') viewer.camera.zoomOut(Math.max(1, sphere.radius * .25));
     else {
       const heading = action === 'north' ? 0 : action === 'reverse' ? viewer.camera.heading + Math.PI : -.5;
-      viewer.camera.viewBoundingSphere(sphere, new Cesium.HeadingPitchRange(heading, -.65, Math.max(8, sphere.radius * 2.8)));
+      viewer.camera.viewBoundingSphere(sphere, new Cesium.HeadingPitchRange(heading, -.65, 0));
       viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
     }
     viewer.scene.requestRender();

@@ -42,11 +42,13 @@ test('real D1 roof keeps source identity and absent interiors in the shared Stud
   await expect(scene).toHaveAttribute('data-scene-ready', 'true');
   await expect(page.locator('[data-map-runtime-id]')).toHaveCount(1);
   await expect(page.locator('[data-external-roof]')).toHaveAttribute('data-source-sha256', receipt.sourceSha256);
+  await page.getByRole('link', { name: '© 3DBAG by tudelft3d and 3DGI · CC BY 4.0', exact: true }).click({ trial: true });
   await page.screenshot({ path: info.outputPath('d1-roof-desktop.png') });
   const canvas = scene.locator('canvas'), box = (await canvas.boundingBox())!;
   const visibleImage = await canvas.screenshot();
   const beforeLayers = await scene.getAttribute('data-camera');
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
+  await page.getByLabel('Map layers and properties', { exact: true }).getByRole('button', { name: 'Layers', exact: true }).click();
   await page.getByLabel('Show buildings', { exact: true }).uncheck();
   await expect(scene).toHaveAttribute('data-visible', 'false');
   await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
@@ -54,6 +56,7 @@ test('real D1 roof keeps source identity and absent interiors in the shared Stud
   await expect(scene).toHaveAttribute('data-camera', beforeLayers!);
   await expect(page.locator('[data-map-runtime-id]')).toHaveCount(1);
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
+  await page.getByLabel('Map layers and properties', { exact: true }).getByRole('button', { name: 'Layers', exact: true }).click();
   await page.getByLabel('Show buildings', { exact: true }).check();
   await page.getByText('Layer appearance', { exact: true }).click();
   await page.getByLabel('Buildings opacity', { exact: true }).press('Home');
@@ -100,6 +103,8 @@ test('real D1 roof keeps source identity and absent interiors in the shared Stud
   await expect(page.locator('.quick-records')).toContainText('Interior records not supplied');
   await page.screenshot({ path: info.outputPath('d1-mobile-interiors.png') });
   await page.getByRole('button', { name: 'Close inspector', exact: true }).click();
+  await page.getByRole('button', { name: 'Fit block', exact: true }).click();
+  await page.getByRole('link', { name: '© 3DBAG by tudelft3d and 3DGI · CC BY 4.0', exact: true }).click({ trial: true });
   await page.screenshot({ path: info.outputPath('d1-mobile-roof.png') });
   expect(errors).toEqual([]);
   await info.attach('d1-lineage-and-capability', { body: JSON.stringify({ receipt, resource,
