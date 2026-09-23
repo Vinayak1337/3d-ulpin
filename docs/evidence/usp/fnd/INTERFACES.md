@@ -22,4 +22,11 @@ UI owns its parent route, selection generation, viewport, cache and slots. Studi
 
 ## Verification boundary
 
+Current bounded milestone: `304725d` passed the local D0/PACK0 and single-real-D1
+journeys (19 runner commands, three browser tests, all 59 tables unchanged across
+each import replay). Independent review accepted source-linked geometry, exact
+unit picking, evidence/packet reload and the captured desktop/mobile interactions.
+The [continuation evidence](../continuation-2026-09-23/README.md) separates this
+result from global placement, GPU/scale, PDF, provider and deployment gates.
+
 `scripts/usp/isolated-live.mjs` restores the committed snapshot into a unique hosted disposable DB/S3 scope, checks every original hash, runs additive migrations and then executes `scripts/usp/verify-live.ts` through real HTTP/SQL/S3 against the retained synthetic Nandan baseline. The latter checks snapshot membership, exact original checksum, cross-building rejection, packet persistence/replay, reviewed commit revisions/receipt/outbox and SQL-fenced job attempts. Both scripts refuse non-isolated environments through `assertIsolation`. The continuation runner also checks migrated Uttam bundle installation/replay without changing restored originals, D0 import/replay and browser journeys, and one retained D1 roof through the shared local display adapter. Consult [saved receipts](d0/README.md) for executed results; runner code alone is not a pass. Redis worker dispatch for `usp:` jobs, bounded multipart upload promotion, current source-grant/release checks, full visual acceptance, wider D1 qualification and public deployment remain separate gates.

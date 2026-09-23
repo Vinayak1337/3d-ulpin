@@ -1,0 +1,11 @@
+{
+  "kind": "temporary-uncommitted-pick-diagnostics",
+  "baseCodeSha": "433ef3ad6f0a991d931f8ca1e337a96ed04ff57f",
+  "scopeId": "local-644a93a4a25dc463",
+  "files": [
+    "pick-before-draw-diagnostics.json",
+    "pick-before-draw.png"
+  ],
+  "finding": "Current Entity bounds were DONE, but the frame and pick lists contained only model/tile commands; the static Entity batch had not enabled primitive.show yet.",
+  "note": "Diagnostic instrumentation was temporary and removed before the final committed correction. This evidence is not labelled as a clean-source acceptance run."
+}

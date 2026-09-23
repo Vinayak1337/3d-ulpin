@@ -126,3 +126,55 @@ Entity readiness adapter for the locked Cesium engine, expose ready overlay
 identities and await the selected unit's actual geometry before the single pick.
 Cesium's public `DataSourceDisplay.ready` is latched and cannot qualify later
 selections; the isolated adapter's private method must be requalified on upgrade.
+
+The `433ef3a` rerun still returned `pickKind:none` after the selected Entity
+readiness check passed. The readiness gap is therefore not a sufficient root
+cause for the pick failure. Milestone acceptance remains open; a bounded Astra
+Max diagnosis owns only the map pick/readiness adapter and its browser test.
+The user then directed the lead to finish this current milestone, push all task
+changes/evidence to GitHub and stop before the later feature milestones.
+
+The first diagnostic run with temporary render/pick telemetry hit a separate
+test defect: repeating Focus can correctly leave the camera unchanged after the
+unit-selection action already focused it. Requiring another large camera delta
+was invalid. Remove that extra precondition while retaining real Focus, initial
+orbit/zoom checks, current geometry readiness and the exact scene-pick assertion.
+
+The second bounded diagnostic established the rendering boundary before the
+functional correction: the selected U-AB01 polygon projected onto the click and
+returned bounding-sphere DONE, but both current render and pick command lists
+contained only four tile/model commands and no Entity primitive. In the locked
+Cesium engine, asynchronous Primitive readiness flips in `afterRender`; the
+static geometry batch enables its `show` flag on the next data-source update.
+The initial adapter therefore advertised readiness one frame too early. Qualify
+the current Entity's actual draw submission before exposing its ready identity;
+do not change geometry, substitute selection or add a fixed time delay.
+
+The `e571830` run verified that the submitted-draw adapter reports the actual
+U-AB01 overlay, but failed a newly added screenshot precondition before picking:
+the test expected a separate Basement-floor mesh. That floor selection renders
+its supplied child unit; the floor record itself has no separate volumetric
+overlay. The receipt confirms the reported ID is U-AB01. Correct only that
+capture wait while retaining the Basement URL/camera and exact subsequent unit
+pick. PACK0 and the expanded D1 journey passed again.
+
+## Current milestone checkpoint
+
+The final run at `304725d67e928f064d3951c3781592c3d706e377` passed all 19 commands
+and all three browser journeys without skips/flakes. Exact single-click picking
+resolved to U-AB01; both import replays preserved all 59 public tables and owned
+service cleanup exited zero. The independent Astra High reviewer accepted this
+bounded local milestone with no remaining blockers after inspecting the actual
+diff, receipts, baseline/final images and retained design reference.
+
+See [the complete continuation evidence](../../continuation-2026-09-23/README.md),
+including original hashes, final SQL/storage/job receipts, browser captures,
+side-by-side comparison, failed diagnostics and observed worker settings. D0
+is locally integrated. D1 qualifies one actual exterior's local shape/identity;
+global placement, analytical volume, GPU performance, wider scale and public
+deployment remain separate gates. Text/CSV PACK0 does not qualify PDF packets.
+
+The user requested that work stop after completing and pushing this milestone.
+READY/FIND/PDF/INGEST/history/rights/impact/runtime-AI/public milestones are not
+implemented by this continuation checkpoint. No deployment or integration-branch
+merge was run. Reproduce this exact receipt before undertaking any later work.
