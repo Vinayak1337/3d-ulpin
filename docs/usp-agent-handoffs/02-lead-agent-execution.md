@@ -6,6 +6,8 @@
 
 **Runtime account clarification, 23 September 2026:** the user has one existing Sarvam key per separate account, with a reported ₹100 introductory grant per account. Use H20's independent-account onboarding and ordered budget rollover, not an assumption that all supplied keys share one wallet. Actual remaining balances and enrollment permissions are separate from that reported grant. Lead/worker model choices are unchanged.
 
+**Dataset policy, 24 September 2026:** H00 section 4 supersedes locality-specific acquisition instructions. General map/load/adaptation testing may use real data from any suitable geography. Preserve old sources/regressions; do not require Uttam Nagar or Delhi. Assign DATA the large real 3D corpus and independent sparse/unfamiliar-source cohorts, with H14/H99 qualification rather than hardcoded sample acceptance. This update changes future test selection, not the recorded D0/D1 milestone or current runtime capabilities.
+
 ## 1. Max versus Ultra: execution surface matters
 
 The [Astra model page](https://developers.openai.com/api/docs/models/gpt-6-astra) lists API efforts low/medium/high/xhigh/max. The current [subagent documentation](https://developers.openai.com/codex/subagents) describes Ultra in eligible ChatGPT Work surfaces as maximum reasoning with proactive delegation, and mentions support depending on client/model. Do not assume Ultra is a different base model or a universally valid API parameter.
@@ -150,6 +152,20 @@ Separately qualify one real D1 roof-shaped building in the same shared
 viewport without flattening it or inventing internal floors. Inspect actual
 browser interaction and compare fresh screenshots with retained references.
 Do not declare a separate showcase or mock API to be the product result.
+
+DATA AFTER THE EXISTING SMOKE MILESTONE:
+Follow H00 section 4's geography-independent selection procedure. Acquire a
+real roof-shaped corpus and compatible same-area context; reserve independent
+publisher/layout cohorts with naturally sparse or missing attributes. No
+Uttam Nagar, Delhi or India-only acquisition prerequisite. Keep native inputs,
+source IDs, releases, CRS/vertical metadata and exact conversion lineage.
+Run real 10k -> 100k -> 1M aggregate load rungs only as partitioned ingestion
+and spatial paging become qualified; do not raise per-job/scene limits or
+clone records to manufacture scale. H14 J A1-A5 distinguishes no-code-edit
+adaptation for supported formats from separately implemented new parsers.
+Measure map interaction during ingestion, false confident mappings, missing
+states and restart/replay correctness. Never present a small smoke test as
+high-load acceptance or move one country's geometry into another's location.
 
 Then continue dependency-ready milestones in order: useful readiness and
 findings/evidence actions; separately qualified PDF packets; durable

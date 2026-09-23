@@ -180,6 +180,8 @@ Reuse one pool and existing `pnpm db:migrate`; add named migration ledger/adviso
 
 ## 10. Datasets, ordered implementation and acceptance
 
+**Dataset policy, 24 September 2026:** follow H00 section 4's geography-independent D3 selection and real aggregate load ladder. FND must not encode a required locality or provider in shared contracts. Larger corpora require tested partitioned storage/manifests, paging, identity and recovery within existing per-operation limits; no admission-limit increase or runtime schema migration is authorized by a new source upload. Existing D0/D1 and historical regression receipts below remain unchanged.
+
 Use DATA's D0 and one D1 reference/geometry example from [00](00-README.md). FND's `usp-data-pack/1` starter now lives in `data-pack.ts`; DATA prepares the remaining full packs. The small [contract-smoke manifest](../../fixtures/usp/D0/contract-smoke/manifest.json) is not a full D0 scene. No existing PC path or unacquired archive is presumed available. Manifest stage assertions are supplied metadata, not independently verified results; the verifier only checks declared local bytes and never promotes parsing/rendering/workflow states.
 
 1. F0 fixtures must cover unassigned intake, valid/historical snapshot, invalid cross-building unit, distinct namespaces, unknown quantity, pending job, unavailable producer, create/update guards, one-target/multi-target proposal and released derivative from restricted source. Producers and consumers parse the same bytes. Proposed `tests/usp-contract-producers.test.ts`. F0a's wire round trips do not replace these remaining domain producer/consumer tests.
