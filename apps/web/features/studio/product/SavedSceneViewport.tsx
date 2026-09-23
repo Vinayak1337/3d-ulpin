@@ -93,11 +93,33 @@ function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,op
   return {action:['fit','focus','north','zoom_in','zoom_out','reverse','neighbourhood'].includes(action)?action as TileNavigation['action']:'reverse',sequence:old.sequence,target,targetRadius};
  },[block.navigation,baseRep,frame,recordId,overlays]);
  const visibleKinds=useMemo(()=>['building','building_part','parcel','road','rail','public_land','vegetation','utility','terrain'].filter(k=>!block.preferences.hiddenLayers.includes(k as never)),[block.preferences.hiddenLayers]);
+ const cutaway=useMemo(()=>{
+  const below=overlays.filter(o=>o.representation.entityId.startsWith('record:')&&(o.representation.vertical?.lower??0)<0);
+  const hidden:string[]=[],outlines:TileOverlay[]=[];
+  if(!scene||!frame||!below.length)return {hidden,outlines};
+  const bounds=below.map(o=>geometryBounds(o.representation.geometry));
+  // Conservative bounds determine display occlusion only, never a spatial finding.
+  for(const entity of scene.entities){
+   if(!['terrain','parcel','road','rail','public_land'].includes(entity.kind))continue;
+   const covering=scene.representations.filter(rep=>rep.entityId===entity.id&&rep.frameId===frame.id&&['Polygon','MultiPolygon'].includes(rep.geometry.type)).filter(rep=>{
+    const b=geometryBounds(rep.geometry);
+    return below.some((item,index)=>(rep.vertical?.upper??0)>=(item.representation.vertical?.lower??0)&&
+      bounds[index][0]<=b[2]&&bounds[index][2]>=b[0]&&bounds[index][1]<=b[3]&&bounds[index][3]>=b[1]);
+   });
+   if(!covering.length)continue;
+   hidden.push(entity.id);
+   if(entity.kind==='parcel'&&!block.preferences.hiddenLayers.includes('parcel'))for(const rep of covering)
+    outlines.push({representation:rep,frame,color:'#987743',outlineOnly:true,selectable:false,strokeWidth:2});
+  }
+  return {hidden,outlines};
+ },[scene,frame,overlays,block.preferences.hiddenLayers]);
+ const displayOverlays=useMemo(()=>[...overlays,...cutaway.outlines],[overlays,cutaway.outlines]);
  if(!view||!scene||!frame)return <div className="spatial-loading" role={resource.error||validated.error?'alert':'status'}><span>{resource.error||validated.error||'Preparing source-linked 3D neighbourhood…'}</span>{(resource.error||validated.error)&&<button className="ui-button" onClick={()=>void resource.reload()}>Retry scene</button>}</div>;
  const buildings=view.items.filter(item=>item.kind==='building'),unknownHeights=buildings.filter(item=>item.height===null).length;
  const sceneSummary=unknownHeights===buildings.length&&buildings.length?`${buildings.length} source outlines · heights unavailable`:unknownHeights?`${buildings.length} buildings · ${unknownHeights} heights unavailable`:`${buildings.length} buildings`;
- return <div style={{height:'100%',position:'relative'}} data-normalized-scene={view.readDigest} data-world={world}>
-  <MapViewport source={{kind:'tiles',props:{manifestUrl:view.manifestUrl,sessionKey:`product:${areaId}:${world}`,selection:selected?{entityId:selected.id}:null,onSelect,mode:'3d',navigation,visibleKinds,shadows:true,opacityByKind,highlightedIds:block.highlightedIds.map(id=>view.items.find(i=>i.canonicalRef.id===id)?.id??'').filter(Boolean),hiddenEntityIds:showInterior&&overlays.some(o=>o.representation.entityId.startsWith('record:'))&&selected?[selected.id]:[],overlays,outline:baseRep&&selected&&block.preferences.labels?{representation:baseRep,frame,label:selected.label}:undefined,onTelemetry:setTelemetry}}}/>
+ return <div style={{height:'100%',position:'relative'}} data-normalized-scene={view.readDigest} data-world={world} data-underground-cutaway={cutaway.hidden.length>0}>
+  <MapViewport source={{kind:'tiles',props:{manifestUrl:view.manifestUrl,sessionKey:`product:${areaId}:${world}`,selection:selected?{entityId:selected.id}:null,onSelect,mode:'3d',navigation,visibleKinds,shadows:true,opacityByKind,highlightedIds:block.highlightedIds.map(id=>view.items.find(i=>i.canonicalRef.id===id)?.id??'').filter(Boolean),hiddenEntityIds:[...(showInterior&&overlays.some(o=>o.representation.entityId.startsWith('record:'))&&selected?[selected.id]:[]),...cutaway.hidden],overlays:displayOverlays,outline:baseRep&&selected&&block.preferences.labels?{representation:baseRep,frame,label:selected.label}:undefined,onTelemetry:setTelemetry}}}/>
+  {cutaway.hidden.length>0&&<div className="saved-cutaway-notice" role="status">Lower-level cutaway · overlapping surface fills hidden; recorded levels unchanged</div>}
   {resource.error&&<div className="normalized-map-notice" role="alert">Scene refresh failed. Previous records remain visible.<button onClick={()=>void resource.reload()}>Retry</button></div>}
   <div className="saved-scene-proof"><i/>{telemetry?.ready?sceneSummary:'Loading geometry'}{roadCenterlines.length>0&&<span title="Recorded road centerlines. The screen stroke does not establish physical road width."> · Road centerlines</span>} <span>Revision {scene.revision} · {world}</span></div>
  </div>;

@@ -97,3 +97,10 @@ its real mesh and exact-byte checks, then the test omitted the Layers tab inside
 the opened dialog. Correct that actual interaction. Visual inspection also found
 the initial roof framing cropped the building and the attribution overlapped
 Checks: use the runtime's aspect-aware sphere fit and reserve control space.
+
+Independent review of the passing `c81ce5d` run found a V4 blocker before
+acceptance: the selected basement geometry was hidden by the parcel fills at
+`+0.025 m` and decorative terrain slab at `−0.5…−0.02 m`. The actual supplied
+basement is `−3.2…0 m`. Correct only display visibility for overlapping surface
+context; retain source coordinates, records and measurements. The reviewer also
+requested a clear active D1 frame label and an unobscured mobile roof.

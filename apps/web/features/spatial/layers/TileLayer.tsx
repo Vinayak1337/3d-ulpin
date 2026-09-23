@@ -156,7 +156,10 @@ export default function TileLayer(props: TileLayerProps) {
                 const time=Cesium.JulianDate.now();
                 const entityId=picked.id.entityId??picked.id.properties?.entityId?.getValue(time);
                 const representationId=picked.id.representationId??picked.id.properties?.representationId?.getValue(time);
-                if(typeof entityId==='string')latest.current.onSelect({entityId,representationId:typeof representationId==='string'?representationId:undefined});
+                if(typeof entityId==='string'){
+                    currentHost.dataset.pickedEntityId=entityId;
+                    latest.current.onSelect({entityId,representationId:typeof representationId==='string'?representationId:undefined});
+                }
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         void Cesium.Cesium3DTileset.fromUrl(props.manifestUrl, {

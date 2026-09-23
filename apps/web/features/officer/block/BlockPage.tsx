@@ -280,7 +280,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
               Saved block · revision {context.area.revision}
             </span>
             <span>
-              {context.area.reference?.analysisCrs || "Reference not supplied"}{" "}
+              Area CRS: {context.area.reference?.analysisCrs || "Reference not supplied"}{" "}
               · metres
             </span>
           </footer>
