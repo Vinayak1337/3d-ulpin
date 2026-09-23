@@ -2,9 +2,9 @@ name: USP foundation starter
 on:
   push:
     branches: ['feat/usp-foundation-f0']
-    paths: ['packages/contracts/**', 'tests/usp-*.test.ts', 'tests/fixtures/usp-*', 'scripts/usp/data/**', 'fixtures/usp/**', '.github/workflows/usp-foundation.yml']
+    paths: ['packages/contracts/**', 'apps/web/lib/server/usp/**', 'apps/web/app/api/v1/usp/**', 'tests/usp-*.test.ts', 'tests/fixtures/usp-*', 'scripts/usp/**', 'fixtures/usp/**', '.github/workflows/usp-foundation.yml']
   pull_request:
-    paths: ['packages/contracts/src/usp/**', 'tests/usp-*.test.ts', 'tests/fixtures/usp-*', 'scripts/usp/data/**', 'fixtures/usp/**', '.github/workflows/usp-foundation.yml']
+    paths: ['packages/contracts/src/usp/**', 'apps/web/lib/server/usp/**', 'apps/web/app/api/v1/usp/**', 'tests/usp-*.test.ts', 'tests/fixtures/usp-*', 'scripts/usp/**', 'fixtures/usp/**', '.github/workflows/usp-foundation.yml']
 permissions:
   contents: read
 concurrency:
@@ -32,7 +32,7 @@ jobs:
           import json, os, pathlib, subprocess, time
           out = pathlib.Path('.runtime/usp-f0'); out.mkdir(parents=True, exist_ok=True)
           commands = [
-            ('starter-tests', 'pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-foundation.test.ts tests/usp-data-pack.test.ts'),
+            ('contract-tests', 'pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-foundation.test.ts tests/usp-data-pack.test.ts tests/usp-contract-producers.test.ts'),
             ('starter-types', 'pnpm exec tsc --noEmit --target ES2022 --module esnext --moduleResolution bundler --strict --skipLibCheck --types node tests/usp-foundation.test.ts tests/usp-data-pack.test.ts tests/fixtures/usp-common.ts'),
             ('pack-bytes', 'pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D0/contract-smoke/manifest.json'),
             ('typecheck', 'pnpm typecheck'),
@@ -54,7 +54,7 @@ jobs:
             checks.append({'name': name, 'command': command, 'exit_code': code, 'seconds': round(time.monotonic() - start, 2)})
             print(name, 'PASS' if code == 0 else 'FAIL', flush=True)
             if code: print((out / (name + '.log')).read_text()[-8000:], flush=True)
-          report = {'schemaVersion': 'usp-f0-verification/1', 'code_sha': subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(), 'node': subprocess.check_output(['node','--version'], text=True).strip(), 'run_id': os.environ['GITHUB_RUN_ID'], 'checks': checks, 'not_run': ['live DB/storage/worker integration', 'real-source D1/D4 acquisition', 'full D0 neighbourhood', 'browser/GPU/V0', 'model hosting', 'F2/deployment']}
+          report = {'schemaVersion': 'usp-f0-verification/1', 'code_sha': subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(), 'node': subprocess.check_output(['node','--version'], text=True).strip(), 'run_id': os.environ['GITHUB_RUN_ID'], 'checks': checks, 'not_run': ['live DB/storage/worker integration (separate isolated-baseline workflow)', 'real-source D1/D4 acquisition', 'full D0 neighbourhood', 'browser/GPU/V0', 'model hosting', 'F2/deployment']}
           (out / 'verification.json').write_text(json.dumps(report, indent=2)+'\n')
           if any(c['exit_code'] for c in checks): raise SystemExit(1)
           PY

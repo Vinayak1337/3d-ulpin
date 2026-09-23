@@ -653,7 +653,14 @@ export async function commitRegistryReview(
   id: string,
   acknowledgement: string,
 ): Promise<RegistryReview> {
-  return transaction(async (client) => {
+  return transaction(client => commitRegistryReviewTx(client, id, acknowledgement));
+}
+/** Caller-owned transaction variant for a coordinated receipt and outbox write. */
+export async function commitRegistryReviewTx(
+  client: PoolClient,
+  id: string,
+  acknowledgement: string,
+): Promise<RegistryReview> {
     await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
     const initial =
       (await client.query("SELECT * FROM registry_reviews WHERE id=$1", [id]))
@@ -774,7 +781,6 @@ export async function commitRegistryReview(
       committed: true,
       acknowledgement: acknowledgement.trim(),
     };
-  });
 }
 export async function registryQuery(
   siteId: string,
