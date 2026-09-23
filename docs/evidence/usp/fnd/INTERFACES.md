@@ -2,6 +2,8 @@
 
 Base SHA: `777c978c`; isolated branch: `codex/fnd-f0-f1`. F0a's common/data-pack/codec schemas remain the source of truth. New consumers import `@ulpin/contracts/usp` (opt-in package subpath). No root contract index was regenerated.
 
+The F0 `UspPorts` interface names upload, model, scanner and delivery dependencies so their eventual owners share one signature. Only the registry snapshot/evidence, reviewed command, packet and SQL attempt functions documented below have live producers here. The other port declarations do not activate a provider or establish authorization.
+
 ## UI-owned live Studio seam
 
 The server route is `/api/v1/usp/[...path]`, loopback and same-origin only. It derives the local operator from the request; callers must not send actor, role or principal fields. JSON responses have `{data,meta:{schemaVersion:'usp/1',requestId,scope}}`; typed errors have `{error:{code,message,retryable,requestId}}`.

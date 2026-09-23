@@ -4,6 +4,7 @@ import {
   UspResolvedTargetSchema, UspSnapshotManifestSchema, UspPrepareProposalSchema,
   UspCommitReceiptSchema, UspJobProjectionSchema, UspReleaseDecisionSchema,
   UspPacket0ReceiptSchema, UspErrorEnvelopeSchema, uspServiceResultSchema,
+  UspModelGatewayRequestSchema, UspScanReceiptSchema, UspSendReceiptResultSchema,
   parseUsp,
 } from '../packages/contracts/src/usp/index';
 import { hasVerticalMembership, storedRevision } from '../apps/web/lib/server/usp/snapshots';
@@ -77,6 +78,12 @@ test('job and release consumers preserve pending state, source lineage and revoc
     redaction: 'Only the reviewed target row', applicability: 'A101' };
   assert.deepEqual(parseUsp(UspReleaseDecisionSchema, wire(release)), release);
   assert.equal(UspReleaseDecisionSchema.safeParse({ ...release, lineage: [] }).success, false);
+  assert.equal(UspModelGatewayRequestSchema.safeParse({ taskKind: 'extract', evidenceRefs: [source],
+    input: { instruction: 'read this cited part' }, outputSchemaId: 'extract-1',
+    budget: { maxInputBytes: 1024, deadlineMs: 30000 }, policyVersion: 'policy-1' }).success, true);
+  assert.equal(UspScanReceiptSchema.safeParse({ receiptId: 'scan-1', uploadId: 'upload-1',
+    assetHash: 'a'.repeat(64), state: 'unavailable', scannerVersion: null }).success, true);
+  assert.equal(UspSendReceiptResultSchema.safeParse({ state: 'unknown', receiptId: null }).success, true);
 });
 
 test('cross-building supplied unit is rejected and packet bytes contain only selected exact part', () => {
