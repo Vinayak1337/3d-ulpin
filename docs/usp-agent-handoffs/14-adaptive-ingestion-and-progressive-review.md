@@ -1,5 +1,7 @@
 # 14 · Adaptive ingestion and durable progressive 3D review
 
+**Provider-plan update, 23 September 2026:** [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) is required for this feature's model integration. Use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) for development-worker selection. These instructions do not claim a live provider, funded account or passing new tests.
+
 Owner **INGEST**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [12 FIND](12-rights-aware-spatial-findings.md), [19 gateway](19-india-contained-deployment.md), and display consumer in [99](99-ui-ux-and-integration.md). ER-04/05/07–11/16/21/24/25 are incorporated here. New paths/types remain implementation tasks, not available exports.
 
 ## A. User outcome and product value
@@ -106,6 +108,10 @@ Events never carry GLBs or full source rows. Fetch at most four authorized asset
 
 Prefix `/api/v1/usp/ingestion`; 01 guards/envelopes. `POST /batches` creates IntakeScope; `POST /batches/:id/uploads`, `PUT /uploads/:id/parts/:number`, `POST /uploads/:id/finalize` use shared receipt primitives. `POST /batches/:id/profile` returns profile/job; `POST /recipes/:id/qualify` requires recipe/version/evidenced decisions; `POST /batches/:id/start` returns 202. Explicit POST pause/resume/cancel and `/chunks/:id/retry` require expected versions. GET batch, `/batches/:id/events`, `/manifests/:id`, `/assets/:id` are current-access checked. POST `/batches/:id/review-groups` pins chosen targets/dependencies; POST `/review-groups/:id/prepare` creates an existing draft/review via FND after reconciliation. Recording remains the separate established commit action.
 
+### 8. Governed AI calls, budgets and fallback
+
+Consume H20 through the existing modelGateway. Use Sarvam 105B V1 for bounded mapping/text interpretation; document OCR uses a separately qualified asynchronous Vision path, not a raw LiDAR-to-JSON LLM. Qualified recipe reuse precedes new inference; record model/prompt/schema/source/price receipt references. A retry or repair shares the task's total attempts, deadline and monetary reservation budget across every key. An exhausted organisation disables its whole key group; throttling waits and never bypasses account limits. Provider/ledger failure retains received sources and accepted drafts and exposes manual mapping or needs-input. Do not add an independent key cycler, billing counter, network client or per-import trainer. Returned token fragments never directly update geometry.
+
 ## F. Exact implementation map
 
 | File | Required change / owner |
@@ -148,6 +154,8 @@ Tests: reused recipe needs no per-record model calls; unit metadata contradictio
 Kill worker, return old attempt after retry/cancel, disconnect SSE, race state/cursor reads, replace/remove tile, expire cursor, revoke access, exhaust byte/CPU/model budget and restart the application. Assert final entity set equals fresh manifest with no duplicate/lost/resurrected objects; missing neighbour prevents completed assessment; one valid group records without publishing unresolved data. Measure first-valid-preview, total time, calls/tokens, peak memory, resident bytes and request counts; do not assert speedup without measurement.
 
 Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:studio`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/t076-source-normalizer.test.ts tests/usp-ingestion.test.ts tests/usp-ingestion-stream.test.ts`; `pnpm exec tsx tests/usp-ingestion-integration.ts`; `pnpm exec tsx tests/usp-draft-scene-integration.ts`; `python -m pytest services/geo/tests/test_jobs.py services/geo/tests/test_usp_ingestion.py`; `pnpm exec playwright test tests/e2e/usp-ingestion.spec.ts`. Return real receipts/manifests and V7 evidence, not timer mocks. Tests listed as new must be created first.
+
+**Additional H20 acceptance:** simulate two worker processes contending for the same final balance, account exhaustion across several keys, terminal retirement after restart, timeout with unknown charge, policy revocation and manual-mapping recovery. Prove a qualified source family reuses its recipe without another model call. Preserve the original INGEST recovery/replay tests; budget tests do not qualify scene rendering.
 
 ## K. Copy-paste assignment
 

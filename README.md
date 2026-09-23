@@ -1,5 +1,7 @@
 # 3D ULPIN — evidence-linked 3D property workbench
 
+**Current execution and runtime AI:** [Astra Max lead with explicit Sol/Astra workers](docs/usp-agent-handoffs/02-lead-agent-execution.md); [planned Sarvam gateway, shared credits and permanent key retirement](docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md). These dated additions are implementation instructions, not a claim that provider accounts or live inference are configured.
+
 **Start implementation with [the adopted handoffs](docs/usp-agent-handoffs/00-README.md).**
 The direction is a visually strong, persisted Studio: select a building, inspect its
 supplied floors and units, open the matching evidence, resolve uncertainty, and

@@ -1,5 +1,7 @@
 # Required human inputs — narrow gates, not engineering assignments
 
+**Account/delegation update, 23 September 2026:** [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) keeps engineering with agents; [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) defines the narrow runtime credential/funding prerequisites. Never request raw keys in chat or Git.
+
 Revised 22 September 2026. Read [00](00-README.md) for agent-owned D0–D7 packs and [01](01-shared-contracts-and-ownership.md) for implementation contracts. This file does not assign coding, general research, schema design, data conversion or routine testing to teammates. No item here blocks F0, D0 or the local V0 visual workflow.
 
 ## 1. What agents do without asking people
@@ -57,6 +59,10 @@ For actual boundary/rights screening, request the available aligned subset throu
 **Output:** sanitized `approval-status.json` with `profile,approved_service_ids,identity_configuration_ref,region_evidence_refs,retention_policy_ref,public_projection_policy_ref,external_mcp_allowed,scanner_approved,mail_approved,approval_date,unresolved_items`. Store references to controlled documents, not secret values or private contracts. Proposed destination `docs/usp-validation/deployment/` contains non-secret status only.
 
 **Dependent outcome / fallback:** F2/protected activation, substantiated India-contained claims and optional external MCP. Local no-AI operation, mocked adapter tests and D0 integration continue. Mail approval absence does not block in-app receipts; scanner/identity absence blocks public uploads. Sarvam credentials missing means no live-provider qualification, not permission to silently use another provider.
+
+### H3a. Runtime AI account evidence and secrets
+
+The accountable owner supplies approved organisation/workspace/rate-limit group identifiers, evidence of the actual remaining balance and permitted allocation, credential secret references, and data-retention/training/residency decisions. Keys from one organisation share funds; do not list Rs100 independently for each. An independently funded fallback requires explicit permission for this project/data and legitimate credit entitlement; no automated signup or rate-limit evasion. Store secrets through the environment/secret mechanism, not public evidence. Agents implement H20, prepare the configuration template, fingerprint/group credentials without logging values, test the fake provider and produce one precise remaining live prerequisite. Absent credentials or balance evidence blocks live qualification only, not no-AI/manual operation or local tests.
 
 ## H4. Observe the completed workflow, without becoming its tester/developer
 
