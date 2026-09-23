@@ -1,0 +1,261 @@
+{
+  "schemaVersion": "usp-d0-oracles/1",
+  "counts": {
+    "buildings": 3,
+    "parcels": 4,
+    "spaces": 11,
+    "units": 10,
+    "shared": 1
+  },
+  "aliases": [
+    "B-A",
+    "B-B",
+    "B-C",
+    "P-A",
+    "P-B",
+    "U-A101",
+    "U-A102",
+    "STAIR-S1",
+    "DUPLEX-D1"
+  ],
+  "selectedTarget": "U-A101",
+  "currentSourceRevision": 2,
+  "packet": {
+    "includeTokens": [
+      "ONLY_A101",
+      "SHARED_STAIR_CONTEXT"
+    ],
+    "excludeTokens": [
+      "NEVER_A102"
+    ],
+    "textPartIds": [
+      "page-r2:A101",
+      "page-r2:SHARED"
+    ],
+    "csvRows": [
+      2,
+      4
+    ],
+    "forbidWholeMixedOriginal": true
+  },
+  "geometryOracles": [
+    {
+      "id": "O-01",
+      "expectedAreaM2": 10,
+      "expectedPositiveVolumeM3": 20,
+      "leftXY": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "rightXY": [
+        [
+          9,
+          0
+        ],
+        [
+          19,
+          0
+        ],
+        [
+          19,
+          10
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          9,
+          0
+        ]
+      ],
+      "leftZ": [
+        0,
+        3
+      ],
+      "rightZ": [
+        1,
+        4
+      ]
+    },
+    {
+      "id": "O-02",
+      "expectedPositiveVolumeM3": 0,
+      "boundaryContact": true,
+      "leftXY": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "rightXY": [
+        [
+          9,
+          0
+        ],
+        [
+          19,
+          0
+        ],
+        [
+          19,
+          10
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          9,
+          0
+        ]
+      ],
+      "leftZ": [
+        0,
+        3
+      ],
+      "rightZ": [
+        3,
+        6
+      ]
+    },
+    {
+      "id": "O-03",
+      "expectedAreaM2": 96,
+      "outerXY": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          0,
+          10
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "holeXY": [
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          2,
+          2
+        ]
+      ]
+    }
+  ],
+  "facts": [
+    {
+      "target": "B-A",
+      "parcelAliases": [
+        "P-A",
+        "P-B"
+      ],
+      "activeOutlineAreaM2": 400
+    },
+    {
+      "target": "F-AB",
+      "lowerM": -3.2,
+      "upperM": 0
+    },
+    {
+      "target": "F-AM",
+      "lowerM": 3.6,
+      "upperM": 5.4
+    },
+    {
+      "target": "DUPLEX-D1",
+      "componentLevels": [
+        "F-A0",
+        "F-AM"
+      ]
+    },
+    {
+      "target": "STAIR-S1",
+      "type": "shared"
+    }
+  ],
+  "missing": [
+    {
+      "target": "B-C",
+      "capability": "unit_plan",
+      "state": "missing"
+    },
+    {
+      "target": "U-B201",
+      "capability": "source_evidence",
+      "state": "withheld"
+    },
+    {
+      "target": "B-B",
+      "capability": "official_parcel_ulpin",
+      "state": "unknown"
+    }
+  ],
+  "qualification": "Independent authored values; not measured outputs or a live import receipt.",
+  "courtyardDraft": {
+    "sourceBuildingAlias": "B-A",
+    "expectedOuterAreaM2": 400,
+    "expectedVoidAreaM2": 4,
+    "expectedNetAreaM2": 396,
+    "state": "retained_unrecorded"
+  }
+}

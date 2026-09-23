@@ -504,8 +504,8 @@ def check_area(data):
 
 def extract_document(data):
     """Extract native text with locators, without interpreting document instructions."""
-    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "text", "csv"):
-        raise InputError("Native document format must be pdf, docx, text or the strict CSV level schedule.")
+    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "text", "csv", "csv_reference"):
+        raise InputError("Native document format must be pdf, docx, text, a CSV reference table or the strict CSV level schedule.")
     encoded = data.get("base64")
     if not isinstance(encoded, str) or len(encoded) > (MAX_DOCUMENT_BYTES + 2) // 3 * 4:
         raise InputError("Document must be base64 with at most 10 MiB of decoded bytes.")
@@ -518,6 +518,9 @@ def extract_document(data):
     if data["format"] == "csv":
         from .native_schedule import extract_schedule
         return {"format": "csv", "method": "native_parse", "sourceSha256": hashlib.sha256(raw).hexdigest(), **extract_schedule(raw)}
+    if data["format"] == "csv_reference":
+        from .native_schedule import extract_reference_table
+        return {"format": "csv_reference", "method": "native_reference", "sourceSha256": hashlib.sha256(raw).hexdigest(), **extract_reference_table(raw)}
     parts, warnings, total_text = [], [], 0
 
     def add(text, locator):

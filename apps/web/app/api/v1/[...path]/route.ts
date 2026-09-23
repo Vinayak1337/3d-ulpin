@@ -25,6 +25,7 @@ import { AppError } from "@/lib/server/errors";
 import { checkStorage, readObject } from "@/lib/server/storage";
 import { query } from "@/lib/server/db";
 import { settings } from "@/lib/server/config";
+import { assertLocalRequest } from "@/lib/server/usp/principal";
 import {
   addUnitSchema,
   applyLevelsSchema,
@@ -54,29 +55,7 @@ async function body(request: Request) {
   }
 }
 function localOnly(request: Request) {
-  const allowed = (hostname: string) =>
-    ["localhost", "127.0.0.1", "[::1]"].includes(hostname);
-  if (!allowed(new URL(request.url).hostname))
-    throw new AppError(
-      403,
-      "LOCAL_DEMO_ONLY",
-      "This single-operator demonstration is available only on localhost.",
-    );
-  const origin = request.headers.get("origin");
-  if (origin) {
-    let valid = false;
-    try {
-      valid = allowed(new URL(origin).hostname);
-    } catch {
-      /* Opaque or malformed origins are not local app origins. */
-    }
-    if (!valid)
-      throw new AppError(
-        403,
-        "ORIGIN_DENIED",
-        "This request did not originate from the local workbench.",
-      );
-  }
+  assertLocalRequest(request);
 }
 async function handle(request: Request, context: Context): Promise<Response> {
   const requestId = randomUUID();

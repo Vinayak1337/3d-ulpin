@@ -1,0 +1,781 @@
+{
+  "schemaVersion": "usp-d0-authored/1",
+  "classification": "synthetic",
+  "authority": "authored test only; not survey, ownership, approval or official issuance",
+  "frame": {
+    "id": "D0-LOCAL-METRES",
+    "horizontalCrs": "EPSG:32643",
+    "originEasting": 520000,
+    "originNorthing": 3150000,
+    "horizontalUnit": "m",
+    "verticalBenchmark": "BM-D0-SYNTHETIC",
+    "verticalUnit": "m",
+    "surveyStatus": "authored synthetic geometry; not observed"
+  },
+  "parcels": [
+    {
+      "alias": "P-A",
+      "ring": [
+        [
+          -2,
+          -2
+        ],
+        [
+          12,
+          -2
+        ],
+        [
+          12,
+          22
+        ],
+        [
+          -2,
+          22
+        ],
+        [
+          -2,
+          -2
+        ]
+      ],
+      "suppliedParcelId": "DEMO-P-A"
+    },
+    {
+      "alias": "P-B",
+      "ring": [
+        [
+          12,
+          -2
+        ],
+        [
+          24,
+          -2
+        ],
+        [
+          24,
+          22
+        ],
+        [
+          12,
+          22
+        ],
+        [
+          12,
+          -2
+        ]
+      ],
+      "suppliedParcelId": "DEMO-P-B"
+    },
+    {
+      "alias": "P-C",
+      "ring": [
+        [
+          32,
+          -2
+        ],
+        [
+          55,
+          -2
+        ],
+        [
+          55,
+          23
+        ],
+        [
+          32,
+          23
+        ],
+        [
+          32,
+          -2
+        ]
+      ],
+      "suppliedParcelId": "DEMO-P-C"
+    },
+    {
+      "alias": "P-D",
+      "ring": [
+        [
+          62,
+          -2
+        ],
+        [
+          86,
+          -2
+        ],
+        [
+          86,
+          23
+        ],
+        [
+          62,
+          23
+        ],
+        [
+          62,
+          -2
+        ]
+      ],
+      "suppliedParcelId": "DEMO-P-D"
+    }
+  ],
+  "buildings": [
+    {
+      "alias": "B-A",
+      "name": "Cross Parcel House",
+      "outer": [
+        [
+          0,
+          0
+        ],
+        [
+          20,
+          0
+        ],
+        [
+          20,
+          20
+        ],
+        [
+          0,
+          20
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "holes": [],
+      "parcels": [
+        "P-A",
+        "P-B"
+      ],
+      "roof": "stepped-terrace",
+      "levels": [
+        {
+          "id": "F-AB",
+          "label": "Basement",
+          "lower": -3.2,
+          "upper": 0
+        },
+        {
+          "id": "F-A0",
+          "label": "Ground",
+          "lower": 0,
+          "upper": 3.6
+        },
+        {
+          "id": "F-AM",
+          "label": "Mezzanine",
+          "lower": 3.6,
+          "upper": 5.4
+        },
+        {
+          "id": "F-A1",
+          "label": "First",
+          "lower": 5.4,
+          "upper": 8.8
+        }
+      ]
+    },
+    {
+      "alias": "B-B",
+      "name": "Sawtooth House",
+      "outer": [
+        [
+          34,
+          0
+        ],
+        [
+          52,
+          0
+        ],
+        [
+          52,
+          20
+        ],
+        [
+          34,
+          20
+        ],
+        [
+          34,
+          0
+        ]
+      ],
+      "holes": [],
+      "parcels": [
+        "P-C"
+      ],
+      "roof": "sawtooth",
+      "levels": [
+        {
+          "id": "F-B0",
+          "label": "Ground",
+          "lower": 0,
+          "upper": 3
+        },
+        {
+          "id": "F-B1",
+          "label": "First",
+          "lower": 3,
+          "upper": 6.7
+        },
+        {
+          "id": "F-B2",
+          "label": "Second",
+          "lower": 6.7,
+          "upper": 10.1
+        }
+      ]
+    },
+    {
+      "alias": "B-C",
+      "name": "Terrace House",
+      "outer": [
+        [
+          64,
+          0
+        ],
+        [
+          84,
+          0
+        ],
+        [
+          84,
+          20
+        ],
+        [
+          64,
+          20
+        ],
+        [
+          64,
+          0
+        ]
+      ],
+      "holes": [],
+      "parcels": [
+        "P-D"
+      ],
+      "roof": "pitched",
+      "levels": [
+        {
+          "id": "F-C0",
+          "label": "Ground",
+          "lower": 0,
+          "upper": 4
+        },
+        {
+          "id": "F-C1",
+          "label": "First",
+          "lower": 4,
+          "upper": 7
+        }
+      ]
+    }
+  ],
+  "spaces": [
+    {
+      "alias": "U-AB01",
+      "building": "B-A",
+      "level": "F-AB",
+      "components": [
+        {
+          "level": "F-AB",
+          "ring": [
+            [
+              1,
+              1
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              8,
+              8
+            ],
+            [
+              1,
+              8
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    },
+    {
+      "alias": "U-A001",
+      "building": "B-A",
+      "level": "F-A0",
+      "components": [
+        {
+          "level": "F-A0",
+          "ring": [
+            [
+              1,
+              1
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              8,
+              8
+            ],
+            [
+              1,
+              8
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    },
+    {
+      "alias": "DUPLEX-D1",
+      "building": "B-A",
+      "level": "F-A0",
+      "components": [
+        {
+          "level": "F-A0",
+          "ring": [
+            [
+              12,
+              1
+            ],
+            [
+              19,
+              1
+            ],
+            [
+              19,
+              8
+            ],
+            [
+              12,
+              8
+            ],
+            [
+              12,
+              1
+            ]
+          ]
+        },
+        {
+          "level": "F-AM",
+          "ring": [
+            [
+              12,
+              1
+            ],
+            [
+              19,
+              1
+            ],
+            [
+              19,
+              8
+            ],
+            [
+              12,
+              8
+            ],
+            [
+              12,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    },
+    {
+      "alias": "U-A101",
+      "building": "B-A",
+      "level": "F-A1",
+      "components": [
+        {
+          "level": "F-A1",
+          "ring": [
+            [
+              1,
+              1
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              8,
+              8
+            ],
+            [
+              1,
+              8
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    },
+    {
+      "alias": "U-A102",
+      "building": "B-A",
+      "level": "F-A1",
+      "components": [
+        {
+          "level": "F-A1",
+          "ring": [
+            [
+              12,
+              1
+            ],
+            [
+              19,
+              1
+            ],
+            [
+              19,
+              8
+            ],
+            [
+              12,
+              8
+            ],
+            [
+              12,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    },
+    {
+      "alias": "STAIR-S1",
+      "building": "B-A",
+      "level": "F-AB",
+      "components": [
+        {
+          "level": "F-AB",
+          "ring": [
+            [
+              8,
+              1
+            ],
+            [
+              12,
+              1
+            ],
+            [
+              12,
+              8
+            ],
+            [
+              8,
+              8
+            ],
+            [
+              8,
+              1
+            ]
+          ]
+        },
+        {
+          "level": "F-A0",
+          "ring": [
+            [
+              8,
+              1
+            ],
+            [
+              12,
+              1
+            ],
+            [
+              12,
+              8
+            ],
+            [
+              8,
+              8
+            ],
+            [
+              8,
+              1
+            ]
+          ]
+        },
+        {
+          "level": "F-AM",
+          "ring": [
+            [
+              8,
+              1
+            ],
+            [
+              12,
+              1
+            ],
+            [
+              12,
+              8
+            ],
+            [
+              8,
+              8
+            ],
+            [
+              8,
+              1
+            ]
+          ]
+        },
+        {
+          "level": "F-A1",
+          "ring": [
+            [
+              8,
+              1
+            ],
+            [
+              12,
+              1
+            ],
+            [
+              12,
+              8
+            ],
+            [
+              8,
+              8
+            ],
+            [
+              8,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "shared"
+    },
+    {
+      "alias": "U-B001",
+      "building": "B-B",
+      "level": "F-B0",
+      "components": [
+        {
+          "level": "F-B0",
+          "ring": [
+            [
+              35,
+              1
+            ],
+            [
+              43,
+              1
+            ],
+            [
+              43,
+              9
+            ],
+            [
+              35,
+              9
+            ],
+            [
+              35,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    },
+    {
+      "alias": "U-B101",
+      "building": "B-B",
+      "level": "F-B1",
+      "components": [
+        {
+          "level": "F-B1",
+          "ring": [
+            [
+              35,
+              1
+            ],
+            [
+              43,
+              1
+            ],
+            [
+              43,
+              9
+            ],
+            [
+              35,
+              9
+            ],
+            [
+              35,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    },
+    {
+      "alias": "U-B201",
+      "building": "B-B",
+      "level": "F-B2",
+      "components": [
+        {
+          "level": "F-B2",
+          "ring": [
+            [
+              35,
+              1
+            ],
+            [
+              43,
+              1
+            ],
+            [
+              43,
+              9
+            ],
+            [
+              35,
+              9
+            ],
+            [
+              35,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    },
+    {
+      "alias": "U-C001",
+      "building": "B-C",
+      "level": "F-C0",
+      "components": [
+        {
+          "level": "F-C0",
+          "ring": [
+            [
+              65,
+              1
+            ],
+            [
+              73,
+              1
+            ],
+            [
+              73,
+              9
+            ],
+            [
+              65,
+              9
+            ],
+            [
+              65,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    },
+    {
+      "alias": "U-C101",
+      "building": "B-C",
+      "level": "F-C1",
+      "components": [
+        {
+          "level": "F-C1",
+          "ring": [
+            [
+              65,
+              1
+            ],
+            [
+              73,
+              1
+            ],
+            [
+              73,
+              9
+            ],
+            [
+              65,
+              9
+            ],
+            [
+              65,
+              1
+            ]
+          ]
+        }
+      ],
+      "type": "unit"
+    }
+  ],
+  "sourceRevisions": [
+    {
+      "logicalSource": "D0-MIXED-PAGE",
+      "revision": 1,
+      "path": "mixed-page-r1.txt"
+    },
+    {
+      "logicalSource": "D0-MIXED-PAGE",
+      "revision": 2,
+      "path": "mixed-page-r2.txt"
+    }
+  ],
+  "missing": [
+    {
+      "target": "B-C",
+      "capability": "unit_plan",
+      "state": "missing",
+      "reason": "No unit plan authored for this building"
+    },
+    {
+      "target": "U-B201",
+      "capability": "source_evidence",
+      "state": "withheld",
+      "reason": "Synthetic withheld-source test; no positive evidence may be inferred"
+    },
+    {
+      "target": "B-B",
+      "capability": "official_parcel_ulpin",
+      "state": "unknown",
+      "reason": "Only synthetic parcel aliases supplied"
+    }
+  ],
+  "courtyardDraft": {
+    "source": "buildings-courtyard-draft.arcgis.json",
+    "scenario": "scenario-courtyard-draft.json",
+    "buildingAlias": "B-A",
+    "state": "retained_unrecorded",
+    "reason": "The current recorded-detail prism authority supports only a simple outline; no courtyard was flattened into registry geometry."
+  }
+}

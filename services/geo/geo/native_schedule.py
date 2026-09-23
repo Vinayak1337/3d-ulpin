@@ -8,6 +8,37 @@ from shapely import from_wkt
 from .validation import InputError
 
 
+def extract_reference_table(raw):
+    """Preserve complete logical CSV rows as references without proposing geometry facts."""
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise InputError("CSV reference table must be UTF-8.") from None
+    if len(text) > 250_000 or "\x00" in text:
+        raise InputError("CSV reference table exceeds 250,000 characters or contains binary null bytes.")
+    try:
+        reader = csv.DictReader(io.StringIO(text, newline=""), strict=True)
+        header = reader.fieldnames
+        if not header or len(header) > 64 or len(header) != len(set(header)) or any(not key or len(key) > 150 for key in header):
+            raise InputError("CSV reference table needs a unique, bounded header.")
+        parts = []
+        for index, row in enumerate(reader):
+            if index >= 2000 or None in row or any(value is None or len(value) > 4096 for value in row.values()):
+                raise InputError("CSV reference table exceeds 2000 rows or has an ambiguous row.")
+            if not any(value.strip() for value in row.values()):
+                continue
+            number = index + 2
+            parts.append({"id": f"part-{len(parts) + 1}",
+                          "text": "\n".join(f"{key}: {row[key]}" for key in header),
+                          "locator": {"row": number, "label": f"CSV row {number}"}})
+    except csv.Error:
+        raise InputError("CSV reference table could not be parsed without ambiguity.") from None
+    if not parts:
+        raise InputError("CSV reference table contains no data rows.")
+    return {"parts": parts, "candidates": [], "characterCount": len(text),
+            "status": "needs_input", "warnings": ["CSV rows are retained references only; field meaning and target applicability require review."]}
+
+
 def extract_schedule(raw):
     from .area import _geometry, _json_geometry
     try:

@@ -1673,6 +1673,8 @@ export async function copyCaseDocuments(
 
 export type DocumentFile = {
   requestKey?: string;
+  familyId?: string;
+  referenceOnly?: boolean;
   bytes: Uint8Array;
   name: string;
   format: "pdf" | "docx" | "text" | "csv" | "png" | "jpeg";
@@ -1727,8 +1729,8 @@ export async function extractDocument(file: DocumentFile) {
           referenceFrameId?: string;
           partIndex: number;
         }[];
-      }>("extract", {
-        format: file.format,
+  }>("extract", {
+        format: file.format === "csv" && file.referenceOnly ? "csv_reference" : file.format,
         base64: Buffer.from(file.bytes).toString("base64"),
       });
 }
@@ -1750,7 +1752,8 @@ async function attachDocumentBatch(
   const pkg = await getPackage(id);
   const receipt = files.length === 1 && files[0].requestKey ? {
     key: `source-document:${id}:${files[0].requestKey}`,
-    hash: sha256(JSON.stringify([files[0].name, files[0].format, files[0].entityIds, sha256(files[0].bytes)])),
+    hash: sha256(JSON.stringify([files[0].name, files[0].format, files[0].entityIds,
+      files[0].familyId ?? null, files[0].referenceOnly ?? false, sha256(files[0].bytes)])),
   } : null;
   async function replay(client?: PoolClient) {
     if (!receipt) return false;
@@ -1779,6 +1782,8 @@ async function attachDocumentBatch(
     conflict();
   }
   for (const file of files) {
+    if (file.referenceOnly && file.format !== "csv")
+      throw new AppError(422, "REFERENCE_FORMAT", "Reference-table parsing requires a CSV original.");
     if (!file.bytes.length || file.bytes.length > documentLimitMiB(file.format) * 1024 * 1024)
       throw new AppError(
         413,
@@ -1861,11 +1866,26 @@ async function attachDocumentBatch(
           );
       }
       for (const { file, sourceId, digest, key, extracted } of prepared) {
+        let familyId = sourceId, sourceRevision = 1;
+        if (file.familyId) {
+          const previous = (await client.query(
+            `SELECT profile,revision FROM sources WHERE case_id=$1 AND family_id=$2
+             ORDER BY revision DESC LIMIT 1 FOR UPDATE`, [row.case_id, file.familyId],
+          )).rows[0];
+          if (!previous) throw new AppError(422, 'UNKNOWN_SOURCE_FAMILY', 'Choose a source family in this preparation.');
+          if (previous.profile !== `${file.format}-reference-v2`) {
+            throw new AppError(422, 'PROFILE_CHANGED', 'A source revision must keep its native document format.');
+          }
+          familyId = file.familyId;
+          sourceRevision = Number(previous.revision) + 1;
+        }
         await client.query(
-          "INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,$4,$5,$6,$7,$8,'inspected',$9)",
+          "INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'inspected',$11)",
           [
             sourceId,
             row.case_id,
+            familyId,
+            sourceRevision,
             file.name,
             `${file.format}-reference-v2`,
             documentMime[file.format],
