@@ -42,15 +42,16 @@ def main() -> int:
             visiting.remove(tid);visited.add(tid)
         for tid in indexed:visit(tid)
         checks.append('Dependency graph is acyclic')
-        check(all(indexed[d].get('sequence',-1)<x['sequence'] for x in tasks for d in x.get('depends_on',[]) if d.startswith('T')),'Preferred execution order respects dependencies')
+        preferred_order={x['id']:x.get('sequence',position) for position,x in enumerate(tasks,1)}
+        check(all(preferred_order[d]<preferred_order[x['id']] for x in tasks for d in x.get('depends_on',[]) if d.startswith('T')),'Preferred execution order respects dependencies')
         check(all(x.get('evidence') and all(indexed[d]['status']=='Accepted' for d in x.get('depends_on',[])) for x in indexed.values() if x['status']=='Accepted'),'Any accepted tasks have evidence references and accepted prerequisites')
-        check(all((root/x['detail_plan_path']).is_file() for x in tasks if x['detail_plan_exists']),'Detailed plans claimed as authored actually exist')
+        check(all((root/x.get('detail_plan_path',x.get('plan_path',''))).is_file() for x in tasks if x.get('detail_plan_exists',bool(x.get('plan_path')))),'Detailed plans claimed as authored actually exist')
         old_schema=load('legacy/schema_tasks.json')['tasks'];old_renderer=load('legacy/renderer_tasks.json')['tasks']
         old_ids={f'schema:{x["id"]}' for x in old_schema}|{f'renderer:{x["id"]}' for x in old_renderer}
         maps=cross['mappings']
         check(len(maps)==len(old_ids) and {x['legacy_id'] for x in maps}==old_ids,'Every old schema/renderer task has one unambiguous crosswalk record')
         check(all(x['new_tasks'] and all(t in indexed for t in x['new_tasks']) for x in maps),'All legacy mapping targets resolve')
-        check(all(set(x['legacy_refs'])=={m['legacy_id'] for m in maps if x['id'] in m['new_tasks']} for x in tasks),'Task-to-legacy and legacy-to-task mappings agree')
+        check(all(set(x.get('legacy_refs',[]))=={m['legacy_id'] for m in maps if x['id'] in m['new_tasks']} for x in tasks),'Task-to-legacy and legacy-to-task mappings agree')
         old_tests=set(re.findall(r'^## (T\d\d) — ',(root/'legacy/schema_acceptance_tests.md').read_text(encoding='utf-8'),re.M))
         check({x['legacy_id'] for x in accept['schema_tests']}=={'schema-test:'+x for x in old_tests},'All 28 original schema tests remain traceable')
         eids={x['id'] for x in edge}
@@ -64,7 +65,7 @@ def main() -> int:
         check(all(all(t in indexed for t in x['tasks']) for x in inputs),'All input profile task references resolve')
         check(all(hashlib.sha256((root/x['preserved_copy']).read_bytes()).hexdigest()==x['sha256'] for x in load('legacy/SOURCE_MANIFEST.json')),'Preserved legacy records match their source hashes')
         check(board['next_task'] in indexed,'Next task exists')
-        core={x['id'] for x in tasks if x['release']!='R3-optional'}
+        core={x['id'] for x in tasks if x.get('release')!='R3-optional'}
         def ancestors(tid):
             acc=set()
             for d in indexed[tid].get('depends_on',[]): acc.add(d);acc|=ancestors(d)
