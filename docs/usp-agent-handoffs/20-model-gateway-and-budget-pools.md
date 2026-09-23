@@ -4,11 +4,13 @@
 
 This document governs runtime Sarvam inference. [02](02-lead-agent-execution.md) separately governs the GPT-6 Sol/Astra agents that write our software. Development-model usage and Sarvam API billing are different budgets.
 
-## A. Outcome and the correction to the key-cycling idea
+## A. Outcome and account-aware key cycling
 
 An operator configures approved provider connections once. Every feature then requests a bounded task through one gateway. The gateway checks permissions, selects a qualified model, reserves sufficient money, calls an eligible credential, records usage, and retires spent credentials without resurrecting them after restart.
 
 **The credit unit is not the API key.** Sarvam's current pricing/rate-limit documentation says ₹100 introductory credit per new user. Its platform documentation says one organisation balance is shared by its workspaces, API keys and products. Account rate limits are shared across keys. Therefore ten keys from one organisation do not establish ₹1,000 or ten independent rate-limit allowances. [S1–S3]
+
+**Project-specific clarification from the user, 23 September 2026:** each existing key intended for this project comes from a different Sarvam account, with a reported ₹100 introductory grant for each account. Use the **independent-account configuration**, normally one credential linked to each distinct organisation billing pool and account rate-limit scope. Do not default this supplied set to one shared ₹100 wallet. This records the user's setup, not a provider-confirmed balance check: exact organisation IDs, remaining credit and permitted project allocation are still enrolled through the secret-safe operator flow. Additional keys later created under an existing organisation do not add another grant.
 
 Required behavior:
 
@@ -87,6 +89,8 @@ Use the existing PostgreSQL pool. Proposed feature-owned metadata tables:
 
 A key's creator is not its billing identity. Operator-provided organisation/workspace metadata must be checked against authorised dashboard/account evidence; do not discover it by guessing from the key string. Unknown pool membership stays unqualified. Several aliases for the same organisation must collapse to the same unique pool. Several secret names with identical key bytes must collapse to one credential/tombstone.
 
+For this project's enrollment, prepare one connection entry per supplied account: opaque account label, actual organisation/workspace IDs, secret reference, distinct billing-pool/rate-scope identity, reported grant amount and provenance, observed remaining balance/time, approved allocation, priority and allowed data/purposes. Mark the ₹100 grant as `user_reported` until evidence is recorded; do not initialize remaining credit from the grant or key count. Preserve balances already consumed elsewhere. If two entries resolve to the same organisation, collapse their funding identity instead of duplicating funds. Distinct verified organisations retain independent ledgers; a missing balance/approval disables that entry, not other qualified entries. Do not ask again whether the user's keys are from different accounts; request only genuinely missing enrollment fields.
+
 Use a stable HMAC fingerprint with a separately protected installation secret; never display the fingerprint as the API key. Preserve its key version and historical fingerprint matching across rotation. Missing fingerprint/retirement state fails closed. Logging may show opaque credential labels, not key fragments or full prompts.
 
 ### E2. One-way credential progression
@@ -102,6 +106,8 @@ unqualified -> standby -> active -> draining -> retired
 `retired`, confirmed `invalid`, and `revoked` are terminal for that exact credential fingerprint. `disabled` is an operator pause, not a retired key. `cooldown` is a retryable health/rate event, not a completed cycle. Only the first documented activation transitions are automatic after prior qualification.
 
 When a local key cap or pool threshold would be crossed, stop new inference admission, mark the credential `draining`, and select the next eligible approved option. Existing admitted work settles normally. For Vision, draining may perform only bounded status/result retrieval of already accepted jobs under their pinned credential/workspace; it cannot start another job. Finalize the cycle and mark `retired` only after those jobs terminate or are explicitly abandoned/reconciled. **After terminal retirement there are zero new provider requests using that key, including health probes.** Settlement of a late local response is allowed but does not reactivate it.
+
+**Configured rollover for the supplied independent accounts:** use a stable operator-approved order (priority, then opaque connection ID), keep the current eligible pool until its affordability/threshold rule closes new admission, then advance to the next qualified pool permitted for that task and data. Persist the active selection and its version alongside the existing route policy/selection state; coordinate selection changes with E3's locked reservation so concurrent workers cannot independently reset or wrap the list. Approval of the pool list authorizes routine threshold rollover without another user prompt at each switch; it does not authorize new accounts, new funding or a different processing boundary. This is ordered progression, not per-request round-robin. If all eligible pools are exhausted, draining, retired, unqualified or otherwise unavailable, return the explicit no-funding/capability state and preserve manual work. Do not revisit terminal credentials. A transient 429 or ambiguous potentially charged request never triggers this budget rollover.
 
 Do not automatically revoke keys at Sarvam; they may serve another authorized application. Our terminal state is an enforced local dispatch denylist. Security revocation immediately stops all dispatch and follows operator-approved provider revocation procedures separately.
 
@@ -207,7 +213,7 @@ Ordinary users see only `AI temporarily unavailable — continue with saved mapp
 
 **G0:** deterministic policy/cost/selection tests and no-key fallback. **G1:** actual PostgreSQL reservation/concurrency/retirement/restart integration with a local fake provider. **G2-chat:** bounded synthetic Sarvam chat qualification with operator-supplied credentials and confirmed funding. **G2-doc:** separate document endpoint, page billing and restart qualification. **G3:** deployment-mode/security/account approval. These refine DEPLOY0/1/2; none delays existing local V0 or ASSIST0.
 
-No credentials were supplied or inspected for this plan. No real balance, endpoint compatibility, billing reconciliation or runtime quality is claimed passed. H90 contains the narrow account-owner prerequisites; agents implement everything else and exercise mocks/fixtures while those prerequisites are unavailable.
+The user supplied the account topology and reported ₹100 grant per account, not secret values or live balance evidence. No credentials were inspected; no real balance, endpoint compatibility, billing reconciliation or runtime quality is claimed passed. H90 contains the narrow account-owner prerequisites; agents implement everything else and exercise mocks/fixtures while those prerequisites are unavailable.
 
 ## I. Build sequence
 
@@ -249,6 +255,9 @@ Use D0 non-personal metadata and a controlled fake Sarvam server with determinis
 | G-22 | Billing and settings routes enforce permissions/version/CSRF rules; response, logs, errors, screenshots and browser bundles reveal no secret. |
 | G-23 | Changing policy mid-job prevents an unapproved next call; a denied result cannot be surfaced from cache. |
 | G-24 | Demonstrate actual D0 mapping → qualified recipe → subsequent batch conversion without repeated inference, plus D4 literal field preservation. No invented height/CRS/owner. |
+| G-25 | Supplied topology: three distinct account/organisation fixtures, one key each, each with a verified unused ₹100 allocation, retain three independent ledgers (₹300 gross allocated, before per-pool headroom and project caps). Spend on A does not debit B/C. Same-organisation aliases still follow G-01. |
+| G-26 | A reports a ₹100 signup grant but its observed remaining balance is ₹64: admit against only the approved remainder, never refill it to ₹100. Unverified B remains ineligible while qualified C can operate within its own permissions; account count is not spend authority. |
+| G-27 | Ordered A → B → C rollover at the reservation-aware soft ceiling survives concurrent callers, restart and reordered config. A drains only admitted jobs and becomes terminal; later admission never wraps to A. Exhausting the final eligible pool gives unavailable/manual fallback, not reset, top-up or another signup. |
 
 For G-20, a standalone old database cannot prove later retirements never happened. Restore must be disabled for paid calls until a current append-only retirement/usage backup or operator-verified reconciliation is available. Restore the stable fingerprint secret securely; absence blocks dispatch. Do not pretend an old snapshot alone provides a globally permanent memory.
 
@@ -256,7 +265,7 @@ Run existing `pnpm typecheck` and `pnpm test:ai`, then create and execute the li
 
 ## K. Copy-paste DEPLOY assignment
 
-> Implement the H20 portion of DEPLOY using 00, 01, 19 and this A–K specification on an isolated branch based on current integration code. Reuse the existing modelGateway port and FND SQL/jobs; implement Sarvam 105B V1 first, then separately qualified Vision document digitisation. Build shared organisation balances, per-key attribution, exact reservation/usage accounting, account-wide throttles, one-way terminal credential retirement, crash reconciliation and permission-safe operator settings. Use D0/fake-provider tests before live calls; acquire D3/D4 only as prescribed. No ₹100-per-key assumption, promo farming, rate-limit evasion, secret commits, automatic recharge, invented balance endpoint, direct registry writes or unapproved provider fallback. FND owns shared contracts/migrations/mounts, UI shared surfaces and DATA fixtures. Run J, return actual evidence, and leave unavailable external qualifications explicit while completing unaffected work.
+> Implement the H20 portion of DEPLOY using 00, 01, 19 and this A–K specification on an isolated branch based on current integration code. Reuse the existing modelGateway port and FND SQL/jobs; implement Sarvam 105B V1 first, then separately qualified Vision document digitisation. Build shared organisation balances, per-key attribution, exact reservation/usage accounting, account-wide throttles, one-way terminal credential retirement, crash reconciliation and permission-safe operator settings. Use D0/fake-provider tests before live calls; acquire D3/D4 only as prescribed. Use the user's confirmed separate-account setup: one existing key per independently funded account, with a reported ₹100 grant each, ordered threshold rollover and persistent retirement. Verify actual organisation identity, remaining balances and permitted allocations; the grant is not a fresh per-key allowance. No promo farming, rate-limit evasion, secret commits, automatic recharge, invented balance endpoint, direct registry writes or unapproved provider fallback. FND owns shared contracts/migrations/mounts, UI shared surfaces and DATA fixtures. Run J, return actual evidence, and leave unavailable external qualifications explicit while completing unaffected work.
 
 ## Primary references checked for this plan
 
