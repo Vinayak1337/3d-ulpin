@@ -4,6 +4,8 @@
 
 **Recommended lead: GPT-6 Astra, reasoning effort Max, in the configured Codex development environment.** The lead implements the critical path and integrates worker results; it is not a full-time planner that delegates all coding away. Development workers may use **only GPT-6 Sol or GPT-6 Astra**. Runtime property inference is separately specified as Sarvam in [20](20-model-gateway-and-budget-pools.md).
 
+**Runtime account clarification, 23 September 2026:** the user has one existing Sarvam key per separate account, with a reported ₹100 introductory grant per account. Use H20's independent-account onboarding and ordered budget rollover, not an assumption that all supplied keys share one wallet. Actual remaining balances and enrollment permissions are separate from that reported grant. Lead/worker model choices are unchanged.
+
 ## 1. Max versus Ultra: execution surface matters
 
 The [Astra model page](https://developers.openai.com/api/docs/models/gpt-6-astra) lists API efforts low/medium/high/xhigh/max. The current [subagent documentation](https://developers.openai.com/codex/subagents) describes Ultra in eligible ChatGPT Work surfaces as maximum reasoning with proactive delegation, and mentions support depending on client/model. Do not assume Ultra is a different base model or a universally valid API parameter.
@@ -165,14 +167,26 @@ is a separate OCR/page-billing job, not a LiDAR parser. Use deterministic
 parsers/geometry and qualified recipe reuse; no training after each chunk.
 
 Implement H20's organisation-level credit pools and per-key attribution.
-The published Rs100 signup credit is not per API key. Verify actual funding
-and group keys sharing a wallet/rate pool. Reserve worst-case cost before
-calls, settle exact usage, retain unknown charge exposure, obey account-wide
-throttles, and never revive terminally retired credentials after restart,
-re-enrolment or an old backup. A 429 cooldown is not exhaustion and must not
-trigger rate-limit evasion. Cross-pool failover requires legitimate funding
-and permission for the same data. No signup automation, auto-top-up,
-secret logging or sending restricted records to unapproved providers.
+USER-CONFIRMED SETUP: each existing key is from a different Sarvam account,
+with a reported Rs100 introductory grant per account. Configure separate
+account/organisation pools and their rate-limit scopes, one key each;
+do not combine this supplied set into one Rs100 wallet. Enroll actual IDs,
+current remaining balances, approved allocations and secret references.
+A reported initial grant is not verified remaining credit. Additional keys
+from the same organisation must share its existing pool, not mint funding.
+
+Use a persisted, operator-approved account order. Reserve worst-case cost,
+then keep the current pool until its admission threshold closes and advance
+to the next eligible approved pool without asking again at each switch.
+Drain admitted document jobs before permanent retirement; never reuse a
+terminal key after restart, re-enrolment, reordered config or old backup.
+Settle actual usage and retain unknown charge exposure. Do not retry a
+possibly charged operation on the next account. A transient 429 is cooldown,
+not exhaustion or permission to evade throttles. When no eligible pool
+remains, preserve pending work and use the no-AI/manual fallback.
+Cross-pool use requires legitimate funding and permission for the same data.
+No signup automation, auto-top-up, secret logging or sending restricted
+records to unapproved providers.
 
 Finish the no-key/fake-provider accounting tests before opt-in synthetic
 live calls. No supplied credential or balance evidence means no live pass;
