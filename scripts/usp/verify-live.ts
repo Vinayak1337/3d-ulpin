@@ -12,6 +12,9 @@ const { registerUspJobInputTx, claimUspJobAttempt, heartbeatUspJobAttempt,
   acceptUspJobAttempt, cancelUspJob, readUspJob } = await import('../../apps/web/lib/server/usp/jobs');
 const require = createRequire(resolve('apps/web/package.json'));
 const { Pool } = require('pg');
+const { UspVerticalSelectionSchema } = await import('../../packages/contracts/src/usp/index');
+const { resolveRegistryTarget, resolveRegistryVerticalContext } = await import('../../apps/web/lib/server/usp/snapshots');
+const { localRequestContext } = await import('../../apps/web/lib/server/usp/principal');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 5000, max: 2 });
 const base = 'http://127.0.0.1:3000/api/v1';
 const hash = (value: Uint8Array | string) => createHash('sha256').update(value).digest('hex');
@@ -54,6 +57,19 @@ try {
   const pins = [building, floor, space, otherBuilding].map((record: any) => ({
     ref: { namespace: 'registry_record', id: record.id }, revision: record.revision }));
   const [buildingPin, floorPin, spacePin, otherPin] = pins;
+  UspVerticalSelectionSchema.parse({ scope, building: buildingPin, floor: floorPin, space: spacePin });
+  for (const [label, pin] of [['building', buildingPin], ['floor', floorPin], ['space', spacePin]] as const) {
+    try { await resolveRegistryTarget(localRequestContext(randomUUID()), scope, pin); }
+    catch (error) {
+      const paths = (error as { issues?: { path: PropertyKey[] }[] }).issues?.map(issue => issue.path.join('.'));
+      throw new Error(`Target producer ${label} failed at ${paths?.slice(0, 4).join(',') ?? 'service'}`);
+    }
+  }
+  try { await resolveRegistryVerticalContext(localRequestContext(randomUUID()), scope, buildingPin, floorPin, spacePin); }
+  catch (error) {
+    const paths = (error as { issues?: { path: PropertyKey[] }[] }).issues?.map(issue => issue.path.join('.'));
+    throw new Error(`Vertical producer failed at ${paths?.slice(0, 4).join(',') ?? 'service'}`);
+  }
   const selected = (await api('/usp/targets/vertical', { scope, building: buildingPin, floor: floorPin, space: spacePin })).data;
   assert.equal(selected.state, 'available');
   const invalid = (await api('/usp/targets/vertical', { scope, building: otherPin, floor: floorPin, space: spacePin })).data;
