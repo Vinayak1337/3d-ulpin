@@ -1,0 +1,5 @@
+SYNTHETIC CONTRACT FIXTURE. NOT A REGISTRY DOCUMENT.
+Flat U-A101: ONLY_A101
+Flat U-A102: NEVER_A102
+Shared stair clause: SHARED_STAIR_CONTEXT
+A shared clause is not evidence of exclusive ownership.

@@ -4,18 +4,23 @@
 
 **Product outcome:** a visually strong, persisted Studio in which a user selects a building, supplied floor and unit, inspects the matching evidence, resolves a specific uncertainty and obtains a genuinely scoped property packet. Adaptive ingestion expands this working journey; it must not postpone it.
 
-**Revision: 22 September 2026 — audit corrections adopted in the original handoffs.** Read this index, [01 shared contracts](01-shared-contracts-and-ownership.md), your assigned feature's A–K sections, and the relevant sections of [99 UI integration](99-ui-ux-and-integration.md). You do not need the historical audit or previous chat to implement a task. [98](98-engineering-readiness-audit.md) is issue history and a closure ledger, not a second implementation specification.
+**Plan revision: 22 September 2026; implementation status updated 23 September 2026.** Read this index, [01 shared contracts](01-shared-contracts-and-ownership.md), your assigned feature's A–K sections, and the relevant sections of [99 UI integration](99-ui-ux-and-integration.md). You do not need the historical audit or previous chat to implement a task. [98](98-engineering-readiness-audit.md) is issue history and a closure ledger, not a second implementation specification.
 
 | Item | Baseline / rule |
 | --- | --- |
-| Repository and documentation branch | `Vinayak1337/3d-ulpin`, `docs/usp-agent-handoffs`; PR #7 |
-| Application baseline inspected | `f623cff897f91bb3ebd4c225f700ac263f7beb72`, `Record hosted floor registry verification` |
-| Pre-remediation documentation | `22aef05d8597acb326e7ee948451ab517134ceea` |
-| Current scope | Edit implementation instructions; no application implementation, data import, production activation or main merge in this documentation task |
-| Meaning of a new path/type below | Required implementation destination/contract, not a claim it already exists |
-| Meaning of a gate | An implementing agent must produce its evidence. Writing a test plan does not pass it. |
+| Repository / original handoffs | `Vinayak1337/3d-ulpin`; original adopted handoffs `e167b1f` on `docs/usp-agent-handoffs`, PR #7 |
+| Starter implementation branch | `feat/usp-foundation-f0`, based on cleaned `d6fa4602c0fb85eae71d7e3f63fb42a2684aa1b8`; cleanup PR #8 remains separate |
+| Application baseline inspected for the plans | `f623cff897f91bb3ebd4c225f700ac263f7beb72`, `Record hosted floor registry verification` |
+| Tested starter code | `1894f2e94e3f4f113fb4431afaf69018dcb730c3`; [actual verification run](https://github.com/Vinayak1337/3d-ulpin/actions/runs/35796807605) |
+| Current scope | F0a common validation/data-pack starter implemented; remaining F0 domain contracts/ports and F1/V0 work are not implemented by this starter |
+| Meaning of a new path/type below | Required implementation destination unless explicitly identified as implemented in the current 01 status note |
+| Meaning of a gate | Required executed evidence, not existence of a plan, type, placeholder or filename |
 
-Before coding, read [root AGENTS](../../AGENTS.md), [web AGENTS](../../apps/web/AGENTS.md), relevant current files and the actual base SHA. Preserve unrelated changes. This revised feature scope replaces contradictory historical handoff sequencing, not source-preservation, local-access or safety requirements. If code has drifted, adapt the narrow integration seam and record the difference; do not rebuild a functioning feature because an old filename or helper changed.
+**What to reuse now:** [USP module](../../packages/contracts/src/usp/index.ts), [common schemas](../../packages/contracts/src/usp/common.ts), [reference codec](../../packages/contracts/src/usp/reference-codec.ts), [data-pack schema](../../packages/contracts/src/usp/data-pack.ts), [offline byte verifier](../../scripts/usp/data/verify-pack.ts) and their 64 passing tests. Root package exports and existing runtime authorities were not changed. F0a is a bounded contract-ready slice, not the full F0 acceptance gate. H01 enumerates the remaining result/manifest/command/job/release contracts and actual producers.
+
+**What to do next:** one FND owner completes remaining F0 then F1-min; DATA prepares full D0 and attempts bounded D1/D4 acquisition. Add the UI owner for the shared live V0 integration once the necessary interfaces exist. Do not rebuild the master index, reinterpret the historical audit or launch ten feature agents. `fixtures/usp/D0/contract-smoke` is only a tiny authored integrity/contract test; it is not the 3–5-building demonstration and has no rendered or recorded result.
+
+Before coding, read [root AGENTS](../../AGENTS.md), [web AGENTS](../../apps/web/AGENTS.md), relevant current files and the actual base SHA. Preserve unrelated changes. In particular, main has separate later OCI deployment changes; this starter does not overwrite or merge them. Reconcile branch ancestry before integration rather than assuming this branch is latest main. This revised feature scope replaces contradictory historical handoff sequencing, not source-preservation, local-access or safety requirements. If code has drifted, adapt the narrow integration seam and record the difference; do not rebuild a functioning feature because an old filename or helper changed.
 
 ## 2. Existing mechanisms to reuse
 
@@ -36,7 +41,7 @@ Observed geometry, planned drawings, inferred quantities, authored fixtures, tec
 
 | Gate | Owner and bounded deliverable | Acceptance / unlock |
 | --- | --- | --- |
-| F0 | FND: shared schemas and executable request/result fixtures in 01, exact refs, intake/snapshot scopes, job/result/release contracts. DATA can acquire originals before F0. | Producer and consumer parse the same success, pending, unavailable and error fixtures. This permits isolated work, not completion claims. |
+| F0 | FND: shared schemas and executable request/result fixtures in 01, exact refs, intake/snapshot scopes, job/result/release contracts. DATA can acquire originals before F0. F0a common/data-pack slice now exists; full gate remains open. | Producer and consumer parse the same success, pending, unavailable and error fixtures. This permits isolated work, not completion claims. |
 | F1-min | FND: D0 live target/evidence reads, exact manifests, additive metadata stores, local access, shared-client commands and job hooks. | Real DB/storage tests, stale rejection, rollback and replay-safe receipt. No public IdP needed. |
 | V0 | UI + FND with the PACK role: D0 active map → building → supplied floor/unit → evidence → a scoped text/CSV packet → reload. UI separately qualifies one real D1 roof model. | V1–V5/V8 in 99 as applicable, persisted IDs, independent oracles, real network/storage calls. PDF-specific acceptance is a later PACK gate, not falsely passed by text export. |
 | F1-feature | FND registers only ports/migrations actually required by the next feature; feature owners connect them. | Narrow producer/consumer and live integration checks per handoff. |
@@ -80,9 +85,9 @@ DATA is an AI-agent responsibility. Existing source catalogues are leads, not lo
 
 ### Acquisition and fixture contract
 
-FND defines `usp-data-pack/1`; DATA creates proposed `fixtures/usp/D0` through `D7` as needed, each with `manifest.json`, `expected.json` and only permitted small originals. Proposed acquisition scripts live in `scripts/usp/data/`. These paths are implementation tasks, not delivered datasets. Large/restricted data lives outside Git; manifests contain non-secret storage references.
+FND now provides the initial `usp-data-pack/1` schema in [data-pack.ts](../../packages/contracts/src/usp/data-pack.ts). DATA creates `fixtures/usp/D0` through `D7` as needed, each with `manifest.json`, `expected.json` and only permitted small originals. Acquisition scripts live in `scripts/usp/data/`. The only starter pack delivered here is `D0/contract-smoke`; other paths remain implementation/acquisition tasks. Large/restricted data lives outside Git. The first verifier handles bounded contained local files only; add an explicit qualified private-storage adapter for larger/restricted packs instead of putting credentials in a manifest.
 
-Each manifest records pack/version, asset URLs and actual hashes/bytes, media/parser version, licence/permission, source/date/reference metadata, dependencies, source identifiers, verified stages, expected capabilities and explicit missing capabilities. A source family and object ID form the source key; identical flat labels in different buildings do not. Cross-source joins record method, evidence and unresolved alternatives. An estimate remains an estimate even if another dataset derived from the same provider agrees with it.
+Each manifest records pack/version, asset URLs and actual hashes/bytes, media/parser version, licence/permission, source/date/reference metadata, dependencies, source identifiers, verified stages, expected capabilities and explicit missing capabilities. A source family and object ID form the source key; identical flat labels in different buildings do not. Cross-source joins record method, evidence and unresolved alternatives. An estimate remains an estimate even if another dataset derived from the same provider agrees with it. The F0a manifest deliberately does not yet implement all parser/join metadata; extend it with the actual producer and shared tests before claiming a full normalized dataset. Supplied stage assertions are not trusted evidence by themselves.
 
 D0 stable aliases: `B-A`, `B-B`, `P-A`, `P-B`, `U-A101`, `U-A102`, `STAIR-S1`, `DUPLEX-D1`; map aliases to server-issued IDs via import receipts. Do not hardcode copied database UUIDs. Embed `ONLY_A101`, `NEVER_A102`, and `SHARED_STAIR_CONTEXT` in deliberately separate regions of the same synthetic page. Expected values are authored independently of the implementation:
 
@@ -100,9 +105,11 @@ Attempt an accessible small source plus its documented alternative, respecting r
 
 An agent receives `00 + 01 + its handoff`; UI additionally reads the enabled feature contracts, not every previous chat. Follow the fixed defaults and capability fallbacks. Do not ask the user to select routine parsers, invent fixture records, implement APIs or resolve shared-file conflicts.
 
+**Recommended model routing, not a measured project benchmark:** Sol XHigh for FND, UI and integration-heavy feature work; Sol High for bounded DATA preparation, READY evaluation and ASSIST0 typed templates. Do not assign complete handoffs to Low or buy Max effort by default. Reserve Astra High for a specific difficult cross-cutting review or reproducible blocker, not every file. Model choice never changes ownership, permissions or acceptance. Exact settings/prices must be checked in the execution surface; the user's external benchmarks are not measured ULPIN completion rates.
+
 Work on `feat/usp-<owner>` from a recorded integration SHA. A shared change request includes exact path, base SHA, contract version, patch, reason, migration impact and reproducer/test. FND or UI, as sole owner, applies it. If an owner is absent, complete isolated allowed work and return that concrete integration patch with blocked status; never fork a second service or call a mocked route complete. No force pushes, implicit snapshot refresh, deployment or main merge.
 
-Completion statuses: `contract_ready`, `local_integrated`, `real_source_qualified`, `deployment_qualified`, or `blocked(reason)`. Report each applicable status separately. A supported text packet can be locally integrated while PDF remains blocked; a reference mesh can render while analytical volume remains unsupported. Preserve these distinctions in UI capability responses.
+Completion statuses: `contract_ready`, `local_integrated`, `real_source_qualified`, `deployment_qualified`, or `blocked(reason)`. Report each applicable status separately. A supported text packet can be locally integrated while PDF remains blocked; a reference mesh can render while analytical volume remains unsupported. An auth fixture can pass without qualifying a real public identity provider. F0a is contract_ready for its explicitly implemented subset only; do not mark all of 01 complete.
 
 ## 6. Verification and delivered evidence
 
@@ -119,7 +126,7 @@ pnpm test:api
 pnpm test:e2e
 ```
 
-Service tests require isolated configured services. New tests are proposed, not pre-existing commands: run them after creation with `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test <unit-test-files>`, `pnpm exec tsx <integration-file>`, `pnpm exec playwright test <spec>` and `python -m pytest <geo-tests>`. Do not invent a `pnpm test:usp-*` script and say it ran. Store sanitized evidence under proposed `docs/evidence/usp/<owner>/` with code SHA, pack/hash, environment, command/exit status, numeric expected/actual values, HTTP/job/DB receipts, artifact hashes and applicable V-shot screenshots. Private originals/results stay out of Git.
+Service tests require isolated configured services. New tests are proposed, not pre-existing commands, except the F0a tests now linked in 01. Run tests after creation with `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test <unit-test-files>`, `pnpm exec tsx <integration-file>`, `pnpm exec playwright test <spec>` and `python -m pytest <geo-tests>`. Do not invent a `pnpm test:usp-*` script and say it ran. Store sanitized evidence under `docs/evidence/usp/<owner>/` with code SHA, pack/hash, environment, command/exit status, numeric expected/actual values, HTTP/job/DB receipts, artifact hashes and applicable V-shot screenshots. Private originals/results stay out of Git.
 
 Every feature tests its named pack before and after integration, then an independent real-source sample when accessible. Keep numerical truth, interaction/visual quality, external-source interpretation and ML generalization as separate checks. No generated result may serve as its own ground-truth oracle. No screenshot, schema validation, catalogue link or mock-only test is sufficient by itself.
 
@@ -127,4 +134,4 @@ Every feature tests its named pack before and after integration, then an indepen
 
 [90](90-required-human-tasks.md) limits human work to unavailable permitted records, accountable review terminology, actual deployment approvals and optional intended-user observations. Automated acquisition, fixture preparation, coding, testing and routine research belong to agents. Unknown input is a supported state; no waiting for people before D0/V0.
 
-All 14 original execution documents are the destinations for current corrections; no new remediation document is required. Audit issue history remains in 98 and its immutable pre-remediation commit. Design instructions may now be ready to execute while implementation tests remain unrun. Do not call the software foolproof or a deployment qualified merely because this documentation revision exists.
+All 14 original execution documents are the destinations for current corrections; no new remediation document is required. Audit issue history remains in 98 and its immutable pre-remediation commit. The F0a starter has executed schema/byte checks; the broader implementation and real-data gates remain open. Do not call the software foolproof or a deployment qualified merely because a documentation revision or partial contract implementation exists.

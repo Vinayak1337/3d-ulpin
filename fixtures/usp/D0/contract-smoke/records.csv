@@ -1,0 +1,3 @@
+parcel_no,space_ref,building_ref,floor_label,lower_m,upper_m,evidence_token
+000127,U-A101,B-A,First floor,3.2,6.8,ONLY_A101
+000127,U-A102,B-A,First floor,3.2,6.8,NEVER_A102

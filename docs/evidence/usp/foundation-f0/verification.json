@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "usp-f0-verification/1",
+  "code_sha": "1894f2e94e3f4f113fb4431afaf69018dcb730c3",
+  "node": "v24.20.0",
+  "run_id": "35796807605",
+  "checks": [
+    {
+      "name": "starter-tests",
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-foundation.test.ts tests/usp-data-pack.test.ts",
+      "exit_code": 0,
+      "seconds": 0.72
+    },
+    {
+      "name": "starter-types",
+      "command": "pnpm exec tsc --noEmit --target ES2022 --module esnext --moduleResolution bundler --strict --skipLibCheck --types node tests/usp-foundation.test.ts tests/usp-data-pack.test.ts tests/fixtures/usp-common.ts",
+      "exit_code": 0,
+      "seconds": 1.57
+    },
+    {
+      "name": "pack-bytes",
+      "command": "pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D0/contract-smoke/manifest.json",
+      "exit_code": 0,
+      "seconds": 0.47
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exit_code": 0,
+      "seconds": 9.95
+    },
+    {
+      "name": "studio",
+      "command": "pnpm test:studio",
+      "exit_code": 0,
+      "seconds": 4.28
+    },
+    {
+      "name": "scope",
+      "command": "pnpm test:register-scope",
+      "exit_code": 0,
+      "seconds": 0.52
+    },
+    {
+      "name": "core",
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-*.test.ts",
+      "exit_code": 0,
+      "seconds": 2.68
+    },
+    {
+      "name": "uttam",
+      "command": "pnpm test:uttam",
+      "exit_code": 0,
+      "seconds": 2.28
+    },
+    {
+      "name": "repo-data",
+      "command": "node --test tests/repo-data-mode.test.mjs",
+      "exit_code": 0,
+      "seconds": 0.11
+    },
+    {
+      "name": "unchanged-checkout",
+      "command": "git diff --exit-code && git diff --check",
+      "exit_code": 0,
+      "seconds": 1.37
+    }
+  ],
+  "not_run": [
+    "live DB/storage/worker integration",
+    "real-source D1/D4 acquisition",
+    "full D0 neighbourhood",
+    "browser/GPU/V0",
+    "model hosting",
+    "F2/deployment"
+  ]
+}
