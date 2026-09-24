@@ -21,7 +21,7 @@ The Codex alignment is honest where it matters most: unknown is never zero, proj
 
 No application code, data, service or deployment was changed. No runtime gate passed.
 
-**Follow-up, 25 September 2026.** The human task list was cut to three always-needed items plus two conditional ones ([H90](90-required-human-tasks.md)); everything else became agent cards DATA-05 to DATA-08, READY-02, UI-07, LEAD-05 and DEPLOY-04 in [H29](29-agent-task-cards.md). Any permitted geography is fine, labelled by geography; nothing needs Delhi data. A cleanup pass listed 105 obsolete or duplicate files with evidence in `docs/cleanup-review/2026-09-25-removals.json` (card CLEANUP-01); the heavier retirement of the old engineering plan and prototypes is CLEANUP-02.
+**Follow-up, 25 September 2026.** The human task list was cut to three always-needed items plus two conditional ones ([H90](90-required-human-tasks.md)); everything else became agent cards DATA-05 to DATA-08, READY-02, UI-07, LEAD-05 and DEPLOY-04 in [H29](29-agent-task-cards.md). Any permitted geography is fine, labelled by geography; nothing needs Delhi data. CLEANUP-01 removed the 105 hash-checked obsolete or duplicate files listed in `docs/cleanup-review/2026-09-25-removals.json` and all nine GitHub workflows; the heavier retirement of the old engineering plan and prototypes remains CLEANUP-02.
 
 ## Findings
 

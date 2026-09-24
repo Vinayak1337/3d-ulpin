@@ -1,5 +1,14 @@
 # Data-transition cleanup — applied on the review branch
 
+## Current cleanup status, 25 September 2026
+
+CLEANUP-01 removed the 105 exact, hash-checked paths in
+[`2026-09-25-removals.json`](2026-09-25-removals.json), along with the seven
+remaining GitHub workflows. The active USP handoff and engineering plan files
+were retained. GitHub CI and deployment automation are no longer configured in
+this tree; validation commands remain available for local runs. The sections
+below describe the earlier review and its historical CI dependencies.
+
 **23 September 2026.** The user approved cleanup. This branch removes **231**
 verified redundant or retired paths, totaling **74,317,749 logical bytes**.
 The [machine-readable receipt](applied-cleanup.json) lists every deletion, its
@@ -40,8 +49,9 @@ instruction to recursively delete the remaining historical candidates.
 
 Structural checks verify protected file hashes, 91 duplicate counterparts,
 reference-image hashes, exact handoff copies and newly broken Markdown targets.
-The branch-scoped apply workflow runs pure repository tests before pushing the
-cleanup commit. Its actual result is in GitHub Actions, not presumed by this text.
+At the time, a branch-scoped apply workflow ran pure repository tests before
+pushing the cleanup commit. Its actual result is in the historical GitHub Actions
+run, not presumed by this text. That workflow is now removed.
 No database, GPU/browser journey, local-PC or real-source qualification is implied.
 
 ## Executed verification
@@ -205,13 +215,13 @@ docs/evidence/t066/browser/receipt-checkpoint.json
 
 See `scripts/reference/verify.ts`, `scripts/ml/browser-workflow.mjs`, `scripts/ux/verify-source-workflow.ts` and `scripts/ux/verify-source-intake.mjs`. Parameterize those harnesses to fresh D0 receipts before archiving machine-specific state. Keep useful scripts/ux source-intake tests; migrate their inputs rather than erasing regression coverage.
 
-## 7. Historical engineering plans are still CI inputs
+## 7. Historical engineering plans still have local consumers
 
-**A07: 138 files can leave the active plan tree only after CI migration.** Do not recursively delete `docs/engineering-plan`.
+**A07: 138 files need a separate local-consumer migration.** Do not recursively delete `docs/engineering-plan`.
 
-[tests/engineering-acceptance.test.mjs](../../tests/engineering-acceptance.test.mjs) reads the reference catalogue, acceptance contract, traceability and backlog. [validate_plan.py](../engineering-plan/tools/validate_plan.py) checks task-plan existence and legacy/schema/renderer data. Existing GitHub workflows call these tools; some also execute actual application checks.
+[tests/engineering-acceptance.test.mjs](../../tests/engineering-acceptance.test.mjs) reads the reference catalogue, acceptance contract, traceability and backlog. [validate_plan.py](../engineering-plan/tools/validate_plan.py) checks task-plan existence and legacy/schema/renderer data. Both remain available as local checks.
 
-Keep the 19 K04 files under `tools/**`, `references/**`, `legacy/**`, plus `backlog.json`, `acceptance_traceability.json`, `edge_cases.json`, `input_support_plan.json` and `legacy_task_crosswalk.json` until the checks are deliberately migrated. Preserve original coverage requirements while replacing old execution sequencing. Do not delete CI merely because branch filters or task names are dated.
+Keep the 19 K04 files under `tools/**`, `references/**`, `legacy/**`, plus `backlog.json`, `acceptance_traceability.json`, `edge_cases.json`, `input_support_plan.json` and `legacy_task_crosswalk.json` until the checks are deliberately migrated. Preserve original coverage requirements while replacing old execution sequencing.
 
 **U01/U02: update, not delete.** Root `AGENTS.md`, `README.md`, current status/startup/Studio/API documents, `data-source/README.md`, package manifests, Next tracing and workflow configurations need synchronized links/current-vs-historical wording. Preserve safety, source-retention and operational instructions. Main currently contains older task priorities; new agents must not accidentally treat them as the adopted USP order.
 
@@ -230,13 +240,10 @@ These are proposed cleanup verification obligations, **not executed test results
 
 [decisions.json](decisions.json) contains 30 ordered, explicit path/prefix rules, reasons and removal prerequisites. [classify_inventory.py](https://github.com/Vinayak1337/3d-ulpin/blob/7472730980fd3d79e7364b5cac3e6c7ebff7dd3d/docs/cleanup-review/classify_inventory.py) is a standard-library **report generator only**, with no apply/delete mode. It verifies the pinned inventory metadata digest and refuses drift or an existing output directory. Ninety-one exact duplicate candidates must retain an identical counterpart; otherwise it fails.
 
-From a checkout containing the pinned baseline:
-
-```sh
-python3 docs/cleanup-review/classify_inventory.py --repo . --output /tmp/ulpin-cleanup-classification
-```
-
-Use a new output directory each time. It produces `full-inventory.json`, `full-inventory.csv`, `candidates.csv`, `candidate-paths.md` and `summary.json`. The downloadable review pack also includes the preserved conservative import graph and reference evidence; supplying `--edges import-edges.json` includes literal static importers in each row. Run the script only for its pinned baseline; changed source requires renewed review, not force-applying old recommendations.
+The generator was removed by CLEANUP-01. Its pinned implementation remains in
+Git history, and the historical output included `full-inventory.json`,
+`full-inventory.csv`, `candidates.csv`, `candidate-paths.md` and `summary.json`.
+Changed source requires renewed review rather than applying old recommendations.
 
 The review pack is not the source dataset pack. No D0/D1/D4 acquisition, new feature implementation or V0 qualification is claimed here. No local `node_modules`, `.next`, untracked checkpoint, downloaded model, PC dataset directory or database volume was inspected. Such paths must not be inferred as safe deletion candidates from this Git inventory.
 
@@ -244,4 +251,4 @@ Removing working-tree files does not remove their historical Git objects or guar
 
 ## Follow-up review, 25 September 2026
 
-A second pass checked the deferred groups against the current staging head and every file's consumers (imports, package scripts, CI workflows, validators and links from current docs). [2026-09-25-removals.json](2026-09-25-removals.json) lists 105 files (about 28 MB) in six groups with each file's blob hash, reason and evidence: superseded briefs and guides, the retired v2 design pack, the officer-studio-v3 and bulk-studio-v4 prototypes, this folder's one-shot apply and inventory tooling and their workflows, the old Studio shell (R01), the old browser harness (R03) and the duplicate navigation list (R04). The edits those removals need (package scripts, one test, handoff and doc links) are already applied. The `git rm` step runs as task card CLEANUP-01. The engineering plan, the reference-map-v5 prototype and the showcase scene stay until CLEANUP-02 retires them together with their CI consumers.
+A second pass checked the deferred groups against the staging head and every file's consumers (imports, package scripts, CI workflows, validators and links from current docs). [2026-09-25-removals.json](2026-09-25-removals.json) lists 105 files (about 28 MB) in six groups with each file's blob hash, reason and evidence: superseded briefs and guides, the retired v2 design pack, the officer-studio-v3 and bulk-studio-v4 prototypes, this folder's one-shot apply and inventory tooling and their workflows, the old Studio shell (R01), the old browser harness (R03) and the duplicate navigation list (R04). CLEANUP-01 removed those files and all remaining GitHub workflows after checking every recorded blob hash. The engineering plan, the reference-map-v5 prototype and the showcase scene stay until CLEANUP-02 retires them together with their remaining local consumers.

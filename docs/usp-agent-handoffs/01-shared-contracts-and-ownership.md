@@ -199,7 +199,7 @@ GF1 acceptance additionally requires **GF-T15** from H26: independent checksum v
 
 Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:registry`, `pnpm test:register-scope`, applicable core tests and proposed tests with the actual project runners after test creation; H28 defines the required evidence. Include forged principal/scope headers, revoked permission during pending reads, public released asset without original grant, release revocation, storage/SQL failure, old cursor and nested transaction regression. Report actual pack/source hashes, requests/DB receipts and unqualified capabilities. F0 types passing does not pass live F1 or browser V0.
 
-Repeat the implemented starter with `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-foundation.test.ts tests/usp-data-pack.test.ts` and `pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D0/contract-smoke/manifest.json`. See the read-only `.github/workflows/usp-foundation.yml` for explicit type-check and regression commands. It performs no DB reset, deployment, model call or automatic merge.
+Repeat the implemented starter with `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-foundation.test.ts tests/usp-data-pack.test.ts`, `pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D0/contract-smoke/manifest.json`, and `pnpm typecheck`. These local checks perform no DB reset, deployment, model call or automatic merge.
 
 ## 11. Copy-paste FND assignment
 
