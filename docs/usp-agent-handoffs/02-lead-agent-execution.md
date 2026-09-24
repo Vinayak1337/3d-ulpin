@@ -1,12 +1,14 @@
 # 02 · Implementation lead and bounded worker delegation
 
+<!-- plan-next-gate: GF0 -->
+
 **Adopted execution update: 23 September 2026.** This is the ready-to-use lead assignment for the existing handoffs, not another product specification. It replaces H00's earlier Sol-first routing recommendation. Domain requirements, ownership, data preservation and qualification gates remain in [00](00-README.md), [01](01-shared-contracts-and-ownership.md) and [99](99-ui-ux-and-integration.md).
 
 **Recommended lead: GPT-6 Astra, reasoning effort Max, in the configured Codex development environment.** The lead implements the critical path and integrates worker results; it is not a full-time planner that delegates all coding away. Development workers may use **only GPT-6 Sol or GPT-6 Astra**. Runtime property inference is separately specified as Sarvam in [20](20-model-gateway-and-budget-pools.md).
 
 **Runtime account clarification, 23 September 2026:** the user has one existing Sarvam key per separate account, with a reported ₹100 introductory grant per account. Use H20's independent-account onboarding and ordered budget rollover, not an assumption that all supplied keys share one wallet. Actual remaining balances and enrollment permissions are separate from that reported grant. Lead/worker model choices are unchanged.
 
-**Dataset policy, 24 September 2026:** H00 section 4 supersedes locality-specific acquisition instructions. General map/load/adaptation testing may use real data from any suitable geography. Preserve old sources/regressions; do not require Uttam Nagar or Delhi. Assign DATA the large real 3D corpus and independent sparse/unfamiliar-source cohorts, with H14/H99 qualification rather than hardcoded sample acceptance. This update changes future test selection, not the recorded D0/D1 milestone or current runtime capabilities.
+**Dataset policy, 24 September 2026:** [H28](28-data-acquisition-and-finale-tests.md) owns D0–D7 acquisition, exact sources, independent oracles and current test gates. Operational data is Indian; tests may use any permitted geography. No locality is mandatory. The full-product learner/load campaigns are separate from the finale's matched-data and domain-AI qualification.
 
 ## 1. Max versus Ultra: execution surface matters
 
@@ -93,140 +95,73 @@ Use separately pinned roles/configs for XHigh implementation and read-only revie
 
 ## 5. Continue the existing implementation, not the old starter
 
-The former `codex/fnd-f0-f1@97146d62d7e64c946abfc98b0d7e670845b17857` work is merged into `staging`. The present continuation is `codex/usp-staging-continuation-20260923` from `origin/staging@2838e798af838d7646ff92b1120c62c8458103da`, targeting staging in PR #13. It preserves main's deployment/API-index fixes. The original `feat/usp-foundation-f0@777c978` is historical. Inspect [FND interfaces](../evidence/usp/fnd/INTERFACES.md), [current D0 evidence](../evidence/usp/fnd/d0/README.md), current code and new test outputs before deciding what remains.
+The consolidated staging baseline is `45d033baae7ec4e5a572d82459b0062c70a12c95`. The continuation is already integrated; former PR/branch names are history, not pending dependencies. Fetch and verify staging before work. Main remains the separate old-code/deployment line. Inspect [FND interfaces](../evidence/usp/fnd/INTERFACES.md), [D0 evidence](../evidence/usp/fnd/d0/README.md), the [23 September local milestone](../evidence/usp/continuation-2026-09-23/README.md) and current code/tests. Do not recreate D0/PACK0/D1 because an old starter prompt requested them.
 
-Those source/receipt reads are not a new end-to-end verification by this document author. Older H00/H01 starter-status prose is historical when current code has advanced. Do not regenerate implemented contracts because that paragraph says they were once missing. Recheck branch drift and preserve main's separate deployment work during later integration.
+These reads do not confer a new runtime pass. Preserve populated data and unrelated changes. A future implementation branch uses the verified staging base and targets staging; no implicit main merge or deployment.
 
 ## 6. Ready-to-paste lead prompt
 
 ```text
 Act as the hands-on implementation lead for Vinayak1337/3d-ulpin.
-Use GPT-6 Astra at Max reasoning in the configured coding environment.
-Use only GPT-6 Sol or GPT-6 Astra for any development worker.
+Use GPT-6 Astra Max in the configured coding environment and only GPT-6
+Sol/Astra workers, with actual settings verified through the client.
 
-Read current AGENTS.md and applicable framework instructions, then
-00-README.md, 01-shared-contracts-and-ownership.md,
-02-lead-agent-execution.md and 99-ui-ux-and-integration.md under
-docs/usp-agent-handoffs/. Read relevant feature A-K sections as needed.
-For runtime AI, read 19 and 20-model-gateway-and-budget-pools.md.
-Do not regenerate the plans or treat the historical audit as another spec.
+Read AGENTS.md and applicable framework instructions. Read H00, H01, H02,
+H26, H27, H28, release-plan.json and the assigned feature/H99 contracts.
+Read H19/H20 before any runtime provider work. Do not turn historical
+T-number backlog entries or earlier audits into a second roadmap.
 
-First inspect worktree changes, running writers, Git ancestry and actual
-interfaces/tests. Continue the latest established implementation, not an
-older starter. Fetch origin/staging and recheck its live head; the last base
-was 2838e798af838d7646ff92b1120c62c8458103da. PRs 8–11 and the adopted
-documentation are merged into staging; former branch names are historical.
-Inspect PR 13's continuation before duplicating work. Use a new isolated
-continuation branch and target staging, preserving newer application and
-main-only deployment changes. No implicit deployment or main merge.
+Inspect dirty files, running writers, Git ancestry and current code/tests.
+Fetch origin/staging; the recorded consolidated baseline is 45d033b.
+Use an isolated continuation branch targeting staging. Leave main and
+populated environments unchanged. Do not activate public services.
 
-Take explicit FND/UI/PACK0 ownership for the critical path as appropriate.
-Preserve the existing registry, jobs, source storage, renderer, IDs,
-revisions, exact evidence links and unavailable states. Implement and test,
-not merely supervise. Never use a new competing map, database or broker.
+Start at the manifest's nextGate (also declared at this file's top). Reuse and regression-check existing
+D0/PACK0 and D1 receipts. Inventory actual gaps, preserve fixture semantics,
+and pin a bounded Indian source bundle plus independent adversarial truth.
+H28 governs acquisition; catalogue metadata is not downloaded survey data.
+Proceed GF1 IDs/exchange, GF2 domain AI and spaces, GF3 governance/impact,
+GF4 scoped card/QR, GF5 evidence and rehearsal as dependencies pass.
 
-SPAWN WORKERS when a genuinely independent task can save time or provide
-independent verification. Choose model/effort by the H02 routing table:
-Sol Medium for bounded read-only exploration; Sol High for DATA and
-ordinary isolated modules; Sol XHigh for integration-heavy leaves;
-Astra High for high-risk cross-layer diagnosis; Astra Max for a specific
-persistent hard blocker. Keep yourself on the critical integration path.
-Do not delegate every small edit or set every worker to Max.
+Implement on the existing registry, sources, jobs, provider gateway and
+MapViewport. Retain the current Cesium D0/D1 runtime. No competing broker,
+map, database or card service. A project ID is not an official ULPIN.
+Unknown/unsupported analytical results are not numerical zeros. Preserve
+all originals, revisions, local metre frames and vertical references.
 
-Actually set/verify the model and effort through the available spawn/config
-mechanism. Worker prose alone is not model selection. If unavailable,
-continue serially on the selected allowed model and report the limitation.
-Do not use another model family, a hidden API runner or new paid account.
+Use explicit bounded owners and the H02 routing table. The lead remains
+on critical-path implementation. Start at most two workers; use separate
+worktrees or non-overlapping paths, no recursive workers. Supply exact
+base, contracts, source hashes, independent expected cases and return
+requirements. No concurrent writers to shared services or writable test DBs.
 
-Start with at most two spawned threads and the existing total ownership
-limits: two implementation owners plus DATA/verification before V0.
-Only the lead spawns; workers cannot spawn children. Every writing worker
-needs a safe worktree or non-overlapping file allocation. Supply exact
-base SHA, paths, interface, pack/hash, tests and return evidence. Never
-allow concurrent writers on shared contracts, state, routes or the map.
+Keep full_product commitments without making them finale prerequisites:
+concurrent learner, public request dashboard, MCP/conversational assistance,
+enrichment, renderer experiments and large-scale protected deployment.
+The four H27 domain-AI workstreams remain in the finale. Existing exact
+conversion/no-key/manual routes remain useful when a provider is unavailable.
 
-MILESTONE 1:
-Finish the actual Studio D0 journey: neighbourhood -> building -> supplied
-floor/unit -> exact evidence -> scoped text/CSV packet -> saved-state reload.
-Separately qualify one real D1 roof-shaped building in the same shared
-viewport without flattening it or inventing internal floors. Inspect actual
-browser interaction and compare fresh screenshots with retained references.
-Do not declare a separate showcase or mock API to be the product result.
+Use H20's modelGateway and task/cost/permission caps. Sarvam does bounded
+interpretation/OCR; qualified specialist tools process geometry. H21 permits
+eligible full-product learning alongside imports; training is not performed
+by the gateway or triggered after every call. Independent account budgets
+need verified allocations; never multiply grants, evade shared throttles,
+reuse retired keys or retry unknown charged work against another account.
+No-key/fake-provider tests precede any permitted live call. No secrets in
+chat, Git, screenshots or logs; no paid or unapproved external fallback.
 
-DATA AFTER THE EXISTING SMOKE MILESTONE:
-Follow H00 section 4's geography-independent selection procedure. Acquire a
-real roof-shaped corpus and compatible same-area context; reserve independent
-publisher/layout cohorts with naturally sparse or missing attributes. No
-Uttam Nagar, Delhi or India-only acquisition prerequisite. Keep native inputs,
-source IDs, releases, CRS/vertical metadata and exact conversion lineage.
-Run real 10k -> 100k -> 1M aggregate load rungs only as partitioned ingestion
-and spatial paging become qualified; do not raise per-job/scene limits or
-clone records to manufacture scale. H14 J A1-A5 distinguishes no-code-edit
-adaptation for supported formats from separately implemented new parsers.
-Measure map interaction during ingestion, false confident mappings, missing
-states and restart/replay correctness. Never present a small smoke test as
-high-load acceptance or move one country's geometry into another's location.
+Run the named requirement tests, real producer/consumer integration and
+actual Studio interaction. Save immutable receipts with exact code/source/
+model/pack hashes, expected versus actual values and measured environment.
+Use an independent read-only review before each substantial acceptance.
+Update the manifest and existing evidence index only from actual passes;
+documentation validation alone cannot close a runtime requirement.
 
-Then continue dependency-ready milestones in order: useful readiness and
-findings/evidence actions; separately qualified PDF packets; durable
-progressive ingestion; history/relationships/impact; governed runtime AI;
-then authenticated citizen/MCP/deployment only after their specific gates.
-Checkpoint and verify each complete workflow before expanding. Do not stop
-for routine permission between files or request that a human pick parsers.
-Use the prescribed data fallbacks; unavailable authentic inputs block only
-their particular real-source qualification. Do not claim optional or blocked
-features complete or spend the whole session rewriting abstractions.
-
-RUNTIME AI:
-Use the existing modelGateway through DEPLOY, not feature-specific clients.
-Sarvam 105B V1 handles bounded mapping/text interpretation; Vision digitise
-is a separate OCR/page-billing job, not a LiDAR parser. Use deterministic
-parsers/geometry and qualified recipe reuse; no training after each chunk.
-
-Implement H20's organisation-level credit pools and per-key attribution.
-USER-CONFIRMED SETUP: each existing key is from a different Sarvam account,
-with a reported Rs100 introductory grant per account. Configure separate
-account/organisation pools and their rate-limit scopes, one key each;
-do not combine this supplied set into one Rs100 wallet. Enroll actual IDs,
-current remaining balances, approved allocations and secret references.
-A reported initial grant is not verified remaining credit. Additional keys
-from the same organisation must share its existing pool, not mint funding.
-
-Use a persisted, operator-approved account order. Reserve worst-case cost,
-then keep the current pool until its admission threshold closes and advance
-to the next eligible approved pool without asking again at each switch.
-Drain admitted document jobs before permanent retirement; never reuse a
-terminal key after restart, re-enrolment, reordered config or old backup.
-Settle actual usage and retain unknown charge exposure. Do not retry a
-possibly charged operation on the next account. A transient 429 is cooldown,
-not exhaustion or permission to evade throttles. When no eligible pool
-remains, preserve pending work and use the no-AI/manual fallback.
-Cross-pool use requires legitimate funding and permission for the same data.
-No signup automation, auto-top-up, secret logging or sending restricted
-records to unapproved providers.
-
-Finish the no-key/fake-provider accounting tests before opt-in synthetic
-live calls. No supplied credential or balance evidence means no live pass;
-manual mapping and typed native answers must still work. Keep developer
-Sol/Astra usage separate from runtime Sarvam budgets and data permissions.
-
-Before accepting each substantial milestone, use a fresh read-only review
-worker for its actual diff, receipts, relevant adversarial tests and visual
-behaviour. Record findings before fixing; then run targeted and integrated
-regressions. Do not endlessly rerun unrelated tests once required checks pass.
-
-Update existing implementation notes with commits, exact commands/exit
-codes, source/pack hashes, API/storage/job receipts, screenshots, observed
-worker models/efforts and usage where available. Distinguish contract-ready,
-local-integrated, real-source-qualified and deployment-qualified outcomes.
-Preserve populated volumes and unrelated work. Never hide failures, weaken
-tests, fabricate dataset facts, buy credits, activate public services or
-merge main without explicit authorization.
-
-Proceed through coding, testing and corrections autonomously within the
-available session/tools. At a real external gate or session limit, leave a
-small recoverable checkpoint with the exact next action; never claim work
-will continue after the session or that an unrun check passed.
+Proceed autonomously through authorized coding/testing. Routine parser and
+fixture choices belong to agents. Use H28's bounded acquisition fallbacks;
+missing authentic input blocks its particular real-source claim, not all
+software work. At a genuine external gate, retain a recoverable checkpoint
+and the precise missing input. Never mark unrun or blocked work complete.
 ```
 
 ## 7. Acceptance for the orchestration setup itself

@@ -16,6 +16,8 @@ Implement saved proposal revisions, exact run manifests/coverage, qualified geom
 
 IMPACT0: saved point-stack or polygon+vertical-interval proposal against qualified planar/prism records, real result persistence, source links and report. Geometry is provided by FIND, not duplicated. Unsupported utilities still appear as assessment gaps. IMPACT1 utility-solid calculations require separately qualified profile conversion and source depth/dimension/reference evidence; do not delay IMPACT0 on them or label them implemented when absent.
 
+**GF3 finale path:** promote this existing IMPACT0 service and UI into the demonstration and [GF-T20 matrix](28-data-acquisition-and-finale-tests.md). There is no separate dig-screen engine. GF2's optional closed-solid qualification in [H27](27-domain-ai-and-cadastral-checks.md) may extend FIND's operation later; IMPACT consumes only profiles that actually pass it.
+
 No route optimization, automatic permissions, legal compensation, emergency advice, mesh boolean engine or cross-site datum federation. Numeric form remains an accessible alternative to drawing. Proposed geometry is hypothetical/planned, not an observed survey.
 
 ## D. HLD and end-to-end flow
@@ -38,6 +40,8 @@ Map tool → enter/draw proposed extent → confirm frame/reference and study sc
 | Textured mesh/unsupported solid | Context display only, no exact collision or clearance |
 
 Utility qualification requires level meaning, benchmark, cross-section, dimensions, interpolation and source/ground reference as needed. No guessed radius/buffer or assumed legal clearance. User-entered clearance remains a labelled scenario parameter. A proposed service drawing is not an as-built location.
+
+Store the source's horizontal and vertical uncertainty separately, with investigated segment/point coverage and date. Utility quality levels A–D describe evidence/investigation quality; they are not universal metre buffers or an automatic collision offset. One exposed quality-A point does not qualify an entire corridor. Absolute depth/elevation is displayed only after qualified ground/vertical-reference conversion; otherwise show source-relative depth or unknown. Unknown depth, an unmapped strip and incomplete inventory stay `not_assessed`, never “safe to dig.” The report is an affected-space screening result, not an official Call Before u Dig notification/submission.
 
 Default D0 ≤30 spaces; legacy requests remain ≤100 spaces. Larger scope uses FIND's bounded indexed candidate pages and fenced child jobs ≤60 seconds; all candidate pairs/results deduplicate across pages. Do not raise legacy limits globally. Coverage stores loaded selection, known inventory completeness evidence (or unknown), assessed count, skipped reasons and required dependencies. Full assessment of loaded records is not full real-world inventory. Hidden assets produce only policy-approved incomplete-scope wording, not identifying coordinates/counts or an all-clear.
 
@@ -76,9 +80,11 @@ Use `feat/usp-impact`; own IMPACT leaves/migration/tests only. F0 schemas allow 
 
 ## J. Data, expected outputs and verification
 
-**D0 before/after:** trench touches a boundary, intersects a basement, passes below a first-floor flat and crosses a utility with unknown depth. These yield contact, positive volume, nonintersection among assessed geometry and not_assessed respectively. Repeat with elevated work. Use O-01 10 m²/20 m³ and O-02 zero positive volume from 00. One input/record edit creates a new run; old report must retain old source manifest. Source-only lines cannot receive guessed depth.
+**D0 before/after:** trench touches a boundary, intersects a basement, passes below a first-floor flat and crosses a utility with unknown depth. These yield contact, positive volume, nonintersection among assessed geometry and not_assessed respectively. Repeat with elevated work. Use O-01 10 m²/20 m³ and O-02 zero positive volume from H28. One input/record edit creates a new run; old report must retain old source manifest. Source-only lines cannot receive guessed depth.
 
 **D5 planned utility after completion:** [RERA project 2079](https://haryanarera.gov.in/view_project/project_preview_open/2079) lists service drawings; acquire only a small matching allowed plan/section, inspect dimensions/reference/date and label planned. Prior catalogue verification did not acquire those drawings. **D7 real underground qualification (dataset policy, 24 September 2026):** request the relevant asset custodian's profile/as-built and control metadata for any selected pilot area through [90](90-required-human-tasks.md); no locality-specific utility inventory is required or presumed. While unavailable, D0 and geography-independent map/load tests proceed; only the corresponding real-impact claim remains unqualified.
+
+**GF-T20 oracle:** one proposal crosses a supported basement prism and a separately unsupported utility corridor with an unmapped segment; add a single quality-A exposure, a quality-D segment, unknown depth and a changed source revision. Expected result lists the affected assessed spaces, contact/nonintersection separately, null utility collision where reference/extent is unsupported, exact investigated coverage and stale old-run status after the revision. Report relative depth unless a qualified absolute conversion exists. Check no all-clear or numeric quality buffer appears. Save the same proposal/run/report receipts for the finale; do not generate a parallel result for presentation.
 
 Test negative levels, zero height, invalid/holed/compound geometry, reference/unit mismatch, incomplete inventory, restricted resources, missing utility dimensions, duplicate command, stale/late worker and revocation before report. A 3D model without a supported analytical profile returns a gap, not guessed result. Actual API results, stored manifests, source links and selected IDs must agree.
 

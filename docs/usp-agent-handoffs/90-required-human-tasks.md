@@ -2,13 +2,13 @@
 
 **Account/delegation update, 23 September 2026:** [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) keeps engineering with agents; [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) defines the narrow runtime credential/funding prerequisites. Never request raw keys in chat or Git.
 
-Revised 22 September 2026. Read [00](00-README.md) for agent-owned D0–D7 packs and [01](01-shared-contracts-and-ownership.md) for implementation contracts. This file does not assign coding, general research, schema design, data conversion or routine testing to teammates. No item here blocks F0, D0 or the local V0 visual workflow.
+Revised 22 September 2026. Read [H28](28-data-acquisition-and-finale-tests.md) for agent-owned D0–D7 packs and [01](01-shared-contracts-and-ownership.md) for implementation contracts. This file does not assign coding, general research, schema design, data conversion or routine testing to teammates. These inputs do not block reuse of the local D0/D1 baseline. They can block a specific new real-source or deployment claim; GF0 must record that limitation honestly.
 
 ## 1. What agents do without asking people
 
 DATA obtains permitted open samples, checks source bytes/schema/licence, creates exact manifests/oracles and bounded acquisition scripts. Feature agents implement parsers, APIs, persistence, reviewed proposal flows, tests and supporting fixtures. FND/UI coordinate shared code through the patch protocol. Agents create the blank sanitized templates below themselves; a teammate need not create a repository, spreadsheet, schema or fixture.
 
-Use documented defaults and fallbacks. After the bounded acquisition attempts in 00, record the failure and continue the supported D0/local path. Do not repeatedly ask the user for the same inaccessible archive or claim a catalogue is downloaded data. Never bypass authentication/CAPTCHA, purchase data or submit applications without explicit authorization. Real persons are needed only for an actual record/permission/account or intended-user observation unavailable to the agent.
+Use documented defaults and fallbacks. After the bounded acquisition attempts in H28, record the failure and continue the supported D0/local path. Do not repeatedly ask the user for the same inaccessible archive or claim a catalogue is downloaded data. Never bypass authentication/CAPTCHA, purchase data or submit applications without explicit authorization. Real persons are needed only for an actual record/permission/account or intended-user observation unavailable to the agent.
 
 ## H1. Obtain a matched permitted building or survey sample
 
@@ -16,7 +16,7 @@ Use documented defaults and fallbacks. After the bounded acquisition attempts in
 
 ### H1a — D5 one planned/known building
 
-Agent first checks [RERA project 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) and [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079). Prior indices were readable but selected attachments failed; no sufficient drawing bundle is assumed. If inaccessible, ask a willing campus/building/property record holder for this bounded set:
+Agent first checks H28’s accessible Bihar drawing lead and its limitations, then [RERA project 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) and [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079). Prior indices were readable but selected attachments failed; no sufficient drawing bundle is assumed. If inaccessible, ask a willing campus/building/property record holder for this bounded set:
 
 | Needed item | What the holder should confirm, or mark not supplied |
 | --- | --- |

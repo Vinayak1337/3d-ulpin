@@ -16,6 +16,8 @@ Implement exact manifest-based findings, explicit applicability/coverage, geomet
 
 First release: qualified planar Polygon/MultiPolygon and prism analysis, parcel intersections, recorded-road-land comparisons, explicit containment/membership errors, bounded documentary disagreement and saved scoped review. Hole/component support requires actual persistence→worker→result round-trip tests. Unsupported representations remain retained/displayable with analytical capability unavailable.
 
+**GF2 extension:** [H27](27-domain-ai-and-cadastral-checks.md) defines the bounded AI candidates, carpet/deviation checks and conditional closed-solid qualification; FIND remains the single analytical operation/coverage owner. GF2 does not widen every query to arbitrary mesh booleans. [H28](28-data-acquisition-and-finale-tests.md) owns the matched real/fixture test matrix and independent oracles.
+
 No arbitrary triangle-mesh/IFC boolean engine, statutory setback defaults, automatic rights adjudication, false precision from satellite pixels or AI-selected measurements. Enhanced RIGHTS context is optional; absence cannot clear a discrepancy. Local function-level correctness does not establish survey accuracy.
 
 ## D. HLD and end-to-end flow
@@ -32,6 +34,10 @@ Single-prism overlap: `dz=max(0,min(upperA,upperB)-max(lowerA,lowerB))`; positiv
 
 Exact source frame, units, axis meaning and vertical benchmark/transform must be compatible. A visual offset or EPSG number alone is insufficient. Missing height yields planar-only assessment; missing datum prevents 3D comparison. Use existing numerical policy for stable arithmetic, separately reporting supplied positional error bounds. Missing accuracy is uncertainty_unknown; compatible error bounds may support a conservative engineering uncertainty_sensitive flag, not a probability or legal tolerance.
 
+Preserve source height type (ellipsoidal, orthometric, local level or unknown), units, benchmark, horizontal/vertical reference, transform operation/version, coverage and supplied error. Convert only through an available qualified operation; keep the original value and transform lineage. Plan-to-observation comparison additionally requires independent alignment/control residuals, compatible phase/revisions and a declared tolerance. Missing control, source revision or height reference means `not_assessed` for the affected 3D/deviation quantity, not zero discrepancy. See H27's deviation contract.
+
+For optional closed solids, FND/DEPLOY first probe the running PostgreSQL/PostGIS versions and installed/enabled SFCGAL extension; a PostGIS 3.5 dependency alone does not establish runtime availability. FIND qualifies each type and operation with fixed analytical fixtures: valid closed and invalid/open shell, touching boundary, overlapping volume, hole and disconnected components. `CG_MakeSolid` is a representation operation, not validation; `CG_Volume` returning zero on a surface representation cannot establish zero conflict. Use an explicit supported representation, closedness/orientation/validity check, applicable `CG_3DIntersection`/`CG_3DDifference`/`CG_3DUnion` operation test and independent expected volume. Run val3dity as a complementary ISO-solid validity check where its input profile fits; it does not verify source authority, cadastral exclusivity or relationships. Failure/unsupported returns `not_assessed` and nullable volume with a reason; only a qualified valid solid may produce numeric zero.
+
 ### Rule and rights compatibility table
 
 | Inputs | Deterministic technical outcome |
@@ -39,6 +45,7 @@ Exact source frame, units, axis meaning and vertical benchmark/transform must be
 | Two recorded-parcel polygons | Positive area or contact; does not select the correct owner/boundary |
 | Structure and recorded road-land polygon | Role-qualified crossing with supplied validity/reference; source road surface/centreline alone cannot establish this test |
 | Parent building containing its flat/floor | Context relation, not competing ownership |
+| Two incompatible exclusive unit assertions, including one contained within the other | Positive-volume overlap is a possible incompatibility when extents, validity and source roles qualify; containment does not exempt it |
 | Same XY but separated Z | No positive volume; boundary contact if applicable |
 | Positive shared volume, exclusivity unknown | Geometric discrepancy; rights compatibility not_assessed |
 | Explicit incompatible exclusive assertions over the same supported extent and overlapping supplied validity | possible_incompatibility requiring review, not ownership verdict |
@@ -47,6 +54,8 @@ Exact source frame, units, axis meaning and vertical benchmark/transform must be
 | Two contradictory extracted facts | Only compare if exact semantic target, quantity/definition and evidence are established; alias similarity is insufficient |
 
 RIGHTS supplies claim/review/authority separately. Accepted technical assertions are not proof of legal validity. PACK receives only independently reviewed applicable context edges; finding participation does not grant blanket document inheritance.
+
+Partition completeness applies only when a source-supported full envelope and relevant inventory are explicitly complete. Structure, atria, voids, setbacks and unassigned technical space can be legitimate; a residual is an explainable review finding, never automatic illegality. Adjacent floors need not have identical footprints. Storey regularity and roof/plan extraction can rank review candidates, but learned ranking never suppresses deterministic critical findings or turns an estimated extra room into observed construction.
 
 ### Findings, case identity and coverage
 
@@ -95,9 +104,11 @@ Map Checks → result → exact participants/level/intersection → Evidence →
 
 ## J. Test data and verification
 
-**Before coding:** D0 from [00](00-README.md). O-01 must yield 10 m²/20 m³; O-02 zero positive volume; O-03 courtyard area 96 m² (1e-6 fixture tolerance, not survey accuracy). Include negative basement levels, mezzanine, unequal levels, multiple buildings per parcel, one building across two parcels, holes/multipart and duplex components with an empty intermediate region. Verify complete persistence→worker→API round trips or a lossless retained/explicit unsupported result; a pure core test alone does not qualify legacy storage.
+**Before coding:** D0 from [H28](28-data-acquisition-and-finale-tests.md). O-01 must yield 10 m²/20 m³; O-02 zero positive volume; O-03 courtyard area 96 m² (1e-6 fixture tolerance, not survey accuracy). Include negative basement levels, mezzanine, unequal levels, multiple buildings per parcel, one building across two parcels, holes/multipart and duplex components with an empty intermediate region. Verify complete persistence→worker→API round trips or a lossless retained/explicit unsupported result; a pure core test alone does not qualify legacy storage.
 
-**After implementation (dataset policy, 24 September 2026):** use [H00's geography-independent D3 corpus](00-README.md#4-data-packs-acquire-before-implementing-against-imaginary-inputs) for source-role, partial-coverage, dense/sparse and cross-tile-neighbour tests. An OSM centreline with no recorded width must not pass a road-land encroachment test; a topographic road surface is not automatically a recorded legal road boundary either. Actual boundary conclusions require D7 matched survey/source-role evidence from the appropriate custodian for the selected area. No locality or complete crosswalk is assumed. Ingesting/rendering a million buildings does not qualify million-object findings or rich-mesh booleans; report assessed coverage and measure only supported analytical profiles. D0 numeric tests proceed while authentic qualification is pending.
+**After implementation (dataset policy, 24 September 2026):** use [H28's geography-independent D3 corpus](28-data-acquisition-and-finale-tests.md) for source-role, partial-coverage, dense/sparse and cross-tile-neighbour tests. An OSM centreline with no recorded width must not pass a road-land encroachment test; a topographic road surface is not automatically a recorded legal road boundary either. Actual boundary conclusions require D7 matched survey/source-role evidence from the appropriate custodian for the selected area. No locality or complete crosswalk is assumed. Ingesting/rendering a million buildings does not qualify million-object findings or rich-mesh booleans; report assessed coverage and measure only supported analytical profiles. D0 numeric tests proceed while authentic qualification is pending.
+
+**GF-T18 extension:** seed a contained pair of exclusive claims, valid parent/unit containment, shared use, intentional atrium/void, setback and unequal stacked footprints, incomplete envelope, incompatible frames, invalid/open solid and a surface representation whose volume operation yields zero. Independent expected categories distinguish positive overlap, contact, legitimate context and `not_assessed`; never infer a legal verdict. Record operation/extension versions, type, validity result, actual nullable measurement and full coverage.
 
 Test unknown accuracy, incompatible datum, missing heights, same label/different building, valid shared use, unresolved easement, contradictory exclusive assertion, stale case link, two concurrent reviewers, duplicate cross-chunk pair, late result, unavailable RIGHTS and parcel-only saved review. Source and relationship updates with unchanged property revision must invalidate old results. Inspect actual selected IDs and saved case history, not merely red pixels.
 

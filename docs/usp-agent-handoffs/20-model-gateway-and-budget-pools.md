@@ -1,5 +1,7 @@
 # 20 · Sarvam gateway, credit pools and credential lifecycle
 
+**Release boundary:** the existing gateway/no-key and cost controls support the finale where needed. Live service qualification remains distinct from documentation. Concurrent schema learning belongs to `full_product` H21; this gateway never trains or records property facts itself.
+
 **Owner: DEPLOY, as a supporting part of [19](19-india-contained-deployment.md), not an eleventh independent USP.** FND owns shared contracts, migrations and route registration; UI owns shared settings mounts. **Decision date: 23 September 2026. Planning/code inspection base: `codex/fnd-f0-f1@97146d62d7e64c946abfc98b0d7e670845b17857`. Status: implementation plan, not installed or live-qualified.** Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [14](14-adaptive-ingestion-and-progressive-review.md), [18](18-grounded-assistance-and-mcp.md) and [19](19-india-contained-deployment.md).
 
 This document governs runtime Sarvam inference. [02](02-lead-agent-execution.md) separately governs the GPT-6 Sol/Astra agents that write our software. Development-model usage and Sarvam API billing are different budgets.
@@ -51,7 +53,7 @@ For mapping, start with at most 24 KiB source/example text, 32 KiB final request
 
 The total synchronous task allowance remains **two network attempts including repair/retry, 45 seconds overall, 1 MiB response cap**, subject to stricter consumer limits. Smaller output schemas or manual clarification are better than silently truncated output. Sarvam pages disagree on the default/complete reasoning-effort enumeration; `low` and `high` are shared documented values. Send them explicitly and qualify the actual response; do not forward OpenAI `max`/`ultra` settings into Sarvam by analogy.
 
-Document jobs are asynchronous: accept a request and return the existing `ServiceResult.pending` with our logical job ID. Do not hold a web request or SQL transaction open until OCR completes. Respect existing upload/page/pixel limits when they are smaller than the provider's. No per-import training or autonomous registry writes.
+Document jobs are asynchronous: accept a request and return the existing `ServiceResult.pending` with our logical job ID. Do not hold a web request or SQL transaction open until OCR completes. Respect existing upload/page/pixel limits when they are smaller than the provider's. The gateway performs no training or autonomous registry writes. H21 separately allows eligible concurrent learning in the full-product release.
 
 ## D. End-to-end design
 
@@ -220,7 +222,7 @@ The user supplied the account topology and reported ₹100 grant per account, no
 1. Inventory current model call sites; define compatible task profiles, local caps and permitted data. Prove no-key/manual behavior.
 2. Add exact money/price versions, pool/credential identity, append-only ledger and retirement tombstones. Test fake responses before any live key.
 3. Connect one V1 chat adapter; disable hidden SDK retries. Complete local simultaneous-request, timeout, crash, drift and revocation tests.
-4. Integrate INGEST's mapping proposal/recipe reuse and ASSIST's typed facts through the same gateway. No per-chunk training.
+4. Integrate INGEST's mapping proposal/recipe reuse and ASSIST's typed facts through the same gateway. H21 separately schedules eligible training batches in the full-product release; gateway calls are not a training trigger.
 5. Mount operator settings/history with actual persisted values, then qualify one synthetic live call with an explicit small allocation.
 6. Add the asynchronous document path and page billing only when its precise endpoint/SKU is confirmed. Qualify G2-doc separately.
 7. Run approved multi-pool rollover and terminal retirement using fake credentials first, then only legitimately funded approved live pools. Qualify restoration and full egress separately.

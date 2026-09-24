@@ -1,6 +1,8 @@
 # 25 — All-format agent, generative enrichment and UX4G-guided design
 
-**Product clarification: 24 September 2026. Owners: INGEST/FND for adaptation, GEO/UI for enrichment, LEARN for learning, UI for government-design alignment, DEPLOY for residency.** This is planned scope, not evidence that every format or new capability already works. Read H14/H21/H22/H23 and H24's presentation copy.
+**Release: `full_product` (FP-ENRICH / FP-FORMATS).** Broad all-format adaptation and generative enrich-first previews remain the product ambition; no universal support claim. The finale uses qualified direct conversion and evidence-supported reconstruction under H14/H27. Enrichment/learner/renderer experiments do not block it. Shared accessibility practices apply to every delivered surface.
+
+**Product clarification: 24 September 2026. Owners: INGEST/FND for adaptation, DOMAIN/UI for enrichment, LEARN for learning, UI for government-design alignment, DEPLOY for residency.** This is planned scope, not evidence that every format or new capability already works. Read H14/H21/H22/H23 and H24's presentation copy.
 
 ## A. All-format ingestion is the product ambition
 
@@ -18,7 +20,7 @@ Encrypted, corrupt, inaccessible or semantically insufficient input can still be
 
 **Route 2: source chunks → interpret/read → generate or estimate needed visual detail → convert the enriched derivative → validate → progressive 3D.**
 
-The second route is explicit core product scope. Enrichment can happen before final schema conversion; it is not limited to putting materials on an already completed map. The raw source and its chunk structure remain unchanged. An enriched derivative carries per-field/per-object lineage, input links, generation method/model/version, assumptions, uncertainty where justified and evidence/estimated/illustrative classification. Both routes use the same transformation and validation services.
+The second route is explicit full-product scope, after finale qualification. Enrichment can happen before final schema conversion; it is not limited to putting materials on an already completed map. The raw source and its chunk structure remain unchanged. An enriched derivative carries per-field/per-object lineage, input links, generation method/model/version, assumptions, uncertainty where justified and evidence/estimated/illustrative classification. Both routes use the same transformation and validation services.
 
 Examples: supply illustrative building massing where a footprint exists but height is absent; generate roof/facade detail for a readable preview; create a styled road surface from a centreline; use a separately qualified reconstruction model where source imagery/points support it. A template is labelled illustrative, not a measured or validated prediction. Too little location or geometry support remains an explicit insufficient-data state; only a separately labelled hypothetical scene may fill such gaps. Generated geometry is usable presentation data, not a new official property, cadastral boundary, ownership assertion or measurement.
 
@@ -34,7 +36,7 @@ H21's learner trains alongside the import on eligible checked examples, is evalu
 
 Use this future product commitment under a proposed-solution heading:
 
-**“Private project data will stay in India using Sarvam AI and India-hosted storage, ML training, logs and backups.”**
+**“Designed for India-resident private processing using a qualified Sarvam service and India-hosted storage, ML, logs and backups.”**
 
 Sarvam's Trust Center states India-only residency for Indian deployments. That supports the provider choice; it does not qualify our whole installation. DEPLOY must verify the selected service agreement and endpoints, all application/model destinations, support/telemetry, browser dependencies and backups before making a present-tense operational claim. No unapproved external-model fallback. Public information intentionally released to public clients is outside the private-data containment statement. Existing gateway accounting and training-permission gates remain unchanged.
 
@@ -55,7 +57,7 @@ Use UX4G as our design reference and GIGW 3.0 as our implementation/review targe
 | Officer register/review | Same reusable buttons, dialogs, form rules, status vocabulary and table behavior, with separate permissions |
 | Inclusion | English/Hindi interface plan with correct language metadata, text expansion and reviewed translations; no untranslated invented property facts |
 
-Reuse existing UI tokens/components behind a small shared UX4G-alignment layer. Do not introduce global CSS resets, conflicting JS behavior, another router/map or unrelated government-service integrations just to adopt the framework. Inspect the exact package version, licence, accessibility behavior and compatibility before installing; guidance adoption does not require replacing our entire frontend. The shared 3D renderer remains Three/R3F or the qualified existing adapter.
+Reuse existing UI tokens/components behind a small shared UX4G-alignment layer. Do not introduce global CSS resets, conflicting JS behavior, another router/map or unrelated government-service integrations just to adopt the framework. Inspect the exact package version, licence, accessibility behavior and compatibility before installing; guidance adoption does not require replacing our entire frontend. The finale retains the current shared Cesium runtime; H22 governs any later measured Three/R3F experiment.
 
 ## F. Acceptance and claims
 

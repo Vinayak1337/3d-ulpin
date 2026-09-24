@@ -2,6 +2,8 @@
 
 Owner **PACK**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`. Revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md) and your UI slots in [99](99-ui-ux-and-integration.md). New paths below are implementation destinations, not existing functionality. Audit remedies ER-05/14/15/24 are incorporated here.
 
+The later retained D0/PACK0 receipt is the current implementation baseline; inspect its exact artifact and tests before assigning new work. PACK1 and the GF4 card/QR remain separate gates, not implied by that receipt.
+
 ## A. User outcome and product value
 
 Allow an authorized user to select a building, floor or unit and obtain only its relevant permitted evidence, including explicitly applicable shared clauses. Example: one page mentions Flat 101, Flat 102 and their staircase. Flat 101's packet includes its reviewed region and the applicable stair clause, never Flat 102's private contents. The result is a generated compilation, not a certified original or a title determination.
@@ -15,6 +17,8 @@ Missing mechanisms to implement: immutable selection plan, reviewed applicabilit
 ## C. Scope and non-goals
 
 **PACK0 / V0:** live target → plan → confirmed text/CSV/JSON extract → private artifact/manifest → reload/download. **PACK1:** PDF/image excerpts after the one-page leakage qualification, summary PDF and ZIP assembly, recovery and optional separately reviewed release. PACK0 completion must explicitly report PDF unavailable until PACK1 passes.
+
+**GF4 card subtype:** a one-page `property_card` is a PACK1 derivative of an exact confirmed packet plan, with its evidence packet retained as the detail/appendix. The finale needs an actual generated PDF, exact revision and a working authorized QR resolver. This does not make the card an original, title certificate or official ULPIN issuance. GF4 follows GF0 data/contracts, GF1 identity/exchange, GF2 domain checks, and GF3 governance/impact; the full public dashboard remains a later product feature. See [27](27-domain-ai-and-cadastral-checks.md) and [28](28-data-acquisition-and-finale-tests.md).
 
 Keep **Property packet** and **Original archive** as different actions. No whole-original fallback for a mixed-property source, automatic legal relevance decision, public release by an LLM, general OCR/conversion platform or official certification. Missing sources remain missing; unsupported optional entries are omitted with a reason, required unavailable context blocks a complete packet.
 
@@ -70,6 +74,18 @@ Private artifacts inherit contributing-source restrictions. **Released artifacts
 
 Manifest pins target, stage/classification, geometry/source/link/relationship versions, extraction/applicability policy, source and output hashes, inclusion reasons and safe omissions. Unapproved public manifests cannot expose source names/parties. Hashes prove byte consistency, not truth.
 
+### Exact-revision Property Card and QR
+
+`CardPlan` extends a confirmed `PacketPlan` with card template/version, [H26's project `P3/1` code and lifecycle pin](26-identifiers-and-standard-exchange.md), supplied official parent ULPIN assertion if present, selected target/geometry revision and frame, source-supported lower/upper levels with their **actual** vertical datum and height type, named quantity definitions/units, declared share basis/reference, approved rights summary, evidence entry refs and selected-space render ref. The application code is labelled as proposed/project-issued, never as an official ULPIN. Missing or incompatible facts print `unavailable`/`unassessed` with reasons; a GNSS/local height is never relabelled AMSL and a derived share or area is never silently substituted for a declaration. A selected-space view must be keyed to the same target and revision as the card and export, not a current camera image of a changed record. The detailed packet remains accessible under the same plan and independent authorization.
+
+FND supplies the namespaced identity/retired-alias resolver; PACK owns the card bytes, exact packet linkage, release decision and QR target. A permanent QR contains only a stable resolver URL plus opaque exact card revision or approved released-derivative ID. It contains no private download token, private source name or access grant. The resolver pins the requested historical revision, resolves retired IDs through explicit lineage, checks current authorization or the active exact-output release on every request, and returns a safe unavailable/denied state after expiry or revocation. A released projection may show fewer fields than a private card; its output hash and release ID are distinct. Public-dashboard deferral does not remove this minimal controlled read path.
+
+**GF4 required mode is `local_operator`:** generate/decode the QR and open its exact-revision resolver in the authorized browser on the same workstation. Preserve H01/H19 loopback-only binding and existing server-derived operator scope; test unauthorized requests and revocation in isolated services. Label the QR “local demonstration link”; it is not a phone/public service. No widening of the operator session to LAN.
+
+A phone scan is an additional conditional demonstration, not a GF4 prerequisite: qualify a separate authenticated read-only resolver or exact released derivative on a reachable host with F2/DEPLOY ingress, TLS, audience, expiry/revocation and device tests first. No original-file, mutation or local-operator routes are exposed through it. `localhost` on the laptop cannot be reached by a phone. Record network/device/access mode and show unavailable until this extra gate passes. A printed QR stays stable while authorization can change.
+
+Integrity display uses source-byte and derivative hashes for consistency. If a predecessor chain is implemented, FND pins canonical serialization, predecessor revision, chain head and missing-link behavior; PACK displays the verification result for the exact revision. A rewritable chain can be recomputed, so an independent authenticity claim additionally needs a separately trusted signed/checkpointed head and key policy. QR and hashes alone do not prove title, source authenticity or legal validity.
+
 ## F. Exact implementation map
 
 | File | Change / owner / dependency |
@@ -81,6 +97,7 @@ Manifest pins target, stage/classification, geometry/source/link/relationship ve
 | Existing scope/export/source/PDF helpers linked in B | Read-only reuse or narrow FND adapter; preserve full-original archive |
 | [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx), [ScopedExport](../../apps/web/features/officer/shared/ScopedExport.tsx) | UI alone mounts separate packet action |
 | Proposed `tests/usp-packets.test.ts`, `tests/usp-packets-integration.ts`, `services/geo/tests/test_usp_packets.py`, `tests/e2e/usp-packets.spec.ts` | PACK exact selection, leakage, persistence, permission and browser evidence |
+| Proposed `apps/web/lib/server/usp/packets/{card,qr-resolver}.ts`, `apps/web/features/usp/packets/PropertyCard.tsx`, `tests/usp-card.test.ts` | PACK GF4 card generation and exact-revision QR; FND mounts resolver/identity guard, UI mounts leaf |
 
 ## G. UI placement and interaction
 
@@ -92,23 +109,26 @@ Branch `feat/usp-packets`; own only PACK paths. F0 permits selector fixtures; F1
 
 ## I. Implementation sequence
 
-1. Obtain D0 mixed-source fixture and independent expected selection from DATA; import through real receipt/review services.
-2. Complete PACK0 selection/plan/text generation/private download and V0 source navigation.
+1. Inspect the recorded D0 mixed-source PACK0 receipt against DATA's independent expected selection and source hashes; preserve its real-service behavior.
+2. Close only verified PACK0 gaps in selection/plan/text generation/private download and V0 source navigation.
 3. Run one-page PDF qualification: source retained, only approved pixels in rebuilt output, hidden-layer inspection and measured memory/time. On failure retain explicit PDF-unavailable state and finish unaffected work.
 4. Add page checkpoints, final assembly, exact-manifest staleness, fenced retry and two-path release checks.
 5. Mount leaves via UI; test rapid property changes and invalid links.
 6. Use D4 or a permitted D5 multi-property source after preserving real bytes; do not infer a geometry join from its filename.
+7. After GF1–GF3 inputs qualify, generate the GF4 card subtype from the exact plan, then qualify the loopback-only local_operator resolver; qualify any phone/released mode separately before demonstrating it.
 
 ## J. Test data, expected result and commands
 
-**Before coding:** D0 from [00](00-README.md), using `ONLY_A101`, `NEVER_A102`, `SHARED_STAIR_CONTEXT` on one page plus equivalent table rows. DATA supplies precise approved regions/applicability and immutable source hash. **After PACK0:** inspect actual ZIP/JSON/CSV and private manifest, not just HTTP 200. **After PACK1:** render output and inspect PDF objects/text/annotations/metadata and every ZIP member; `NEVER_A102` must be absent everywhere, approved shared clause present, original hash unchanged. Compare image regions visually; absence of searchable text alone does not prove no leaked pixels.
+**Before coding:** D0 from [H28](28-data-acquisition-and-finale-tests.md), using `ONLY_A101`, `NEVER_A102`, `SHARED_STAIR_CONTEXT` on one page plus equivalent table rows. DATA supplies precise approved regions/applicability and immutable source hash. **After PACK0:** inspect actual ZIP/JSON/CSV and private manifest, not just HTTP 200. **After PACK1:** render output and inspect PDF objects/text/annotations/metadata and every ZIP member; `NEVER_A102` must be absent everywhere, approved shared clause present, original hash unchanged. Compare image regions visually; absence of searchable text alone does not prove no leaked pixels.
 
 **Real source:** [DDA inventory](https://dda.gov.in/sites/default/files/Housing_Department/list_of_flats_and_garages_dda_premium_housing_scheme_2026.pdf), first page, preserved and rechecked before extraction. Extract the intended row and required headings without adjacent unit rows; keep Block/Pocket columns distinct. No complete inventory/owner inference. If source is unreachable or redistribution unclear, use local permitted copy or D0 and leave real-source qualification unpassed.
 
 Negative tests: wrong target, source-link change after plan, missing page, rotation/CropBox, corrupt hash, mixed page with only whole-page permission, missing shared context, access cycle, duplicate generation, late worker, crash between page and assembly, revoked grant/release and approved public derivative whose viewer cannot read originals. One optional omission must not hide a required-context blocker. Original archive regression must still pass separately.
 
+**GF-T21 card/QR oracle:** one building with two sibling units and a shared clause; independently expected card fields and selected source regions. Compare card, live view, model export and resolver target IDs/revisions. Inspect rendered pixels, PDF text, annotations, attachments, metadata and filenames for sibling leakage. Decode/open in the authorized same-device local_operator mode and prove loopback isolation; if the optional phone mode is enabled, test its actual device/network and separate authenticated or released-only audience; test expired/revoked release, retired alias with successor link, wrong-unit link, missing historical revision and tampered predecessor/hash. Expected outcomes are exact historical bytes or safe denied/unavailable, never a silently updated current card. Record output/source hashes and whether any separately trusted chain head exists; absent one, report consistency only.
+
 Run `pnpm typecheck`, `pnpm test:register-scope`, `pnpm test:register-exports`; then `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-packets.test.ts`, `pnpm exec tsx tests/usp-packets-integration.ts`, `python -m pytest services/geo/tests/test_usp_packets.py`, `pnpm exec playwright test tests/e2e/usp-packets.spec.ts`. Proposed tests must first be created. Save sanitized artifact/hash and V5/V8 evidence under the 00 evidence convention. Report PACK0, PACK1, real-source and public-release status separately.
 
 ## K. Copy-paste agent assignment
 
-> Implement PACK using 00, 01 and this A–K handoff. On isolated feat/usp-packets, obtain D0 and attempt the bounded D4 sample; preserve sources and source-to-target truth. Complete the live text/CSV plan→artifact→download slice first, then qualify the specified one-page PDFium crop/rebuild path and add checkpointed PDF generation. Follow exact SnapshotScope, job fencing and private-versus-released derivative rules. Do not broaden scope, attach whole mixed originals, invent legal applicability or build a second map/router. Request narrow FND/UI changes. Run J through real services and inspect actual bytes/pixels, not mocks; return commits, pack/output hashes, leakage/recovery/permission evidence, screenshots and explicit unsupported gates. Routine technical decisions follow this handoff; no main merge or public activation without authorization.
+> Implement PACK using 00, 01 and this A–K handoff. On isolated feat/usp-packets, inspect the retained D0/PACK0 live receipt and attempt the bounded D4 sample; preserve sources and source-to-target truth. Close verified PACK0 gaps, then qualify the specified one-page PDFium crop/rebuild path and add checkpointed PDF generation. After GF1–GF3 inputs qualify, generate the GF4 card from the exact packet plan and verify the same-device loopback QR resolver; phone access remains conditional on its separate protected-ingress gate. Follow exact SnapshotScope, job fencing and private-versus-released derivative rules. Do not broaden scope, attach whole mixed originals, invent legal applicability or build a second map/router. Request narrow FND/UI changes. Run J through real services and inspect actual bytes/pixels, not mocks; return commits, pack/output hashes, leakage/recovery/permission evidence, screenshots and explicit unsupported gates. Routine technical decisions follow this handoff; no main merge or public activation without authorization.
