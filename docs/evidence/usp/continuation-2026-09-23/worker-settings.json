@@ -1,0 +1,159 @@
+{
+  "observedAt": "2026-09-23T17:08:19.639596+00:00",
+  "source": "Local Codex turn_context and token_count metadata; message contents excluded",
+  "usageBoundary": "Client-reported cumulative session counters, including repeated and cached context; not billed cost or runtime Sarvam spend. Lead counters continue to change.",
+  "agents": [
+    {
+      "role": "lead",
+      "requested": {
+        "model": "gpt-6-astra",
+        "effort": "max"
+      },
+      "observed": {
+        "model": "gpt-6-astra",
+        "effort": "max"
+      },
+      "reportedCumulativeSessionTokens": {
+        "input_tokens": 28350866,
+        "cached_input_tokens": 27076864,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 133050,
+        "reasoning_output_tokens": 60356,
+        "total_tokens": 28483916
+      }
+    },
+    {
+      "role": "data_inventory",
+      "requested": {
+        "model": "gpt-6-sol",
+        "effort": "medium"
+      },
+      "observed": {
+        "model": "gpt-6-sol",
+        "effort": "medium"
+      },
+      "reportedCumulativeSessionTokens": {
+        "input_tokens": 1744339,
+        "cached_input_tokens": 1529216,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 8788,
+        "reasoning_output_tokens": 946,
+        "total_tokens": 1753127
+      }
+    },
+    {
+      "role": "bundle_compatibility",
+      "requested": {
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "observed": {
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "reportedCumulativeSessionTokens": {
+        "input_tokens": 3975762,
+        "cached_input_tokens": 3858816,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 27833,
+        "reasoning_output_tokens": 11885,
+        "total_tokens": 4003595
+      }
+    },
+    {
+      "role": "d1_source",
+      "requested": {
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "observed": {
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "reportedCumulativeSessionTokens": {
+        "input_tokens": 4570426,
+        "cached_input_tokens": 4462464,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 23888,
+        "reasoning_output_tokens": 6068,
+        "total_tokens": 4594314
+      }
+    },
+    {
+      "role": "baseline_review",
+      "requested": {
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "observed": {
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "reportedCumulativeSessionTokens": {
+        "input_tokens": 744695,
+        "cached_input_tokens": 673408,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 7528,
+        "reasoning_output_tokens": 4303,
+        "total_tokens": 752223
+      }
+    },
+    {
+      "role": "external_geometry",
+      "requested": {
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "observed": {
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "reportedCumulativeSessionTokens": {
+        "input_tokens": 592819,
+        "cached_input_tokens": 533504,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 11993,
+        "reasoning_output_tokens": 819,
+        "total_tokens": 604812
+      }
+    },
+    {
+      "role": "milestone_one_review",
+      "requested": {
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "observed": {
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "reportedCumulativeSessionTokens": {
+        "input_tokens": 12347819,
+        "cached_input_tokens": 11805184,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 22851,
+        "reasoning_output_tokens": 6732,
+        "total_tokens": 12370670
+      }
+    },
+    {
+      "role": "basement_pick_diagnosis",
+      "requested": {
+        "model": "gpt-6-astra",
+        "effort": "max"
+      },
+      "observed": {
+        "model": "gpt-6-astra",
+        "effort": "max"
+      },
+      "reportedCumulativeSessionTokens": {
+        "input_tokens": 7331594,
+        "cached_input_tokens": 7057152,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 26114,
+        "reasoning_output_tokens": 10652,
+        "total_tokens": 7357708
+      }
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {resolve,relative,isAbsolute} from 'node:path';
 import {gunzipSync} from 'node:zlib';
+import {originalColumns} from './uttam-v1-schema.mjs';
 
 export const digest = value => createHash('sha256').update(value).digest('hex');
 export const canonical = value => JSON.stringify(normalize(value));
@@ -25,8 +26,12 @@ export function inside(root,name) {
   return file;
 }
 export async function schema(client) {
-  const columns=(await client.query(`SELECT c.table_name,c.column_name,c.udt_name FROM information_schema.columns c
+  const columns=(await client.query(`SELECT c.table_name,c.column_name,c.udt_name,c.is_nullable,c.column_default,
+    pg_catalog.format_type(a.atttypid,a.atttypmod) AS formatted_type FROM information_schema.columns c
     JOIN pg_tables t ON t.schemaname=c.table_schema AND t.tablename=c.table_name
+    JOIN pg_namespace n ON n.nspname=c.table_schema
+    JOIN pg_class r ON r.relnamespace=n.oid AND r.relname=c.table_name
+    JOIN pg_attribute a ON a.attrelid=r.oid AND a.attname=c.column_name
     WHERE c.table_schema='public' AND c.table_name NOT IN ('spatial_ref_sys','repo_data_state','dataset_bundle_installs')
     ORDER BY c.table_name,c.ordinal_position`)).rows;
   const keys=(await client.query(`SELECT c.relname AS name, array_agg(a.attname::text ORDER BY u.ord) AS columns
@@ -42,9 +47,38 @@ export async function schema(client) {
     JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum=u.cn
     JOIN pg_attribute b ON b.attrelid=r.oid AND b.attnum=u.pn
     WHERE p.contype='f' AND n.nspname='public' GROUP BY p.oid,c.relname,r.relname`)).rows;
-  const tables={};
-  for(const c of columns){tables[c.table_name]??={name:c.table_name,columns:[],primaryKey:keys.find(k=>k.name===c.table_name)?.columns||[]};tables[c.table_name].columns.push(c.column_name);}
-  return {tables,fks};
+  const tables={},columnDefinitions={};
+  for(const c of columns){
+    tables[c.table_name]??={name:c.table_name,columns:[],primaryKey:keys.find(k=>k.name===c.table_name)?.columns||[]};
+    tables[c.table_name].columns.push(c.column_name);
+    (columnDefinitions[c.table_name]??={})[c.column_name]={udtName:c.udt_name,formattedType:c.formatted_type,nullable:c.is_nullable,default:c.column_default};
+  }
+  return {tables,fks,columnDefinitions};
+}
+// The immutable v1 bundle predates the nullable job-start receipt added by
+// migrateSpatialMl. Permit only that exact additive migration for this bundle.
+export function assertCompatibleBundleSchema(bundle,actual) {
+  assert(bundle.manifest.version===1&&bundle.manifest.id==='uttam-nagar-2026-09-17-v1'&&
+    bundle.manifest.database.sha256==='d5b08aa68a86bae4e6b45c18cdf8c7f7f1f96087ee0d2d7b031d460c5efcfb07',
+    'Unsupported dataset bundle schema version');
+  for(const name of bundle.payload.order){
+    const saved=bundle.payload.tables[name],current=actual.tables[name];
+    assert(current,`Missing table ${name}: run db:migrate first`);
+    const pinned=originalColumns[name];
+    assert(pinned,`No original schema signature for ${name}`);
+    assert.deepEqual(saved.columns,pinned.map(([column])=>column),`Bundle columns differ from pinned ${name} schema`);
+    const original=JSON.stringify(current.columns)===JSON.stringify(saved.columns);
+    const knownAddition=name==='jobs'&&
+      JSON.stringify(current.columns)===JSON.stringify([...saved.columns,'started_at'])&&
+      JSON.stringify(actual.columnDefinitions?.jobs?.started_at)===JSON.stringify({udtName:'timestamptz',formattedType:'timestamp with time zone',nullable:'YES',default:null});
+    assert(original||knownAddition,`Schema changed for ${name}; run matching migrations`);
+    assert.deepEqual(current.primaryKey,saved.primaryKey,`Primary key differs for ${name}`);
+    for(const [column,type,nullable,defaultValue] of pinned){
+      const definition=actual.columnDefinitions?.[name]?.[column];
+      assert.deepEqual([definition?.formattedType,definition?.nullable,definition?.default],
+        [type,nullable,defaultValue],`Original schema differs for ${name}.${column}`);
+    }
+  }
 }
 export function rowKey(row,columns) { return canonical(columns.map(c=>row[c])); }
 export function insertionOrder(tables,fks) {
@@ -98,9 +132,9 @@ export async function loadBundle(directory) {
   }
   return {directory,manifest,payload};
 }
-async function compareTable(client,table,exact) {
+export async function compareTable(client,table,exact) {
   const name=identifier(table.name),columns=table.columns.map(identifier).join(','),join=table.primaryKey.map(k=>`t.${identifier(k)}=s.${identifier(k)}`).join(' AND ');
-  const result=(await client.query(`WITH seed AS (SELECT * FROM jsonb_populate_recordset(NULL::public.${name},$1::jsonb))
+  const result=(await client.query(`WITH seed AS (SELECT ${columns} FROM jsonb_populate_recordset(NULL::public.${name},$1::jsonb))
     SELECT count(*)::int AS found, count(*) FILTER(WHERE to_jsonb(t)=to_jsonb(s))::int AS identical
     FROM (SELECT ${columns} FROM public.${name}) t JOIN seed s ON ${join}`,[JSON.stringify(table.rows)])).rows[0];
   if(exact)assert.equal(result.identical,result.found,`Existing ${table.name} rows differ. Preserved; do not delete local data to replay this seed.`);
@@ -125,6 +159,7 @@ async function checkStorage(s3,sdk,env,bundle,put=false) {
 }
 export async function verifyBundle(client,s3,sdk,env,bundle,exact=true) {
   await client.query("SET TIME ZONE 'UTC'");
+  assertCompatibleBundleSchema(bundle,await schema(client));
   let rows=0,changed=0;
   for(const name of bundle.payload.order){
     const t=bundle.payload.tables[name],r=await compareTable(client,t,false);
@@ -141,6 +176,7 @@ export async function installBundle(client,s3,sdk,env,bundle) {
   try{
     await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
     await client.query(`CREATE TABLE IF NOT EXISTS dataset_bundle_installs(id text PRIMARY KEY,sha256 text NOT NULL,installed_at timestamptz NOT NULL DEFAULT now())`);
+    assertCompatibleBundleSchema(bundle,await schema(client));
     const marker=(await client.query('SELECT sha256 FROM dataset_bundle_installs WHERE id=$1',[bundle.manifest.id])).rows[0];
     if(marker){
       assert.equal(marker.sha256,bundle.manifest.database.sha256,'Installed bundle version differs; refusing to replace local data');
@@ -148,13 +184,7 @@ export async function installBundle(client,s3,sdk,env,bundle) {
       await client.query('COMMIT');
       return {alreadyInstalled:true,...await verifyBundle(client,s3,sdk,env,bundle,false)};
     }
-    const actual=await schema(client);
-    for(const name of bundle.payload.order){
-      const t=bundle.payload.tables[name];assert(actual.tables[name],`Missing table ${name}: run db:migrate first`);
-      assert.deepEqual(actual.tables[name].columns,t.columns,`Schema changed for ${name}; run matching migrations`);
-      assert.deepEqual(actual.tables[name].primaryKey,t.primaryKey,`Primary key differs for ${name}`);
-      await compareTable(client,t,true);
-    }
+    for(const name of bundle.payload.order)await compareTable(client,bundle.payload.tables[name],true);
     // No database data rows are written until all existing identities are checked.
     const uploaded=await checkStorage(s3,sdk,env,bundle,true);
     let inserted=0;

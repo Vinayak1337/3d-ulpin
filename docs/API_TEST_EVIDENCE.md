@@ -1,5 +1,7 @@
 # API regression evidence
 
+> **Direction note — 23 September 2026:** This is a historical API result at its stated revision and a conventional output path of the existing regression script. Re-run in an isolated environment for a current result. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 **17/17 checks passed.** Executed: 2026-09-14T00:19:32.882Z.
 
 Target: http://127.0.0.1:3000. Mode: non-disruptive adversarial suite.

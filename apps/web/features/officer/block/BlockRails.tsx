@@ -319,6 +319,10 @@ export function BlockInspector({
           ),
         )}
       </nav>
+      {selected && <div className="ui-inspector-selection" aria-label="Selected scope">
+        <strong>{selected.name}</strong>
+        <span>{block.selectedRecord?.name ?? (selected.kind === 'building' ? 'Whole building' : selected.kind)}</span>
+      </div>}
       <div className="ui-inspector-content">
         {mode === "property" &&
           (!selected ? (
@@ -584,7 +588,9 @@ export function BlockInspector({
         <footer className="ui-inspector-actions">
           <Link
             className="ui-button ui-button--primary"
-            href={routes.register(selected.id, block.context.data?.area.id)+(block.recordId?`&record=${encodeURIComponent(block.recordId)}`:'')}
+            href={routes.register(selected.id, block.context.data?.area.id)
+              +(block.recordId?`&record=${encodeURIComponent(block.recordId)}&tab=evidence`:'')
+              +(block.recordId&&block.packetId?`&packet=${encodeURIComponent(block.packetId)}`:'')}
           >
             <Icon name="register" />
             Open property register

@@ -1,5 +1,7 @@
 # Late-result race evidence
 
+> **Direction note — 23 September 2026:** This is a historical API result at its stated revision and a conventional output path of the existing regression script. Re-run in an isolated environment for a current result. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 **1/1 checks passed.** Executed: 2026-09-12T09:45:24.992Z.
 
 Target: http://127.0.0.1:3000. Mode: controlled late-result race.

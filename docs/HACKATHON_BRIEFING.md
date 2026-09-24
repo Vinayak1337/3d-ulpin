@@ -1,5 +1,7 @@
 # Presentation briefing — 3D ULPIN prototype
 
+> **Direction note — 23 September 2026:** This is a dated presentation brief, not the new feature-completion ledger. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 This describes the implementation, not a claim of government approval or a finished national platform. The hosted demo is intentionally public at the user's request; officer authentication is future work.
 
 ## A 45-second explanation

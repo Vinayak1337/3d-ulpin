@@ -1,5 +1,7 @@
 # Local Nous document assistance
 
+> **Direction note — 23 September 2026:** The Nous-specific behavior below is historical/baseline. Governed Sarvam and manual fallback requirements are in handoff 19; no live provider pass is implied. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 The server adapter, evidence grounding, image cropping, persistence and review seam are implemented. **Real inference acceptance remains blocked:** `NOUS_API_KEY` was absent from the task environment and project environment files. No actual Nous inference ran. The ten-real-document evaluation, field accuracy, geometric correction burden, local-language accuracy and live vision/structured-output behavior are not measured.
 
 The [recorded public catalog observation](evidence/nous-catalog-observation.json) contains 404 advertised models and seven routes with zero prompt/completion prices. `stepfun/step-3.7-flash:free` currently advertises text/image input and structured outputs. This is public metadata, not proof of the account's entitlement or quota. Primary references are the [Nous model catalog](https://inference-api.nousresearch.com/v1/models), [official route recommendations](https://portal.nousresearch.com/api/nous/recommended-models), [Nous portal](https://portal.nousresearch.com/) and [official Hermes catalog selection source](https://github.com/NousResearch/hermes-agent/blob/main/hermes_cli/models.py).

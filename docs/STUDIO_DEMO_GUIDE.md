@@ -1,5 +1,7 @@
 # Studio source-to-record guide
 
+> **Direction note — 23 September 2026:** This walkthrough describes the retained application baseline, not completion of the planned USP workflows. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 Latest source-package demo (21 September 2026): see [Lake View source showcase](LAKE_VIEW_SOURCE_SHOWCASE.md). The complete ZIP builds a draft preview and is separate from the persisted workflow below. Navigation now calls the work queue **Batches** and its intake action **New batch**. Historical saved-demo availability depends on the selected local data environment.
 
 Current workflow: 20 September 2026. Open the running local app at

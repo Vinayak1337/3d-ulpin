@@ -1,5 +1,7 @@
 # Hackathon demo — 3D ULPIN
 
+> **Direction note — 23 September 2026:** This is a retained baseline demonstration, not evidence that the new features or datasets are finished. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 Start at http://127.0.0.1:3000/studio/datasets. Keep the local web server, dispatcher, PostgreSQL/PostGIS, object storage, Redis and private worker running.
 
 ## Five-minute walkthrough

@@ -974,6 +974,7 @@
 .ulpin-app .ui-dialog .ui-rail-tabs > .ui-button { display: none; }
 .ulpin-app .ui-map-toolbar .ui-button, .ulpin-app .ui-map-mode button { min-height: 44px; font-size: 13px; }
 .ulpin-app .ui-inspector-heading { min-height: 54px; }
+.ulpin-app .ui-inspector-selection { display: none; }
 .ulpin-app .ui-inspector-content { padding: 20px; }
 .ulpin-app .ui-property-summary { text-align: left; }
 .ulpin-app .ui-property-summary h2 { font-size: 22px; margin: 12px 0 6px; }
@@ -987,8 +988,10 @@
 .ulpin-app .ui-checks-panel .ui-findings-list { display: flex; flex-direction: column; max-height: none; overflow: visible; }
 .ulpin-app .ui-checks-panel .ui-finding { width: auto; flex: none; }
 @media (max-width: 720px) {
-  .ulpin-app .ui-block-grid.ui-focused-map { grid-template-columns: minmax(0, 1fr); overflow: auto; }
-  .ulpin-app .ui-focused-map .ui-map-column { min-height: 48vh; }
-  .ulpin-app .ui-focused-map .ui-block-inspector { max-height: 46vh; border-top: 1px solid var(--ui-divider); }
+  .ulpin-app .ui-block-grid.ui-focused-map { grid-template-columns: minmax(0, 1fr); overflow: hidden; }
+  .ulpin-app .ui-focused-map .ui-map-column { min-height: 0; }
+  .ulpin-app .ui-focused-map .ui-block-inspector { position: absolute; inset: 0; width: 100%; max-height: none; z-index: 40; border-top: 1px solid var(--ui-divider); }
+  .ulpin-app .ui-inspector-selection { display: flex; flex-direction: column; gap: 4px; flex: none; padding: 12px 20px; border-bottom: 1px solid var(--ui-divider); font-size: 16px; overflow-wrap: anywhere; }
+  .ulpin-app .ui-inspector-selection span { color: var(--ui-muted); font-size: 14px; }
   .ulpin-app .ui-map-legend { display: none; }
 }

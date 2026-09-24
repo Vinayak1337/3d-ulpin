@@ -1,5 +1,7 @@
 # Bulk 3D ULPIN — proposed interface
 
+> **Direction note — 23 September 2026:** Historical standalone prototype retained for reference; not an alternative product, schema authority or new dataset. Current implementation and data/testing assignments are in [USP handoff 00](../../docs/usp-agent-handoffs/00-README.md) and the assigned feature file.
+
 This is an isolated interactive design reference, not the implementation on port 3000. It uses a separately authored fictional dataset. The live application remains empty.
 
 Run from the repository root:

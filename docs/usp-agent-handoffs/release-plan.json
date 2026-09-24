@@ -1,0 +1,1017 @@
+{
+  "schemaVersion": "ulpin-release-plan/1",
+  "decisionDate": "2026-09-24",
+  "currentRelease": "finale_v1",
+  "nextGate": "GF0",
+  "baseline": {
+    "commit": "45d033baae7ec4e5a572d82459b0062c70a12c95",
+    "receipt": "docs/evidence/usp/continuation-2026-09-23/README.md",
+    "scope": "Recorded local D0/PACK0 and single D1 exterior; no new finale pass"
+  },
+  "releases": {
+    "finale_v1": {
+      "requires": [
+        "GF0",
+        "GF1",
+        "GF2",
+        "GF3",
+        "GF4",
+        "GF5"
+      ]
+    },
+    "full_product": {
+      "requires": [
+        "GF0",
+        "GF1",
+        "GF2",
+        "GF3",
+        "GF4",
+        "GF5",
+        "FP-LEARN",
+        "FP-PUBLIC",
+        "FP-ASSIST",
+        "FP-FORMATS",
+        "FP-ENRICH",
+        "FP-RENDER",
+        "FP-SCALE",
+        "FP-DEPLOY"
+      ]
+    }
+  },
+  "owners": {
+    "LEAD": "Integration and independent acceptance",
+    "FND": "Shared contracts, storage, transactions and lifecycle",
+    "INGEST": "Readers, constrained mappings, progressive conversion",
+    "DOMAIN": "Domain candidate and quantity leaves",
+    "FIND": "Qualified spatial operations and findings",
+    "RIGHTS": "Declared rights and common-space relationships",
+    "HISTORY": "Exact revision comparison and lineage reads",
+    "IMPACT": "Coverage-aware infrastructure screening",
+    "PACK": "Scoped packets, card and QR presentation",
+    "UI": "Shared Studio routes and viewport",
+    "DATA": "Acquisition, independent truth and manifests",
+    "DEPLOY": "Provider, privacy and deployment controls",
+    "CITIZEN": "Public requests and private submissions",
+    "ASSIST": "Grounded assistance/MCP",
+    "LEARN": "Concurrent schema learning",
+    "READY": "Exact-manifest readiness, evidence gaps and review queue"
+  },
+  "gates": [
+    {
+      "id": "GF0",
+      "release": "finale_v1",
+      "title": "Data and contracts",
+      "dependsOn": [],
+      "tests": [
+        "GF-DATA",
+        "GF-CONTRACT"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "GF1",
+      "release": "finale_v1",
+      "title": "Identity and exchange",
+      "dependsOn": [
+        "GF0"
+      ],
+      "tests": [
+        "GF-T15",
+        "GF-EXCHANGE"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "GF2",
+      "release": "finale_v1",
+      "title": "Domain AI and spaces",
+      "dependsOn": [
+        "GF1"
+      ],
+      "tests": [
+        "GF-T16",
+        "GF-T17",
+        "GF-T18",
+        "GF-AI",
+        "GF-AGENT",
+        "GF-RECOVERY",
+        "GF-VIEW"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "GF3",
+      "release": "finale_v1",
+      "title": "Governance and impact",
+      "dependsOn": [
+        "GF2"
+      ],
+      "tests": [
+        "GF-T19",
+        "GF-T20",
+        "GF-READY"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "GF4",
+      "release": "finale_v1",
+      "title": "Scoped property card and QR",
+      "dependsOn": [
+        "GF3"
+      ],
+      "tests": [
+        "GF-T21",
+        "GF-PRIVACY"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "GF5",
+      "release": "finale_v1",
+      "title": "Evidence and rehearsal",
+      "dependsOn": [
+        "GF4"
+      ],
+      "tests": [
+        "GF-T15",
+        "GF-T16",
+        "GF-T17",
+        "GF-T18",
+        "GF-T19",
+        "GF-T20",
+        "GF-T21",
+        "GF-AI",
+        "GF-AGENT",
+        "GF-EXCHANGE",
+        "GF-RECOVERY",
+        "GF-VIEW",
+        "GF-DATA",
+        "GF-PRIVACY",
+        "GF-CONTRACT",
+        "GF-READY",
+        "GF-REHEARSAL"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "FP-LEARN",
+      "release": "full_product",
+      "title": "Concurrent schema learner",
+      "dependsOn": [
+        "GF5"
+      ],
+      "tests": [
+        "FP-LEARN-TEST"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "FP-PUBLIC",
+      "release": "full_product",
+      "title": "Public data-request and evidence dashboard",
+      "dependsOn": [
+        "GF5",
+        "FP-DEPLOY"
+      ],
+      "tests": [
+        "FP-PUBLIC-TEST"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "FP-ASSIST",
+      "release": "full_product",
+      "title": "Grounded assistance and MCP",
+      "dependsOn": [
+        "GF5"
+      ],
+      "tests": [
+        "FP-ASSIST-TEST"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "FP-FORMATS",
+      "release": "full_product",
+      "title": "Broader native adapter coverage",
+      "dependsOn": [
+        "GF5"
+      ],
+      "tests": [
+        "FP-FORMATS-TEST"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "FP-ENRICH",
+      "release": "full_product",
+      "title": "Labelled enrich-first previews",
+      "dependsOn": [
+        "FP-FORMATS"
+      ],
+      "tests": [
+        "FP-ENRICH-TEST"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "FP-RENDER",
+      "release": "full_product",
+      "title": "Measured renderer alternative",
+      "dependsOn": [
+        "GF5"
+      ],
+      "tests": [
+        "FP-RENDER-TEST"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "FP-SCALE",
+      "release": "full_product",
+      "title": "Real-corpus load ladder",
+      "dependsOn": [
+        "FP-FORMATS"
+      ],
+      "tests": [
+        "FP-SCALE-TEST"
+      ],
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "FP-DEPLOY",
+      "release": "full_product",
+      "title": "Protected multiuser deployment",
+      "dependsOn": [
+        "GF5"
+      ],
+      "tests": [
+        "FP-DEPLOY-TEST"
+      ],
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-DATA",
+      "title": "Matched evidence from any permitted geography (labelled), exact acquisition stages and independent truth",
+      "owner": "DATA",
+      "gate": "GF0",
+      "docs": [
+        "docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/usp-agent-handoffs/29-agent-task-cards.md",
+        "docs/usp-agent-handoffs/90-required-human-tasks.md"
+      ],
+      "tests": [
+        "GF-DATA"
+      ],
+      "auditFindings": [
+        "F02",
+        "F06",
+        "F12"
+      ]
+    },
+    {
+      "id": "R-ID",
+      "title": "Immutable proposed IDs, sourced official anchors and reviewed lifecycle",
+      "owner": "FND",
+      "gate": "GF1",
+      "docs": [
+        "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md",
+        "docs/usp-agent-handoffs/15-property-history-and-comparison.md",
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md"
+      ],
+      "tests": [
+        "GF-T15"
+      ],
+      "auditFindings": [
+        "F04"
+      ]
+    },
+    {
+      "id": "R-EXCHANGE",
+      "title": "LADM mapping and loss-aware CityJSON plus sidecar",
+      "owner": "FND",
+      "gate": "GF1",
+      "docs": [
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md"
+      ],
+      "tests": [
+        "GF-EXCHANGE"
+      ],
+      "auditFindings": [
+        "F05"
+      ]
+    },
+    {
+      "id": "R-AI",
+      "title": "Four source-linked domain pipelines and independent qualification",
+      "owner": "DOMAIN",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tests": [
+        "GF-AI"
+      ],
+      "auditFindings": [
+        "F06"
+      ]
+    },
+    {
+      "id": "R-INGEST",
+      "title": "Bounded conversion, agent proposals, durable SSE and recovery",
+      "owner": "INGEST",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md"
+      ],
+      "tests": [
+        "GF-RECOVERY"
+      ],
+      "auditFindings": [
+        "F01",
+        "F06"
+      ]
+    },
+    {
+      "id": "R-AGENT",
+      "title": "Constrained mapping agent: held-out accuracy, injection, literal rejection, PII egress, outage and caps",
+      "owner": "INGEST",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/usp-agent-handoffs/97-review-findings-and-alignment.md"
+      ],
+      "tests": [
+        "GF-AGENT"
+      ],
+      "auditFindings": [
+        "C05",
+        "C06",
+        "C08"
+      ]
+    },
+    {
+      "id": "R-VIEW",
+      "title": "Retain Cesium and qualify actual source-shaped Studio path",
+      "owner": "UI",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
+        "docs/design-system/README.md",
+        "docs/design-system/ui-brief.md",
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "tests": [
+        "GF-VIEW"
+      ],
+      "auditFindings": [
+        "F08"
+      ]
+    },
+    {
+      "id": "R-RIGHTS",
+      "title": "Declared UDS, shared/elevated/underground rights versus physical space",
+      "owner": "RIGHTS",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/16-shared-spaces-and-vertical-rights.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tests": [
+        "GF-T16",
+        "GF-T18"
+      ],
+      "auditFindings": [
+        "F09",
+        "F10"
+      ]
+    },
+    {
+      "id": "R-CARPET",
+      "title": "Component-defined quantity with independent calculation",
+      "owner": "DOMAIN",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tests": [
+        "GF-T17"
+      ],
+      "auditFindings": [
+        "F09"
+      ]
+    },
+    {
+      "id": "R-GEOMETRY",
+      "title": "Qualified operations, topology semantics and named datums",
+      "owner": "FIND",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/12-rights-aware-spatial-findings.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tests": [
+        "GF-T18"
+      ],
+      "auditFindings": [
+        "F07",
+        "F11",
+        "F12"
+      ]
+    },
+    {
+      "id": "R-DEVIATION",
+      "title": "Exact sanctioned/observed pair, controls and uncertainty",
+      "owner": "HISTORY",
+      "gate": "GF3",
+      "docs": [
+        "docs/usp-agent-handoffs/15-property-history-and-comparison.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tests": [
+        "GF-T19"
+      ],
+      "auditFindings": [
+        "F11",
+        "F12"
+      ]
+    },
+    {
+      "id": "R-IMPACT",
+      "title": "Promote IMPACT0 with coverage and utility accuracy limits",
+      "owner": "IMPACT",
+      "gate": "GF3",
+      "docs": [
+        "docs/usp-agent-handoffs/17-infrastructure-impact-screening.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tests": [
+        "GF-T20"
+      ],
+      "auditFindings": [
+        "F12"
+      ]
+    },
+    {
+      "id": "R-CARD",
+      "title": "Existing packet subtype and exact-revision QR",
+      "owner": "PACK",
+      "gate": "GF4",
+      "docs": [
+        "docs/usp-agent-handoffs/10-scoped-evidence-packets.md",
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md"
+      ],
+      "tests": [
+        "GF-T21"
+      ],
+      "auditFindings": [
+        "F13"
+      ]
+    },
+    {
+      "id": "R-TRUST",
+      "title": "Authorization, release isolation and hash-chain trust limits",
+      "owner": "FND",
+      "gate": "GF4",
+      "docs": [
+        "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md",
+        "docs/usp-agent-handoffs/10-scoped-evidence-packets.md",
+        "docs/usp-agent-handoffs/15-property-history-and-comparison.md",
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md"
+      ],
+      "tests": [
+        "GF-T21",
+        "GF-PRIVACY"
+      ],
+      "auditFindings": [
+        "F13",
+        "F14"
+      ]
+    },
+    {
+      "id": "R-CLAIMS",
+      "title": "Rehearsed workflow and measured versus planned claims",
+      "owner": "LEAD",
+      "gate": "GF5",
+      "docs": [
+        "docs/usp-agent-handoffs/00-README.md",
+        "docs/usp-agent-handoffs/24-product-method-and-ppt.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/usp-agent-handoffs/29-agent-task-cards.md",
+        "docs/usp-agent-handoffs/97-review-findings-and-alignment.md"
+      ],
+      "tests": [
+        "GF-T15",
+        "GF-T16",
+        "GF-T17",
+        "GF-T18",
+        "GF-T19",
+        "GF-T20",
+        "GF-T21",
+        "GF-AI",
+        "GF-AGENT",
+        "GF-EXCHANGE",
+        "GF-RECOVERY",
+        "GF-VIEW",
+        "GF-DATA",
+        "GF-PRIVACY",
+        "GF-CONTRACT",
+        "GF-READY",
+        "GF-REHEARSAL"
+      ],
+      "auditFindings": [
+        "F01"
+      ]
+    },
+    {
+      "id": "R-FP-LEARN",
+      "title": "FP-LEARN retained full-product capability",
+      "owner": "LEARN",
+      "gate": "FP-LEARN",
+      "docs": [
+        "docs/usp-agent-handoffs/21-concurrent-schema-learning.md"
+      ],
+      "tests": [
+        "FP-LEARN-TEST"
+      ],
+      "auditFindings": [
+        "F01"
+      ]
+    },
+    {
+      "id": "R-FP-PUBLIC",
+      "title": "FP-PUBLIC retained full-product capability",
+      "owner": "CITIZEN",
+      "gate": "FP-PUBLIC",
+      "docs": [
+        "docs/usp-agent-handoffs/13-citizen-evidence-and-corrections.md"
+      ],
+      "tests": [
+        "FP-PUBLIC-TEST"
+      ],
+      "auditFindings": [
+        "F01"
+      ]
+    },
+    {
+      "id": "R-FP-ASSIST",
+      "title": "FP-ASSIST retained full-product capability",
+      "owner": "ASSIST",
+      "gate": "FP-ASSIST",
+      "docs": [
+        "docs/usp-agent-handoffs/18-grounded-assistance-and-mcp.md"
+      ],
+      "tests": [
+        "FP-ASSIST-TEST"
+      ],
+      "auditFindings": [
+        "F01"
+      ]
+    },
+    {
+      "id": "R-FP-FORMATS",
+      "title": "FP-FORMATS retained full-product capability",
+      "owner": "INGEST",
+      "gate": "FP-FORMATS",
+      "docs": [
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "tests": [
+        "FP-FORMATS-TEST"
+      ],
+      "auditFindings": [
+        "F01"
+      ]
+    },
+    {
+      "id": "R-FP-ENRICH",
+      "title": "FP-ENRICH retained full-product capability",
+      "owner": "UI",
+      "gate": "FP-ENRICH",
+      "docs": [
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "tests": [
+        "FP-ENRICH-TEST"
+      ],
+      "auditFindings": [
+        "F01"
+      ]
+    },
+    {
+      "id": "R-FP-RENDER",
+      "title": "FP-RENDER retained full-product capability",
+      "owner": "UI",
+      "gate": "FP-RENDER",
+      "docs": [
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md"
+      ],
+      "tests": [
+        "FP-RENDER-TEST"
+      ],
+      "auditFindings": [
+        "F01"
+      ]
+    },
+    {
+      "id": "R-FP-SCALE",
+      "title": "FP-SCALE retained full-product capability",
+      "owner": "DATA",
+      "gate": "FP-SCALE",
+      "docs": [
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "tests": [
+        "FP-SCALE-TEST"
+      ],
+      "auditFindings": [
+        "F01"
+      ]
+    },
+    {
+      "id": "R-FP-DEPLOY",
+      "title": "FP-DEPLOY retained full-product capability",
+      "owner": "DEPLOY",
+      "gate": "FP-DEPLOY",
+      "docs": [
+        "docs/usp-agent-handoffs/19-india-contained-deployment.md",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md",
+        "docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md"
+      ],
+      "tests": [
+        "FP-DEPLOY-TEST"
+      ],
+      "auditFindings": [
+        "F01"
+      ]
+    },
+    {
+      "id": "R-CONTRACT",
+      "title": "Actual shared contracts and source/geometry/job producer-consumer inventory",
+      "owner": "FND",
+      "gate": "GF0",
+      "docs": [
+        "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "tests": [
+        "GF-CONTRACT"
+      ],
+      "auditFindings": [
+        "F01",
+        "F02"
+      ]
+    },
+    {
+      "id": "R-READY",
+      "title": "Scoped readiness, stale evidence and accountable review",
+      "owner": "READY",
+      "gate": "GF3",
+      "docs": [
+        "docs/usp-agent-handoffs/11-evidence-readiness-and-review-queue.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "tests": [
+        "GF-READY"
+      ],
+      "auditFindings": [
+        "F01",
+        "F02"
+      ]
+    },
+    {
+      "id": "R-REHEARSAL",
+      "title": "Integrated Studio journey, metrics and honest PPT/backup rehearsal",
+      "owner": "UI",
+      "gate": "GF5",
+      "docs": [
+        "docs/usp-agent-handoffs/24-product-method-and-ppt.md",
+        "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/design-system/README.md",
+        "docs/design-system/ui-brief.md"
+      ],
+      "tests": [
+        "GF-REHEARSAL"
+      ],
+      "auditFindings": [
+        "F01",
+        "F02"
+      ]
+    }
+  ],
+  "tests": {
+    "GF-T15": {
+      "kind": "runtime",
+      "owner": "FND",
+      "specs": [
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-T16": {
+      "kind": "runtime",
+      "owner": "RIGHTS",
+      "specs": [
+        "docs/usp-agent-handoffs/16-shared-spaces-and-vertical-rights.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-T17": {
+      "kind": "runtime",
+      "owner": "DOMAIN",
+      "specs": [
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-T18": {
+      "kind": "runtime",
+      "owner": "FIND",
+      "specs": [
+        "docs/usp-agent-handoffs/12-rights-aware-spatial-findings.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-T19": {
+      "kind": "runtime",
+      "owner": "HISTORY",
+      "specs": [
+        "docs/usp-agent-handoffs/15-property-history-and-comparison.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-T20": {
+      "kind": "runtime",
+      "owner": "IMPACT",
+      "specs": [
+        "docs/usp-agent-handoffs/17-infrastructure-impact-screening.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-T21": {
+      "kind": "runtime",
+      "owner": "PACK",
+      "specs": [
+        "docs/usp-agent-handoffs/10-scoped-evidence-packets.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-AI": {
+      "kind": "runtime",
+      "owner": "DOMAIN",
+      "specs": [
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-EXCHANGE": {
+      "kind": "runtime",
+      "owner": "FND",
+      "specs": [
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-RECOVERY": {
+      "kind": "runtime",
+      "owner": "INGEST",
+      "specs": [
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-VIEW": {
+      "kind": "runtime",
+      "owner": "UI",
+      "specs": [
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-DATA": {
+      "kind": "runtime",
+      "owner": "DATA",
+      "specs": [
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-PRIVACY": {
+      "kind": "runtime",
+      "owner": "FND",
+      "specs": [
+        "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md",
+        "docs/usp-agent-handoffs/10-scoped-evidence-packets.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "FP-LEARN-TEST": {
+      "kind": "runtime",
+      "owner": "LEARN",
+      "specs": [
+        "docs/usp-agent-handoffs/21-concurrent-schema-learning.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "FP-PUBLIC-TEST": {
+      "kind": "runtime",
+      "owner": "CITIZEN",
+      "specs": [
+        "docs/usp-agent-handoffs/13-citizen-evidence-and-corrections.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "FP-ASSIST-TEST": {
+      "kind": "runtime",
+      "owner": "ASSIST",
+      "specs": [
+        "docs/usp-agent-handoffs/18-grounded-assistance-and-mcp.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "FP-ENRICH-TEST": {
+      "kind": "runtime",
+      "owner": "UI",
+      "specs": [
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "FP-FORMATS-TEST": {
+      "kind": "runtime",
+      "owner": "INGEST",
+      "specs": [
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "FP-RENDER-TEST": {
+      "kind": "runtime",
+      "owner": "UI",
+      "specs": [
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "FP-SCALE-TEST": {
+      "kind": "runtime",
+      "owner": "DATA",
+      "specs": [
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "FP-DEPLOY-TEST": {
+      "kind": "runtime",
+      "owner": "DEPLOY",
+      "specs": [
+        "docs/usp-agent-handoffs/19-india-contained-deployment.md",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-CONTRACT": {
+      "kind": "runtime",
+      "owner": "FND",
+      "specs": [
+        "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-READY": {
+      "kind": "runtime",
+      "owner": "READY",
+      "specs": [
+        "docs/usp-agent-handoffs/11-evidence-readiness-and-review-queue.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-REHEARSAL": {
+      "kind": "runtime",
+      "owner": "UI",
+      "specs": [
+        "docs/usp-agent-handoffs/24-product-method-and-ppt.md",
+        "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-AGENT": {
+      "kind": "runtime",
+      "owner": "INGEST",
+      "specs": [
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    }
+  },
+  "entryPoints": [
+    "AGENTS.md",
+    "README.md",
+    "docs/usp-agent-handoffs/00-README.md",
+    "docs/usp-agent-handoffs/02-lead-agent-execution.md",
+    "docs/engineering-plan/CURRENT_WORK.md"
+  ],
+  "activeDocDirectory": "docs/usp-agent-handoffs",
+  "planValidation": {
+    "validator": "docs/usp-agent-handoffs/tools/validate_handoffs.py",
+    "tests": "docs/usp-agent-handoffs/tools/tests/test_validate_handoffs.py",
+    "auditFindings": [
+      "F01",
+      "F02",
+      "F03",
+      "C02",
+      "C08",
+      "C24"
+    ],
+    "status": "passed",
+    "receipt": "docs/evidence/usp/claude-review-alignment-2026-09-24/verification.json"
+  },
+  "receiptContract": {
+    "schemaVersion": "ulpin-test-receipt/1",
+    "finaleRoot": "docs/evidence/usp/finale",
+    "fullProductRoot": "docs/evidence/usp/full-product",
+    "requiredFields": [
+      "testId",
+      "status",
+      "codeCommit",
+      "manifestHash",
+      "sourceHashes",
+      "modelHashes",
+      "runAt",
+      "environment",
+      "command",
+      "exitCode",
+      "expectedActual",
+      "artifacts"
+    ],
+    "note": "Machine checks provenance shape and file hashes, not truth of execution. Independent review remains mandatory."
+  }
+}

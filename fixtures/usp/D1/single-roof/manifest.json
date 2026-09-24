@@ -1,0 +1,240 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D1",
+  "version": 1,
+  "profile": "single-roof",
+  "description": "One unchanged 3DBAG CityJSONFeature API response with independent source geometry oracle and HTTP receipt; only catalogue and byte stages are asserted. No rendered or recorded D1 qualification.",
+  "assets": [
+    {
+      "id": "original.json",
+      "mediaType": "application/json",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://api.3dbag.nl/collections/pand/items/NL.IMBAG.Pand.1655100000500568"
+      },
+      "sourceVersion": null,
+      "attribution": "© 3DBAG by tudelft3d and 3DGI — https://docs.3dbag.nl/en/copyright/",
+      "permission": {
+        "state": "documented",
+        "reference": "https://docs.3dbag.nl/en/copyright/ (CC BY 4.0)",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:7415",
+        "verticalReference": "NAP height (EPSG:7415)",
+        "horizontalUnit": "m",
+        "verticalUnit": "m",
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "original.json",
+        "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+        "bytes": 6783
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "acquisition.md"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "acquisition.md"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "response.headers",
+      "mediaType": "text/plain",
+      "classification": "unknown",
+      "origin": {
+        "kind": "external",
+        "url": "https://api.3dbag.nl/collections/pand/items/NL.IMBAG.Pand.1655100000500568"
+      },
+      "sourceVersion": null,
+      "attribution": "© 3DBAG by tudelft3d and 3DGI — https://docs.3dbag.nl/en/copyright/",
+      "permission": {
+        "state": "documented",
+        "reference": "https://docs.3dbag.nl/en/copyright/ (CC BY 4.0)",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:7415",
+        "verticalReference": "NAP height (EPSG:7415)",
+        "horizontalUnit": "m",
+        "verticalUnit": "m",
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "response.headers",
+        "sha256": "22919e818eaef9c0ef5b0573f64fdc7fc57c536b057066f56aa07abf486fb5f1",
+        "bytes": 245
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "acquisition.md"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "acquisition.md"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "expected.json",
+      "mediaType": "application/json",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "Independent standard-library inspection of original.json, detailed in acquisition.md"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN DATA fixture analysis",
+      "permission": {
+        "state": "documented",
+        "reference": "Authored independent D1 fixture analysis, project test use",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:7415",
+        "verticalReference": "NAP height (EPSG:7415)",
+        "horizontalUnit": "m",
+        "verticalUnit": "m",
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "expected.json",
+        "sha256": "12adc100852331d2f96d9feebee3e60b5c71bf5e7bbb109437a7ff207a178554",
+        "bytes": 1909
+      },
+      "dependencies": [
+        "original.json"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Authored test oracle rather than external catalogue asset"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "acquisition.md"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "acquisition.md",
+      "mediaType": "text/markdown",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "DATA source receipt, 2026-09-23"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN DATA source receipt",
+      "permission": {
+        "state": "documented",
+        "reference": "Authored independent D1 fixture analysis, project test use",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "acquisition.md",
+        "sha256": "1b7d3f98e00b35e360a4785494d356b37fc8cdc7816abef36ccca065e591caa7",
+        "bytes": 3425
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Authored acquisition evidence rather than external catalogue asset"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "acquisition.md"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    }
+  ],
+  "expectedPath": "expected.json",
+  "expectedCapabilities": [
+    "preserved_external_cityjsonfeature",
+    "declared_epsg7415_nap_metadata",
+    "building_and_part_identity_oracle",
+    "lod22_nonhorizontal_roof_topology_oracle",
+    "explicit_null_interior_availability"
+  ],
+  "missingCapabilities": [
+    "product_parser_qualification",
+    "triangulated_roof_rendering",
+    "feature_pick_identity",
+    "qualified_global_placement",
+    "internal_floor_geometry",
+    "unit_or_rights_evidence",
+    "record_workflow_verification"
+  ]
+}

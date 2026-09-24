@@ -1,49 +1,43 @@
-# 3D ULPIN hackathon implementation
+# 3D ULPIN — current agent entry point
 
-Latest steering: first correct the reference image pack UX (T069), then resume
-T064–T068 app changes. See design/officer-studio-v3/DESIGN_BRIEF.md.
+<!-- plan-next-gate: GF0 -->
 
-Latest user priority (20 September 2026): Studio is the sole officer interface.
-Audit and simplify the complete source-to-record workflow for SIH 26011, safely
-automating source metadata and removing redundant presentation. Preserve all
-originals, identities, revision history and unique processing capabilities.
-Replace old pages with thin Studio URL resolvers; delete proven-unused UI code.
-Execute T062–T068 one bounded task at a time with fresh Astra 6 High workers and
-parent review. See docs/engineering-plan/STUDIO_UX_PLAN.md and CURRENT_WORK.md.
-This supersedes historical instructions to retain duplicate compatibility UIs.
+## Adopted direction, 24 September 2026
 
-Historical user priority (T058): T057 was rejected visually. First copy the actual
-`E:/Projects/ulpin-city-studio` design and interactions into the product with
-working routes; then improve that Studio against the original image mockups.
-Prepare consistent synthetic records/documents first where needed. Compare actual
-browser captures side by side before claiming completion. See T058_PLAN.md.
-This authorizes the Studio's shared Three/R3F viewport; retain existing Cesium
-and backend workflows as compatibility paths, not discarded implementations.
-ML follows this visual milestone. Do not replace real source shapes with boxes.
+Read `docs/usp-agent-handoffs/00-README.md`, `release-plan.json`, H01/H02, H26–H28, the assigned feature and H99. Read `apps/web/AGENTS.md` before web changes. `docs/engineering-plan/CURRENT_WORK.md` names the current gate.
 
-Execution policy (18 September 2026): `docs/engineering-plan/backlog.json` is the
-adopted task/status authority on `feat/unified-spatial-foundation`. Continue one
-bounded task at a time, with its detailed plan, tests, review and recorded result.
-The branch preserves the inherited `feat/reusable-spatial-map-core` implementation;
-assess its coverage rather than rebuilding it. A task is not accepted merely
-because its types compile or an earlier branch contains related code. Keep
-private-PC data and isolated hosted-fixture verification explicitly distinct.
+The adopted finale release is `finale_v1`: Identify → Prove → Govern, with equal emphasis on adaptive evidence ingestion and the officer outcome. Start at the next gate declared above and follow GF0–GF5 in the manifest. Reuse the recorded D0/PACK0 and single-real-D1 milestone; do not restart historical F0/F1-min/V0. New finale capabilities remain pending until actual evidence passes.
 
-Current branch implementation scope (18 September 2026): build the authorized reusable renderer-first and unified-schema foundation on a separate branch. All pages delegate to the shared MapViewport/runtime; source-specific adapters may remain during compatibility migration. Use one layout-scoped resource cache and view-session service rather than page-specific copies. Canonical data remains in existing services. Establish and test the shared contract, compiler and streamed calibration maps before claiming visual acceptance or expanding all later UIs. See docs/SHARED_MAP_IMPLEMENTATION.md. Earlier dated presentation scopes below are historical and do not override this instruction.
+The separate `full_product` release retains concurrent schema learning, a privacy-preserving public request dashboard, MCP/conversational assistance, generative previews, renderer alternatives and scale. These are not finale prerequisites. H21 permits eligible training alongside imports when that workstream is implemented; a learner/cache is not a substitute for H27's domain AI.
 
+H23/H28 define Indian operational data, data.gov.in-first discovery and separate tests from any permitted geography. H22 retains the current Cesium D0/D1 runtime for the finale; future Three/R3F is evidence-gated. No Delhi-only prerequisite. No planned capability, catalogue or package declaration is an implementation pass.
 
-Current scope (15 September 2026): replace the previous presentation with the reference-led officer interface on unversioned Block Map, Property Register and Plan Workspace routes. Match the supplied reference header and panels. Main navigation always opens directories; contextual property actions preserve canonical identity and the surrounding block. Build a clearly labeled persisted fictional demonstration neighborhood through real ingestion, processing and review, alongside separately selectable real datasets. Extract required capabilities before deleting obsolete screens; retain historical URL resolution, all originals and revision history. Use reusable feature modules, focused hooks and transient Zustand state. No version branding in the interface. The T00–T10 evidence and unresolved real Indian data/free-route Nous gates remain historical acceptance obligations.
+## Branch and implementation discipline
 
+Current consolidated baseline is `staging@45d033baae7ec4e5a572d82459b0062c70a12c95`. Fetch and reconcile the actual current head before work. New implementation branches use the current verified integration base and target `staging`. Do not merge into `main`, activate public services or deploy without explicit authorization. No force push.
 
-The active demonstration is Lake View. Extend its existing canonical properties with fictional parcel IDs, visible parcels/roads, computed conflict examples and property PDF exports. Keep real datasets separate. Remove only the two user-selected redundant demonstrations from active directories by reversible archival; retain originals and historical access. Seed reruns must preserve user changes and history. Register scenes support circular orbit controls and Ctrl-drag. Workspace Clear/Ctrl+Q cancels only the current drawing. Block/building/floor/unit downloads keep canonical 3D ULPINs, linked parcel 2D ULPIN assertions and byte-identical source revisions; missing geometry remains explicitly unavailable.
+Keep Next.js/TypeScript, existing Three/Cesium runtime boundaries, PostgreSQL/PostGIS, private source/object storage, Redis/Celery, dispatcher and Python processing. Use one canonical registry, one job authority, one provider gateway, one conversion/validation contract and one active shared map runtime. Extend actual existing services rather than inventing competing databases, uploaders, brokers or per-page maps. Preserve compatible legacy URLs and unique document/GIS/raster/point-cloud inspection capabilities.
 
-- Keep Next.js, CesiumJS, PostgreSQL/PostGIS, S3-compatible storage, Redis/Celery, and private Python processing.
-- Keep this release local and single-operator. Defer production authentication/multiple users, Android, formal statutory acceptance, official identity issuance, field synchronization and exchange. AI extraction is in current scope as reviewed assistance, never spatial authority or direct publication; no paid fallback.
-- Never fabricate computed results or treat generated synthetic files as real survey evidence.
-- Canonical units are local metres in a named frame and vertical benchmark. Display transformations are not measurements.
-- Source receipt, suitability, draft geometry, and validation are distinct.
-- Preserve originals, source revisions, geometry revisions, and input fingerprints.
-- No private secrets in committed files or tool output. Services stay local.
-- `REPO_DATA=true` selects the isolated `ulpin-repo` services and committed snapshot; false preserves the linked environment. Never overwrite populated repository volumes or refresh the committed snapshot implicitly. Preserve original object bytes, source attribution, identities and revision history; run `repo:check` before publishing a snapshot.
-- Limit command output aggressively; never inspect binary files as text.
-- You are working alongside other agents. Respect assigned files and coordinate shared-contract changes with the lead. Do not revert another agent's work. No recursive agent spawning.
+## Data and evidence invariants
+
+Preserve originals/hashes, source and geometry revisions, identifiers, locators, reference frames/units, attribution, permissions and review history. Unknown, absent, null, withheld and conflicting remain distinct. Official supplied parcel ULPINs differ from application building/floor/space IDs. A floor is not necessarily a unit; one building can span parcels and one unit can span floors. Source or display geometry does not grant ownership or official issuance.
+
+Never fabricate recorded heights, floors, control points, ownership or analytical conflicts. Enhanced preview may use explicitly labelled estimates and illustrative massing/materials, with separate provenance and capability restrictions. These cannot affect measurement, evidence coverage, readiness, rights, property packets or training ground truth. Insufficient geometry/reference data is flagged, not filled into an apparently complete cadastre. Distinct source geographies remain separate; foreign tests are not moved onto Indian coordinates.
+
+`REPO_DATA=true` selects isolated repository services; false preserves the linked environment. Never reset populated volumes, implicitly reseed, export a replacement snapshot or overwrite `.env`/credentials. Existing datasets, canonical originals, upload ZIPs and manifest-bound scene assets remain protected. Historic cleanup records are not permission for a new data purge. Old locality packs remain provenance/regression material, not mandatory acquisition targets. Large/restricted new inputs stay outside Git.
+
+## Ownership and bounded agents
+
+FND owns shared schemas, backend hooks, migrations, configuration/dependencies, transactions and model-dispatch epochs. INGEST owns profiling/partition/conversion/draft leaves. LEARN owns eligible examples, candidate training/inference/evaluation, not queue or registry writes. UI owns shared routes/selection/cache/renderer and public mounts. DATA owns acquisition/fixtures/independent truth. DEPLOY owns provider calls, data/training/egress policy, billing and credentials. Existing feature owners retain their bounded leaves. Transfer shared ownership explicitly; one writer per shared seam.
+
+Use an isolated worktree and record base SHA. Keep at most two implementation owners plus bounded DATA/review initially and at most three unfinished integration-dependent streams later. Only the lead spawns; no recursive workers. Any user-authorized coding agent may lead or work. Choose models by H02's role tiers (the Codex profile keeps the user's GPT-6 Astra lead with Sol/Astra-only workers) and verify actual model/effort settings. Record `agent.product/model/effort` in tickets and receipts. Milestone review comes from a different model family or a human. Unsupported selection uses an explicit serial fallback. Pick work from `docs/usp-agent-handoffs/29-agent-task-cards.md`; `97-review-findings-and-alignment.md` lists open review findings; `docs/design-system/README.md` is the UI source of truth under H99. Coding agents are not runtime processors for private operational records.
+
+## Sarvam and learning gates
+
+Use H20's single governed model gateway and existing budgets, account scopes, reservations, shared throttles, drain/retirement state and recovery. Supplied independent accounts do not establish verified remaining balances or unrestricted permissions. Never reuse retired credentials, farm grants, evade throttles, buy credits or expose keys.
+
+Sarvam residency, application residency, confidentiality and correctness are separate qualifications. H21/H23 require applicable written permission before using Sarvam-derived outputs for training/testing/improving ML. Independent permitted labels have a separate provenance route. A missing permission blocks that training-data route; the full-product learner remains planned and the finale proceeds on qualified non-learning routes. Fake-provider/no-key tests precede permitted live calls. Keep manual/exact conversion useful during outages.
+
+## Verification
+
+Read the assigned test data, use locked dependencies and existing isolation/build-server guards, and preserve current test histories. Test the current release requirements in H28 and release-plan.json. Preserve source integrity, semantic errors/abstention, partial publication, stale events, later evidence, privacy, India policy and bounded resources. Learner parameter updates/handover, enriched display and public dashboard tests belong to their full-product gates. Record executed commands, exit statuses, code/source/model hashes, actual receipts and fresh active-product screenshots. Separate plan readiness, code tests, local integration, learning qualification, real-source accuracy, GPU performance and deployment. A document, mock or screenshot alone cannot pass a runtime gate.

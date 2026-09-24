@@ -19,8 +19,9 @@ export function useBlock(areaId: string) {
   const query = useSearchParams(),
     router = useRouter(),
     pathname = usePathname();
-  const selectedId = query.get("feature");
-  const requestedRecord=query.get('record');
+  const repeatedSelection = ['feature','record','world','packet'].some(key => query.getAll(key).length > 1);
+  const selectedId = repeatedSelection ? null : query.get("feature");
+  const requestedRecord = repeatedSelection ? null : query.get('record');
   const findingId = query.get("findingId");
   const finding = context.data?.latestCheck?.stale
     ? null
@@ -77,9 +78,18 @@ export function useBlock(areaId: string) {
     for (const feature of list) extra.delete(feature.id);
     return [...list, ...extra.values()];
   }, [context.data, shownFindings]);
-  const selected = features.find((f) => f.id === selectedId) || null;
+  const selectedCandidate = features.find((f) => f.id === selectedId) || null;
   const worlds=[...new Set(features.map(f=>f.worldStatus))];
-  const world=worlds.find(w=>w===query.get('world'))??selected?.worldStatus??worlds[0]??'observed';
+  const requestedWorld = query.get('world');
+  const invalidWorld = !!requestedWorld && (!worlds.includes(requestedWorld as typeof worlds[number])
+    || !!selectedCandidate && selectedCandidate.worldStatus !== requestedWorld);
+  const selected = invalidWorld ? null : selectedCandidate;
+  const selectionError = repeatedSelection ? 'This link has conflicting selection parameters.'
+    : invalidWorld ? 'The supplied source world does not contain this selection.'
+    : selectedId && context.data && !selected ? 'The supplied feature is not in this block.'
+    : requestedRecord && context.data && selected?.kind !== 'building' ? 'The supplied unit has no selected building in this block.'
+    : null;
+  const world=worlds.find(w=>w===requestedWorld)??selected?.worldStatus??worlds[0]??'observed';
   const dossier = useResource<BuildingDossier>(
     selected?.kind === "building" ? `/buildings/${selected.id}/dossier` : null,
   );
@@ -135,7 +145,7 @@ export function useBlock(areaId: string) {
   const select = (id: string) => {
     const feature = features.find((f) => f.id === id);
     if(!feature)return;
-    updateQuery({feature:id,record:null,world:feature.worldStatus});
+    updateQuery({feature:id,record:null,packet:null,world:feature.worldStatus});
     if (feature?.kind === "utility")
       setPreferences(areaId, { inspector: "utility" });
     else if (feature?.kind === "parcel")
@@ -183,11 +193,13 @@ export function useBlock(areaId: string) {
   return {
     context,
     worlds,world,
-    setWorld:(value:string)=>{if(worlds.includes(value as typeof world))updateQuery({world:value,feature:null,record:null,findingId:null});},
+    packetId: repeatedSelection ? null : query.get('packet'),
+    setWorld:(value:string)=>{if(worlds.includes(value as typeof world))updateQuery({world:value,feature:null,record:null,packet:null,findingId:null});},
     recordId:requestedRecord&&dossier.data?.records.some(r=>r.id===requestedRecord)?requestedRecord:null,
     recordUnavailable:!!requestedRecord&&!!dossier.data&&!dossier.data.records.some(r=>r.id===requestedRecord),
     selectedRecord:dossier.data?.records.find(r=>r.id===requestedRecord),
-    selectRecord:(id:string|null)=>{if(id&&!dossier.data?.records.some(r=>r.id===id))return;updateQuery({record:id});if(id){setPreferences(areaId,{inspector:'floors'});navigate('focus');}},
+    selectRecord:(id:string|null)=>{if(id&&!dossier.data?.records.some(r=>r.id===id))return;updateQuery({record:id,packet:null});if(id){setPreferences(areaId,{inspector:'floors'});navigate('focus');}},
+    selectionError,
     featureLabels,
     showConflicts,
     conflictCount: conflictFindings.length,

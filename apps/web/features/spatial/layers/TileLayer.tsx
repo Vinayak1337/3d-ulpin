@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
+import { entityGeometryReady } from '../engine/entity-readiness';
 import { createMapRuntime } from "../engine/runtime";
 import { useSpatialServices } from "../data/Provider";
 import type { MapCamera, MapSelection } from "../data/session";
@@ -70,6 +71,8 @@ export default function TileLayer(props: TileLayerProps) {
         tileset: Cesium.Cesium3DTileset;
     } | null>(null);
     const latest = useRef(props);
+    const overlayEntities = useRef<Cesium.Entity[]>([]);
+    const overlayIds = useRef<string[]>([]);
     latest.current = props;
     const [error, setError] = useState("");
     const [ready, setReady] = useState(false);
@@ -132,31 +135,41 @@ export default function TileLayer(props: TileLayerProps) {
             if (disposed || state?.viewer !== viewer)
                 return;
             const tileset = state.tileset;
+            const overlaysReady = entityGeometryReady(viewer.dataSourceDisplay, overlayEntities.current, viewer.scene);
+            const sceneReady = tileset.tilesLoaded && overlaysReady;
+            currentHost.dataset.readyOverlayIds = JSON.stringify(overlaysReady ? overlayIds.current : []);
             const now = performance.now();
-            if (now - lastReport < 350 && reportedReady === tileset.tilesLoaded)
+            if (now - lastReport < 350 && reportedReady === sceneReady)
                 return;
             lastReport = now;
-            reportedReady = tileset.tilesLoaded;
-            currentHost.dataset.sceneReady = String(tileset.tilesLoaded);
+            reportedReady = sceneReady;
+            currentHost.dataset.sceneReady = String(sceneReady);
             currentHost.dataset.loadedTiles = String(loaded.size);
             const camera = snapshotCamera(viewer);
             currentHost.dataset.camera = JSON.stringify(camera);
-            latest.current.onTelemetry?.({ ready: tileset.tilesLoaded, loadedTiles: loaded.size, tileBytes: tileset.totalMemoryUsageInBytes, camera });
+            latest.current.onTelemetry?.({ ready: sceneReady, loadedTiles: loaded.size, tileBytes: tileset.totalMemoryUsageInBytes, camera });
         }));
         viewer.screenSpaceEventHandler.setInputAction((event: {
             position: Cesium.Cartesian2;
         }) => {
             const picked = viewer.scene.pick(event.position);
+            delete currentHost.dataset.pickedEntityId;
+            currentHost.dataset.pickKind = !picked ? 'none' : typeof picked.getProperty === 'function' ? 'tile' : picked.id ? 'entity' : 'other';
             if (picked && typeof picked.getProperty === "function") {
                 const entityId = picked.getProperty("entityId"), representationId = picked.getProperty("representationId");
-                if (typeof entityId === "string" && typeof representationId === "string")
+                if (typeof entityId === "string" && typeof representationId === "string") {
+                    currentHost.dataset.pickedEntityId=entityId;
                     latest.current.onSelect({ entityId, representationId });
+                }
             }
             else if (picked?.id) {
                 const time=Cesium.JulianDate.now();
                 const entityId=picked.id.entityId??picked.id.properties?.entityId?.getValue(time);
                 const representationId=picked.id.representationId??picked.id.properties?.representationId?.getValue(time);
-                if(typeof entityId==='string')latest.current.onSelect({entityId,representationId:typeof representationId==='string'?representationId:undefined});
+                if(typeof entityId==='string'){
+                    currentHost.dataset.pickedEntityId=entityId;
+                    latest.current.onSelect({entityId,representationId:typeof representationId==='string'?representationId:undefined});
+                }
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
         void Cesium.Cesium3DTileset.fromUrl(props.manifestUrl, {
@@ -248,6 +261,9 @@ export default function TileLayer(props: TileLayerProps) {
     useEffect(()=>{
         const state=active.current;if(!state||!ready||!props.overlays?.length)return;
         const {viewer}=state,entities:Cesium.Entity[]=[];
+        overlayEntities.current=entities;
+        overlayIds.current=[...new Set(props.overlays.filter(o=>o.selectable!==false).map(o=>o.representation.entityId))];
+        if(host.current){host.current.dataset.sceneReady='false';host.current.dataset.readyOverlayIds='[]';}
         for(const overlay of props.overlays){
             const {representation:rep,frame}=overlay,matrix=enuToEcef(frame),lower=rep.vertical?.lower??.14,upper=rep.vertical?.upper??lower;
             const color=Cesium.Color.fromCssColorString(overlay.color),material=color.withAlpha(overlay.opacity??.5);
@@ -268,7 +284,10 @@ export default function TileLayer(props: TileLayerProps) {
             }
         }
         viewer.scene.requestRender();
-        return()=>{if(!viewer.isDestroyed()){entities.forEach(e=>viewer.entities.remove(e));viewer.scene.requestRender();}};
+        return()=>{
+            if(overlayEntities.current===entities){overlayEntities.current=[];overlayIds.current=[];if(host.current)host.current.dataset.readyOverlayIds='[]';}
+            if(!viewer.isDestroyed()){entities.forEach(e=>viewer.entities.remove(e));viewer.scene.requestRender();}
+        };
     },[ready,props.overlays]);
     useEffect(()=>{
         const state=active.current;if(!state||!ready)return;

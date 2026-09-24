@@ -1,0 +1,505 @@
+{
+ "schemaVersion": "ulpin-cleanup-removals/1",
+ "date": "2026-09-25",
+ "reviewedAt": "7472730980fd3d79e7364b5cac3e6c7ebff7dd3d",
+ "executor": "Any coding agent via task card CLEANUP-01 (docs/usp-agent-handoffs/29-agent-task-cards.md)",
+ "how": "On a branch from current staging: for each file below, confirm `git ls-files -s <path>` shows the listed blob, then `git rm` it. Run the checks. Restore only a file a failing check names, and record why here.",
+ "checks": [
+  "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+  "python3 -m unittest discover -s docs/usp-agent-handoffs/tools/tests",
+  "python3 docs/engineering-plan/tools/validate_plan.py",
+  "pnpm typecheck",
+  "pnpm test:studio",
+  "pnpm test:ui",
+  "pnpm build"
+ ],
+ "alreadyApplied": [
+  "package.json: removed scripts test:studio:browser, test:studio:continuation, studio:capture and duplicate test:v2",
+  "tests/v2-state.test.ts: asserts productNavigation",
+  "H99 and H22: removed references to the old Studio shell",
+  "docs/design-system, docs/OFFICER_STARTUP.md, deploy/digitalocean/README.md, docs/cleanup-review/README.md: links retargeted to history or current handoffs"
+ ],
+ "kept": {
+  "why": "Still consumed or still describing live behaviour",
+  "items": [
+   "docs/API_*_EVIDENCE.md (written by scripts/api-regression.ts)",
+   "docs/engineering-plan/** and design/reference-map-v5/** (CI, tests and data generators consume them; retire together in CLEANUP-02)",
+   "apps/web/features/studio/{data,scene}/* (studio:prepare and test:studio use the data files; scene/* is FP-RENDER material)",
+   "Uttam Nagar packs, scripts and docs (guard existing data; optional regression pack, not a requirement)",
+   "Operational guides: README, AGENTS, DEMO_DATA, REGISTRY_DEMO_GUIDE, docs/{ARCHITECTURE,AREA_WORKFLOW,COMPLETE_DEMO,EXPLAINER_GUIDE,IMPLEMENTATION_CONTRACT,INPUT_GUIDE,LAKE_VIEW_SOURCE_SHOWCASE,OFFICER_STARTUP,PLATFORM,REGISTER_CONTROLS_AND_EXPORTS,REGISTRY,STUDIO_DEMO_GUIDE,GOOGLE_UTTAM_NAGAR,UTTAM_NAGAR_SETUP,local-spatial-extraction}.md",
+   ".agents/skills (agent skills in use)"
+  ]
+ },
+ "groups": [
+  {
+   "id": "obsolete-docs",
+   "reason": "Dated presentation briefs, demo walkthroughs, hosting notes, identifier and map-slice notes and the Word tutorial are superseded by handoffs H19, H24, H26, H99 and docs/design-system. OFFICER_AI.md documents the Nous path the finale build disables (H19 Z1). docs/v2-design is replaced by docs/design-system.",
+   "evidence": "No code, test, CI or validator reads them. Links from remaining current docs were rewritten in this review; historical documents keep text mentions only.",
+   "bytes": 1190750,
+   "files": [
+    {
+     "path": "docs/3D_ULPIN_UI_Demo_Guide.docx",
+     "blob": "93988331588b1a36440b444be8f4a4def7fc6849"
+    },
+    {
+     "path": "docs/HACKATHON_BRIEFING.md",
+     "blob": "cde80530d5f41a27d32593a891a85c4150d6db22"
+    },
+    {
+     "path": "docs/HACKATHON_DEMO.md",
+     "blob": "02135c656b8f7e286f060b422a9fa06053b73680"
+    },
+    {
+     "path": "docs/HOSTING.md",
+     "blob": "205fbe0130e83f961e3a817bd8bdc9a6e2a008fd"
+    },
+    {
+     "path": "docs/OFFICER_AI.md",
+     "blob": "614dd8f27cd282668d504651048969187c84f1f9"
+    },
+    {
+     "path": "docs/PROTOTYPE_IDENTIFIERS.md",
+     "blob": "ce42722235021d669274fb37553fe3ef77d29e30"
+    },
+    {
+     "path": "docs/SHARED_MAP_IMPLEMENTATION.md",
+     "blob": "3429a064bd8b7a92708854a4fb6f768e4792a2b5"
+    },
+    {
+     "path": "docs/frontend-completion/coverage.json",
+     "blob": "30f3e913f8eabb7b99549673511d6c3f7908e47a"
+    },
+    {
+     "path": "docs/v2-design/BUILD_PROMPT.md",
+     "blob": "d1f4716527f02072e6af535c23385ccdaab75990"
+    },
+    {
+     "path": "docs/v2-design/MANIFEST.json",
+     "blob": "76f502bc7e88001a11dd02a6bd0ac418bff14844"
+    },
+    {
+     "path": "docs/v2-design/README.md",
+     "blob": "8a544be97ef9ce76eef9f5498585e06a70cba2cf"
+    },
+    {
+     "path": "docs/v2-design/UI_NAVIGATION_MATRIX.md",
+     "blob": "f5d4e65f864178639c38d6022203507296046799"
+    },
+    {
+     "path": "docs/v2-design/design.md",
+     "blob": "f71fb8dbff04873ef402ee2c6f42a2609b9b8a78"
+    },
+    {
+     "path": "docs/v2-design/tokens.css",
+     "blob": "b83b67e6943965516567b757f377a9c4fb435fbb"
+    }
+   ]
+  },
+  {
+   "id": "retired-prototypes",
+   "reason": "Standalone design prototypes and image packs (earlier cleanup rules A08, A09); the user rejected those UIs, and docs/design-system is the reference now.",
+   "evidence": "Only docs/engineering-plan/backlog.json lists them as evidence strings; validate_plan.py does not check evidence paths exist.",
+   "bytes": 26809804,
+   "files": [
+    {
+     "path": "design/bulk-studio-v4/DATA_MODEL.md",
+     "blob": "faa92007efbf83c04f13408dcda47ffa06099aaf"
+    },
+    {
+     "path": "design/bulk-studio-v4/README.md",
+     "blob": "4fc5eb5d16364316dd22a8ffe787056ab47f441d"
+    },
+    {
+     "path": "design/bulk-studio-v4/REFERENCE_AUDIT.md",
+     "blob": "e032d55c8a5090d54f8d9d1f57b2e8fa43b3b298"
+    },
+    {
+     "path": "design/bulk-studio-v4/SOURCE_INVENTORY.md",
+     "blob": "6a5e0dcf1082181bb07c2d66f75434dd347dff7e"
+    },
+    {
+     "path": "design/bulk-studio-v4/app.css",
+     "blob": "da5eee56d3251fb3b1bb0cd65da05eaf530e5190"
+    },
+    {
+     "path": "design/bulk-studio-v4/app.js",
+     "blob": "3e53ca5e8afe0be8ec70a6cc529cd316c1640e65"
+    },
+    {
+     "path": "design/bulk-studio-v4/demo-data.json",
+     "blob": "c27575e604eca2165f7e483446c240bce7867045"
+    },
+    {
+     "path": "design/bulk-studio-v4/gallery.html",
+     "blob": "c7b3157066babedbef9139e9082ff757d3617c9d"
+    },
+    {
+     "path": "design/bulk-studio-v4/index.html",
+     "blob": "e777e82b4f8266543070b4ac3333b1242b8f6dab"
+    },
+    {
+     "path": "design/bulk-studio-v4/map.css",
+     "blob": "ac5bb4e015df147890b8c6fe18f180816c5b2f37"
+    },
+    {
+     "path": "design/bulk-studio-v4/map.js",
+     "blob": "3df86f51ee5ea2c85d5097e04c76a275f75dd137"
+    },
+    {
+     "path": "design/bulk-studio-v4/schema.json",
+     "blob": "97ff42e65ba1c51fffeca4bd7e5186307113095b"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/01-batches.png",
+     "blob": "85df4e2b4cec86da8671f56d7305264501fdf0fb"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/02-import.png",
+     "blob": "f2adffaf5fe0620603bd02cccc3a90c8a8263d57"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/03-organise.png",
+     "blob": "cb3d8946d0f92f1d9b20de2abca71fd81974cd7a"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/04-exception.png",
+     "blob": "e7057613be0e0edad6b140e2c68fdabdd3f35563"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/05-plan-review.png",
+     "blob": "b0690d03acefbafc09672d72859cf98c5aa12074"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/06-record-scope.png",
+     "blob": "2d5e52c3d1362f21f6a30460673b57c8d6622c2c"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/07-register.png",
+     "blob": "07b04f6e4d33f1b7fa513af23cae0b9eba6bf638"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/08-map.png",
+     "blob": "1ff4c530a5bfc1d05cb676de94468cd5edcc526e"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/09-map-floor.png",
+     "blob": "70a5ea2e7e3db90adc9f141d0831854cff34a04b"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/10-map-section.png",
+     "blob": "5a643dbe12bfabea4a6e8f8aa6133a4825235cdb"
+    },
+    {
+     "path": "design/bulk-studio-v4/screens/11-map-underground.png",
+     "blob": "b1eae12a72f41e3b01336d67690bba257e2f6ff9"
+    },
+    {
+     "path": "design/bulk-studio-v4/validate-fixture.py",
+     "blob": "543268f9ea15ce8be3ea2fe71e2829063cc2167b"
+    },
+    {
+     "path": "design/bulk-studio-v4/vendor/OrbitControls.js",
+     "blob": "3b49ec2db3aae21cc7c9fa1df38d2c703e28b324"
+    },
+    {
+     "path": "design/bulk-studio-v4/vendor/THREE-LICENSE.txt",
+     "blob": "8ada2a5f982916b0ba4b7a0aa7de347587e745d7"
+    },
+    {
+     "path": "design/bulk-studio-v4/vendor/three.core.js",
+     "blob": "0a1d6cb9ef3cabc97a50bd02394c85e8d1c513c2"
+    },
+    {
+     "path": "design/bulk-studio-v4/vendor/three.module.js",
+     "blob": "c52087acfabae80efabb8cc05e3a1d96e35a1426"
+    },
+    {
+     "path": "design/bulk-studio-v4/verify.mjs",
+     "blob": "69f674118dd88e8bfadc113601f93126a620aaca"
+    },
+    {
+     "path": "design/officer-studio-v3/01-plan-review.png",
+     "blob": "b2461c0fbdb69a5ab0ba707fa1c76798fe17e3f6"
+    },
+    {
+     "path": "design/officer-studio-v3/01b-scale-needs-input-draft.png",
+     "blob": "d838bf063fd0bb4667d71ea856de9f256a7f0b4b"
+    },
+    {
+     "path": "design/officer-studio-v3/02-map.png",
+     "blob": "353ff1625bc8f418b6aef0a162e6c49f46b0b231"
+    },
+    {
+     "path": "design/officer-studio-v3/03-register-draft.png",
+     "blob": "6af6ac91de89afa0bfb2b3cc078ae0a7c0476ace"
+    },
+    {
+     "path": "design/officer-studio-v3/03-register.png",
+     "blob": "768af83a0063f85893debca900f47876211c2705"
+    },
+    {
+     "path": "design/officer-studio-v3/04-work-queue.png",
+     "blob": "9c8eb95571b20bf8ae61791646b2ff0ffef60f23"
+    },
+    {
+     "path": "design/officer-studio-v3/05-add-files.png",
+     "blob": "bf7159e306d8400c9618579062a9306da8a88dcc"
+    },
+    {
+     "path": "design/officer-studio-v3/06-check-and-record.png",
+     "blob": "0beeb245cfd9298764aaca21088f08c26dc32403"
+    },
+    {
+     "path": "design/officer-studio-v3/DESIGN_BRIEF.md",
+     "blob": "41da633ef9061b0df3d076845733808468cfb49d"
+    },
+    {
+     "path": "design/officer-studio-v3/PROMPTS.md",
+     "blob": "5734919e82136f061be694f1d7b4d5c0069168ea"
+    },
+    {
+     "path": "design/officer-studio-v3/REVIEW.md",
+     "blob": "b5a6540301266056c888ea7abbd414c6f69b02fb"
+    },
+    {
+     "path": "design/officer-studio-v3/actual/intake.png",
+     "blob": "2b65e5cfdd254519835f7da49e48210e50088f27"
+    },
+    {
+     "path": "design/officer-studio-v3/actual/map.png",
+     "blob": "1408952ca6bb9bdcfb6125465f7ad79ec3e81db3"
+    },
+    {
+     "path": "design/officer-studio-v3/actual/queue.png",
+     "blob": "aea5d02058f712a1a2358c8ab220ac7f7b61a9a7"
+    },
+    {
+     "path": "design/officer-studio-v3/actual/register.png",
+     "blob": "76042fb0d13591bef12f5e021944f186bcf7de9b"
+    },
+    {
+     "path": "design/officer-studio-v3/actual/workspace.png",
+     "blob": "0e24711f88615fd8b3ab2fa14be756acb07bf887"
+    },
+    {
+     "path": "design/officer-studio-v3/before/intake.png",
+     "blob": "807a2feb6839b83cb2f2aef4cb0c5b2786158655"
+    },
+    {
+     "path": "design/officer-studio-v3/before/map.png",
+     "blob": "4bde76459078fa2f44c22e1d8a84ebca20c71e0b"
+    },
+    {
+     "path": "design/officer-studio-v3/before/register.png",
+     "blob": "22b00789ab0d36e27f621d6f7d220df51a88135e"
+    },
+    {
+     "path": "design/officer-studio-v3/before/start.png",
+     "blob": "8c2c90baf569e0d436d6acc2929c94ee2f0507d6"
+    },
+    {
+     "path": "design/officer-studio-v3/before/workspace.png",
+     "blob": "69dfd2c46d3daf116e74dcae8b5f52374e91e930"
+    },
+    {
+     "path": "design/officer-studio-v3/implementation.html",
+     "blob": "2c9c485bdba88f9ba8e97e3005867eda0779a623"
+    },
+    {
+     "path": "design/officer-studio-v3/index.html",
+     "blob": "d441950588cd7579143567922ece7bef229ef312"
+    }
+   ]
+  },
+  {
+   "id": "one-shot-cleanup-tooling",
+   "reason": "The 23 September cleanup already ran. Its apply and inventory workflows only trigger on the branch review/data-transition-cleanup-20260923.",
+   "evidence": "The two scripts are run only by those two workflows. The record (README, decisions.json, applied-cleanup.json, verification.json) stays.",
+   "bytes": 67938,
+   "files": [
+    {
+     "path": ".github/workflows/ulpin-cleanup-apply.yml",
+     "blob": "e9b02d6f67d51351178927d2b038fb5f3ef7c107"
+    },
+    {
+     "path": ".github/workflows/ulpin-cleanup-review.yml",
+     "blob": "27465127db063626d57338ab5c0f509d4297f213"
+    },
+    {
+     "path": "docs/cleanup-review/apply_cleanup.py",
+     "blob": "91fdd94304d6de5751f8830d04509d7543d0c3f5"
+    },
+    {
+     "path": "docs/cleanup-review/classify_inventory.py",
+     "blob": "1b57d0f7b3642766c276182e981a2eb6a417efc0"
+    }
+   ]
+  },
+  {
+   "id": "R01-old-studio-shell",
+   "reason": "Old Studio shell and its components; no route mounts it (/studio/showcase mounts ReferenceWorkbench).",
+   "evidence": "Static import graph: nothing outside the set imports any file; no package script or CI job uses them. H99 and H22 references were removed in this review.",
+   "bytes": 243540,
+   "files": [
+    {
+     "path": "apps/web/features/studio/App.tsx",
+     "blob": "cde06eaa2e0a2f9bdfaeebe20e4e708899df7110"
+    },
+    {
+     "path": "apps/web/features/studio/StudioApp.tsx",
+     "blob": "c68e65b2152057bd7e6381305d76cfbc990ed59e"
+    },
+    {
+     "path": "apps/web/features/studio/StudioEntry.tsx",
+     "blob": "3f805322645b3d775652ebc1c7f25fc18ce63559"
+    },
+    {
+     "path": "apps/web/features/studio/components/DialogSection.tsx",
+     "blob": "9324333de5a2be82644738cda587b0d76668e080"
+    },
+    {
+     "path": "apps/web/features/studio/components/FloorPlan.tsx",
+     "blob": "3b4965adc317d001daf51063a6db59d97ea566a7"
+    },
+    {
+     "path": "apps/web/features/studio/components/Inspector.tsx",
+     "blob": "78e9733bcb6275ef25c2f3df23d55dc56a769e0f"
+    },
+    {
+     "path": "apps/web/features/studio/components/PreparedDocumentViewer.tsx",
+     "blob": "732a06e04f4f0da64a2f956e8ce7eb289d9c3011"
+    },
+    {
+     "path": "apps/web/features/studio/components/QuickDocumentDrawer.tsx",
+     "blob": "20606d0ff152b2c8d3dda324e2af90c5b5df7c05"
+    },
+    {
+     "path": "apps/web/features/studio/components/RecordModal.tsx",
+     "blob": "8198c856eb96dc818cd81f34ac5ef417392f5e16"
+    },
+    {
+     "path": "apps/web/features/studio/components/RegisterOverview.tsx",
+     "blob": "5188ae419f94744c69b7107a81595d547f094a56"
+    },
+    {
+     "path": "apps/web/features/studio/components/SourceReceipt.tsx",
+     "blob": "abdc671f23930efe7368f787fdd1edaf16eee264"
+    },
+    {
+     "path": "apps/web/features/studio/components/StudioImport.tsx",
+     "blob": "14e0dd3a7e8950c5013752aafc3c6e37185937cf"
+    },
+    {
+     "path": "apps/web/features/studio/components/StudioWorkspace.tsx",
+     "blob": "dc414c5f1ddc25885dfcf409a6b8ae2535f460ef"
+    },
+    {
+     "path": "apps/web/features/studio/components/UtilitySection.tsx",
+     "blob": "212e037742d6e28dc11a9cba636121e39debd59e"
+    },
+    {
+     "path": "apps/web/features/studio/components/Visuals.tsx",
+     "blob": "8acfc4c751baadf691d2853205823068f7f1a001"
+    },
+    {
+     "path": "apps/web/features/studio/components/inspection.css",
+     "blob": "50ec22d445f9d91673bbb84aa1af23d85b107e89"
+    },
+    {
+     "path": "apps/web/features/studio/components/sources.css",
+     "blob": "ba586b992a4cb6dcb672d5de3f7306872bf89c11"
+    },
+    {
+     "path": "apps/web/features/studio/components/useDialog.ts",
+     "blob": "0181ca9784f84fd638615e864dc6072da2c576b8"
+    },
+    {
+     "path": "apps/web/features/studio/components/workspace.css",
+     "blob": "2e44d7a378555b7d0ea87cd368496c9edd638027"
+    },
+    {
+     "path": "apps/web/features/studio/data/mapScale.ts",
+     "blob": "80de5155f0888f5c3bbcc4b21e8d4b3b58f6b62b"
+    },
+    {
+     "path": "apps/web/features/studio/data/property-upload.ts",
+     "blob": "f971edc955bac88295ee125f454a18e42a293e33"
+    },
+    {
+     "path": "apps/web/features/studio/data/usePropertyPreview.ts",
+     "blob": "fdb6799d23163d66d9a07e5a8b03f6de355b04bf"
+    },
+    {
+     "path": "apps/web/features/studio/data/useWorkspaceDraft.ts",
+     "blob": "26d830f8b946f8fe6d1a676e6a3e3fa245ac5e33"
+    },
+    {
+     "path": "apps/web/features/studio/hierarchy.css",
+     "blob": "45101c7c18b7c26a9bcd778be19bde223040bfd4"
+    },
+    {
+     "path": "apps/web/features/studio/integration.css",
+     "blob": "52ef6aeda93abb9b48722e93422ad0bfc955d094"
+    },
+    {
+     "path": "apps/web/features/studio/refinements.css",
+     "blob": "b3d29812840bbba0f194ce7ee8f40a5a8b16683e"
+    },
+    {
+     "path": "apps/web/features/studio/styles.css",
+     "blob": "302664bcac584a264d3f49469816b4956528c9c8"
+    },
+    {
+     "path": "apps/web/features/studio/useStudioRoute.ts",
+     "blob": "c53458b4bd95ad5b1111103824a8f35b5dd28b14"
+    }
+   ]
+  },
+  {
+   "id": "R03-old-browser-harness",
+   "reason": "Browser checks that wait for window.__CITY_DEBUG__ (set only by the unloaded CityScene) and old selectors that exist only in R01; replaced by tests/e2e/usp-product-journey.spec.ts and usp-d1-journey.spec.ts in CI.",
+   "evidence": "package.json scripts test:studio:browser, test:studio:continuation and studio:capture were removed in this review; no CI job calls them.",
+   "bytes": 43032,
+   "files": [
+    {
+     "path": "scripts/spatial/studio-baseline.mjs",
+     "blob": "5b8731453f779151ec6f543c5e24b5edd4251fd7"
+    },
+    {
+     "path": "scripts/spatial/studio-capture.mjs",
+     "blob": "f681a5d0f284e554edcc5b0a943ed41c56a167c0"
+    },
+    {
+     "path": "scripts/spatial/studio-continuation-verify.mjs",
+     "blob": "f8f1d9cf07360f91c0b230186e93278017da78de"
+    },
+    {
+     "path": "scripts/spatial/studio-correctness-verify.mjs",
+     "blob": "ca7399bc4ae32858591a2da9efea32fb6163e18b"
+    },
+    {
+     "path": "scripts/spatial/studio-port-check.mjs",
+     "blob": "5762071485af92deac7b6441bccce229c37b83e1"
+    },
+    {
+     "path": "scripts/spatial/studio-verify.mjs",
+     "blob": "6315ca51d061042148d146c6dd94f72bbbbf7d5c"
+    }
+   ]
+  },
+  {
+   "id": "R04-duplicate-navigation",
+   "reason": "Test-only duplicate of productNavigation with superseded labels.",
+   "evidence": "tests/v2-state.test.ts now asserts productNavigation (Batches, Map, Register) instead.",
+   "bytes": 433,
+   "files": [
+    {
+     "path": "apps/web/features/officer/shared/navigation.ts",
+     "blob": "32abbdd0ed055fa9eb78cf88b97fb748c06272a9"
+    }
+   ]
+  }
+ ],
+ "totalFiles": 105,
+ "totalBytes": 28355497
+}

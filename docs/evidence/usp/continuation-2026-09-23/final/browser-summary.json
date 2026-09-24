@@ -1,0 +1,50 @@
+{
+  "codeSha": "304725d67e928f064d3951c3781592c3d706e377",
+  "stats": {
+    "startTime": "2026-09-23T16:58:08.113Z",
+    "duration": 48183.701,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "profile": "Chromium software WebGL; isolated local production server",
+  "tests": [
+    {
+      "file": "usp-d1-journey.spec.ts",
+      "title": "real D1 roof keeps source identity and absent interiors in the shared Studio map",
+      "ok": true,
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 18352,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "usp-product-journey.spec.ts",
+      "title": "D0 Studio selection compiles exact PACK0 and reopens its saved receipt",
+      "ok": true,
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 13557,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "usp-product-journey.spec.ts",
+      "title": "D0 map navigation, supplied levels and building switches preserve exact records",
+      "ok": true,
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 15703,
+          "retry": 0
+        }
+      ]
+    }
+  ]
+}
