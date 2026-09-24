@@ -1,5 +1,7 @@
 # 18 · Grounded property assistance and optional public MCP
 
+**Release: `full_product` (FP-ASSIST).** Conversational assistance/MCP is deferred beyond the finale. Existing deterministic source-linked explanations may be reused without claiming a deployed agent or MCP server. The finale ingestion agent follows H14/H27 and cannot publish registry facts.
+
 **Provider-plan update, 23 September 2026:** [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) is required for this feature's model integration. Use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) for development-worker selection. These instructions do not claim a live provider, funded account or passing new tests.
 
 Owner **ASSIST**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), gateway in [19](19-india-contained-deployment.md) and [99](99-ui-ux-and-integration.md). ER-15/21/22/25 are incorporated. New paths below are implementation tasks, not available functionality.

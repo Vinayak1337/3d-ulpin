@@ -10,16 +10,11 @@ Store geography, publisher, source release, intended use (`operational_india`, `
 
 The preference is Indian data, especially the government portal, not a false claim that the portal already supplies a complete high-resolution 3D city. If it lacks a needed layer, identify an appropriate Indian government custodian, permitted Indian institutional survey or user-supplied Indian source; record the availability and permission gap. Do not silently substitute a foreign city. The existing foreign corpus can still exercise code, scale and holdout testing in a clearly separate namespace. Foreign test access does not override private-data residency policy.
 
-### Verified discovery leads, not acquired files
+### Acquisition authority
 
-| Source | Potential role | What remains unproved |
-| --- | --- | --- |
-| data.gov.in Cartosat-1 DEM catalog | Indian terrain context; catalog describes about 30 m posting and links to Bhuvan | Actual tile bytes/version, datum, permitted use; unsuitable alone for individual roofs/floor dimensions |
-| data.gov.in GIS group: municipal utility/landmark catalogs | Streetlights, transformers, landmarks and other spatial context | Actual schemas, dates, coverage and download health; points are not buried pipe networks or building solids |
-| Survey of India Online Maps Portal | Indian topographic vector products, including roads/rail/hydrology | Required resolution, access, licence/cost and same-area alignment; catalog availability is not a free bulk data grant |
-| Local/state survey or land-record custodian, permitted campus or building source | Footprints, parcel layers, plans, point clouds, controls and records for a selected Indian area | Case-specific access, evidence alignment and currentness |
+[H28](28-data-acquisition-and-finale-tests.md) contains exact data.gov.in resources, format/access caveats, Indian plan/terrain/point-cloud/imagery candidates, preserved D0–D7 meanings, acquisition stages and dataset-to-test mapping. Start with its bounded matched Indian building bundle and independent modality samples. Postal/admin layers are useful context, never substitutes for parcels or floor geometry.
 
-Acquire one coherent Indian area only after inspecting its real geometry and required metadata. Preserve raw inputs; pair layers from the same bounds/time/reference and track conflicting sources. Do not infer roof/floor/rights data from a postal polygon, point of interest or DEM. Choose the area by available quality and diversity, not a fixed location name.
+No candidate is claimed acquired or qualified by this update. Pair layers only when their actual bounds, time, frame and source evidence support the relationship. A foreign test corpus may exercise formats and scale but cannot fill an Indian rights/survey evidence gap.
 
 ## B. Sarvam and India-resident processing
 
@@ -40,7 +35,7 @@ The Sarvam training restriction in H21 is an explicit gate. Preserve the existin
 | Interpretation/executor — INGEST | One constrained mapping format and deterministic transform executor | Versioned contracts, units/reference operations and validators |
 | Learner — LEARN | Eligible examples, candidate training, inference and evaluation | Existing jobs/storage, same mapping format; no new gateway |
 | Model registry/routing — FND | Immutable artifacts, qualification receipts and dispatch epochs | Existing SQL transactions/audit/outbox |
-| Geometry and visuals — GEO/UI | Supported canonical geometry plus separate display derivatives | One geometry-validation authority and MapViewport runtime |
+| Geometry and visuals — DOMAIN/UI | Supported canonical geometry plus separate display derivatives | One geometry-validation authority and MapViewport runtime |
 | Evidence/registry — existing feature owners | Later links, rights/revisions, scoped packets and reviewed commits | Existing canonical registry, IDs and immutable snapshots |
 | Public experience — CITIZEN/UI | Released discovery, private submissions and tracked corrections | Shared components with isolated access-aware state |
 | Policy — DEPLOY/DATA | India data/egress rules, credentials and training eligibility | One policy evaluator and one governed provider client |
@@ -65,39 +60,31 @@ The supplied statement requires unique identities for surface parcels, multi-sto
 | Volumetric rights / underground infrastructure | Reviewed rights assertions linked to exact space/evidence; utility depth, cross-section and datum required for qualified volume analysis. Missing depth remains a gap. |
 | Scalable/interoperable cadastre | Bounded jobs, 3D Tiles/display assets, source-preserving exports and stable identities. Round-trip source metadata; 3D Tiles alone is a visualization standard, not cadastral/legal conformance. |
 
-Schema learning makes integration easier; it does not replace these four domain AI/ML tasks. They remain committed roadmap workstreams with explicit data/accuracy gates, not silently dropped as optional marketing language.
+Full-product schema learning is intended to make integration easier; it does not replace these four domain AI/ML tasks. They remain committed roadmap workstreams with explicit data/accuracy gates, not silently dropped as optional marketing language.
 
-## E. Phased build plan and exit criteria
+## E. Delivery order and exit criteria
 
-**B0 — Contract and baseline lock.** Inspect live branch, assigned writers and current receipts. Preserve originals/DBs. Add compatible SourceProfile/Chunk/ConverterBinding/MappingExample/ModelVersion/QualificationReceipt/DisplayProvenance contracts through FND. Run actual producer-consumer tests, no mock-only acceptance.
+Use [release-plan.json](release-plan.json), not the retired B0–B6 ordering. **GF0 data/contracts → GF1 identity/exchange → GF2 domain AI/spaces → GF3 governance/impact → GF4 card/QR → GF5 rehearsal.** Detailed exits are in H00 and H28. Preserve current D0/PACK0/D1; qualify new work against its actual code base.
 
-**B1 — First progressive pipeline.** Implement one supported structured source and retained rich-3D path: receipt → raw chunks → teacher/exact conversion → shared validation → persisted draft assets → SSE/polling → selectable map. A known-schema large file must also appear progressively. Reuse the existing tested workflow, not a new demo app.
+The finale's direct progressive pipeline and domain AI do not wait for schema-model training, public uploads, visual enrichment or a renderer migration. Existing IMPACT0 is promoted into GF3 with explicit unmapped/unknown-data limitations. Current Cesium is the finale runtime. H26 adds proposed-ID lifecycle, LADM mapping and minimum exchange; H27 adds named algorithms and independent quantity/geometry checks.
 
-**B2 — Concurrent learning and handover.** Build the CPU learner and eligible dataset lane in parallel with B1 interfaces. Demonstrate actual candidate training, untouched evaluation, shadow run, recorded promotion, pending-only handover and rollback on the same import. No-key/permission-failed cases continue through the safe supported route. This is part of the core adaptive milestone, not postponed behind every other feature.
+After the finale, dependency-ready `full_product` gates deliver the real concurrent learner (FP-LEARN), separate public request dashboard (FP-PUBLIC), assistance/MCP (FP-ASSIST), broader adapters (FP-FORMATS), enrichment (FP-ENRICH), optional renderer evaluation (FP-RENDER), load testing (FP-SCALE) and protected deployment (FP-DEPLOY). They remain planned, not deleted or rebranded as completed. Run 10k → 100k → 1M real unique-object rungs only after bounded acquisition, parsing and spatial paging qualify.
 
-**B3 — Better rendering and sparse-data behavior.** Run the R3F/3D Tiles candidate against current Cesium on identical data. Qualify one active runtime, roof shape/picking/clipping and interaction. Add evidence/estimated/illustrative layers, insufficiency policy and exported labels. No artificial building count from procedural decoration.
+Use H02's bounded Sol/Astra workers and sole shared-service ownership. No force push, main merge, deployment, credit purchase, snapshot refresh or secret commit follows implicitly from this plan.
 
-**B4 — Later records and citizen dashboard.** Attach registry documents/plans to existing identities; revalidate only affected facts. Build distinct public lookup/submission/status pages and officer review. Enforce authorization, quarantine, scoped evidence and separate reviewed recording before public activation.
-
-**B5 — Cadastral modalities and operational Indian area.** Acquire permitted same-area Indian inputs, then qualify imagery/point-cloud/plan processors, reference placement, vertical delineation and topology. External data access blocks only the corresponding real-data assertion, not coding/tests.
-
-**B6 — Scale and protected deployment.** Test 10k → 100k → 1M real unique buildings using any permitted test geography; production data remains India-only. Measure ingestion, training interference, rendering and concurrent-user load separately. Qualify India hosting/egress/restore and source permissions before activation.
-
-Initial ownership: lead/FND plus one INGEST or UI implementation owner and bounded DATA/review work; LEARN starts when its interfaces are stable, with explicit non-overlapping ownership. Retain only GPT-6 Sol/Astra development workers and existing effort verification; no new model configuration or worker is installed by this document. No force push, implicit main merge, secret commit, credit purchase or service activation.
-
-## F. Acceptance matrix
+## F. Acceptance matrix across both releases
 
 | Test group | Required proof |
 | --- | --- |
 | Source/geometry correctness | Raw schema/IDs/numbers preserved; valid coordinates/holes/reference; source-role and per-field authority retained |
-| Adaptive interpretation | Unfamiliar-layout holdouts, no application-code edits, real parameter learning, false-confident/abstention metrics |
-| Same-import handover | Exact dispatch epochs with pending/running/completed jobs; restart, race, cancellation and rollback |
+| Full-product learned interpretation | Unfamiliar-layout holdouts, no application-code edits, real parameter learning, false-confident/abstention metrics |
+| Full-product same-import handover | Exact dispatch epochs with pending/running/completed jobs; restart, race, cancellation and rollback |
 | Progressive experience | First persisted selectable geometry before completion; actual requests/events; no camera reset; known schemas also chunked |
 | Poor data | Useful valid subset; explicit insufficiency; generated layers cannot alter measurement, readiness or ownership |
 | Evidence added later | Stable IDs, exact source revisions, targeted updates; ambiguous matches never silently merged |
-| Public isolation | Contributor A cannot access B's files; released-only lookup; scanner outage quarantines; reviewed proposal before record |
+| Full-product public isolation (card access is also tested in finale GF4) | Contributor A cannot access B's files; released-only lookup; scanner outage quarantines; reviewed proposal before record |
 | Geography/residency | Test assets excluded from operational publication; India data bounds verified; unapproved network destinations denied |
-| Scale/recovery | Unique count reconciliation, stage times, CPU/RSS/client resident bytes, frame/selection p50/p95, controlled training contention |
+| Full-product scale / finale bounded recovery | Unique count reconciliation, stage times, CPU/RSS/client resident bytes, frame/selection p50/p95, controlled training contention |
 
 Do not invent test commands that do not exist. Use actual locked scripts and tsx/Python/Playwright runners; add new tests before naming them executed. Save code/source/model/dataset hashes and sanitized receipts. Distinguish contract-ready, locally integrated, learning-qualified, real-source-qualified and deployment-qualified.
 

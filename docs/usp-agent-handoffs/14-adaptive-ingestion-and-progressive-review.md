@@ -1,6 +1,6 @@
 # 14 — Source-preserving chunks, progressive maps and learned handover
 
-**Rewritten 24 September 2026. Owner: INGEST; shared APIs/jobs/contracts: FND; learner: LEARN; map: UI.** This replaces H14's earlier exclusion of concurrent learning. Read H00/H01/H21/H22/H23. All capabilities below are requirements unless supported by separate execution evidence.
+**Rewritten 24 September 2026. Owner: INGEST; shared APIs/jobs/contracts: FND; learner: LEARN; map: UI.** This replaces H14's earlier exclusion of concurrent learning. Read H00/H01/H21/H22/H23. Finale GF2 implements the qualified direct/exact and governed interpretation path with durable chunks/SSE. The learning branches, section G and learner-specific acceptance belong to `full_product` FP-LEARN; they cannot block finale ingestion. All new capabilities remain requirements until supported by execution evidence.
 
 ## A. User outcome
 
@@ -47,7 +47,7 @@ A source chunk keeps original field names, nesting, identifiers, nulls, quantiti
 | LAS / LAZ | Spatial blocks with required processing overlap | Point attributes, source CRS, boundary ownership and no duplicate canonical objects |
 | Plans / document bundles | Page/section groups with original locators and cross-page context | Rotation, scale, applicable level, references; document-only rows can remain unplaced |
 
-Unqualified formats are preserved as unsupported. They are not silently pre-renamed into our schema for an adaptation test. Add a new reader as a bounded module, not a second ingestion system. Initial implementation starts with existing qualified structured inputs and one native 3D reader; modality expansion follows H23.
+Unqualified formats are preserved as unsupported. They are not silently pre-renamed into our schema for an adaptation test. Add a new reader as a bounded module, not a second ingestion system. Initial implementation starts with existing qualified structured inputs and one native 3D reader; finale modality qualification follows H27/H28. Heavy reconstruction uses separately qualified resumable processor jobs and resource limits, not an unbounded exception to these interactive child caps.
 
 ## D. Shared types and stage ownership
 
@@ -80,7 +80,7 @@ Read status + manifest + event cursor consistently. Use a durable ordered outbox
 
 The map may add buildings and road segments in a short, natural reveal; reduced-motion disables transitions. Never withhold already useful data for theatrical timing. Keep camera/selection stable, show genuine received/converted/visible counts and distinguish unknown total from 0%. Processing chunks and rendering tiles may differ in size; both retain the same object identities.
 
-## G. Same-import model handover
+## G. Same-import model handover — full_product
 
 H21 supplies `CandidateModel`, `QualificationReceipt` and an immutable promoted model artifact. FND changes the family-specific dispatch binding using a version/CAS-protected transaction. LEARN cannot mutate the queue or property tables directly.
 
@@ -102,7 +102,7 @@ Use H01 envelopes under `/api/v1/usp/ingestion`: batch receipt/status, upload pa
 
 Preserve old H14 loss/replay/permission tests and add:
 
-- A familiar million-record input is still partitioned; early preview does not wait for whole-file conversion.
+- Finale uses the bounded admitted cohort in H28 and proves early preview before completion. Full-product scale adds the million-record target; familiar inputs are still partitioned.
 - Source chunks preserve original schema and every accepted/rejected/unresolved record has a disposition.
 - An unfamiliar supported schema works without application-code edits; a new parser is reported separately.
 - A learner actually changes trained parameters, passes untouched evaluation and takes over pending chunks in the same import. A mapping cache alone fails this claim.

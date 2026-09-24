@@ -1,6 +1,8 @@
 # 15 · Exact-space history and revision comparison
 
-Owner **HISTORY**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), geometry contract in [12](12-rights-aware-spatial-findings.md) and [99](99-ui-ux-and-integration.md). ER-05/20/24 are incorporated. New files are implementation destinations.
+Owner **HISTORY**. Historical baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 24 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [26](26-identifiers-and-standard-exchange.md), [28](28-data-acquisition-and-finale-tests.md), geometry contract in [12](12-rights-aware-spatial-findings.md) and [99](99-ui-ux-and-integration.md). ER-05/20/24 are incorporated. New files are implementation destinations.
+
+**GF3 deviation ownership:** HISTORY integrates exact sanctioned/observed revision pairs and owns the deviation comparison service/GF-T19. DOMAIN supplies qualified candidate/quantity outputs; FIND supplies spatial operations. H27 defines those interfaces and no second history or geometry engine is created.
 
 ## A. User outcome and product value
 
@@ -14,7 +16,7 @@ Implement exact historical composition adapters, unit-specific comparisons, perm
 
 ## C. Scope and non-goals
 
-Required: exact-target paginated history, explicit two-manifest field/evidence/relationship comparison, supported geometry difference, historical URLs and available lineage browsing. Read-only comparison must not wait for new split/merge editing. New lineage writes remain optional until a same-client reviewed identity operation is implemented and tested by FND.
+Required: exact-target paginated history, explicit two-manifest field/evidence/relationship comparison, supported geometry difference, historical URLs and available lineage browsing. Read-only comparison does not wait for split/merge editing. **For `finale_v1` GF1, reviewed split/merge retirement, successor assignment and lineage writes are required together** under H26's FND-owned same-client identity command; HISTORY consumes and proves the resulting graph. The older read-only milestone remains useful but cannot pass GF1 alone.
 
 No inferred pre-survey state, guessed construction dates, interpolation between missing revisions, automatic title transfer, generic editable event log, arbitrary mesh booleans or current-source substitution. One retained revision is a valid single-version view, not proof of no historic change.
 
@@ -50,7 +52,9 @@ Overlay compatibility checks horizontal CRS, axes/units, anchor/transform versio
 
 Proposed `usp_history_comparisons` stores immutable input manifests/result refs/method versions/access-view. Cache key includes both full manifests, requested fields, geometry method and entitlement/policy. Small field differences execute inline within a bounded request; geometry work uses FND fenced jobs, ≤60-second child tasks and the qualified profile limits. API never synchronously scans every historical source for a timeline page.
 
-Proposed `usp_history_lineage` records actual reviewed change ID, split/merge kind, predecessor/successor pins, evidence, post-commit receipt and dates. Writes, when enabled, occur atomically with actual identity retirement/allocation through FND; lineage alone cannot create property identities. Enforce same namespace/kind, acyclicity, correct split/merge cardinality and non-reused IDs. Missing recorded lineage remains absent; authored lineage fixtures do not prove the production write path.
+Proposed `usp_history_lineage` records actual reviewed change ID, split/merge kind, predecessor/successor UUIDs and project codes, exact pre/post pins, evidence, post-commit receipt and dates. At GF1 its writes occur atomically with actual identity retirement/allocation through H26's FND command; lineage alone cannot create property identities. Enforce namespace/kind policy, acyclicity, split one-to-many and merge many-to-one cardinality, distinct participants and non-reused IDs/codes. A correction that preserves one space uses a revision and historical label/anchor association, not a fictitious successor. Missing recorded lineage remains absent; authored lineage fixtures do not prove the production write path.
+
+Resolver output for an old UUID, proposed code or meaningful historical alias includes exact retained status (`assigned`, `retired`, `cancelled_error`), recorded revision and authorized successor/predecessor links. A cancelled code is never reused or silently redirected. Same flat name, shared parcel, geometry overlap or nearest centroid cannot establish lineage. A demolished space stays retired; a replacement receives a new reviewed identity unless evidence and policy establish continuity. QR/card and CityJSON sidecar use the same code and exact revision as the history view, subject to current access or an exact active release. A valid checksum alone does not permit lookup or grant access.
 
 Prefix `/api/v1/usp/history`: `GET /targets/:ref/history` with exact scope/cursor/limit≤100; `GET /targets/:ref/lineage`; `POST /comparisons` with request/create guard → result or 202; `GET /comparisons/:id`. Use FND reference codec and envelopes. Invalid pairs/unsupported operation are 409/422 as appropriate. Historical permission checks use current grants or an explicit active release decision for those exact derivative bytes. Previously visible does not mean permanently authorized. Public history cannot expose former owners through a sanitized current page.
 
@@ -58,7 +62,7 @@ Prefix `/api/v1/usp/history`: `GET /targets/:ref/history` with exact scope/curso
 
 | File | Change / owner |
 | --- | --- |
-| Existing registry/history/core/scene files linked in B | FND exact historical read and optional same-client lineage adapters; UI retains old routes |
+| Existing registry/history/core/scene files linked in B | FND exact historical read and GF1 same-client identity/lineage adapter; UI retains old routes |
 | Proposed `packages/contracts/src/usp/history.ts` | HISTORY entry/comparison/lineage schemas using F0 refs |
 | Proposed `apps/web/lib/server/usp/history/{timeline,compare,lineage,routes}.ts`, `migrations/15-history.ts` | HISTORY bounded read/comparison and actual receipt links |
 | Proposed `apps/web/features/usp/history/{PropertyTimeline,ComparisonPanel,LineageStrip}.tsx` | HISTORY leaf UI |
@@ -71,14 +75,14 @@ Quick register → selected unit History → Compare versions → full register 
 
 ## H. Ownership and dependencies
 
-Use `feat/usp-history`, own HISTORY paths/tests/migration. F0 permits oracle tests; F1 exact reads required for live history. FIND is required for the requested analytical differences, not text history. RIGHTS/ASSIST consume available read projections; no circular dependency on optional split/merge editing. FND owns registry IDs/transactions, DATA shared packs, UI all shared map/parent changes. A missing adapter is a declared capability gate, not permission to create substitute history.
+Use an isolated branch from the verified staging head; own HISTORY paths/tests/migration. GF0 permits oracle tests; GF1 exact reads and actual FND split/merge receipts are required for the finale identity flow. FIND is required for analytical differences, not text history. RIGHTS/ASSIST consume available read projections. FND owns registry IDs/transactions and H26 allocation, DATA shared packs, UI all shared map/parent changes. A missing adapter is a declared capability gate, not permission to create substitute history.
 
 ## I. Implementation sequence
 
 1. DATA supplies D0 version pair and independent expected differences; inventory actual retained source/geometry/link history.
 2. Connect exact-manifest reads and field/evidence differences before overlays.
 3. Add qualified FIND polygon/prism operations and per-constituent unavailable states.
-4. Add available lineage browsing; consume actual commit receipts only when the optional write path exists.
+4. Add lineage browsing against H26's required GF1 reviewed split/merge receipts; preserve absent lineage where no historical write exists.
 5. Mount reusable UI and historical URLs, preserving current records and camera.
 6. Change current data and reopen the old comparison to prove its independence; then attempt a permitted real dated pair.
 
@@ -88,10 +92,12 @@ Use `feat/usp-history`, own HISTORY paths/tests/migration. F0 permits oracle tes
 
 **D5 later real-source gate:** obtain a permitted revision pair for the same tower/unit from [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) or [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or a known-property/campus drawing pair. Previously only indices were verified; do not assume two downloadable versions exist. Check matching identity, drawing purpose, date, units and permission. If only one exists, show one, do not synthesize an earlier real version. D0 remains the implementation fallback.
 
-Test missing old original, current family/new source revision, same flat name in another building, hidden past parties, revoked source/release, cursor membership change, invalid lineage/cardinality, component holes and late geometry result. If lineage writes are enabled, rollback between identity update and receipt must leave neither apparent successor nor orphan lineage. V6 screenshot must name actual manifest refs and preserve one camera; a mock before/after is insufficient.
+Test missing old original, current family/new source revision, same flat name in another building, hidden past parties, revoked source/release, cursor membership change, invalid lineage/cardinality, component holes and late geometry result. At GF1, rollback between identity update and receipt must leave neither apparent successor nor orphan lineage. V6 screenshot must name actual manifest refs and preserve one camera; a mock before/after is insufficient.
 
-Run `pnpm typecheck`, `pnpm test:registry`, `pnpm test:studio`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-identity.test.ts tests/usp-history.test.ts`; `pnpm exec tsx tests/usp-history-integration.ts`; `pnpm exec playwright test tests/e2e/usp-history.spec.ts`. Return pack/source/manifest hashes, exact before/after expected/actual values, no-write/permission proofs and V6 screenshots. Separate read history, supported geometry and optional lineage-write qualification.
+**GF-T15** adds two concurrent reviewed allocation attempts, retry with the same request key, stale expected revision, split/merge rollback after code reservation, cancelled-code tombstone, corrected label/official anchor, multi-parcel and missing-anchor records, retired URL/QR behavior and non-reused successors. Compare H26's independent vectors and exact before/after receipt rows. **GF-T21** later verifies card, viewer, exchange and resolver show one code/revision without leaking a sibling or obsolete release. Record both test IDs in H28's central matrix; historical backlog T numbers remain separate.
+
+Run `pnpm typecheck`, `pnpm test:registry`, `pnpm test:studio`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-identity.test.ts tests/usp-history.test.ts`; `pnpm exec tsx tests/usp-history-integration.ts`; `pnpm exec playwright test tests/e2e/usp-history.spec.ts`. Return pack/source/manifest hashes, exact before/after expected/actual values, no-write/permission proofs and V6 screenshots. Separate read-history and supported-geometry results; report the GF1 lineage-write gate from actual FND receipts.
 
 ## K. Copy-paste assignment
 
-> Implement HISTORY on feat/usp-history using 00, 01 and this handoff. Obtain two real-service D0 revisions and later attempt one permitted D5 pair. Build exact historical manifests/constituents, field/source/relationship diff, supported FIND overlays and stable old-record navigation. Never substitute current sources/placement, infer history, turn unknown into zero or block basic read history on a new split/merge editor. FND owns immutable-read/identity adapters, UI shared mounts and DATA pack files. Execute J by modifying current data while reopening old manifests and testing access/no-write behavior. Return commits, hashes, numerical/source evidence, V6 images and explicit optional gates. No unauthorized merge or official-history claim from fixtures.
+> Implement HISTORY using 00, 01, H26, H28 and this handoff. Reuse retained D0 revisions and attempt one permitted dated real pair. Build exact historical manifests/constituents, field/source/relationship diff, supported FIND overlays and stable old-record navigation. For `finale_v1` GF1, consume FND's atomic reviewed split/merge, retirement and successor receipts; test stale/concurrent/rollback behavior under GF-T15. Never substitute current sources/placement, infer history, turn unknown into zero or hide a retired record through automatic redirect. FND owns immutable-read/identity writes, UI shared mounts and DATA independent packs. Return source/manifest hashes, before/after rows, actual receipts, V6 images and unqualified capabilities. Do not claim official issuance or legal history from fixtures.

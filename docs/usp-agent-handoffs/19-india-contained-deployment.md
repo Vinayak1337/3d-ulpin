@@ -1,5 +1,7 @@
 # 19 · Governed AI and India-contained deployment
 
+**Release boundary:** finale uses local isolated services and existing provider/no-key controls; production authentication, multiuser/public activation and India-hosted deployment are `full_product` gates. Local privacy and any permitted provider call still require their relevant checks.
+
 **Provider-plan update, 23 September 2026:** [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) is required for this feature's model integration. Use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) for development-worker selection. These instructions do not claim a live provider, funded account or passing new tests.
 
 Owner **DEPLOY**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), consumers [13](13-citizen-evidence-and-corrections.md), [14](14-adaptive-ingestion-and-progressive-review.md), [18](18-grounded-assistance-and-mcp.md) and UI slot in [99](99-ui-ux-and-integration.md). ER-16/22/23 are incorporated. No provider, infrastructure or application certification is claimed by this plan.
@@ -46,7 +48,7 @@ The initial model set is Sarvam 105B V1 for bounded schema mapping/extracted tex
 
 Sarvam's introductory credit is per new user, while organisation balances and account rate limits are shared by keys. Authorised rollover must not multiply the shared balance or bypass throttling. Retired credentials never resume after restart/re-enrolment; draining admitted document jobs and transient cooldown are distinct states. Unknown provider charge is retained as exposure, not silently refunded. A funded key is not proof of data-transfer permission.
 
-Keep the current synchronous two-attempt/45-second/1 MiB caps as total task bounds, including retries and repair; asynchronous document jobs use existing durable jobs and their own qualified page budget. Count reasoning inside completion usage once. Provider token streaming is not geometry SSE. FND routes or disables the legacy Nous path; no unapproved paid/model/geography fallback. No-key and exhausted-budget modes keep manual mapping and typed answers useful. Later training stays outside live ingestion.
+Keep the current synchronous two-attempt/45-second/1 MiB caps as total task bounds, including retries and repair; asynchronous document jobs use existing durable jobs and their own qualified page budget. Count reasoning inside completion usage once. Provider token streaming is not geometry SSE. FND routes or disables the legacy Nous path; no unapproved paid/model/geography fallback. No-key and exhausted-budget modes keep manual mapping and typed answers useful. When FP-LEARN is implemented, H21 permits eligible, isolated training alongside ingestion; provider-derived examples require recorded permission. It is not a finale prerequisite.
 
 ### Scanner and mail adapters
 
@@ -112,7 +114,7 @@ Use `feat/usp-deployment`; own DEPLOY new adapters/reference/test files only. F0
 
 ## J. Dataset and operational verification
 
-Use D0 non-personal fixtures from [00](00-README.md), labelled restricted for policy testing: original upload, exact property, source preview, PACK derivative and INGEST draft asset. Source data need not be truly sensitive to test denial. Add one separately released sanitized derivative and verify public access without private originals. D1/D2 external fetching is an explicit allowed acquisition task, not an unapproved runtime tile dependency; cache/preserve permitted small assets for private-mode tests.
+Use D0 non-personal fixtures from [H28](28-data-acquisition-and-finale-tests.md), labelled restricted for policy testing: original upload, exact property, source preview, PACK derivative and INGEST draft asset. Source data need not be truly sensitive to test denial. Add one separately released sanitized derivative and verify public access without private originals. D1/D2 external fetching is an explicit allowed acquisition task, not an unapproved runtime tile dependency; cache/preserve permitted small assets for private-mode tests.
 
 Live provider qualification uses only bounded synthetic fields through a separately configured approved key. No key means adapter mocks plus deterministic operation, not a live Sarvam pass. Verify structured output, truncation, tool attempts, response limit, quota/timeout, missing key and model unavailable; deny the approved endpoint and assert no legacy/alternative call. No automatic credit purchase or unapproved model/funding/geography switch; only pre-authorised H20 rollover is permitted.
 
@@ -120,7 +122,7 @@ Scanner tests include a benign permitted test fixture, known antivirus test arti
 
 Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:ai`, existing `pnpm platform:health`; proposed `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-deployment.test.ts`, `pnpm exec tsx tests/usp-deployment-integration.ts`, `pnpm exec playwright test tests/e2e/usp-deployment.spec.ts`, and `pnpm exec tsx scripts/usp/deployment-check.ts` only after creation and against an explicitly isolated target. Return code/pack/image/provider versions, inventory, actual calls denied/allowed, launch/restore receipts and unresolved H3 evidence. Configuration tests cannot prove residency.
 
-**H20 is part of DEPLOY acceptance:** execute its G-01 through G-24 tests as applicable. Qualify local ledger/fake-provider behavior separately from live chat, live document billing and deployment residency. No public balance API, real key pool or permanent post-restore memory is assumed. Operator account evidence is required before funded calls, not before fixture implementation.
+**H20 is part of DEPLOY acceptance:** execute its G-01 through G-27 tests as applicable. Qualify local ledger/fake-provider behavior separately from live chat, live document billing and deployment residency. No public balance API, real key pool or permanent post-restore memory is assumed. Operator account evidence is required before funded calls, not before fixture implementation.
 
 ## K. Copy-paste assignment
 

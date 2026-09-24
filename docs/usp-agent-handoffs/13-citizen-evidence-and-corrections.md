@@ -1,5 +1,7 @@
 # 13 · Citizen evidence, corrections and scoped notifications
 
+**Release: `full_product` (FP-PUBLIC).** The separate public data-request/evidence/correction dashboard remains planned with private submissions, released-only discovery, tracking and authorization. It is not a finale prerequisite. GF4 reuses the release/access contracts for the card without enabling a public portal.
+
 Owner **CITIZEN**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), DEPLOY ports in [19](19-india-contained-deployment.md) and UI slots in [99](99-ui-ux-and-integration.md). ER-04/06/15/16/22 are incorporated. Local synthetic integration can precede F2; public activation cannot.
 
 ## A. User outcome and product value

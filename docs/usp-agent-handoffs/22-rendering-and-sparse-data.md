@@ -4,9 +4,11 @@
 
 ## A. Rendering decision
 
-The repository already declares Three.js, React Three Fiber, Drei and CesiumJS. The recalled alternative is **Three.js / React Three Fiber**, not evidence that an engine switch alone improves geometry. Recommended target: richer district/building presentation with Three.js + R3F + Drei, using **3DTilesRendererJS** for large tiled assets if its required decoders, metadata and selection are qualified. This package is a new candidate, not an installed dependency established by the reviewed package file.
+**`finale_v1`: retain the current shared Cesium runtime used by the recorded D0/D1 workflow.** Qualify its actual source-shaped meshes, picking, basement visibility, clipping and frame placement; do not infer support from a Cesium demo using a different primitive type. Display clipping never proves volumetric intersection.
 
-Cesium remains a compatible geospatial renderer behind the existing `MapViewport`/runtime abstraction. Do not run two independent maps or permanently duplicate camera/selection/cache logic. Use one active renderer lease per focused map; switch via a shared adapter only. No broad renderer rewrite until one identical representative fixture demonstrates the required roof fidelity, clipping, picking, coordinates and resource behavior on both paths.
+**`full_product`: evaluate Three.js + React Three Fiber + Drei behind the existing MapViewport boundary only for a measured unmet interaction/rendering need.** 3DTilesRendererJS is an optional candidate requiring decoder, metadata, selection, licence and cache qualification. It is not a committed engine migration or an installed capability. Test the same assets, camera and device against current Cesium before deciding. Maintain one active renderer lease and shared selection/cache semantics.
+
+Helsinki 3D contributes an example of separate textured city context and semantic building models with source provenance. It is a city/data programme, not an alternative JavaScript engine. Use a permitted small native-coordinate sample for optional D2 visual tests; its model does not provide Indian apartment rights. See [H28](28-data-acquisition-and-finale-tests.md).
 
 Use GLB/glTF assets, hierarchical 3D Tiles, local engineering origins for numerical stability, bounded caches and suitable level of detail. Qualified horizontal/vertical transforms remain shared domain operations. Start with the stable WebGL path; WebGPU is an optional measured upgrade, not a guaranteed speed fix. MapLibre/deck.gl, iTowns, Giro3D or Babylon.js are not additional mandatory engines. Introduce one only for a measured unmet capability, not to collect libraries.
 
@@ -14,7 +16,7 @@ Use GLB/glTF assets, hierarchical 3D Tiles, local engineering origins for numeri
 
 Chunking is independent of whether interpretation is AI-assisted, learned or exact. Geometry is prepared and published in useful batches. SSE announces saved ready assets; the shared map fetches and adds them without resetting the camera. Display-tile boundaries need not equal processing-chunk boundaries.
 
-Start with the existing 25–100 visible exteriors / 25 MiB visible-geometry profile and small selected interiors; keep existing compiler/frame limits until separately qualified. A 10k/100k/1M backend corpus is navigated through a spatial index, not loaded into one frame or one browser array. Promotion of the learner increases conversion throughput where measured; it does not bypass draw-call, network, memory or GPU budgets.
+Start with the existing 25–100 visible exteriors / 25 MiB visible-geometry profile and small selected interiors; keep existing compiler/frame limits until separately qualified. A 10k/100k/1M backend corpus is navigated through a spatial index, not loaded into one frame or one browser array. In the full-product release, promotion of the learner may increase conversion throughput where measured; it does not bypass draw-call, network, memory or GPU budgets.
 
 Visual quality comes from source-shaped geometry, roof silhouette, consistent units, stable lighting/materials, selective contact shadows, outlines and careful interaction. Render decorative repetitions with instancing where qualified. Dispose assets/materials and keep selection IDs stable across LoD and tile seams. Prioritize a coherent local view and connected roads, while retaining fair queue scheduling.
 
@@ -52,7 +54,7 @@ Map existence must not depend on a registry document, supplied ULPIN or complete
 
 Later upload → retained revision → candidate association by exact identifiers first → ambiguity review → evidence link/new source observation → targeted revalidation → revised display/record if supported. A new authoritative height supersedes an estimate through a new revision; old sources, predictions and packets remain traceable. Do not rebuild all buildings for a new document. One building may span parcels; one unit may span floors; one stair can serve several units.
 
-## F. Separate public dashboard
+## F. Separate public dashboard — full_product
 
 Public: find released property, view permitted evidence status, report a discrepancy/missing space, upload allowed documents, answer clarification and track own submissions/notifications. Officer: compare sources, validate associations and approve an actual proposal through the existing registry workflow.
 
@@ -60,8 +62,8 @@ Share UI components and domain APIs, not unrestricted sessions, caches or record
 
 ## G. Acceptance
 
-Run a real active-product camera path while ingestion and training are active. Verify pan/orbit/zoom, basement visibility, source-shaped roofs/holes, stable picks and no stale target information. Compare the current and candidate renderer with identical assets/camera/device. Keep previous V1–V8 regressions.
+For the finale, run a real active-product camera path while qualified ingestion is active. Full-product learner qualification additionally runs that path during training. Verify pan/orbit/zoom, basement visibility, source-shaped roofs/holes, stable picks and no stale target information. The deferred renderer experiment compares current and candidate renderers with identical assets/camera/device; it cannot block finale acceptance. Keep previous V1–V8 regressions.
 
 Proposed initial performance targets from the existing plan: first useful local scene within 8 seconds after admitted prepared inputs, cached selection feedback within 100 ms and desktop frame-time p95 at most 33 ms on declared reference hardware. Measure acquisition, source preparation and conversion latency separately rather than hiding them from end-to-end preview time. These are engineering targets, not achieved results.
 
-Toggle enhanced preview and assert source hashes, measured quantities, readiness, rights, findings and evidence exports are unchanged. Insufficient geometry must not become an apparently complete cadastre. Add real evidence and prove the estimate is superseded without changing physical identity. Ten repeated navigation cycles must not show continuing owned-resource growth after expected cache warmup. Software-WebGL screenshots do not qualify actual GPU performance.
+During full-product enrichment qualification, toggle enhanced preview and assert source hashes, measured quantities, readiness, rights, findings and evidence exports are unchanged. Insufficient geometry must not become an apparently complete cadastre. Add real evidence and prove the estimate is superseded without changing physical identity. Ten repeated navigation cycles must not show continuing owned-resource growth after expected cache warmup. Software-WebGL screenshots do not qualify actual GPU performance.

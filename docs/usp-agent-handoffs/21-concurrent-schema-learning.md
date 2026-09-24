@@ -1,6 +1,8 @@
 # 21 — Concurrent schema learner and safe automatic handover
 
-**New core handoff, 24 September 2026. Owner: LEARN; FND owns shared contracts, persistence and dispatch; DEPLOY owns provider permission.** This is a real ML implementation plan, not a description of an existing trained model.
+**Release: `full_product` (FP-LEARN).** Real training, qualification and pending-only same-import handover remain committed scope, after the finale. They do not block GF0–GF5. H27 domain AI is a different capability and stays in the finale.
+
+**Full-product handoff, 24 September 2026. Owner: LEARN; FND owns shared contracts, persistence and dispatch; DEPLOY owns provider permission.** This is a real ML implementation plan, not a description of an existing trained model.
 
 ## A. Exactly what the learner learns
 

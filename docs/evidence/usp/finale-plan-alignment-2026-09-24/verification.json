@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "ulpin-plan-alignment-receipt/1",
+  "kind": "documentation_alignment_only",
+  "status": "passed",
+  "checkedAt": "2026-09-24T14:14:02.365237+00:00",
+  "baselineCommit": "45d033baae7ec4e5a572d82459b0062c70a12c95",
+  "mainUnchangedAt": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
+  "sourceReviewSha256": "605e47e2ab00d5232de06bb478b66310f66f2890a856a3b4cb7228ca3eeb42c1",
+  "nextGate": "GF0",
+  "runtimeGatesPassed": [],
+  "counts": {
+    "activePlanMutationTests": 29,
+    "legacyPlanChecks": 26,
+    "legacyPlanTests": 23,
+    "requirements": 25,
+    "runtimeTestGroups": 24,
+    "releaseGates": 14
+  },
+  "checks": [
+    {
+      "name": "active-plan",
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+      "exitCode": 0,
+      "output": "PASS: active document links/anchors, owners/tests, release DAG, baseline and next gate\nDocument consistency only; no application/runtime gate is passed by this validator.\n"
+    },
+    {
+      "name": "active-plan-tests",
+      "command": "python3 -m unittest discover -s docs/usp-agent-handoffs/tools/tests",
+      "exitCode": 0,
+      "output": ".............................\n----------------------------------------------------------------------\nRan 29 tests in 0.080s\n\nOK\n"
+    },
+    {
+      "name": "legacy-plan",
+      "command": "<bundled-python3> docs/engineering-plan/tools/validate_plan.py",
+      "exitCode": 0,
+      "output": "{\n  \"status\": \"PASS\",\n  \"kind\": \"planning_record_consistency_only\",\n  \"checks_passed\": 26,\n  \"checks\": [\n    \"Execution and maintenance IDs are unique\",\n    \"Edge-case IDs are unique\",\n    \"Task statuses use the declared workflow\",\n    \"Active implementation WIP does not exceed its declared limit\",\n    \"All dependencies resolve\",\n    \"Dependency graph is acyclic\",\n    \"Preferred execution order respects dependencies\",\n    \"Any accepted tasks have evidence references and accepted prerequisites\",\n    \"Detailed plans claimed as authored actually exist\",\n    \"Every old schema/renderer task has one unambiguous crosswalk record\",\n    \"All legacy mapping targets resolve\",\n    \"Task-to-legacy and legacy-to-task mappings agree\",\n    \"All 28 original schema tests remain traceable\",\n    \"Schema test-to-edge-case references resolve\",\n    \"All edge-case task references resolve\",\n    \"Every original ui_gates record is retained\",\n    \"All ui_gates task references resolve\",\n    \"Every original benchmarks record is retained\",\n    \"All benchmarks task references resolve\",\n    \"Product requirement-to-task references resolve\",\n    \"All 25 input families are retained\",\n    \"All input profile task references resolve\",\n    \"Preserved legacy records match their source hashes\",\n    \"Next task exists\",\n    \"No core-release task depends on optional expansion\",\n    \"Proof cleanup is not a hidden product dependency\"\n  ],\n  \"not_verified\": [\n    \"Application code or behavior\",\n    \"Database migrations or integrity\",\n    \"Desktop access or deletion\",\n    \"Source-format parsing\",\n    \"Geodetic/geometry correctness\",\n    \"Actual renderer images or performance\",\n    \"Physical device accessibility\",\n    \"Complete prior conversation retrieval\"\n  ]\n}\n"
+    },
+    {
+      "name": "legacy-plan-tests",
+      "command": "<bundled-python3> -m unittest discover -s docs/engineering-plan/tools/tests",
+      "exitCode": 0,
+      "output": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 2.226s\n\nOK\n"
+    },
+    {
+      "name": "diff-whitespace",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "workflow-shape",
+      "command": "ruby -ryaml (parse workflow and assert read-only permissions, staging trigger, three static-check steps)",
+      "exitCode": 0,
+      "output": "PASS: YAML parsed with system Psych; read-only permissions, staging trigger and static checks\n"
+    }
+  ],
+  "resolvedToolLimitations": [
+    {
+      "attempt": "Python YAML parser",
+      "exitCode": 1,
+      "reason": "PyYAML absent in bundled runtime",
+      "resolution": "Parsed with available system Ruby/Psych; no package installed"
+    }
+  ],
+  "independentReview": {
+    "workers": [
+      "align_identity",
+      "align_domain"
+    ],
+    "model": "gpt-6-sol",
+    "effort": "xhigh",
+    "resolved": [
+      "scope/owners/next-gate drift",
+      "GF4 same-device loopback versus conditional phone ingress",
+      "GF-AI learned versus deterministic pass boundary",
+      "GF-CONTRACT/GF-READY/GF-REHEARSAL traceability",
+      "runtime receipt namespace/provenance/hash checks",
+      "Python 3.9-compatible streaming SHA-256"
+    ]
+  },
+  "filesSha256": {
+    ".github/workflows/ulpin-handoff-plan.yml": "ac1cc7b32b5b1a398150f1b7b19509e142f515351a515f5cf053df12fe8c1c5d",
+    "AGENTS.md": "6761d596af581e6a29a747ca7348c8d1d271995a830b8cf082320fb53f410a0d",
+    "README.md": "d67c24e7a3799136cfef602ad1f86bc35b073d6f4c6d63897f7025037494e7e6",
+    "docs/engineering-plan/CURRENT_WORK.md": "f077e73fb5497cb000935e2dff410da41f642302ca90296d313d0f8ae5c11429",
+    "docs/usp-agent-handoffs/00-README.md": "7cba1922ed7812621660d36eba65457e3eb6ff452361a644b36b61e64bdf897a",
+    "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md": "9273ea8951e623a64c7ce46bc5f3e8a6bcc776475b3136861d10ad72ec1830b1",
+    "docs/usp-agent-handoffs/02-lead-agent-execution.md": "8e89aaea65a72dcc8f9d7e836067999cce36e854909a4d692ac98ec555cbc8c8",
+    "docs/usp-agent-handoffs/10-scoped-evidence-packets.md": "d33cfe78e9204dc19e0e2d78c9ad52f97bbb77f61aca2e7d7b9daf2069bd7a15",
+    "docs/usp-agent-handoffs/11-evidence-readiness-and-review-queue.md": "d42f5d51a5621c2abf668d307a1633ddf969b1306404e983f915d2c2f9d8cb34",
+    "docs/usp-agent-handoffs/12-rights-aware-spatial-findings.md": "816419c90ab35fccd06882eb7cf3df6fee52515ec8dbc9e2b37719da722c4b19",
+    "docs/usp-agent-handoffs/13-citizen-evidence-and-corrections.md": "52291b953aaa933eb327f70fa9d0149f58b84490c68eb432d4e9fba81133344c",
+    "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md": "9b20068687ea46c3871f9c079d3005bad902687dc2316e5ffd650c7d2a3d69db",
+    "docs/usp-agent-handoffs/15-property-history-and-comparison.md": "701a49b869f799aef4cf349f1908af0d46e7240c1504c11b57b69e9632695770",
+    "docs/usp-agent-handoffs/16-shared-spaces-and-vertical-rights.md": "e30e134307a4af6e7c14992388b858efa57fc14459530331d7865aae0bee6185",
+    "docs/usp-agent-handoffs/17-infrastructure-impact-screening.md": "9e10eb300a6a0426df12eed780579801a109d0c355cdb7427e0aebc8f94ae43f",
+    "docs/usp-agent-handoffs/18-grounded-assistance-and-mcp.md": "245eedf7e258c48c46ec4439cd9fce8637d5f9cce5a5559d024ed5ae7bdd7df7",
+    "docs/usp-agent-handoffs/19-india-contained-deployment.md": "281c4dc44988c3614e758b468837bbe02a46c1ba2f3a8553c73d1437681d5954",
+    "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md": "bcbcc47b87de37497797e4b08ae5b858254c77fefd176313b86a0c8d9a564b4e",
+    "docs/usp-agent-handoffs/21-concurrent-schema-learning.md": "6a694fc11099a005e11d6f659cfd19c65376f66a1451a6f2d452f6ab709e6aeb",
+    "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md": "16c4f93ed16c52059ecb65a6f7d692f9c27661d2ee03d12e8aac21fd348a11b0",
+    "docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md": "82d5aa59aa3d179dd99751cc517f6359b90772d6afb1bdea68b685d7035bae11",
+    "docs/usp-agent-handoffs/24-product-method-and-ppt.md": "b77ad21b4db59116d21dbe5e8db0081b5c28e5fd92100d0ed1e37f1d3e8e06a6",
+    "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md": "983d762946d74b114b2472cb3fa7b1abc4b178a142883fb388801e9887a435be",
+    "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md": "bc8b49d4350700da75696b6a5b99cdcbfcc08ab757b3c8b2867eb56e7333c824",
+    "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md": "0b43dca481eb7fd62a6babbf6330e0650e2c2f909ff47a7e854d1eef558097ea",
+    "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md": "dd2ab6fc57e7dae6cda619b0aa98ef9dc32ba742ae4ddd810995a353a0dfc98b",
+    "docs/usp-agent-handoffs/90-required-human-tasks.md": "db435ebb8262231ccd93236433bb77656328e01a8a357664ac163e79403c829d",
+    "docs/usp-agent-handoffs/98-engineering-readiness-audit.md": "8704aab3dd6cd6096b0e84696e874dae2518129e4f9fcdf08777e5cbc30203de",
+    "docs/usp-agent-handoffs/99-ui-ux-and-integration.md": "57e22ba5895d45a788f6386124d0820259fb94b30537a82be1aaaa793d3edbaf",
+    "docs/usp-agent-handoffs/release-plan.json": "6e24651d27dd5ced58842d9e32bdccef6eba0685374ea5b4fecb62b3c71828b1",
+    "docs/usp-agent-handoffs/tools/tests/test_validate_handoffs.py": "fa06e015922ca8fde2b1d545a273b80d0be19b9e4d462789b2b0189ceefd6363",
+    "docs/usp-agent-handoffs/tools/validate_handoffs.py": "f2d43a48776c22f62b8184f03041e2032727708a3ec1184efaa3f76b8ea34d5a"
+  },
+  "limits": [
+    "No application implementation, service/browser/GPU tests, training, data acquisition or deployment performed",
+    "Runtime tests in release-plan.json remain planned; documentation checks do not pass them",
+    "New CI workflow is locally parsed; remote result recorded separately by GitHub"
+  ]
+}

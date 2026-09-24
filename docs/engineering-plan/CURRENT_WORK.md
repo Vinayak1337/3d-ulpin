@@ -1,15 +1,15 @@
 # Current work — adopted USP handoffs
 
-**Updated 23 September 2026.** The former T-number execution narrative is retained
-as historical evidence, not the current task queue. Begin with
-[handoff 00](../usp-agent-handoffs/00-README.md),
-[shared contracts](../usp-agent-handoffs/01-shared-contracts-and-ownership.md) and
-[active Studio UI](../usp-agent-handoffs/99-ui-ux-and-integration.md).
+<!-- plan-next-gate: GF0 -->
 
-The next implementation gate is F0, followed by F1-min and V0 using D0 and a
-separate D1 real-roof sample. No F0/V0/I1 implementation pass is claimed by the
-cleanup. D0–D7 acquisition and feature-specific tests are in those handoffs.
-Do not seed or empty the existing product to prepare a new dataset.
+**Updated 24 September 2026 after finale alignment.** The current plan is
+[H00](../usp-agent-handoffs/00-README.md), with machine-readable releases and
+requirements in [release-plan.json](../usp-agent-handoffs/release-plan.json).
+The historical T-number backlog remains CI/evidence history.
+
+**Next gate: GF0.** Reuse the recorded [D0/PACK0 and real D1 milestone](../evidence/usp/continuation-2026-09-23/README.md), inventory the current implementation and pin the H28 matched-data/independent-test contract. Then execute GF1–GF5 in dependency order. All new finale gates remain pending; this is a plan alignment, not a fresh application test pass. Concurrent learning, public portal, MCP, enrichment, renderer experiments and scale remain `full_product` work.
+
+Consolidated application baseline: `staging@45d033baae7ec4e5a572d82459b0062c70a12c95`. Fetch/recheck the live head before implementation. Main remains unchanged. Read [H26](../usp-agent-handoffs/26-identifiers-and-standard-exchange.md), [H27](../usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md), [H28](../usp-agent-handoffs/28-data-acquisition-and-finale-tests.md), shared H01 and UI H99. Do not seed or empty the product to prepare data.
 
 Existing evidence worth consulting when its exact feature is relevant:
 
