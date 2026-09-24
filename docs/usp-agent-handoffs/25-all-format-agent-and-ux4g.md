@@ -76,3 +76,12 @@ For UX4G/GIGW alignment, test complete public and officer journeys with keyboard
 - Sarvam India-deployment residency statement: https://www.sarvam.ai/trust-center
 
 The agent/enrichment design and acceptance cases above are project decisions based on the user's clarification. These external sources establish the provider/design-framework descriptions, not implementation results for our product.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) UI-01 and FP-FORMATS-01.
+
+- **Design system decision.** The finale UI follows [the repository design system](../design-system/README.md): UX4G 3.1 foundations (as published in the UX4G `web_design_system` repository; the public site may still label the kit 3.0) transcribed into the existing `--ui-*` tokens, plus our own map and 3D layer. **Do not install the UX4G CSS or JS bundle into Studio**; it ships a global reboot and scripts this file already bans. FP-PUBLIC may use UX4G components only under `/public/*` and only if their styles stay scoped to those routes. The Sarvam line lives in [H24](24-product-method-and-ppt.md) Z3.
+- **Keep display derivatives out of analysis.** Enrichment output goes to the separate display-derivative store ([H22](22-rendering-and-sparse-data.md) Z1), keyed by `recordId`. FIND, READY, PACK, LEARN examples and the H26 export have no query path to it. FP-ENRICH-TEST asserts at SQL level that canonical tables hold zero `illustrative` rows.
+- **Adapter development samples.** Adapter-development tasks receive only DEPLOY-approved sanitized or synthetic samples, never private originals. Every reader runs without network inside the job's extracted directory and follows the hostile-input contract in [H14](14-adaptive-ingestion-and-progressive-review.md) Z1. Source text never becomes a tool argument; tools come only from the capability-registry enum.
+- **Tests.** A VRT pointing at `/etc/passwd`, a glTF `uri` pointing at `169.254.169.254`, a zip-slip entry, a nested zip over the expanded cap, and a plan PDF containing "assign code now" all fail safely.

@@ -12,6 +12,8 @@ Build an evidence-linked 3D property workbench for SIH 26011. Give equal emphasi
 
 ## Two release scopes
 
+**How to pick up work (any coding agent).** Read this file, then [H97 review findings](97-review-findings-and-alignment.md), then take the next unblocked card for the active gate from [H29 task cards](29-agent-task-cards.md). Many handoffs end with a **"Z. Hardening addendum (H97)"** section: where an addendum conflicts with text above it in the same file, the addendum wins. UI work also reads [the design system](../design-system/README.md).
+
 [release-plan.json](release-plan.json) is the machine-readable authority for release membership, dependencies, requirement owners/tests and next gate. This index explains it. Feature handoffs define behavior; H28 defines datasets and acceptance. H24 is presentation copy. Historical task numbers and receipts are evidence at their recorded revision, not a competing queue.
 
 | Release | Build and demonstrate | Boundary |
@@ -25,9 +27,9 @@ The finale still includes real domain AI/ML: building extraction, plan segmentat
 
 | Gate | What we build | Evidence needed to exit |
 | --- | --- | --- |
-| GF0 — data and contracts | Inventory current implementation; select matched Indian sources; pin pack manifests, coordinate/height metadata, parser/processor capabilities and shared contracts | GF-CONTRACT/GF-DATA: existing D0/D1 regression receipts rechecked; independent expected cases; authentic-data gaps named; no resets or invented survey facts |
+| GF0 — data and contracts | Inventory current implementation; select matched sources (Indian preferred, any permitted geography, labelled); pin pack manifests, coordinate/height metadata, parser/processor capabilities and shared contracts | GF-CONTRACT/GF-DATA: existing D0/D1 regression receipts rechecked; independent expected cases; authentic-data gaps named; no resets or invented survey facts |
 | GF1 — identify and exchange | H26 project ID allocator/lifecycle, supplied official assertions, semantic CityJSON + rights/provenance sidecar, LADM mapping | GF-T15 and GF-EXCHANGE: race/idempotency/lifecycle cases and independent loss-aware round trip |
-| GF2 — prove spaces | H14 progressive source path; H27 domain-AI candidates, floor/space review, qualified solids/prisms and reference operations; H16 shared rights | GF-AI, GF-T16–18, GF-RECOVERY and GF-VIEW; predictions versus truth, quantities versus source components, unsupported versus zero |
+| GF2 — prove spaces | H14 progressive source path and constrained mapping agent; H27 domain-AI candidates and site model pipeline, floor/space review, qualified solids/prisms and reference operations; H16 shared rights | GF-AI, GF-AGENT, GF-T16–18, GF-RECOVERY and GF-VIEW; predictions versus truth, quantities versus source components, unsupported versus zero |
 | GF3 — govern | H11/H12 evidence/readiness, H15 exact-revision deviations/history and H17 dig/impact screening | GF-READY and GF-T19–20: independent control cases, coverage gaps and stale/unknown utility depth; no automatic illegality or safe-to-dig verdict |
 | GF4 — share scoped proof | H10 property-card subtype of existing packet service and access-checked exact-revision QR | GF-T21 and GF-PRIVACY; excluded-unit pixels/metadata absent, revoked/retired/wrong-unit tests, explicit local-only delivery mode and separately gated phone access |
 | GF5 — rehearse and report | Complete officer journey, known limitations, timed metrics, loss reports and PPT evidence | GF-REHEARSAL plus all finale test receipts, local browser rehearsal, honest measured/target/unavailable labels; no inferred runtime pass from this plan |
@@ -48,6 +50,8 @@ Next gate: **GF0**. Existing D0/PACK0 and D1 are the baseline to reuse, not a re
 | Exact datasets, tests, acquisition | [H28](28-data-acquisition-and-finale-tests.md) |
 | Full product: public, assistance, learner, enrichment | [H13](13-citizen-evidence-and-corrections.md), [H18](18-grounded-assistance-and-mcp.md), [H21](21-concurrent-schema-learning.md), [H25](25-all-format-agent-and-ux4g.md) |
 | PPT, human prerequisites, audit history, UI | [H24](24-product-method-and-ppt.md), [H90](90-required-human-tasks.md), [H98](98-engineering-readiness-audit.md), [H99](99-ui-ux-and-integration.md) |
+| Task cards for any agent, review findings | [H29](29-agent-task-cards.md), [H97](97-review-findings-and-alignment.md) |
+| Design system, UI brief and specimen data | [Design system](../design-system/README.md), [UI brief](../design-system/ui-brief.md) |
 
 ## Fixed decisions
 

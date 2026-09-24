@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "ulpin-plan-alignment-receipt/1",
+  "kind": "documentation_alignment_only",
+  "status": "passed",
+  "checkedAt": "2026-09-24T22:22:29.050377+00:00",
+  "reviewedCommit": "7472730980fd3d79e7364b5cac3e6c7ebff7dd3d",
+  "localCommit": "89404b46fbbbfc6f7a8cacf3cbdba94f04200191",
+  "baselineCommit": "45d033baae7ec4e5a572d82459b0062c70a12c95",
+  "nextGate": "GF0",
+  "runtimeGatesPassed": [],
+  "agent": {
+    "product": "Claude (Cowork)",
+    "model": "claude-opus-5-5 (configured)",
+    "role": "cross-family reviewer and documentation editor"
+  },
+  "review": {
+    "kind": "agent",
+    "modelFamily": "claude",
+    "independence": "different_family_from_handoff_author",
+    "scope": "All 25 handoffs, release-plan.json, validator and tests, AGENTS.md, engineering-plan entry points, v2 design pack",
+    "findings": "docs/usp-agent-handoffs/97-review-findings-and-alignment.md",
+    "humanApproval": "pending"
+  },
+  "checks": [
+    {
+      "name": "active-plan",
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+      "exitCode": 0,
+      "output": "PASS: active document links/anchors, owners/tests, release DAG, baseline and next gate\nDocument consistency only; no application/runtime gate is passed by this validator.\n"
+    },
+    {
+      "name": "active-plan-tests",
+      "command": "python3 -m unittest discover -s docs/usp-agent-handoffs/tools/tests",
+      "exitCode": 0,
+      "output": ".............................\n----------------------------------------------------------------------\nRan 29 tests in 0.049s\n\nOK\n"
+    },
+    {
+      "name": "legacy-plan",
+      "command": "python3 docs/engineering-plan/tools/validate_plan.py",
+      "exitCode": 0,
+      "output": "amilies are retained\",\n    \"All input profile task references resolve\",\n    \"Preserved legacy records match their source hashes\",\n    \"Next task exists\",\n    \"No core-release task depends on optional expansion\",\n    \"Proof cleanup is not a hidden product dependency\"\n  ],\n  \"not_verified\": [\n    \"App"
+    }
+  ],
+  "filesSha256": {
+    "AGENTS.md": "5ef07a3373f9294df9248945f4559918a02b4ba739bffac79055eca98c0ec4ba",
+    "CLAUDE.md": "3170ec0393dad26a87809ee5b52b1e2684ff1e94647768ff5d81f6f7865ecb55",
+    "GEMINI.md": "3c8e841269720d7dfa460e216a74e32159b385f00f8e318fd092f8e5da2ad686",
+    "deploy/digitalocean/README.md": "113aa65fc2b1ac0df1abd4db6cf10ff33a67d5f880ba867b6646839db167bd61",
+    "docs/OFFICER_STARTUP.md": "8c273dff77e10aa9e0b743a49e17641ee9f5788d41968788c9a56beff2beb45c",
+    "docs/cleanup-review/2026-09-25-removals.json": "63d7bfdd0fb1577398f058667b1bbcb498990e6335d1a808c71002541e600851",
+    "docs/cleanup-review/README.md": "f4104b1f6d5dbd456b4f84854a2c3b853fd65d14e31ffaa00bffa8b4860b33a3",
+    "docs/design-system/README.md": "ff2c33b7f4c9f56fa094e589229861abbf2b2c53bf7e2c120199a6d934987653",
+    "docs/design-system/components.md": "5745cd87fdd8ec2e8c6edf65e3699039fca256662b7dd4469d6f3abe05bd5e18",
+    "docs/design-system/fonts.css": "771535c7f0ffe30d598cee128e44af29cdc27f25d5c1801f5586bf476eab9f2e",
+    "docs/design-system/map-and-3d.md": "903fe4360a3706b1c6a490fcde0990f162fe58b63d70f6dc0422eebbc6d92f23",
+    "docs/design-system/reference/components.css": "4fe52c0eef388720afcc3e85f30879b1c966bdf18a5f84705c6daf9c4060eca0",
+    "docs/design-system/surfaces-and-layout.md": "11f51abcb5240067c2ef32e6b20ef6bdfec3e732d526b943cf1b93e63971e71f",
+    "docs/design-system/tokens.css": "f1199c438e920e3d905ba63a7c02aee2f9f3b48a3e568afb25b6480b965d540f",
+    "docs/design-system/tokens.json": "30c4370038604747d245b6f3d2c6c0e7ee70024cbb3bda7d7956b116f5698f4b",
+    "docs/design-system/ui-brief.md": "2359905fb54747de3958d39f85fb18ccd3fd5e20434cf8e5ecdde763d833f491",
+    "docs/design-system/ux4g-alignment.md": "edbdad1a5d997e2042a959b762458384ae6de287d91ac41d9e0f3bf4d5555fc0",
+    "docs/usp-agent-handoffs/00-README.md": "be1c2257ca5544feefb9296c6553203f436f95dc3d7d456f508fa111548053b8",
+    "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md": "130ba9a540ca1a63c92dc3538baf585e1e645b1e6be617d570f9ad850efd7fa7",
+    "docs/usp-agent-handoffs/02-lead-agent-execution.md": "ba31440cdd4ac51d62ec729b5b5f7737cbf588c8e16faafdf792f1510d45f6b3",
+    "docs/usp-agent-handoffs/13-citizen-evidence-and-corrections.md": "48ff37a2c31c26e1a986f314cfa660e95ab1159180d9ba905cbc4bca0f37e64a",
+    "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md": "6da174e07b4973df21a62b9db9fd2a5fd435bd9ef025d7f2953de7cd3820ab7d",
+    "docs/usp-agent-handoffs/15-property-history-and-comparison.md": "60acc473734dd0023f1e5b4381c2ecbbff2b501ef8a5509afa92a93f505d5d8d",
+    "docs/usp-agent-handoffs/16-shared-spaces-and-vertical-rights.md": "af9e06994582e8aa936c0fc8a930bbf05f61a1c48aea5fe965cbdf60cb440199",
+    "docs/usp-agent-handoffs/17-infrastructure-impact-screening.md": "04d74f9619e9120666b153b7fa71fd1ea6237474136c4467417a36b656a11568",
+    "docs/usp-agent-handoffs/18-grounded-assistance-and-mcp.md": "37ded50b64b136ad5cab001c9e1c2feb1c0c3f35bf51883321a0a31f9b663f6b",
+    "docs/usp-agent-handoffs/19-india-contained-deployment.md": "71ef003651e058f38a334150e924ffa02ac3678f1dc00068d42b5f09cd49c746",
+    "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md": "4a8942c6c93ec27ff332a11237bdb129b5237a01abad83f6645250c1b048e610",
+    "docs/usp-agent-handoffs/21-concurrent-schema-learning.md": "f88a40057153736c4638076c46386b036b8e37711be77e59a7456aa593f1c582",
+    "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md": "9ab56d4bb44a803b3925c42c6ad4992520258615bf0625124a7e9953cd3194af",
+    "docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md": "c4779f6f04f3b47a4fda4138512545099044dbfef1d24bcaf66de9fc55335d81",
+    "docs/usp-agent-handoffs/24-product-method-and-ppt.md": "6bafa08012f02d56bdeb6ac284845bd3364a19a81aa5be20ff0fe0484517e7d1",
+    "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md": "1e34e3f4345ad68633a3a9237728c7f5392dc0133f4247de396818db8ebecae2",
+    "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md": "de4aa60a7aa76e8d71d18f6b5dcb6a8ae170be18c429f5060ff1a61fb0f9865a",
+    "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md": "20be81665b3abc0f544565d3890d66ed52d76d53aa0f5579c3c8e9be1008b2c2",
+    "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md": "cceb0d7665e684815684d5d0153ebfe4c17719722a581473eae134476a47a7b1",
+    "docs/usp-agent-handoffs/29-agent-task-cards.md": "000ede4d7b6c3f52aca2c6eeb30e98e6e1f2c669806f3e7fa19332d269626bf3",
+    "docs/usp-agent-handoffs/90-required-human-tasks.md": "97b94945d0f4f63b95f5ca36c1048acf0bf1a58a210233b2e6f6da66af5700eb",
+    "docs/usp-agent-handoffs/97-review-findings-and-alignment.md": "959187ee7848cf12277312968e4f02257e9b524ae8dcf007c3f1952264fe8fea",
+    "docs/usp-agent-handoffs/99-ui-ux-and-integration.md": "775699eab0b4f8416c02cf656cd7d7530b4ad446b20e87578b8a3a8440648bc0",
+    "docs/usp-agent-handoffs/release-plan.json": "d13699596689adecfb86a5c59cbc7e8d5e79ab6eb1c5696aed293394eb561989",
+    "package.json": "c4ad5403183cf6e4a4b78ca6842ce233491681934236242a3f6cff51ecd910e0",
+    "tests/v2-state.test.ts": "910d2197f6847eab2a79aa454f073349cb54f4f80c78fbaae0fea7926cefa9f4"
+  },
+  "limits": [
+    "Documentation and plan consistency only. Code edits in this change: package.json script removals and one test assertion; deletions are listed in docs/cleanup-review/2026-09-25-removals.json and run as CLEANUP-01. No typecheck or app tests ran here (npm registry blocked); CLEANUP-01 runs them.",
+    "No runtime gate passed.",
+    "The validator does not recompute these hashes yet (task card LEAD-01).",
+    "Human approval of this alignment is pending."
+  ]
+}

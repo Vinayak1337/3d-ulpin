@@ -46,7 +46,7 @@ The evidence view is the default for recording and analysis. An explicit **Enhan
 
 There is no arbitrary universal completeness percentage. A versioned `DataSufficiencyPolicy` evaluates the intended task and minimum evidence for location, footprint, height, reference and identity. Avoid both extremes: silently inventing facts and rejecting an entire useful batch because a few optional fields are absent.
 
-A later visual-estimation model can learn heights/roof classes from permitted independently sourced examples using footprint geometry and relevant context. Evaluate on spatially held-out Indian sites, report error/ranges and out-of-domain behavior, and abstain when support is inadequate. This is a different model from schema interpretation. Neither decorative output nor the system's own guesses become training ground truth.
+A later visual-estimation model can learn heights/roof classes from permitted independently sourced examples using footprint geometry and relevant context. Evaluate on spatially held-out sites (Indian where available), report error/ranges and out-of-domain behavior, and abstain when support is inadequate. This is a different model from schema interpretation. Neither decorative output nor the system's own guesses become training ground truth.
 
 ## E. Registry and other evidence may arrive later
 
@@ -67,3 +67,39 @@ For the finale, run a real active-product camera path while qualified ingestion 
 Proposed initial performance targets from the existing plan: first useful local scene within 8 seconds after admitted prepared inputs, cached selection feedback within 100 ms and desktop frame-time p95 at most 33 ms on declared reference hardware. Measure acquisition, source preparation and conversion latency separately rather than hiding them from end-to-end preview time. These are engineering targets, not achieved results.
 
 During full-product enrichment qualification, toggle enhanced preview and assert source hashes, measured quantities, readiness, rights, findings and evidence exports are unchanged. Insufficient geometry must not become an apparently complete cadastre. Add real evidence and prove the estimate is superseded without changing physical identity. Ten repeated navigation cycles must not show continuing owned-resource growth after expected cache warmup. Software-WebGL screenshots do not qualify actual GPU performance.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) FND-04 and UI-03.
+
+### Z1. Two fields instead of one overloaded "layer"
+
+"Three layers" means two different things across these docs. FND adds two separate fields to every geometry and display asset in `packages/contracts/src/usp`:
+
+| Field | Values | Meaning |
+| --- | --- | --- |
+| `representation` | `context_mesh`, `physical_semantic`, `legal_space` | What the geometry is: a photogrammetry context mesh, a semantic building part, or a legal/rights volume |
+| `geometryClass` | `evidence_linked`, `estimated`, `illustrative` | How much we can trust it |
+| `analyticEligible` | boolean | True only for `evidence_linked` geometry that passed its qualification; FIND, READY, PACK, LEARN examples and the H26 export accept only these |
+| `semanticLod` vs `displayLevel` | CityGML LoD label vs tile refinement level | Never use "LoD" alone |
+
+Plus `DataSufficiencyVerdict {task, requirements[], outcome: sufficient | partial | insufficient_for_spatial_reconstruction, missing[]}`. Measurement is allowed only when `analyticEligible` and `representation` is not `context_mesh`. Display derivatives live in a separate store keyed by `recordId`; only the display compiler reads it.
+
+### Z2. Where heights come from in India
+
+| Height source | `geometryClass` | Analytic? |
+| --- | --- | --- |
+| Own nDSM with qualified control (H27 Z1) | `evidence_linked` | Yes, after checkpoint residual test |
+| Third-party ML heights (Open Buildings 2.5D, Microsoft) | `estimated` | No; display only |
+| OpenStreetMap `building:levels` or `height` tags | `evidence_linked` attribute from a volunteered source | No |
+| Sanctioned storey count ("G+3", "S+4") | `evidence_linked` count | Count yes; count × assumed floor height is `illustrative` |
+| CartoDEM (about 30 m) | Terrain context only | No |
+
+### Z3. Indian level realities
+
+Add `levelKind`: `stilt`, `basement`, `lower_ground`, `ground`, `mezzanine`, `typical`, `terrace`, `rooftop_structure`. Level order comes from the source, not elevation. Unknown elevations stay null; illustrative spacing appears only in Enhanced preview. Hill buildings where the road entrance is "ground" keep the source's naming. Every value carries its unit or is `not_assessed`. Add matching GF-VIEW fixtures: storey count without heights ("4 storeys (source), height illustrative"), a footprint with no height rendered 2D and labelled "height unknown", a point with no footprint producing no polygon, a stilt floor and a mezzanine.
+
+### Z4. Definitions for acceptance
+
+- "First useful local scene" = the first frame where at least one persisted object is pickable with the correct `recordId`, timed from the first `scene.manifest_published`. Report receipt-to-scene time separately.
+- Finale Studio routes add no new R3F or drei scene code and do not mount the `features/studio/scene/*` path (the old Studio shell that mounted it is retired by CLEANUP-01); that path is FP-RENDER material. Existing `three` helpers inside the spatial runtime, such as `features/spatial/reference-runtime/survey-layers.ts`, stay as they are.

@@ -88,3 +88,12 @@ Success is an executed demo: an unfamiliar supported source begins through the p
 ## References
 
 Scikit-learn out-of-core classification and SGDClassifier documentation support the incremental baseline. Sherlock (Hulsebos et al., 2019) and TURL (Deng et al., 2020) support semantic-column/table learning as research directions; their results are not results for this application. Source URLs and verification date are in H23.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. This file is full_product (FP-LEARN). Task card: [H29](29-agent-task-cards.md) FP-LEARN-01.
+
+- **Qualify offline first.** A same-import handover needs training, held-out qualification and a shadow run inside one import, with human corrections as the only labels; it will rarely pass. Qualify the learner offline on layout families A and B, then demonstrate handover only for a family inside the qualified domain. Otherwise report "candidate saved; no handover".
+- **Receipts are hashed, not signed**, unless a named signing key exists and its verification is tested (a full-product prerequisite in [H90](90-required-human-tasks.md)). Write "hashed `QualificationReceipt`".
+- **Indian layouts.** Regional area units (bigha, biswa, gaj, guntha, marla, kanal) resolve to `needs_input` unless a sourced state or district conversion is recorded. Survey and khasra numbers always stay strings. Test Devanagari digits, lakh grouping, DD/MM/YYYY and feet-inch strings ([H28](28-data-acquisition-and-finale-tests.md) Z3).
+- **Wording.** Until FP-LEARN-TEST passes, slides and screens call this "planned: schema learner", never present tense.

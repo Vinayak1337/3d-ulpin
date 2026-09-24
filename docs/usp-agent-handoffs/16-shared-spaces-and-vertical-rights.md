@@ -95,7 +95,7 @@ Use an isolated branch from the verified staging head; own RIGHTS modules/migrat
 3. Persist assertion/review with FND same-client receipt; test rollback and concurrent reviews.
 4. Add sourced declaration population, rational shares, amendments and one-unit limited-common allocation; implement reviewed applicability and downstream projections, invalidating dependent manifests.
 5. Mount exact-space/evidence UX via UI; demonstrate one geometry serving multiple units and one valid limited-common area serving one unit.
-6. Test qualified physical/legal elevated and underground per-level components through actual persistence; then attempt permitted matched Indian clauses for real-source evaluation.
+6. Test qualified physical/legal elevated and underground per-level components through actual persistence; then attempt a permitted public declaration (any geography, labelled) for real-source evaluation.
 
 ## J. Data and acceptance tests
 
@@ -105,7 +105,7 @@ Use an isolated branch from the verified staging head; own RIGHTS modules/migrat
 
 **GF-T18 spatial negative cases:** explicit legal basement/elevated extent, physical-only roof/utility, different vertical datums, non-overlapping duplex components, a legitimate atrium and contained unit versus incompatible exclusive units. Assert no inferred air right, no legal right from physical intersection, and unavailable analytical geometry when a component or Z operation is missing. The complete source inventory and qualified solid profile are prerequisites for a partition-residual claim; see [27](27-domain-ai-and-cadastral-checks.md).
 
-**After local completion, D5:** obtain permitted matching plan/section/shared clauses from [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) or [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or a consenting institution. Previous attachment access was not qualified. Recheck tower/unit, clause applicability, dates, geometry and permissions; do not collect unrelated personal data. Missing clauses → D0 fallback and unpassed real-rights qualification.
+**After local completion, D5:** obtain permitted matching plan/section/shared clauses from [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) or [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or an openly licensed declaration from any geography. Previous attachment access was not qualified. Recheck tower/unit, clause applicability, dates, geometry and permissions; do not collect unrelated personal data. Missing clauses → D0 fallback and unpassed real-rights qualification.
 
 Test stale endpoint/source/applicability, duplicate command, superseded/withdrawn assertion, two reviewers, cross-site request, private parties in graph/tooltips/JSON, unavailable HISTORY, and failed transaction before receipt. PACK must exclude the sibling deed even after an accepted shared relation; FIND must not clear overlap merely because an easement was accepted technically. Reopen the same relation and sources after restart; dependent results must become stale on relation-only change.
 
@@ -115,4 +115,40 @@ Run `pnpm typecheck`, `pnpm test:registry`; `pnpm exec tsx --tsconfig apps/web/t
 
 ## K. Copy-paste assignment
 
-> Implement RIGHTS for `finale_v1` using 00, 01, H26, H28 and this handoff. Reuse D0 stair/duplex/claim truth and qualify a permitted matched Indian declaration where available. Preserve legacy relations and one identity across component geometries. Build versioned assertions, exact evidence/validity/exclusivity, declaration-scoped rational UDS, complete-population checks, amendments and valid one-unit limited-common allocation. Keep physical, legal and planning volumes distinct; an elevated volume is not an inferred transferable air right. Review and commit through FND's same-client transaction. Supply FIND/PACK/IMPACT projections with explicit unknown states; no blanket inheritance or ownership inference. UI owns shared Cesium scene/parents, DATA independent pack oracles. Complete GF-T16 and relevant GF-T18 plus J's rollback/stale/component/clause/access tests; return source hashes, independent sums, receipts and screenshots with capability limits. Do not invent legal rights or merge main without authorization.
+> Implement RIGHTS for `finale_v1` using 00, 01, H26, H28 and this handoff. Reuse D0 stair/duplex/claim truth and qualify a permitted public declaration (any geography, labelled) where available. Preserve legacy relations and one identity across component geometries. Build versioned assertions, exact evidence/validity/exclusivity, declaration-scoped rational UDS, complete-population checks, amendments and valid one-unit limited-common allocation. Keep physical, legal and planning volumes distinct; an elevated volume is not an inferred transferable air right. Review and commit through FND's same-client transaction. Supply FIND/PACK/IMPACT projections with explicit unknown states; no blanket inheritance or ownership inference. UI owns shared Cesium scene/parents, DATA independent pack oracles. Complete GF-T16 and relevant GF-T18 plus J's rollback/stale/component/clause/access tests; return source hashes, independent sums, receipts and screenshots with capability limits. Do not invent legal rights or merge main without authorization.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task card: [H29](29-agent-task-cards.md) RIGHTS-01.
+
+### Z1. Indian tenure regimes
+
+One apartment declaration splitting UDS across units is only one of several Indian arrangements. Add `tenureRegime` to the site or building record:
+
+| Value | Meaning | UDS behaviour |
+| --- | --- | --- |
+| `apartment_declaration` | Apartment ownership act declaration (for example MAOA 1970) | As specified above |
+| `cooperative_society` | Society holds land and building; members hold shares and occupancy rights (for example MCS Act 1960); conveyance may be pending | Unit share state `not_applicable`; card says "not applicable: co-operative society tenure" |
+| `per_deed_uds` | UDS stated in each sale deed (common in TN, Karnataka, Telangana) | A `ShareSet` built from several per-deed instruments, with a reviewer-asserted population |
+| `leasehold_sublease` | Authority lease (for example DDA, Noida) with sub-leases | Lessor recorded as a party; shares relative to the lease |
+| `association_held_common` | Common areas conveyed to the association of allottees (RERA section 17) | Association is the holder party of common areas |
+| `unknown` | Not yet established | `not_assessed` |
+
+Holder party kinds add `society`, `association`, `promoter` and `authority`. Phased projects add `retainedResidual` entries held by the promoter and counted in the population. The denominator records `denominatorSource` pinned to the plot-area revision (plot area changes after road-widening surrender).
+
+- Parse literal strings such as `450.75 sq ft` or `0.873%` directly to rationals; no floating point at any step. Test it.
+- Declaration amendments need `consentEvidence` under the jurisdiction's rule, otherwise `not_assessed`.
+- `populationStatus: partial` or `unknown` is stored and assessed as `not_assessed_incomplete_population`; the create/amend guard checks that the declared status matches the supplied entries.
+- FND adds a registered `declaration` command kind and declaration/entry/applicability revision pins to SnapshotManifest ([H01](01-shared-contracts-and-ownership.md) Z1).
+
+### Z2. Corridors, parking, encumbrances and big buildings
+
+- **Corridors.** Add a bounded `right_of_user` claim: one corridor space (metro tunnel or viaduct, pipeline right of user) linked to N burdened parcel references, each with its own per-parcel extent and vertical limits. No fabricated common site. One labelled D0 fixture crosses two sites and feeds GF-T18 and H17.
+- **Parking and terraces.** Add `parkingCategory` (`garage`, `covered_stilt`, `open`, `podium`, `mechanical_stack_slot`, `basement`) and `grantMode` (`sold_with_unit`, `allotted_by_association`, `leased`, `unknown`). Stilt and open parking are common areas under RERA and the Nahalchand (2010) ruling, and terraces are common by default. A stilt slot conveyed by promoter sale is flagged `possible_incompatibility`; an exclusive terrace needs an explicit clause. Add this negative case to GF-T16.
+- **Extra claim kinds.** `encumbrance_claim` (mortgage), `litigation_flag` (lis pendens, stay, attachment), `lease_claim` (for example a telecom tower or DISCOM room on common property, with a non-unit lessee) and `reserved_development_claim` (promoter-reserved TDR or FSI floors). Same evidence and review rules. PACK shows them only as "flag per source X".
+- **Large beneficiary sets.** A lift core can serve 300–500 units in one hop. Paginate beneficiaries per hop through H01 `readScope` (limit at most 100) with exact totals; apply the 200-node bound only to multi-hop traversal. Add a D0 case with 480 beneficiaries.
+- **Single-beneficiary rule.** Flag only `general_common` spaces with fewer than two beneficiaries or beneficiaries that do not match the declared population. Limited common areas may have one beneficiary.
+
+### Z3. GF2 must-ship list
+
+GF2 ships: read relationships, one declaration with the rational check, one limited common area, the PACK projection and GF-T16. Everything else in section I is later work. `potential_development_space` defaults to `not_assessed` unless a sourced FSI rulebook (stilt and basement exclusions, premium and fungible FSI, TDR) is pinned; on screen it reads "remaining permissible floor area (m²), not a right".

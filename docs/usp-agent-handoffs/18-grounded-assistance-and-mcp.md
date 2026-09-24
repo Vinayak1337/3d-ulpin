@@ -121,3 +121,13 @@ Run `pnpm typecheck`, `pnpm test:ai`; `pnpm exec tsx --tsconfig apps/web/tsconfi
 ## K. Copy-paste assignment
 
 > Implement ASSIST on feat/usp-assistance using 00, 01 and this handoff. Start with actual D0 service facts and deterministic templates, then attempt normalized D4 rows for independent source testing. Build useful native answers with exact citations/actions before optional model routing or remote MCP. Citation membership alone is not truth: preserve subject, units, negation, unknown state and coverage mechanically. Use DEPLOY's gateway, FND auth/SDK/mounts and UI selection slots; do not add SQL, URL fetching, hidden writes or a separate data authority. Run J real-service injection/permission/semantic tests, return commits, fact outputs, screenshots and separate client gates. Local F1 assistance must not wait for public F2. No external activation or main merge without authorization.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. This file is full_product (FP-ASSIST). Task card: [H29](29-agent-task-cards.md) FP-ASSIST-01.
+
+- **Vendor-neutral.** "External MCP clients" means any vendor's client. Cite the MCP specification and the official SDK first; any single vendor's guide is one example.
+- **Origin and Host validation.** Streamable HTTP requires `allowedHosts` and `allowedOrigins`; a forged Origin or Host gets 403 (test it).
+- **Untrusted quotes.** `exactQuote` from uploaded documents is rendered as inert text (no markdown, no autolinks) with Unicode tag and bidi characters stripped. Public MCP tools return no free-text quotes; private tools wrap quotes in a typed `untrustedSourceText` field.
+- **ASSIST0 without a model** is a set of enumerated question chips generated from the available producers; free text arrives with ASSIST1. Templates are bilingual (English and Hindi), use Indian digit grouping and convert m² to sq ft with a stated rounding rule.
+- **Minimal prompts.** ASSIST1 sends the question plus a catalogue of fact IDs and kinds, never raw records ([H20](20-model-gateway-and-budget-pools.md) Z1).

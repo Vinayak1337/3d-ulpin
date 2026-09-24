@@ -2,7 +2,7 @@
 
 **Dataset policy update, 24 September 2026:** general map/load qualification uses real data from any suitable geography under [H28](28-data-acquisition-and-finale-tests.md). No Delhi/Uttam Nagar acquisition is required. D0/D1 smoke acceptance remains distinct from the larger real corpus, sparse-source and concurrent-ingestion interaction tests below; this documentation update does not claim those tests passed.
 
-**AI settings/delegation update, 23 September 2026:** use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) for worker ownership and [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) for the DEPLOY settings leaf. These are not new top-level product screens or a reason to delay the existing V0 scene.
+**AI settings/delegation update, 23 September 2026:** use [02 - implementation lead, role tiers and worker delegation](02-lead-agent-execution.md) for worker ownership and [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) for the DEPLOY settings leaf. These are not new top-level product screens or a reason to delay the existing V0 scene.
 
 Owner **UI**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026 after reviewing the revised feature handoffs 10–19 and shared contracts. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), this file and the actual enabled producers. ER-02/03/07/11/17/18/23–25 are incorporated. These are implementation/acceptance requirements, not claims that the UI or datasets have been tested in this documentation task.
 
@@ -14,7 +14,7 @@ Owner **UI**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 Se
 
 Deliver a polished, usable semantic 3D workbench: neighbourhood → selected building → supplied floor/unit → exact evidence → useful review/report action → reopen saved state. Photographic context is optional. Do not confuse a textured mesh with legal property geometry, or a satellite background with a complete 3D interface.
 
-The active route is [Studio catch-all](../../apps/web/app/studio/%5B%5B...view%5D%5D/page.tsx), using [Shell](../../apps/web/features/officer/shared/Shell.tsx). Active map: [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx) → [SavedSceneViewport](../../apps/web/features/studio/product/SavedSceneViewport.tsx) → [MapViewport](../../apps/web/features/spatial/MapViewport.tsx). Reuse [SpatialDataProvider](../../apps/web/features/spatial/data/Provider.tsx), [map sessions](../../apps/web/features/spatial/data/session.ts), [resource cache](../../apps/web/features/spatial/data/resource-cache.ts) and the appropriate existing renderer/lease path. Improving only [Studio App showcase](../../apps/web/features/studio/App.tsx) is not product integration.
+The active route is [Studio catch-all](../../apps/web/app/studio/%5B%5B...view%5D%5D/page.tsx), using [Shell](../../apps/web/features/officer/shared/Shell.tsx). Active map: [BlockPage](../../apps/web/features/officer/block/BlockPage.tsx) → [SavedSceneViewport](../../apps/web/features/studio/product/SavedSceneViewport.tsx) → [MapViewport](../../apps/web/features/spatial/MapViewport.tsx). Reuse [SpatialDataProvider](../../apps/web/features/spatial/data/Provider.tsx), [map sessions](../../apps/web/features/spatial/data/session.ts), [resource cache](../../apps/web/features/spatial/data/resource-cache.ts) and the appropriate existing renderer/lease path.
 
 The retained D0/D1 qualified viewport path and `ExternalMeshLayer` use Cesium. Keep that path as the current finale runtime and verify its actual feature picking, selected-space identity, basement visibility, section/isolate controls and restored camera. Cesium clipping-polygon documentation for glTF/tilesets does not by itself qualify the existing Primitive layer; a section must be demonstrated against the actual asset/layer type. Clipping changes display only; FIND/IMPACT backend results remain analytical authority. R3F is a later measured option under the one-active-runtime rule, not a required migration.
 
@@ -183,7 +183,7 @@ If a budget fails, reduce resident LoD/texture resolution/draw calls within the 
 2. GF2 mounts reviewed domain candidates, supported spaces and FIND results through the existing typed selection/slots and Cesium display path. Keep D1 exterior and unavailable interiors distinct. No learner/public workflow prerequisite.
 3. GF3 mounts governance checks and the existing IMPACT0 report; GF4 mounts PACK's exact-revision card/QR after its producer tests. HISTORY/RIGHTS/INGEST feature leaves integrate according to their actual dependencies. Native ASSIST0 can run after its F1 producers exist, not only after F2.
 4. `full_product` UI-public: F2/DEPLOY enables released finder/own-submission routes and separately public MCP settings; never reuse internal search/full dossier on public surfaces. GF4 uses PACK's same-device loopback resolver and access checks; phone scanning needs a separately qualified protected read surface and is not a finale prerequisite.
-5. Run corresponding V shots, negative integration and workload tests, then full regressions. H4 intended-user observation is a separate usability gate, not a substitute for automated verification or a prerequisite to all coding.
+5. Run corresponding V shots, negative integration and workload tests, then full regressions. Automated task-completion checks (UI-07) are the usability gate; observation by a person is optional and never claimed.
 
 Existing commands: `pnpm typecheck`, `pnpm test:studio`, `pnpm test:register-scope`, `pnpm test:register-exports`, `pnpm test:registry`, `pnpm test:api`, `pnpm test:e2e`. Proposed tests after creation: `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-ui-integration.test.ts tests/usp-external-scene.test.ts`; `pnpm exec playwright test tests/e2e/usp-product-journey.spec.ts tests/e2e/usp-visual.spec.ts`. Respect [Playwright config](../../playwright.config.ts), [isolation](../../scripts/engineering/isolation.mjs) and [build-server guard](../../scripts/check-build-server.mjs).
 
@@ -194,3 +194,72 @@ Return route→producer→pack→test evidence matrix, actual SHA/source/artifac
 ## 11. Copy-paste UI assignment
 
 > Implement UI on feat/usp-ui-integration using 00, 01, this file and enabled feature contracts. Work in the actual Studio route and shared BlockPage/SavedSceneViewport/MapViewport path. Preserve the recorded D0/PACK0 and D1 roof/identity baseline, then verify the current Cesium path's picking, basement/section interaction and camera restoration against actual assets. Mount GF2 domain checks/spaces, GF3 governance/IMPACT0 and GF4 exact-revision PACK card/QR as their producers qualify; preserve rich external source shapes, not generic boxes or another viewer. Qualify the bounded finale cohort and section 8's interaction-under-ingestion tests with bounded resident assets; reserve 10k/100k/1M D3 corpus qualification for full_product FP-SCALE; no locality prerequisite or million-object all-resident scene. Follow selection-generation/cache/access rules, durable INGEST manifests and all relevant V1–V8 shot contracts. UI owns shared frontend; FND backend/config, feature owners leaves, DATA fixtures. Use stated no-data/no-model/local-frame fallbacks and continue unaffected work without asking humans to design it. Run section 10 actual service/browser/geometry/performance checks, compare fixed-camera fresh screenshots and return exact evidence and capability gates. Do not call mocked/showcase-only work finished, invent source facts, activate public services or merge main without authorization.
+
+## Z. Hardening addendum (H97): design system, screens and wording
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. This file stays the authority for routes, selection, cache, slots and V1–V8; [the design system](../design-system/README.md) is the authority for tokens, components, map styling and copy. Task cards: [H29](29-agent-task-cards.md) UI-01 to UI-06.
+
+### Z1. Visual source of truth
+
+| Topic | Rule |
+| --- | --- |
+| Tokens | Extend the existing `--ui-*` tokens in `apps/web/features/officer/shared/tokens.css` with the values in [`docs/design-system/tokens.css`](../design-system/tokens.css): map, rights, finding marks, sequential ramp, utility colours and the dark theme. Rename nothing that already exists; consolidate, do not add a second token file at runtime |
+| Base | UX4G 3.1 foundations plus our map and 3D layer. Do not install the UX4G CSS/JS bundle or any other component library in Studio ([H25](25-all-format-agent-and-ux4g.md) Z) |
+| Fonts | Self-host Noto Sans, Noto Sans Devanagari and Noto Sans Mono (woff2, SIL OFL) under `apps/web/public/fonts/`; put them first in `--ui-font-sans` and `--ui-font-mono`. No Google Fonts request in any mode. Call `document.fonts.load()` before creating Cesium labels |
+| Icons | Phosphor Regular (already a dependency) through one `Icon` wrapper. Screens rebuilt for the finale switch from `lucide-react` to the wrapper; never mix both sets on one screen. A lint rule warns on new `lucide-react` imports |
+| Accent | Forest green `--ui-primary` `#235347` (dark `#6cc3a0`) is the only accent. Map colour appears only when a Colour by mode is on |
+| Text | Studio body 15 px, metadata at least 12 px; Portal body 16 px. Tabular figures for numbers |
+
+### Z2. Layout reconciled with section 4
+
+- **Top bar 56 px** (`--ui-header-height: 56px`): wordmark, **Batches · Map · Register**, search (`/`), area switcher, Live/Snapshot status, theme, user. Area, source classification and revision sit in a 36 px scope strip at the top of the map column, which is the second row in section 4's sketch.
+- **No permanent left rail.** Layers, Spaces, Sources and Checks open on demand as one 308 px panel over the left of the canvas; closed by default; one at a time.
+- **Inspector** 360 px by default, 400 px while an evidence preview is open (inside the 360–420 px range).
+- **One tray** (172 px, collapsible) holds either the import stream or the findings list, never both.
+- Floating map toolbar top-left, level rail on the canvas's right edge, legend bottom-left, readout on the bottom edge.
+- Breakpoints as section 4: about 900 px collapses optional panels; about 620 px uses one full-height sheet.
+
+### Z3. Screens by release
+
+The [UI brief](../design-system/ui-brief.md) lists 33 screens. The finale builds these 15; the rest are full_product.
+
+| Brief ID | Screen | Route (section 3) | V shot | Release |
+| --- | --- | --- | --- | --- |
+| S1 | Batches | `/studio/work` | V8 | finale_v1 |
+| S2 | Add files | `/studio/add-files` | V7 | finale_v1 |
+| S3 | Live import on map | `/studio/imports/:importPackageId` | V7 | finale_v1 |
+| S4 | Area map | `/studio/areas/:areaId` | V1, V2 | finale_v1 |
+| S5 | Building and floors | `/studio/areas/:areaId?feature=…&record=…` | V2, V3 | finale_v1 |
+| S6 | Underground and impact screening | same, underground mode | V4 | finale_v1 |
+| S7 | Evidence viewer | same, `panel=evidence` | V5 | finale_v1 |
+| S8 | Findings review | same, findings tray | V4 | finale_v1 |
+| S9 | Workspace: review details | `/studio/properties/:buildingId/workspace` | V3 | finale_v1 |
+| S10 | Workspace: check and record | same, check stage | V3 | finale_v1 |
+| S11 | Assign proposed 3D ULPIN (dialog) | over S10 or S12 | V5 | finale_v1 |
+| S12 | Property register | `/studio/properties/:buildingId/register` | V5, V6 | finale_v1 |
+| S13 | Deviation check | register or map, comparison panel | V6 | finale_v1 |
+| S14 | Property Card | register, card preview | V5 | finale_v1 |
+| P4L | Verify card, local demonstration link | loopback resolver ([H10](10-scoped-evidence-packets.md) local_operator) | V5 | finale_v1 |
+| P1–P7 | Public portal | `/public/*` | V8 | FP-PUBLIC |
+| A1–A7 | Admin console | not built; finale counts live on Batches (at most three) and the workspace dialog | none | full_product |
+| S15–S19 | Unit page, revision compare, air-rights, command palette, split/merge | later | V6 | full_product |
+
+### Z4. Fixed wording
+
+| Do not show | Show instead |
+| --- | --- |
+| "Issue 3D ULPIN", "Issued" | "Assign proposed 3D ULPIN", "Assigned" |
+| An identity code with parcel, level or use segments | The `P3` code, plus the separate "Location" line ([H26](26-identifiers-and-standard-exchange.md) Z1) |
+| "m AMSL" on levels | Metres plus the named vertical reference, for example "m · site datum SD-1"; mean sea level only when the source states it |
+| "Export dig notice" | "Export screening report", with "Not a clearance or dig permission" on the report |
+| Utility sleeves sized by quality letter | A sleeve only when the source states a positional tolerance; otherwise the quality letter badge and "tolerance not stated" |
+| "Chain verified" | "Chain consistent" (or "Chain signed and verified" only when a signed head verifies) |
+| "Ordered by likelihood" | Deterministic order: blocking, then severity, then size ([H27](27-domain-ai-and-cadastral-checks.md) Z3) |
+| "Work queue" | "Batches" |
+| Phone QR scan as the finale path | "Local demonstration link" on the same device |
+
+### Z5. Acceptance additions
+
+- Offline visual test: no external font or icon requests; a Hindi label renders in the map and the inspector.
+- Contrast checks for every token pair used as text (4.5:1) and every control border (3:1) in both themes.
+- Screenshots for V1–V8 use the specimen data in the UI brief so fresh captures can be compared with the mockups.

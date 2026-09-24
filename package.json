@@ -6,9 +6,6 @@
   "scripts": {
     "studio:prepare": "tsx scripts/studio/prepare.ts",
     "test:studio": "tsx --tsconfig apps/web/tsconfig.json --test tests/studio-*.test.ts",
-    "test:studio:browser": "node scripts/spatial/studio-verify.mjs",
-    "test:studio:continuation": "node scripts/spatial/studio-continuation-verify.mjs",
-    "studio:capture": "node scripts/spatial/studio-capture.mjs",
     "data:uttam:check": "node scripts/datasets/uttam-nagar.mjs check",
     "data:uttam:install": "node scripts/datasets/uttam-nagar.mjs install",
     "data:uttam:verify": "node scripts/datasets/uttam-nagar.mjs verify",
@@ -31,7 +28,6 @@
     "typecheck": "pnpm --filter @ulpin/web typecheck",
     "test:e2e": "playwright test",
     "test:scene": "tsx --test tests/building-scene.test.ts",
-    "test:v2": "tsx --tsconfig apps/web/tsconfig.json --test tests/v2-*.test.ts apps/web/lib/legacy-url.test.ts apps/web/features/officer/workspace/measurement.test.ts",
     "test:case-document-copy": "tsx scripts/verify-case-document-copy.ts",
     "test:demo": "tsx scripts/verify-demo.ts",
     "test:api": "tsx scripts/api-regression.ts",

@@ -107,7 +107,7 @@ Public Find my property supports identifier/address/map with optional location p
 
 **D0 before/after:** A selects B-A/U-A101, uploads a synthetic mixed-page plan, receives clarification and a linked draft. B cannot read A's submission/upload/preview/notification/packet by changing any ID. Officer records through normal review; only then does A see recorded. Test same Flat 101 in B-B, missing ULPIN, absent unit, two-parcel building and incomplete target. A contact-verified email yields no ownership grant.
 
-**D5 after local completion:** attempt one permitted plan/section/related clause from [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) or [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or consenting campus/property source. These are acquisition leads; previous attachments failed. Preserve matched drawing metadata and de-identify permitted fixture. No sensitive original in public Git. If blocked, continue D0 and report real-source gate unmet, not ask teammates to implement the workflow.
+**D5 after local completion:** attempt one permitted plan/section/related clause from [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) or [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or an openly licensed public document. These are acquisition leads; previous attachments failed. Preserve matched drawing metadata and de-identify permitted fixture. No sensitive original in public Git. If blocked, continue D0 and report real-source gate unmet, not ask teammates to implement the workflow.
 
 Interrupt before/after final upload receipt, scan, promotion, submission and draft creation. Test unavailable scanner, active content, byte/pixel overflow, same bytes/different intent, hash mismatch, stale target, simultaneous reviewers, withdrawal, clarification resubmission, revoked release and mail acknowledgement loss. Accepted-state rollback must leave no orphan draft/link/event. Public projection must not execute database synchronization. Inspect actual records/receipt IDs, not just mocked status messages.
 
@@ -116,3 +116,25 @@ Run `pnpm typecheck`, `pnpm test:case-document-copy`, `pnpm test:api`; `pnpm exe
 ## K. Copy-paste assignment
 
 > Implement CITIZEN from 00, 01 and this handoff on feat/usp-citizen. Obtain D0 two-person/reviewer data, attempt permitted D5 only for later real-source testing. Build public-release-only lookup, durable targetless receipts, hash-bound quarantine/promotion, explicit submit/clarify/withdraw/review commands and in-app notifications. FND supplies prepareProposal/commit/identity adapters; UI owns mounts; DEPLOY supplies scanner/mail. Complete the real submission→reviewed draft→separate recorded-receipt path, not fake acceptance. Run J crash/isolation/stale/delivery tests and return commits, pack/receipt evidence, screenshots and separate F2 gates. No direct registry writes, private-source public fallback, ownership-by-email, external activation or main merge without authorization.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. This file is **full_product** (FP-PUBLIC, after GF5 and FP-DEPLOY); "F0/F1-feature/F2" gate names above map to FP-DEPLOY and FP-PUBLIC-TEST. Task card: [H29](29-agent-task-cards.md) FP-PUBLIC-01.
+
+### Z1. DPDP Act 2023 and Aadhaar rules
+
+- Pin a `PrivacyNoticeVersion` and a legal basis (consent or a section 7 legitimate use) to every submission. Show the notice before collection, in English and Hindi at least (Eighth Schedule languages on request).
+- Retention table per state: quarantine, rejected, withdrawn, accepted evidence kept under a stated legal obligation. Withdrawn or rejected submissions are erased after the stated period, leaving only a hash tombstone. Test it.
+- `POST /me/data-requests` for access, correction and erasure, a published grievance contact, and a breach runbook in [H19](19-india-contained-deployment.md) Z3. No processing of children's data.
+- Uploaded deeds carry Aadhaar, PAN, phone numbers and photos. Run the shared redaction module ([H01](01-shared-contracts-and-ownership.md) Z1): mask Aadhaar to the last four digits in every derivative (preview, index, logs, model input), strip EXIF from derivatives, keep the original filename as restricted metadata. D0 fixture: a synthetic deed with a Verhoeff-valid dummy Aadhaar and a GPS-tagged JPEG; neither appears in outputs.
+
+### Z2. Abuse controls
+
+Per-subject and per-target submission quotas (429), a required `relationshipToProperty` with an attestation against false statements, hash and near-duplicate grouping into one review item, an `abusive` reviewer disposition that throttles the subject, and a 403 when submitter, reviewer and recorder are the same person or linked. Subscriptions in v1 cover only the user's own submissions and requests, never another property's dispute activity.
+
+### Z3. Identity and ingress
+
+- Citizen sign-in: MeriPehchaan or DigiLocker OIDC first; OTP over SMS as fallback (needs TRAI DLT registration, a full-product prerequisite in [H90](90-required-human-tasks.md)); no Aadhaar e-KYC unless an approved purpose exists.
+- The public ingress allowlists only `/public/*` and the citizen API routes; everything else returns 404 at the proxy. Public sessions use a separate cookie. Test that `/studio/*` and other USP routes return 404 from the public origin.
+- Public pages meet GIGW 3.0 and WCAG 2.1 AA, ship English and Hindi, and follow the Portal rules in [the design system](../design-system/README.md).
+- Replace the D5 RERA-attachment step with the DATA-02 synthetic redacted deed.

@@ -1,0 +1,36 @@
+/*
+ * Self-hosted fonts (SIL Open Font License). UI-01 adds these woff2 files under
+ * apps/web/public/fonts/ and imports this block once from the app's global CSS.
+ * No request to fonts.googleapis.com in any mode (H99 Z1). Download the variable
+ * fonts from the notofonts GitHub releases and convert to woff2; record SHA-256 in the PR.
+ */
+@font-face {
+  font-family: "Noto Sans";
+  src: url("/fonts/NotoSans-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans Devanagari";
+  src: url("/fonts/NotoSansDevanagari-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0900-097F, U+1CD0-1CFF, U+200C-200D, U+20A8, U+20B9, U+25CC, U+A830-A839, U+A8E0-A8FF;
+}
+@font-face {
+  font-family: "Noto Sans Mono";
+  src: url("/fonts/NotoSansMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+/* Portal only (FP-PUBLIC): Noto Sans Display SemiBold for the home heading. */
+@font-face {
+  font-family: "Noto Sans Display";
+  src: url("/fonts/NotoSansDisplay-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}

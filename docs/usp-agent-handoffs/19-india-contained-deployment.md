@@ -127,3 +127,32 @@ Run `pnpm typecheck`, `pnpm test:api`, `pnpm test:ai`, existing `pnpm platform:h
 ## K. Copy-paste assignment
 
 > Implement DEPLOY using 00, 01 and this handoff on feat/usp-deployment. Use non-personal D0 to build default-deny policy, governed Sarvam/local adapters, hash-bound scanner and honest mail outcomes; keep no-AI local operation usable. FND owns shared config/build/auth/legacy patches and UI the existing workspace dialog. Inventory all routes/SSR/assets/browser calls, not just new model traffic. Build/test the standalone stack with correct web/dispatcher entrypoints in new isolated volumes, then run J egress/scanner/recovery tests. Actual approved service/account evidence is a separate gate; do not ask humans to code/provision by default, collect secrets in Git/chat, buy credits, claim configuration proves residency or launch/merge main without authorization.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) DEPLOY-02 and DEPLOY-03.
+
+### Z1. The finale build must not call non-Indian providers
+
+The legacy officer-AI path can still send deed text and image crops to a non-Indian endpoint, while the Shell says "Your evidence stays here". In the finale build (GF0, owner FND):
+
+- Ignore `NOUS_API_KEY` unless `ULPIN_ALLOW_NON_INDIA_PROVIDER=1` is set explicitly; the finale profile never sets it.
+- Drive the Shell's data-residency copy from capability status, not a fixed sentence.
+- GF-REHEARSAL asserts zero requests to non-allowlisted hosts using the egress log.
+
+### Z2. Offline rehearsal profile `local_demo_offline`
+
+Venue Wi-Fi is unreliable. Add a sub-profile where the gateway serves hash-matched recorded responses through the replay adapter ([H20](20-model-gateway-and-budget-pools.md) Z1), labelled on screen "replayed from rehearsal <date>". Map tiles and fonts are served locally. Recipe reuse is labelled as reuse. GF-REHEARSAL runs once with the network disabled ([H28](28-data-acquisition-and-finale-tests.md) Z5).
+
+### Z3. Compliance mapping (demo-configured versus production-gated)
+
+| Obligation | Finale (local demo) | FP-DEPLOY |
+| --- | --- | --- |
+| DPDP Act 2023 and Rules: notice, purpose, retention, erasure, grievance, breach intimation | Synthetic or consented data only; retention table documented | Processor contract with the provider, per-table retention and erasure jobs, grievance contact, breach runbook |
+| CERT-In directions (28 April 2022): incident reporting within 6 hours, 180-day log retention in India, NTP sync to NIC/NPL | Not applicable to a local demo; stated as such | Required and tested |
+| Retention for `usp_assist_runs` and model-call tables | 30 days in demo | Set by the approved policy |
+| Fine-resolution geospatial data (own drone ortho, DSM, LiDAR) | Processed on India-located machines; agents get downsampled or synthetic samples | Same; an FP-DEPLOY prerequisite in H90, not a finale input |
+
+### Z4. Host and Origin checks
+
+The loopback-bound finale app validates the `Host` header against an allowlist (DNS-rebinding protection). A forged `Host` gets 403; add this to section J.
