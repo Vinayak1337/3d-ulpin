@@ -1,74 +1,78 @@
-# 24 — Product explanation and copy-ready PPT page
+# 24 — All-format AI agent: product value and PPT wording
 
-**24 September 2026. Planned product direction, not a claim that all features are implemented.** The working name remains 3D ULPIN. H00/H14/H21/H22/H23 contain the engineering plan.
+**Revised 24 September 2026. Proposed product and delivery commitments, not a claim that all capabilities are already implemented.** Read H00/H14/H21/H22/H23 and H25. The working name remains 3D ULPIN.
 
 ## Product in one paragraph
 
-We are building an India-focused 3D property platform that turns fragmented spatial data into an inspectable map linked to property evidence. An AI agent organizes large unfamiliar datasets into manageable chunks and helps convert them into our representation. Buildings and roads appear progressively while a specialized ML converter learns alongside the import from permitted checked examples. Once independently validated, it takes over compatible pending work and future familiar inputs. A separate public dashboard lets people submit documents and discrepancies; reviewers connect accepted evidence to the same property record.
+We are building an AI-agent-powered 3D property platform designed to support all formats of spatial, survey, building-model and property-document data. The agent selects a conversion route or generates additional visual detail where needed, then converts the result into our common representation. Buildings and roads appear progressively while a smaller ML converter learns alongside the import and, once validated, takes over compatible pending and future work. Registry documents can arrive later. A separate public dashboard collects evidence and discrepancy reports. Private processing is designed to stay in India using Sarvam and India-hosted infrastructure, with UX4G-guided interfaces and GIGW 3.0 accessibility targets.
 
-## Core value and how it is delivered
+## Value and method
 
-| Value proposition | Method |
+| Proposed value | How we intend to deliver it |
 | --- | --- |
-| A useful map before the full import finishes | Source-preserving chunks, saved partial geometry, event notifications and bounded incremental rendering |
-| Less repeated interpretation | Familiar-schema mappings plus an actual trained learner; a qualified pending-queue handover, not a model call for every row |
-| Better handling of incomplete inputs | Keep usable facts; show optional estimated/illustrative visuals separately; flag inputs too weak for spatial reconstruction |
-| A map that grows into a property record | Stable identities allow registry documents, plans and other evidence to be attached later |
-| Public participation with traceable outcomes | Separate public dashboard for discrepancy/evidence submission, clarification and reviewed correction |
-| India-focused data handling | Indian operational data, data.gov.in first; Sarvam and our own training/storage inside an approved India deployment |
-| Vertical property understanding | Surface parcels, floors, units, shared spaces and underground volumes linked to their supporting evidence |
+| All-format ingestion through an AI agent | Detect structure, select readers/conversion chains, qualify new adapters and connect diverse inputs to one common representation |
+| Better-looking 3D from incomplete inputs | Generate or estimate useful visual detail before final conversion where needed, with explicit provenance and insufficiency flags |
+| A useful map while processing continues | Source-preserving chunks, saved assets and SSE notifications; buildings/roads are added progressively |
+| Learning that reduces repeated interpretation | Train a smaller model alongside the import, independently test it and switch pending compatible work; familiar mappings still execute directly |
+| Evidence and public corrections over time | Stable property identities, later registry/plan links and a separate citizen submission/status dashboard |
+| Private data stays in India | Sarvam AI plus India-hosted storage, our own ML, logs and backups, verified before protected deployment |
+| Citizen-friendly government-design alignment | UX4G-guided reusable components; GIGW 3.0 / WCAG 2.1 AA implementation and review targets |
 
-These are intended differentiators and benefits, not claims of exclusive novelty, measured savings, customer adoption or established market leadership.
+All-format is the product ambition across relevant domain formats; per-format support is demonstrated incrementally. Corrupt, encrypted, inaccessible or fundamentally insufficient inputs retain an explicit blocked/gap state. Generated visual detail is not measured or legal evidence. These are proposed differentiators, not quantified savings or exclusive novelty claims.
 
-## Method without jargon
+## Two conversion routes, one shared map
 
-1. Keep the original file and inspect its structure.
-2. Split it into small, meaningful pieces without changing its source meaning.
-3. Use a familiar conversion or ask Sarvam to help interpret new patterns.
-4. Check the output and show usable buildings/roads as each part becomes ready.
-5. In parallel, train and test our smaller model on eligible examples.
-6. Switch only the remaining compatible work when that model is qualified; keep chunking and checking.
-7. Add evidence and reviewed corrections later without rebuilding the whole map.
+**Direct:** original → meaningful chunks → interpret/read → convert → validate → progressively display.
 
-The learner is not responsible for every geometric reconstruction task. Building extraction from imagery, point-cloud processing, floor segmentation and topology checks use dedicated processors and evaluation under the problem statement. Better-looking generated detail is labelled, never evidence of ownership or a measured boundary.
+**Enrich first:** original → meaningful chunks → interpret/read → generate/estimate needed visual detail → convert enriched derivative → validate → progressively display.
+
+**Alongside both:** eligible checked examples → train smaller ML → independent tests → promote → route unstarted compatible chunks to the learned path.
+
+Keep originals unchanged and label generated fields/assets. Familiar schemas remain chunked too. A model or adapter promotion never makes all remaining geometry instantly resident in the browser. Later source evidence replaces estimates through traceable revisions, not silent edits.
 
 ---
 
-# PPT-ready page — copy-ready wording
+# PPT-ready page — proposed solution and USPs
 
 ## Slide title
-**3D ULPIN: progressive mapping that learns new data structures**
+**3D ULPIN: all-format AI ingestion, richer 3D, progressive delivery**
 
 ## One-line pitch
-**Turn fragmented Indian spatial data into an inspectable 3D property map that appears progressively, adapts to new schemas and gains evidence over time.**
+**An AI agent designed to turn spatial and property data in any format into a richer, progressively built 3D map—by converting it directly or generating the visual detail needed before conversion.**
 
 ## The problem
-Large files arrive in different structures. Traditional land outlines do not explain stacked apartments, shared spaces or underground infrastructure. Missing or disconnected records make property review difficult.
+Spatial files and property documents arrive in incompatible formats, often incomplete. Flat parcel maps cannot explain stacked apartments, shared spaces or underground infrastructure.
 
 ## Our proposed USPs
-- **See results sooner:** buildings and roads appear chunk by chunk while the rest processes.
-- **AI starts; specialized ML takes over:** checked, permitted examples train a smaller converter; validated models handle compatible pending and familiar data.
-- **Useful despite incomplete data:** preserve known facts, label estimated/illustrative detail and flag insufficient evidence.
-- **Evidence can arrive later:** attach registry documents, plans and corrections to stable property identities.
-- **Public participation, controlled review:** a separate dashboard accepts discrepancy reports and supporting documents.
-- **India-focused by design:** Indian operational datasets, data.gov.in first, and Sarvam AI within an approved India-resident processing architecture.
+- **All-format AI ingestion:** the agent selects and adapts conversion tools instead of making every supplier follow our schema.
+- **Enrich and stream:** generate labelled visual detail where needed, then reveal buildings and roads chunk by chunk—not after the whole import.
+- **AI starts; specialized ML takes over:** train alongside processing; validated converters handle remaining compatible chunks and future familiar data.
+- **Evidence and public participation:** attach registry records later; a separate public dashboard collects documents, discrepancies and tracked corrections.
+- **Private data stays in India:** use Sarvam AI with India-hosted storage, ML training, logs and backups.
+- **UX4G-guided, citizen-friendly design:** reusable interfaces designed against GIGW 3.0 accessibility and usability requirements.
 
-## Method line / diagram text
-**Source files → small chunks → AI/familiar conversion → validated 3D map**
+## Method line
+**Any-format input → source-preserving chunks → direct conversion OR visual enrichment + conversion → progressively built 3D map**
 
-**In parallel: eligible examples → train ML → independent tests → hand over the remaining compatible queue**
+**Parallel learning: checked eligible examples → train → validate → hand over pending compatible work**
 
 ## Technology line
-**Three.js / React Three Fiber for rich interaction; tiled 3D delivery; a shared spatial database; Sarvam-assisted interpretation; a smaller local schema learner.** Renderer changes and the learned path must be qualified against the actual application.
+**Sarvam AI + specialized ML + Three.js / React Three Fiber + tiled 3D delivery + one shared spatial model + UX4G-guided interfaces.**
 
-## Honest status footer
-**Local core demonstrated; concurrent learning, high-load operation and protected public deployment are planned qualification milestones. Sarvam-derived training requires applicable permission. Generated visuals are not survey or ownership evidence.**
+## Status footer
+**Proposed capabilities; delivered support is verified by format and workflow. Generated visuals remain labelled. India residency and GIGW conformance are deployment/review gates, not claimed certifications.**
 
-## Suggested presenter sentence
-“Our advantage is the connected workflow: people can inspect the map while it is being built, the system can reduce repeated interpretation as it learns, and new documents improve the same property record rather than starting again.”
+## Presenter sentence
+“The AI agent is the integration layer: it interprets unfamiliar inputs, converts or enriches them, and starts showing a useful map while our smaller model learns to reduce repeated work.”
 
 ---
 
-## Do not put these claims in the PPT
+## Presenter notes and source basis
 
-Do not say “understands every possible file,” “instantly renders a million buildings,” “Sarvam guarantees correctness,” “generated details show the actual field,” “India residency is already certified,” “official 3D ULPINs are issued,” or quote a speedup/accuracy/customer number not supported by executed evidence.
+“All-format” describes the intended agent-led architecture, not tested support for every existing file today. Keep the claim in a proposed-solution context and show the current capability matrix in demonstrations. Source insufficiency is different from format incompatibility.
+
+The India point refers to private project data and approved India deployment. Publicly released information can reach external public browsers. Sarvam states India-only residency for Indian deployments; H23/H25 require verifying the entire app path. Sarvam-derived training remains subject to H21's applicable permission gate.
+
+UX4G is a Digital India/MeitY initiative; GIGW 3.0 includes WCAG 2.1 Level AA. Adopt these as design and verification targets, not government endorsement or certification. Official references: https://www.ux4g.gov.in/get-started/about-ux4g ; https://guidelines.india.gov.in/new-features-of-gigw-3-0/ ; https://www.sarvam.ai/trust-center . Checked 24 September 2026.
+
+Do not describe generated geometry as surveyed fact, claim instant whole-city rendering, guaranteed AI correctness, official identifier issuance, certified residency/conformance, or invent performance/customer results. Operational data remains Indian, data.gov.in first, with no required locality; tests may use any permitted geography and existing datasets remain.
