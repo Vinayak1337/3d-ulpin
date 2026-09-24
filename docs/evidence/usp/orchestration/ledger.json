@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-24T23:55:12.129943+00:00",
+  "updatedAt": "2026-09-24T23:56:35.979710+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "f45bbc7ad69d826d2fdca19d83e0dcf568bf95fa",
+    "acceptedStagingBase": "10503934234055faf5dc23f26007b717062b68bf",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -28,7 +28,9 @@
         "scope": "report only"
       }
     ],
-    "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf"
+    "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
+    "remoteStaging": "f45bbc7ad69d826d2fdca19d83e0dcf568bf95fa",
+    "publication": "local integration only; not pushed"
   },
   "scope": {
     "sequence": [
@@ -96,7 +98,7 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "bootstrap_accepted_idle",
+      "status": "dispatching_FND-01",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -138,6 +140,46 @@
         "independence": "same_family",
         "verdict": "accepted"
       }
+    },
+    {
+      "assignmentId": "FND-01",
+      "attempt": 1,
+      "callbackId": "ulpin-FND-01-attempt-1",
+      "objective": "Inventory actual shared seams and rerun bounded D0/D1 regression without claiming unavailable runtime integration",
+      "baseCommit": "10503934234055faf5dc23f26007b717062b68bf",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-01-contract-inventory",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "scripts/usp/gf/GF-CONTRACT.*",
+        "tests/usp-gf-contract.test.*",
+        "docs/evidence/usp/finale/GF-CONTRACT/",
+        "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md section 10 status annotations only"
+      ],
+      "exclusions": [
+        "application behavior",
+        "shared schema/migrations/dependencies/configuration",
+        "release-plan.json and validator tools (lead LEAD-01)",
+        "orchestration/ledger.json",
+        "historical fixtures/receipts",
+        "existing data/credentials",
+        "formal UI"
+      ],
+      "acceptance": [
+        "H29 FND-01 and H28 Z1 inventory schema and seven seams",
+        "H01 section 10 items 1–6 honestly annotated done@sha or remaining with receipt link",
+        "Current-code D0/D1 unit and isolated integration checks with actual exit codes, hashes and sanitized artifacts; failures retained",
+        "Job consumer absence and other unqualified seams explicit; no gate completion without independent review"
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-CONTRACT/FND-01-report.md",
+      "status": "dispatching",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -701,7 +743,7 @@
         "GF-CONTRACT"
       ],
       "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
-      "status": "pending_current_evidence",
+      "status": "assigned_inventory_pending_evidence",
       "evidence": []
     },
     {
@@ -800,13 +842,18 @@
       "command": "Parent inspected worker turn_context, read_thread, commit diff and ancestry",
       "exitCode": 0,
       "result": "actual gpt-6-sol/high; isolated /51a5 worktree; only owned report changed; callback sender/assignment/attempt matched"
+    },
+    {
+      "command": "git merge --ff-only feat/ulpin-finale-full-product (local staging)",
+      "exitCode": 0,
+      "result": "staging at 10503934234055faf5dc23f26007b717062b68bf; byte-identical pre-existing porcelain status, main SHA unchanged"
     }
   ],
   "nextSteps": [
-    "Integrate accepted bootstrap documentation into local staging without changing pre-existing checkout deletions.",
-    "Assign FND-01 to the same verified worker at the updated staging base.",
-    "Lead retains LEAD-01 validator and shared plan machinery ownership; formal UI is deferred.",
-    "On callback inspect changes and actual tests; preserve open gates and dispatch next bounded work."
+    "End turn after dispatch and one bounded wait_threads snapshot; worker callback resumes review.",
+    "Review FND-01 commit/test artifacts against assignment and actual current code; do not equate inventory with GF0 completion.",
+    "Implement LEAD-01 as lead-owned plan machinery; acquire GF0 sources with the next bounded DATA assignment.",
+    "Continue finale then full_product; formal UI requires later linked mockup authorization."
   ],
   "processedCallbacks": [
     {
