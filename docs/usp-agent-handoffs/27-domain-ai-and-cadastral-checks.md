@@ -61,3 +61,36 @@ FND owns proposed shared `packages/contracts/src/usp/domain-candidates.ts`; DOMA
 5. UI demonstrates one coherent selected building/source/identity/revision, candidate-to-review transition and explicit uncertainty. GF5 records actual output hashes, errors, processing time, live versus retained steps and failure fallback.
 
 Tests must prove source hash unchanged; candidate and accepted draft use separate revisions; stale worker/review cannot publish; unsupported/missing data remains unknown; no AI output allocates an ID, source height or legal result. Save GF-AI and GF-T17/18 receipts for GF2; HISTORY saves GF-T19 for GF3. Update H28's gate matrix with clean negatives and actual evidence. A tool installation, passing typecheck or a polished scene alone does not pass either gate.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) DOMAIN-01 to DOMAIN-03.
+
+### Z1. Site model pipeline, the Helsinki way
+
+Helsinki and 3DBAG both build two products from one capture: a textured context mesh for looks, and semantic building models for questions. Do the same for one site from an open drone dataset with published ground control points (DATA-06; foreign data labelled `test_only`, an Indian site optional), with explicit artefact contracts so each step can be checked:
+
+| Step | Tool (conditional on the suitability gate above) | Output artefact and contract |
+| --- | --- | --- |
+| 1. Capture | Open drone dataset with overlapping imagery and published GCPs, split into control and at least 3 held-out checkpoints (leave-one-out when fewer than 8) | `capture-manifest.csv`: images, camera, GCP and checkpoint coordinates with horizontal CRS and named vertical reference |
+| 2. Reconstruct | OpenDroneMap | Orthophoto, DSM, DTM, point cloud and the reconstruction report with checkpoint residuals |
+| 3. Classify | PDAL | Ground/non-ground cloud; building labels still come from step 4 |
+| 4. Footprints | Learned building-mask route (GF-AI) plus officer review | Reviewed **roofprints** (imagery outlines include chajjas and balconies; they are not ground footprints) |
+| 5. LoD1.2 prism | Deterministic | `groundZ` = median DTM sample in a 1–3 m ring outside the footprint, storing min and max for slope; roof height = 70th percentile of nDSM inside the roofprint (record 50p, 70p and max as 3DBAG does; freeze 70p for the prism in GF0). CityJSON `lod: "1.2"` |
+| 6. LoD2.2 roof | roofer | Planar roof and wall surfaces with semantic IDs, CityJSON `lod: "2.2"`; unsupported roofs stay LoD1.2 with a limitation |
+| 7. Interiors | Plan segmentation route plus reviewed level schedule | Reviewed unit prisms per level (vertical delineation above) |
+| 8. Publish | Existing compiler | 3D Tiles 1.1 with feature metadata `recordId`, `geometryClass`, `semanticLod`, `sourceRevision` so a pick resolves to a registry record |
+
+The context mesh from step 2 stays `representation: context_mesh`, display-only and never measured. Parapets, stair cabins (mumty), lift rooms and water tanks are rooftop structures: they do not raise the storey count or the LoD1.2 roof height percentile beyond what the frozen rule gives, and GF-T19 has negatives for them ([H28](28-data-acquisition-and-finale-tests.md) Z3). Add a D0 sloped-site fixture with hand-computed `groundZ`, roof height and volume.
+
+### Z2. Paths and ownership correction
+
+HISTORY's deviation service lives at `apps/web/lib/server/usp/history/deviation.ts` (HISTORY's own directory under H01 section 9), not under `domain/`. DOMAIN still supplies candidates and quantities; FIND supplies operations.
+
+### Z3. Learned ranking wording
+
+Findings are ordered deterministically in the finale: blocking first, then by severity, then by volume or area. Learned ranking is labelled "experimental ordering" and ships only if GF-AI preregistration includes it with its own holdout. No slide or screen says findings are "ordered by likelihood" unless that test passed.
+
+### Z4. Existing learned routes and oracle authorship
+
+Two learned routes already exist with pinned hashes: see `services/geo/ml-models.json` (CubiCasa5K rooms ONNX, RF-DETR building segmentation) and the small third-party-labelled evaluations in `docs/evidence/t061`. Start GF-AI from them rather than from scratch. RF-DETR's training set is undocumented, so either show the GF-AI holdout does not overlap it or evaluate the documented DeepLabV3 baseline fine-tuned on the HOTOSM training split. Independent truth comes from DATA-07 benchmarks; the carpet, share, prism and `groundZ` oracles come from DATA-08 (a different model family, committed before the implementation).

@@ -4,7 +4,7 @@
 
 **Owner: DEPLOY, as a supporting part of [19](19-india-contained-deployment.md), not an eleventh independent USP.** FND owns shared contracts, migrations and route registration; UI owns shared settings mounts. **Decision date: 23 September 2026. Planning/code inspection base: `codex/fnd-f0-f1@97146d62d7e64c946abfc98b0d7e670845b17857`. Status: implementation plan, not installed or live-qualified.** Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [14](14-adaptive-ingestion-and-progressive-review.md), [18](18-grounded-assistance-and-mcp.md) and [19](19-india-contained-deployment.md).
 
-This document governs runtime Sarvam inference. [02](02-lead-agent-execution.md) separately governs the GPT-6 Sol/Astra agents that write our software. Development-model usage and Sarvam API billing are different budgets.
+This document governs runtime Sarvam inference. [02](02-lead-agent-execution.md) separately governs the coding agents (any user-authorized client, by role tier) that write our software. Development-model usage and Sarvam API billing are different budgets.
 
 ## A. Outcome and account-aware key cycling
 
@@ -283,3 +283,24 @@ Vendor facts below were checked on 23 September 2026; implementations must pin a
 * **S8:** [Error guide](https://docs.sarvam.ai/api/getting-started/errors-troubleshooting) and S3 FAQ — endpoint-specific 402/429 exhaustion and auth/error distinctions.
 * **S9:** [Sarvam integration reference](https://docs.sarvam.ai/api-reference/metaprompt) — current SDK/Document AI field cautions; follow exact endpoint specification over illustrative snippets.
 * **S10:** [Sarvam trust centre](https://www.sarvam.ai/trust-center); application-wide boundary requirements remain in H19.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task card: [H29](29-agent-task-cards.md) DEPLOY-01.
+
+### Z1. Finale subset `R-MODEL-CORE` (GF2)
+
+This file specifies a full multi-pool ledger for FP-DEPLOY. The finale needs a handful of mapping calls, so GF2 builds only this subset:
+
+- One provider key read from the `ULPIN_PROVIDER_KEY_<LABEL>` environment namespace (or `/run/secrets/`). A secret reference outside that namespace, or any `NEXT_PUBLIC_*` name, is rejected with 422; registering `DATABASE_URL` or `S3_SECRET_KEY` as a provider key is a test case.
+- One `usp_model_calls` table with reserve and settle, a hard project cap, and 402/429 classification.
+- A per-consumer allocation so assistance can never starve ingestion (for example INGEST reserves at least 70 % of the project cap), plus a daily call cap per principal.
+- A `ProviderAdapter` interface (`propose(request) → structured result | typed error`) with three implementations: the selected Sarvam adapter, a fake adapter for tests, and a **replay** adapter for the offline rehearsal profile ([H19](19-india-contained-deployment.md) Z2). Sarvam is the selected adapter behind a provider-neutral interface, not an architectural dependency.
+- A prompt minimiser before every call, using the shared redaction module ([H01](01-shared-contracts-and-ownership.md) Z1). Assistance prompts carry only the question plus a catalogue of fact IDs and kinds.
+- Finale tests from section J: G-04, G-05 (single pool), G-08, G-09, G-12, G-17, G-18, G-19 and G-22, plus the GF-AGENT cases in [H28](28-data-acquisition-and-finale-tests.md) Z2. Everything else in section J is FP-DEPLOY.
+
+Prices in formulas are fixtures (`price_versions`), not constants in code. The baseline for this file is the current staging head named in `release-plan.json`.
+
+### Z2. Promotional credit pools
+
+The finale default is one budget pool with rollover off, so no human input is needed. Before a second or third account's credit ever becomes eligible for rollover (FP-DEPLOY), record a distinct `accountHolder` (a team member) and a `termsPoolingCheck` citing the provider clause that permits it. Otherwise treat all keys as one project budget. Never show rollover on stage.

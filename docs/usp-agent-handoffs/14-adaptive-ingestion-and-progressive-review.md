@@ -111,3 +111,49 @@ Preserve old H14 loss/replay/permission tests and add:
 - Registry documents added later update only affected evidence/review state, not all map geometry.
 
 Report cold/warm first useful preview, stage time/throughput, teacher calls, learning cost, peak worker/client memory, frame/selection p50/p95 and exact recovery counts. Compare parser+mapping baseline, teacher-assisted route and learned route on identical cohorts. Larger real-data rungs remain 10k/100k/1M unique buildings, not repeated copies. Hardware-specific targets are defined in H22/H23. No new benchmark has run in this planning task.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) INGEST-01 to INGEST-03. Test: GF-AGENT in [H28](28-data-acquisition-and-finale-tests.md) Z2.
+
+### Z1. Hostile-input contract for every reader
+
+Uploaded files are untrusted. Every reader, existing or new:
+
+- Reuses the archive validator in `services/geo/geo/native_gis.py` (member count, expanded size, zip-slip, symlinks) for all archives, including nested archives against the 128 MiB expanded cap.
+- Opens GDAL/OGR only on extracted local paths, with network and virtual drivers disabled (`GDAL_SKIP`/`OGR_SKIP` for VRT and `/vsicurl/`-style drivers, `GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR`, `GDAL_VRT_ENABLE_PYTHON=NO`) and no network egress from the worker.
+- Parses XML (GML, KML, CityGML) with external entities disabled (`defusedxml` or `resolve_entities=False`).
+- Treats any embedded reference (GDAL VRT source, KML NetworkLink, OBJ `mtllib`, glTF `uri`, CityJSON texture URL, 3D Tiles external content, DXF XREF) that is absolute, contains `..`, uses `/vsi*` or a URL scheme as `unsupported_external_reference`.
+- Checks header-declared dimensions and point counts before decoding (LAZ, GeoTIFF, JPEG2000) and rejects decompression bombs.
+- Validates CityJSON vertex indices and rejects a zero or negative transform scale.
+
+Each rule gets a GF-RECOVERY negative fixture.
+
+### Z2. The model proposes mappings; code does everything else
+
+- The ingestion orchestrator is **deterministic server code with fixed steps**. The model is called only for "propose a mapping", through structured output, with tools disabled ([H20](20-model-gateway-and-budget-pools.md) bounded request profiles). A model response that names a tool is rejected.
+- `MappingPlan` operations may reference only source paths and conversion IDs from a versioned registry (for example `ft_to_m@1`, `sqft_to_m2@1`). Reject any numeric literal, CRS code, coordinate or ID string that does not appear verbatim as a source path. Parent-key links are validated by referential integrity.
+- **Data minimisation before egress:** send headers, types, value-shape statistics and masked exemplars only. Mask Aadhaar (12 digits passing Verhoeff) to the last four digits, PAN (`[A-Z]{5}[0-9]{4}[A-Z]`) and Indian mobiles (`(\+91)?[6-9]\d{9}`) before any provider call and in every derivative (preview, index, logs).
+- Mappings derived from model output stay `proposed` until an officer approves the recipe. The model can never promote a recipe, and a saved recipe records who approved it.
+- Caps per batch: at most N distinct unfamiliar layouts sent to the model and at most ₹X reserved (both set in config and shown in the batch receipt). Over the cap, layouts go to `needs_input`.
+
+### Z3. A no-model route that works in the finale
+
+Add `manual_mapping` to GF2: the officer maps columns to concepts in Batch review using the same constrained plan schema and conversion registry. "Provider unavailable" produces `needs_input`, never a stalled batch. The learner events (`learning.status_changed`, `converter.promoted`) and section G stay full_product.
+
+### Z4. Size, duplicates and revisions
+
+- Over the per-batch record limit, return 413 with split guidance rather than silently truncating.
+- The same bytes (same SHA-256) in the same workspace return the existing receipt.
+- A revised file becomes a new source revision reconciled by source-row key, with each row marked `changed`, `added` or `removed`.
+
+### Z5. Deliverables an agent can check
+
+| Path (proposed) | Purpose |
+| --- | --- |
+| `packages/contracts/src/usp/ingestion.ts` | `MappingPlan`, conversion registry IDs, `SourceProfile` |
+| `services/geo/geo/usp_ingestion.py` | Reader dispatch using the Z1 guards |
+| `apps/web/lib/server/usp/ingest/redact.ts` | Z2 masking, shared with PACK and ASSIST |
+| `tests/usp-ingestion-hostile.test.ts`, `tests/usp-ingestion-agent.test.ts` | GF-RECOVERY negatives and GF-AGENT cases |
+
+Section I acceptance bullets that mention learner training are FP-LEARN, not GF2.

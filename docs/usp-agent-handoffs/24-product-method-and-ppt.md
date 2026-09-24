@@ -38,14 +38,14 @@ Use a clear visual and at most one core claim per slide. Label screenshots and d
 | 5 — 3D and trustworthy quantities | Current Studio view with floor/duplex/basement selection, uncertainty and component quantities | Explain contact versus overlap, incomplete data and supported solid profile; pretty clipping is not analysis |
 | 6 — Governance demonstration | A legitimate shared-space case plus one independently verified deviation or dig warning | No automatic “illegal construction” or “safe to dig”; display controls, tolerances and coverage gaps |
 | 7 — Property proof card | Sanitized card and revision QR with evidence scope | Resolve in same-device authorized loopback mode; label local demonstration. Phone scanning is conditional on a separately qualified protected read surface. QR is no authorization or official title |
-| 8 — Data, standards and measured results | Small dataset lineage diagram, proposed ID/CityJSON/sidecar/LADM mapping and 4–6 honest metrics | Distinguish data.gov.in context, matched Indian evidence, D0 authored truth and foreign benchmark tests |
+| 8 — Data, standards and measured results | Small dataset lineage diagram, proposed ID/CityJSON/sidecar/LADM mapping and 4–6 honest metrics | Distinguish data.gov.in context, matched evidence (geography labelled), D0 authored truth and foreign benchmark tests |
 | 9 — Roadmap and adoption | Finale delivered/pending matrix; next full-product gates | Preserve learner, separate public request dashboard, MCP, broader formats/enrichment, optional R3F and scale; no claim these are already built |
 
 Appendix: requirement-to-test matrix, model/licence/data permissions, coordinate/vertical references, card privacy tests, supported formats/geometry, limitations and failure/recovery receipts. Keep every headline traceable to an artifact.
 
 ## Coherent six-minute rehearsal target
 
-Freeze one matched Indian property with two source-supported levels and one shared/limited-common relationship, plus the evidence needed for its claimed quantities. Show a real-source comparison only where both sources actually match. Keep seeded adverse cases clearly labelled. For an underground example without matched real records, switch explicitly to the authored fixture; do not place unrelated real utilities beneath the Indian property.
+Freeze one matched building from any permitted source (labelled by geography; Indian where available) with two source-supported levels and one shared/limited-common relationship (from D0 unless a public source supplies it), plus the evidence needed for its claimed quantities. Show a real-source comparison only where both sources actually match. Keep seeded adverse cases clearly labelled. For an underground example without matched real records, switch explicitly to the authored fixture; do not place unrelated real utilities beneath the Indian property.
 
 | Target time | Action in the actual product | Evidence boundary |
 | --- | --- | --- |
@@ -68,7 +68,7 @@ These are rehearsal allocations, not measured timings. If the authentic matched 
 | AI quality | Per-task precision/recall/IoU, boundary/level error, abstention and correction effort | Denominator, independent labels and untouched holdout; do not transfer external benchmark scores |
 | Geometry/identity correctness | Independent numeric oracle error; checksum/lifecycle/roundtrip tests; unsupported count | Tests passed/total at exact commit, not vague “100% accurate” |
 | Interaction | Selection/frame p50/p95 and peak resident resources on declared device | Targets remain targets until measured; no software-WebGL claim of hardware performance |
-| Human value | Same bounded task by baseline versus assisted flow, review time/corrections | Report protocol/sample count; no invented officer adoption or percentage savings |
+| Workflow effort | Scripted runs (UI-07): officer inputs and machine time, assisted versus `manual_mapping`; no human-time savings claim | Report protocol/sample count; no invented officer adoption or percentage savings |
 | Privacy/resilience | Wrong-unit/revocation/injection tests, crash/replay recovery and missing-data outcomes | Report exact tested scenarios and remaining gaps, not “fully secure” |
 
 Suggested initial interaction targets retained from H22: first useful local scene within 8 seconds **after admitted prepared inputs**, cached selection feedback within 100 ms, desktop frame-time p95 at most 33 ms on declared hardware. Also show full end-to-end latency. These are targets, not this repository's measured results.
@@ -80,3 +80,38 @@ Use a visible status key: **implemented and tested / implemented but unqualified
 The separate public data-request/evidence dashboard lets citizens find released properties, submit private evidence/discrepancies, respond to clarification and track their own cases. It requires H13 privacy/quarantine/authorization and reviewed recording, not an exposed officer view. H21 adds real concurrent schema learning and qualified pending-work handover. H25 expands adapters and labelled visual enrichment; H18 adds bounded grounded assistance/MCP. These remain planned follow-on capabilities, not finale dependencies.
 
 UX4G-guided interfaces and GIGW 3.0/WCAG 2.1 AA are design/review targets for delivered surfaces, not certification or government endorsement. References and precise gates are in H25. Do not imply official ownership through government identity/emblems.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task card: [H29](29-agent-task-cards.md) LEAD-04.
+
+### Z1. Slide changes
+
+The problem is titled "3D ULPIN Generation", so identity gets its own slide, and the caveats move to one place instead of every slide.
+
+| Slide | Change |
+| --- | --- |
+| 2 — Two USPs | Keep equal weight, but lead with the four SIH AI tasks (building extraction, floor segmentation, vertical delineation, topology validation), with intake as the enabler |
+| New 3 — 3D identity | The `P3` code beside its readable location (`MH2507A1B3C4D5 / S01 / F07 / R003`, [H26](26-identifiers-and-standard-exchange.md) Z1), the official-anchor state, level limits with their named vertical reference, and the lifecycle draft → assigned → retired. Line: "Proposed project code; the state's ULPIN is unchanged." |
+| 6 — Governance | Deviation is a labelled seeded case unless a matched real pair exists; dig output is a "screening report", never a notice or clearance |
+| 8 — split in two | 8a Standards: CityJSON 2.0 plus sidecar, LADM mapped-field percentage, 3D Tiles as display only. 8b Measured results: the metric cards in Z2 |
+| New 10 — Trust model | The one slide that carries the caveats: estimated vs measured, unknown vs zero, project code vs official ULPIN, screening vs clearance, chain consistency vs authenticity |
+
+Positioning line for slides 1 and 9: "NAKSHA maps the buildings; we identify, prove and govern the spaces inside them." Appendix adds the judge Q&A from the plan review, relabelling any scale answer (3D Tiles or 3DCityDB at city scale) as roadmap. If SIH 2026 mandates a PPT template, map these slides onto it.
+
+### Z2. Named metric cards
+
+| Card | Source test |
+| --- | --- |
+| Building footprint IoU on held-out tiles | GF-AI |
+| Plan room-boundary error and storey-count accuracy | GF-AI |
+| Units needing no officer edit (%) | GF-AGENT and GF-AI review logs |
+| Seeded-error recall and false alerts on clean twins | GF-T18, GF-T19 |
+| Carpet-area error against the hand calculation | GF-T17 |
+| Scripted time to card and officer inputs, assisted vs manual | UI-07 and GF-REHEARSAL receipts |
+
+Empty cards stay empty with "not yet measured".
+
+### Z3. One Sarvam line
+
+Use one line on every slide and page: **"Designed for India-resident processing; Sarvam is the selected provider behind a provider-neutral gateway."** H23 and H25 link here instead of keeping their own versions.

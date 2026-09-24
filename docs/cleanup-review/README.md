@@ -228,7 +228,7 @@ These are proposed cleanup verification obligations, **not executed test results
 
 ## 9. Exact file lists and reproducibility
 
-[decisions.json](decisions.json) contains 30 ordered, explicit path/prefix rules, reasons and removal prerequisites. [classify_inventory.py](classify_inventory.py) is a standard-library **report generator only**, with no apply/delete mode. It verifies the pinned inventory metadata digest and refuses drift or an existing output directory. Ninety-one exact duplicate candidates must retain an identical counterpart; otherwise it fails.
+[decisions.json](decisions.json) contains 30 ordered, explicit path/prefix rules, reasons and removal prerequisites. [classify_inventory.py](https://github.com/Vinayak1337/3d-ulpin/blob/7472730980fd3d79e7364b5cac3e6c7ebff7dd3d/docs/cleanup-review/classify_inventory.py) is a standard-library **report generator only**, with no apply/delete mode. It verifies the pinned inventory metadata digest and refuses drift or an existing output directory. Ninety-one exact duplicate candidates must retain an identical counterpart; otherwise it fails.
 
 From a checkout containing the pinned baseline:
 
@@ -241,3 +241,7 @@ Use a new output directory each time. It produces `full-inventory.json`, `full-i
 The review pack is not the source dataset pack. No D0/D1/D4 acquisition, new feature implementation or V0 qualification is claimed here. No local `node_modules`, `.next`, untracked checkpoint, downloaded model, PC dataset directory or database volume was inspected. Such paths must not be inferred as safe deletion candidates from this Git inventory.
 
 Removing working-tree files does not remove their historical Git objects or guarantee a smaller full-history clone. No history rewrite, force push or release-data deletion is proposed.
+
+## Follow-up review, 25 September 2026
+
+A second pass checked the deferred groups against the current staging head and every file's consumers (imports, package scripts, CI workflows, validators and links from current docs). [2026-09-25-removals.json](2026-09-25-removals.json) lists 105 files (about 28 MB) in six groups with each file's blob hash, reason and evidence: superseded briefs and guides, the retired v2 design pack, the officer-studio-v3 and bulk-studio-v4 prototypes, this folder's one-shot apply and inventory tooling and their workflows, the old Studio shell (R01), the old browser harness (R03) and the duplicate navigation list (R04). The edits those removals need (package scripts, one test, handoff and doc links) are already applied. The `git rm` step runs as task card CLEANUP-01. The engineering plan, the reference-map-v5 prototype and the showcase scene stay until CLEANUP-02 retires them together with their CI consumers.

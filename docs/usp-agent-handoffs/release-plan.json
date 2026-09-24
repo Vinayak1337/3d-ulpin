@@ -95,6 +95,7 @@
         "GF-T17",
         "GF-T18",
         "GF-AI",
+        "GF-AGENT",
         "GF-RECOVERY",
         "GF-VIEW"
       ],
@@ -146,6 +147,7 @@
         "GF-T20",
         "GF-T21",
         "GF-AI",
+        "GF-AGENT",
         "GF-EXCHANGE",
         "GF-RECOVERY",
         "GF-VIEW",
@@ -267,12 +269,14 @@
   "requirements": [
     {
       "id": "R-DATA",
-      "title": "Matched Indian evidence, exact acquisition stages and independent truth",
+      "title": "Matched evidence from any permitted geography (labelled), exact acquisition stages and independent truth",
       "owner": "DATA",
       "gate": "GF0",
       "docs": [
         "docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md",
-        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/usp-agent-handoffs/29-agent-task-cards.md",
+        "docs/usp-agent-handoffs/90-required-human-tasks.md"
       ],
       "tests": [
         "GF-DATA"
@@ -347,13 +351,36 @@
       ]
     },
     {
+      "id": "R-AGENT",
+      "title": "Constrained mapping agent: held-out accuracy, injection, literal rejection, PII egress, outage and caps",
+      "owner": "INGEST",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/usp-agent-handoffs/97-review-findings-and-alignment.md"
+      ],
+      "tests": [
+        "GF-AGENT"
+      ],
+      "auditFindings": [
+        "C05",
+        "C06",
+        "C08"
+      ]
+    },
+    {
       "id": "R-VIEW",
       "title": "Retain Cesium and qualify actual source-shaped Studio path",
       "owner": "UI",
       "gate": "GF2",
       "docs": [
         "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
-        "docs/usp-agent-handoffs/99-ui-ux-and-integration.md"
+        "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
+        "docs/design-system/README.md",
+        "docs/design-system/ui-brief.md",
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
       ],
       "tests": [
         "GF-VIEW"
@@ -490,7 +517,9 @@
       "docs": [
         "docs/usp-agent-handoffs/00-README.md",
         "docs/usp-agent-handoffs/24-product-method-and-ppt.md",
-        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/usp-agent-handoffs/29-agent-task-cards.md",
+        "docs/usp-agent-handoffs/97-review-findings-and-alignment.md"
       ],
       "tests": [
         "GF-T15",
@@ -501,6 +530,7 @@
         "GF-T20",
         "GF-T21",
         "GF-AI",
+        "GF-AGENT",
         "GF-EXCHANGE",
         "GF-RECOVERY",
         "GF-VIEW",
@@ -679,7 +709,9 @@
       "docs": [
         "docs/usp-agent-handoffs/24-product-method-and-ppt.md",
         "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
-        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/design-system/README.md",
+        "docs/design-system/ui-brief.md"
       ],
       "tests": [
         "GF-REHEARSAL"
@@ -891,7 +923,8 @@
       "kind": "runtime",
       "owner": "DEPLOY",
       "specs": [
-        "docs/usp-agent-handoffs/19-india-contained-deployment.md"
+        "docs/usp-agent-handoffs/19-india-contained-deployment.md",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md"
       ],
       "status": "planned",
       "receipts": []
@@ -926,6 +959,17 @@
       ],
       "status": "planned",
       "receipts": []
+    },
+    "GF-AGENT": {
+      "kind": "runtime",
+      "owner": "INGEST",
+      "specs": [
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
     }
   },
   "entryPoints": [
@@ -942,10 +986,13 @@
     "auditFindings": [
       "F01",
       "F02",
-      "F03"
+      "F03",
+      "C02",
+      "C08",
+      "C24"
     ],
     "status": "passed",
-    "receipt": "docs/evidence/usp/finale-plan-alignment-2026-09-24/verification.json"
+    "receipt": "docs/evidence/usp/claude-review-alignment-2026-09-24/verification.json"
   },
   "receiptContract": {
     "schemaVersion": "ulpin-test-receipt/1",

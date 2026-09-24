@@ -101,3 +101,26 @@ Run `pnpm typecheck`, `pnpm test:registry`, `pnpm test:studio`; `pnpm exec tsx -
 ## K. Copy-paste assignment
 
 > Implement HISTORY using 00, 01, H26, H28 and this handoff. Reuse retained D0 revisions and attempt one permitted dated real pair. Build exact historical manifests/constituents, field/source/relationship diff, supported FIND overlays and stable old-record navigation. For `finale_v1` GF1, consume FND's atomic reviewed split/merge, retirement and successor receipts; test stale/concurrent/rollback behavior under GF-T15. Never substitute current sources/placement, infer history, turn unknown into zero or hide a retired record through automatic redirect. FND owns immutable-read/identity writes, UI shared mounts and DATA independent packs. Return source/manifest hashes, before/after rows, actual receipts, V6 images and unqualified capabilities. Do not claim official issuance or legal history from fixtures.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) HISTORY-01 and HISTORY-02.
+
+### Z1. Split the sequence by gate
+
+- **GF1 block:** exact revision reads, field diff, lineage display (including `boundary_adjustment`, [H26](26-identifiers-and-standard-exchange.md) Z2) and the GF-T15 history rows. Exit: GF-T15 history cases pass.
+- **GF3 block:** FIND overlays and the sanctioned/observed deviation (GF-T19). Exit: GF-T19 receipt.
+
+Section I step 3 (FIND polygon/prism operations) belongs to the GF3 block, so GF1 is never blocked on FIND.
+
+### Z2. Sanctioned versus observed deviation (GF-T19)
+
+HISTORY owns `apps/web/lib/server/usp/history/deviation.ts` and `tests/usp-deviation.test.ts`. It consumes H27 `DeviationPair` and FIND operations and returns a review finding with uncertainty, never a verdict. Cases come from H28's single GF-T19 list: identical pair, revised sanctioned plan, seeded extra storey, seeded setback, missing datum (`not_comparable`), and the rooftop-structure and chajja negatives in [H28](28-data-acquisition-and-finale-tests.md) Z3. Command: `pnpm test -- usp-deviation` (FND wires it into `pnpm test:gf:GF-T19`).
+
+### Z3. Indian transaction dates
+
+Replace the two date fields with `sourceDates[] {role, literal, isoDateOnly, calendar}`, where `role` is one of `execution`, `registration`, `mutation`, `effective`, `sanction`, `occupancy_certificate`, plus `mutationStatus` (`recorded`, `pending`, `rejected`, `unknown`). Registration can follow execution by months, and mutation is often pending. An unregistered agreement or power-of-attorney chain is shown as "document, not a registered transfer". Store `recordedAt` as UTC and display it in IST; store date-only values as dates, never instants. Tests: `2024-03-31` round-trips unchanged; a pending-mutation entry is not shown as a recorded transfer.
+
+### Z4. Revision chain on history
+
+Each revision shows chain state from H10: `consistent`, `broken` or `unsigned`. The UI says "Chain consistent" only; it never says "verified" or "authentic" unless a signed head exists and verifies.

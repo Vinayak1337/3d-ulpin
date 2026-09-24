@@ -20,7 +20,7 @@ No candidate is claimed acquired or qualified by this update. Pair layers only w
 
 Presentation wording: **“Designed for India-resident processing using Sarvam AI, with application storage, training, logs and backups kept within approved Indian infrastructure.”** This describes the target architecture, not certified live deployment.
 
-Sarvam's Trust Center states India-only residency for Indian deployments. DEPLOY still qualifies the selected API/product contract, endpoints, retention, subprocessors, support access and training settings. Host our own learner and object/SQL stores in the approved India boundary. Audit browser basemaps, fonts, telemetry, signed URLs, backups and all legacy model paths; disable unapproved egress. Development GPT workers use code and permitted sanitized fixtures, not private operational property data.
+Sarvam's Trust Center states India-only residency for Indian deployments. DEPLOY still qualifies the selected API/product contract, endpoints, retention, subprocessors, support access and training settings. Host our own learner and object/SQL stores in the approved India boundary. Audit browser basemaps, fonts, telemetry, signed URLs, backups and all legacy model paths; disable unapproved egress. Development coding agents of any vendor use code and permitted sanitized fixtures, not private operational property data.
 
 Publicly released information delivered to public browsers can leave India; do not describe public distribution as an absolute geographic containment guarantee. Private originals remain protected. Data residency, confidentiality, integrity and semantic correctness are separate requirements. Hashes preserve byte identity; validators and accountable source/review checks address correctness.
 
@@ -70,7 +70,7 @@ The finale's direct progressive pipeline and domain AI do not wait for schema-mo
 
 After the finale, dependency-ready `full_product` gates deliver the real concurrent learner (FP-LEARN), separate public request dashboard (FP-PUBLIC), assistance/MCP (FP-ASSIST), broader adapters (FP-FORMATS), enrichment (FP-ENRICH), optional renderer evaluation (FP-RENDER), load testing (FP-SCALE) and protected deployment (FP-DEPLOY). They remain planned, not deleted or rebranded as completed. Run 10k → 100k → 1M real unique-object rungs only after bounded acquisition, parsing and spatial paging qualify.
 
-Use H02's bounded Sol/Astra workers and sole shared-service ownership. No force push, main merge, deployment, credit purchase, snapshot refresh or secret commit follows implicitly from this plan.
+Use H02's bounded role-tier workers and sole shared-service ownership. No force push, main merge, deployment, credit purchase, snapshot refresh or secret commit follows implicitly from this plan.
 
 ## F. Acceptance matrix across both releases
 
@@ -109,3 +109,14 @@ S8. Sarvam Trust Center: https://www.sarvam.ai/trust-center . States India-only 
 S9. Sarvam Terms of Service: https://www.sarvam.ai/terms-of-service . Version 2.0, effective 29 July 2026; section 10.5(a), training/derived-output restriction and written-permission requirement. Confirm applicable product-specific terms.
 
 S10. Government discovery: https://data.gov.in/catalog/digital-elevation-model-dem-generated-cartosat-1-satellite-data-india ; https://data.gov.in/dataset-group-name/GIS ; https://onlinemaps.surveyofindia.gov.in/AboutPortal.aspx . Catalog/publisher descriptions only; no new dataset files downloaded in this task.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) DATA-02 and DATA-03.
+
+- **CRS checks cannot rely on "inside India".** UTM 43N data read as 44N moves about 600 km and still lands in India; Kalianpur/Everest data labelled WGS84 lands on the wrong parcel. Never infer zone or datum from coordinate ranges; send these cases to the unknown-CRS path and use a known control point residual. Fixtures are in [H28](28-data-acquisition-and-finale-tests.md) Z3.
+- **One India boundary.** The admission polygon is Survey of India's official boundary at a pinned release, with a coastal and island rule (an Andaman point is admitted, a Colombo point is rejected). No national overview map from a non-Survey of India boundary appears in the UI or PPT.
+- **Identifier matching.** Keep the literal ID and add a `normalizedKey` (NFKC, Indic digits converted to ASCII, subdivision separators kept) used only to propose review candidates. `१२३/४क` and `123/4क` become a candidate pair; `123/4` and `123/40` do not. Names and addresses never auto-link.
+- **Fine-resolution geospatial data.** Applies only if Indian fine-resolution capture is ever ingested: such orthophotos, DSMs and LiDAR are classed `india_restricted_geospatial`: processed only on India-located machines and CI runners; coding agents get downsampled or synthetic samples. Verify the current national geospatial guideline thresholds before quoting them.
+- **Coverage rows.** The SIH mapping table adds: a D0 elevated corridor and a stilt parking level (GF-T18 case and rehearsal beat); checkpoint RMSE in centimetres from held-out published GCPs (DATA-06), or `not_assessed`; DEM/DSM as nDSM height against checkpoints. FSI/TDR envelopes stay roadmap.
+- The Sarvam slide line is the one in [H24](24-product-method-and-ppt.md) Z3.

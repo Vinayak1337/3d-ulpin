@@ -1,6 +1,6 @@
 # Shared contracts, ownership and foundation implementation
 
-**Current continuation note, 23 September 2026:** [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) governs development workers. [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) specifies DEPLOY-owned runtime inference, money reservations, shared organisation wallets and one-way key retirement. Current [ports](../../packages/contracts/src/usp/ports.ts), [domain types](../../packages/contracts/src/usp/domain.ts) and [FND interfaces](../evidence/usp/fnd/INTERFACES.md) have advanced beyond the historical F0a note below. Their existence does not qualify the provider gateway; inspect actual bindings/tests rather than recreate these modules.
+**Current continuation note, 23 September 2026:** [02 - implementation lead, role tiers and worker delegation](02-lead-agent-execution.md) governs development workers. [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) specifies DEPLOY-owned runtime inference, money reservations, shared organisation wallets and one-way key retirement. Current [ports](../../packages/contracts/src/usp/ports.ts), [domain types](../../packages/contracts/src/usp/domain.ts) and [FND interfaces](../evidence/usp/fnd/INTERFACES.md) have advanced beyond the historical F0a note below. Their existence does not qualify the provider gateway; inspect actual bindings/tests rather than recreate these modules.
 
 Owner **FND**. Historical application baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; plan revised 24 September 2026. Read [00](00-README.md), the [finale release/data/test authority](28-data-acquisition-and-finale-tests.md), and [proposed identifier/exchange profile](26-identifiers-and-standard-exchange.md). For `finale_v1`, implement GF0 data/contracts → GF1 identity/exchange → GF2 qualified domain AI/spaces/geometry → GF3 checks/impact → GF4 card/QR → GF5 evidence/rehearsal. F0/F1-min/V0 below name earlier foundation checkpoints, not a new prerequisite ordering that restarts accepted work. Full-product learner, public dashboard, MCP, enrichment and scale remain planned without blocking the finale lane.
 
@@ -184,7 +184,7 @@ Reuse one pool and existing `pnpm db:migrate`; add named migration ledger/adviso
 
 ## 10. Datasets, ordered implementation and acceptance
 
-**Dataset policy, 24 September 2026:** follow [H28](28-data-acquisition-and-finale-tests.md) for the matched Indian finale bundle, exact source status, independent oracles, permitted fallbacks and aggregate load ladder. FND must not encode a required locality or provider in shared contracts. Larger corpora require tested partitioned storage/manifests, paging, identity and recovery within existing per-operation limits; no admission-limit increase or runtime schema migration is authorized by a new source upload. Existing D0/D1 and historical regression receipts below remain unchanged.
+**Dataset policy, 24 September 2026:** follow [H28](28-data-acquisition-and-finale-tests.md) for the matched finale bundle (any permitted geography, labelled), exact source status, independent oracles, permitted fallbacks and aggregate load ladder. FND must not encode a required locality or provider in shared contracts. Larger corpora require tested partitioned storage/manifests, paging, identity and recovery within existing per-operation limits; no admission-limit increase or runtime schema migration is authorized by a new source upload. Existing D0/D1 and historical regression receipts below remain unchanged.
 
 Use DATA's D0 and one D1 reference/geometry example as historical foundation fixtures; use H28's qualified matched bundle for GF0–GF5. FND's `usp-data-pack/1` starter now lives in `data-pack.ts`; DATA prepares the remaining full packs. The small [contract-smoke manifest](../../fixtures/usp/D0/contract-smoke/manifest.json) is not a full D0 scene. No existing PC path or unacquired archive is presumed available. Manifest stage assertions are supplied metadata, not independently verified results; the verifier only checks declared local bytes and never promotes parsing/rendering/workflow states.
 
@@ -204,3 +204,35 @@ Repeat the implemented starter with `pnpm exec tsx --tsconfig apps/web/tsconfig.
 ## 11. Copy-paste FND assignment
 
 > Read 00, H26, H28, this handoff including its historical F0a state, root/web AGENTS and actual services; check branch drift. Reuse accepted FND ports and D0 receipts. For `finale_v1`, complete only remaining GF0 contract/data seams, then own GF1's reviewed proposed-code commands, exact resolver, atomic lineage transaction and CityJSON/sidecar registry adapter. Preserve separate UUID, sourced official assertions and missing-anchor state; do not derive a legal parent from overlap. Keep source IDs/bytes, current wrappers, job fences, access/release and local restrictions. HISTORY owns lineage reads, RIGHTS owns declaration assertions, UI owns frontend/SSR mounts, DATA owns independent fixtures and feature owners own leaves; transfer shared contracts explicitly. Run section 10's relevant regression tests plus GF-T15 and round-trip/rollback/concurrency tests. Return source/manifest hashes, code vectors, actual receipts, loss report and unqualified capabilities. Do not treat contract-smoke as a full scene, claim mocks prove integration, activate public services or merge main without authorization.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) FND-01 to FND-05.
+
+### Z1. Contract additions FND owns
+
+- `prepareProposal` kind adds `declaration` (H16 declarations, entries, amendments). SnapshotManifest pins add declaration, entry and applicability revisions, so historical cards keep the then-current declaration.
+- Geometry and display assets carry `representation`, `geometryClass`, `analyticEligible` and `semanticLod` ([H22](22-rendering-and-sparse-data.md) Z1). Display derivatives use a separate store readable only by the display compiler.
+- Registry reads expose the derived, display-only `verticalLocator` ([H26](26-identifiers-and-standard-exchange.md) Z1).
+- One shared redaction module (Aadhaar with Verhoeff check, PAN, Indian mobile, EXIF strip) used by INGEST, PACK, ASSIST and CITIZEN ([H14](14-adaptive-ingestion-and-progressive-review.md) Z2).
+- Model gateway in the finale is the `R-MODEL-CORE` subset in [H20](20-model-gateway-and-budget-pools.md) Z1. The "two keys sharing one wallet … restore/re-enrolment" qualification in section 2 applies before FP-DEPLOY live multi-pool qualification, not before GF2.
+
+### Z2. Legacy ID legend
+
+| Old term | Status now |
+| --- | --- |
+| F0, F1-min, V0 | Done at the recorded baseline; not restarted |
+| F2 | Now FP-DEPLOY (protected multiuser) |
+| PACK0 / PACK1 | Text/CSV packet (done) / PDF packet (GF4) |
+| IMPACT0 | Existing screening path promoted in GF3 |
+| D0–D7 | Data packs in H28 |
+| ER-xx, F01–F14 | Audit findings in H98 |
+| C01–C52 | Cross-family review findings in H97 |
+| T015–T021 (engineering plan) | Historical tasks; unrelated to GF-T15–GF-T21 |
+| G-01–G-27 | H20 gateway tests (finale subset listed in H20 Z1) |
+
+Worker limits restated in gate terms: during GF0–GF1, at most two implementation owners plus one DATA/review task; from GF2, at most three unfinished integration-dependent streams.
+
+### Z3. Section 10 status
+
+Before GF0 exits, mark each of items 1–6 in section 10 as `done@<sha>` or `remaining` with a receipt link (GF0 checklist row 2 in [H28](28-data-acquisition-and-finale-tests.md) Z1).

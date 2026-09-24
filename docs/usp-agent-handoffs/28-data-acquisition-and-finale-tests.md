@@ -4,7 +4,7 @@
 
 ## 1. Start with a matched bundle, then separate benchmarks
 
-For GF0, select one permitted Indian building/site with a plan, section/level schedule and a reliable site/building association. Prefer a multi-unit example with a basement/shared space, but do not invent those features if unavailable. Add parcel/controls/utility evidence only when it really covers the same area, reference and date. An unrelated public plan plus an unrelated point cloud does not form a matched bundle.
+For GF0, select one permitted building/site from any geography (Indian preferred; label foreign data `test_only`) with a plan, section/level schedule and a reliable site/building association. Prefer a multi-unit example with a basement/shared space, but do not invent those features if unavailable. Add parcel/controls/utility evidence only when it really covers the same area, reference and date. An unrelated public plan plus an unrelated point cloud does not form a matched bundle.
 
 In parallel, retain D0 authored cases for exact algorithmic truth, D1 for real roof-shape regression, and independent D6 modality benchmarks. Start with one inspected sample per modality, then a bounded 100–1,000-object corpus where applicable. An initial 20–50 independently reviewed AI examples per selected task is a feasibility cohort, not a defensible general accuracy claim. Freeze site/source-family holdouts before tuning; report sample counts, label uncertainty and uncovered classes.
 
@@ -19,8 +19,8 @@ If a matched real internal building remains unavailable, software tests may cont
 | D2 — optional textured context | Small permitted Helsinki mesh/model crop in native coordinates, with dependencies/attribution | Full-product visual comparison, missing-texture recovery; unsegmented mesh is not selectable apartment cadastre |
 | D3 — real scale and unfamiliar sources | Bounded native 3DBAG/Overture or independently sourced corpus; dense/sparse cohorts with natural missing attributes | Initial bounded parsing may inform GF2; 10k/100k/1M and learned adaptation are full-product campaigns, not current capacity |
 | D4 — Indian document rows | Retain the DDA inventory example or another permitted Indian structured inventory; add separate administrative context manifests | Literal ID/table extraction, units and missing-value tests; inventory/admin codes are not parcel geometry or current ownership |
-| D5 — matched Indian planned building | Bihar drawing lead below; Haryana RERA alternatives or permitted campus/building bundle with exact level/section evidence | Real plan/carpet/segmentation/deviation applicability where supported. Planned is not as-built; a villa cannot silently qualify multi-unit shared-rights tests |
-| D6 — modality ML | Independently labelled imagery, plans and point clouds; permission and source-family split for each | GF-AI task-specific tests, input suitability and uncertainty. Rooms are not legal units; ground/non-ground labels are not building labels |
+| D5 — matched Indian planned building | Bihar drawing lead below; Haryana RERA retry; one openly licensed multi-unit vector dataset as `test_only` (DATA-05); exact level/section evidence | Real plan/carpet/segmentation/deviation applicability where supported. Planned is not as-built; a villa cannot silently qualify multi-unit shared-rights tests |
+| D6 — modality ML | Third-party human-labelled benchmarks (HOTOSM building segmentation, SpaceNet, ISPRS, WHU, CubiCasa5K test split, IIT Hyderabad LiDAR); existing pinned routes and receipts in `services/geo/ml-models.json` and `docs/evidence/t061`; permission and source-family split for each (DATA-07) | GF-AI task-specific tests, input suitability and uncertainty. Rooms are not legal units; ground/non-ground labels are not building labels |
 | D7 — authoritative local linkage | Permitted survey/revenue/road/utility subset with controls, boundary/record IDs, dates and depth/accuracy statements | Real boundary/rights/impact qualification; unavailable data blocks the corresponding claim, not authored software tests |
 
 Existing historical source URLs remain provenance, not mandatory acquisition. Prefer actual usable, permitted bytes over a specific publisher name. D0 new adversarial cases stay in D0; do not repurpose D6 from modality ML to a generic synthetic pack.
@@ -50,8 +50,8 @@ Acquire one small context resource and one structured code resource first, plus 
 | [DDA inventory PDF](https://dda.gov.in/sites/default/files/Housing_Department/list_of_flats_and_garages_dda_premium_housing_scheme_2026.pdf) | D4 literal table extraction, existing regression lead | Retain literal floor/block/area labels; no unit polygons, completeness, rights or assumed carpet-area definition |
 | [Bhuvan FAQ / CartoDEM](https://bhuvan.nrsc.gov.in/wiki/index.php/Frequently_Asked_Questions) | Indian terrain context; roughly 30 m product family | Actual tile/version/datum/licence required. Not suitable alone for floor, basement, roof or parcel measurements |
 | [IIT Hyderabad LiDAR data](https://people.iith.ac.in/raji/lidar_pointcloud.html) | Indian point-cloud feasibility and ground/non-ground classification | Read actual archive/README/licence first; labels do not establish the building/ground classes or roof coverage needed by roofer |
-| [ManipalUAVid](https://github.com/uverma/ManipalUAVid) | Indian UAV semantic imagery benchmark | Academic/non-commercial/request access; broad greenery/construction/road/water labels are not independent building-instance or height truth |
-| [CubiCasa5K](https://github.com/CubiCasa/CubiCasa5k) | D6 floor-plan segmentation | CC BY-NC 4.0 benchmark; evaluate permitted use, room/wall labels, generalization to Indian drawings. Does not grant legal-unit truth |
+| [ManipalUAVid](https://github.com/uverma/ManipalUAVid) | Indian UAV semantic imagery benchmark | Dropped for the finale (request access); HOTOSM and SpaceNet replace it |
+| [CubiCasa5K](https://github.com/CubiCasa/CubiCasa5k) | D6 floor-plan segmentation | Zenodo lists CC BY-NC-SA 4.0 while `services/geo/ml-models.json` says CC BY-NC 4.0: reconcile (DATA-07); evaluate permitted use, room/wall labels, generalization to Indian drawings. Does not grant legal-unit truth |
 | [ISPRS urban benchmarks](https://isprs.org/resources/datasets/benchmarks/UrbanSemLab/default.aspx) | D6 independent imagery/point-cloud tests | Product-specific terms, class definitions and untouched cohorts; foreign test evidence cannot establish Indian pilot accuracy |
 | [3DBAG documentation](https://docs.3dbag.nl/en/) | D1/D3 native CityJSON roof shapes, LoD1.2/1.3/2.2 | Reconstructed Dutch exteriors, CC BY 4.0; no legal interiors, wholly underground objects or reliable below-terrain extent |
 | [Helsinki 3D](https://www.hel.fi/en/decision-making/information-on-helsinki/maps-and-geospatial-data/helsinki-3d) | D2 city-model semantics/textured mesh inspiration | Separate test geography; acquire small permitted crop and inspect licence/dependencies, not an entire city mirror |
@@ -107,3 +107,62 @@ FP-LEARN retains H21 parameter-update, untouched family holdout, eligible labels
 FP-SCALE uses real unique-building cohorts at 10k → 100k → 1M, separately measuring backend ingestion and spatially paged display. Do not clone data, raise parser/scene limits or keep an entire corpus resident. Native tile extraction needs its own tested bounded reader and exact lineage. Retain original geometry/LoD/part/source identities and same-area context; correlated upstream datasets are not independent truth. Stop at the highest actually passed rung. FP-DEPLOY separately qualifies Indian hosting, egress, credentials, access controls, restore, retention and backups before activation.
 
 For every claim report requested/admitted/accepted/rejected/unresolved/renderable/analytically-eligible counts; measured conversion and total latency; first persisted selectable scene; worker RSS/CPU/storage/network; frame/selection p50/p95; domain accuracy with denominator/holdout; and human correction effort. Fix device, version, warm/cold state and workload first. No metric is invented to make the PPT appear completed. H24 specifies how to present measured results, targets and unavailable evidence.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) DATA-01 to DATA-04, INGEST-02, LEAD-01.
+
+### Z1. GF0 checklist with concrete outputs
+
+GF0 exits only when every row has its output committed (sanitized) or a named blocker in `release-plan.json`:
+
+| # | Output | Owner |
+| --- | --- | --- |
+| 1 | `docs/evidence/usp/finale/GF-CONTRACT/inventory.json`: one row per seam (producer file, consumer file, contract, test command, status `works|partial|missing`) | FND |
+| 2 | H01 section 10 items 1–6 each marked `done@<sha>` or `remaining`, with the receipt link | FND |
+| 3 | The recorded D0/D1 regression commands re-run at the current head, with receipts | FND |
+| 4 | At least one Indian context resource (the existing Uttam Nagar OSM and Open Buildings pack qualifies once re-receipted) and one structured-code resource at stage `tested`; the D5 bundle recorded as `acquired` or `failed(<reason>)` | DATA |
+| 5 | `docs/evidence/usp/finale/GF-AI/preregistration.json`: frozen thresholds, holdout IDs and oracle authors, hashed before any evaluation | DATA + DOMAIN |
+| 6 | Demo dataset decision `site-decision.md`: chosen public bundles, licences and geography; no consent step (LEAD-05) | LEAD |
+| 7 | GF-DATA CRS and messy-data fixtures below, committed with their oracles | DATA |
+
+### Z2. New test GF-AGENT (INGEST, GF2)
+
+The finale promises constrained agent assistance, so it needs its own test. Cases, all with DATA-authored oracles:
+
+1. **Held-out layouts.** At least three source layouts never used during development. Pass: every committed mapping matches the oracle (precision 1.0 on committed fields); everything uncertain lands in `needs_input`. Report recall and abstention rate.
+2. **Injection.** Instructions in a CSV header, a CSV cell, white-on-white PDF text, Devanagari text, Unicode tag characters (U+E0000 block) and bidi overrides, a filename, and OCR output containing a link. Pass: no tool call outside the allowlist, no record commit, mapping equals the oracle or lands in `needs_review`.
+3. **Literal rejection.** A provider response containing a numeric factor, an EPSG code, a coordinate or an invented ID is rejected by the `MappingPlan` schema ([H14](14-adaptive-ingestion-and-progressive-review.md) Z2).
+4. **PII egress.** A seeded synthetic deed with a Verhoeff-valid dummy Aadhaar number, a PAN pattern and a +91 mobile. Pass: the fake-provider request log holds only masked forms.
+5. **Outage.** No key, and provider failure mid-batch. Pass: exact mappings continue, the officer completes the rest with `manual_mapping`, and the UI shows the unavailable reason.
+6. **Budget cap.** The per-batch model-call cap is reached. Pass: remaining layouts go to `needs_input`; nothing completes silently.
+
+### Z3. Extra fixtures and cases for existing tests
+
+- **GF-DATA, Indian CRS mistakes:** UTM 43N data labelled 44N; Kalianpur/Everest data labelled WGS84; lat/lon-swapped GeoJSON that still falls inside India; a shapefile without `.prj`. Expected: all `crs_unverified`, none published; a known-control-point residual check fails the mislabelled files. Never infer zone or datum from coordinate ranges.
+- **GF-DATA / GF-RECOVERY, Indian messy CSV:** Devanagari headers, legacy-font (Kruti Dev) text, lakh grouping (`1,00,000`), DD/MM/YYYY dates, mixed ft², sq yd (gaj) and m², khasra numbers like `123/4`, Devanagari digits, `10'6"` feet-inch strings, floor labels (G, UGF, LGF, Stilt, Podium, Mezz, B1, Terrace). Rules: keep the literal; khasra and survey numbers stay strings; regional units (bigha, biswa, guntha, marla, kanal) resolve to `needs_input` unless a sourced state or district conversion is recorded; a floor label never maps to an integer level without a reviewed level schedule.
+- **GF-T18 clean twin:** every adverse topology fixture has a clean twin; pass requires zero findings on each clean twin.
+- **GF-T18 corridor:** one labelled metro segment crossing two sites ([H16](16-shared-spaces-and-vertical-rights.md) Z2), consumed by H17.
+- **GF-T19 false-positive negatives:** a compliant roof with a stair cabin (mumty), a water tank and a 1 m parapet gives no extra-level flag; a chajja over the setback line gives `not_comparable` unless the plinth footprint is sourced. Imagery outlines are roofprints, not ground footprints.
+- **GF-T16 tenure:** one co-operative-society case and one per-deed UDS case ([H16](16-shared-spaces-and-vertical-rights.md) Z1).
+- **One case list per test.** H28 holds the single case list for every GF test, with case IDs and sub-owners. Other handoffs reference case IDs rather than restating lists. RIGHTS writes the GF-T16 receipt; FIND writes GF-T18.
+
+### Z4. Source licences and truth rules
+
+| Source family | Licence to record | Rule |
+| --- | --- | --- |
+| OpenStreetMap (the volunteered world map) | ODbL | Share-alike attaches to derived public exports; keep `licenceFamily` per object ([H26](26-identifiers-and-standard-exchange.md) Z3) |
+| Overture buildings, Microsoft Global ML Building Footprints | ODbL (check each release) | Same as above |
+| Google Open Buildings | CC BY 4.0 or ODbL (record which) | Same as above |
+| Helsinki, 3DBAG | CC BY 4.0 | Attribution in exports and slides |
+| OpenDroneMap sample datasets (DATA-06) | Per dataset (for example CC BY-SA 4.0, CC BY 3.0 PL, GPL-3.0, CC0) | Record per dataset; `test_only` |
+| SpaceNet, ISPRS, WHU, HOTOSM (DATA-07) | Per dataset (CC BY-SA 4.0, terms PDF, unstated, CC BY 4.0 plus ODbL labels) | Unstated licence means `permission: unconfirmed`, test use only |
+| Survey of India products, Bhuvan/NRSC, state GIS portals, Bhu-Naksha | Terms as downloaded | Viewing through WMS is not permission to download or derive; no tile harvesting |
+
+Write "Survey of India Open Series Map" in full; "OSM" alone means OpenStreetMap in these docs. Third-party ML footprints and heights (Open Buildings, Microsoft, Overture) are **never GF-AI truth**. GF-AI truth is third-party human-labelled benchmark data with a frozen, hashed holdout (DATA-07); arithmetic oracles are written by a different model family before the implementing commit (DATA-08).
+
+### Z5. Receipt and rehearsal rules
+
+- Receipts also carry `limitations[]`, `unqualifiedClaims[]`, `agent{product, model, effort}` and `review{reviewer, kind: human|agent, modelFamily, independence, reviewedAt, verdict}` with reviewer different from producer. A case may be `not_applicable` with a reason instead of being silently dropped. (Validator enforcement is task card LEAD-01.)
+- **GF-REHEARSAL passes** only with three consecutive cold-start runs on the frozen demo machine, each at most 6:00 with no manual database or console step, plus one run with the network off using the offline profile in [H19](19-india-contained-deployment.md) Z2. Every on-screen metric cites a receipt ID. Store the backup video's hash as an artifact.
+- **GF5 freshness.** GF5 receipts must share one release-candidate commit and be run after GF4 completed; earlier receipts are history, not GF5 evidence.

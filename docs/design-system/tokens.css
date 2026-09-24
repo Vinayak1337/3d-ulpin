@@ -1,0 +1,174 @@
+/*
+ * 3D ULPIN design tokens for the existing `.ulpin-app` scope.
+ *
+ * Reference file, not imported at runtime. UI-01 (docs/usp-agent-handoffs/29-agent-task-cards.md)
+ * merges these values into apps/web/features/officer/shared/tokens.css. Names marked
+ * "existing" already exist there; keep them and update values. Everything else is new.
+ * Source: docs/design-system/tokens.json (UX4G 3.1 foundations + v2 forest green + map layer).
+ */
+
+.ulpin-app {
+  /* Surfaces and text */
+  --ui-background: #f4f7f8; /* existing */
+  --ui-surface: #ffffff; /* existing */
+  --ui-surface-subtle: #f0f5f3; /* existing */
+  --ui-surface-tint: #f6faf8; /* existing */
+  --ui-ink: #16272d; /* existing */
+  --ui-ink-soft: #31454d; /* existing */
+  --ui-muted: #5b6a72; /* existing */
+  --ui-divider: #dbe4e6; /* existing */
+  --ui-border-strong: #c6d3d7; /* existing */
+  --ui-line-control: #7d8e94;
+
+  /* Accent and status */
+  --ui-primary: #235347; /* existing */
+  --ui-primary-hover: #183d34; /* existing */
+  --ui-primary-soft: #e8f2ed; /* existing */
+  --ui-on-primary: #ffffff;
+  --ui-focus: #176b87; /* existing */
+  --ui-info: #245e87; /* existing */
+  --ui-info-soft: #eaf4fc; /* existing */
+  --ui-success: #157347; /* existing */
+  --ui-success-soft: #e8f6ee; /* existing */
+  --ui-warning: #8a4b0f; /* existing */
+  --ui-warning-soft: #fff4de; /* existing */
+  --ui-danger: #b42318; /* existing */
+  --ui-danger-soft: #fff0ee; /* existing */
+
+  /* Map base scene (geometry only, never UI text) */
+  --ui-map-ground: #e9eeec;
+  --ui-map-road: #dce2e2;
+  --ui-map-public-land: #dde8e0;
+  --ui-map-water: #cfe1ec;
+  --ui-map-parcel-line: #8c9c9a;
+  --ui-map-building: #d5dbd9;
+  --ui-map-building-edge: #a9b5b2;
+  --ui-map-selected: var(--ui-primary);
+  --ui-map-halo: #ffffff;
+  --ui-map-sky-band: #eaf2f8;
+  --ui-map-soil-top: #d9c9aa;
+  --ui-map-soil-deep: #b89f78;
+
+  /* Colour by: Rights (3 hues only) */
+  --ui-rights-exclusive: #2a78d6;
+  --ui-rights-shared: #1baf7a;
+  --ui-rights-public: #eb6834;
+
+  /* Finding marks (with icon and label, never text colour) */
+  --ui-mark-critical: #d03b3b;
+  --ui-mark-serious: #ec835a;
+  --ui-mark-warning: #fab219;
+  --ui-mark-good: #0ca30c;
+
+  /* Readiness ramp (one hue) and unknown */
+  --ui-seq-100: #cde2fb;
+  --ui-seq-250: #86b6ef;
+  --ui-seq-400: #3987e5;
+  --ui-seq-550: #1c5cab;
+  --ui-seq-700: #0d366b;
+  --ui-readiness-unknown: #b8c3c6;
+
+  /* Utilities (APWA uniform colour code) */
+  --ui-utility-electric: #d7262e;
+  --ui-utility-gas: #f2c200;
+  --ui-utility-telecom: #f28c00;
+  --ui-utility-water: #1f6fd1;
+  --ui-utility-reclaimed: #8e44ad;
+  --ui-utility-sewer: #2e8b3a;
+
+  /* Type: Noto first, self-hosted (see fonts.css). Studio scale = existing --ui-text-* */
+  --ui-font-sans: "Noto Sans", "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", sans-serif; /* existing, new value */
+  --ui-font-display: "Noto Sans Display", "Noto Sans", system-ui, sans-serif;
+  --ui-font-mono: "Noto Sans Mono", ui-monospace, "SFMono-Regular", Consolas, monospace; /* existing, new value */
+  --ui-text-xs: 12px;  /* existing: studio-label */
+  --ui-text-sm: 13px;  /* existing: studio-body-sm, id-code, data-num */
+  --ui-text-md: 15px;  /* existing: studio-body */
+  --ui-text-lg: 17px;  /* existing: studio-heading */
+  --ui-text-xl: 22px;  /* existing: studio-title */
+  --ui-portal-display: 40px;
+  --ui-portal-h1: 32px;
+  --ui-portal-h2: 24px;
+  --ui-portal-h3: 20px;
+  --ui-portal-body: 16px;
+  --ui-portal-body-sm: 14px;
+  --ui-devanagari-line-height: 1.8;
+
+  /* Shape lock: 4 tags/map labels, 8 controls, 12 panels, 16 dialogs/card, pill badges */
+  --ui-radius-4: 4px;
+
+  /* Layout (H99 Z2) */
+  --ui-header-height: 56px; /* existing, was 72px */
+  --ui-scope-strip-height: 36px;
+  --ui-left-rail-width: 308px; /* existing: on-demand panel, closed by default */
+  --ui-right-rail-width: 360px; /* existing */
+  --ui-right-rail-wide: 400px; /* existing */
+  --ui-bottom-tray-height: 172px; /* existing */
+  --ui-portal-content: 1200px;
+  --ui-portal-header-height: 64px;
+  --ui-a11y-bar-height: 32px;
+
+  /* Map focus and context */
+  --ui-opacity-context: 0.35;
+  --ui-opacity-ghost: 0.25;
+  --ui-opacity-ground-cut: 0.35;
+
+  /* Layers */
+  --ui-z-canvas: 0;
+  --ui-z-map-overlay: 10;
+  --ui-z-rail: 20;
+  --ui-z-tray: 30;
+  --ui-z-popover: 40;
+  --ui-z-dialog: 50;
+  --ui-z-toast: 60;
+
+  --ui-focus-ring: 0 0 0 3px #ffffff, 0 0 0 5px #176b87;
+  --ui-hatch: repeating-linear-gradient(45deg, transparent 0 4px, rgb(22 39 45 / 28%) 4px 5px);
+}
+
+/* Dark theme: opt-in with data-theme="dark" on the .ulpin-app root. Light stays the default. */
+.ulpin-app[data-theme="dark"] {
+  color-scheme: dark;
+  --ui-background: #0e1719;
+  --ui-surface: #142024;
+  --ui-surface-subtle: #1a292e;
+  --ui-surface-tint: #172529;
+  --ui-ink: #e4ecee;
+  --ui-ink-soft: #c3d0d4;
+  --ui-muted: #93a4aa;
+  --ui-divider: #26373c;
+  --ui-border-strong: #34494f;
+  --ui-line-control: #6f868d;
+  --ui-primary: #6cc3a0;
+  --ui-primary-hover: #86d3b3;
+  --ui-primary-soft: #16342b;
+  --ui-on-primary: #0b1a15;
+  --ui-focus: #5cc2e0;
+  --ui-info: #7db8e6;
+  --ui-info-soft: #132a3b;
+  --ui-success: #6fcf97;
+  --ui-success-soft: #12301f;
+  --ui-warning: #f0b35a;
+  --ui-warning-soft: #33240f;
+  --ui-danger: #ff8a7e;
+  --ui-danger-soft: #3a1715;
+  --ui-map-ground: #11191b;
+  --ui-map-road: #1d2a2e;
+  --ui-map-public-land: #16261f;
+  --ui-map-water: #0f2633;
+  --ui-map-parcel-line: #52666b;
+  --ui-map-building: #2a383c;
+  --ui-map-building-edge: #465a60;
+  --ui-map-halo: #0e1719;
+  --ui-map-sky-band: #12222c;
+  --ui-map-soil-top: #4b4032;
+  --ui-map-soil-deep: #3a3127;
+  --ui-rights-exclusive: #3987e5;
+  --ui-rights-shared: #199e70;
+  --ui-rights-public: #d95926;
+  --ui-readiness-unknown: #3d4c51;
+  --ui-shadow-card: 0 2px 12px #00000059;
+  --ui-shadow-floating: 0 6px 18px #00000080;
+  --ui-shadow-overlay: 0 16px 42px #000000a6;
+  --ui-focus-ring: 0 0 0 3px #142024, 0 0 0 5px #5cc2e0;
+  --ui-hatch: repeating-linear-gradient(45deg, transparent 0 4px, rgb(228 236 238 / 30%) 4px 5px);
+}

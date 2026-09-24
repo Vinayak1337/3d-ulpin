@@ -27,7 +27,7 @@ import {
   geometryPoints,
   geometryPrimitives,
 } from "../apps/web/features/officer/block/geometry";
-import { mainNavigation } from "../apps/web/features/officer/shared/navigation";
+import { productNavigation } from "../apps/web/features/studio/product/urls";
 
 const property = (index: number, area = "area-A"): RecentProperty => ({
   buildingId: `building-${index}`,
@@ -379,16 +379,16 @@ test("parcel intersections and legacy registry IDs do not become canonical build
 
 test("main navigation always opens directories independently of contextual property routes", () => {
   assert.deepEqual(
-    mainNavigation.map((item) => item.href),
-    ["/studio/datasets", "/studio/registry", "/studio/workspaces"],
+    productNavigation.map((item) => item.href),
+    ["/studio/work", "/studio/datasets", "/studio/registry"],
   );
   assert.equal(
     routes.register("building-B", "block-A"),
     "/studio/properties/building-B/register?area=block-A",
   );
   assert.deepEqual(
-    mainNavigation.map((item) => item.label),
-    ["Block Map", "Property Register", "Plan Workspace"],
+    productNavigation.map((item) => item.label),
+    ["Batches", "Map", "Register"],
   );
 });
 

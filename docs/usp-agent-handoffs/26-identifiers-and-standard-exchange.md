@@ -73,3 +73,35 @@ CityGML, IFC and GeoPackage receive separately versioned profiles and tests befo
 GF1 consumes GF0's matched source/fixture manifest. **GF-T15** covers independent code vectors, exhaustive single-symbol substitutions, normalization rejects, uniqueness, concurrent assignment/retry, missing/partial/multiple official anchors, corrected labels/anchors, error cancellation, retirement and atomic split/merge with exact old URL/QR behavior. **GF-T16** is owned by H16 for declaration and common-area semantics. **GF-EXCHANGE** adds a separate GF1 round-trip receipt: CityJSON validation, sidecar binding, exact/loss categories and reviewed-only import. **GF-T21** later checks the same code/revision in viewer, card, export and QR with revocation/retirement behavior. Central dataset, independent oracles, tolerances and evidence matrix live in [28](28-data-acquisition-and-finale-tests.md); its tests are not historical backlog T15–T21.
 
 Run focused contract/registry/transaction tests, DB rollback and two-writer concurrency tests, round-trip import/export, access/release tests and actual resolver/PDF integration when built. Return command/receipt IDs, manifest and source hashes, independent vector outputs, before/after rows, rejected stale/duplicate outcomes, exact loss report, software versions and an explicit list of still-unqualified profiles. Keep existing source preservation, job fencing, review and release tests.
+
+## Z. Hardening addendum (H97)
+
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) FND-02 and FND-03.
+
+### Z1. Display-only vertical locator
+
+`P3` codes are deliberately meaningless, so judges and officers also need a readable "where is this space" string. Add a derived, display-only field:
+
+| Field | Rule |
+| --- | --- |
+| `verticalLocator` | Derived from the current revision at read time; never stored as identity, never accepted as input, never parsed. |
+| Format | `<anchor> / <structure> / <level> / <space>` |
+| `<anchor>` | The reviewed official parcel ULPIN when anchor state is `reviewed_complete` with exactly one `primary` association; `MULTI(n)` for n reviewed parcel associations with no single primary; `NO-ANCHOR` for `not_supplied`, `supplied_unreviewed`, `conflicting` or `withdrawn`. Never pick the largest overlap. |
+| `<structure>` | `S` (surface), `U` (underground) or `A` (elevated/air) plus a two-digit structure number within the anchor, e.g. `S01`. |
+| `<level>` | The source level token after review: `B2`, `B1`, `LG`, `UG`, `G`, `ST` (stilt), `M1` (mezzanine), `P1` (podium), `F01`…`F99`, `T` (terrace), `R` (rooftop structure). Multi-level spaces show `F07-F08`. Unknown level shows `L?`. |
+| `<space>` | Space kind letter (`R` residential, `C` commercial, `P` parking, `X` common, `U` utility, `V` volume/corridor) plus a three-digit sequence within the level. |
+
+Example: `MH2507A1B3C4D5 / S01 / F07 / R003` next to `P3-7Q4M2R8T6V0W3X5Y9ZAB-R4`. The UI labels it "Location", never "code" or "ULPIN", and shows no check character. A level correction or anchor review changes the locator and never the `projectCode`. The resolver rejects locator strings with 422 `locator_not_an_identifier`. CityJSON export writes the locator only as a sidecar display attribute, not as an ID.
+
+GF-T15 adds three cases: a level correction changes the locator but not the code; `MULTI(2)` for a basement spanning two reviewed parcels; resolver rejection of a locator string.
+
+### Z2. Lineage kind for boundary adjustments
+
+Split and merge do not cover a partial transfer between two continuing spaces (a terrace portion re-allotted, a wall shifted between adjacent flats). Add `boundary_adjustment`: both identities keep their codes, both get new revisions, and a lineage link records the transferred portion's geometry and evidence. Any other shape returns 422 `unsupported_lineage_kind`. Add one GF-T15 case.
+
+### Z3. Exchange pins
+
+- Pin **CityJSON 2.0** for `P3-CJ/1` (it has `BuildingStorey`, `BuildingUnit` and `BuildingRoom`). Validate with `cjval` and `val3dity`; record both versions in the GF-EXCHANGE receipt.
+- Put the horizontal EPSG code in `metadata.referenceSystem`. Indian vertical references often have no EPSG code: write the named vertical reference (benchmark, datum or "local site datum") in metadata and the sidecar, and never relabel a GNSS ellipsoidal or local height as mean sea level.
+- Propagate `licenceFamily` per object (for example ODbL, CC BY 4.0, government terms) into the sidecar. Export refuses to mix share-alike objects into a non-share-alike public export and lists them as a loss entry instead.
+- CityGML 3.0 is a stretch export produced by conversion from the CityJSON output with its own loss report; it is not a GF1 exit requirement.

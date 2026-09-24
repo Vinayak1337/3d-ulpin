@@ -4,7 +4,7 @@
 
 **Adopted execution update: 23 September 2026.** This is the ready-to-use lead assignment for the existing handoffs, not another product specification. It replaces H00's earlier Sol-first routing recommendation. Domain requirements, ownership, data preservation and qualification gates remain in [00](00-README.md), [01](01-shared-contracts-and-ownership.md) and [99](99-ui-ux-and-integration.md).
 
-**Recommended lead: GPT-6 Astra, reasoning effort Max, in the configured Codex development environment.** The lead implements the critical path and integrates worker results; it is not a full-time planner that delegates all coding away. Development workers may use **only GPT-6 Sol or GPT-6 Astra**. Runtime property inference is separately specified as Sarvam in [20](20-model-gateway-and-budget-pools.md).
+**Model-neutral roles, updated 24 September 2026 ([H97](97-review-findings-and-alignment.md)).** Any user-authorized coding agent (Codex, Claude Code, Gemini CLI or another client) may lead or work on this plan. Choose models by the **role tiers** in section 2, not by vendor. The lead implements the critical path and integrates worker results; it is not a full-time planner that delegates all coding away. **Codex profile (the user's original selection, unchanged for Codex):** lead GPT-6 Astra at effort Max; workers GPT-6 Sol or GPT-6 Astra only. Runtime property inference is separately specified as Sarvam in [20](20-model-gateway-and-budget-pools.md) and is never performed by a coding agent. Work is picked from [H29 task cards](29-agent-task-cards.md).
 
 **Runtime account clarification, 23 September 2026:** the user has one existing Sarvam key per separate account, with a reported ₹100 introductory grant per account. Use H20's independent-account onboarding and ordered budget rollover, not an assumption that all supplied keys share one wallet. Actual remaining balances and enrollment permissions are separate from that reported grant. Lead/worker model choices are unchanged.
 
@@ -14,15 +14,15 @@
 
 The [Astra model page](https://developers.openai.com/api/docs/models/gpt-6-astra) lists API efforts low/medium/high/xhigh/max. The current [subagent documentation](https://developers.openai.com/codex/subagents) describes Ultra in eligible ChatGPT Work surfaces as maximum reasoning with proactive delegation, and mentions support depending on client/model. Do not assume Ultra is a different base model or a universally valid API parameter.
 
-For this project, use **Astra Max plus explicit delegation and verified worker settings**. This gives the lead a strong reasoning setting while making our worker-family restriction and ownership visible. Ultra is optional only where the actual client supports it and can honour the same model/tool/ownership restrictions; it is not required for parallelism. No claim is made that Ultra or Max is always faster, cheaper or more correct.
+In the Codex profile, use **Astra Max plus explicit delegation and verified worker settings**; in other clients, use the client's highest available reasoning setting for the lead and the tier map below. This gives the lead a strong reasoning setting while making our worker-family restriction and ownership visible. Ultra is optional only where the actual client supports it and can honour the same model/tool/ownership restrictions; it is not required for parallelism. No claim is made that Ultra or Max is always faster, cheaper or more correct.
 
-Inspect the installed client's actual model choices, subagent tool schema and configuration precedence. Record requested and observed settings separately. A sentence saying a worker is Sol does not change its model. If the client cannot enforce a chosen worker model/effort, report that limitation and continue serially on the already selected allowed model; do not silently spawn a different family or buy separate API access.
+Inspect the installed client's actual model choices, subagent tool schema and configuration precedence. Record requested and observed settings separately. A sentence saying a worker is Sol does not change its model. If the client cannot enforce a chosen worker model/effort, report that limitation and continue serially on the already selected allowed model; do not silently switch to a model outside the configured tier map for that client, and do not buy separate API access.
 
 ## 2. Worker selection policy
 
-These are initial project routing choices, not benchmark-derived guarantees. Use the smallest sufficient assignment, not the lowest effort irrespective of risk.
+These are initial project routing choices, not benchmark-derived guarantees. Use the smallest sufficient assignment, not the lowest effort irrespective of risk. Each assignment names a **tier**; the tier map after this table says which model each client uses. The model column is the Codex profile.
 
-| Assignment | Model and effort | Boundary |
+| Assignment | Codex profile model and effort | Boundary |
 | --- | --- | --- |
 | Bounded read-only file search, source index or log summary | `gpt-6-sol`, `medium` | Return cited findings; no broad redesign or shared-file edits. |
 | D0/D1/D4 data preparation, ordinary leaf implementation, fixed-policy READY/ASSIST0 logic | `gpt-6-sol`, `high` | Own explicit paths and independent expected cases; do not infer unavailable data. |
@@ -31,6 +31,16 @@ These are initial project routing choices, not benchmark-derived guarantees. Use
 | Persistent, genuinely hard blocker after focused attempts | `gpt-6-astra`, `max` | One bounded escalation, not a second whole-project orchestrator. |
 | Independent milestone review | `gpt-6-sol`, `xhigh`; Astra `high` for a specific unresolved high-risk question | Reviewer does not edit the implementation before reporting findings. |
 | Critical-path integration and architectural decisions | Lead `gpt-6-astra`, `max` | Lead writes code and runs the integrated workflow. |
+
+| Tier | Codex profile | Claude Code | Gemini CLI | Any other client |
+| --- | --- | --- | --- | --- |
+| T-read (read-only search, summaries) | `gpt-6-sol` medium | Claude Haiku or Sonnet | Gemini Flash | Fast model, read-only tools |
+| T-work (bounded leaf, data prep, UI leaf) | `gpt-6-sol` high/xhigh | Claude Sonnet | Gemini Pro | General coding model |
+| T-risk (transactions, numerics, access control) | `gpt-6-astra` high | Claude Opus | Gemini Pro, high thinking | Strongest reasoning model |
+| T-lead (critical path, integration) | `gpt-6-astra` max | Claude Opus, highest effort | Gemini Pro, highest thinking | Strongest reasoning model |
+| T-review (milestone review) | `gpt-6-sol` xhigh | Any family other than the author's | Any family other than the author's | Different family or a human |
+
+Model names in the non-Codex columns are families, not pinned IDs: record the exact model ID and effort the client reports in the task ticket and receipt (`agent.product`, `agent.model`, `agent.effort`). **Milestone review must come from a different model family than the one that wrote the change, or from a human** (a same-family review is recorded as `review.independence: same_family`). If a client cannot run a tier, run the work serially at the lead tier and record that.
 
 Do not default all children to Max or build a model-selection service merely to implement the project. Do not split a ten-line edit into a worker. After two focused unsuccessful fixes of the same reproducible defect, escalate the defect with its evidence rather than restarting the feature. A missing dataset, credential, executable or permission is an environmental gate, not proof that more reasoning solves it.
 
@@ -59,7 +69,7 @@ Return: commit/diff, commands and exit codes, artefact/receipt refs,
 
 The lead performs unrelated critical-path work while an independent worker runs. It waits when it needs that worker's actual interface or result, not by repeatedly polling every few seconds. At integration, verify the worker's exact base/diff, run appropriate combined tests and update the existing status/receipt. No worker may merge main, enable production, alter secrets or bypass failed acceptance.
 
-## 4. Optional client configuration examples
+## 4. Optional client configuration examples (Codex profile only)
 
 **Examples only: not installed or runtime-tested by this documentation task.** Check current installed Codex documentation before creating/merging these files. Preserve existing project/user configuration; do not overwrite it. The [current documented configuration](https://developers.openai.com/codex/subagents) allows per-agent model and effort overrides, so verify that custom-agent files do not silently override the requested spawn settings.
 
@@ -103,8 +113,9 @@ These reads do not confer a new runtime pass. Preserve populated data and unrela
 
 ```text
 Act as the hands-on implementation lead for Vinayak1337/3d-ulpin.
-Use GPT-6 Astra Max in the configured coding environment and only GPT-6
-Sol/Astra workers, with actual settings verified through the client.
+Use the T-lead tier of your client (Codex profile: GPT-6 Astra Max with
+only GPT-6 Sol/Astra workers); verify actual settings through the client.
+Read H97 (review findings) and pick the next unblocked H29 task card.
 
 Read AGENTS.md and applicable framework instructions. Read H00, H01, H02,
 H26, H27, H28, release-plan.json and the assigned feature/H99 contracts.
@@ -153,7 +164,7 @@ chat, Git, screenshots or logs; no paid or unapproved external fallback.
 Run the named requirement tests, real producer/consumer integration and
 actual Studio interaction. Save immutable receipts with exact code/source/
 model/pack hashes, expected versus actual values and measured environment.
-Use an independent read-only review before each substantial acceptance.
+Use an independent read-only review (different model family or a human) before each substantial acceptance.
 Update the manifest and existing evidence index only from actual passes;
 documentation validation alone cannot close a runtime requirement.
 
