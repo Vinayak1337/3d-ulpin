@@ -1,0 +1,239 @@
+{
+  "schemaVersion": "gf-contract-inventory/1",
+  "rows": [
+    {
+      "id": "schema",
+      "producer": "packages/contracts/src/usp/domain.ts",
+      "consumer": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "contract": "packages/contracts/src/usp/common.ts",
+      "test": "tests/usp-contract-producers.test.ts",
+      "testCommand": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-*.test.ts",
+      "status": "partial",
+      "evidence": "Snapshot, target, job and result DTOs are parsed by current routes/tests.",
+      "limitation": "UspPorts still declares upload, model, scanner and delivery operations without live bindings; this row does not qualify every declared port.",
+      "problems": [],
+      "fileEvidence": {
+        "producer": {
+          "path": "packages/contracts/src/usp/domain.ts",
+          "sha256": "dcd2ccd1ae5f4976fcb820e1091dd524a48781b5377da02296387a13f396d062",
+          "markerFound": true
+        },
+        "consumer": {
+          "path": "apps/web/app/api/v1/usp/[...path]/route.ts",
+          "sha256": "e4153ddd990a0724d447f7a9f2a0820eed8f2e92f416fcc99766516cbe2d80b9",
+          "markerFound": true
+        },
+        "contract": {
+          "path": "packages/contracts/src/usp/common.ts",
+          "sha256": "bd321db14a59dae78399f50f818b7feec7cdd15c925eb1c0d57459ca9ec5d87f",
+          "markerFound": true
+        },
+        "test": {
+          "path": "tests/usp-contract-producers.test.ts",
+          "sha256": "44e96872f0cd3856f18b504beacc77eec4305291fa27cc626e6a856069cd2124",
+          "markerFound": true
+        }
+      }
+    },
+    {
+      "id": "registry",
+      "producer": "apps/web/lib/server/usp/snapshots.ts",
+      "consumer": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "contract": "packages/contracts/src/usp/domain.ts",
+      "test": "scripts/usp/verify-live.ts",
+      "testCommand": "node scripts/usp/local-isolation.mjs --run",
+      "status": "works",
+      "evidence": "Local route captures pinned registry/source membership; live runner checks exact reads, vertical membership and packet scope.",
+      "limitation": "Historical D0 result must be rerun at this code revision; this is local operator scope only.",
+      "problems": [],
+      "fileEvidence": {
+        "producer": {
+          "path": "apps/web/lib/server/usp/snapshots.ts",
+          "sha256": "a5dea158f26c5e3b5e47e3f8163c176ade819d55762815a8b16be6c834d1f195",
+          "markerFound": true
+        },
+        "consumer": {
+          "path": "apps/web/app/api/v1/usp/[...path]/route.ts",
+          "sha256": "e4153ddd990a0724d447f7a9f2a0820eed8f2e92f416fcc99766516cbe2d80b9",
+          "markerFound": true
+        },
+        "contract": {
+          "path": "packages/contracts/src/usp/domain.ts",
+          "sha256": "dcd2ccd1ae5f4976fcb820e1091dd524a48781b5377da02296387a13f396d062",
+          "markerFound": true
+        },
+        "test": {
+          "path": "scripts/usp/verify-live.ts",
+          "sha256": "8c051e22eb38fb4751b69a296241459a05804f5d2f71141f410ac7fa4a112938",
+          "markerFound": true
+        }
+      }
+    },
+    {
+      "id": "source",
+      "producer": "apps/web/lib/server/usp/snapshots.ts",
+      "consumer": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "contract": "packages/contracts/src/usp/common.ts",
+      "test": "scripts/usp/verify-d0-live.ts",
+      "testCommand": "node scripts/usp/local-isolation.mjs --run",
+      "status": "works",
+      "evidence": "Original and exact-part reads check pinned source revision and object hash; PACK0 uses these locators.",
+      "limitation": "Text/CSV exact parts are supported; broad PDF extraction and general multipart promotion are outside this tested path.",
+      "problems": [],
+      "fileEvidence": {
+        "producer": {
+          "path": "apps/web/lib/server/usp/snapshots.ts",
+          "sha256": "a5dea158f26c5e3b5e47e3f8163c176ade819d55762815a8b16be6c834d1f195",
+          "markerFound": true
+        },
+        "consumer": {
+          "path": "apps/web/app/api/v1/usp/[...path]/route.ts",
+          "sha256": "e4153ddd990a0724d447f7a9f2a0820eed8f2e92f416fcc99766516cbe2d80b9",
+          "markerFound": true
+        },
+        "contract": {
+          "path": "packages/contracts/src/usp/common.ts",
+          "sha256": "bd321db14a59dae78399f50f818b7feec7cdd15c925eb1c0d57459ca9ec5d87f",
+          "markerFound": true
+        },
+        "test": {
+          "path": "scripts/usp/verify-d0-live.ts",
+          "sha256": "e40a715f8d1d1a2a10c2cacf563a1c9fe6692dc9fcee21adcd56469078a23f98",
+          "markerFound": true
+        }
+      }
+    },
+    {
+      "id": "geometry",
+      "producer": "apps/web/lib/server/usp/external-scene.ts",
+      "consumer": "apps/web/features/usp/shared/ExternalSceneViewport.tsx",
+      "contract": "apps/web/features/usp/shared/external-scene.ts",
+      "test": "tests/e2e/usp-d1-journey.spec.ts",
+      "testCommand": "node scripts/usp/local-isolation.mjs --run",
+      "status": "partial",
+      "evidence": "A retained CityJSON exterior is decoded and displayed through the shared MapViewport/Cesium path.",
+      "limitation": "This display profile is local-frame only; analytical solids, global placement and wider source coverage are unqualified.",
+      "problems": [],
+      "fileEvidence": {
+        "producer": {
+          "path": "apps/web/lib/server/usp/external-scene.ts",
+          "sha256": "e711dd78d4ede0589640ee09aed14c3851c82ccd0dbad95a5ba36033cbcf8049",
+          "markerFound": true
+        },
+        "consumer": {
+          "path": "apps/web/features/usp/shared/ExternalSceneViewport.tsx",
+          "sha256": "dcf8ac09dff456816fbeef626fa8292cf88132c1d55031a0c2e04d7019cb626a",
+          "markerFound": true
+        },
+        "contract": {
+          "path": "apps/web/features/usp/shared/external-scene.ts",
+          "sha256": "ab526ab12c6e50bed0c8561599dc53cf8b48d3712b651b1ebdc9c762f03b3641",
+          "markerFound": true
+        },
+        "test": {
+          "path": "tests/e2e/usp-d1-journey.spec.ts",
+          "sha256": "56d619cb216c810a6f836a52a8773ea560eeab3f2e26a4a54a077150f25dc1b4",
+          "markerFound": true
+        }
+      }
+    },
+    {
+      "id": "job",
+      "producer": "apps/web/lib/server/usp/jobs.ts",
+      "consumer": null,
+      "contract": "packages/contracts/src/usp/domain.ts",
+      "test": "scripts/usp/verify-live.ts",
+      "testCommand": "node scripts/usp/local-isolation.mjs --run",
+      "status": "partial",
+      "evidence": "The isolated SQL runner exercises lease, fence, stale completion, idempotent accept and cancel.",
+      "limitation": "No production caller of the USP attempt functions was found; the existing dispatcher does not yet consume this USP fence API. Test-only use is not production wiring.",
+      "problems": [
+        "production_consumer_not_found"
+      ],
+      "fileEvidence": {
+        "producer": {
+          "path": "apps/web/lib/server/usp/jobs.ts",
+          "sha256": "8f959dd05344c2733957d9cd9152732506b53fa39382e25acc14bc856eb2c211",
+          "markerFound": true
+        },
+        "consumer": null,
+        "contract": {
+          "path": "packages/contracts/src/usp/domain.ts",
+          "sha256": "dcd2ccd1ae5f4976fcb820e1091dd524a48781b5377da02296387a13f396d062",
+          "markerFound": true
+        },
+        "test": {
+          "path": "scripts/usp/verify-live.ts",
+          "sha256": "8c051e22eb38fb4751b69a296241459a05804f5d2f71141f410ac7fa4a112938",
+          "markerFound": true
+        }
+      }
+    },
+    {
+      "id": "sse",
+      "producer": "apps/web/lib/server/usp/commands.ts",
+      "consumer": null,
+      "contract": "packages/contracts/src/usp/ports.ts",
+      "test": "scripts/usp/verify-live.ts",
+      "testCommand": "node scripts/usp/local-isolation.mjs --run",
+      "status": "missing",
+      "evidence": "Commands write an ordered outbox row in the current transaction.",
+      "limitation": "No USP outbox delivery/SSE endpoint or production stream consumer was found. The outbox alone does not provide SSE.",
+      "problems": [
+        "production_consumer_not_found"
+      ],
+      "fileEvidence": {
+        "producer": {
+          "path": "apps/web/lib/server/usp/commands.ts",
+          "sha256": "42ebe208263ef687526a4201679a10dba55118ec856a668139b1ffc10fae14da",
+          "markerFound": true
+        },
+        "consumer": null,
+        "contract": {
+          "path": "packages/contracts/src/usp/ports.ts",
+          "sha256": "4055830c10e4464906c072566bc4642279ea3aac59e3fb5bbe0095c1f1d1d5b6",
+          "markerFound": true
+        },
+        "test": {
+          "path": "scripts/usp/verify-live.ts",
+          "sha256": "8c051e22eb38fb4751b69a296241459a05804f5d2f71141f410ac7fa4a112938",
+          "markerFound": true
+        }
+      }
+    },
+    {
+      "id": "ui",
+      "producer": "apps/web/features/usp/shared/Packet0Action.tsx",
+      "consumer": "apps/web/features/studio/product/SavedSceneViewport.tsx",
+      "contract": "apps/web/features/spatial/MapViewport.tsx",
+      "test": "tests/e2e/usp-product-journey.spec.ts",
+      "testCommand": "node scripts/usp/local-isolation.mjs --run",
+      "status": "partial",
+      "evidence": "Existing functional Studio route uses scoped PACK0 selection and the one shared viewport for D0/D1.",
+      "limitation": "This is the retained functional test UI; formal redesign is deferred. Full selection generation/access cache contract remains unqualified.",
+      "problems": [],
+      "fileEvidence": {
+        "producer": {
+          "path": "apps/web/features/usp/shared/Packet0Action.tsx",
+          "sha256": "c07aac207797fdfe6f38efc54bcf2268f72511e8db13ef45d9d1772bb7524fed",
+          "markerFound": true
+        },
+        "consumer": {
+          "path": "apps/web/features/studio/product/SavedSceneViewport.tsx",
+          "sha256": "42edce482f4dc8c580900f7f1bb9924a195729991a65ed34a6cb812345e9452d",
+          "markerFound": true
+        },
+        "contract": {
+          "path": "apps/web/features/spatial/MapViewport.tsx",
+          "sha256": "676eda0febcecf6db480052498c3bfde452a00b48361c7efc94b42f7c3095279",
+          "markerFound": true
+        },
+        "test": {
+          "path": "tests/e2e/usp-product-journey.spec.ts",
+          "sha256": "77564e8948fe224ef179dc480c45c8933803bd93a20156c6dfc21f39dafce7d0",
+          "markerFound": true
+        }
+      }
+    }
+  ]
+}
