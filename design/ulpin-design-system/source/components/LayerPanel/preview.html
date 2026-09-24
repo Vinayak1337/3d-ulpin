@@ -1,0 +1,21 @@
+<!-- @dsCard group="Map & 3D" height=400 -->
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>LayerPanel preview</title></head>
+<body>
+<div class="ul-pad"><div class="ul-panel" style="width:308px">
+<div class="ul-panel__head"><h3 class="ul-panel__title">Layers</h3><svg class="ul-ico" viewBox="0 0 256 256" aria-hidden="true"><path d="M230.91,172A8,8,0,0,1,228,182.91l-96,56a8,8,0,0,1-8.06,0l-96-56A8,8,0,0,1,36,169.09l92,53.65,92-53.65A8,8,0,0,1,230.91,172ZM220,121.09l-92,53.65L36,121.09A8,8,0,0,0,28,134.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,121.09ZM24,80a8,8,0,0,1,4-6.91l96-56a8,8,0,0,1,8.06,0l96,56a8,8,0,0,1,0,13.82l-96,56a8,8,0,0,1-8.06,0l-96-56A8,8,0,0,1,24,80Zm23.88,0L128,126.74,208.12,80,128,33.26Z"/></svg></div>
+<div class="ul-panel__body" style="padding:8px">
+ <div class="ul-group-label">Colour by</div>
+ <div class="ul-seg" role="group" aria-label="Colour by" style="margin:0 8px 6px"><button aria-pressed="false">None</button><button aria-pressed="true">Rights</button><button aria-pressed="false">Readiness</button></div>
+ <div class="ul-group-label">Cadastre</div>
+ <div class="ul-layer"><span class="ul-swatch" style="background:none;box-shadow:inset 0 0 0 1.5px var(--map-parcel-line)"></span><span class="ul-grow">Parcels</span><span class="ul-toggle" role="switch" aria-checked="true"></span></div>
+ <div class="ul-layer"><span class="ul-swatch" style="background:var(--map-building)"></span><span class="ul-grow">Buildings</span><span class="ul-toggle" role="switch" aria-checked="true"></span></div>
+ <div class="ul-layer"><span class="ul-swatch" style="background:var(--rights-exclusive)"></span><span class="ul-grow">Spaces</span><span class="ul-toggle" role="switch" aria-checked="true"></span></div>
+ <div class="ul-group-label">Below ground</div>
+ <div class="ul-layer"><span class="ul-swatch" style="background:var(--soil-top)"></span><span class="ul-grow">Basements</span><span class="ul-toggle" role="switch" aria-checked="true"></span></div>
+ <div class="ul-layer"><span class="ul-swatch" style="background:var(--utility-water)"></span><span class="ul-grow">Utilities</span><span class="ul-toggle" role="switch" aria-checked="false"></span></div>
+ <div class="ul-layer"><span class="ul-swatch ul-hatch" style="background-color:var(--readiness-unknown)"></span><span class="ul-grow">Tunnels <span class="ul-muted">No data</span></span><span class="ul-toggle" role="switch" aria-checked="false"></span></div>
+</div></div></div>
+</body>
+</html>

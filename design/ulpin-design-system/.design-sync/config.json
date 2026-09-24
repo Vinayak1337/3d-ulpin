@@ -1,0 +1,44 @@
+{
+  "projectId": "a4084ee5-ad43-4cf2-9d10-b745820f5b65",
+  "shape": "package",
+  "pkg": "@ulpin/design-system",
+  "globalName": "Ulpin",
+  "buildCmd": "npm run build",
+  "cssEntry": "dist/ulpin.css",
+  "docsDir": "docs",
+  "guidelinesGlob": [
+    "brand/*.md"
+  ],
+  "componentSrcMap": {
+    "MapStyle": "src/components/MapCanvas.tsx",
+    "MapPatterns": "src/components/MapCanvas.tsx",
+    "Wordmark": "src/components/StudioHeader.tsx"
+  },
+  "overrides": {
+    "Icon": {
+      "cardMode": "column"
+    },
+    "DescriptionList": {
+      "cardMode": "column"
+    },
+    "Tabs": {
+      "cardMode": "column"
+    },
+    "MapCanvas": {
+      "cardMode": "column"
+    },
+    "MapToolbar": {
+      "cardMode": "column"
+    },
+    "Inspector": {
+      "cardMode": "column"
+    },
+    "PortalHeader": {
+      "cardMode": "column"
+    },
+    "StudioHeader": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}
