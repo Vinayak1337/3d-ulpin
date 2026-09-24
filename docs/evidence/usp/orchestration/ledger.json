@@ -1,0 +1,785 @@
+{
+  "schemaVersion": "ulpin-orchestration-ledger/1",
+  "updatedAt": "2026-09-24T23:50:44.852908+00:00",
+  "soleWriter": "orchestrator",
+  "orchestrator": {
+    "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+    "hostId": "local",
+    "agent": {
+      "product": "Codex",
+      "model": "gpt-6-astra",
+      "effort": "high"
+    },
+    "verification": "CODEX_THREAD_ID, list_threads and current session turn_context"
+  },
+  "integration": {
+    "branch": "feat/ulpin-finale-full-product",
+    "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
+    "acceptedStagingBase": "f45bbc7ad69d826d2fdca19d83e0dcf568bf95fa",
+    "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
+    "target": "staging",
+    "mainPolicy": "unchanged",
+    "existingCheckout": "194 pre-existing deletions preserved; no stash/reset/reseed",
+    "acceptedCommits": [],
+    "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf"
+  },
+  "scope": {
+    "sequence": [
+      "finale_v1",
+      "full_product"
+    ],
+    "nextGate": "GF0",
+    "formalUI": "deferred until complete mockup is linked and explicitly authorized; minimal functional test interfaces only",
+    "workerLimit": 2,
+    "defaultWorkers": 1,
+    "nativeSubagents": false,
+    "callbackMode": "dispatch then end turn; resume on tool-based worker callback; no polling loops or automation"
+  },
+  "inputs": [
+    {
+      "path": "/Users/vinayak/.codex/attachments/42788986-534f-47e6-a362-aad0cebe65e1/Pasted text.txt",
+      "sha256": "1ca55488c4c2861253f93e31d50369e58eb4ede9176ed058917136b8f7dc0add",
+      "role": "user-adopted execution instructions"
+    },
+    {
+      "path": "/Users/vinayak/Downloads/3D ULPIN Plan Review — Grand Finale Hardening.docx",
+      "sha256": "605e47e2ab00d5232de06bb478b66310f66f2890a856a3b4cb7228ca3eeb42c1",
+      "role": "advisory review; not independent action authorization"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D001",
+      "decision": "Latest user prompt overrides H02 Max: Astra High lead, Sol High ordinary work, Sol XHigh difficult integration; settings must be observed."
+    },
+    {
+      "id": "D002",
+      "decision": "DOCX is advisory. Adopted H26/H97 control opaque P3 identity, sourced anchors, named vertical references, CityJSON 2.0 sidecar and same-device QR. No imported instruction grants new external authorization."
+    },
+    {
+      "id": "D003",
+      "decision": "No formal UI cards or wholesale legacy deletion now. Preserve useful services, URLs and current Cesium testing runtime."
+    },
+    {
+      "id": "D004",
+      "decision": "Create requested branch from verified staging; review/integrate scoped commits there first. Authorized staging integration is lead-only, one accepted change at a time; never disturb dirty primary checkout or main."
+    },
+    {
+      "id": "D005",
+      "decision": "Cross-family milestone review/oracle requirement remains real. Sol/Astra review is conservatively same-family unless independent provenance proves otherwise. Obtain human or supported cross-family review at that boundary; do not claim independence."
+    },
+    {
+      "id": "D006",
+      "decision": "Source/credential/training permissions, public deployment, purchases and unrelated sensitive account scopes remain separately gated; user authorized routine public data acquisition and basic Google sign-in."
+    }
+  ],
+  "workers": [
+    {
+      "clientThreadId": "client-new-thread:6529019e-9c77-4207-8302-931b051ba244",
+      "threadId": null,
+      "hostId": "local",
+      "title": "3D ULPIN worker — bootstrap and contracts",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "observedAgent": null,
+      "status": "queued_worktree_setup"
+    }
+  ],
+  "assignments": [
+    {
+      "assignmentId": "BOOT-001",
+      "attempt": 1,
+      "callbackId": "ulpin-BOOT-001-attempt-1",
+      "objective": "Verify isolated worker identity/model settings, bounded code evidence and tool callback before implementation dispatch",
+      "baseCommit": "f45bbc7ad69d826d2fdca19d83e0dcf568bf95fa",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "docs/evidence/usp/orchestration/bootstrap/BOOT-001.md"
+      ],
+      "exclusions": [
+        "application code",
+        "shared schemas/migrations/configuration",
+        "ledger.json",
+        "release-plan.json",
+        "existing data and credentials"
+      ],
+      "status": "queued_worktree_setup",
+      "workerThreadId": null,
+      "workerHostId": "local",
+      "worktree": null,
+      "reportPath": "docs/evidence/usp/orchestration/bootstrap/BOOT-001.md",
+      "resultCommit": null,
+      "clientThreadId": "client-new-thread:6529019e-9c77-4207-8302-931b051ba244"
+    }
+  ],
+  "capabilityChecklist": [
+    {
+      "id": "R-DATA",
+      "capability": "Matched evidence from any permitted geography (labelled), exact acquisition stages and independent truth",
+      "plans": [
+        "docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/usp-agent-handoffs/29-agent-task-cards.md",
+        "docs/usp-agent-handoffs/90-required-human-tasks.md"
+      ],
+      "tasks": [
+        "DATA-01",
+        "DATA-02",
+        "DATA-03",
+        "DATA-04",
+        "DATA-05",
+        "DATA-06",
+        "DATA-07",
+        "DATA-08",
+        "LEAD-05"
+      ],
+      "gate": "GF0",
+      "gateDependencies": [],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-DATA"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-ID",
+      "capability": "Immutable proposed IDs, sourced official anchors and reviewed lifecycle",
+      "plans": [
+        "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md",
+        "docs/usp-agent-handoffs/15-property-history-and-comparison.md",
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md"
+      ],
+      "tasks": [
+        "FND-02",
+        "HISTORY-01"
+      ],
+      "gate": "GF1",
+      "gateDependencies": [
+        "GF0"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-T15"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-EXCHANGE",
+      "capability": "LADM mapping and loss-aware CityJSON plus sidecar",
+      "plans": [
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md"
+      ],
+      "tasks": [
+        "FND-03"
+      ],
+      "gate": "GF1",
+      "gateDependencies": [
+        "GF0"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-EXCHANGE"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-AI",
+      "capability": "Four source-linked domain pipelines and independent qualification",
+      "plans": [
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tasks": [
+        "DOMAIN-01",
+        "DOMAIN-02"
+      ],
+      "gate": "GF2",
+      "gateDependencies": [
+        "GF1"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-AI"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-INGEST",
+      "capability": "Bounded conversion, agent proposals, durable SSE and recovery",
+      "plans": [
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md"
+      ],
+      "tasks": [
+        "INGEST-01",
+        "INGEST-03"
+      ],
+      "gate": "GF2",
+      "gateDependencies": [
+        "GF1"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-RECOVERY"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-AGENT",
+      "capability": "Constrained mapping agent: held-out accuracy, injection, literal rejection, PII egress, outage and caps",
+      "plans": [
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/usp-agent-handoffs/97-review-findings-and-alignment.md"
+      ],
+      "tasks": [
+        "FND-06",
+        "DEPLOY-01",
+        "INGEST-02"
+      ],
+      "gate": "GF2",
+      "gateDependencies": [
+        "GF1"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-AGENT"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-VIEW",
+      "capability": "Retain Cesium and qualify actual source-shaped Studio path",
+      "plans": [
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
+        "docs/design-system/README.md",
+        "docs/design-system/ui-brief.md",
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "tasks": [
+        "FND-04"
+      ],
+      "gate": "GF2",
+      "gateDependencies": [
+        "GF1"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-VIEW"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-RIGHTS",
+      "capability": "Declared UDS, shared/elevated/underground rights versus physical space",
+      "plans": [
+        "docs/usp-agent-handoffs/16-shared-spaces-and-vertical-rights.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tasks": [
+        "RIGHTS-01"
+      ],
+      "gate": "GF2",
+      "gateDependencies": [
+        "GF1"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-T16",
+        "GF-T18"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-CARPET",
+      "capability": "Component-defined quantity with independent calculation",
+      "plans": [
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tasks": [
+        "DOMAIN-03"
+      ],
+      "gate": "GF2",
+      "gateDependencies": [
+        "GF1"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-T17"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-GEOMETRY",
+      "capability": "Qualified operations, topology semantics and named datums",
+      "plans": [
+        "docs/usp-agent-handoffs/12-rights-aware-spatial-findings.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tasks": [
+        "FIND-01"
+      ],
+      "gate": "GF2",
+      "gateDependencies": [
+        "GF1"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-T18"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-DEVIATION",
+      "capability": "Exact sanctioned/observed pair, controls and uncertainty",
+      "plans": [
+        "docs/usp-agent-handoffs/15-property-history-and-comparison.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tasks": [
+        "HISTORY-02"
+      ],
+      "gate": "GF3",
+      "gateDependencies": [
+        "GF2"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-T19"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-IMPACT",
+      "capability": "Promote IMPACT0 with coverage and utility accuracy limits",
+      "plans": [
+        "docs/usp-agent-handoffs/17-infrastructure-impact-screening.md",
+        "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md"
+      ],
+      "tasks": [
+        "IMPACT-01"
+      ],
+      "gate": "GF3",
+      "gateDependencies": [
+        "GF2"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-T20"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-CARD",
+      "capability": "Existing packet subtype and exact-revision QR",
+      "plans": [
+        "docs/usp-agent-handoffs/10-scoped-evidence-packets.md",
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md"
+      ],
+      "tasks": [
+        "PACK-01"
+      ],
+      "gate": "GF4",
+      "gateDependencies": [
+        "GF3"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-T21"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-TRUST",
+      "capability": "Authorization, release isolation and hash-chain trust limits",
+      "plans": [
+        "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md",
+        "docs/usp-agent-handoffs/10-scoped-evidence-packets.md",
+        "docs/usp-agent-handoffs/15-property-history-and-comparison.md",
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md"
+      ],
+      "tasks": [
+        "FND-07"
+      ],
+      "gate": "GF4",
+      "gateDependencies": [
+        "GF3"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-T21",
+        "GF-PRIVACY"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-CLAIMS",
+      "capability": "Rehearsed workflow and measured versus planned claims",
+      "plans": [
+        "docs/usp-agent-handoffs/00-README.md",
+        "docs/usp-agent-handoffs/24-product-method-and-ppt.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/usp-agent-handoffs/29-agent-task-cards.md",
+        "docs/usp-agent-handoffs/97-review-findings-and-alignment.md"
+      ],
+      "tasks": [
+        "LEAD-03",
+        "LEAD-04"
+      ],
+      "gate": "GF5",
+      "gateDependencies": [
+        "GF4"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-T15",
+        "GF-T16",
+        "GF-T17",
+        "GF-T18",
+        "GF-T19",
+        "GF-T20",
+        "GF-T21",
+        "GF-AI",
+        "GF-AGENT",
+        "GF-EXCHANGE",
+        "GF-RECOVERY",
+        "GF-VIEW",
+        "GF-DATA",
+        "GF-PRIVACY",
+        "GF-CONTRACT",
+        "GF-READY",
+        "GF-REHEARSAL"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-FP-LEARN",
+      "capability": "FP-LEARN retained full-product capability",
+      "plans": [
+        "docs/usp-agent-handoffs/21-concurrent-schema-learning.md"
+      ],
+      "tasks": [
+        "FP-LEARN-01"
+      ],
+      "gate": "FP-LEARN",
+      "gateDependencies": [
+        "GF5"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "FP-LEARN-TEST"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-FP-PUBLIC",
+      "capability": "FP-PUBLIC retained full-product capability",
+      "plans": [
+        "docs/usp-agent-handoffs/13-citizen-evidence-and-corrections.md"
+      ],
+      "tasks": [
+        "FP-PUBLIC-01"
+      ],
+      "gate": "FP-PUBLIC",
+      "gateDependencies": [
+        "GF5",
+        "FP-DEPLOY"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "FP-PUBLIC-TEST"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-FP-ASSIST",
+      "capability": "FP-ASSIST retained full-product capability",
+      "plans": [
+        "docs/usp-agent-handoffs/18-grounded-assistance-and-mcp.md"
+      ],
+      "tasks": [
+        "FP-ASSIST-01"
+      ],
+      "gate": "FP-ASSIST",
+      "gateDependencies": [
+        "GF5"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "FP-ASSIST-TEST"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-FP-FORMATS",
+      "capability": "FP-FORMATS retained full-product capability",
+      "plans": [
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "tasks": [
+        "FP-FORMATS-01"
+      ],
+      "gate": "FP-FORMATS",
+      "gateDependencies": [
+        "GF5"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "FP-FORMATS-TEST"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-FP-ENRICH",
+      "capability": "FP-ENRICH retained full-product capability",
+      "plans": [
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "tasks": [
+        "FP-ENRICH-01"
+      ],
+      "gate": "FP-ENRICH",
+      "gateDependencies": [
+        "FP-FORMATS"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "FP-ENRICH-TEST"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-FP-RENDER",
+      "capability": "FP-RENDER retained full-product capability",
+      "plans": [
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md"
+      ],
+      "tasks": [
+        "FP-RENDER-01"
+      ],
+      "gate": "FP-RENDER",
+      "gateDependencies": [
+        "GF5"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "FP-RENDER-TEST"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-FP-SCALE",
+      "capability": "FP-SCALE retained full-product capability",
+      "plans": [
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "tasks": [
+        "FP-SCALE-01"
+      ],
+      "gate": "FP-SCALE",
+      "gateDependencies": [
+        "FP-FORMATS"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "FP-SCALE-TEST"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-FP-DEPLOY",
+      "capability": "FP-DEPLOY retained full-product capability",
+      "plans": [
+        "docs/usp-agent-handoffs/19-india-contained-deployment.md",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md",
+        "docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md"
+      ],
+      "tasks": [
+        "FP-DEPLOY-01"
+      ],
+      "gate": "FP-DEPLOY",
+      "gateDependencies": [
+        "GF5"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "FP-DEPLOY-TEST"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-CONTRACT",
+      "capability": "Actual shared contracts and source/geometry/job producer-consumer inventory",
+      "plans": [
+        "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "tasks": [
+        "FND-01",
+        "LEAD-01",
+        "FND-05"
+      ],
+      "gate": "GF0",
+      "gateDependencies": [],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-CONTRACT"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-READY",
+      "capability": "Scoped readiness, stale evidence and accountable review",
+      "plans": [
+        "docs/usp-agent-handoffs/11-evidence-readiness-and-review-queue.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "tasks": [
+        "READY-01",
+        "READY-02"
+      ],
+      "gate": "GF3",
+      "gateDependencies": [
+        "GF2"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-READY"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-REHEARSAL",
+      "capability": "Integrated Studio journey, metrics and honest PPT/backup rehearsal",
+      "plans": [
+        "docs/usp-agent-handoffs/24-product-method-and-ppt.md",
+        "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/design-system/README.md",
+        "docs/design-system/ui-brief.md"
+      ],
+      "tasks": [
+        "DEPLOY-02",
+        "DEPLOY-04",
+        "UI-07"
+      ],
+      "gate": "GF5",
+      "gateDependencies": [
+        "GF4"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-REHEARSAL"
+      ],
+      "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-MODEL-CORE",
+      "capability": "Governed Sarvam finale subset and no-key/manual fallback",
+      "plans": [
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md"
+      ],
+      "tasks": [
+        "FND-06",
+        "DEPLOY-01"
+      ],
+      "gate": "GF2",
+      "taskDependencies": [
+        "FND-06"
+      ],
+      "acceptanceTests": [
+        "G-04",
+        "G-05",
+        "G-08",
+        "G-09",
+        "G-12",
+        "G-17",
+        "G-18",
+        "G-19",
+        "G-22",
+        "GF-AGENT"
+      ],
+      "acceptanceCriteria": "H20 Z1 fake-provider qualification before permitted live calls",
+      "status": "pending_current_evidence",
+      "evidence": []
+    }
+  ],
+  "checks": [
+    {
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+      "exitCode": 0,
+      "result": "plan consistency only"
+    },
+    {
+      "command": "python3 -m unittest discover -s docs/usp-agent-handoffs/tools/tests -q",
+      "exitCode": 0,
+      "result": "29 tests passed; no runtime qualification"
+    }
+  ],
+  "nextSteps": [
+    "Dispatch BOOT-001 and record returned actual identifiers.",
+    "End turn after bounded setup snapshot; accept only matching tool callback.",
+    "On verified callback inspect report/commit/model metadata, integrate scoped report and dispatch FND-01; retain LEAD-01 as lead work.",
+    "Proceed through dependency-ready H29 cards and full_product, without marking any gate complete absent actual evidence and independent acceptance."
+  ]
+}
