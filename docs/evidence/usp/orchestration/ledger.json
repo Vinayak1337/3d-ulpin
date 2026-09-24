@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-24T23:56:35.979710+00:00",
+  "updatedAt": "2026-09-24T23:56:46.242341+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -98,7 +98,7 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "dispatching_FND-01",
+      "status": "assigned_FND-01",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -178,7 +178,7 @@
         "Job consumer absence and other unqualified seams explicit; no gate completion without independent review"
       ],
       "reportPath": "docs/evidence/usp/finale/GF-CONTRACT/FND-01-report.md",
-      "status": "dispatching",
+      "status": "dispatched",
       "resultCommit": null
     }
   ],
