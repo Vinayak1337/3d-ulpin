@@ -1,0 +1,59 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>3D ULPIN</title>
+<style>
+  html, body { margin:0; height:100%; }
+  body { background:var(--bg); color:var(--ink); font-family:var(--font-sans); overflow:hidden; }
+  .cover { position:relative; height:288px; overflow:hidden; }
+  .art { position:absolute; top:0; left:480px; width:480px; height:288px; overflow:hidden; }
+  .art svg { display:block; width:480px; height:288px; }
+  .brand { fill:var(--primary); }
+  .cut { fill:var(--primary-soft); }
+  .deep { fill:var(--ink); }
+  .mass { fill:var(--map-building); }
+  .soil { fill:var(--soil-top); }
+  .soil2 { fill:var(--soil-deep); }
+  .ground { fill:var(--bg); }
+  .words { position:absolute; left:var(--space-6); bottom:var(--space-6); max-width:440px; }
+  .name { margin:0; font-family:var(--font-display); font-size:88px; line-height:.92; font-weight:600; letter-spacing:-.02em; color:var(--ink); }
+  .tag { margin:var(--space-2) 0 0 3px; font-size:14px; line-height:20px; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      primary 144x208 slab bled off the top (the brand, largest) · ink 120x120 · map-building 96x152 · soil-top band 480x80 below grade with soil-deep basements; about 35% of 960x288
+  arrangement a skyline standing on one ground line at y=208, basements hanging below it: the product's own vertical section
+  pattern     literal motif, stacked levels: space-1-tall floor cuts at a space-6 pitch in primary-soft across the slab, two basement slabs in soil-deep, one pill tunnel cut from the ground colour
+  scales      sides in space-2 multiples; gaps space-4; floor pitch space-6; corners radius-4 on buildings, tunnel rx half its height
+-->
+<rect class="brand" x="24" y="-16" width="144" height="224" rx="4"/>
+<rect class="cut" x="24" y="16" width="144" height="4"/>
+<rect class="cut" x="24" y="40" width="144" height="4"/>
+<rect class="cut" x="24" y="64" width="144" height="4"/>
+<rect class="cut" x="24" y="88" width="144" height="4"/>
+<rect class="cut" x="24" y="112" width="144" height="4"/>
+<rect class="cut" x="24" y="136" width="144" height="4"/>
+<rect class="cut" x="24" y="160" width="144" height="4"/>
+<rect class="cut" x="24" y="184" width="144" height="4"/>
+<rect class="deep" x="184" y="88" width="120" height="120" rx="4"/>
+<rect class="mass" x="320" y="56" width="96" height="152" rx="4"/>
+<rect class="mass" x="432" y="136" width="64" height="72" rx="4"/>
+<rect class="soil" x="0" y="208" width="480" height="80"/>
+<rect class="soil2" x="24" y="216" width="144" height="24" rx="4"/>
+<rect class="soil2" x="24" y="248" width="144" height="24" rx="4"/>
+<rect class="ground" x="232" y="256" width="216" height="16" rx="8"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">3D ULPIN</h1>
+<p class="tag">Every space, its code, its evidence.</p>
+</div>
+</div>
+</body>
+</html>
