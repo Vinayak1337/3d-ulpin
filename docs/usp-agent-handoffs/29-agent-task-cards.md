@@ -115,13 +115,13 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 ### CLEANUP-01 · Remove obsolete and duplicate files
 **Owner** LEAD · **Tier** T-work · **Needs** none
 - **Read:** `docs/cleanup-review/2026-09-25-removals.json` (every path, its reason and the evidence that nothing live uses it).
-- **Build:** `git rm -r` exactly the listed paths on a branch from current staging. The link and reference fix-ups were applied in the same review, so nothing else needs editing.
+- **Build:** remove exactly the listed paths on a branch from current staging after checking their recorded Git blob hashes. Remove the remaining GitHub workflows as part of the CI retirement; retain the active handoff and engineering plan files.
 - **Done when:** `python3 docs/usp-agent-handoffs/tools/validate_handoffs.py`, its unit tests, `python3 docs/engineering-plan/tools/validate_plan.py`, `pnpm typecheck`, `pnpm test:studio` and `pnpm test:ui` pass; `pnpm build` succeeds. If any fails, restore only the file it names and record why in the removals file.
 
 ### CLEANUP-02 · Retire the historical engineering plan and prototypes
 **Owner** LEAD · **Tier** T-risk · **Needs** CLEANUP-01
-- **Build:** retire `docs/engineering-plan/` (except anything the handoffs still link), `design/reference-map-v5/` and the R3F showcase scene only together with their consumers: the workflows `ulpin-engineering-baseline.yml` and the engineering steps of `ulpin-integration-baseline.yml`, `tests/engineering-acceptance.test.mjs`, the evidence writers in `scripts/spatial/save-demo-datasets.ts` and `tests/t084-dataset-ml-integration.ts`, `scripts/reference/build-shared.mjs`, and `CURRENT_WORK.md` as an entry point (move its gate line into H00 and drop it from `release-plan.json` `entryPoints`). Replace or remove the e2e specs that cannot pass (`tests/e2e/workbench.spec.ts`, `presentation.spec.ts`, `scripts/reference/browser.ts`).
-- **Done when:** CI is green on the branch with the reduced workflow set, and the handoff validator still passes.
+- **Build:** retire `docs/engineering-plan/` (except anything the handoffs still link), `design/reference-map-v5/` and the R3F showcase scene only together with their remaining local consumers: `tests/engineering-acceptance.test.mjs`, the evidence writers in `scripts/spatial/save-demo-datasets.ts` and `tests/t084-dataset-ml-integration.ts`, `scripts/reference/build-shared.mjs`, and `CURRENT_WORK.md` as an entry point (move its gate line into H00 and drop it from `release-plan.json` `entryPoints`). Replace or remove the e2e specs that cannot pass (`tests/e2e/workbench.spec.ts`, `presentation.spec.ts`, `scripts/reference/browser.ts`). The GitHub workflows were retired in CLEANUP-01.
+- **Done when:** the applicable local validators, tests, typecheck and build pass, and the handoff validator still passes.
 
 ## GF1 — identify and exchange
 
