@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-24T23:50:44.852908+00:00",
+  "updatedAt": "2026-09-24T23:55:12.129943+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -20,7 +20,14 @@
     "target": "staging",
     "mainPolicy": "unchanged",
     "existingCheckout": "194 pre-existing deletions preserved; no stash/reset/reseed",
-    "acceptedCommits": [],
+    "acceptedCommits": [
+      {
+        "sourceCommit": "ab179811aef412a6735b171928a63d8c9d3091c6",
+        "integrationCommit": "8b8a9f3",
+        "assignmentId": "BOOT-001",
+        "scope": "report only"
+      }
+    ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf"
   },
   "scope": {
@@ -76,7 +83,7 @@
   "workers": [
     {
       "clientThreadId": "client-new-thread:6529019e-9c77-4207-8302-931b051ba244",
-      "threadId": null,
+      "threadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "hostId": "local",
       "title": "3D ULPIN worker — bootstrap and contracts",
       "requestedAgent": {
@@ -84,8 +91,13 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "observedAgent": null,
-      "status": "queued_worktree_setup"
+      "observedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "status": "bootstrap_accepted_idle",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
   "assignments": [
@@ -110,13 +122,22 @@
         "release-plan.json",
         "existing data and credentials"
       ],
-      "status": "queued_worktree_setup",
-      "workerThreadId": null,
+      "status": "accepted",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "workerHostId": "local",
-      "worktree": null,
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
       "reportPath": "docs/evidence/usp/orchestration/bootstrap/BOOT-001.md",
-      "resultCommit": null,
-      "clientThreadId": "client-new-thread:6529019e-9c77-4207-8302-931b051ba244"
+      "resultCommit": "ab179811aef412a6735b171928a63d8c9d3091c6",
+      "clientThreadId": "client-new-thread:6529019e-9c77-4207-8302-931b051ba244",
+      "integrationCommit": "8b8a9f3",
+      "acceptedAt": "2026-09-24T23:55:12.129943+00:00",
+      "review": {
+        "reviewer": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+        "scope": "bootstrap protocol and report only; no runtime milestone",
+        "modelFamily": "GPT-6",
+        "independence": "same_family",
+        "verdict": "accepted"
+      }
     }
   ],
   "capabilityChecklist": [
@@ -774,12 +795,33 @@
       "command": "python3 -m unittest discover -s docs/usp-agent-handoffs/tools/tests -q",
       "exitCode": 0,
       "result": "29 tests passed; no runtime qualification"
+    },
+    {
+      "command": "Parent inspected worker turn_context, read_thread, commit diff and ancestry",
+      "exitCode": 0,
+      "result": "actual gpt-6-sol/high; isolated /51a5 worktree; only owned report changed; callback sender/assignment/attempt matched"
     }
   ],
   "nextSteps": [
-    "Dispatch BOOT-001 and record returned actual identifiers.",
-    "End turn after bounded setup snapshot; accept only matching tool callback.",
-    "On verified callback inspect report/commit/model metadata, integrate scoped report and dispatch FND-01; retain LEAD-01 as lead work.",
-    "Proceed through dependency-ready H29 cards and full_product, without marking any gate complete absent actual evidence and independent acceptance."
+    "Integrate accepted bootstrap documentation into local staging without changing pre-existing checkout deletions.",
+    "Assign FND-01 to the same verified worker at the updated staging base.",
+    "Lead retains LEAD-01 validator and shared plan machinery ownership; formal UI is deferred.",
+    "On callback inspect changes and actual tests; preserve open gates and dispatch next bounded work."
+  ],
+  "processedCallbacks": [
+    {
+      "callbackId": "ulpin-BOOT-001-attempt-1",
+      "assignmentId": "BOOT-001",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "ab179811aef412a6735b171928a63d8c9d3091c6",
+      "result": "accepted"
+    }
+  ],
+  "observations": [
+    {
+      "id": "OBS-001",
+      "finding": "USP job attempt functions have a verification runner consumer; production dispatcher linkage unproven. FND-01 must classify honestly, not count test-only caller as integrated runtime."
+    }
   ]
 }
