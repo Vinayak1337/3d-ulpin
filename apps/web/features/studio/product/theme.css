@@ -104,3 +104,22 @@
   color: var(--ui-on-primary);
   border-color: var(--ui-primary);
 }
+
+.ulpin-app.studio-operations[data-theme="dark"] .ui-inspector-tabs button {
+  background: var(--ui-surface);
+  color: var(--ui-ink-soft);
+}
+.ulpin-app.studio-operations[data-theme="dark"] .ui-inspector-tabs button[aria-pressed="true"] {
+  color: var(--ui-primary);
+}
+.ulpin-app.studio-operations[data-theme="dark"] .ui-inspector-metrics {
+  background: var(--ui-divider);
+  border-color: var(--ui-divider);
+}
+.ulpin-app.studio-operations[data-theme="dark"] .ui-inspector-metrics > div {
+  background: var(--ui-surface-subtle);
+  color: var(--ui-ink);
+}
+.ulpin-app.studio-operations[data-theme="dark"] .ui-inspector-metrics small {
+  color: var(--ui-ink-soft);
+}

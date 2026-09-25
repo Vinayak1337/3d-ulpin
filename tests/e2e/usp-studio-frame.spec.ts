@@ -63,6 +63,11 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   await expect(scope.getByRole("link", { name: "Add files" })).toBeVisible();
   await expect(scope.getByRole("button", { name: "Export" })).toBeVisible();
   await expect(page.locator("[data-product-header]")).toHaveCSS("height", "56px");
+  const scopeBounds = await scope.boundingBox();
+  expect(scopeBounds).toBeTruthy();
+  expect(scopeBounds!.y).toBeGreaterThanOrEqual(56);
+  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-selected-dark-390.png") });
+  await page.getByRole("button", { name: "Close inspector" }).click();
   await page.getByRole("button", { name: "Layers", exact: true }).click();
   const sheet = page.getByRole("complementary", { name: "Layers panel" });
   await expect(sheet).toBeVisible();
