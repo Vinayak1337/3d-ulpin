@@ -1,0 +1,100 @@
+/* Foundation contrast for the retained Studio chrome. Map geometry keeps its source colors. */
+.ulpin-app.studio-operations .ui-button {
+  /* A palette switch changes text immediately; animating only the surface causes unreadable controls. */
+  transition: none;
+}
+
+.ulpin-app.studio-operations:not([data-theme="dark"]) :is(
+  .ui-map-compass .ui-button,
+  .ui-map-zoom .ui-button,
+  .ui-map-bottom > .ui-button
+) {
+  border-color: var(--ui-muted);
+}
+
+.ulpin-app.studio-operations .city-nav a,
+.ulpin-app.studio-operations .ui-map-mode button {
+  color: var(--ui-ink-soft);
+}
+
+.ulpin-app.studio-operations .city-nav a[aria-current="page"] {
+  color: var(--ui-primary);
+}
+
+.ulpin-app.studio-operations .ui-map-mode button[aria-pressed="true"] {
+  color: var(--ui-on-primary);
+}
+
+/* Dark compatibility while UI-02 migrates the remaining frame styles. */
+.ulpin-app.studio-operations[data-theme="dark"] :is(
+  .city-header,
+  .city-search,
+  .city-search-results,
+  .city-dataset > button,
+  .city-dataset-menu,
+  .city-dataset-menu a,
+  .city-dataset-menu > button,
+  .city-header-actions button,
+  .city-header-actions a,
+  .city-mobile-menu,
+  .ui-contextbar,
+  .ui-block-left,
+  .ui-block-inspector,
+  .ui-map-toolbar,
+  .ui-map-mode,
+  .ui-map-world,
+  .ui-map-compass button,
+  .ui-map-zoom button,
+  .ui-map-legend,
+  .ui-active-finding,
+  .ui-map-status
+) {
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  border-color: var(--ui-divider);
+}
+
+.ulpin-app.studio-operations[data-theme="dark"] :is(
+  .city-brand small,
+  .city-brand em,
+  .city-nav a,
+  .city-dataset > button,
+  .city-search kbd,
+  .ui-map-mode button,
+  .ui-map-compass span:first-child,
+  .ui-north-arrow,
+  .ui-map-legend
+) {
+  color: var(--ui-ink-soft);
+}
+
+.ulpin-app.studio-operations[data-theme="dark"] :is(
+  .city-nav a[aria-current="page"],
+  .city-search-results > button[aria-selected="true"]
+) {
+  background: var(--ui-primary-soft);
+  color: var(--ui-primary);
+}
+
+.ulpin-app.studio-operations[data-theme="dark"] :is(
+  .city-search input,
+  .ui-map-world select,
+  .city-search-results > button
+) {
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  border-color: var(--ui-line-control);
+}
+
+.ulpin-app.studio-operations[data-theme="dark"] :is(.city-search input, .ui-map-world select)::placeholder {
+  color: var(--ui-muted);
+}
+
+.ulpin-app.studio-operations[data-theme="dark"] :is(
+  .city-header-actions .check-button,
+  .ui-map-mode button[aria-pressed="true"]
+) {
+  background: var(--ui-primary);
+  color: var(--ui-on-primary);
+  border-color: var(--ui-primary);
+}

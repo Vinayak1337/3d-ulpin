@@ -8,6 +8,7 @@ import "./ui.css";
 import "./shell.css";
 import ProductHeader from "../../studio/product/ProductHeader";
 import "../../studio/product/operations.css";
+import "../../studio/product/theme.css";
 function Navigation({ children }: { children: ReactNode }) {
   const [statusOpen, setStatusOpen] = useState(false);
   const health = useResource<{

@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "ui-01-evidence/1",
+  "assignmentId": "UI-01",
+  "callbackId": "ulpin-UI-01-attempt-1",
+  "attempt": 1,
+  "baseCommit": "7d056675c766d81280ac81c69572d2d01d3cde0b",
+  "codeCommit": "693b224dbb5fa1a43c77e10d8b2c69c4309722f1",
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-sol",
+    "effort": "high"
+  },
+  "runner": {
+    "result": "PASS",
+    "scopeId": "local-eb727cec123195d0",
+    "commands": [
+      {
+        "label": "source-sha",
+        "exitCode": 0
+      },
+      {
+        "label": "docker-context",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-project",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-volumes",
+        "exitCode": 0
+      },
+      {
+        "label": "services-start",
+        "exitCode": 0
+      },
+      {
+        "label": "database-restore",
+        "exitCode": 0
+      },
+      {
+        "label": "migration",
+        "exitCode": 0
+      },
+      {
+        "label": "repeat-migration",
+        "exitCode": 0
+      },
+      {
+        "label": "usp-verify-live",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-authored-pack",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-live-verify",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "ui-01-foundations-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-d1-studio-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "gf-t15-project-identity",
+        "exitCode": 0
+      },
+      {
+        "label": "owned-services-cleanup",
+        "exitCode": 0
+      }
+    ],
+    "rawReceiptSha256": "ed772778b70d04f9b7ba7e4d4d52c98be420d58f6b9ce20158750c37d88c0fa7"
+  },
+  "sources": {
+    "apps/web/features/officer/shared/tokens.css": "c2985e4e768f99715f20fdb16278eb471103f593c54295f75cf981e2229928c0",
+    "apps/web/features/officer/shared/ui.tsx": "ac7ab5ab4ed5283940c634d28c1ea3181dd9b51e88d2472c013f9f107a1525ae",
+    "apps/web/features/studio/product/theme.css": "29999e51c93f681971148269a7a3e21bde10bdf7e3cb4e0a9f71b2e83363fc9b",
+    "tests/e2e/usp-ui-foundations.spec.ts": "e1d4a52e003a45f4b38272750e76b6ed16d653d1afb5bf7891ddea09bd6715dc",
+    "scripts/usp/ui/icon-import-warning.mjs": "c9ae113395fc6b967e03fdb3f6fabfebf032181ade08deba03cd72aca86fb5da"
+  },
+  "fontWoff2": {
+    "NotoSans-Variable.woff2": "9a14b982545cf734de350a74348e00af10261d305bafd4fdd88d0b90da97b096",
+    "NotoSansDevanagari-Variable.woff2": "effe7c7302e879bdd234df26328ac8012cfbeffdca03ba8aa12bab942ec8aeb2",
+    "NotoSansMono-Variable.woff2": "a0cabb3b0c5c5ec7fa572a5b4ac042e7af2cfa88c4e31173c9cd8b9ad0865fd6"
+  },
+  "fontLicenses": {
+    "OFL-NotoSans.txt": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+    "OFL-NotoSansDevanagari.txt": "a216f6f8d85c7228093e0ee5e258d9d377e6671f68acb4db1930b29583d0f331",
+    "OFL-NotoSansMono.txt": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a"
+  },
+  "screenshots": {
+    "studio-light-desktop.png": "5f4c454571928ac574935194d93d35e10e9fd0a290e2d9139c6ac89225485f92",
+    "studio-dark-desktop.png": "d59e44a733df44ca64419b34b41866a2530de57cf82835a77f82ef30a2547dfd",
+    "hindi-label.png": "33aff5d9017d9e1b92c70a941ec374327c4956abfa62c8c1962a634268eef223"
+  },
+  "qualification": "UI-01 local foundations and retained Studio browser only; full GF-VIEW, UI-02 frame, public mounts, GPU performance and deployment remain pending"
+}
