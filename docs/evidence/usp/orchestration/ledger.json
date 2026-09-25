@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T14:16:23.948952+00:00",
+  "updatedAt": "2026-09-25T15:08:57.025124+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -62,6 +62,12 @@
         "assignmentId": "UI-01",
         "integrationMethod": "merge preserving failed and passed attempts",
         "scope": "Offline fonts, shared tokens/icon foundation and focused light/dark contrast"
+      },
+      {
+        "sourceCommit": "f14210357d2ccf7f513ebbb00e4ce38c3ad58367",
+        "assignmentId": "UI-02",
+        "integrationMethod": "merge preserving both attempts and actual tested ancestry",
+        "scope": "Studio header/frame/panels, responsive sheet and runtime continuity"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -136,6 +142,12 @@
     {
       "id": "D011",
       "decision": "Worker attempt-2 acknowledged then ended without execution. Resume explicitly on updated integration base, preserving original assignment base and unmerged implementation ancestry. Default remains one worker and one accepted integration at a time."
+    },
+    {
+      "id": "D011",
+      "decision": "UI-02 scope strip increases from36px to52px desktop and104px phone to provide nonoverlapping44px controls and readable metadata. Header remains56px.",
+      "reason": "Resolve explicit design minimum hit-area/readability requirements against original compact strip geometry.",
+      "recordedAt": "2026-09-25T15:08:57.025124+00:00"
     }
   ],
   "workers": [
@@ -932,9 +944,9 @@
         "390x844 scope header/action reachable; 900/620 breakpoints, keyboard/focus/Escape,200% and reduced motion",
         "Live production isolated screenshots and state/instance assertions; existing D0/D1,identity and UI-01 regressions retained"
       ],
-      "status": "dispatched",
+      "status": "accepted_bounded_studio_frame",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-02/attempt-2/report.md",
-      "resultCommit": null,
+      "resultCommit": "f14210357d2ccf7f513ebbb00e4ce38c3ad58367",
       "ownershipClarifications": [
         {
           "path": "apps/web/features/usp/shared/ExternalSceneViewport.tsx",
@@ -949,7 +961,26 @@
         "UI02-R2",
         "UI02-R3",
         "UI02-R4"
-      ]
+      ],
+      "testedCommit": "300447b0cbe74e81d20f0c16b88601c5ab476660",
+      "acceptedAt": "2026-09-25T15:08:57.025124+00:00",
+      "review": {
+        "independence": "same_family",
+        "verdict": "R1-R4 addressed for bounded frame integration; no GF-VIEW milestone pass",
+        "checks": [
+          "Report hash pins,raw runner receipt,and base/code/result ancestry verified",
+          "22 internal zero exits including D0/D1/UI01/identity/cleanup",
+          "Dark desktop and phone captures inspected; target and contrast measurements reviewed",
+          "Combined branch pnpm test:ui:20passed; pnpm typecheck:exit0"
+        ],
+        "limits": [
+          "Same GPT-6 family engineering review only; different-family or human milestone review pending",
+          "200% evidence is width reflow at720 CSS px, not full browser-zoom/height/text scaling qualification",
+          "Keyboard evidence covers focus entry/return, slash and Escape; exhaustive Tab traversal and all-route accessibility remain pending",
+          "One unchanged-code cold-scene timeout preserved; following guarded run passed",
+          "Source accuracy, analytical mesh volume, GPU, learning and deployment remain unqualified"
+        ]
+      }
     }
   ],
   "capabilityChecklist": [
@@ -1127,9 +1158,10 @@
         "GF-VIEW"
       ],
       "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
-      "status": "partial_ui_foundations",
+      "status": "partial_ui_foundations_and_frame",
       "evidence": [
-        "docs/evidence/usp/finale/GF-VIEW/UI-01/attempt-2/report.md"
+        "docs/evidence/usp/finale/GF-VIEW/UI-01/attempt-2/report.md",
+        "docs/evidence/usp/finale/GF-VIEW/UI-02/attempt-2/report.md"
       ]
     },
     {
@@ -1782,6 +1814,15 @@
       "resultCommit": "ad71e514cba205eec4dc44fb982efa1e9800378e",
       "result": "corrections_required_not_integrated",
       "normalization": "CamelCase callback fields normalized from uniquely matching source task and callbackId."
+    },
+    {
+      "callbackId": "ulpin-UI-02-attempt-2",
+      "assignmentId": "UI-02",
+      "attempt": 2,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "f14210357d2ccf7f513ebbb00e4ce38c3ad58367",
+      "result": "accepted_bounded_studio_frame",
+      "normalization": "callback/assignment/worker_id/host aliases normalized from unique source task and callback. complete means ready for review; supplied base is attempt1 continuation, original accepted integration base remains c597d525."
     }
   ],
   "observations": [
@@ -2001,7 +2042,7 @@
       "card": "UI-02",
       "title": "Studio frame",
       "needs": "UI-01",
-      "status": "in_progress"
+      "status": "accepted_bounded_scope"
     },
     {
       "card": "UI-03",
