@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T16:28:53.676872+00:00",
+  "updatedAt": "2026-09-25T16:29:55.257367+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "bcf2c81106b38191edbedb72d01f641edd77ad03",
+    "acceptedStagingBase": "1a6baf0d832117932c291fa6bfc08a536d8bd26e",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -199,7 +199,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "ready_for_next_assignment",
+      "status": "assigned_FND-04",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1265,6 +1265,46 @@
       "testedCommit": "3f434995a5b75062337f108740ee11455c0511b9",
       "acceptedAt": "2026-09-25T16:28:53.676872+00:00",
       "reviewRef": "docs/evidence/usp/orchestration/LEAD-01B-attempt-1-review.json"
+    },
+    {
+      "assignmentId": "FND-04",
+      "attempt": 1,
+      "callbackId": "ulpin-FND-04-attempt-1",
+      "objective": "Enforce geometry qualification and isolate display derivatives from canonical analytical readers; add sufficiency and declaration contracts",
+      "baseCommit": "1a6baf0d832117932c291fa6bfc08a536d8bd26e",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-04-geometry-separation",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "ownership": [
+        "packages/contracts/src/usp/ geometry/sufficiency/declaration contract additions and exports",
+        "apps/web/lib/server/usp/ additive migrations, canonical projection guards and separate display-only access adapter",
+        "Existing canonical registry geometry producer/reader hooks narrowly necessary for these invariants; report exact seam transfer before widening scope",
+        "tests/usp-* focused contract tests and scripts/usp/gf/ FND-04 SQL verification using existing isolation guards",
+        "docs/evidence/usp/finale/GF-VIEW/FND-04/ new evidence"
+      ],
+      "exclusions": [
+        "UI/component/map redesign, new renderer or invented scene geometry",
+        "DATA fixture authoring or alteration of official originals",
+        "Full RIGHTS workflow, LEARN/domain inference or parallel database/storage authority",
+        "Ledger/plan/AGENTS changes, volume reset, implicit reseed, credentials, deployment, staging/main merge or push"
+      ],
+      "acceptance": [
+        "H29 FND-04 and H01Z1/H22Z1-2: representation, geometryClass, analyticEligible, semanticLod versus displayLevel, DataSufficiencyVerdict, declaration proposal kind and revision pins",
+        "Qualification fails closed: evidence_linked alone is insufficient; context mesh never measurement eligible; unknown legacy qualification stays unqualified",
+        "Separate display store read by display compiler only; FIND/READY/PACK/export cannot read it; canonical analytical tables cannot accept illustrative rows",
+        "Existing migrations run correctly on fresh and already-migrated isolated databases; additive changes preserve original/history data",
+        "Only unchanged official-source data for new domain coverage; metadata and schema tests distinct, missing domain/SQL coverage not disguised as a pass",
+        "Run typecheck and relevant existing regressions through isolation/build guards; new receipts pin exact code/source hashes and unqualified claims"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/FND-04/attempt-1/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -2012,8 +2052,8 @@
     }
   ],
   "nextSteps": [
-    "Complete and review LEAD-01B plan-governance validator without approving claims or gates.",
-    "Continue implementation while official scene permissions and missing source coverage remain explicit."
+    "Review FND-04 geometry qualification and display-store separation.",
+    "Keep official-source acquisition/reuse gaps and independent milestone review unqualified."
   ],
   "processedCallbacks": [
     {
@@ -2276,7 +2316,7 @@
       "card": "FND-04",
       "title": "Geometry classes and display-derivative separation",
       "needs": "FND-01",
-      "status": "pending"
+      "status": "dispatched"
     },
     {
       "card": "FND-05",
