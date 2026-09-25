@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:45:10.653455+00:00",
+  "updatedAt": "2026-09-25T21:47:07.208926+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -302,7 +302,7 @@
         "effort": "medium"
       },
       "observedAgent": null,
-      "status": "assigned_DATA-UI08-provenance"
+      "status": "idle_awaiting_corrected_preview_for_visual_check"
     }
   ],
   "assignments": [
@@ -2331,7 +2331,7 @@
       "assignmentId": "DATA-UI08-provenance",
       "attempt": 1,
       "callbackId": "data-UI08-provenance",
-      "status": "dispatched",
+      "status": "completed_report_sent_to_coder",
       "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
       "requestedAgent": {
         "product": "Codex",
@@ -2347,6 +2347,18 @@
         "acquisition",
         "providers",
         "preview services or browser checks"
+      ],
+      "resultCommit": "0e941e423edca2f81f0ef979cf74c3ecf39665af",
+      "worktree": "/Users/vinayak/.codex/worktrees/data-ui08-provenance-luna",
+      "reportPath": "docs/evidence/usp/orchestration/reviews/DATA-UI08-provenance-luna.md",
+      "findings": [
+        "case/import dataKind and area aggregate have recorded worldStatus basis; not official status",
+        "saved spatial listing synthetic/demonstration is compatibility default, not qualified classification",
+        "source provenance fields exist but are not joined to listing; unknown/unverified without qualified basis"
+      ],
+      "limitations": [
+        "read-only contract lookup, no individual record classification",
+        "no production data/code changes or tests"
       ]
     },
     {
@@ -3118,7 +3130,7 @@
   ],
   "nextSteps": [
     "Sol corrects provenance and safely app-only refreshes same3187; retain existing service volumes.",
-    "Luna delivers bounded existing provenance metadata findings to Sol; no synthetic-to-official relabelling.",
+    "Use completed DATA provenance report for correction; no duplicate discovery or inferred official status.",
     "Luna visually checks corrected pin when ready; avoid duplicate check of intermediate candidate.",
     "Delegate accepted integration at safe checkpoint; keep real-source/runtime qualifications open."
   ],
@@ -3424,6 +3436,11 @@
       "callbackId": "PREVIEW-UI08-checkpoint",
       "codeCommit": "8298d8afef62b0b7e753adddfd7315f61fbe6e97",
       "result": "same3187 new UI candidate serving; original service data preserved; app-only stop45396 supersedes runner38560"
+    },
+    {
+      "callbackId": "data-UI08-provenance",
+      "resultCommit": "0e941e423edca2f81f0ef979cf74c3ecf39665af",
+      "result": "existing metadata findings delivered to Sol; no official classification invented"
     }
   ],
   "observations": [
