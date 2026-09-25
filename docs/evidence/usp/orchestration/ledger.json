@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T00:16:04.291490+00:00",
+  "updatedAt": "2026-09-25T00:35:59.109952+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -32,6 +32,12 @@
         "integrationMethod": "merge preserving tested-commit ancestry",
         "assignmentId": "FND-01",
         "scope": "inventory and retained local regression only"
+      },
+      {
+        "sourceCommit": "ef317c9b1e25c929be6ea332ef5e8d10b5e4991a",
+        "assignmentId": "DATA-01",
+        "integrationMethod": "merge preserving tested-commit ancestry",
+        "scope": "9 road segments, 785 LGD district code parser rows, D7 permission boundary"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -108,7 +114,7 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "assigned_DATA-01",
+      "status": "accepted_idle",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -280,9 +286,52 @@
         "D7 permission-required status cited, not invented data",
         "No gate pass without independent review"
       ],
-      "status": "dispatched",
+      "status": "accepted_bounded_source_tests",
       "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-01/report.md",
-      "resultCommit": null
+      "resultCommit": "ef317c9b1e25c929be6ea332ef5e8d10b5e4991a",
+      "testedCommit": "0b5229a0f43981858da4f6cd16fa9584a61dd00d",
+      "acceptedAt": "2026-09-25T00:35:59.109952+00:00",
+      "review": {
+        "reviewer": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+        "independence": "same_family",
+        "verdict": "accepted only for retained-context and code-parser testing",
+        "checks": [
+          "4 tests rerun",
+          "artifact/code/manifest hashes",
+          "current resource page GODL notice and sandbox warning verified"
+        ],
+        "limits": [
+          "785 rows are not current authoritative administrative status",
+          "No property/cadastral or training qualification"
+        ]
+      }
+    },
+    {
+      "assignmentId": "FND-DATA-01",
+      "attempt": 1,
+      "objective": "Address DATA-01 shared-provenance contract request without rewriting historical manifests",
+      "workerThreadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
+      "branch": "agent/FND-DATA-01-provenance-contract",
+      "baseCommit": "975fc77c171ea35e4d6d7a305804edec83d4fd45",
+      "ownership": [
+        "packages/contracts/src/usp/data-pack.ts",
+        "tests/usp-data-pack.test.ts"
+      ],
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "status": "implemented_tested",
+      "resultCommit": "e0482809f12e11f9584e0d8f5bc72d194c429b44",
+      "evidence": [
+        "docs/evidence/usp/orchestration/FND-DATA-01-checks.json"
+      ],
+      "limits": [
+        "No real-source, runtime or independent gate acceptance"
+      ]
     }
   ],
   "capabilityChecklist": [
@@ -313,8 +362,12 @@
         "GF-DATA"
       ],
       "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
-      "status": "assigned_source_bundle_pending_evidence",
-      "evidence": []
+      "status": "partial_context_and_code_parser_tested",
+      "evidence": [
+        "docs/evidence/usp/finale/GF-DATA/DATA-01/report.md",
+        "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json",
+        "docs/evidence/usp/orchestration/FND-DATA-01-checks.json"
+      ]
     },
     {
       "id": "R-ID",
@@ -957,9 +1010,9 @@
     }
   ],
   "nextSteps": [
-    "Integrate accepted FND-01 and LEAD-01A partial code; no runtime gate completion.",
-    "Dispatch DATA-01 to same Sol High worker for context/structured-code provenance and bounded acquisition.",
-    "On callback inspect actual data/schema evidence, then continue LEAD-01B and dependency-ready FND/DATA work."
+    "Integrate compatible source-provenance contract.",
+    "Dispatch DATA-05 public planned-building bundle using new optional asset.provenance for new manifests.",
+    "Continue LEAD-01B, independent truth/holdouts and FND-02; all release gates remain open."
   ],
   "processedCallbacks": [
     {
@@ -977,6 +1030,15 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "5177deb40080544c6e5a21c73483faf431aa4e80",
       "result": "accepted_bounded_inventory"
+    },
+    {
+      "callbackId": "ulpin-DATA-01-attempt-1",
+      "assignmentId": "DATA-01",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "ef317c9b1e25c929be6ea332ef5e8d10b5e4991a",
+      "result": "accepted_bounded_source_tests",
+      "normalization": "Worker JSON used card/status/evidenceCommit aliases; source envelope and callbackId uniquely match the assigned worker and attempt. Future callbacks must use the requested fields."
     }
   ],
   "observations": [

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "ulpin-development-check/1",
+  "assignmentId": "FND-DATA-01",
+  "codeCommit": "e0482809f12e11f9584e0d8f5bc72d194c429b44",
+  "runAt": "2026-09-25T00:35:59.109952+00:00",
+  "agent": {
+    "id": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high"
+  },
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile --offline",
+      "exitCode": 0,
+      "logSha256": "ef2ccb4b120617ddfb2917cfb0faa05ed9990a1f296d97eb9643d3aa6a0e97a4"
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-data-pack.test.ts tests/usp-foundation.test.ts",
+      "exitCode": 0,
+      "logSha256": "7c140de800f4546f05c72e2af4932f2e14daafbdc9d57158e41872281c853c12"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "logSha256": "6226d528b09f5b5a8c4f146517398e2ae957e4699e86775213aba8c7d2840521"
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-*.test.ts",
+      "exitCode": 0,
+      "logSha256": "64eb22e20ba98a2dce9876111e2b4f94c4e0c07224bfa98f31e83001ac53a9d0"
+    },
+    {
+      "command": "python3 tests/usp-gf0-source-bundle.test.py",
+      "exitCode": 0,
+      "result": "4 tests passed"
+    },
+    {
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+      "exitCode": 0,
+      "result": "Document consistency only"
+    }
+  ],
+  "limits": [
+    "Shared preparation DTO and verifier compatibility only; no runtime gate passed.",
+    "Historical DATA-01 manifests and sidecars remain immutable; future producers can supply typed asset.provenance.",
+    "Metadata and parser evidence do not grant permissions, prove source truth or qualify operational ingestion."
+  ],
+  "review": {
+    "status": "pending_independent_review"
+  }
+}
