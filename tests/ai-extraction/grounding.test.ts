@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { boundedPolygon, chooseFreeModel, digest, isFreeModel, redactPrivateText, validateExtraction, type AiPart } from '../../apps/web/lib/server/officer-ai-validation';
 import { callNous, extractionMessages, inspectNous, minimizeExtractionOutput } from '../../apps/web/lib/server/officer-ai-provider';
-import { redactMessageText } from '../../apps/web/lib/server/usp/ingest/redact';
+import { redactDocumentViews, redactMessageText } from '../../apps/web/lib/server/usp/ingest/redact';
 
 // Synthetic unit cases exercise rejection boundaries. They are not a real-document accuracy evaluation.
 const entity={id:'building-a',worldStatus:'observed' as const};
@@ -49,6 +49,9 @@ test('09 private identifiers are excluded from outbound text',()=>{
   assert(!redacted.includes('Synthetic Person'));assert(!redacted.includes('1234'));assert(!redacted.includes('9876543210'));assert(!redacted.includes('contact@'));assert(redacted.includes('Height 12 m'));
   const json=redactMessageText('[9876543210,12]');
   assert(!json.includes('9876543210'));assert.equal(JSON.parse(json)[1],12);
+  const retained='9876543210', exponential=Number(retained).toExponential();
+  assert.notEqual(JSON.parse(redactMessageText(exponential)),Number(retained));
+  assert.notEqual(JSON.parse(redactDocumentViews({parts:[part(exponential)]}).parts[0].text),Number(retained));
   assert.deepEqual(minimizeExtractionOutput({candidates:[],questions:[],unexpected:9876543210}),{invalidResponse:true});
 });
 test('10 source status and questions remain proposals; fingerprints change with evidence',()=>{
