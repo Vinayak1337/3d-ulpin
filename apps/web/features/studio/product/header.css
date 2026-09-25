@@ -88,6 +88,10 @@
 .ulpin-app .city-dataset-menu small { font-size: 12px !important; }
 .ulpin-app .city-dataset-menu header button { min-width: 44px; min-height: 44px; }
 .ulpin-app .city-snapshot-status svg { color: var(--ui-ink-soft); }
+@media (max-width: 1250px) {
+  .ulpin-app .city-dataset { min-width: 44px; max-width: 44px; }
+  .ulpin-app .city-dataset > button { width: 44px; }
+}
 @media (max-width: 760px) {
   .ulpin-app .city-header { gap: 4px; padding: 0 6px; }
   .ulpin-app .city-brand { flex: 0 0 auto; }
