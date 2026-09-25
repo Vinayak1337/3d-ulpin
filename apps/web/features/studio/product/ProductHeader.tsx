@@ -14,9 +14,9 @@ import "./product.css";
 import "./header.css";
 
 type Result = { key: string; label: string; detail: string; href: string };
-type Props = { actions?: ReactNode; theme: "light" | "dark"; onThemeToggle: () => void };
+type Props = { actions?: ReactNode };
 
-export default function ProductHeader({ actions, theme, onThemeToggle }: Props) {
+export default function ProductHeader({ actions }: Props) {
   const path = usePathname();
   const router = useRouter();
   const family = productFamily(path);
@@ -128,7 +128,6 @@ export default function ProductHeader({ actions, theme, onThemeToggle }: Props) 
       </div>}
     </div>
     <span className="city-snapshot-status" aria-label="Workspace snapshot status unavailable"><Icon name="info" size={14} />Status unavailable</span>
-    <button className="city-theme-toggle" aria-label={`Use ${theme === "dark" ? "light" : "dark"} theme`} onClick={onThemeToggle}><Icon name="settings" size={18} /><span>{theme === "dark" ? "Light" : "Dark"}</span></button>
     {actions && <div className="city-header-actions">{actions}</div>}
     <span className="city-user-status" title="No user profile is available">User unavailable</span>
     <button className="city-mobile-menu" aria-label="Main navigation" aria-expanded={mobile} onClick={() => setMobile(value => !value)}><Icon name={mobile ? "close" : "menu"} size={20} /></button>

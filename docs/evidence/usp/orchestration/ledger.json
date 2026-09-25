@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T15:10:07.341050+00:00",
+  "updatedAt": "2026-09-25T15:14:41.791239+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -148,6 +148,12 @@
       "decision": "UI-02 scope strip increases from36px to52px desktop and104px phone to provide nonoverlapping44px controls and readable metadata. Header remains56px.",
       "reason": "Resolve explicit design minimum hit-area/readability requirements against original compact strip geometry.",
       "recordedAt": "2026-09-25T15:08:57.025124+00:00"
+    },
+    {
+      "id": "D012",
+      "recordedAt": "2026-09-25T15:14:41.791239+00:00",
+      "decision": "User requires desktop-first/light-only product now; remove theme control and release its header space. Mobile optimization and theme delivery deferred; preserve modular components/tokens/layout seams for later. Root AGENTS.md overrides old delivery requirements.",
+      "authority": "Direct user instruction on25September2026; clarification explicitly UI space, not disk cleanup."
     }
   ],
   "workers": [

@@ -6,7 +6,7 @@ import { cameraDelta, readCamera } from "./usp-camera";
 async function frameGeometry(page: import("@playwright/test").Page, label: string) {
   return page.evaluate(label => {
     const names = [
-      '.city-search', '.city-dataset > button', '.city-theme-toggle',
+      '.city-search', '.city-dataset > button',
       '.city-header-actions button[aria-label="Local workspace status"]',
       '.city-mobile-menu', '.ui-block-title > a',
       '.ui-context-actions .ui-button', '.ui-map-mode button',
@@ -54,7 +54,7 @@ async function contrast(page: import("@playwright/test").Page, selector: string)
 const receiptFile = process.env.ULPIN_D0_RECEIPT_FILE;
 test.skip(!receiptFile, "Requires the isolated D0 Studio fixture");
 
-test("UI-02 frame keeps one scene and selection across panels, tray, theme and phone", async ({ page, request }) => {
+test("UI-02 frame keeps one scene and selection across panels, tray and phone in light-only mode", async ({ page, request }) => {
   const receipt = JSON.parse(await readFile(receiptFile!, "utf8"));
   const buildingId = receipt.physicalFeatures["B-A"];
   const area = await (await request.get(`/api/v1/areas/${receipt.areaId}/context`)).json();
@@ -63,7 +63,11 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   const screenshots = process.env.ULPIN_UI02_SCREENSHOT_DIR;
   const measurements: unknown[] = [];
   if (screenshots) await mkdir(screenshots, { recursive: true });
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.addInitScript(() => localStorage.setItem("ulpin:studio:viewer-theme:1", "dark"));
   await page.goto(`/studio/areas/${receipt.areaId}?feature=${buildingId}`);
+  await expect(page.locator(".ulpin-app")).toHaveAttribute("data-theme", "light");
+  await expect(page.getByRole("button", { name: /Use (dark|light) theme/ })).toHaveCount(0);
   const scene = page.locator("[data-tile-canvas]");
   await expect(scene).toHaveAttribute("data-scene-ready", "true", { timeout: 45000 });
   const runtime = page.locator("[data-map-runtime-id]");
@@ -125,13 +129,12 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   await page.getByRole("button", { name: "Close findings" }).click();
   await expect(page.getByRole("region", { name: "Block findings" })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Use dark theme" }).click();
-  await expect(page.locator(".ulpin-app")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator(".ulpin-app")).toHaveAttribute("data-theme", "light");
   await page.getByRole("button", { name: "Layers", exact: true }).click();
-  const darkLayer = await contrast(page, ".saved-layer-opacity summary");
-  expect(darkLayer.ratio).toBeGreaterThanOrEqual(4.5);
-  measurements.push({ label: "dark-layer-appearance", ...darkLayer });
-  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-layers-dark-1440.png") });
+  const settledLayer = await contrast(page, ".saved-layer-opacity summary");
+  expect(settledLayer.ratio).toBeGreaterThanOrEqual(4.5);
+  measurements.push({ label: "settled-light-layer-appearance", ...settledLayer });
+  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-layers-light-1440.png") });
   // The panel and inspector remain mounted when desktop is resized to a phone.
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(scope).toBeVisible();
@@ -150,7 +153,7 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   const bounds = await sheet.boundingBox();
   expect(bounds).toBeTruthy();
   expect(bounds!.width).toBeGreaterThanOrEqual(389);
-  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-layers-dark-390.png") });
+  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-layers-light-390.png") });
   await page.keyboard.press("/");
   await expect(page.getByRole("combobox", { name: "Search properties and record IDs" })).toBeFocused();
   await page.keyboard.press("Escape");
@@ -159,10 +162,10 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   await page.keyboard.press("Escape");
   await expect(sheet).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Close inspector" })).toBeFocused();
-  const darkCoverage = await contrast(page, ".ui-source-details summary");
-  expect(darkCoverage.ratio).toBeGreaterThanOrEqual(4.5);
-  measurements.push({ label: "dark-evidence-coverage", ...darkCoverage });
-  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-selected-dark-390.png") });
+  const phoneCoverage = await contrast(page, ".ui-source-details summary");
+  expect(phoneCoverage.ratio).toBeGreaterThanOrEqual(4.5);
+  measurements.push({ label: "phone-light-evidence-coverage", ...phoneCoverage });
+  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-selected-light-390.png") });
   await page.getByRole("button", { name: /Open documents \(/ }).click();
   await page.locator(".quick-evidence .quick-source").first().click();
   await expect(page.getByRole("dialog", { name: "Original property evidence" })).toBeVisible();
@@ -176,7 +179,7 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   await expect(page.getByRole("button", { name: "Close inspector" })).toBeVisible();
   await scope.getByRole("button", { name: "Back to map" }).click();
   await expect(page.getByRole("button", { name: "Close inspector" })).toHaveCount(0);
-  measurements.push(await frameGeometry(page, "390-dark"));
+  measurements.push(await frameGeometry(page, "390-light"));
   await page.getByRole("button", { name: "Spaces", exact: true }).click();
   await expect(page.getByRole("complementary", { name: "Spaces panel" })).toBeVisible();
   await page.getByRole("complementary", { name: "Spaces panel" }).locator(".ui-panel-list > button").first().click();
@@ -187,23 +190,23 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
 
   for (const width of [620, 900]) {
     await page.setViewportSize({ width, height: 900 });
-    measurements.push(await frameGeometry(page, `${width}-dark`));
-    if (screenshots) await page.screenshot({ path: join(screenshots, `d0-frame-dark-${width}.png`) });
+    measurements.push(await frameGeometry(page, `${width}-light`));
+    if (screenshots) await page.screenshot({ path: join(screenshots, `d0-frame-light-${width}.png`) });
   }
 
   // A 1440px display at 200% browser zoom exposes a 720 CSS-pixel viewport.
   await page.setViewportSize({ width: 720, height: 900 });
   await expect(page.getByRole("button", { name: "Layers", exact: true })).toBeVisible();
   await expect(scope).toBeVisible();
-  measurements.push(await frameGeometry(page, "1440-zoom-200-dark"));
-  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-frame-dark-zoom-200.png") });
+  measurements.push(await frameGeometry(page, "1440-zoom-200-light"));
+  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-frame-light-zoom-200.png") });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.getByRole("button", { name: "Layers", exact: true }).click();
   const motion = await sheet.evaluate(element => getComputedStyle(element).transitionDuration);
   expect(motion).toBe("0s");
   await page.getByRole("button", { name: "Close layers panel" }).click();
   await page.reload();
-  await expect(page.locator(".ulpin-app")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator(".ulpin-app")).toHaveAttribute("data-theme", "light");
   await expect(page).toHaveURL(new RegExp(`feature=${buildingId}`));
   if (screenshots) await writeFile(join(screenshots, "measurements.json"), JSON.stringify({ areaId: receipt.areaId, selectedFeatureId: buildingId, runtimeId, camera, measurements, pageErrors: errors }, null, 2) + "\n");
   let releaseDossier!: () => void;

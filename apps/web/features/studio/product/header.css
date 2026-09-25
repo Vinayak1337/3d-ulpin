@@ -7,6 +7,7 @@
   background: var(--ui-surface);
   border-color: var(--ui-divider);
   color: var(--ui-ink);
+  color-scheme: light;
   font-family: var(--ui-font-sans);
   box-shadow: none;
 }
@@ -17,18 +18,16 @@
 .ulpin-app .city-nav a { min-height: 40px; padding: 9px 12px; font-size: 13px; }
 .ulpin-app .city-nav a span { font-size: inherit; }
 .ulpin-app .city-nav a svg { display: none; }
-.ulpin-app .city-search { margin-left: auto; max-width: 330px; min-width: 130px; height: 36px; background: var(--ui-surface); border-color: var(--ui-line-control); color: var(--ui-ink-soft); }
+.ulpin-app .city-search { margin-left: auto; max-width: 410px; min-width: 130px; height: 36px; background: var(--ui-surface); border-color: var(--ui-line-control); color: var(--ui-ink-soft); }
 .ulpin-app .city-search input { font-family: var(--ui-font-sans) !important; font-size: 12px !important; color: var(--ui-ink) !important; }
 .ulpin-app .city-search input::placeholder { color: var(--ui-muted); }
 .ulpin-app .city-search-results,
 .ulpin-app .city-dataset-menu { background: var(--ui-surface); border-color: var(--ui-divider); color: var(--ui-ink); }
 .ulpin-app .city-dataset { max-width: 165px; }
 .ulpin-app .city-dataset > button,
-.ulpin-app .city-theme-toggle,
 .ulpin-app .city-header-actions button { min-height: 36px; padding: 7px 8px; background: var(--ui-surface); border: 1px solid var(--ui-line-control); border-radius: 5px; color: var(--ui-ink-soft); font-size: 12px; }
 .ulpin-app .city-dataset > button { max-width: 100%; }
 .ulpin-app .city-dataset > button span { max-width: 125px; }
-.ulpin-app .city-theme-toggle { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer; }
 .ulpin-app .city-snapshot-status { display: inline-flex; align-items: center; gap: 6px; color: var(--ui-ink-soft); font-size: 12px; white-space: nowrap; }
 .ulpin-app .city-snapshot-status .ui-dot { background: var(--ui-primary); }
 .ulpin-app .city-user-status { color: var(--ui-muted); font-size: 11px; white-space: nowrap; }
@@ -40,8 +39,7 @@
   .ulpin-app .city-nav { margin-left: 2px; }
   .ulpin-app .city-nav a { padding: 8px 7px; }
   .ulpin-app .city-snapshot-status,
-  .ulpin-app .city-user-status,
-  .ulpin-app .city-theme-toggle span { display: none; }
+  .ulpin-app .city-user-status { display: none; }
   .ulpin-app .city-dataset { max-width: 40px; }
   .ulpin-app .city-dataset > button span,
   .ulpin-app .city-dataset > button svg:last-child { display: none; }
@@ -65,7 +63,6 @@
   .ulpin-app .city-search kbd { color: transparent; display: none; }
   .ulpin-app .city-dataset { max-width: 36px; }
   .ulpin-app .city-dataset > button { padding: 7px; }
-  .ulpin-app .city-theme-toggle { padding: 7px; }
   .ulpin-app .city-mobile-menu { display: flex; }
   .ulpin-app .city-search-results { position: fixed; top: 56px; left: 10px; right: 10px; width: auto; }
   .ulpin-app .city-dataset-menu { position: fixed; top: 56px; right: 10px; }
@@ -76,11 +73,9 @@
 .ulpin-app .city-nav a,
 .ulpin-app .city-search,
 .ulpin-app .city-dataset > button,
-.ulpin-app .city-theme-toggle,
 .ulpin-app .city-header-actions button,
 .ulpin-app .city-mobile-menu { min-height: 44px; height: 44px; border-radius: 8px; }
 .ulpin-app .city-header-actions button[aria-label="Local workspace status"] { width: 44px; min-width: 44px; }
-.ulpin-app .city-theme-toggle { min-width: 44px; }
 .ulpin-app .city-mobile-menu { width: 44px; min-width: 44px; }
 .ulpin-app .city-search input,
 .ulpin-app .city-search-results small,
@@ -100,7 +95,6 @@
   .ulpin-app .city-search { min-width: 44px; flex: 1 1 44px; padding: 0 9px; }
   .ulpin-app .city-dataset { max-width: 44px; flex: 0 0 44px; }
   .ulpin-app .city-dataset > button { width: 44px; padding: 8px; }
-  .ulpin-app .city-theme-toggle { width: 44px; justify-content: center; padding: 8px; }
   .ulpin-app .city-search:focus-within { position: absolute; z-index: 90; top: 6px; left: 6px; right: 6px; width: auto; max-width: none; background: var(--ui-surface); }
   .ulpin-app .city-search:focus-within input::placeholder { display: initial; color: var(--ui-muted); }
   .ulpin-app .city-search-results { left: 6px; right: 6px; }
