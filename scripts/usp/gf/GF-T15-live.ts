@@ -6,8 +6,9 @@ import { execFileSync } from 'node:child_process';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { assertUspIsolation } from '../local-isolation.mjs';
-import { ProjectLocationSchema, UspCommitReceiptSchema,
+import { ProjectIdentityReviewSchema, ProjectLocationSchema, UspCommitReceiptSchema,
   projectCodeForPayload } from '../../../packages/contracts/src/usp/index';
+import { fingerprint } from '../../../apps/web/lib/server/domain';
 import { localRequestContext } from '../../../apps/web/lib/server/usp/principal';
 import { captureRegistrySnapshot } from '../../../apps/web/lib/server/usp/snapshots';
 import { assignProjectCode, mutateProjectIdentity, prepareProjectIdentityReview,
@@ -197,6 +198,54 @@ try {
     (error: { status?: number }) => error.status === 403 || error.status === 409);
   checks.push('pre-assignment and selected-target snapshots do not expose later or unrelated identities');
 
+  const scopeState = async () => ({
+    reviews: (await pool.query('SELECT count(*)::int AS n FROM usp_project_identity_reviews WHERE manifest_id=$1',
+      [selectedA.scope.manifestId])).rows[0].n,
+    codes: (await pool.query('SELECT count(*)::int AS n FROM usp_project_codes WHERE scope_id=$1', [siteId])).rows[0].n,
+    audits: (await pool.query('SELECT count(*)::int AS n FROM usp_project_identity_audit WHERE scope_id=$1', [siteId])).rows[0].n,
+    outbox: (await pool.query('SELECT count(*)::int AS n FROM usp_outbox WHERE stream_id=$1', [`registry:${siteId}`])).rows[0].n,
+    snapshots: (await pool.query('SELECT count(*)::int AS n FROM usp_snapshots WHERE scope_id=$1', [siteId])).rows[0].n,
+    versions: Object.fromEntries(await Promise.all([ids.A, ids.B, ids.C, ids.D].map(async id => [id, await version(id)]))),
+  });
+  const beforeSelectionRejects = await scopeState();
+  const otherLocation = { ...location, locator: { ...location.locator, spaceNumber: 4 } };
+  const boundaryGeometry = { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] };
+  const rejectedReviews = [
+    () => review('assign', selectedA.scope, [ids.C], { location }),
+    () => review('correct', selectedA.scope, [ids.B],
+      { predecessors: [ids.B], successors: [], location }),
+    () => review('split', selectedA.scope, [ids.A, ids.C, ids.D],
+      { predecessors: [ids.A], successors: [ids.C, ids.D],
+        locations: { [ids.C]: location, [ids.D]: otherLocation } }),
+    () => review('merge', selectedA.scope, [ids.A, ids.B, ids.C],
+      { predecessors: [ids.A, ids.B], successors: [ids.C], locations: { [ids.C]: location } }),
+    () => review('boundary_adjustment', selectedA.scope, [ids.A, ids.B],
+      { predecessors: [ids.A], successors: [ids.B], transferredGeometry: boundaryGeometry }),
+  ];
+  for (const reject of rejectedReviews) await assert.rejects(reject(),
+    (error: { status?: number; code?: string }) => error.status === 403 && error.code === 'USP_IDENTITY_SELECTION');
+  assert.deepEqual(await scopeState(), beforeSelectionRejects);
+  checks.push('A-only selection rejects unselected assignment, correction, split, merge and boundary reviews with no writes');
+
+  const legacyReview = ProjectIdentityReviewSchema.parse({ operation: 'correct', scope: selectedA.scope,
+    recordIds: [ids.B], predecessors: [ids.B], successors: [], expectedVersions: { [ids.B]: await version(ids.B) },
+    reason: 'Simulated already-prepared review from prior validator', evidence, location });
+  const legacyReviewId = randomUUID();
+  await pool.query(`INSERT INTO usp_project_identity_reviews
+    (id,scope_id,manifest_id,operation,command_hash,reviewer_subject,body)
+    VALUES($1,$2,$3,'correct',$4,'local-demo-operator',$5)`, [legacyReviewId, siteId,
+    selectedA.scope.manifestId, fingerprint(legacyReview), legacyReview]);
+  const beforeLegacyCommit = await scopeState();
+  await assert.rejects(mutateProjectIdentity(ctx(), { operation: 'correct',
+    predecessors: [ids.B], successors: [], scope: selectedA.scope,
+    expectedVersions: legacyReview.expectedVersions, expectedManifestId: selectedA.scope.manifestId,
+    reviewId: legacyReviewId, requestKey: randomUUID() }),
+  (error: { status?: number; code?: string }) => error.status === 403 && error.code === 'USP_IDENTITY_SELECTION');
+  assert.deepEqual(await scopeState(), beforeLegacyCommit);
+  assert.equal((await pool.query('SELECT consumed_at FROM usp_project_identity_reviews WHERE id=$1',
+    [legacyReviewId])).rows[0].consumed_at, null);
+  checks.push('already-prepared unselected review cannot commit; shared command validator rolls back cleanly');
+
   const revisedLocation = { ...location, anchorState: 'reviewed_partial' as const,
     parcels: [
       parcel(' AUTHORED-PARCEL-1 ', 'associated', 'reviewed'),
@@ -353,7 +402,22 @@ try {
   }
   const fCode = await assertStatus(ids.F, 'assigned'), gCode = await assertStatus(ids.G, 'assigned');
   const beforeF = await version(ids.F), beforeG = await version(ids.G);
-  await mutation('boundary_adjustment', [ids.F], [ids.G], { transferredGeometry });
+  const bothSelected = (await captureRegistrySnapshot(ctx(), siteId, { kind: 'targets', pins: [
+    { ref: { namespace: 'registry_record', id: ids.F }, revision: beforeF },
+    { ref: { namespace: 'registry_record', id: ids.G }, revision: beforeG },
+  ] })).scope;
+  const bothReviewed = await review('boundary_adjustment', bothSelected, [ids.F, ids.G],
+    { predecessors: [ids.F], successors: [ids.G], transferredGeometry });
+  const bothReceipt = await mutateProjectIdentity(ctx(), { operation: 'boundary_adjustment',
+    predecessors: [ids.F], successors: [ids.G], scope: bothSelected,
+    expectedVersions: bothReviewed.expectedVersions, expectedManifestId: bothSelected.manifestId,
+    reviewId: bothReviewed.reviewId, requestKey: randomUUID() });
+  UspCommitReceiptSchema.parse(bothReceipt);
+  const bothPost = (await pool.query('SELECT body FROM usp_snapshots WHERE id=$1',
+    [bothReceipt.snapshot.manifestId])).rows[0].body;
+  assert.equal(bothPost.selection.kind, 'targets');
+  assert.deepEqual(bothPost.selection.pins.map((pin: { ref: { id: string }; revision: number }) =>
+    [pin.ref.id, pin.revision]).sort(), [[ids.F, beforeF + 1], [ids.G, beforeG + 1]].sort());
   assert.equal(await assertStatus(ids.F, 'assigned'), fCode);
   assert.equal(await assertStatus(ids.G, 'assigned'), gCode);
   assert.equal(await version(ids.F), beforeF + 1);
@@ -369,6 +433,7 @@ try {
   assert.deepEqual((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
     identifier: gCode })).successors, []);
   checks.push('boundary adjustment preserves both codes, advances both revisions and records geometry/evidence');
+  checks.push('fully selected two-target boundary review and commit retain both post-state pins');
   checks.push('reverse temporal boundary adjustment succeeds and never appears as identity successor');
 
   assert.deepEqual(UspCommitReceiptSchema.parse(await assignProjectCode(ctx(), winning)), receiptA);

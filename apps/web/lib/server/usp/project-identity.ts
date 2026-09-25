@@ -59,6 +59,11 @@ function validateMembers(manifest: Awaited<ReturnType<typeof scopedManifestTx>>,
     if (row.revision !== versions[row.id] || !manifest.members.some(member =>
       member.pin.ref.namespace === 'registry_record' && member.pin.ref.id === row.id
       && member.pin.revision === row.revision)) conflict('The target version or membership changed.');
+    if (manifest.selection.kind === 'targets' && !manifest.selection.pins.some(pin =>
+      pin.ref.namespace === 'registry_record' && pin.ref.id === row.id
+      && pin.revision === row.revision)) {
+      throw new AppError(403, 'USP_IDENTITY_SELECTION', 'Every identity participant must be in the selected target set.');
+    }
     if (!evidence.some(item => (row.body?.evidence ?? []).some((binding: { sourceId: string; locator: string }) =>
       binding.sourceId === item.sourceId && binding.locator === item.locator))) {
       throw new AppError(422, 'USP_IDENTITY_EVIDENCE', 'Each identity target needs matching recorded source evidence.');
