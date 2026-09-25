@@ -13,6 +13,8 @@ import json
 import re
 import shutil
 import struct
+import subprocess
+import sys
 import tempfile
 import zipfile
 from fractions import Fraction
@@ -463,12 +465,29 @@ def mutation_checks() -> list[str]:
     return outcomes
 
 
+def rebuild_compare() -> dict:
+    with tempfile.TemporaryDirectory(prefix="ulpin-data02-rebuild-") as temporary:
+        script = Path(temporary) / "generate.py"
+        shutil.copy2(ROOT.parent / "generate.py", script)
+        run = subprocess.run([sys.executable, str(script)], text=True, capture_output=True, check=False)
+        require(run.returncode == 0, f"authored rebuild failed: {run.stderr[:300]}")
+        recreated = Path(temporary) / "v1"
+        expected = {path.relative_to(ROOT).as_posix():hashlib.sha256(path.read_bytes()).hexdigest()
+                    for path in ROOT.rglob("*") if path.is_file()}
+        actual = {path.relative_to(recreated).as_posix():hashlib.sha256(path.read_bytes()).hexdigest()
+                  for path in recreated.rglob("*") if path.is_file()}
+        require(expected == actual, "authored rebuild changed fixture or oracle bytes")
+        return {"matched_files":len(expected),"byte_identical":True}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--self-test",action="store_true",help="also reject copied negative mutations")
+    parser.add_argument("--rebuild-compare",action="store_true",help="re-author in a temporary directory and compare bytes")
     args = parser.parse_args()
     result = validate_pack()
     result["mutation_checks"] = mutation_checks() if args.self_test else []
+    result["rebuild"] = rebuild_compare() if args.rebuild_compare else None
     print(json.dumps(result,ensure_ascii=False,sort_keys=True,indent=2))
 
 
