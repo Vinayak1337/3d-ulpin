@@ -1,4 +1,5 @@
 import { geometryPin, requireQualifiedGeometryRecords, qualifiedGeometryRecordPins, isQualifiedPin } from './usp/geometry';
+import { qualifyFindingParticipants, requireQualifiedFindingParticipants } from './usp/finding-qualification';
 import type {
   DossierSource,
   PhysicalFeature,
@@ -62,8 +63,12 @@ export async function exportBlock(
   const context = await areaContext(areaId);
   const geometryPins = context.features.map(feature => geometryPin('area_feature', feature));
   const qualified = await qualifiedGeometryRecordPins('export','area_feature',context.features);
-  const geometryAvailable = geometryPins.every(pin => isQualifiedPin(qualified, pin));
-  if (format !== 'json') await requireQualifiedGeometryRecords('PACK','area_feature',context.features);
+  const findingQualification = await qualifyFindingParticipants('export', context.latestCheck?.findings ?? []);
+  const geometryAvailable = geometryPins.every(pin => isQualifiedPin(qualified, pin)) && findingQualification.state === 'qualified';
+  if (format !== 'json') {
+    await requireQualifiedGeometryRecords('PACK','area_feature',context.features);
+    await requireQualifiedFindingParticipants('PACK', context.latestCheck?.findings ?? []);
+  }
   const site = (
     await query("SELECT identifier,revision FROM registry_sites WHERE id=$1", [
       context.area.siteId,
@@ -124,7 +129,10 @@ export async function exportBlock(
     geometryQualification: { state: allGeometryAvailable ? 'qualified' : 'not_assessed',
       purpose: allGeometryAvailable ? 'analytical_export' : 'retained_source_inspection',
       missing: geometryPins.filter(pin => !isQualifiedPin(qualified, pin)) },
-    check: allGeometryAvailable ? context.latestCheck : undefined,
+    check: allGeometryAvailable && !context.latestCheck?.stale ? context.latestCheck : undefined,
+    findingQualification,
+    historicalCheck: (!allGeometryAvailable || context.latestCheck?.stale) && context.latestCheck
+      ? { purpose: 'retained_history_inspection', currentAnalyticalEligibility: false, check: context.latestCheck } : undefined,
     note: "3D ULPINs are application identifiers. Parcel 2D ULPINs retain their source assertion or fictional demo status. Originals may cover multiple floors.",
   };
   if (format === "json")

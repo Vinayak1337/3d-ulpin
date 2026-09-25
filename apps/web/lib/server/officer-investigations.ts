@@ -1,4 +1,5 @@
 import { geometryPin, requireQualifiedGeometry, requireQualifiedGeometryRecords, qualifiedGeometryRecordPins, isQualifiedPin } from './usp/geometry';
+import { projectFindingHistory, qualifyFindingParticipants, requireQualifiedFindingParticipants } from './usp/finding-qualification';
 import { sourceBundle } from "./source-bundle";
 import { hasGoogleAttribution, hasOsmAttribution } from "../map-attribution";
 import { selectRegisterScope } from "../register-scope";
@@ -17,11 +18,14 @@ import { AppError, conflict, notFound } from "./errors";
 import { fingerprint } from "./domain";
 
 const now = () => new Date().toISOString();
-export async function getInvestigation(id: string): Promise<Investigation> {
+async function readInvestigation(id: string): Promise<Investigation> {
   return (
     (await query("SELECT body FROM officer_investigations WHERE id=$1", [id]))
       .rows[0]?.body ?? notFound("Investigation not found.")
   );
+}
+export async function getInvestigation(id: string): Promise<Investigation> {
+  return projectFindingHistory('READY', await readInvestigation(id));
 }
 async function persist(client: any, item: Investigation) {
   await client.query(
@@ -84,7 +88,7 @@ export async function createInvestigation(input: {
     if (retry) {
       if (retry.body.buildingId !== input.buildingId)
         conflict("This request key belongs to another property.");
-      return retry.body as Investigation;
+      return projectFindingHistory('READY', retry.body as Investigation, client);
     }
     const fresh = await buildingDossier(input.buildingId);
     if (
@@ -113,6 +117,7 @@ export async function createInvestigation(input: {
       conflict(
         "This check is stale. Run a fresh area check before opening an investigation.",
       );
+    await requireQualifiedFindingParticipants('FIND', findings, client);
     const time = now(),
       i: Investigation = {
         id: randomUUID(),
@@ -171,7 +176,7 @@ export async function createInvestigation(input: {
       "INSERT INTO officer_investigation_revisions(investigation_id,revision,body) VALUES($1,1,$2)",
       [i.id, i],
     );
-    return i;
+    return projectFindingHistory('READY', i, client);
   });
 }
 export async function updateInvestigation(
@@ -261,9 +266,11 @@ export async function updateInvestigation(
               )
             ).rows[0]?.body
           : null;
-      if (['READY_FOR_REVIEW', 'REVIEWED', 'CLOSED'].includes(input.status))
+      if (['READY_FOR_REVIEW', 'REVIEWED', 'CLOSED'].includes(input.status)) {
         await requireQualifiedGeometry('READY', [geometryPin('area_feature', d.building),
           ...d.records.filter(record => record.geometry).map(record => geometryPin('registry_record', record))], client);
+        await requireQualifiedFindingParticipants('READY', i.findings, client);
+      }
       if (
         ["READY_FOR_REVIEW", "REVIEWED", "CLOSED"].includes(input.status) &&
         (d.area.revision !== i.inputSnapshot.areaRevision ||
@@ -293,7 +300,7 @@ export async function updateInvestigation(
       status: i.status,
     });
     await persist(client, i);
-    return i;
+    return projectFindingHistory('READY', i, client);
   });
 }
 const escape = (v: unknown) =>
@@ -476,7 +483,7 @@ export async function exportRegister(
   recordId?: string,
 ) {
   const current = await buildingDossier(buildingId),
-    i = investigationId ? await getInvestigation(investigationId) : undefined;
+    i = investigationId ? await readInvestigation(investigationId) : undefined;
   const snapshot = i?.registerSnapshot
     ? {
         ...current,
@@ -493,6 +500,10 @@ export async function exportRegister(
     );
   const d = scoped.dossier;
   const selection = scoped.selection;
+  // Assessment must include withheld current findings, or filtering would turn a failed
+  // neighbour qualification into an apparently clean export with an empty findings list.
+  const exportFindings = i ? i.findings : (current.historicalFindings?.findings ?? current.issues);
+  const findingsCurrent = i ? true : !current.check?.stale;
   const geometryPins = [geometryPin('area_feature', d.building),
     ...d.parcels.map(parcel => geometryPin('area_feature', parcel.feature)),
     ...d.records.filter(record => record.geometry).map(record => geometryPin('registry_record', record))];
@@ -500,10 +511,13 @@ export async function exportRegister(
     ...await qualifiedGeometryRecordPins('export','area_feature',[d.building,...d.parcels.map(parcel=>parcel.feature)]),
     ...await qualifiedGeometryRecordPins('export','registry_record',d.records.filter(record=>record.geometry)),
   ]);
-  const geometryAvailable = geometryPins.every(pin => isQualifiedPin(qualified, pin));
+  const findingQualification = await qualifyFindingParticipants('export', exportFindings);
+  const geometryAvailable = geometryPins.every(pin => isQualifiedPin(qualified, pin)) && findingQualification.state === 'qualified' && findingsCurrent;
   if (format !== 'json') {
     await requireQualifiedGeometryRecords('PACK','area_feature',[d.building,...d.parcels.map(parcel=>parcel.feature)]);
     await requireQualifiedGeometryRecords('PACK','registry_record',d.records.filter(record=>record.geometry));
+    await requireQualifiedFindingParticipants('PACK', exportFindings);
+    if (!findingsCurrent) throw new AppError(422, 'USP_FINDING_CHECK_STALE', 'The current finding check is stale. Retained findings remain available for history inspection.');
   }
   // Older snapshots may cite a parcel/finding original without duplicating its
   // metadata in sources. Resolve those immutable revision IDs, never current
@@ -511,7 +525,7 @@ export async function exportRegister(
   const relatedEvidence = [
     ...d.associations.flatMap((a) => a.evidence),
     ...d.parcels.flatMap((p) => p.feature.evidence),
-    ...(i ? i.findings : d.issues).flatMap((f) => f.evidence ?? []),
+    ...exportFindings.flatMap((f) => f.evidence ?? []),
   ];
   const relatedSources = await dossierSources(
     [
@@ -536,7 +550,10 @@ export async function exportRegister(
     geometryQualification: { state: geometryAvailable ? 'qualified' : 'not_assessed',
       purpose: geometryAvailable ? 'analytical_export' : 'retained_source_inspection',
       missing: geometryPins.filter(pin => !isQualifiedPin(qualified, pin)) },
-    findings: geometryAvailable ? (i ? i.findings : d.issues) : [],
+    findings: geometryAvailable ? exportFindings : [],
+    findingQualification,
+    historicalFindings: !geometryAvailable ? { purpose: 'retained_history_inspection', currentAnalyticalEligibility: false,
+      findings: exportFindings } : undefined,
     // The sanitized register above is the exact saved snapshot. Do not export
     // a second raw copy containing unrelated rights/party fields.
     investigation: i ? { ...i, registerSnapshot: undefined, findings: geometryAvailable ? i.findings : [],
@@ -596,7 +613,7 @@ export async function exportRegister(
         JSON.stringify(r.evidence),
         "recorded",
       ]),
-      ...(i ? i.findings : d.issues).map((f) => [
+      ...exportFindings.map((f) => [
         "discrepancy",
         f.id,
         f.code,
@@ -626,7 +643,7 @@ export async function exportRegister(
     });
   }
   const parcelSummary = `<h2>Parcel details</h2><p><b>2D ULPIN:</b> ${(d.parcelIdentifiers ?? []).map((p) => `${escape(p.value)} (${p.scheme === "demo_ulpin" ? "Demo - not officially issued" : "Source assertion"})`).join("; ") || "Not supplied"}</p><p>${d.building.worldStatus === "synthetic" ? "FICTIONAL TRAINING DATA. All properties, plans and parcel IDs in this dataset are authored examples." : "Source-backed context; no official issuance is asserted by this application."}</p><table><thead><tr><th>Parcel</th><th>Recorded area</th><th>Association</th></tr></thead><tbody>${d.parcels.map((p) => `<tr><td>${escape(p.feature.name)}</td><td>${escape(p.feature.areaM2)} m²</td><td>${escape(p.status)}</td></tr>`).join("")}</tbody></table><p>Building footprint: ${escape(d.building.areaM2)} m². Height: ${escape(d.building.height.value ?? "Not supplied")} ${d.building.height.value == null ? "" : "m"}.</p>`;
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escape(d.building.name)} · property register</title><style>body{font:13px system-ui;color:#262822;max-width:1000px;margin:40px auto;padding:0 24px;line-height:1.5}h1{font:30px Georgia}h2{break-after:avoid}tr,p,svg{break-inside:avoid}td{overflow-wrap:anywhere}.records{table-layout:fixed;font-size:11px}.records th:first-child{width:31%}.records th:nth-child(2){width:24%}.records td,.records th{padding:7px}svg{max-height:360px}thead{display:table-header-group}table{border-collapse:collapse;width:100%;margin:18px 0}td,th{text-align:left;border-bottom:1px solid #ccc;padding:10px}small{color:#555}a{color:#355b54}button{padding:10px}@media print{button{display:none}body{margin:0}} </style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${escape(selection.name)}</h1><p><b>${escape(selection.kind)} 3D ULPIN:</b> ${escape(selection.ulpin3d)}</p><p><b>Building 3D ULPIN:</b> ${escape(d.building.identifier)} · revision ${d.building.revision}</p><small>Application identifiers, not official national issuance. Selected scope: ${escape(selection.kind)}. Findings and shared source files retain building context.</small><p>${escape(i?.reference ?? "Property register")} ${escape(i?.status ?? "")}</p>${parcelSummary}${snapshotSvg(d, i)}<small>Plan in ${escape(d.area.reference?.analysisCrs)} local metres. Blue: parcel; green: property; orange: computed discrepancy. Geometry is tied to the cited revisions.</small><h2>Section</h2>${sectionSnapshot(d)}<h2>Building, floor and unit register</h2>${data.register.length ? `<table class="records"><thead><tr><th>3D ULPIN</th><th>Record</th><th>Levels m</th><th>Area m²</th><th>Volume m³</th></tr></thead><tbody>${data.register.map((r) => `<tr><td>${escape(r.identifier)}</td><td>${escape(r.name)}<br><small>Revision ${r.revision}</small></td><td>${r.geometry ? escape(`${r.geometry.lower}–${r.geometry.upper}`) : "Not supplied"}</td><td>${escape(r.geometry?.area ?? "Not supplied")}</td><td>${escape(r.geometry?.volume ?? "Not supplied")}</td></tr>`).join("")}</tbody></table>` : "<p>No detailed spaces have been recorded.</p>"}<h2>Building discrepancies and conditions</h2>${!i && d.check?.stale ? "<p>The previous overlap check is out of date. Run a new check before using discrepancy results.</p>" : ""}${(i ? i.findings : d.issues).map((f) => `<p><b>${escape(f.code)}</b> ${escape(f.message)} ${f.areaM2 !== undefined ? escape(`${f.areaM2} m²`) : ""} ${f.volumeM3 !== undefined ? escape(`${f.volumeM3} m³`) : ""}</p>`).join("") || "<p>No discrepancy is included in this export.</p>"}${d.missing.map((m) => `<p>${escape(m)}</p>`).join("")}${(i?.requests ?? []).map((r) => `<p><b>${escape(r.status)}</b> ${escape(r.question)} ${escape(r.response)}</p>`).join("")}<h2>Evidence</h2>${d.sources.map((s) => `<p><a href="${escape(s.url)}">${escape(s.name)}</a> · revision ${s.revision} · ${escape(s.createdAt)}<br><small>SHA-256 ${escape(s.sha256)}</small></p>`).join("")}<h2>Decision record</h2><p>${escape(i?.notes)} ${escape(i?.nextAction)}</p>${(i?.history ?? []).map((h) => `<p>${escape(h.time)} · ${escape(h.status)} · ${escape(h.reason)}</p>`).join("")}<p><small>${escape(data.scope)}</small></p></body></html>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escape(d.building.name)} · property register</title><style>body{font:13px system-ui;color:#262822;max-width:1000px;margin:40px auto;padding:0 24px;line-height:1.5}h1{font:30px Georgia}h2{break-after:avoid}tr,p,svg{break-inside:avoid}td{overflow-wrap:anywhere}.records{table-layout:fixed;font-size:11px}.records th:first-child{width:31%}.records th:nth-child(2){width:24%}.records td,.records th{padding:7px}svg{max-height:360px}thead{display:table-header-group}table{border-collapse:collapse;width:100%;margin:18px 0}td,th{text-align:left;border-bottom:1px solid #ccc;padding:10px}small{color:#555}a{color:#355b54}button{padding:10px}@media print{button{display:none}body{margin:0}} </style></head><body><button onclick="window.print()">Print / Save PDF</button><h1>${escape(selection.name)}</h1><p><b>${escape(selection.kind)} 3D ULPIN:</b> ${escape(selection.ulpin3d)}</p><p><b>Building 3D ULPIN:</b> ${escape(d.building.identifier)} · revision ${d.building.revision}</p><small>Application identifiers, not official national issuance. Selected scope: ${escape(selection.kind)}. Findings and shared source files retain building context.</small><p>${escape(i?.reference ?? "Property register")} ${escape(i?.status ?? "")}</p>${parcelSummary}${snapshotSvg(d, i)}<small>Plan in ${escape(d.area.reference?.analysisCrs)} local metres. Blue: parcel; green: property; orange: computed discrepancy. Geometry is tied to the cited revisions.</small><h2>Section</h2>${sectionSnapshot(d)}<h2>Building, floor and unit register</h2>${data.register.length ? `<table class="records"><thead><tr><th>3D ULPIN</th><th>Record</th><th>Levels m</th><th>Area m²</th><th>Volume m³</th></tr></thead><tbody>${data.register.map((r) => `<tr><td>${escape(r.identifier)}</td><td>${escape(r.name)}<br><small>Revision ${r.revision}</small></td><td>${r.geometry ? escape(`${r.geometry.lower}–${r.geometry.upper}`) : "Not supplied"}</td><td>${escape(r.geometry?.area ?? "Not supplied")}</td><td>${escape(r.geometry?.volume ?? "Not supplied")}</td></tr>`).join("")}</tbody></table>` : "<p>No detailed spaces have been recorded.</p>"}<h2>Building discrepancies and conditions</h2>${!i && d.check?.stale ? "<p>The previous overlap check is out of date. Run a new check before using discrepancy results.</p>" : ""}${exportFindings.map((f) => `<p><b>${escape(f.code)}</b> ${escape(f.message)} ${f.areaM2 !== undefined ? escape(`${f.areaM2} m²`) : ""} ${f.volumeM3 !== undefined ? escape(`${f.volumeM3} m³`) : ""}</p>`).join("") || "<p>No discrepancy is included in this export.</p>"}${d.missing.map((m) => `<p>${escape(m)}</p>`).join("")}${(i?.requests ?? []).map((r) => `<p><b>${escape(r.status)}</b> ${escape(r.question)} ${escape(r.response)}</p>`).join("")}<h2>Evidence</h2>${d.sources.map((s) => `<p><a href="${escape(s.url)}">${escape(s.name)}</a> · revision ${s.revision} · ${escape(s.createdAt)}<br><small>SHA-256 ${escape(s.sha256)}</small></p>`).join("")}<h2>Decision record</h2><p>${escape(i?.notes)} ${escape(i?.nextAction)}</p>${(i?.history ?? []).map((h) => `<p>${escape(h.time)} · ${escape(h.status)} · ${escape(h.reason)}</p>`).join("")}<p><small>${escape(data.scope)}</small></p></body></html>`;
   const sourceCredit = hasOsmAttribution([d.building, ...d.parcels.map((p) => p.feature)])
     ? '<p><small>Map context and OSM-derived inputs: © OpenStreetMap contributors. Data licensed under ODbL 1.0. https://www.openstreetmap.org/copyright . ' + (d.building.worldStatus === "synthetic" ? 'This is a fictional scenario; heights, rooms, occupant allocations and conflict inputs are invented, not an actual household or ownership determination.' : 'Open map outlines do not establish cadastral boundaries, occupants or ownership.') + '</small></p>'
     : "";

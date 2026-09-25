@@ -60,6 +60,11 @@ export const UspDisplayDerivativeSchema = z.strictObject({
 export const UspGeometryProjectionSchema = z.strictObject({
   target: CoreRevisionRefSchema, metadata: UspGeometryMetadataSchema.nullable(),
   qualificationRevision: CorePositiveRevisionSchema.nullable(), sufficiency: DataSufficiencyVerdictSchema,
+}).superRefine((value, ctx) => {
+  if ((value.metadata?.analyticEligible === true) !== (value.sufficiency.outcome === 'sufficient') ||
+      (value.metadata?.analyticEligible && value.qualificationRevision === null)) {
+    ctx.addIssue({ code: 'custom', message: 'Current eligibility and sufficiency must agree and pin a qualification revision' });
+  }
 }).readonly();
 export type UspGeometryMetadata = z.infer<typeof UspGeometryMetadataSchema>;
 export type DataSufficiencyVerdict = z.infer<typeof DataSufficiencyVerdictSchema>;

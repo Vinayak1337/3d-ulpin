@@ -58,9 +58,13 @@ export function isQualifiedPin(qualified: ReadonlySet<string>, pin: TargetPin) {
 export function geometryProjection(target: TargetPin, metadata: unknown, qualificationRevision: number | null,
   eligible: boolean): UspGeometryProjection {
   const parsed = UspGeometryMetadataSchema.safeParse(metadata);
-  const qualified = eligible && parsed.success && parsed.data.analyticEligible;
+  const qualified = eligible && qualificationRevision !== null && parsed.success && parsed.data.analyticEligible;
+  const effectiveMetadata = parsed.success ? (parsed.data.analyticEligible && !qualified
+    ? { ...parsed.data, analyticEligible: false,
+      qualification: { state: 'unqualified', reasons: ['current_qualification_unavailable'] } }
+    : parsed.data) : null;
   return UspGeometryProjectionSchema.parse({ target,
-    metadata: parsed.success ? parsed.data : null, qualificationRevision,
+    metadata: effectiveMetadata, qualificationRevision,
     sufficiency: DataSufficiencyVerdictSchema.parse({ task: 'spatial_analysis',
       requirements: ['canonical_revision', 'source_integrity', 'geometry_qualification'],
       outcome: qualified ? 'sufficient' : 'insufficient_for_spatial_reconstruction',
