@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T01:00:22.611739+00:00",
+  "updatedAt": "2026-09-25T01:10:53.430285+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -443,7 +443,15 @@
       ],
       "status": "dispatched",
       "reportPath": "docs/evidence/usp/finale/GF-T15/FND-02/report.md",
-      "resultCommit": null
+      "resultCommit": null,
+      "ownershipClarifications": [
+        {
+          "path": "scripts/usp/isolated-live.mjs",
+          "scope": "One GF-T15 command invocation after migration and before disposable runner cleanup; existing lifecycle, isolation and historical checks preserved.",
+          "reason": "Worker requested explicit confirmation for real isolated DB concurrency/rollback execution; already covered by minimal isolated runner registration.",
+          "confirmedAt": "2026-09-25T01:10:53.430186+00:00"
+        }
+      ]
     }
   ],
   "capabilityChecklist": [
