@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T00:35:59.109952+00:00",
+  "updatedAt": "2026-09-25T00:37:59.792894+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "546ff4edea76906b4f5640ff6fd2a9c226326ded",
+    "acceptedStagingBase": "584428eb2006db5d2a91973ea5569dc59d59644c",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -114,7 +114,7 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "accepted_idle",
+      "status": "assigned_DATA-05",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -332,6 +332,47 @@
       "limits": [
         "No real-source, runtime or independent gate acceptance"
       ]
+    },
+    {
+      "assignmentId": "DATA-05",
+      "attempt": 1,
+      "callbackId": "ulpin-DATA-05-attempt-1",
+      "objective": "Public planned-building D5 bundle with exact source/level evidence and an openly licensed foreign multi-unit test sample",
+      "baseCommit": "584428eb2006db5d2a91973ea5569dc59d59644c",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/DATA-05-public-plan-bundle",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "fixtures/usp/D5/gf0-public-plans-v1/",
+        "fixtures/usp/D5/gf0-multiunit-v1/",
+        "scripts/usp/data/gf0-plan-bundle.*",
+        "tests/usp-gf0-plan-bundle.test.*",
+        "docs/evidence/usp/finale/GF-DATA/DATA-05/"
+      ],
+      "exclusions": [
+        "earlier packs/receipts",
+        "shared schemas and dependencies",
+        "app code",
+        "release plan/handoffs",
+        "orchestration ledger",
+        "ML evaluation or invented source relationships"
+      ],
+      "acceptance": [
+        "H29 DATA-05 and H28 D5 acquired or named failed state",
+        "Bihar source and bounded Haryana alternatives inspected visually where accessible",
+        "openly licensed multi-unit vector sample labelled foreign test_only",
+        "new optional canonical asset.provenance used without permission or stage promotion",
+        "restricted/unconfirmed originals outside Git, source hashes and safe locators retained"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-05/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -1010,9 +1051,9 @@
     }
   ],
   "nextSteps": [
-    "Integrate compatible source-provenance contract.",
-    "Dispatch DATA-05 public planned-building bundle using new optional asset.provenance for new manifests.",
-    "Continue LEAD-01B, independent truth/holdouts and FND-02; all release gates remain open."
+    "End turn after dispatch; resume on DATA-05 callback.",
+    "Review and integrate source evidence then finish LEAD-01B or next ready FND work.",
+    "Keep GF0 data/independent truth gaps open; no formal UI or deployment."
   ],
   "processedCallbacks": [
     {
