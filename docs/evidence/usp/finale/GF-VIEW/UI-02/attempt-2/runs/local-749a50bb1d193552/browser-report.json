@@ -1,0 +1,165 @@
+{
+  "config": {
+    "argv": [
+      "/Users/vinayak/.hermes/node/bin/node",
+      "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/usp-studio-frame.spec.ts"
+    ],
+    "configFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/playwright.config.ts",
+    "rootDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-02/attempt-2/runs/local-749a50bb1d193552/browser-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "usp-studio-frame.spec.ts",
+      "file": "usp-studio-frame.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "UI-02 frame keeps one scene and selection across panels, tray, theme and phone",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 53974,
+                  "error": {
+                    "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Back to map' })\u001b[22m\n",
+                    "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Back to map' })\u001b[22m\n\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts:216:59",
+                    "location": {
+                      "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts",
+                      "column": 59,
+                      "line": 216
+                    },
+                    "snippet": "  214 |   });\n  215 |   await page.reload({ waitUntil: \"domcontentloaded\" });\n> 216 |   await page.getByRole(\"button\", { name: \"Back to map\" }).click();\n      |                                                           ^\n  217 |   await page.getByRole(\"button\", { name: \"Sources\", exact: true }).click();\n  218 |   const sourcesPanel = page.getByRole(\"complementary\", { name: \"Sources panel\" });\n  219 |   await expect(sourcesPanel).toContainText(\"Loading source evidence\");"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts",
+                        "column": 59,
+                        "line": 216
+                      },
+                      "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Back to map' })\u001b[22m\n\n\n  214 |   });\n  215 |   await page.reload({ waitUntil: \"domcontentloaded\" });\n> 216 |   await page.getByRole(\"button\", { name: \"Back to map\" }).click();\n      |                                                           ^\n  217 |   await page.getByRole(\"button\", { name: \"Sources\", exact: true }).click();\n  218 |   const sourcesPanel = page.getByRole(\"complementary\", { name: \"Sources panel\" });\n  219 |   await expect(sourcesPanel).toContainText(\"Loading source evidence\");\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts:216:59"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T14:46:06.853Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-studio-frame-UI-02-fra-53d8e-panels-tray-theme-and-phone/test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-studio-frame-UI-02-fra-53d8e-panels-tray-theme-and-phone/video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-studio-frame-UI-02-fra-53d8e-panels-tray-theme-and-phone/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-studio-frame-UI-02-fra-53d8e-panels-tray-theme-and-phone/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts",
+                    "column": 59,
+                    "line": 216
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9e5eaacd67ac40649843-ef23afbdc1837a5a9ddc",
+          "file": "usp-studio-frame.spec.ts",
+          "line": 57,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-25T14:46:06.452Z",
+    "duration": 54919.465000000004,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

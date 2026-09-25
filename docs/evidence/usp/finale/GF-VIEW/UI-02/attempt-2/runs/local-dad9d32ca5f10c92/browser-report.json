@@ -1,0 +1,165 @@
+{
+  "config": {
+    "argv": [
+      "/Users/vinayak/.hermes/node/bin/node",
+      "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/usp-studio-frame.spec.ts"
+    ],
+    "configFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/playwright.config.ts",
+    "rootDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-02/attempt-2/runs/local-dad9d32ca5f10c92/browser-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "usp-studio-frame.spec.ts",
+      "file": "usp-studio-frame.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "UI-02 frame keeps one scene and selection across panels, tray, theme and phone",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 22526,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-tile-canvas]')\nExpected: \u001b[32m\"\u001b[7mtru\u001b[27me\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mfals\u001b[27me\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" locator('[data-tile-canvas]') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-tile-canvas]')\u001b[22m\n\u001b[2m    - locator resolved to <div class=\"spatial-canvas\" data-tile-canvas=\"true\" data-tile-source=\"/api/v1/spatial/core/areas/39d21135-6264-4c2f-be86-f8741ac9d121/scene/synthetic/8fc2719b5e8342c8329ff1f8e6ad1e6a7d16560b845b5c83b2769b615b66bf95/manifest.json\"></div>\u001b[22m\n\u001b[2m    - unexpected value \"null\"\u001b[22m\n\u001b[2m    - locator resolved to <div data-loaded-tiles=\"0\" class=\"spatial-canvas\" data-tile-canvas=\"true\" data-map-runtime-id=\"1\" data-scene-ready=\"false\" data-shadow-profile=\"metre-neighbourhood-bias-v1\" data-tile-source=\"/api/v1/spatial/core/areas/39d21135-6264-4c2f-be86-f8741ac9d121/scene/synthetic/8fc2719b5e8342c8329ff1f8e6ad1e6a7d16560b845b5c83b2769b615b66bf95/manifest.json\">…</div>\u001b[22m\n\u001b[2m    4 × unexpected value \"false\"\u001b[22m\n\u001b[2m      - locator resolved to <div data-loaded-tiles=\"0\" class=\"spatial-canvas\" data-tile-canvas=\"true\" data-map-runtime-id=\"1\" data-scene-ready=\"false\" data-ready-overlay-ids=\"[]\" data-shadow-profile=\"metre-neighbourhood-bias-v1\" data-tile-source=\"/api/v1/spatial/core/areas/39d21135-6264-4c2f-be86-f8741ac9d121/scene/synthetic/8fc2719b5e8342c8329ff1f8e6ad1e6a7d16560b845b5c83b2769b615b66bf95/manifest.json\" data-camera=\"{\"longitude\":1.3125762538550492,\"latitude\":0.4969984439408631,\"height\":90.46409301285222,\"heading\":5.8468557539…>…</div>\u001b[22m\n\u001b[2m    - unexpected value \"false\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-tile-canvas]')\nExpected: \u001b[32m\"\u001b[7mtru\u001b[27me\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mfals\u001b[27me\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" locator('[data-tile-canvas]') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-tile-canvas]')\u001b[22m\n\u001b[2m    - locator resolved to <div class=\"spatial-canvas\" data-tile-canvas=\"true\" data-tile-source=\"/api/v1/spatial/core/areas/39d21135-6264-4c2f-be86-f8741ac9d121/scene/synthetic/8fc2719b5e8342c8329ff1f8e6ad1e6a7d16560b845b5c83b2769b615b66bf95/manifest.json\"></div>\u001b[22m\n\u001b[2m    - unexpected value \"null\"\u001b[22m\n\u001b[2m    - locator resolved to <div data-loaded-tiles=\"0\" class=\"spatial-canvas\" data-tile-canvas=\"true\" data-map-runtime-id=\"1\" data-scene-ready=\"false\" data-shadow-profile=\"metre-neighbourhood-bias-v1\" data-tile-source=\"/api/v1/spatial/core/areas/39d21135-6264-4c2f-be86-f8741ac9d121/scene/synthetic/8fc2719b5e8342c8329ff1f8e6ad1e6a7d16560b845b5c83b2769b615b66bf95/manifest.json\">…</div>\u001b[22m\n\u001b[2m    4 × unexpected value \"false\"\u001b[22m\n\u001b[2m      - locator resolved to <div data-loaded-tiles=\"0\" class=\"spatial-canvas\" data-tile-canvas=\"true\" data-map-runtime-id=\"1\" data-scene-ready=\"false\" data-ready-overlay-ids=\"[]\" data-shadow-profile=\"metre-neighbourhood-bias-v1\" data-tile-source=\"/api/v1/spatial/core/areas/39d21135-6264-4c2f-be86-f8741ac9d121/scene/synthetic/8fc2719b5e8342c8329ff1f8e6ad1e6a7d16560b845b5c83b2769b615b66bf95/manifest.json\" data-camera=\"{\"longitude\":1.3125762538550492,\"latitude\":0.4969984439408631,\"height\":90.46409301285222,\"heading\":5.8468557539…>…</div>\u001b[22m\n\u001b[2m    - unexpected value \"false\"\u001b[22m\n\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts:68:23",
+                    "location": {
+                      "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts",
+                      "column": 23,
+                      "line": 68
+                    },
+                    "snippet": "  66 |   await page.goto(`/studio/areas/${receipt.areaId}?feature=${buildingId}`);\n  67 |   const scene = page.locator(\"[data-tile-canvas]\");\n> 68 |   await expect(scene).toHaveAttribute(\"data-scene-ready\", \"true\");\n     |                       ^\n  69 |   const runtime = page.locator(\"[data-map-runtime-id]\");\n  70 |   await expect(runtime).toHaveCount(1);\n  71 |   const runtimeId = await runtime.getAttribute(\"data-map-runtime-id\");"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts",
+                        "column": 23,
+                        "line": 68
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-tile-canvas]')\nExpected: \u001b[32m\"\u001b[7mtru\u001b[27me\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mfals\u001b[27me\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" locator('[data-tile-canvas]') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-tile-canvas]')\u001b[22m\n\u001b[2m    - locator resolved to <div class=\"spatial-canvas\" data-tile-canvas=\"true\" data-tile-source=\"/api/v1/spatial/core/areas/39d21135-6264-4c2f-be86-f8741ac9d121/scene/synthetic/8fc2719b5e8342c8329ff1f8e6ad1e6a7d16560b845b5c83b2769b615b66bf95/manifest.json\"></div>\u001b[22m\n\u001b[2m    - unexpected value \"null\"\u001b[22m\n\u001b[2m    - locator resolved to <div data-loaded-tiles=\"0\" class=\"spatial-canvas\" data-tile-canvas=\"true\" data-map-runtime-id=\"1\" data-scene-ready=\"false\" data-shadow-profile=\"metre-neighbourhood-bias-v1\" data-tile-source=\"/api/v1/spatial/core/areas/39d21135-6264-4c2f-be86-f8741ac9d121/scene/synthetic/8fc2719b5e8342c8329ff1f8e6ad1e6a7d16560b845b5c83b2769b615b66bf95/manifest.json\">…</div>\u001b[22m\n\u001b[2m    4 × unexpected value \"false\"\u001b[22m\n\u001b[2m      - locator resolved to <div data-loaded-tiles=\"0\" class=\"spatial-canvas\" data-tile-canvas=\"true\" data-map-runtime-id=\"1\" data-scene-ready=\"false\" data-ready-overlay-ids=\"[]\" data-shadow-profile=\"metre-neighbourhood-bias-v1\" data-tile-source=\"/api/v1/spatial/core/areas/39d21135-6264-4c2f-be86-f8741ac9d121/scene/synthetic/8fc2719b5e8342c8329ff1f8e6ad1e6a7d16560b845b5c83b2769b615b66bf95/manifest.json\" data-camera=\"{\"longitude\":1.3125762538550492,\"latitude\":0.4969984439408631,\"height\":90.46409301285222,\"heading\":5.8468557539…>…</div>\u001b[22m\n\u001b[2m    - unexpected value \"false\"\u001b[22m\n\n\n  66 |   await page.goto(`/studio/areas/${receipt.areaId}?feature=${buildingId}`);\n  67 |   const scene = page.locator(\"[data-tile-canvas]\");\n> 68 |   await expect(scene).toHaveAttribute(\"data-scene-ready\", \"true\");\n     |                       ^\n  69 |   const runtime = page.locator(\"[data-map-runtime-id]\");\n  70 |   await expect(runtime).toHaveCount(1);\n  71 |   const runtimeId = await runtime.getAttribute(\"data-map-runtime-id\");\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts:68:23"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T14:42:30.651Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-studio-frame-UI-02-fra-53d8e-panels-tray-theme-and-phone/test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-studio-frame-UI-02-fra-53d8e-panels-tray-theme-and-phone/video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-studio-frame-UI-02-fra-53d8e-panels-tray-theme-and-phone/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-studio-frame-UI-02-fra-53d8e-panels-tray-theme-and-phone/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-studio-frame.spec.ts",
+                    "column": 23,
+                    "line": 68
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9e5eaacd67ac40649843-ef23afbdc1837a5a9ddc",
+          "file": "usp-studio-frame.spec.ts",
+          "line": 57,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-25T14:42:30.277Z",
+    "duration": 23491.673000000003,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
