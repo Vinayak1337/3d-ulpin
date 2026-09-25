@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "ui08-checks/1",
+  "baseSha": "80e1e9cf46a49eefb1d4024efe14f82c177ec85d",
+  "codeSha": "d8b95384bb802b3b1de121f650524aec21be7ab6",
+  "agent": {
+    "product": "Codex desktop",
+    "model": "gpt-6-sol",
+    "effort": "xhigh"
+  },
+  "executed": [
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test:ui",
+      "exitCode": 0,
+      "passed": 20
+    },
+    {
+      "command": "pnpm test:scene",
+      "exitCode": 0,
+      "passed": 7
+    },
+    {
+      "command": "pnpm test:spatial",
+      "exitCode": 0,
+      "passed": 30
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/studio-routing.test.ts tests/studio-entry.test.ts",
+      "exitCode": 0,
+      "passed": 33
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/t076-source-normalizer.test.ts tests/t076-provided-source-adapters.test.ts",
+      "exitCode": 0,
+      "passed": 14
+    },
+    {
+      "command": "pnpm exec tsx --test tests/usp-ui08-recorded-labels.test.mjs apps/web/features/spatial/reference-runtime/floor-plates.test.mjs",
+      "exitCode": 0,
+      "passed": 6
+    },
+    {
+      "command": "node --test tests/usp-ui-preview-isolation.test.mjs",
+      "exitCode": 0,
+      "passed": 1
+    },
+    {
+      "command": "node scripts/usp/local-isolation.mjs --preview-run",
+      "exitCode": 0,
+      "run": "local-c4b63017534069b9",
+      "browserPassed": 1,
+      "screenshots": 5
+    },
+    {
+      "command": "pnpm build",
+      "exitCode": 1,
+      "blockedBy": "repository build guard: unrelated portfolio server on port 3000"
+    }
+  ],
+  "designScan": {
+    "baseSha": "80e1e9cf46a49eefb1d4024efe14f82c177ec85d",
+    "addedUiLines": 182,
+    "candidates": 1,
+    "adjudication": "Generated standalone register HTML inline style is byte-identical to base; no new color declaration."
+  }
+}

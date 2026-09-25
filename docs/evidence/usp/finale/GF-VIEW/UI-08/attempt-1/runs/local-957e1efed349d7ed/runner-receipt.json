@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "ui08-isolated-preview/1",
+  "scopeId": "local-957e1efed349d7ed",
+  "codeSha": "e2bc9f855b09d9db34bb1405e80e51e5d9b5e29a",
+  "status": "FAILED",
+  "source": "hash-pinned repo-data snapshot, retained historical regression only",
+  "commands": [
+    {
+      "label": "code-sha",
+      "exitCode": 0
+    },
+    {
+      "label": "docker-context",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-containers",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-volumes",
+      "exitCode": 0
+    },
+    {
+      "label": "owned-services-start",
+      "exitCode": 0
+    },
+    {
+      "label": "private-bucket-init",
+      "exitCode": 0
+    },
+    {
+      "label": "exact-database-restore",
+      "exitCode": 0
+    },
+    {
+      "label": "owned-services-cleanup",
+      "exitCode": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "pinned-originals",
+      "databaseSha256": "92cbdeb930c7b20f9a90f7857f92787ebe2562c65892ad835a758bdf1b6cfda8",
+      "objectCount": 497
+    },
+    {
+      "name": "new-project-and-loopback-ports"
+    },
+    {
+      "name": "snapshot-exact",
+      "tables": 44,
+      "objects": 497
+    }
+  ],
+  "screenshots": [],
+  "limitation": "No DATA-09 reference scene qualification or production build.",
+  "error": "AssertionError [ERR_ASSERTION]: Preview server exited before readiness\n\n143 !== null\n\n    at waitServer (file:///Users/vinayak/.codex/worktrees/51a5/3D%20Ulpin/scripts/usp/ui/UI-08-isolated-preview.mjs:82:12)\n    at async file:///Users/vinayak/.codex/worktrees/51a5/3D%20Ulpin/scripts/usp/ui/UI-08-isolated-preview.mjs:134:3"
+}

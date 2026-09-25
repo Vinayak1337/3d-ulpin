@@ -1,0 +1,165 @@
+{
+  "config": {
+    "argv": [
+      "/Users/vinayak/.hermes/node/bin/node",
+      "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/usp-ui08-content.spec.ts"
+    ],
+    "configFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/playwright.config.ts",
+    "rootDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/runs/local-fa4a73130fa9c5c8/browser-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "usp-ui08-content.spec.ts",
+      "file": "usp-ui08-content.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "UI-08 saved-record screens and explicit unselected map",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 34681,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('main')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('main') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('main')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('main')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('main') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('main')\u001b[22m\n\n    at ready (/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui08-content.spec.ts:36:44)\n    at capture (/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui08-content.spec.ts:16:11)\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui08-content.spec.ts:35:5",
+                    "location": {
+                      "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui08-content.spec.ts",
+                      "column": 44,
+                      "line": 36
+                    },
+                    "snippet": "  34 |     });\n  35 |     await capture('S12-property-register', `/studio/properties/${building}/register`, async () => {\n> 36 |       await expect(page.getByRole('main')).toBeVisible();\n     |                                            ^\n  37 |       await expect(page.locator('main').getByText(/Observed|Synthetic|Planned|Mixed|Unknown/).first()).toBeVisible();\n  38 |     });\n  39 |   } else {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui08-content.spec.ts",
+                        "column": 44,
+                        "line": 36
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('main')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('main') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('main')\u001b[22m\n\n\n  34 |     });\n  35 |     await capture('S12-property-register', `/studio/properties/${building}/register`, async () => {\n> 36 |       await expect(page.getByRole('main')).toBeVisible();\n     |                                            ^\n  37 |       await expect(page.locator('main').getByText(/Observed|Synthetic|Planned|Mixed|Unknown/).first()).toBeVisible();\n  38 |     });\n  39 |   } else {\n    at ready (/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui08-content.spec.ts:36:44)\n    at capture (/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui08-content.spec.ts:16:11)\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui08-content.spec.ts:35:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T17:58:45.059Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui08-content-UI-08-sav-38e5a-and-explicit-unselected-map/test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui08-content-UI-08-sav-38e5a-and-explicit-unselected-map/video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui08-content-UI-08-sav-38e5a-and-explicit-unselected-map/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui08-content-UI-08-sav-38e5a-and-explicit-unselected-map/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui08-content.spec.ts",
+                    "column": 44,
+                    "line": 36
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "1fbe9792444efda82478-d82e07b7f3592b0c63fe",
+          "file": "usp-ui08-content.spec.ts",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-25T17:58:44.822Z",
+    "duration": 35459.286,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
