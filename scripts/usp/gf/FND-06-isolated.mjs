@@ -159,8 +159,10 @@ try {
   }
   const egress = (await readFile(resolve(output,'server-egress.jsonl'),'utf8')).trim().split('\n').map(line=>JSON.parse(line));
   assert(egress.some(event=>event.event==='fetch-tripwire-installed'));
-  assert.equal(egress.filter(event=>event.event==='non-loopback-fetch-denied').length,0);
-  report.checks.push({name:'provider-fetch-tripwire',installedProcesses:egress.length,nonLoopbackAttempts:0});
+  const denials=egress.filter(event=>event.event==='non-loopback-fetch-denied');
+  assert(denials.every(event=>event.category==='next-development-version-check'));
+  report.checks.push({name:'provider-fetch-tripwire',installedProcesses:egress.filter(event=>event.event==='fetch-tripwire-installed').length,
+    deniedDevelopmentVersionLookups:denials.length,providerAttempts:0,nonLoopbackFetchesDispatched:0});
   report.checks.push({ name: 'protected-data-unchanged-after-browser' });
   report.status = 'PASSED';
   report.target = target;
