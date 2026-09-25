@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T14:03:21.159513+00:00",
+  "updatedAt": "2026-09-25T14:16:23.948952+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -152,9 +152,9 @@
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "high"
+        "effort": "xhigh"
       },
-      "status": "assigned_UI-02",
+      "status": "assigned_UI-02_attempt-2",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -842,8 +842,98 @@
         "390x844 scope header/action reachable; 900/620 breakpoints, keyboard/focus/Escape,200% and reduced motion",
         "Live production isolated screenshots and state/instance assertions; existing D0/D1,identity and UI-01 regressions retained"
       ],
-      "status": "dispatched",
+      "status": "corrections_required",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-02/report.md",
+      "resultCommit": "ad71e514cba205eec4dc44fb982efa1e9800378e",
+      "ownershipClarifications": [
+        {
+          "path": "apps/web/features/usp/shared/ExternalSceneViewport.tsx",
+          "scope": "Import existing ../../spatial/viewport.css before dynamic map mount; no source/resource/geometry changes. Frame fallback positioning remains in owned frame CSS.",
+          "reason": "Phone source-error Retry must remain reachable when dynamic map does not mount. Lead verified net diff against accepted base is exactly one stylesheet import.",
+          "confirmedAt": "2026-09-25T14:03:21.159513+00:00"
+        }
+      ],
+      "testedCommit": "9495b36d8eed12cb7bf1fc05142a1c9468aeadac",
+      "review": {
+        "independence": "same_family",
+        "verdict": "Runtime continuity checks pass, but status semantics, design sizing, mobile overlay/focus and dark contrast require correction before integration",
+        "checks": [
+          "15 source and 24 artifact SHA-256 digests verified",
+          "Base/tested/result ancestry verified",
+          "Actual worker gpt-6-sol/xhigh confirmed",
+          "22 internal zero exits reviewed",
+          "Desktop/phone screenshots and frame/browser code inspected"
+        ],
+        "findings": [
+          {
+            "id": "UI02-R1",
+            "issue": "ProductHeader labels any loaded AreaContext as Saved area snapshot without snapshot identity or timestamp; Sources panel can report No sources while dossier is loading or failed.",
+            "required": "Derive status from authoritative available scope semantics; absent qualification stays unavailable. Snapshot requires actual saved snapshot and timestamp. Distinguish Sources pending/error/empty and retain usable package results."
+          },
+          {
+            "id": "UI02-R2",
+            "issue": "New frame CSS makes scope actions 30px, back 25x30px and other controls 34/36px without 44px hit areas; metadata falls to 10/11px. Panel/control radii contradict design shape lock. Phone search is cramped.",
+            "required": "Respect design system >=44px nonoverlapping hit areas, metadata >=12px and token shapes. Reflow responsive frame instead of shrinking; document scope strip geometry exception needed for target sizing. Verify actual reachability, dimensions and overflow at phone/intermediate widths and 200%."
+          },
+          {
+            "id": "UI02-R3",
+            "issue": "Inspector and on-demand panel remain concurrently rendered as overlapping full sheets below620; tests close inspector first and miss resize state. Panel opener retains focus behind full sheet; global Escape closes panel even with a nested dialog.",
+            "required": "One foreground mobile sheet with deterministic switching/back, visible focus and no focus on obscured controls. Restore focus on close; topmost overlay handles Escape first. Preserve canonical selected record and runtime/camera. Test resize with both desktop surfaces open, keyboard traversal, nested dialog, search shortcut and supported back navigation."
+          },
+          {
+            "id": "UI02-R4",
+            "issue": "Dark screenshots show dim Layer appearance and Source/reference details; retained hardcoded colors (#688260/#50675b) are mounted in the newly framed panels. Existing foundation test does not measure these surfaces.",
+            "required": "Use theme tokens for actual frame-mounted text and controls, measure effective composited contrast in both themes including these summaries and evidence coverage, then capture settled light/dark desktop/phone evidence."
+          }
+        ]
+      }
+    },
+    {
+      "assignmentId": "UI-02",
+      "attempt": 2,
+      "callbackId": "ulpin-UI-02-attempt-2",
+      "objective": "Studio frame, on-demand panels, single inspector/tray and responsive behavior preserving canonical selection and shared map runtime",
+      "baseCommit": "c597d5252518b336d1cafc8852db21bdfcea13db",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-02-studio-frame",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "apps/web/features/studio/product/ProductHeader.tsx and header.css",
+        "apps/web/features/studio/product/operations.css and theme.css frame compatibility",
+        "apps/web/features/officer/shared/Shell.tsx and shell.css",
+        "apps/web/features/officer/shared/ui.tsx minimal required icon additions only",
+        "apps/web/features/officer/block/BlockPage.tsx, BlockRails.tsx, FindingsTray.tsx and block.css frame/panel presentation",
+        "apps/web/features/officer/shared/store.tsx and block/useBlock.ts minimal camera/selection persistence only if needed",
+        "tests/e2e/usp-studio-frame.spec.ts and existing USP UI browser selectors retaining assertions",
+        "scripts/usp/isolated-live.mjs minimal frame check hook",
+        "docs/evidence/usp/finale/GF-VIEW/UI-02/",
+        "apps/web/features/officer/block/frame.css responsive/frame corrections; narrowly scoped contrast overrides for frame-mounted legacy components"
+      ],
+      "exclusions": [
+        "backend/contracts/migrations and new provider/services",
+        "UI-03 semantic geometry and renderer changes",
+        "UI-04 ingestion/domain workflows",
+        "UI-08 wholesale content cleanup or dataset rewriting",
+        "mockup sample values/prototype code",
+        "historical receipts and orchestration ledger",
+        "public deployment or staging/main merges"
+      ],
+      "acceptance": [
+        "H99 sections3-4/Z2/Z6 and H29 UI-02; design system overrides reference-only mockup",
+        "56px top bar,36px scope strip,308px one-at-a-time left panel closed by default,360/400px inspector,172px single collapsible tray",
+        "Existing record-backed panels only; unavailable feature states explicit",
+        "Same Cesium runtime, camera and selection survive panel/theme/2D-3D transitions and supported back navigation",
+        "390x844 scope header/action reachable; 900/620 breakpoints, keyboard/focus/Escape,200% and reduced motion",
+        "Live production isolated screenshots and state/instance assertions; existing D0/D1,identity and UI-01 regressions retained"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-02/attempt-2/report.md",
       "resultCommit": null,
       "ownershipClarifications": [
         {
@@ -852,6 +942,13 @@
           "reason": "Phone source-error Retry must remain reachable when dynamic map does not mount. Lead verified net diff against accepted base is exactly one stylesheet import.",
           "confirmedAt": "2026-09-25T14:03:21.159513+00:00"
         }
+      ],
+      "continuationCommit": "ad71e514cba205eec4dc44fb982efa1e9800378e",
+      "correctionFindings": [
+        "UI02-R1",
+        "UI02-R2",
+        "UI02-R3",
+        "UI02-R4"
       ]
     }
   ],
@@ -1599,7 +1696,7 @@
     }
   ],
   "nextSteps": [
-    "End turn after UI-02 dispatch; resume on callback.",
+    "End turn after UI-02 attempt-2 dispatch; resume on callback.",
     "Review frame state persistence and responsive behavior; integrate bounded accepted work.",
     "Next remaining GF0 data and plan machinery, then FND-04/UI-03 and other dependency-ready cards."
   ],
@@ -1676,6 +1773,15 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "15eda07dd62c282c7b17952321e981f0747479a4",
       "result": "accepted_bounded_ui_foundations"
+    },
+    {
+      "callbackId": "ulpin-UI-02-attempt-1",
+      "assignmentId": "UI-02",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "ad71e514cba205eec4dc44fb982efa1e9800378e",
+      "result": "corrections_required_not_integrated",
+      "normalization": "CamelCase callback fields normalized from uniquely matching source task and callbackId."
     }
   ],
   "observations": [
