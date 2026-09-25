@@ -1,5 +1,7 @@
 # 3D ULPIN design system
 
+**Frontend replacement:** Rebuild affected legacy screens from this design language as their existing plan cards are implemented, then remove the superseded UI. This is progressive work within the plan, not a separate redesign phase. Preserve shared runtime/data contracts and saved-link compatibility; mockup data/code must not be copied. See the [delivery policy](../usp-agent-handoffs/current-delivery-policy.md).
+
 **Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
 
 The visual and content rules for every 3D ULPIN screen: the design language agents build in. It is the repository copy of the team's design system (the private claude.ai Design System artifact and its Claude Design project), kept in sync with it and reconciled with the finale handoffs. Agents cannot open private claude.ai pages, so this folder is what they build from; [Sync with the team design system](#sync-with-the-team-design-system) records what was compared and what differs on purpose.

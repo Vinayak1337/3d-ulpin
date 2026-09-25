@@ -1,6 +1,8 @@
 # Unified Studio UI/UX, real 3D display and integration
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**26 September sequencing:** Replace legacy UI afresh from the design system and reference mockups while implementing each existing card; delete that surface's superseded components after migration. Do not divert into a separate redesign or continue polishing legacy screens. Reuse shared contracts/runtime, preserve unique inspection and saved URLs, and apply UI-08 record/provenance checks in every replacement. See [delivery policy](current-delivery-policy.md).
+
+**Current scope:** [Current delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
 
 **Dataset policy update, 24 September 2026:** general map/load qualification uses real data from any suitable geography under [H28](28-data-acquisition-and-finale-tests.md). No Delhi/Uttam Nagar acquisition is required. D0/D1 smoke acceptance remains distinct from the larger real corpus, sparse-source and concurrent-ingestion interaction tests below; this documentation update does not claim those tests passed.
 
