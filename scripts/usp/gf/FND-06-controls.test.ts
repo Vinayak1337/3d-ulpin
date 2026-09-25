@@ -36,6 +36,8 @@ test('Verhoeff arithmetic on short non-identity control inputs and unavailable v
   const states={ownerName:null,email:'withheld',phone:'unknown',pan:'conflicting'};
   assert.deepEqual(redactDerivative(states),states);
   assert.deepEqual(redactDocumentViews({parts:[],revision:3}),{parts:[],revision:3});
+  const timestamp=new Date(0);
+  assert.equal(redactDocumentViews({updatedAt:timestamp}).updatedAt,timestamp);
 });
 test('image denial precedes original storage/processor access and message construction', async () => {
   assert.doesNotThrow(()=>assertNoImageEgress([]));

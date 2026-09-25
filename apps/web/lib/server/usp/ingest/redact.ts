@@ -56,6 +56,7 @@ export function redactMessageText(text: string): string {
 export function redactDocumentViews<T>(value: T): T {
   if (Array.isArray(value)) return value.map(redactDocumentViews) as T;
   if (!value || typeof value !== 'object') return value;
+  if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) return value;
   return Object.fromEntries(Object.entries(value).map(([key, item]) => [key,
     (key === 'parts' || key === 'referenceParts') && Array.isArray(item)
       ? item.map(part => typeof part?.text === 'string' ? {...part, text:redactMessageText(part.text), locator:redactDerivative(part.locator)} : part)
