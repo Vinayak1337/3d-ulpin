@@ -31,13 +31,16 @@ const kinds: { kind: FeatureKind; label: string; icon: IconName }[] = [
 export function BlockLeftRail({
   block,
   onClose,
+  mode,
 }: {
   block: BlockController;
   onClose?: () => void;
+  mode?: "layers" | "properties";
 }) {
   const [filter, setFilter] = useState(""),
     [listing, setListing] = useState<"building" | "parcel" | "utility">("building");
   const { preferences, features } = block;
+  const rail = mode ?? preferences.rail;
   const properties = features.filter(
     (f) =>
       f.worldStatus===block.world && (f.kind === listing || !!filter.trim()) &&
@@ -46,8 +49,8 @@ export function BlockLeftRail({
         .includes(filter.toLowerCase()),
   );
   return (
-    <aside className="ui-block-left" aria-label="Map layers and properties">
-      <div className="ui-rail-tabs">
+    <div className="ui-block-left" aria-label={rail === "layers" ? "Map layers" : "Properties in this area"}>
+      {!mode && <div className="ui-rail-tabs">
         {(["layers", "properties"] as const).map((mode) => (
           <button
             key={mode}
@@ -66,8 +69,8 @@ export function BlockLeftRail({
             onClick={onClose}
           />
         )}
-      </div>
-      {preferences.rail === "layers" && (
+      </div>}
+      {rail === "layers" && (
         <div className="ui-layers">
           <div className="ui-rail-caption">
             <h3>Map layers</h3>
@@ -127,7 +130,7 @@ export function BlockLeftRail({
           </div>
         </div>
       )}
-      {preferences.rail === "properties" && <>
+      {rail === "properties" && <>
       <div className="ui-property-list-heading">
         <div className="ui-rail-caption">
           <h3>In this block</h3>
@@ -213,7 +216,7 @@ export function BlockLeftRail({
         <Icon name="layers" size={14} />
       </footer>
       </>}
-    </aside>
+    </div>
   );
 }
 function Metadata({ feature }: { feature: PhysicalFeature }) {

@@ -11,6 +11,16 @@ import "../../studio/product/operations.css";
 import "../../studio/product/theme.css";
 function Navigation({ children }: { children: ReactNode }) {
   const [statusOpen, setStatusOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  useEffect(() => {
+    const saved = window.localStorage.getItem("ulpin:studio:viewer-theme:1");
+    if (saved === "dark" || saved === "light") setTheme(saved);
+  }, []);
+  const toggleTheme = () => setTheme(current => {
+    const next = current === "light" ? "dark" : "light";
+    window.localStorage.setItem("ulpin:studio:viewer-theme:1", next);
+    return next;
+  });
   const health = useResource<{
     ok: boolean;
     services: Record<string, boolean>;
@@ -27,11 +37,11 @@ function Navigation({ children }: { children: ReactNode }) {
     };
   }, []);
   return (
-    <div className="ulpin-app studio-operations" data-ui-shell>
+    <div className="ulpin-app studio-operations" data-ui-shell data-theme={theme}>
       <a className="ui-skip" href="#ui-content">
         Skip to content
       </a>
-      <ProductHeader actions={<button onClick={()=>setStatusOpen(true)} aria-label="Local workspace status"><span className={online?'ui-dot':'ui-dot ui-dot--offline'}/><span>Local workspace</span></button>}/>
+      <ProductHeader theme={theme} onThemeToggle={toggleTheme} actions={<button onClick={()=>setStatusOpen(true)} aria-label="Local workspace status"><span className={online?'ui-dot':'ui-dot ui-dot--offline'}/><span>Local workspace</span></button>}/>
 
       <div id="ui-content" className="ui-content">
         {children}

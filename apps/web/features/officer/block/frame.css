@@ -1,0 +1,129 @@
+/* UI-02: map-first Studio frame around the retained shared viewport. */
+.ulpin-app.studio-operations .ui-block-page { min-height: 0; height: 100%; }
+.ulpin-app.studio-operations .ui-block-grid.ui-focused-map {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  grid-template-columns: minmax(0, 1fr) 360px;
+}
+.ulpin-app.studio-operations .ui-block-grid.ui-focused-map.ui-inspector-closed { grid-template-columns: minmax(0, 1fr); }
+.ulpin-app.studio-operations .ui-map-column { position: relative; }
+.ulpin-app.studio-operations .ui-contextbar {
+  min-height: 36px;
+  height: 36px;
+  flex: none;
+  padding: 0 12px;
+  gap: 8px;
+  background: var(--ui-surface);
+  border-color: var(--ui-divider);
+}
+.ulpin-app.studio-operations .ui-block-title { gap: 8px; overflow: hidden; }
+.ulpin-app.studio-operations .ui-block-title > a { width: 25px; height: 30px; border: 0; color: var(--ui-ink-soft); }
+.ulpin-app.studio-operations .ui-block-title h1 {
+  font-size: 13px;
+  line-height: 1.2;
+  margin: 0;
+  max-width: min(30vw, 260px);
+  color: var(--ui-ink);
+}
+.ulpin-app.studio-operations .ui-scope-classification {
+  border: 1px solid var(--ui-divider);
+  background: var(--ui-primary-soft);
+  color: var(--ui-primary);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.ulpin-app.studio-operations .ui-scope-revision { color: var(--ui-ink-soft); font-size: 11px; white-space: nowrap; }
+.ulpin-app.studio-operations .ui-context-actions { gap: 4px; flex: none; }
+.ulpin-app.studio-operations .ui-context-actions .ui-button { min-height: 30px; padding: 4px 7px; font-size: 11px; }
+.ulpin-app.studio-operations .ui-map-stage { min-height: 0; }
+.ulpin-app.studio-operations .ui-map-toolbar {
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  width: auto;
+  background: transparent;
+  box-shadow: none;
+  gap: 5px;
+}
+.ulpin-app.studio-operations .ui-map-toolbar > .ui-button { background: var(--ui-surface); color: var(--ui-ink); border: 1px solid var(--ui-line-control); }
+.ulpin-app.studio-operations .ui-map-mode { background: var(--ui-surface); border-color: var(--ui-line-control); }
+.ulpin-app.studio-operations .ui-panel-switches { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--ui-line-control); border-radius: 6px; background: var(--ui-surface); box-shadow: 0 2px 8px #14251a14; }
+.ulpin-app.studio-operations .ui-panel-switches button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ui-ink-soft);
+  font: 12px var(--ui-font-sans);
+  cursor: pointer;
+}
+.ulpin-app.studio-operations .ui-panel-switches button[aria-pressed="true"] { background: var(--ui-primary-soft); color: var(--ui-primary); }
+.ulpin-app.studio-operations .ui-on-demand-panel {
+  position: absolute;
+  z-index: 20;
+  top: 62px;
+  bottom: 12px;
+  left: 12px;
+  width: min(308px, calc(100% - 24px));
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  border: 1px solid var(--ui-divider);
+  border-radius: 7px;
+  box-shadow: 0 8px 28px #14251a2b;
+}
+.ulpin-app.studio-operations .ui-on-demand-panel > header { display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 4px 10px 4px 16px; border-bottom: 1px solid var(--ui-divider); }
+.ulpin-app.studio-operations .ui-on-demand-panel h2 { font-size: 14px; }
+.ulpin-app.studio-operations .ui-on-demand-panel .ui-block-left { display: flex; flex: 1; width: auto; position: static; box-shadow: none; border: 0; background: var(--ui-surface); }
+.ulpin-app.studio-operations .ui-panel-list { display: flex; flex-direction: column; min-height: 0; overflow: auto; padding: 8px; }
+.ulpin-app.studio-operations .ui-panel-list > button,
+.ulpin-app.studio-operations .ui-panel-source { display: flex; align-items: flex-start; gap: 8px; width: 100%; padding: 10px; text-align: left; border: 0; border-bottom: 1px solid var(--ui-divider); background: var(--ui-surface); color: var(--ui-ink); font: inherit; }
+.ulpin-app.studio-operations .ui-panel-list > button[aria-current] { background: var(--ui-primary-soft); }
+.ulpin-app.studio-operations .ui-panel-list strong,
+.ulpin-app.studio-operations .ui-panel-list small { display: block; overflow-wrap: anywhere; }
+.ulpin-app.studio-operations .ui-panel-list strong { font-size: 12px; }
+.ulpin-app.studio-operations .ui-panel-list small { margin-top: 3px; color: var(--ui-ink-soft); font-size: 11px; }
+.ulpin-app.studio-operations .ui-panel-checks { display: flex; flex-direction: column; align-items: stretch; gap: 9px; padding: 14px; }
+.ulpin-app.studio-operations .ui-panel-checks p { font-size: 12px; color: var(--ui-ink-soft); }
+.ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { width: auto; min-width: 0; position: static; background: var(--ui-surface); }
+.ulpin-app.studio-operations .ui-findings-tray { height: 172px; max-height: 172px; background: var(--ui-surface); }
+.ulpin-app.studio-operations .ui-findings-tray > header { flex: none; }
+.ulpin-app.studio-operations .ui-findings-list { min-height: 0; overflow: auto; }
+@media (max-width: 900px) {
+  .ulpin-app.studio-operations .ui-panel-switches button span { display: none; }
+  .ulpin-app.studio-operations .ui-panel-switches button { padding: 5px 7px; }
+  .ulpin-app.studio-operations .ui-block-grid.ui-focused-map { grid-template-columns: minmax(0, 1fr); position: relative; }
+  .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { position: absolute; z-index: 30; right: 0; top: 0; bottom: 0; width: min(360px, 90vw); box-shadow: -8px 0 28px #10291e26; }
+}
+@media (max-width: 620px) {
+  .ulpin-app.studio-operations .ui-contextbar { min-height: 42px; height: 42px; padding: 0 7px; flex-wrap: nowrap; }
+  .ulpin-app.studio-operations .ui-block-title { gap: 4px; }
+  .ulpin-app.studio-operations .ui-block-title h1 { max-width: 100px; font-size: 12px; }
+  .ulpin-app.studio-operations .ui-scope-classification { font-size: 10px; padding: 2px 4px; }
+  .ulpin-app.studio-operations .ui-scope-revision { font-size: 10px; }
+  .ulpin-app.studio-operations .ui-context-actions { width: auto; padding: 0; }
+  .ulpin-app.studio-operations .ui-context-actions .ui-button { width: 30px; min-width: 30px; height: 30px; min-height: 30px; padding: 5px; font-size: 0; }
+  .ulpin-app.studio-operations .ui-context-actions .ui-button span { display: none; }
+  .ulpin-app.studio-operations .ui-map-toolbar { top: 8px; left: 6px; right: 6px; gap: 3px; }
+  .ulpin-app.studio-operations .ui-map-mode { padding: 2px; }
+  .ulpin-app.studio-operations .ui-map-mode button { min-height: 34px; padding: 5px; font-size: 11px; }
+  .ulpin-app.studio-operations .ui-panel-switches { padding: 2px; }
+  .ulpin-app.studio-operations .ui-panel-switches button { min-height: 34px; padding: 4px 5px; }
+  .ulpin-app.studio-operations .ui-map-toolbar > .ui-button { min-height: 38px; padding: 5px; }
+  .ulpin-app.studio-operations .ui-on-demand-panel { inset: 0; width: 100%; border-radius: 0; border: 0; box-shadow: none; }
+  .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { inset: 0; width: 100%; max-height: none; }
+  .ulpin-app.studio-operations .ui-findings-tray { height: 172px; max-height: 172px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ulpin-app.studio-operations .ui-on-demand-panel,
+  .ulpin-app.studio-operations .ui-block-inspector { transition: none; }
+}

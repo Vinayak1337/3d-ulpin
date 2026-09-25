@@ -1,5 +1,72 @@
-/* Shared officer navigation: stable destinations before contextual tools. */
-.city-header{gap:24px;padding:0 28px;height:68px;min-height:68px;box-shadow:none}.city-brand{width:auto}.city-brand>span{font-size:23px;gap:9px;letter-spacing:-.7px}.city-brand small{font-size:8px;letter-spacing:1px;display:inline}.city-nav{margin-left:10px;gap:3px;flex-shrink:0}.city-nav a{font-size:12px;padding:10px 12px}.city-nav a span{font-size:12px}.city-nav a>svg{display:none}.city-search{margin-left:auto;max-width:320px;min-width:180px;flex:1}.city-dataset{max-width:125px}.city-header-actions button[aria-label="Local workspace status"]{border:0;min-width:32px;padding:8px}.city-header-actions button[aria-label="Local workspace status"]>span:not(.ui-dot){display:none}
-@media(max-width:1200px){.city-header{gap:14px;padding:0 20px}.city-brand small{display:none}.city-nav{margin-left:4px}.city-nav a{padding:10px 9px}.city-dataset{max-width:36px}.city-dataset>button span,.city-dataset>button>svg:last-child{display:none}.city-search{min-width:160px}.city-search kbd{display:none}}
-@media(min-width:761px) and (max-width:900px){.city-header{gap:10px;padding:0 16px}.city-brand{width:auto}.city-brand>span{font-size:21px}.city-nav,.city-nav.is-open{display:flex;position:static;flex-direction:row;align-items:center;width:auto;padding:0;background:none;border:0;border-radius:0;box-shadow:none}.city-nav a{min-height:40px;padding:9px 7px}.city-nav a span{font-size:11px}.city-search{min-width:100px}.city-mobile-menu{display:none}.city-header-actions{margin-left:0}}
-@media(max-width:760px){.city-header{height:60px;min-height:60px;gap:9px;padding:0 12px}.city-brand{width:auto}.city-brand>span{font-size:20px}.city-nav{display:none;position:absolute;right:12px;top:58px;width:230px;padding:8px;background:white;border:1px solid #d7e1d9;border-radius:7px;box-shadow:0 8px 24px #294f3920}.city-nav.is-open{display:flex;flex-direction:column;align-items:stretch}.city-nav a>svg{display:block}.city-nav a span{font-size:13px}.city-search{min-width:40px}.city-search input::placeholder{color:transparent}.city-dataset{max-width:28px}.city-mobile-menu{display:flex;flex-shrink:0}.city-header-actions{margin-left:0}.city-search-results{position:fixed;top:62px;left:10px;right:10px;width:auto}.city-dataset-menu{position:fixed;top:62px;right:10px}}
+/* One persistent Studio navigation row. Context belongs to the map scope strip. */
+.ulpin-app .city-header {
+  height: var(--ui-header-height);
+  min-height: var(--ui-header-height);
+  gap: 12px;
+  padding: 0 20px;
+  background: var(--ui-surface);
+  border-color: var(--ui-divider);
+  color: var(--ui-ink);
+  font-family: var(--ui-font-sans);
+  box-shadow: none;
+}
+.ulpin-app .city-brand { width: auto; }
+.ulpin-app .city-brand > span { font-size: 19px; letter-spacing: -.04em; gap: 8px; }
+.ulpin-app .city-brand small { display: inline; font-size: 9px; letter-spacing: .12em; }
+.ulpin-app .city-nav { margin: 0 0 0 12px; gap: 2px; flex-shrink: 0; }
+.ulpin-app .city-nav a { min-height: 40px; padding: 9px 12px; font-size: 13px; }
+.ulpin-app .city-nav a span { font-size: inherit; }
+.ulpin-app .city-nav a svg { display: none; }
+.ulpin-app .city-search { margin-left: auto; max-width: 330px; min-width: 130px; height: 36px; background: var(--ui-surface); border-color: var(--ui-line-control); color: var(--ui-ink-soft); }
+.ulpin-app .city-search input { font-family: var(--ui-font-sans) !important; font-size: 12px !important; color: var(--ui-ink) !important; }
+.ulpin-app .city-search input::placeholder { color: var(--ui-muted); }
+.ulpin-app .city-search-results,
+.ulpin-app .city-dataset-menu { background: var(--ui-surface); border-color: var(--ui-divider); color: var(--ui-ink); }
+.ulpin-app .city-dataset { max-width: 165px; }
+.ulpin-app .city-dataset > button,
+.ulpin-app .city-theme-toggle,
+.ulpin-app .city-header-actions button { min-height: 36px; padding: 7px 8px; background: var(--ui-surface); border: 1px solid var(--ui-line-control); border-radius: 5px; color: var(--ui-ink-soft); font-size: 12px; }
+.ulpin-app .city-dataset > button { max-width: 100%; }
+.ulpin-app .city-dataset > button span { max-width: 125px; }
+.ulpin-app .city-theme-toggle { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer; }
+.ulpin-app .city-snapshot-status { display: inline-flex; align-items: center; gap: 6px; color: var(--ui-ink-soft); font-size: 12px; white-space: nowrap; }
+.ulpin-app .city-snapshot-status .ui-dot { background: var(--ui-primary); }
+.ulpin-app .city-user-status { color: var(--ui-muted); font-size: 11px; white-space: nowrap; }
+.ulpin-app .city-header-actions button[aria-label="Local workspace status"] { width: 36px; min-width: 36px; justify-content: center; }
+.ulpin-app .city-header-actions button[aria-label="Local workspace status"] > span:not(.ui-dot) { display: none; }
+.ulpin-app .city-mobile-menu { width: 36px; height: 36px; background: var(--ui-surface); border-color: var(--ui-line-control); color: var(--ui-ink); }
+@media (max-width: 1250px) {
+  .ulpin-app .city-header { gap: 8px; padding: 0 14px; }
+  .ulpin-app .city-nav { margin-left: 2px; }
+  .ulpin-app .city-nav a { padding: 8px 7px; }
+  .ulpin-app .city-snapshot-status,
+  .ulpin-app .city-user-status,
+  .ulpin-app .city-theme-toggle span { display: none; }
+  .ulpin-app .city-dataset { max-width: 40px; }
+  .ulpin-app .city-dataset > button span,
+  .ulpin-app .city-dataset > button svg:last-child { display: none; }
+}
+@media (min-width: 761px) and (max-width: 900px) {
+  .ulpin-app .city-nav,
+  .ulpin-app .city-nav.is-open { display: flex; position: static; flex-direction: row; align-items: center; width: auto; padding: 0; background: none; border: 0; box-shadow: none; }
+  .ulpin-app .city-mobile-menu { display: none; }
+  .ulpin-app .city-search { min-width: 100px; }
+}
+@media (max-width: 760px) {
+  .ulpin-app .city-header { height: 56px; min-height: 56px; gap: 7px; padding: 0 10px; }
+  .ulpin-app .city-brand > span { font-size: 17px; }
+  .ulpin-app .city-brand small { display: none; }
+  .ulpin-app .city-nav { display: none; position: absolute; top: 55px; right: 10px; width: 210px; padding: 8px; background: var(--ui-surface); border: 1px solid var(--ui-divider); border-radius: 6px; box-shadow: 0 8px 28px #152b2533; }
+  .ulpin-app .city-nav.is-open { display: flex; flex-direction: column; align-items: stretch; }
+  .ulpin-app .city-nav a svg { display: block; }
+  .ulpin-app .city-search { min-width: 36px; flex: 1; padding: 0 8px; }
+  .ulpin-app .city-search input { font-size: 16px !important; }
+  .ulpin-app .city-search input::placeholder,
+  .ulpin-app .city-search kbd { color: transparent; display: none; }
+  .ulpin-app .city-dataset { max-width: 36px; }
+  .ulpin-app .city-dataset > button { padding: 7px; }
+  .ulpin-app .city-theme-toggle { padding: 7px; }
+  .ulpin-app .city-mobile-menu { display: flex; }
+  .ulpin-app .city-search-results { position: fixed; top: 56px; left: 10px; right: 10px; width: auto; }
+  .ulpin-app .city-dataset-menu { position: fixed; top: 56px; right: 10px; }
+}
