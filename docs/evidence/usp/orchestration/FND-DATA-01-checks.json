@@ -1,8 +1,8 @@
 {
   "schemaVersion": "ulpin-development-check/1",
   "assignmentId": "FND-DATA-01",
-  "codeCommit": "e0482809f12e11f9584e0d8f5bc72d194c429b44",
-  "runAt": "2026-09-25T00:35:59.109952+00:00",
+  "codeCommit": "5a4c7ec2f794e632a491e04c130b6f01fe483d1a",
+  "runAt": "2026-09-25T00:36:32.953934+00:00",
   "agent": {
     "id": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
     "product": "Codex",
@@ -11,34 +11,81 @@
   },
   "checks": [
     {
-      "command": "pnpm install --frozen-lockfile --offline",
+      "command": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "--tsconfig",
+        "apps/web/tsconfig.json",
+        "--test",
+        "tests/usp-contract-producers.test.ts",
+        "tests/usp-d1-import.test.ts",
+        "tests/usp-d1-pack.test.ts",
+        "tests/usp-data-pack.test.ts",
+        "tests/usp-external-scene.test.ts",
+        "tests/usp-foundation.test.ts"
+      ],
+      "startedAt": "2026-09-25T00:36:30.446503+00:00",
       "exitCode": 0,
-      "logSha256": "ef2ccb4b120617ddfb2917cfb0faa05ed9990a1f296d97eb9643d3aa6a0e97a4"
+      "outputSha256": "0eae790cbb3448b8bda7588a1cedc88769122d7dd4a4f7caeaf91afa942f658f",
+      "summary": [
+        "\u2139 tests 107",
+        "\u2139 suites 0",
+        "\u2139 pass 107",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 337.723416"
+      ]
     },
     {
-      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-data-pack.test.ts tests/usp-foundation.test.ts",
+      "command": [
+        "pnpm",
+        "typecheck"
+      ],
+      "startedAt": "2026-09-25T00:36:31.053963+00:00",
       "exitCode": 0,
-      "logSha256": "7c140de800f4546f05c72e2af4932f2e14daafbdc9d57158e41872281c853c12"
+      "outputSha256": "6226d528b09f5b5a8c4f146517398e2ae957e4699e86775213aba8c7d2840521",
+      "summary": [
+        "",
+        "> 3d-ulpin@ typecheck /Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
+        "> pnpm --filter @ulpin/web typecheck",
+        "",
+        "",
+        "> @ulpin/web@0.1.0 typecheck /Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin/apps/web",
+        "> tsc --noEmit",
+        ""
+      ]
     },
     {
-      "command": "pnpm typecheck",
+      "command": [
+        "python3",
+        "tests/usp-gf0-source-bundle.test.py"
+      ],
+      "startedAt": "2026-09-25T00:36:32.810005+00:00",
       "exitCode": 0,
-      "logSha256": "6226d528b09f5b5a8c4f146517398e2ae957e4699e86775213aba8c7d2840521"
+      "outputSha256": "80144f3bf12d071a1497821467ab02765712cb11da3f547a5e2b5cf79f938e9a",
+      "summary": [
+        "....",
+        "----------------------------------------------------------------------",
+        "Ran 4 tests in 0.007s",
+        "",
+        "OK"
+      ]
     },
     {
-      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-*.test.ts",
+      "command": [
+        "python3",
+        "docs/usp-agent-handoffs/tools/validate_handoffs.py"
+      ],
+      "startedAt": "2026-09-25T00:36:32.863085+00:00",
       "exitCode": 0,
-      "logSha256": "64eb22e20ba98a2dce9876111e2b4f94c4e0c07224bfa98f31e83001ac53a9d0"
-    },
-    {
-      "command": "python3 tests/usp-gf0-source-bundle.test.py",
-      "exitCode": 0,
-      "result": "4 tests passed"
-    },
-    {
-      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
-      "exitCode": 0,
-      "result": "Document consistency only"
+      "outputSha256": "a1c46c33f360ec4669db56db3856f1bcd4dd48bdfc19bf57e8148606502955ed",
+      "summary": [
+        "PASS: active document links/anchors, owners/tests, release DAG, baseline and next gate",
+        "Document consistency only; no application/runtime gate is passed by this validator."
+      ]
     }
   ],
   "limits": [
@@ -48,5 +95,6 @@
   ],
   "review": {
     "status": "pending_independent_review"
-  }
+  },
+  "implementationCommit": "e0482809f12e11f9584e0d8f5bc72d194c429b44"
 }
