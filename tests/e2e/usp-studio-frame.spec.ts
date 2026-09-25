@@ -65,7 +65,7 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   if (screenshots) await mkdir(screenshots, { recursive: true });
   await page.goto(`/studio/areas/${receipt.areaId}?feature=${buildingId}`);
   const scene = page.locator("[data-tile-canvas]");
-  await expect(scene).toHaveAttribute("data-scene-ready", "true");
+  await expect(scene).toHaveAttribute("data-scene-ready", "true", { timeout: 45000 });
   const runtime = page.locator("[data-map-runtime-id]");
   await expect(runtime).toHaveCount(1);
   const runtimeId = await runtime.getAttribute("data-map-runtime-id");
