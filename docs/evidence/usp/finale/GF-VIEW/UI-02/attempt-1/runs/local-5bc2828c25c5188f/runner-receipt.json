@@ -1,0 +1,1021 @@
+{
+  "schemaVersion": "usp-isolated-live/1",
+  "codeSha": "9495b36d8eed12cb7bf1fc05142a1c9468aeadac",
+  "scopeId": "local-5bc2828c25c5188f",
+  "result": "PASS",
+  "checks": [
+    {
+      "name": "dedicated-loopback-ports"
+    },
+    {
+      "name": "restored-db-and-originals",
+      "tables": 44,
+      "objects": 497
+    },
+    {
+      "name": "additive-migration-replay"
+    },
+    {
+      "name": "migrated-bundle-preservation-and-replay",
+      "bundleSha256": "d5b08aa68a86bae4e6b45c18cdf8c7f7f1f96087ee0d2d7b031d460c5efcfb07",
+      "insertedRows": 4440,
+      "uploadedObjects": 53
+    },
+    {
+      "name": "fnd-live-receipt",
+      "receipt": {
+        "schemaVersion": "usp-fnd-live/1",
+        "codeSha": "9495b36d8eed12cb7bf1fc05142a1c9468aeadac",
+        "environment": "local-disposable-isolation",
+        "data": "retained synthetic Nandan baseline; not full D0",
+        "status": "passed",
+        "siteId": "c65e220d-bb6c-4bb0-9fff-8c140789602b",
+        "sourceSha256": "56a25a4b687876612d2367afe3032562e91ababd6302cb6f8fd606041f64972a",
+        "manifestId": "ba3a757f-ef81-45ec-9d62-67d3f97ce860",
+        "manifestDigest": "d1a8165f10357e22e6a8afb85de3ccff060d74e1f68c414a5201cf3d45352595",
+        "targetId": "3588021e-af7b-457c-8bdb-5c6f849c027e",
+        "targetRevisionBefore": 1,
+        "targetRevisionAfter": 2,
+        "packetId": "673fbd6d-e067-4afe-9537-0889873725d1",
+        "packetSha256": "fcaaeaccb58a32419c5732edbbdc9012431a787860113556577d6430a0257942",
+        "packetStatus": "incomplete",
+        "commitReceiptId": "8f211dad-d171-4369-a4e2-bb282be18b55",
+        "event": {
+          "streamId": "registry:c65e220d-bb6c-4bb0-9fff-8c140789602b",
+          "sequence": "2"
+        },
+        "originalBytes": 6228,
+        "fencedJobId": "671ee0d5-f136-4ca5-9e31-21ac010048c8",
+        "fences": [
+          1,
+          2
+        ],
+        "cancelledJobId": "e8171320-8764-44e0-8eeb-3c4893ce2d55"
+      }
+    },
+    {
+      "name": "d0-replay-preservation",
+      "tables": {
+        "administrative_relationships": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "administrative_units": {
+          "rows": 3,
+          "sha256": "f9454ec611f8777450624875bf40544e32de65b746c425ef5a812c723d87c9c2"
+        },
+        "area_acquisitions": {
+          "rows": 1,
+          "sha256": "dc470e2ad0e84c81d4890a5cb78b0e4dc6d4806434d2a2fc5a3f3ba34c629f59"
+        },
+        "area_check_runs": {
+          "rows": 30,
+          "sha256": "74c538f037b0dc640e2a68548fcfae140b1cb05753844f56689c2e014efe9b9d"
+        },
+        "area_memberships": {
+          "rows": 3,
+          "sha256": "fe359af1433aef5a307347f924541d4eaf310c4338a086ab49176395a64e0f68"
+        },
+        "block_group_memberships": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "block_group_revisions": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "block_groups": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "building_preparation_revisions": {
+          "rows": 40,
+          "sha256": "8a841f8a11ef21c06485b5cceeab44009a4b5002ec4ef5d55d7ffd6f4a8e4960"
+        },
+        "building_preparations": {
+          "rows": 22,
+          "sha256": "edc044494a9abad8a9eecb95ab2f3c87d722b44225a8cb4d7b93bacf0df43eaf"
+        },
+        "cases": {
+          "rows": 221,
+          "sha256": "983bb375c25f3ba82663dc198566ea63462633e834817d3ca5cf0ec05858d819"
+        },
+        "dataset_bundle_installs": {
+          "rows": 1,
+          "sha256": "fc87a5a5eee17fe4e19596c3e9690d1eae38d62b74cf09e3a60e755ebb7873a5"
+        },
+        "events": {
+          "rows": 1358,
+          "sha256": "0c1ff694de08d135adc83be98ac7d37f2d3a4ab202c34f8b91090a2e84ba02b5"
+        },
+        "external_identifiers": {
+          "rows": 640,
+          "sha256": "bd934fc0e6ac371b796126246382be140c5169d6082b356866144c9cfca68523"
+        },
+        "identity_floors": {
+          "rows": 290,
+          "sha256": "6a6c21b141d913f806ea8b712e237d692fcbf422498e860093a612a945c61573"
+        },
+        "identity_spaces": {
+          "rows": 684,
+          "sha256": "e378cf6fcd354cc862186c53df52acfdea2c002305e1c6ebdc6201801401a92b"
+        },
+        "import_package_revisions": {
+          "rows": 1196,
+          "sha256": "15a25d5b6659d7078bc78f085ee8e6862d4b5a7957f4b74f33cc877f2c501df9"
+        },
+        "import_packages": {
+          "rows": 53,
+          "sha256": "b02d1a5293dfe35a9ac3279a885807d6fe930ab438c4575c728679c56caccadb"
+        },
+        "jobs": {
+          "rows": 583,
+          "sha256": "f507ec90597f27f5479d2c0997a066cc5912335a0e32aa3ea212372e8188dab3"
+        },
+        "map_areas": {
+          "rows": 14,
+          "sha256": "6237681cf12d03ac0bf8928bf7b286632567f927ec6e5d72f596c4a768e1db69"
+        },
+        "officer_ai_derivatives": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "officer_ai_runs": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "officer_investigation_revisions": {
+          "rows": 24,
+          "sha256": "8154a49d3007bbe5e79734cdef1579fa1001fac58f0abdfbb3992be618dba52b"
+        },
+        "officer_investigations": {
+          "rows": 7,
+          "sha256": "d8f6114ffd8ab8f79ec6d4e1b0b0139221b8874f5d83df886cbae1183a48148f"
+        },
+        "operations": {
+          "rows": 387,
+          "sha256": "f309c31d4e46d33894da5df918803149aa96ad14a90dedfcca657c4ad65885fe"
+        },
+        "physical_feature_revisions": {
+          "rows": 564,
+          "sha256": "1cece2fbeebf03e888a99cab48250929903818e240767052f13cc4da066813a9"
+        },
+        "physical_features": {
+          "rows": 564,
+          "sha256": "0b3bf3ba81e8cbaaa8aa32061b515a398f6421eaa82912f55973b82b6c7bcbdd"
+        },
+        "property_association_revisions": {
+          "rows": 19,
+          "sha256": "8f2b78e3899ef195461b2fae452606d87ef7ac0ff0de78ddf8868b7092dd6818"
+        },
+        "property_associations": {
+          "rows": 19,
+          "sha256": "70dc401282c7805726687409bcc2f9a8cb9bf0fdfc6cfeef7dd825b6a4cf2f90"
+        },
+        "registry_aliases": {
+          "rows": 276,
+          "sha256": "49472a1bfb302312139ae4f43f84b2b484ed7a63eea0e312ba86e9a67d03b544"
+        },
+        "registry_case_feature_mappings": {
+          "rows": 233,
+          "sha256": "c943b3c2e7742dee77eb31db6d8428840bd1c4a1beb7c404e97511d1024537df"
+        },
+        "registry_case_import_operations": {
+          "rows": 28,
+          "sha256": "f443d920b44d7cd3de56975163fe161efec95a4c327ca11e696f257cff74a7b6"
+        },
+        "registry_drafts": {
+          "rows": 107,
+          "sha256": "57d835d4c256ba640aae7ab37ead14ec51589f5c91f7d0b62195f415c9774ba1"
+        },
+        "registry_links": {
+          "rows": 413,
+          "sha256": "79b849857cc4bc2f4b7b7a168f6a7945452c8585a3bda4c6e2d5f99f4e8f6596"
+        },
+        "registry_records": {
+          "rows": 654,
+          "sha256": "dac7effd056293ee57445798cf227538865bf7165212a426e95edd9484b982d7"
+        },
+        "registry_reviews": {
+          "rows": 128,
+          "sha256": "dccec1487cc6bbe222486ea906a8ae74172e590d7760e79a89295df20e27cd87"
+        },
+        "registry_revisions": {
+          "rows": 343,
+          "sha256": "d0b7aec7092e9ef802c08f974cacfab585114510543343eb21a17fdb25977f99"
+        },
+        "registry_rights": {
+          "rows": 104,
+          "sha256": "2b8b2dfc7f016606ce5bf03dbcaf19e7af1d02817a4991bede639ba1c3901497"
+        },
+        "registry_sites": {
+          "rows": 14,
+          "sha256": "caedb0af361d04fea82e0605cd8f06937faf24ee72282d98516062a9ea495f6f"
+        },
+        "scene_asset_bindings": {
+          "rows": 10,
+          "sha256": "b36d57a4d573107d7c17b4c88eb2af02780c7f24bcf8f272a8f3a34714c393c9"
+        },
+        "snapshots": {
+          "rows": 153,
+          "sha256": "53aeced7b59cefb4728bf4faf680fe6f2e1c2ccb017cad7718e23bdbc0c4c3c1"
+        },
+        "source_feature_links": {
+          "rows": 564,
+          "sha256": "3a9474a097ae339f15539940226c7dda6e8833b78ed3b6f49aa27b30cabcbe07"
+        },
+        "sources": {
+          "rows": 553,
+          "sha256": "64bad0c5f4a40a3eb808dbc3befd41a97a60a4b2349d62fe8758fe10abd4e242"
+        },
+        "spatial_ml_batches": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ml_footprint_drafts": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ml_items": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ref_sys": {
+          "rows": 8500,
+          "sha256": "2bb4adb27d115545b9293dfee0e259ddb19e8d93762511ee018a06a3c4850824"
+        },
+        "unit_revisions": {
+          "rows": 1011,
+          "sha256": "2d96f6932d2ff8cf202105940c5ed89ca5da7339b5eaf755c156a160f2ba704e"
+        },
+        "units": {
+          "rows": 684,
+          "sha256": "6e6722f2082f4caaca3f07604aba43fa4ff3021301860ee486d003863a4efa8d"
+        },
+        "usp_command_receipts": {
+          "rows": 3,
+          "sha256": "5586a5dbdff670626fe903145c33bcbbbbd870cd8a935db1de33a8866febed9b"
+        },
+        "usp_job_attempts": {
+          "rows": 3,
+          "sha256": "a63a0f4165297aa68ad09a7b78d0e1f62ab5553627a6a46e1af6f98adecaa488"
+        },
+        "usp_job_metadata": {
+          "rows": 2,
+          "sha256": "fa86035a29631be05b09f450d91abaf08980c89634f6d1fc4dfb7be1accf3771"
+        },
+        "usp_migration_ledger": {
+          "rows": 2,
+          "sha256": "0bb3d26ed20fbd34146f5aa4cfe667d2f6e30eb67d43039c958741bc401a4bda"
+        },
+        "usp_outbox": {
+          "rows": 4,
+          "sha256": "8688a1455a795ed2f75774f65ead885c04aba30b3d1830c30fe0f894aeea2465"
+        },
+        "usp_outbox_streams": {
+          "rows": 3,
+          "sha256": "6b988a3ef89c463659730707dba1f4b03a9a7175839190831a1fcd828d34af13"
+        },
+        "usp_packets": {
+          "rows": 1,
+          "sha256": "d9403feabdd51683802471cd90b5069412f23d6218c2c485d7c0d09e994f5083"
+        },
+        "usp_project_codes": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_audit": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_reviews": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_state": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_lineage": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_releases": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_snapshot_bodies": {
+          "rows": 140,
+          "sha256": "3cad7b0c03e10ac6be1d7f70d70e6e221b017316cbf8ccc4c4f6aa083f63378d"
+        },
+        "usp_snapshots": {
+          "rows": 5,
+          "sha256": "5075fe80774b50146f24c56c4c5419f92dcd0d49226310afa29a5ca0bf51d48c"
+        }
+      }
+    },
+    {
+      "name": "d1-replay-preservation",
+      "tables": {
+        "administrative_relationships": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "administrative_units": {
+          "rows": 3,
+          "sha256": "f9454ec611f8777450624875bf40544e32de65b746c425ef5a812c723d87c9c2"
+        },
+        "area_acquisitions": {
+          "rows": 1,
+          "sha256": "dc470e2ad0e84c81d4890a5cb78b0e4dc6d4806434d2a2fc5a3f3ba34c629f59"
+        },
+        "area_check_runs": {
+          "rows": 30,
+          "sha256": "74c538f037b0dc640e2a68548fcfae140b1cb05753844f56689c2e014efe9b9d"
+        },
+        "area_memberships": {
+          "rows": 3,
+          "sha256": "fe359af1433aef5a307347f924541d4eaf310c4338a086ab49176395a64e0f68"
+        },
+        "block_group_memberships": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "block_group_revisions": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "block_groups": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "building_preparation_revisions": {
+          "rows": 40,
+          "sha256": "8a841f8a11ef21c06485b5cceeab44009a4b5002ec4ef5d55d7ffd6f4a8e4960"
+        },
+        "building_preparations": {
+          "rows": 22,
+          "sha256": "edc044494a9abad8a9eecb95ab2f3c87d722b44225a8cb4d7b93bacf0df43eaf"
+        },
+        "cases": {
+          "rows": 222,
+          "sha256": "817c44dba8c3df25c86ae3795ea407fe329c3ab9db9bd6c98a569267bf0d3e6c"
+        },
+        "dataset_bundle_installs": {
+          "rows": 1,
+          "sha256": "fc87a5a5eee17fe4e19596c3e9690d1eae38d62b74cf09e3a60e755ebb7873a5"
+        },
+        "events": {
+          "rows": 1358,
+          "sha256": "0c1ff694de08d135adc83be98ac7d37f2d3a4ab202c34f8b91090a2e84ba02b5"
+        },
+        "external_identifiers": {
+          "rows": 641,
+          "sha256": "f42ed7f08ad023392e87a4f1691e683514dbecb05c2fec632574065b92c81681"
+        },
+        "identity_floors": {
+          "rows": 290,
+          "sha256": "6a6c21b141d913f806ea8b712e237d692fcbf422498e860093a612a945c61573"
+        },
+        "identity_spaces": {
+          "rows": 684,
+          "sha256": "e378cf6fcd354cc862186c53df52acfdea2c002305e1c6ebdc6201801401a92b"
+        },
+        "import_package_revisions": {
+          "rows": 1200,
+          "sha256": "8aa3da6ae10a7cb7c3052bafdb984da2c38126b106c2542a97ddf6f10e882784"
+        },
+        "import_packages": {
+          "rows": 54,
+          "sha256": "cc6a525d7c6e2f8b4e11a2f81804c50466d27b7aca69460583cf360fae2c10b1"
+        },
+        "jobs": {
+          "rows": 583,
+          "sha256": "f507ec90597f27f5479d2c0997a066cc5912335a0e32aa3ea212372e8188dab3"
+        },
+        "map_areas": {
+          "rows": 15,
+          "sha256": "624e72937db9fc2d0d35556ae85b37f1dffe1a75707ce03267a567d3d92bf5aa"
+        },
+        "officer_ai_derivatives": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "officer_ai_runs": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "officer_investigation_revisions": {
+          "rows": 24,
+          "sha256": "8154a49d3007bbe5e79734cdef1579fa1001fac58f0abdfbb3992be618dba52b"
+        },
+        "officer_investigations": {
+          "rows": 7,
+          "sha256": "d8f6114ffd8ab8f79ec6d4e1b0b0139221b8874f5d83df886cbae1183a48148f"
+        },
+        "operations": {
+          "rows": 388,
+          "sha256": "9e80e81d47d4c73ec524169bc7d7556751b9abf18024cf5a87a0198d76ec2c91"
+        },
+        "physical_feature_revisions": {
+          "rows": 565,
+          "sha256": "984aa9da3535a6137304c9d8f25cab14340ea749251a7048ec98d75b37c95b53"
+        },
+        "physical_features": {
+          "rows": 565,
+          "sha256": "4b801511c05b9e8c3662e45ae3f1e39461fda01d4f71d2ec8ea98419de2a1878"
+        },
+        "property_association_revisions": {
+          "rows": 19,
+          "sha256": "8f2b78e3899ef195461b2fae452606d87ef7ac0ff0de78ddf8868b7092dd6818"
+        },
+        "property_associations": {
+          "rows": 19,
+          "sha256": "70dc401282c7805726687409bcc2f9a8cb9bf0fdfc6cfeef7dd825b6a4cf2f90"
+        },
+        "registry_aliases": {
+          "rows": 276,
+          "sha256": "49472a1bfb302312139ae4f43f84b2b484ed7a63eea0e312ba86e9a67d03b544"
+        },
+        "registry_case_feature_mappings": {
+          "rows": 233,
+          "sha256": "c943b3c2e7742dee77eb31db6d8428840bd1c4a1beb7c404e97511d1024537df"
+        },
+        "registry_case_import_operations": {
+          "rows": 28,
+          "sha256": "f443d920b44d7cd3de56975163fe161efec95a4c327ca11e696f257cff74a7b6"
+        },
+        "registry_drafts": {
+          "rows": 107,
+          "sha256": "57d835d4c256ba640aae7ab37ead14ec51589f5c91f7d0b62195f415c9774ba1"
+        },
+        "registry_links": {
+          "rows": 413,
+          "sha256": "79b849857cc4bc2f4b7b7a168f6a7945452c8585a3bda4c6e2d5f99f4e8f6596"
+        },
+        "registry_records": {
+          "rows": 655,
+          "sha256": "271f4b2c4eb8df394bdb8f3e43752d5902d8d43c732eda807cefbde0c3357871"
+        },
+        "registry_reviews": {
+          "rows": 128,
+          "sha256": "dccec1487cc6bbe222486ea906a8ae74172e590d7760e79a89295df20e27cd87"
+        },
+        "registry_revisions": {
+          "rows": 343,
+          "sha256": "d0b7aec7092e9ef802c08f974cacfab585114510543343eb21a17fdb25977f99"
+        },
+        "registry_rights": {
+          "rows": 104,
+          "sha256": "2b8b2dfc7f016606ce5bf03dbcaf19e7af1d02817a4991bede639ba1c3901497"
+        },
+        "registry_sites": {
+          "rows": 15,
+          "sha256": "718e81f096b39d160d6f29570da2d7e45b241ea15932f2e40f1c26f2cc344d9f"
+        },
+        "scene_asset_bindings": {
+          "rows": 10,
+          "sha256": "b36d57a4d573107d7c17b4c88eb2af02780c7f24bcf8f272a8f3a34714c393c9"
+        },
+        "snapshots": {
+          "rows": 153,
+          "sha256": "53aeced7b59cefb4728bf4faf680fe6f2e1c2ccb017cad7718e23bdbc0c4c3c1"
+        },
+        "source_feature_links": {
+          "rows": 565,
+          "sha256": "c1e3e8a26820d79ddde8b82cafd879856d6e39a868b03ca5cc17f5273245bb02"
+        },
+        "sources": {
+          "rows": 555,
+          "sha256": "6612768be91afea06c25fc24ab1ef7e94e58ab3fa1f06700b846e2c5ecf65cba"
+        },
+        "spatial_ml_batches": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ml_footprint_drafts": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ml_items": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ref_sys": {
+          "rows": 8500,
+          "sha256": "2bb4adb27d115545b9293dfee0e259ddb19e8d93762511ee018a06a3c4850824"
+        },
+        "unit_revisions": {
+          "rows": 1011,
+          "sha256": "2d96f6932d2ff8cf202105940c5ed89ca5da7339b5eaf755c156a160f2ba704e"
+        },
+        "units": {
+          "rows": 684,
+          "sha256": "6e6722f2082f4caaca3f07604aba43fa4ff3021301860ee486d003863a4efa8d"
+        },
+        "usp_command_receipts": {
+          "rows": 4,
+          "sha256": "bc5ef7e31d81486729304ca673c9bb0a52cf806e312b08d7dcb9881c1c0b58fd"
+        },
+        "usp_job_attempts": {
+          "rows": 3,
+          "sha256": "a63a0f4165297aa68ad09a7b78d0e1f62ab5553627a6a46e1af6f98adecaa488"
+        },
+        "usp_job_metadata": {
+          "rows": 2,
+          "sha256": "fa86035a29631be05b09f450d91abaf08980c89634f6d1fc4dfb7be1accf3771"
+        },
+        "usp_migration_ledger": {
+          "rows": 2,
+          "sha256": "0bb3d26ed20fbd34146f5aa4cfe667d2f6e30eb67d43039c958741bc401a4bda"
+        },
+        "usp_outbox": {
+          "rows": 4,
+          "sha256": "8688a1455a795ed2f75774f65ead885c04aba30b3d1830c30fe0f894aeea2465"
+        },
+        "usp_outbox_streams": {
+          "rows": 3,
+          "sha256": "6b988a3ef89c463659730707dba1f4b03a9a7175839190831a1fcd828d34af13"
+        },
+        "usp_packets": {
+          "rows": 2,
+          "sha256": "bd91ac6febd514179d6369ce6723e51fdc21422e614ac4d7559f8592963cb1c5"
+        },
+        "usp_project_codes": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_audit": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_reviews": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_state": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_lineage": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_releases": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_snapshot_bodies": {
+          "rows": 183,
+          "sha256": "5cdd2ee40b798eadbbf050fdfd3f048f9016a9c5e4b5e841dd23f4b2ff882e51"
+        },
+        "usp_snapshots": {
+          "rows": 6,
+          "sha256": "b33845bf7c5966d83b95a0ce2a594af4e000cf4a89d22f757bacfcf35128bdea"
+        }
+      }
+    },
+    {
+      "name": "ui-01-fonts-contrast-and-hindi",
+      "browser": "tests/e2e/usp-ui-foundations.spec.ts passed against production server"
+    },
+    {
+      "name": "ui-02-studio-frame",
+      "browser": "tests/e2e/usp-studio-frame.spec.ts passed against production server"
+    },
+    {
+      "name": "d0-v0-live-receipts",
+      "import": {
+        "schemaVersion": "usp-d0-import-receipt/1",
+        "packProfile": "golden-v1",
+        "areaId": "5ffe2810-4018-45f7-947d-5ac1f9006aaa",
+        "siteId": "5ffe2810-4018-45f7-947d-5ac1f9006aaa",
+        "physicalFeatures": {
+          "B-A": "d9d51590-3f1a-436b-94cf-6022f5d9f88b",
+          "B-B": "81d7cdc2-d18d-4b20-a08e-881d73468ca7",
+          "B-C": "bbe4a9c4-432e-48aa-b0a9-c2dcd8677128",
+          "P-A": "735861df-7184-4bf7-93f1-6fd932158138",
+          "P-B": "1dbddcd7-f9cb-432b-9b74-e8656f8e1f9b",
+          "P-C": "1f2e6ab6-4a17-42b3-829e-601f43505d6c",
+          "P-D": "25f72714-7432-4d76-b71f-42f7d51c76ec"
+        },
+        "records": {
+          "B-A": "d9d51590-3f1a-436b-94cf-6022f5d9f88b",
+          "property / B-A / Ground": "7210fc88-1a5c-42d5-9648-a5cf0e0f8094",
+          "property / B-A / Mezzanine": "98c9ae08-9d83-415a-a4fe-3ddd60ba7672",
+          "property / B-A / First": "86409bc3-cd6a-463b-9714-f419ff1dc8ee",
+          "property / B-A / Basement": "b89cd784-3689-4322-bdbc-e1ee32077a13",
+          "DUPLEX-D1-1": "49746c2d-a5e8-4ece-ab69-281b115b46a9",
+          "DUPLEX-D1-2": "ce65d216-c7a2-4a66-b857-f137bfdfcffa",
+          "U-A001": "9bba9b8e-549b-483a-beae-2ca761b63fda",
+          "U-A101": "ffee5a73-07c6-4ef2-996f-498400957232",
+          "U-A102": "eff0368e-5bef-4ff3-964e-036554747d81",
+          "U-AB01": "05f271c1-7a3e-42fb-bbfb-361ad8a2c0f3",
+          "B-B": "81d7cdc2-d18d-4b20-a08e-881d73468ca7",
+          "property / B-B / Ground": "cb8df93a-13a9-4071-b8c5-a637b24897c2",
+          "property / B-B / First": "aac6ef2f-d479-4e9d-832c-bbd874bd84e7",
+          "property / B-B / Second": "4bb1b2ec-446f-4d65-80b7-e6da19c00210",
+          "U-B001": "a3b5132a-47f4-49f6-a4d3-4a29ecd0fc88",
+          "U-B101": "e5718e28-9c20-4470-a773-69dd049890f0",
+          "U-B201": "56f611ae-100b-4ddb-8674-a9ffb7b9808f",
+          "B-C": "bbe4a9c4-432e-48aa-b0a9-c2dcd8677128",
+          "property / B-C / Ground": "7ec081dc-8685-4255-af54-e438d1ca47a2",
+          "property / B-C / First": "b16e59b5-ff45-441a-9eee-5bb81327b256",
+          "U-C001": "c3d8760f-a8a3-4cbc-9452-349c89a4c05b",
+          "U-C101": "b5c9c9c2-5a70-4605-b4af-524eb39bbc0f"
+        },
+        "sourceParts": {
+          "U-A101": [
+            {
+              "sourceRevisionId": "ccdc8ed6-8b1f-47ac-82e7-0f2aa359f8fd",
+              "locator": "line 3",
+              "partId": "c6287192-9067-4d1e-9484-4235fbbfe245"
+            },
+            {
+              "sourceRevisionId": "ccdc8ed6-8b1f-47ac-82e7-0f2aa359f8fd",
+              "locator": "line 5",
+              "partId": "79bb8dbb-1fbb-42b5-856d-574b404da377"
+            },
+            {
+              "sourceRevisionId": "aa509ef1-ddb6-45cb-a1d2-2701fd240e9b",
+              "locator": "CSV row 2",
+              "partId": "f6fc11a7-1379-41d8-96a2-b844f9f952c4"
+            },
+            {
+              "sourceRevisionId": "aa509ef1-ddb6-45cb-a1d2-2701fd240e9b",
+              "locator": "CSV row 4",
+              "partId": "d88f3712-3beb-40db-8a44-0720c617f0be"
+            }
+          ],
+          "U-A102": [
+            {
+              "sourceRevisionId": "ccdc8ed6-8b1f-47ac-82e7-0f2aa359f8fd",
+              "locator": "line 4",
+              "partId": "c6308a12-bc25-4df7-abf9-89b9dfa9d0fc"
+            },
+            {
+              "sourceRevisionId": "ccdc8ed6-8b1f-47ac-82e7-0f2aa359f8fd",
+              "locator": "line 5",
+              "partId": "79bb8dbb-1fbb-42b5-856d-574b404da377"
+            },
+            {
+              "sourceRevisionId": "aa509ef1-ddb6-45cb-a1d2-2701fd240e9b",
+              "locator": "CSV row 3",
+              "partId": "9336899b-6429-4467-9b54-0e961a1274fb"
+            },
+            {
+              "sourceRevisionId": "aa509ef1-ddb6-45cb-a1d2-2701fd240e9b",
+              "locator": "CSV row 4",
+              "partId": "d88f3712-3beb-40db-8a44-0720c617f0be"
+            }
+          ]
+        },
+        "originalHashes": {
+          "scenario.json": "89e63c8f551570bac2b496cea02898803c4cca1d74766e0a7cf724f2ada2b7be",
+          "buildings.arcgis.json": "8e8048356c8f1142a183d6e1d2ec6ee6cb779805d3010870bd5e67d15b550f0a",
+          "scenario-courtyard-draft.json": "26bd19cb5af77b2206a3ee20c2453ea6b40d53920a5c2fb9b8c2f77b918719d0",
+          "buildings-courtyard-draft.arcgis.json": "99ec4e3acf6133294b50cc86feb3ad2abd72d7374f2d73e4957d5d3423dba79a",
+          "parcels.arcgis.json": "385f6265c815dfb570aebb035ce8031785bc50aafa9152606d47e954aad651db",
+          "spaces-B-A.csv": "d0c2fb5c727d140639bd591045921ab883923b47365d6ce4bb754af6e3559d0e",
+          "spaces-B-B.csv": "ac63417f2d33f288f1f9fc003d6b4c2bf894a6755f67635a4802593191611887",
+          "spaces-B-C.csv": "6efcbe6a46d38eb742f4aea00b997271b08ef99e72a6232847e6f6e39839ba80",
+          "mixed-page-r1.txt": "eed2ba2e905c1c6981067eb41dc89479d7f81bc3ee2d4e53fb78c523ea10a655",
+          "mixed-page-r2.txt": "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8",
+          "mixed-rows-r1.csv": "f83b1077fc11d07bf6b7bf4e25e2f11ae073a97302e5d04b1f4e41c4d2524e26",
+          "mixed-rows-r2.csv": "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2"
+        },
+        "sourceHashesByRevisionId": {
+          "b619bf99-93a4-4638-81b6-f3136af4f143": "8e8048356c8f1142a183d6e1d2ec6ee6cb779805d3010870bd5e67d15b550f0a",
+          "85ef21f3-4489-4fc3-ac81-c43d3d0efa60": "061bd80d07863b6ddbd953de3c2f804d686bd44ad87ad73f4862c8323dff8643",
+          "a4b76b36-cae9-4141-b0b0-e151a926c1ee": "eed2ba2e905c1c6981067eb41dc89479d7f81bc3ee2d4e53fb78c523ea10a655",
+          "ccdc8ed6-8b1f-47ac-82e7-0f2aa359f8fd": "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8",
+          "f796ff81-f85d-41b5-a039-88fea274f017": "f83b1077fc11d07bf6b7bf4e25e2f11ae073a97302e5d04b1f4e41c4d2524e26",
+          "aa509ef1-ddb6-45cb-a1d2-2701fd240e9b": "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2",
+          "0b5780bf-117e-48cf-9ce0-ade6a05f6a64": "385f6265c815dfb570aebb035ce8031785bc50aafa9152606d47e954aad651db",
+          "f7d6aa3c-2237-47c8-951e-2b07e39c6e69": "9c4c551d22c0dc4d781d15e95c9dc65beb622785d04a1488d71172084c7e5886",
+          "902d9ae7-b1dc-4374-8715-1ed40d8c0ab6": "d0c2fb5c727d140639bd591045921ab883923b47365d6ce4bb754af6e3559d0e",
+          "4ae9bc97-20cc-4492-b2ac-dfeab7dd2281": "ac63417f2d33f288f1f9fc003d6b4c2bf894a6755f67635a4802593191611887",
+          "59398fad-2075-448f-bb6e-6788478c503b": "6efcbe6a46d38eb742f4aea00b997271b08ef99e72a6232847e6f6e39839ba80",
+          "cd086424-0580-422f-8199-74784852783d": "d827f728ccdc693f32915e00e779f791d5415c29accb4286283208a39811fa33"
+        },
+        "sources": [
+          {
+            "sourceRevisionId": "b619bf99-93a4-4638-81b6-f3136af4f143",
+            "familyId": "b619bf99-93a4-4638-81b6-f3136af4f143",
+            "revision": 1,
+            "name": "buildings.arcgis.json",
+            "sha256": "8e8048356c8f1142a183d6e1d2ec6ee6cb779805d3010870bd5e67d15b550f0a"
+          },
+          {
+            "sourceRevisionId": "85ef21f3-4489-4fc3-ac81-c43d3d0efa60",
+            "familyId": "a767b39d-b696-42aa-86a7-8a7afd18850d",
+            "revision": 1,
+            "name": "Cross Parcel House · reviewed detail derivative",
+            "sha256": "061bd80d07863b6ddbd953de3c2f804d686bd44ad87ad73f4862c8323dff8643"
+          },
+          {
+            "sourceRevisionId": "a4b76b36-cae9-4141-b0b0-e151a926c1ee",
+            "familyId": "a4b76b36-cae9-4141-b0b0-e151a926c1ee",
+            "revision": 1,
+            "name": "mixed-page-r1.txt",
+            "sha256": "eed2ba2e905c1c6981067eb41dc89479d7f81bc3ee2d4e53fb78c523ea10a655"
+          },
+          {
+            "sourceRevisionId": "ccdc8ed6-8b1f-47ac-82e7-0f2aa359f8fd",
+            "familyId": "a4b76b36-cae9-4141-b0b0-e151a926c1ee",
+            "revision": 2,
+            "name": "mixed-page-r2.txt",
+            "sha256": "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8"
+          },
+          {
+            "sourceRevisionId": "f796ff81-f85d-41b5-a039-88fea274f017",
+            "familyId": "f796ff81-f85d-41b5-a039-88fea274f017",
+            "revision": 1,
+            "name": "mixed-rows-r1.csv",
+            "sha256": "f83b1077fc11d07bf6b7bf4e25e2f11ae073a97302e5d04b1f4e41c4d2524e26"
+          },
+          {
+            "sourceRevisionId": "aa509ef1-ddb6-45cb-a1d2-2701fd240e9b",
+            "familyId": "f796ff81-f85d-41b5-a039-88fea274f017",
+            "revision": 2,
+            "name": "mixed-rows-r2.csv",
+            "sha256": "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2"
+          },
+          {
+            "sourceRevisionId": "0b5780bf-117e-48cf-9ce0-ade6a05f6a64",
+            "familyId": "0b5780bf-117e-48cf-9ce0-ade6a05f6a64",
+            "revision": 1,
+            "name": "parcels.arcgis.json",
+            "sha256": "385f6265c815dfb570aebb035ce8031785bc50aafa9152606d47e954aad651db"
+          },
+          {
+            "sourceRevisionId": "f7d6aa3c-2237-47c8-951e-2b07e39c6e69",
+            "familyId": "b40aa6d2-d7c9-42bc-91d0-7a43a38f6bc5",
+            "revision": 1,
+            "name": "Sawtooth House · reviewed detail derivative",
+            "sha256": "9c4c551d22c0dc4d781d15e95c9dc65beb622785d04a1488d71172084c7e5886"
+          },
+          {
+            "sourceRevisionId": "902d9ae7-b1dc-4374-8715-1ed40d8c0ab6",
+            "familyId": "902d9ae7-b1dc-4374-8715-1ed40d8c0ab6",
+            "revision": 1,
+            "name": "spaces-B-A.csv",
+            "sha256": "d0c2fb5c727d140639bd591045921ab883923b47365d6ce4bb754af6e3559d0e"
+          },
+          {
+            "sourceRevisionId": "4ae9bc97-20cc-4492-b2ac-dfeab7dd2281",
+            "familyId": "4ae9bc97-20cc-4492-b2ac-dfeab7dd2281",
+            "revision": 1,
+            "name": "spaces-B-B.csv",
+            "sha256": "ac63417f2d33f288f1f9fc003d6b4c2bf894a6755f67635a4802593191611887"
+          },
+          {
+            "sourceRevisionId": "59398fad-2075-448f-bb6e-6788478c503b",
+            "familyId": "59398fad-2075-448f-bb6e-6788478c503b",
+            "revision": 1,
+            "name": "spaces-B-C.csv",
+            "sha256": "6efcbe6a46d38eb742f4aea00b997271b08ef99e72a6232847e6f6e39839ba80"
+          },
+          {
+            "sourceRevisionId": "cd086424-0580-422f-8199-74784852783d",
+            "familyId": "f5e05805-b14a-45d4-b686-872e35689e82",
+            "revision": 1,
+            "name": "Terrace House · reviewed detail derivative",
+            "sha256": "d827f728ccdc693f32915e00e779f791d5415c29accb4286283208a39811fa33"
+          }
+        ],
+        "limitations": [
+          "Synthetic source only",
+          "Courtyard source retained as an unrecorded draft because the registry accepts one simple ring",
+          "Compound duplex and shared stair remain authored source truth; native preparation currently records separate schedule components"
+        ]
+      },
+      "live": {
+        "schemaVersion": "usp-d0-live/1",
+        "status": "passed",
+        "packProfile": "golden-v1",
+        "areaId": "5ffe2810-4018-45f7-947d-5ac1f9006aaa",
+        "siteId": "5ffe2810-4018-45f7-947d-5ac1f9006aaa",
+        "parcelScope": "same-area-and-world-suggestions; explicit associations retained",
+        "manifestId": "459d674d-ce24-4e01-a693-81a646b9fdbb",
+        "manifestDigest": "c2879d7c36ab5ac96c052db938507f48ab274ca2e70d1779d14079c1cfc48248",
+        "targetId": "ffee5a73-07c6-4ef2-996f-498400957232",
+        "targetRevision": 1,
+        "sourceOriginalSha256": [
+          "7e8bf0f4b94e680be09fa30a62a218f9c6deb8bcd987ede7b5eea0657da40cf8",
+          "cae048bc255032137323979029054cabb3544d2f9dc83bbf4e57c871ba117fd2"
+        ],
+        "selectedLocators": [
+          "line 3",
+          "line 5",
+          "CSV row 2",
+          "CSV row 4"
+        ],
+        "packetId": "c5d94a44-558f-447e-98f5-832ad8d8355d",
+        "packetSha256": "329841606f7ac5172f5396fb4af65aa246801d47c2fc6f9e7d09d2542619dcb2",
+        "packetStatus": "complete",
+        "artifactBytes": 1301,
+        "crossBuilding": "invalid_vertical_membership"
+      },
+      "browser": "tests/e2e/usp-product-journey.spec.ts passed against production server"
+    },
+    {
+      "name": "d1-local-source-display",
+      "import": {
+        "schemaVersion": "usp-d1-import-receipt/1",
+        "isolationId": "local-5bc2828c25c5188f",
+        "packageId": "d0dfb6f8-4d75-4790-84e5-24917bb0e8a9",
+        "areaId": "0617838f-a0f6-44f5-baf3-04cf1483c5cf",
+        "featureId": "39205bbf-6d70-4390-b509-a1c8288b1efb",
+        "sourceRevisionId": "978f885e-5118-4bf7-8693-641f0895ebc0",
+        "sourceSha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+        "sourceBuildingId": "NL.IMBAG.Pand.1655100000500568",
+        "derivedSourceRevisionId": "4c9ce514-0443-4f83-85e3-a6cea7fb6748",
+        "derivedGisSha256": "0f0d0e8a4ddd3a32ccf1b3cdfd1c19882424f6c4aa1145885a19b4403b747fd9",
+        "limitations": [
+          "Only the supplied LoD 0 horizontal footprint is imported as analytical 2D geometry; roof mesh remains in the retained original.",
+          "The current geometry-role vocabulary has no building_footprint value, so the footprint role is unknown.",
+          "NAP-to-ellipsoid/global placement is unqualified; do not infer an elevation correction or cross-source measurement.",
+          "No source-backed height, internal floors, units, parcel rights or analytical 3D mesh is available."
+        ]
+      },
+      "browser": "tests/e2e/usp-d1-journey.spec.ts passed against production server",
+      "limitations": [
+        "Local engineering display only; no qualified global NAP transform",
+        "No supplied interiors or analytical volume"
+      ]
+    },
+    {
+      "name": "gf-t15-project-identity",
+      "receipt": {
+        "schemaVersion": "usp-gf-t15-live/1",
+        "codeCommit": "9495b36d8eed12cb7bf1fc05142a1c9468aeadac",
+        "environment": "local-colima",
+        "scopeId": "d972a0a9-ee66-4b56-af65-7f5c404fceea",
+        "sourceSha256": "783719ada119a459da27816e97ae23db2741462575b664109b65b23bf17db4de",
+        "checks": [
+          "authored synthetic site, source and eight independent space UUIDs inserted in disposable database",
+          "two-writer same-record race, exact replay and changed-payload 409",
+          "canonical stored/HTTP/replayed receipts and changed access, policy or role rejection",
+          "stale manifest 409 before code reservation",
+          "stale version 409 and namespace unique-index savepoint retry",
+          "injected fault rolls back code and receipt; exact request subsequently succeeds",
+          "status-aware project-code resolver and locator string 422",
+          "pre-assignment and selected-target snapshots do not expose later or unrelated identities",
+          "A-only selection rejects unselected assignment, correction, split, merge and boundary reviews with no writes",
+          "already-prepared unselected review cannot commit; shared command validator rolls back cleanly",
+          "reviewed two-parcel duplex locator correction preserves code",
+          "unreviewed parcel stays NO-ANCHOR; reviewed primary appears without changing identity",
+          "identity mutation post-state snapshot retains exact target selection and persisted pin",
+          "literal assertion metadata, mixed-complete rejection and stale source/revision pins",
+          "unsupported 1-to-1 split returns 422 before mutation",
+          "atomic split and merge with fresh successor UUID/code, retirement and retained old resolver",
+          "error cancellation and terminal retirement retain nonreusable tombstones",
+          "boundary adjustment rejects unassigned, retired and cancelled recipients without writes",
+          "boundary adjustment preserves both codes, advances both revisions and records geometry/evidence",
+          "fully selected two-target boundary review and commit retain both post-state pins",
+          "reverse temporal boundary adjustment succeeds and never appears as identity successor",
+          "old receipt replays after later data revisions; altered captured identity fails hash check"
+        ],
+        "limitations": [
+          "Authored synthetic geometry and parcel labels; no official issuance, survey or ownership conclusion"
+        ],
+        "rows": [
+          {
+            "status": "assigned",
+            "n": 3
+          },
+          {
+            "status": "cancelled_error",
+            "n": 1
+          },
+          {
+            "status": "retired",
+            "n": 4
+          }
+        ],
+        "auditCount": 14,
+        "receiptCount": 14,
+        "representativeReceipts": [
+          "755bbbcd-6d21-4a58-97d5-4e0bfccc5675",
+          "969c4710-de17-4da3-aa02-db9bb5960b8d",
+          "8635688a-3303-4ed3-b163-7315276ac0ff"
+        ],
+        "status": "passed"
+      }
+    }
+  ],
+  "commands": [
+    {
+      "label": "source-sha",
+      "exitCode": 0,
+      "durationMs": 8
+    },
+    {
+      "label": "docker-context",
+      "exitCode": 0,
+      "durationMs": 69
+    },
+    {
+      "label": "existing-project",
+      "exitCode": 0,
+      "durationMs": 29
+    },
+    {
+      "label": "existing-volumes",
+      "exitCode": 0,
+      "durationMs": 13
+    },
+    {
+      "label": "services-start",
+      "exitCode": 0,
+      "durationMs": 12828
+    },
+    {
+      "label": "database-restore",
+      "exitCode": 0,
+      "durationMs": 865
+    },
+    {
+      "label": "migration",
+      "exitCode": 0,
+      "durationMs": 418
+    },
+    {
+      "label": "repeat-migration",
+      "exitCode": 0,
+      "durationMs": 263
+    },
+    {
+      "label": "usp-verify-live",
+      "exitCode": 0,
+      "durationMs": 11337
+    },
+    {
+      "label": "d0-authored-pack",
+      "exitCode": 0,
+      "durationMs": 446
+    },
+    {
+      "label": "d0-import-plan",
+      "exitCode": 0,
+      "durationMs": 462
+    },
+    {
+      "label": "d0-import-apply",
+      "exitCode": 0,
+      "durationMs": 16547
+    },
+    {
+      "label": "d0-import-replay",
+      "exitCode": 0,
+      "durationMs": 3659
+    },
+    {
+      "label": "d0-live-verify",
+      "exitCode": 0,
+      "durationMs": 972
+    },
+    {
+      "label": "d1-import-plan",
+      "exitCode": 0,
+      "durationMs": 334
+    },
+    {
+      "label": "d1-import-apply",
+      "exitCode": 0,
+      "durationMs": 3424
+    },
+    {
+      "label": "d1-import-replay",
+      "exitCode": 0,
+      "durationMs": 1825
+    },
+    {
+      "label": "ui-01-foundations-browser",
+      "exitCode": 0,
+      "durationMs": 9382
+    },
+    {
+      "label": "ui-02-studio-frame-browser",
+      "exitCode": 0,
+      "durationMs": 15203
+    },
+    {
+      "label": "d0-d1-studio-browser",
+      "exitCode": 0,
+      "durationMs": 47193
+    },
+    {
+      "label": "gf-t15-project-identity",
+      "exitCode": 0,
+      "durationMs": 12531
+    },
+    {
+      "label": "owned-services-cleanup",
+      "exitCode": 0,
+      "durationMs": 3070
+    }
+  ],
+  "limitation": "Synthetic D0 and retained Nandan baseline; one real D1 exterior in a local engineering display. Global placement, interior records, analytical mesh volume and public deployment are unqualified."
+}
