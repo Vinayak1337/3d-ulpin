@@ -1,0 +1,195 @@
+{
+  "schemaVersion": "gf-contract-run/1",
+  "codeCommit": "dfe0d36e078f696918c21a73cbc596347c480abb",
+  "scopeId": "local-dc385737012e5c49",
+  "result": "PASS",
+  "profile": "local isolated loopback Colima",
+  "commands": [
+    {
+      "name": "source-sha",
+      "exitCode": 0,
+      "durationMs": 13
+    },
+    {
+      "name": "docker-context",
+      "exitCode": 0,
+      "durationMs": 89
+    },
+    {
+      "name": "existing-project",
+      "exitCode": 0,
+      "durationMs": 46
+    },
+    {
+      "name": "existing-volumes",
+      "exitCode": 0,
+      "durationMs": 18
+    },
+    {
+      "name": "services-start",
+      "exitCode": 0,
+      "durationMs": 12962
+    },
+    {
+      "name": "database-restore",
+      "exitCode": 0,
+      "durationMs": 930
+    },
+    {
+      "name": "migration",
+      "exitCode": 0,
+      "durationMs": 531
+    },
+    {
+      "name": "repeat-migration",
+      "exitCode": 0,
+      "durationMs": 309
+    },
+    {
+      "name": "usp-verify-live",
+      "exitCode": 0,
+      "durationMs": 11398
+    },
+    {
+      "name": "d0-authored-pack",
+      "exitCode": 0,
+      "durationMs": 417
+    },
+    {
+      "name": "d0-import-plan",
+      "exitCode": 0,
+      "durationMs": 861
+    },
+    {
+      "name": "d0-import-apply",
+      "exitCode": 0,
+      "durationMs": 17108
+    },
+    {
+      "name": "d0-import-replay",
+      "exitCode": 0,
+      "durationMs": 3718
+    },
+    {
+      "name": "d0-live-verify",
+      "exitCode": 0,
+      "durationMs": 1008
+    },
+    {
+      "name": "d1-import-plan",
+      "exitCode": 0,
+      "durationMs": 332
+    },
+    {
+      "name": "d1-import-apply",
+      "exitCode": 0,
+      "durationMs": 2066
+    },
+    {
+      "name": "d1-import-replay",
+      "exitCode": 0,
+      "durationMs": 1704
+    },
+    {
+      "name": "d0-d1-studio-browser",
+      "exitCode": 0,
+      "durationMs": 47975
+    },
+    {
+      "name": "owned-services-cleanup",
+      "exitCode": 0,
+      "durationMs": 3241
+    }
+  ],
+  "checks": [
+    "dedicated-loopback-ports",
+    "restored-db-and-originals",
+    "additive-migration-replay",
+    "migrated-bundle-preservation-and-replay",
+    "fnd-live-receipt",
+    "d0-replay-preservation",
+    "d1-replay-preservation",
+    "d0-v0-live-receipts",
+    "d1-local-source-display"
+  ],
+  "sourceHashes": {
+    "d0ManifestSha256": "2be6119d9bac27c5f1ce273ab1aad093ff623e2a4ff72c13892e0d43c70a619f",
+    "d1ManifestSha256": "1cf9ebb88700669c3eb64e6b7a55c5edd7a176c44d7ecce63b188a0767250b71",
+    "d1OriginalSha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+    "repositoryManifestSha256": "ce083a3cd5ae6b0280c343f7d7ec55534c05ba3287481b0c7fcdccc11687c556"
+  },
+  "fndLive": {
+    "status": "passed",
+    "codeSha": "dfe0d36e078f696918c21a73cbc596347c480abb",
+    "sourceSha256": "56a25a4b687876612d2367afe3032562e91ababd6302cb6f8fd606041f64972a",
+    "manifestDigest": "6084ff0580419006a7fa867307fe6fb660eb5fee90b80b2bd67de98d129269e8",
+    "packetSha256": "fcaaeaccb58a32419c5732edbbdc9012431a787860113556577d6430a0257942",
+    "fences": [
+      1,
+      2
+    ]
+  },
+  "d0": {
+    "importProfile": "golden-v1",
+    "originalCount": 12,
+    "sourceCount": 12,
+    "liveStatus": "passed",
+    "packetStatus": "complete",
+    "packetSha256": "460c964bb85af2ebf13adc33c028f2932aa3e72825fe4e42a7af4fb8403df9e9",
+    "selectedLocators": [
+      "line 3",
+      "line 5",
+      "CSV row 2",
+      "CSV row 4"
+    ],
+    "crossBuilding": "invalid_vertical_membership",
+    "limitations": [
+      "Synthetic source only",
+      "Courtyard source retained as an unrecorded draft because the registry accepts one simple ring",
+      "Compound duplex and shared stair remain authored source truth; native preparation currently records separate schedule components"
+    ]
+  },
+  "d1": {
+    "sourceSha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+    "sourceBuildingId": "NL.IMBAG.Pand.1655100000500568",
+    "limitations": [
+      "Only the supplied LoD 0 horizontal footprint is imported as analytical 2D geometry; roof mesh remains in the retained original.",
+      "The current geometry-role vocabulary has no building_footprint value, so the footprint role is unknown.",
+      "NAP-to-ellipsoid/global placement is unqualified; do not infer an elevation correction or cross-source measurement.",
+      "No source-backed height, internal floors, units, parcel rights or analytical 3D mesh is available."
+    ]
+  },
+  "browser": {
+    "stats": {
+      "startTime": "2026-09-25T00:01:46.211Z",
+      "duration": 47139.492,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "tests": [
+      {
+        "title": "real D1 roof keeps source identity and absent interiors in the shared Studio map",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "D0 Studio selection compiles exact PACK0 and reopens its saved receipt",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "D0 map navigation, supplied levels and building switches preserve exact records",
+        "results": [
+          "passed"
+        ]
+      }
+    ]
+  },
+  "limitations": "Synthetic D0 and retained Nandan baseline; one real D1 exterior in a local engineering display. Global placement, interior records, analytical mesh volume and public deployment are unqualified.",
+  "rawReceiptSha256": "9b9804993307d686996ca18a9fdca4689da66b992eb1b50921625abd52304e88",
+  "rawBrowserReportSha256": "d9b259e927490611a6d7199da1543a84d559fc8459489dffece44d39f5a6f288"
+}

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "gf-contract-artifacts/1",
+  "files": {
+    "inventory.json": "27d3d4e36822583e200b7ab37e623ae0a5099aedf2fd642b76bd626b3d547487",
+    "run-summary.json": "6db39da0c2714b490702674ac3e597e15ee11546f1666f636e3a686c7bd00742",
+    "d0-packet-reloaded.png": "6105eceb95a304ff5a9199ad64f5138583b1fb1ad5a2a48e5237a5dffd7607c5",
+    "d0-neighbourhood-desktop.png": "617a392b3dc615a23507fc7e171d7510f0d314e05aca3e5d4e41403a0e8493ac",
+    "d1-roof-desktop.png": "2172e22b009b0aee60e651b8834a75db6840e9d40aeb36b87dd05fea0c17f40c"
+  }
+}
