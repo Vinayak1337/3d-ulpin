@@ -77,6 +77,8 @@ try {
     assert.equal((await pool().query('SELECT usp_geometry_receipt_eligible($1,NULL,1,NULL,$2::jsonb) AS eligible',
       ['registry_record',JSON.stringify(metadata)])).rows[0].eligible,false);
   }
+  for (const metadata of [{geometryClass:'estimated'},{geometryClass:'illustrative'},{representation:'context_mesh'}])
+    assert.equal((await pool().query('SELECT usp_has_display_only_geometry($1::jsonb) AS blocked',[JSON.stringify(metadata)])).rows[0].blocked,true);
   checks.push({name:'sql-absent-metadata-label-only-context-mesh-fail-closed'});
 
   if (mode === 'retained') {
