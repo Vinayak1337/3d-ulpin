@@ -80,17 +80,20 @@ const icons = {
 export type IconName = keyof typeof icons;
 export function Icon({
   name,
-  size = 18,
+  size,
+  context = "studio",
   className = "",
 }: {
   name: IconName;
   size?: number;
+  context?: "studio" | "dense" | "portal";
   className?: string;
 }) {
   const Component = icons[name];
+  const resolvedSize = size ?? { studio: 20, dense: 16, portal: 24 }[context];
   return (
     <Component
-      size={size}
+      size={resolvedSize}
       weight="regular"
       aria-hidden="true"
       className={className}

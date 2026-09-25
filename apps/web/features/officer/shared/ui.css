@@ -4,8 +4,7 @@
   inset: 0;
   overflow: auto;
   isolation: isolate;
-  font-size: 14px;
-  --ui-header-height: 64px;
+  font-size: var(--ui-text-md);
 }
 .ulpin-app *,
 .ulpin-app *::before,
@@ -36,9 +35,9 @@
   max-width: 100%;
   min-height: 42px;
   color: var(--ui-ink);
-  background: white;
+  background: var(--ui-surface);
   padding: 10px 12px;
-  border: 1px solid var(--ui-divider);
+  border: 1px solid var(--ui-line-control);
   border-radius: 8px;
 }
 .ulpin-app :where(input[type="checkbox"], input[type="radio"]) {
@@ -83,8 +82,8 @@
   gap: 8px;
   min-height: 42px;
   padding: 9px 14px;
-  background: white;
-  border: 1px solid var(--ui-divider);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line-control);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 550;
@@ -97,12 +96,12 @@
 }
 .ulpin-app .ui-button:hover:not(:disabled) {
   background: var(--ui-surface-subtle);
-  border-color: #9cb4aa;
+  border-color: var(--ui-primary);
 }
 .ulpin-app .ui-button--primary {
   background: var(--ui-primary);
   border-color: var(--ui-primary);
-  color: white;
+  color: var(--ui-on-primary);
 }
 .ulpin-app .ui-button--primary:hover:not(:disabled) {
   background: var(--ui-primary-hover);
@@ -121,8 +120,8 @@
   gap: 5px;
   padding: 4px 8px;
   border-radius: 5px;
-  background: #edf1f1;
-  color: #56646a;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-ink-soft);
   font-size: 11px;
   line-height: 1.4;
   font-weight: 550;
@@ -146,7 +145,7 @@
 }
 .ulpin-app .ui-panel {
   min-width: 0;
-  background: white;
+  background: var(--ui-surface);
   border: 1px solid var(--ui-divider);
   border-radius: 12px;
   overflow: hidden;
@@ -177,7 +176,7 @@
   place-items: center;
   width: 50px;
   height: 50px;
-  color: #708b81;
+  color: var(--ui-primary);
   background: var(--ui-surface-subtle);
   border-radius: 14px;
 }
@@ -208,7 +207,7 @@
   max-height: 90dvh;
   border: 1px solid var(--ui-divider);
   border-radius: 16px;
-  background: white;
+  background: var(--ui-surface);
   color: var(--ui-ink);
   box-shadow: var(--ui-shadow-overlay);
 }
@@ -240,7 +239,7 @@
   gap: 5px;
   padding: 18px;
   background: var(--ui-surface-tint);
-  border: 1px solid #e6eeeb;
+  border: 1px solid var(--ui-divider);
   border-radius: 10px;
 }
 .ulpin-app .ui-stat span,
@@ -274,7 +273,7 @@
   padding: 10px 12px;
   border: 1px solid var(--ui-divider);
   border-radius: 8px;
-  background: #f4f7f3;
+  background: var(--ui-surface-tint);
   display: grid;
   gap: 4px;
   font-size: 12px;
@@ -308,17 +307,16 @@
 .ui-parcel-list-tabs button {
   border: 1px solid var(--ui-divider);
   border-radius: 6px;
-  background: white;
+  background: var(--ui-surface);
   padding: 6px 10px;
 }
 .ui-parcel-list-tabs button[aria-pressed="true"] {
   background: var(--ui-primary);
-  color: white;
+  color: var(--ui-on-primary);
 }
 .ui-record-ulpin {
   font:
-    10px ui-monospace,
-    monospace;
+    10px var(--ui-font-mono);
   overflow-wrap: anywhere;
   line-height: 1.5;
 }
