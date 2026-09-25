@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "gf0-swiss-observed/1",
+  "sourceRecord": "Zenodo 7070952 v1.0.0",
+  "rangeSha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+  "rangeBytes": 2097152,
+  "sampleSha256": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd",
+  "sampleBytes": 27052,
+  "sourceKey": {
+    "site_id": "127",
+    "building_id": "164",
+    "floor_id": "717"
+  },
+  "rowCount": 81,
+  "unitIds": [
+    "23024",
+    "23025"
+  ],
+  "entityTypeCounts": {
+    "separator": 51,
+    "feature": 12,
+    "opening": 12,
+    "area": 6
+  },
+  "geometryType": "POLYGON",
+  "horizontalCrs": null,
+  "coordinateUnit": null,
+  "sourceCompleteness": "unverified beyond observed range",
+  "note": "Observed source values, not a cadastral or independent ML oracle."
+}

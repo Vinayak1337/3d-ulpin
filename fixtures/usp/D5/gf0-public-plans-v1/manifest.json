@@ -1,0 +1,760 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D5",
+  "version": 1,
+  "profile": "gf0-public-plans-v1",
+  "description": "Bihar and Haryana public planned-drawing candidates. Original PDFs are outside Git with reuse/training permission unconfirmed.",
+  "assets": [
+    {
+      "id": "bihar-magnolia-sanctioned-layout.pdf",
+      "mediaType": "application/pdf",
+      "classification": "planned",
+      "origin": {
+        "kind": "external",
+        "url": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf"
+      },
+      "sourceVersion": "drawings V5-01 and V5-02 dated 08.06.21",
+      "attribution": "Bihar RERA / project submitter",
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": "drawing-relative FFL ±00; surveyed datum unknown",
+        "horizontalUnit": "feet/inches (drawing dimensions)",
+        "verticalUnit": "feet/inches (relative FFL)",
+        "sourceDate": "08.06.21 (drawing date)"
+      },
+      "content": {
+        "state": "unavailable",
+        "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Bihar RERA sanctioned Magnolia Residency drawing",
+        "sourceRelease": "drawings V5-01 and V5-02 dated 08.06.21",
+        "resourceId": "RERAP2311201700019-3",
+        "nativeIds": [
+          "V5-01",
+          "V5-02"
+        ],
+        "acquiredAt": "2026-09-25T00:38:59.574536Z",
+        "original": {
+          "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+          "bytes": 2455183
+        },
+        "parser": {
+          "name": "pypdf+Poppler visual inspection",
+          "version": "pypdf 6.16.2"
+        },
+        "heightType": "planned relative level annotations",
+        "benchmark": null,
+        "coverage": "visual pages 1-2 of 6; Villa Type 5 sheet with blank unit number",
+        "licenceFamily": null,
+        "trainingPermission": {
+          "state": "unconfirmed",
+          "reason": "Public PDF access does not establish ML training rights"
+        },
+        "purpose": "test_only",
+        "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "as_built_geometry",
+          "survey_control",
+          "verified_unit_association",
+          "title_or_ownership",
+          "redistribution_permission",
+          "training_permission"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    },
+    {
+      "id": "haryana-2831-basement-01.pdf",
+      "mediaType": "application/pdf",
+      "classification": "planned",
+      "origin": {
+        "kind": "external",
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c59456d263NDg2NTE="
+      },
+      "sourceVersion": "portal upload 29-08-2024",
+      "attribution": "Haryana RERA / project submitter",
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": "29-08-2024 (portal upload)"
+      },
+      "content": {
+        "state": "unavailable",
+        "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Haryana RERA 2831 uploaded basement drawing",
+        "sourceRelease": "portal upload 29-08-2024",
+        "resourceId": "2831",
+        "nativeIds": [
+          "BUILDING PLAN-BASEMENT-01"
+        ],
+        "acquiredAt": "2026-09-25T00:41:11.020005Z",
+        "original": {
+          "sha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49",
+          "bytes": 1711314
+        },
+        "parser": {
+          "name": "pypdf+Poppler visual inspection",
+          "version": "pypdf 6.16.2"
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "one basement drawing page visually reviewed",
+        "licenceFamily": null,
+        "trainingPermission": {
+          "state": "unconfirmed",
+          "reason": "Public PDF access does not establish ML training rights"
+        },
+        "purpose": "test_only",
+        "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "as_built_geometry",
+          "survey_control",
+          "verified_unit_association",
+          "title_or_ownership",
+          "redistribution_permission",
+          "training_permission"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    },
+    {
+      "id": "haryana-2831-tower3-plan1.pdf",
+      "mediaType": "application/pdf",
+      "classification": "planned",
+      "origin": {
+        "kind": "external",
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc="
+      },
+      "sourceVersion": "portal upload 29-08-2024",
+      "attribution": "Haryana RERA / project submitter",
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": "29-08-2024 (portal upload)"
+      },
+      "content": {
+        "state": "unavailable",
+        "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Haryana RERA 2831 uploaded tower drawing",
+        "sourceRelease": "portal upload 29-08-2024",
+        "resourceId": "2831",
+        "nativeIds": [
+          "TOWER-3 PLAN-1"
+        ],
+        "acquiredAt": "2026-09-25T00:41:16.696207Z",
+        "original": {
+          "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+          "bytes": 1655334
+        },
+        "parser": {
+          "name": "pypdf+Poppler visual inspection",
+          "version": "pypdf 6.16.2"
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "one Tower-3 plan drawing page visually reviewed",
+        "licenceFamily": null,
+        "trainingPermission": {
+          "state": "unconfirmed",
+          "reason": "Public PDF access does not establish ML training rights"
+        },
+        "purpose": "test_only",
+        "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "as_built_geometry",
+          "survey_control",
+          "verified_unit_association",
+          "title_or_ownership",
+          "redistribution_permission",
+          "training_permission"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    },
+    {
+      "id": "haryana-2831-tower3-section.pdf",
+      "mediaType": "application/pdf",
+      "classification": "planned",
+      "origin": {
+        "kind": "external",
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA="
+      },
+      "sourceVersion": "sheet Jan-2024; portal upload 29-08-2024",
+      "attribution": "Haryana RERA / project submitter",
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": "road ±0.000 as drawn; surveyed benchmark unknown",
+        "horizontalUnit": null,
+        "verticalUnit": "metres (drawn relative levels)",
+        "sourceDate": "Jan-2024 (sheet)"
+      },
+      "content": {
+        "state": "unavailable",
+        "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Haryana RERA 2831 uploaded tower section",
+        "sourceRelease": "sheet Jan-2024; portal upload 29-08-2024",
+        "resourceId": "2831",
+        "nativeIds": [
+          "TOWER-3 SECTION ELEVATION"
+        ],
+        "acquiredAt": "2026-09-25T00:43:08.042067Z",
+        "original": {
+          "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+          "bytes": 2448909
+        },
+        "parser": {
+          "name": "pypdf+Poppler visual inspection",
+          "version": "pypdf 6.16.2"
+        },
+        "heightType": "planned relative level annotations",
+        "benchmark": null,
+        "coverage": "one Tower-3 section/elevation visually reviewed",
+        "licenceFamily": null,
+        "trainingPermission": {
+          "state": "unconfirmed",
+          "reason": "Public PDF access does not establish ML training rights"
+        },
+        "purpose": "test_only",
+        "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "as_built_geometry",
+          "survey_control",
+          "verified_unit_association",
+          "title_or_ownership",
+          "redistribution_permission",
+          "training_permission"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    },
+    {
+      "id": "haryana-2079-last-approved.pdf",
+      "mediaType": "application/pdf",
+      "classification": "unknown",
+      "origin": {
+        "kind": "external",
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/f3a0fa0a26MzAwMTY="
+      },
+      "sourceVersion": "portal upload 28-06-2023",
+      "attribution": "Haryana RERA / project submitter",
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": "28-06-2023 (portal upload)"
+      },
+      "content": {
+        "state": "unavailable",
+        "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Haryana RERA 2079 uploaded attachment",
+        "sourceRelease": "portal upload 28-06-2023",
+        "resourceId": "2079",
+        "nativeIds": [
+          "A COMPLETE SET OF THE LAST APPROVED BUILDING PLANS"
+        ],
+        "acquiredAt": "2026-09-25T00:41:17.099850Z",
+        "original": {
+          "sha256": "a2ccde8e1d914c19e054b367c52ef5636cfd6e1410bd77617d9e1570f6895a18",
+          "bytes": 1517504
+        },
+        "parser": {
+          "name": "pypdf+Poppler visual inspection",
+          "version": "pypdf 6.16.2"
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "12-page PDF; first page preview only, remaining pages uninspected",
+        "licenceFamily": null,
+        "trainingPermission": {
+          "state": "unconfirmed",
+          "reason": "Public PDF access does not establish ML training rights"
+        },
+        "purpose": "test_only",
+        "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "as_built_geometry",
+          "survey_control",
+          "verified_unit_association",
+          "title_or_ownership",
+          "redistribution_permission",
+          "training_permission"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "not_run"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    },
+    {
+      "id": "expected.json",
+      "mediaType": "application/json",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "DATA-05 source inspection, 2026-09-25"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN DATA-05 bounded source record",
+      "permission": {
+        "state": "documented",
+        "reference": "Project-authored test metadata",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "expected.json",
+        "sha256": "2312534f3cb81e85868eb56420b83475ce61380c8e49da016bea9a7c39227318",
+        "bytes": 1726
+      },
+      "dependencies": [
+        "bihar-magnolia-sanctioned-layout.pdf",
+        "haryana-2831-basement-01.pdf",
+        "haryana-2831-tower3-plan1.pdf",
+        "haryana-2831-tower3-section.pdf",
+        "haryana-2079-last-approved.pdf"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Project-authored evidence"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+        },
+        "parsed": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "project-authored DATA-05 source observation",
+        "sourceRelease": "2026-09-25",
+        "resourceId": null,
+        "nativeIds": [],
+        "acquiredAt": "2026-09-25T00:47:29.577613Z",
+        "original": {
+          "sha256": "2312534f3cb81e85868eb56420b83475ce61380c8e49da016bea9a7c39227318",
+          "bytes": 1726
+        },
+        "parser": {
+          "name": "Python standard json",
+          "version": null
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "Only source observations named by the D5 pack",
+        "licenceFamily": "project-authored",
+        "trainingPermission": {
+          "state": "not_applicable",
+          "reason": "Authored source observation, not a training label"
+        },
+        "purpose": "authored_demo",
+        "privacy": "sanitized source metadata only",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "independent_numeric_oracle",
+          "source_permission"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    },
+    {
+      "id": "sample-manifest.csv",
+      "mediaType": "text/csv",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "DATA-05 source inspection, 2026-09-25"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN DATA-05 bounded source record",
+      "permission": {
+        "state": "documented",
+        "reference": "Project-authored test metadata",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "sample-manifest.csv",
+        "sha256": "33292ac8bb855f5aa1984e6a9286782f6a3caa275d64af9b0680dd26abe27be2",
+        "bytes": 1070
+      },
+      "dependencies": [
+        "bihar-magnolia-sanctioned-layout.pdf",
+        "haryana-2831-basement-01.pdf",
+        "haryana-2831-tower3-plan1.pdf",
+        "haryana-2831-tower3-section.pdf",
+        "haryana-2079-last-approved.pdf"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Project-authored evidence"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "project-authored DATA-05 source observation",
+        "sourceRelease": "2026-09-25",
+        "resourceId": null,
+        "nativeIds": [],
+        "acquiredAt": "2026-09-25T00:47:29.546214Z",
+        "original": {
+          "sha256": "33292ac8bb855f5aa1984e6a9286782f6a3caa275d64af9b0680dd26abe27be2",
+          "bytes": 1070
+        },
+        "parser": {
+          "name": "Python standard csv",
+          "version": null
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "Only source observations named by the D5 pack",
+        "licenceFamily": "project-authored",
+        "trainingPermission": {
+          "state": "not_applicable",
+          "reason": "Authored source observation, not a training label"
+        },
+        "purpose": "authored_demo",
+        "privacy": "sanitized source metadata only",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "independent_numeric_oracle",
+          "source_permission"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    }
+  ],
+  "expectedPath": "expected.json",
+  "expectedCapabilities": [
+    "source_document_acquisition",
+    "planned_drawing_literal_levels",
+    "separate_indian_candidates"
+  ],
+  "missingCapabilities": [
+    "verified_same_unit_plan_association",
+    "as_built_geometry",
+    "survey_control",
+    "rights",
+    "redistribution_permission"
+  ]
+}

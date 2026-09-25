@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "gf0-plan-acquisition/1",
+  "task": "DATA-05",
+  "externalDirectory": "/Users/vinayak/.codex/task-data/ulpin-data-05",
+  "requestPolicy": "One bounded public request per selected attachment; no login, CAPTCHA bypass, owner contact or access request.",
+  "bihar": {
+    "url": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+    "projectPage": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+    "httpStatus": 200,
+    "mediaType": "application/pdf",
+    "bytes": 2455183,
+    "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+    "acquiredAt": "2026-09-25T00:38:59.574536Z",
+    "permission": "unconfirmed: no source-specific reuse or training licence observed",
+    "privateFile": "bihar-magnolia-sanctioned-layout-original.pdf"
+  },
+  "haryana2831": {
+    "projectPage": "https://haryanarera.gov.in/view_project/project_preview_open/2831",
+    "portalUploadDate": "29-08-2024",
+    "attachmentAttempts": [
+      {"label": "BUILDING PLAN-BASEMENT-01", "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c59456d263NDg2NTE=", "httpStatus": 200, "bytes": 1711314, "sha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49", "acquiredAt": "2026-09-25T00:41:11.020005Z", "privateFile": "haryana-2831-basement-01.pdf"},
+      {"label": "BUILDING PLAN-TOWER-3 PLAN-1", "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc=", "httpStatus": 200, "bytes": 1655334, "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865", "acquiredAt": "2026-09-25T00:41:16.696207Z", "privateFile": "haryana-2831-tower3-plan1.pdf"},
+      {"label": "BUILDING PLAN-TOWER-3 SECTION ELEVATION", "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA=", "httpStatus": 200, "bytes": 2448909, "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b", "acquiredAt": "2026-09-25T00:43:08.042067Z", "privateFile": "haryana-2831-tower3-section.pdf"}
+    ],
+    "permission": "unconfirmed: public attachment access does not establish reuse or training terms"
+  },
+  "haryana2079": {
+    "projectPage": "https://haryanarera.gov.in/view_project/project_preview_open/2079",
+    "portalUploadDate": "28-06-2023",
+    "label": "A COMPLETE SET OF THE LAST APPROVED BUILDING PLANS",
+    "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/f3a0fa0a26MzAwMTY=",
+    "httpStatus": 200,
+    "bytes": 1517504,
+    "sha256": "a2ccde8e1d914c19e054b367c52ef5636cfd6e1410bd77617d9e1570f6895a18",
+    "acquiredAt": "2026-09-25T00:41:17.099850Z",
+    "permission": "unconfirmed",
+    "privateFile": "haryana-2079-last-approved.pdf"
+  },
+  "swiss": {
+    "recordUrl": "https://zenodo.org/records/7070952",
+    "apiUrl": "https://zenodo.org/api/records/7070952",
+    "apiSnapshotSha256": "ba5cde1ed1d240b0bf0390c8b180e0e4ff2484c79ff2f2ec26d72605ee5ed6bd",
+    "recordVersion": "1.0.0",
+    "doi": "10.5281/zenodo.7070952",
+    "publishedLicence": "CC BY 4.0 (Zenodo record API metadata.license.id)",
+    "publishedFile": "geometries.csv",
+    "publishedFileBytes": 792527191,
+    "publishedFileAdvertisedChecksum": "md5:2c78951982ba87f0a28ef6ca0724e48a",
+    "fileUrl": "https://zenodo.org/records/7070952/files/geometries.csv",
+    "rangeRequest": "bytes=0-2097151",
+    "httpStatus": 206,
+    "contentRange": "bytes 0-2097151/792527191",
+    "acquiredRangeBytes": 2097152,
+    "acquiredRangeSha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+    "acquiredAt": "2026-09-25T00:42:07.717811Z",
+    "privateRangeFile": "swiss-dwellings-geometries-range-0-2097151.bin",
+    "sampleSha256": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd",
+    "sampleBytes": 27052,
+    "limitations": "The acquired raw range is not the full published file. Full-file SHA-256 and completeness are unverified."
+  }
+}
