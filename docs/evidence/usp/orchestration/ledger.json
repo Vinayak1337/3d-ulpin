@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T17:41:44.012532+00:00",
+  "updatedAt": "2026-09-25T17:48:40.695281+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -1453,6 +1453,14 @@
           "scope": "Replace name-derived provenance and hard-coded evidence fallback with record-backed presentation and explicit missing/empty states; retain saved-source inspection. No storage, protected public evidence, renderer or analytical qualification changes.",
           "reason": "Worker traced saved map links to processing and register views which still infer provenance from names or substitute public ML evidence.",
           "confirmedAt": "2026-09-25T17:41:44.012532+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-runtime/map.js"
+          ],
+          "scope": "Exact-name display fix in displayName only, plus focused assertion in owned UI regression tests. Preserve safe rendering and existing absent-value behavior; no source normalization, records, geometry or renderer changes.",
+          "reason": "Saved-map displayName strips recorded label suffixes according to provenance-like words, altering source names. No conflicting active writer assigned.",
+          "confirmedAt": "2026-09-25T17:48:40.695281+00:00"
         }
       ]
     }
