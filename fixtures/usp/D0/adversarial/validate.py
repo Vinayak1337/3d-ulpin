@@ -113,13 +113,15 @@ def check_ifc(path: Path) -> dict:
     require("FILE_SCHEMA(('IFC4'));" in data and "ENDSEC;\nDATA;" in data, "not IFC4 DATA")
     entities = dict((int(identifier), body) for identifier, body in
                     re.findall(r"^#(\d+)=(IFC[A-Z0-9_]+\(.*\));$", data, re.MULTILINE))
-    require(len(entities) == 18 and len(set(entities)) == 18, "IFC entity count")
+    require(len(entities) == 25 and len(set(entities)) == 25, "IFC entity count")
     for body in entities.values():
         for ref in re.findall(r"#(\d+)", body):
             require(int(ref) in entities, "dangling IFC reference")
     require("IFCPROJECT(" in data and "IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.)" in data,
             "IFC project/units missing")
-    require("IFCBUILDINGSTOREY(" in data and "IFCSITE(" in data, "IFC hierarchy missing")
+    require("IFCBUILDINGSTOREY(" in data and "IFCSITE(" in data and
+            "IFCEXTRUDEDAREASOLID(" in data and "IFCPRODUCTDEFINITIONSHAPE(" in data,
+            "IFC local geometry/hierarchy missing")
     require("IFCMAPCONVERSION" not in data and "IFCPROJECTEDCRS" not in data,
             "IFC unexpectedly georeferenced")
     # Lexical sanity: every opening parenthesis closes outside quoted strings.
