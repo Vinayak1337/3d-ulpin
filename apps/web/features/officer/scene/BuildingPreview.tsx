@@ -91,7 +91,7 @@ export default function BuildingPreview({
       />
       <text x="14" y="165" fontSize="9" fill="#586b61">
         {feature.worldStatus === "synthetic"
-          ? "Fictional demonstration"
+          ? "Synthetic"
           : "Recorded exterior"}
       </text>
     </svg>

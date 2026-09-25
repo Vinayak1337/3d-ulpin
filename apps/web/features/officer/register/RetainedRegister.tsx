@@ -100,7 +100,7 @@ export default function RetainedRegister({
         </div>
         <Badge tone={detail.site.synthetic ? "warning" : "neutral"}>
           {detail.site.synthetic
-            ? "Fictional demonstration"
+            ? "Synthetic"
             : "Retained records"}
         </Badge>
       </header>
