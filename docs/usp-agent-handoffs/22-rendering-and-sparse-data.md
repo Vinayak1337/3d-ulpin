@@ -103,3 +103,8 @@ Add `levelKind`: `stilt`, `basement`, `lower_ground`, `ground`, `mezzanine`, `ty
 
 - "First useful local scene" = the first frame where at least one persisted object is pickable with the correct `recordId`, timed from the first `scene.manifest_published`. Report receipt-to-scene time separately.
 - Finale Studio routes add no new R3F or drei scene code and do not mount the `features/studio/scene/*` path (the old Studio shell that mounted it is retired by CLEANUP-01); that path is FP-RENDER material. Existing `three` helpers inside the spatial runtime, such as `features/spatial/reference-runtime/survey-layers.ts`, stay as they are.
+
+### Z5. Finale Enhanced view and real reference area (25 September 2026)
+
+[H30](30-reference-scene-and-incomplete-data.md) brings a bounded part of section C's Enhanced preview into `finale_v1`: deterministic scene dressing (DEM terrain, road ribbons, water and green fills, seeded trees, context massing by H30 G precedence, slab lines and window bands, sun and shadows) over a real Indian reference area (DATA-09), with the sync rules in H30 D. The no-change assertion in section G moves from full-product enrichment qualification into GF-SCENE for this bounded view. Learned height estimates and generative detail remain FP-ENRICH. Section D's poor-data table is extended by H30 E's fill / ask / park / reject decisions and question budget.
+

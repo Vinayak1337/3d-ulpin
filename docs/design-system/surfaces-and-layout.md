@@ -22,7 +22,7 @@ Routes are fixed by [H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) sec
 - The top bar has one navigation row only; the scope strip is context, not navigation.
 - A finding, packet or history panel replaces the inspector's foreground with a clear **Back**; do not stack panels.
 - **Workspace** (`/studio/properties/:buildingId/workspace`) is one canvas with stages **Add files → Review details → Check and record**, plus Tools (measure, calibrate, compare).
-- **Register** (`/studio/properties/:buildingId/register`) is a page at up to 1600 px: identity header once, the model with the level rail, the floors and units table, then tabs Shares, Documents, Checks, History.
+- **Register** (`/studio/properties/:buildingId/register`) is a page at up to 1600 px: identity header once, then the model with the level rail beside tabs **Units · Shares · Documents · Checks · History** (Units is the floors and units table; Documents is the evidence tab, `tab=evidence` in H99's URLs).
 - **Batches** (`/studio/work`) shows exact work items and next actions with at most three scope-qualified counts. There is no separate dashboard per feature.
 - Operator capabilities (AI provider state, offline profile) live in the existing workspace dialog, not a settings page.
 - Always offer **Back to map**, restoring camera and selection.
@@ -57,4 +57,4 @@ Routes are fixed by [H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) sec
 
 ## Admin Console (full_product)
 
-Not built for the finale. When built: same top bar with **Overview · Imports · Coverage · Users · Audit · Settings**; summary first, and every number opens the filtered list behind it; charts with one axis each and status colours only for status. In the finale, Batches carries the counts and the workspace dialog carries capability state.
+Not built for the finale. When built: same top bar with **Overview · Imports · Coverage · Users · Audit · Settings**; summary first, and every number opens the filtered list behind it; charts with one axis each, thin marks, a legend for two or more series and status colours only for status. In the finale, Batches carries the counts and the workspace dialog carries capability state.

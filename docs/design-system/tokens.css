@@ -79,7 +79,7 @@
   /* Type: Noto first, self-hosted (see fonts.css). Studio scale = existing --ui-text-* */
   --ui-font-sans: "Noto Sans", "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", sans-serif; /* existing, new value */
   --ui-font-display: "Noto Sans Display", "Noto Sans", system-ui, sans-serif;
-  --ui-font-mono: "Noto Sans Mono", ui-monospace, "SFMono-Regular", Consolas, monospace; /* existing, new value */
+  --ui-font-mono: "Noto Sans Mono", ui-monospace, "SF Mono", Menlo, monospace; /* existing, new value */
   --ui-text-xs: 12px;  /* existing: studio-label */
   --ui-text-sm: 13px;  /* existing: studio-body-sm, id-code, data-num */
   --ui-text-md: 15px;  /* existing: studio-body */
@@ -92,6 +92,11 @@
   --ui-portal-body: 16px;
   --ui-portal-body-sm: 14px;
   --ui-devanagari-line-height: 1.8;
+
+  /* Spacing: --ui-space-1..8 already exist (4px grid). These three are only for gaps between Portal page sections. */
+  --ui-space-10: 40px;
+  --ui-space-12: 48px;
+  --ui-space-16: 64px;
 
   /* Shape lock: 4 tags/map labels, 8 controls, 12 panels, 16 dialogs/card, pill badges */
   --ui-radius-4: 4px;

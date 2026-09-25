@@ -18,8 +18,8 @@ Build an evidence-linked 3D property workbench for SIH 26011. Give equal emphasi
 
 | Release | Build and demonstrate | Boundary |
 | --- | --- | --- |
-| `finale_v1` | Supported progressive ingestion/SSE; constrained agent assistance; proposed immutable IDs and official-anchor assertions; CityJSON plus sidecar exchange; domain-AI candidates; qualified vertical/shared/underground geometry; scoped UDS/carpet/deviation/topology/impact checks; evidence card and revision QR; measured rehearsal | One local operator, current shared Cesium path. Unsupported inputs/analyses remain explicit. No statutory issuance or production deployment claim. |
-| `full_product` | Concurrent schema learner and mid-import handover; separate privacy-preserving public request/evidence dashboard; grounded conversational assistance/MCP; qualified enrich-first previews; broader format coverage; measured renderer alternatives; large-scale and protected multiuser deployment | Retained commitments, not prerequisites for `finale_v1`. Each needs its own data, permission, accuracy and operational qualification. |
+| `finale_v1` | Supported progressive ingestion/SSE; constrained agent assistance; proposed immutable IDs and official-anchor assertions; CityJSON plus sidecar exchange; domain-AI candidates; qualified vertical/shared/underground geometry; scoped UDS/carpet/deviation/topology/impact checks; evidence card and revision QR; a real Indian reference area with a deterministic Enhanced view, and fill/ask/park/reject handling of incomplete input from every data family ([H30](30-reference-scene-and-incomplete-data.md)); measured rehearsal | One local operator, current shared Cesium path. Unsupported inputs/analyses remain explicit. No statutory issuance or production deployment claim. |
+| `full_product` | Concurrent schema learner and mid-import handover; separate privacy-preserving public request/evidence dashboard; grounded conversational assistance/MCP; qualified generative enrich-first previews (learned heights, AI façades and textures); broader format coverage beyond H30's finale families; measured renderer alternatives; large-scale and protected multiuser deployment | Retained commitments, not prerequisites for `finale_v1`. Each needs its own data, permission, accuracy and operational qualification. |
 
 The finale still includes real domain AI/ML: building extraction, plan segmentation, evidence-supported vertical delineation and explainable topology validation under H27. Schema learning is a separate full-product capability; exact mapping reuse must not be described as trained ML. The constrained ingestion agent proposes mappings and orchestrates allowlisted tools; deterministic processors and accountable review govern recording.
 
@@ -29,7 +29,7 @@ The finale still includes real domain AI/ML: building extraction, plan segmentat
 | --- | --- | --- |
 | GF0 — data and contracts | Inventory current implementation; select matched sources (Indian preferred, any permitted geography, labelled); pin pack manifests, coordinate/height metadata, parser/processor capabilities and shared contracts | GF-CONTRACT/GF-DATA: existing D0/D1 regression receipts rechecked; independent expected cases; authentic-data gaps named; no resets or invented survey facts |
 | GF1 — identify and exchange | H26 project ID allocator/lifecycle, supplied official assertions, semantic CityJSON + rights/provenance sidecar, LADM mapping | GF-T15 and GF-EXCHANGE: race/idempotency/lifecycle cases and independent loss-aware round trip |
-| GF2 — prove spaces | H14 progressive source path and constrained mapping agent; H27 domain-AI candidates and site model pipeline, floor/space review, qualified solids/prisms and reference operations; H16 shared rights | GF-AI, GF-AGENT, GF-T16–18, GF-RECOVERY and GF-VIEW; predictions versus truth, quantities versus source components, unsupported versus zero |
+| GF2 — prove spaces | H14 progressive source path and constrained mapping agent; H27 domain-AI candidates and site model pipeline, floor/space review, qualified solids/prisms and reference operations; H16 shared rights | GF-AI, GF-AGENT, GF-T16–18, GF-RECOVERY, GF-VIEW, GF-SCENE and GF-SUFFICIENCY; predictions versus truth, quantities versus source components, unsupported versus zero |
 | GF3 — govern | H11/H12 evidence/readiness, H15 exact-revision deviations/history and H17 dig/impact screening | GF-READY and GF-T19–20: independent control cases, coverage gaps and stale/unknown utility depth; no automatic illegality or safe-to-dig verdict |
 | GF4 — share scoped proof | H10 property-card subtype of existing packet service and access-checked exact-revision QR | GF-T21 and GF-PRIVACY; excluded-unit pixels/metadata absent, revoked/retired/wrong-unit tests, explicit local-only delivery mode and separately gated phone access |
 | GF5 — rehearse and report | Complete officer journey, known limitations, timed metrics, loss reports and PPT evidence | GF-REHEARSAL plus all finale test receipts, local browser rehearsal, honest measured/target/unavailable labels; no inferred runtime pass from this plan |
@@ -46,12 +46,13 @@ Next gate: **GF0**. Existing D0/PACK0 and D1 are the baseline to reuse, not a re
 | History, shared rights, impact | [H15](15-property-history-and-comparison.md), [H16](16-shared-spaces-and-vertical-rights.md), [H17](17-infrastructure-impact-screening.md) |
 | Deployment and governed Sarvam | [H19](19-india-contained-deployment.md), [H20](20-model-gateway-and-budget-pools.md) |
 | Renderer and data policy | [H22](22-rendering-and-sparse-data.md), [H23](23-india-data-and-delivery-plan.md) |
+| Real reference scene, incomplete data, every input family | [H30](30-reference-scene-and-incomplete-data.md) |
 | IDs, exchange and cadastral algorithms | [H26](26-identifiers-and-standard-exchange.md), [H27](27-domain-ai-and-cadastral-checks.md) |
 | Exact datasets, tests, acquisition | [H28](28-data-acquisition-and-finale-tests.md) |
 | Full product: public, assistance, learner, enrichment | [H13](13-citizen-evidence-and-corrections.md), [H18](18-grounded-assistance-and-mcp.md), [H21](21-concurrent-schema-learning.md), [H25](25-all-format-agent-and-ux4g.md) |
 | PPT, human prerequisites, audit history, UI | [H24](24-product-method-and-ppt.md), [H90](90-required-human-tasks.md), [H98](98-engineering-readiness-audit.md), [H99](99-ui-ux-and-integration.md) |
 | Task cards for any agent, review findings | [H29](29-agent-task-cards.md), [H97](97-review-findings-and-alignment.md) |
-| Design system, UI brief and specimen data | [Design system](../design-system/README.md), [UI brief](../design-system/ui-brief.md) |
+| Design system, UI brief and reference mockups | [Design system](../design-system/README.md), [UI brief](../design-system/ui-brief.md), [Officer Studio reference mockups](../design-system/mockups/officer-studio/README.md) (reference only, not production UI) |
 
 ## Fixed decisions
 
