@@ -55,6 +55,14 @@ Do not add mirrored implementation tests, broad speculative matrices, screenshot
 
 Use real unchanged official sources, data.gov.in first or the responsible issuer. Never invent operational records, dummy PII, geometry, documents/images or adverse source fixtures. Existing historic corpora are retained regression only. Missing official coverage stays unqualified; do not manufacture it or halt unrelated implementation.
 
+## Persistent local preview
+
+Reserve `http://127.0.0.1:3187` for the user-visible running preview; temporary verification must use other ports. Verify the port is free before first startup and never kill an unrelated listener. Keep this loopback-only server running after handoff until the user requests it stopped or maintenance requires a coordinated restart. No scheduler or polling automation is needed.
+
+The coding worker maintains a dedicated pinned preview worktree and owned isolated services using the existing guarded setup. Never serve from a worktree whose branch is changing during implementation. Preserve original/linked data and keep providers disabled. Record the served commit, URL, owned process/service identities and stop command without secrets. A candidate preview must be labelled as awaiting review; a running server is not release acceptance.
+
+Reuse this URL for manual testing and user status checks. Every manual handoff and relevant shipped-work update names the already-running URL and served revision. Refresh the same preview only at a safe checkpoint coordinated with the active tester; do not silently test one revision while changing its files. Do not tear down the persistent preview as part of unrelated test cleanup. User-entered preview changes are not permission to overwrite originals or discard the preview's state.
+
 ## Compact assignment and return
 
 Assignment: task ID/attempt; outcome and relevant plan sections; exact base/worktree; owned paths/exclusions; model/effort; a few acceptance checks; callback destination. Include only changes from standing rules.
