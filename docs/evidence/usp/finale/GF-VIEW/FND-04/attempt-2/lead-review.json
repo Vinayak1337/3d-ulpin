@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "ulpin-bounded-review/1",
+  "assignmentId": "FND-04",
+  "attempt": 1,
+  "reviewedAt": "2026-09-25T17:17:12.202780+00:00",
+  "reviewer": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "independence": "same_family"
+  },
+  "codeCommit": "6ddc4e17b322ebf44d0b173a5a94da63fbb24aef",
+  "resultCommit": "0d07d3442c3dcf983c23b645100c3bc65a58a976",
+  "verdict": "corrections_required_not_integrated",
+  "findings": [
+    {
+      "id": "FND04-R1",
+      "priority": "high",
+      "file": "apps/web/lib/server/usp/geometry.ts",
+      "finding": "geometryProjection preserves parsed metadata analyticEligible=true and qualification.state=qualified even when current SQL eligibility is false; only sufficiency changes. resolveRegistryTarget uses this path for stale/revoked source or qualification snapshots. Downstream readers can see contradictory current eligibility.",
+      "required": "Expose current effective eligibility as false when SQL eligibility is false; preserve historical annotation separately if needed with explicit historical status. Enforce projection consistency in schema and tests, including qualification revocation/supersession."
+    },
+    {
+      "id": "FND04-R2",
+      "priority": "high",
+      "file": "apps/web/lib/server/officer-investigations.ts",
+      "finding": "createInvestigation/updateInvestigation guard only building and record pins. exportRegister guards building/parcels/records but emits saved i.findings when those pass, without qualifying all finding.featureIds. An unqualified/revoked neighbouring participant can therefore still support saved findings/readiness/printable export. block export similarly emits latestCheck after checking only context.features and child records.",
+      "required": "Use a shared participant-complete qualification guard across finding creation/readiness/export/block-check projections. Match every finding participant to its exact checked/saved revision and current qualified state; missing participant pins or revoked qualification must abstain. Preserve historical findings for explicit inspection without treating them as current analytical findings. Cover selected building-qualified/neighbour-unqualified, participant removal/staleness and saved investigation scenarios using metadata/retained evidence within source policy."
+    }
+  ],
+  "checks": [
+    {
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-geometry.test.ts",
+      "exitCode": 0,
+      "tests": 8
+    },
+    {
+      "command": "Lead projection metadata reproduction with qualified annotation and eligible=false",
+      "exitCode": 0,
+      "observed": {
+        "analyticEligible": true,
+        "state": "qualified",
+        "sufficiency": "insufficient_for_spatial_reconstruction"
+      }
+    },
+    {
+      "command": "Lead SHA-256 verification against attempt-1 artifact manifest",
+      "exitCode": 0,
+      "artifacts": 18
+    }
+  ],
+  "limits": [
+    "No database replay performed by lead pending correctness fixes",
+    "Positive official-source analytical qualification unavailable",
+    "SQL/application deployment role boundary remains unqualified",
+    "No runtime/milestone gate acceptance"
+  ]
+}

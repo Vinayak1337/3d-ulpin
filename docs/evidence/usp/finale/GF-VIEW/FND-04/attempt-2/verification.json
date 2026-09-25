@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "ulpin-fnd04-implementation-verification/2",
+  "status": "passed_bounded_checks_pending_independent_review",
+  "assignmentId": "FND-04",
+  "attempt": 2,
+  "baseCommit": "1a6baf0d832117932c291fa6bfc08a536d8bd26e",
+  "attemptBaseCommit": "0d07d3442c3dcf983c23b645100c3bc65a58a976",
+  "codeCommit": "051584595fabbd1a42480233c7c2f7ea05984ca6",
+  "checkedAt": "2026-09-25T17:26:37.757504+00:00",
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "observedFrom": "latest worker session turn_context"
+  },
+  "filesSha256": {
+    "apps/web/lib/server/areas.ts": "bb62a85a9e4fb810b7c78b29be24c24d6224d6e22f4782f13d8940c8bae2514c",
+    "apps/web/lib/server/block-export.ts": "f63b3a96abd729a7222facbaf4e138556f477dfcfd6af249c6ffcf8b365f1aec",
+    "apps/web/lib/server/officer-investigations.ts": "c186b2ec454f0e41834090390900d629d9c25dca53c56c7d7a97f7987cb91a2d",
+    "apps/web/lib/server/officer.ts": "ac26a4c2efc244ac0fe890e15284d0208a8c9e2d3205a0c76bcd52fc8f00898b",
+    "apps/web/lib/server/registry.ts": "9be0d70c4f4daf3a6685f2aeb01baa2134fd03d412e5a2f80a6b3bbb782f9c4f",
+    "apps/web/lib/server/usp/commands.ts": "6a35ef2cd942e16bbdcea72122ebb073d67e81256944bbc21c0e95d63d1c30f4",
+    "apps/web/lib/server/usp/display-compiler.ts": "3912852431fcd184c2f495c193997f5bb4ec44e1269752726adbf120507e23bd",
+    "apps/web/lib/server/usp/external-scene.ts": "6be1592ae38783ed71d268fed8f26fa2e57a52436f679a723e8d5b1859912849",
+    "apps/web/lib/server/usp/finding-qualification.ts": "79dc2dac47144fb6a94e045c8b3a9cad53a827eb10c7eba1ad1d549ca5048b1e",
+    "apps/web/lib/server/usp/geometry-migration.ts": "cd26986e409e49abed78b57e2b4f57fd21b5e7f867c5d32f4fd55aaeb4c77d57",
+    "apps/web/lib/server/usp/geometry.ts": "bc8925ea5cab317a00026467d7a731a2db939ac62f18e2c6a2a7a506a4ad34a5",
+    "apps/web/lib/server/usp/migrations.ts": "18c4482da8d9b0317afecfcfbefa443058d17db6f7ac4a4389f09aa89b174954",
+    "apps/web/lib/server/usp/snapshots.ts": "97f375521e352e0aae1c9279df0b91ad6d2c23b51903576cdf41114dbe5d538a",
+    "packages/contracts/src/usp/domain.ts": "94c5ebf1f7b9160dcaaf931b6440435244e878df8935cb1e1c8ed4cac633de47",
+    "packages/contracts/src/usp/geometry.ts": "81b8acb168b213d33469ac8a14d984e86e49f9e279c3a030307d5c868ca6be38",
+    "packages/contracts/src/usp/index.ts": "80239bceeae192a293af28dfe8d9ac3e8e521014b0d8cf50cf17e9acdc98d18a",
+    "scripts/usp/gf/FND-04-isolated.mjs": "71559162052e9d04ea4f5a67f955508ea542acb57354ced2a77b5a9425dc4db5",
+    "scripts/usp/gf/FND-04-sql.ts": "e917cd500559d78b0fa0af08166840ef423a2ed3cf2ba88c921afeed0bb01ca8",
+    "tests/usp-finding-qualification.test.ts": "50c2ca079feee7a5c58e01a00e37f72b2e9e58edb1c69b026d393ff38e671d5f",
+    "tests/usp-geometry.test.ts": "25989b79778e9900628119035f04a1237f207e995be497064b2fcafb13eb1bfe"
+  },
+  "attempt2ChangedFiles": [
+    "apps/web/lib/server/block-export.ts",
+    "apps/web/lib/server/officer-investigations.ts",
+    "apps/web/lib/server/officer.ts",
+    "apps/web/lib/server/usp/finding-qualification.ts",
+    "apps/web/lib/server/usp/geometry.ts",
+    "packages/contracts/src/usp/geometry.ts",
+    "scripts/usp/gf/FND-04-sql.ts",
+    "tests/usp-finding-qualification.test.ts",
+    "tests/usp-geometry.test.ts"
+  ],
+  "leadReviewSha256": "b413d844934627bc505e06fce091eb71b29efe9f8915dde9cd197f807813f9ee",
+  "retainedRegression": {
+    "manifestSha256": "ce083a3cd5ae6b0280c343f7d7ec55534c05ba3287481b0c7fcdccc11687c556",
+    "databaseSha256": "92cbdeb930c7b20f9a90f7857f92787ebe2562c65892ad835a758bdf1b6cfda8",
+    "databaseBytes": 3939807,
+    "protectedTablesUnchanged": 44
+  },
+  "checks": {
+    "typecheck": {
+      "exitCode": 0
+    },
+    "uspTests": {
+      "passed": 124,
+      "failed": 0
+    },
+    "registryTests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "registerScopeTests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "freshSql": {
+      "passed": 21
+    },
+    "retainedSql": {
+      "passed": 24
+    }
+  },
+  "corrections": {
+    "FND04-R1": "Current projection explicitly unqualified on false SQL eligibility; schema rejects contradictory sufficiency or missing qualification revision.",
+    "FND04-R2": "Shared saved-participant/body/revision/source guard used by creation, readiness, current projections and register/block exports; explicit retained history preserved."
+  },
+  "runtimeGatesPassed": [],
+  "officialSourceAccuracyQualified": false,
+  "displayDerivativeRowsCreated": 0,
+  "runtimeModelHashes": [],
+  "limitations": [
+    "Qualified selected participant with unavailable or changed neighbour is metadata-only adapter coverage, not a positive operational qualification.",
+    "Actual retained saved-investigation and block export abstention was exercised with unchanged legacy records. All legacy analytical geometry remains unqualified.",
+    "No enabled qualifying processor or accepted real positive qualification receipt. No official-source analytical accuracy qualification.",
+    "No display derivative generation, asset byte round trip, renderer, provider, GPU, protected multiuser, UI/browser or deployment gate run.",
+    "Declaration acceptance remains not_assessed. Purpose-role ACL tests do not restrain privileged database administrators.",
+    "Independent cross-family or human milestone review remains outstanding; same-family worker checks are implementation evidence only."
+  ]
+}
