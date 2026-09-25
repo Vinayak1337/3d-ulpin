@@ -41,6 +41,21 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
         const [a, b] = [rgb(value(foreground)), rgb(value(background))].sort((x, y) => y - x);
         return (a + 0.05) / (b + 0.05);
       };
+      const actual = [
+        ['brand', '.city-brand', '.city-header'],
+        ['navigation', '.city-nav a', '.city-header'],
+        ['area heading', '.ui-block-title h1', '.ui-contextbar'],
+        ['source world', '.ui-map-world', '.ui-map-world'],
+        ['map mode', '.ui-map-mode button[aria-pressed="false"]', '.ui-map-mode'],
+        ['selected map mode', '.ui-map-mode button[aria-pressed="true"]', '.ui-map-mode button[aria-pressed="true"]'],
+        ['map status', '.ui-map-status', '.ui-map-status'],
+      ].map(([name, foreground, background]) => {
+        const foregroundElement = element.querySelector(foreground)!;
+        const backgroundElement = element.querySelector(background)!;
+        const a = rgb(getComputedStyle(foregroundElement).color);
+        const b = rgb(getComputedStyle(backgroundElement).backgroundColor);
+        return { name, ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
+      });
       return {
         text: [
           ['--ui-ink', '--ui-background'], ['--ui-ink', '--ui-surface'],
@@ -50,11 +65,13 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
           ['--ui-danger', '--ui-danger-soft'],
         ].map(([foreground, background]) => ({ foreground, background, ratio: contrast(foreground, background) })),
         control: contrast('--ui-line-control', '--ui-surface'),
+        actual,
         surface: value('--ui-surface'),
         computedFont: style.fontFamily,
       };
     });
     for (const pair of result.text) expect(pair.ratio, `${theme} ${pair.foreground} on ${pair.background}`).toBeGreaterThanOrEqual(4.5);
+    for (const pair of result.actual) expect(pair.ratio, `${theme} visible ${pair.name}`).toBeGreaterThanOrEqual(4.5);
     expect(result.control, `${theme} control outline`).toBeGreaterThanOrEqual(3);
     expect(result.computedFont).toContain('Noto Sans');
     if (screenshots) await page.screenshot({ path: join(screenshots, `studio-${theme}-desktop.png`) });
