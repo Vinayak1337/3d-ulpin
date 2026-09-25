@@ -4,11 +4,11 @@
 
 ## Adopted direction, 24 September 2026
 
-Read `docs/usp-agent-handoffs/00-README.md`, `release-plan.json`, H01/H02, H26–H28, the assigned feature and H99. Read `apps/web/AGENTS.md` before web changes. `docs/engineering-plan/CURRENT_WORK.md` names the current gate.
+Read `docs/usp-agent-handoffs/00-README.md`, `release-plan.json`, H01/H02, H26–H28, H30, the assigned feature and H99. Read `apps/web/AGENTS.md` before web changes. `docs/engineering-plan/CURRENT_WORK.md` names the current gate.
 
 The adopted finale release is `finale_v1`: Identify → Prove → Govern, with equal emphasis on adaptive evidence ingestion and the officer outcome. Start at the next gate declared above and follow GF0–GF5 in the manifest. Reuse the recorded D0/PACK0 and single-real-D1 milestone; do not restart historical F0/F1-min/V0. New finale capabilities remain pending until actual evidence passes.
 
-The separate `full_product` release retains concurrent schema learning, a privacy-preserving public request dashboard, MCP/conversational assistance, generative previews, renderer alternatives and scale. These are not finale prerequisites. H21 permits eligible training alongside imports when that workstream is implemented; a learner/cache is not a substitute for H27's domain AI.
+The separate `full_product` release retains concurrent schema learning, a privacy-preserving public request dashboard, MCP/conversational assistance, generative previews, renderer alternatives and scale. The finale's Enhanced view is deterministic scene dressing over real layers and records (H30), not generative preview. These are not finale prerequisites. H21 permits eligible training alongside imports when that workstream is implemented; a learner/cache is not a substitute for H27's domain AI.
 
 H23/H28 define Indian operational data, data.gov.in-first discovery and separate tests from any permitted geography. H22 retains the current Cesium D0/D1 runtime for the finale; future Three/R3F is evidence-gated. No Delhi-only prerequisite. No planned capability, catalogue or package declaration is an implementation pass.
 

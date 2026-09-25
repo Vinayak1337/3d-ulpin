@@ -71,6 +71,12 @@
       "items": {
         "$ref": "#/$defs/Count"
       }
+    },
+    "scene": {
+      "$ref": "#/$defs/Scene"
+    },
+    "contextSelection": {
+      "$ref": "#/$defs/ContextObject"
     }
   },
   "$defs": {
@@ -1837,6 +1843,17 @@
               "type": "boolean"
             }
           }
+        },
+        "questionBudget": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "needsInput": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SufficiencyDecision"
+          }
         }
       }
     },
@@ -1997,6 +2014,12 @@
         },
         "error": {
           "$ref": "#/$defs/ActionableError"
+        },
+        "sufficiency": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SufficiencyDecision"
+          }
         }
       }
     },
@@ -2262,6 +2285,151 @@
           "items": {
             "$ref": "#/$defs/Revision"
           }
+        }
+      }
+    },
+    "SufficiencyDecision": {
+      "x-source": "H30 E",
+      "description": "Per object and task. Never fills coordinates, CRS, vertical reference, analytic level elevations, unit boundaries, rights, identifiers, utility depths or control points.",
+      "type": "object",
+      "required": [
+        "object",
+        "task",
+        "outcome"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "object": {
+          "$ref": "#/$defs/Ref"
+        },
+        "task": {
+          "enum": [
+            "place",
+            "massing",
+            "floors",
+            "units",
+            "underground",
+            "context"
+          ]
+        },
+        "outcome": {
+          "enum": [
+            "complete",
+            "fill_display",
+            "ask",
+            "park",
+            "reject_for_3d"
+          ]
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unlocks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "What answering or supplying the missing item would enable"
+        },
+        "question": {
+          "$ref": "#/$defs/MappingQuestion"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "policyVersion": {
+          "type": "string"
+        }
+      }
+    },
+    "LayerAttribution": {
+      "type": "object",
+      "required": [
+        "layerId",
+        "text",
+        "licence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layerId": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "description": "Shown on the map while the layer is visible"
+        },
+        "licence": {
+          "type": "string"
+        },
+        "shareAlike": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Scene": {
+      "x-source": "H30 C–D, H22 Z1",
+      "type": "object",
+      "required": [
+        "view"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "view": {
+          "enum": [
+            "evidence",
+            "enhanced"
+          ]
+        },
+        "generatorVersion": {
+          "type": "string"
+        },
+        "seed": {
+          "type": "string"
+        },
+        "derivativeHash": {
+          "type": "string"
+        },
+        "stale": {
+          "type": "boolean",
+          "description": "Shows the 'Updating' marker while a derivative regenerates"
+        },
+        "attributions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LayerAttribution"
+          }
+        },
+        "sunAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ContextObject": {
+      "description": "A generated or context-layer object in the Enhanced view. Never a property; selection shows 'Context building · no record'.",
+      "type": "object",
+      "required": [
+        "displayId",
+        "layerId",
+        "geometry"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "displayId": {
+          "type": "string"
+        },
+        "layerId": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "string",
+          "description": "The deterministic rule that shaped it, for example the height tier used"
+        },
+        "geometry": {
+          "$ref": "#/$defs/GeometryRef"
         }
       }
     }
