@@ -8,7 +8,7 @@ export async function migrateUsp() {
       name text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now()
     )`);
     const name = 'usp_f1_min_001';
-    if ((await client.query('SELECT 1 FROM usp_migration_ledger WHERE name=$1', [name])).rowCount) return;
+    if (!(await client.query('SELECT 1 FROM usp_migration_ledger WHERE name=$1', [name])).rowCount) {
     await client.query(`
       CREATE TABLE IF NOT EXISTS usp_snapshots (
         id uuid PRIMARY KEY, scope_id uuid NOT NULL REFERENCES registry_sites(id),
@@ -61,5 +61,47 @@ export async function migrateUsp() {
       );
     `);
     await client.query('INSERT INTO usp_migration_ledger(name) VALUES($1)', [name]);
+    }
+    const identityName = 'usp_identity_001';
+    if ((await client.query('SELECT 1 FROM usp_migration_ledger WHERE name=$1', [identityName])).rowCount) return;
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS usp_project_identity_reviews (
+        id uuid PRIMARY KEY, scope_id uuid NOT NULL REFERENCES registry_sites(id),
+        manifest_id uuid NOT NULL REFERENCES usp_snapshots(id),
+        operation text NOT NULL, command_hash text NOT NULL,
+        reviewer_subject text NOT NULL, body jsonb NOT NULL,
+        consumed_at timestamptz, created_at timestamptz NOT NULL DEFAULT now()
+      );
+      CREATE TABLE IF NOT EXISTS usp_project_codes (
+        code text PRIMARY KEY CHECK (code ~ '^P3-[0-9A-HJKMNP-TV-Z]{20}-[0-9A-HJKMNP-TV-Z]{2}$'),
+        record_id uuid NOT NULL UNIQUE REFERENCES registry_records(id),
+        scope_id uuid NOT NULL REFERENCES registry_sites(id),
+        status text NOT NULL CHECK (status IN ('assigned','retired','cancelled_error')),
+        review_id uuid NOT NULL REFERENCES usp_project_identity_reviews(id),
+        assigned_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
+      );
+      CREATE TABLE IF NOT EXISTS usp_project_identity_state (
+        record_id uuid PRIMARY KEY REFERENCES registry_records(id),
+        location jsonb NOT NULL, review_id uuid NOT NULL REFERENCES usp_project_identity_reviews(id),
+        version integer NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS usp_project_identity_audit (
+        id uuid PRIMARY KEY, scope_id uuid NOT NULL REFERENCES registry_sites(id),
+        review_id uuid NOT NULL REFERENCES usp_project_identity_reviews(id),
+        operation text NOT NULL, record_ids uuid[] NOT NULL, receipt_id uuid NOT NULL,
+        body jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now()
+      );
+      CREATE TABLE IF NOT EXISTS usp_project_lineage (
+        id uuid PRIMARY KEY, scope_id uuid NOT NULL REFERENCES registry_sites(id),
+        kind text NOT NULL CHECK (kind IN ('split','merge','boundary_adjustment')),
+        predecessor_id uuid NOT NULL REFERENCES registry_records(id),
+        successor_id uuid NOT NULL REFERENCES registry_records(id),
+        review_id uuid NOT NULL REFERENCES usp_project_identity_reviews(id),
+        evidence jsonb NOT NULL, transferred_geometry jsonb,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        CHECK(predecessor_id <> successor_id), UNIQUE(kind,predecessor_id,successor_id,review_id)
+      );
+    `);
+    await client.query('INSERT INTO usp_migration_ledger(name) VALUES($1)', [identityName]);
   });
 }

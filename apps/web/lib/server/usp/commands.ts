@@ -11,7 +11,7 @@ import { AppError, conflict, notFound } from '../errors';
 import { commitRegistryReviewTx } from '../registry';
 import { assertLocalUsp, captureRegistrySnapshotTx } from './snapshots';
 
-async function scopedManifestTx(client: PoolClient, ctx: RequestContext, scope: CommitProposal['scope']) {
+export async function scopedManifestTx(client: PoolClient, ctx: RequestContext, scope: CommitProposal['scope']) {
   z.uuid().parse(scope.scopeId);
   z.uuid().parse(scope.manifestId);
   const row = (await client.query('SELECT body FROM usp_snapshots WHERE id=$1 AND digest=$2',
@@ -22,7 +22,7 @@ async function scopedManifestTx(client: PoolClient, ctx: RequestContext, scope: 
   return manifest;
 }
 
-async function requestReceiptTx(client: PoolClient, ctx: RequestContext, scopeKey: string,
+export async function requestReceiptTx(client: PoolClient, ctx: RequestContext, scopeKey: string,
   operation: string, requestKey: string, commandSha256: string) {
   const key = `${ctx.principal.subject}:${scopeKey}:${operation}:${requestKey}`;
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [key]);
