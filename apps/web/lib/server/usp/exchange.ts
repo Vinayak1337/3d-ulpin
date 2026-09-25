@@ -67,18 +67,34 @@ function mapping(records: ExchangeRecord[], cityObjects: Json, losses: Loss[]) {
 export function buildExchange(input: { scope: SnapshotScope; frame: { horizontal: string; vertical: string; unit: string };
   records: ExchangeRecord[]; sources: Source[]; licenceFamily: string | null }) {
   const losses: Loss[] = [], cityObjects: Json = {};
-  const byId = new Map(input.records.map(record => [record.id, record]));
   const sources = new Map(input.sources.map(source => [source.id, source]));
-  for (const record of input.records) {
+  // Decide visibility once. A withheld record cannot reappear through the sidecar or LADM report.
+  const allowedRecords = input.records.filter(record => {
     const body = record.body.body ?? record.body;
-    const type = objectType(body.kind);
-    if (!type) { losses.push({ objectId: record.id, field: 'kind', category: 'unsupported', reason: 'No P3-CJ/1 CityObject type' }); continue; }
     if (body.synthetic === true || record.sourceIds.length === 0) {
       losses.push({ objectId: record.id, field: 'sourceQualification', category: 'unsupported',
         reason: body.synthetic === true ? 'Historical synthetic record is not an official source'
           : 'No linked original source revision' });
-      continue;
+      return false;
     }
+    const referenced = record.sourceIds.map(id => sources.get(id));
+    if (referenced.some(source => !source)) {
+      losses.push({ objectId: record.id, field: 'sources', category: 'unsupported', reason: 'Exact source revision unavailable' });
+      return false;
+    }
+    const families = [...new Set(referenced.map(source => source?.licenceFamily).filter((s): s is string => !!s))];
+    if (input.licenceFamily && families.some(family => isShareAlike(family) && family !== input.licenceFamily)) {
+      losses.push({ objectId: record.id, field: 'licenceFamily', category: 'withheld', reason: 'Share-alike licence conflicts with export family' });
+      return false;
+    }
+    return true;
+  });
+  const byId = new Map(allowedRecords.map(record => [record.id, record]));
+  const allowedSourceIds = new Set(allowedRecords.flatMap(record => record.sourceIds));
+  for (const record of allowedRecords) {
+    const body = record.body.body ?? record.body;
+    const type = objectType(body.kind);
+    if (!type) { losses.push({ objectId: record.id, field: 'kind', category: 'unsupported', reason: 'No P3-CJ/1 CityObject type' }); continue; }
     const linked = (Array.isArray(body.links) ? body.links : []).filter((link: Json) =>
       (link.type === 'within' || link.type === 'floor') && byId.has(link.targetId));
     const parents = linked.filter((link: Json) => {
@@ -93,18 +109,10 @@ export function buildExchange(input: { scope: SnapshotScope; frame: { horizontal
       continue;
     }
     const referenced = record.sourceIds.map(id => sources.get(id));
-    if (referenced.some(source => !source)) {
-      losses.push({ objectId: record.id, field: 'sources', category: 'unsupported', reason: 'Exact source revision unavailable' });
-      continue;
-    }
     if (referenced.some(source => !source?.metadata.sourceAuthority && !source?.metadata.source_authority))
       losses.push({ objectId: record.id, field: 'sourceAuthority', category: 'unsupported',
         reason: 'Issuing authority is not recorded in this source revision; official-source qualification is unavailable' });
     const families = [...new Set(referenced.map(source => source?.licenceFamily).filter((s): s is string => !!s))];
-    if (input.licenceFamily && families.some(family => isShareAlike(family) && family !== input.licenceFamily)) {
-      losses.push({ objectId: record.id, field: 'licenceFamily', category: 'withheld', reason: 'Share-alike licence conflicts with export family' });
-      continue;
-    }
     if (families.length > 1) losses.push({ objectId: record.id, field: 'licenceFamily', category: 'unsupported',
       reason: 'Multiple source licence families; review compatibility before distribution' });
     if (referenced.some(source => !source?.licenceFamily)) losses.push({ objectId: record.id,
@@ -139,9 +147,10 @@ export function buildExchange(input: { scope: SnapshotScope; frame: { horizontal
     cityJsonEncoding: 'JSON.stringify UTF-8',
     access: 'private', codeNamespace: 'P3/1', frame: input.frame,
     exportLicenceFamily: input.licenceFamily,
-    records: input.records.map(record => ({ ...record, omittedFromCityJson: !cityObjects[record.id] })),
-    sources: input.sources.map(source => ({ ...source })), losses };
-  return { cityJson, sidecar, ladm: mapping(input.records, cityObjects, losses), losses };
+    requestedPins: input.records.map(record => record.pin),
+    records: allowedRecords.map(record => ({ ...record, omittedFromCityJson: !cityObjects[record.id] })),
+    sources: input.sources.filter(source => allowedSourceIds.has(source.id)).map(source => ({ ...source })), losses };
+  return { cityJson, sidecar, ladm: mapping(allowedRecords, cityObjects, losses), losses };
 }
 
 function validateCityJson(value: unknown, frame: { horizontal: string; vertical: string }) : asserts value is Json {
@@ -173,6 +182,36 @@ function validateCityJson(value: unknown, frame: { horizontal: string; vertical:
   }
 }
 
+function hierarchyConflicts(cityObjects: Json): Comparison[] {
+  const conflicts: Comparison[] = [];
+  for (const [id, object] of Object.entries(cityObjects)) {
+    const parents = object.parents;
+    if (object.type === 'Building') {
+      if (parents !== undefined) conflicts.push({ objectId: id, field: 'CityObject.parents', category: 'conflict',
+        detail: 'A Building cannot have a parent in this profile' });
+    } else if (!Array.isArray(parents) || parents.length !== 1 || typeof parents[0] !== 'string'
+      || !cityObjects[parents[0]] || (object.type === 'BuildingStorey' && cityObjects[parents[0]].type !== 'Building')
+      || (object.type === 'BuildingUnit' && !['Building','BuildingStorey'].includes(cityObjects[parents[0]].type))) {
+      conflicts.push({ objectId: id, field: 'CityObject.parents', category: 'conflict',
+        detail: 'The single required parent is absent or has an unsupported type' });
+    } else if (!Array.isArray(cityObjects[parents[0]].children)
+      || !cityObjects[parents[0]].children.includes(id)) {
+      conflicts.push({ objectId: id, field: 'CityObject.parents', category: 'conflict',
+        detail: 'The parent does not list this child' });
+    }
+    if (object.children !== undefined) {
+      if (!Array.isArray(object.children) || new Set(object.children).size !== object.children.length
+        || object.children.some((childId: unknown) => typeof childId !== 'string'
+          || !cityObjects[childId] || !Array.isArray(cityObjects[childId].parents)
+          || cityObjects[childId].parents.length !== 1 || cityObjects[childId].parents[0] !== id)) {
+        conflicts.push({ objectId: id, field: 'CityObject.children', category: 'conflict',
+          detail: 'Children must resolve uniquely and link back to this parent' });
+      }
+    }
+  }
+  return conflicts;
+}
+
 export function compareExchange(expected: ReturnType<typeof buildExchange>, suppliedCity: unknown,
   suppliedSidecar: unknown) {
   validateCityJson(suppliedCity, expected.sidecar.frame);
@@ -184,7 +223,8 @@ export function compareExchange(expected: ReturnType<typeof buildExchange>, supp
       || sidecar.cityJsonSha256 !== sha256(JSON.stringify(city)) || sidecar.access !== 'private'
       || sidecar.cityJsonEncoding !== 'JSON.stringify UTF-8'
       || sidecar.codeNamespace !== 'P3/1' || canonical(sidecar.frame) !== canonical(expected.sidecar.frame)
-      || sidecar.exportLicenceFamily !== expected.sidecar.exportLicenceFamily)
+      || sidecar.exportLicenceFamily !== expected.sidecar.exportLicenceFamily
+      || canonical(sidecar.requestedPins) !== canonical(expected.sidecar.requestedPins))
       throw new AppError(422, 'USP_EXCHANGE_BINDING', 'The sidecar does not bind to these CityJSON bytes and snapshot.');
     if (!Array.isArray(sidecar.sources) || sidecar.sources.length !== expected.sidecar.sources.length
       || sidecar.sources.some((source: unknown, i: number) => !shape(source)
@@ -197,6 +237,7 @@ export function compareExchange(expected: ReturnType<typeof buildExchange>, supp
   }
   const sidecar = suppliedSidecar as Json | null;
   const report: Comparison[] = [];
+  report.push(...hierarchyConflicts(city.CityObjects));
   if (sidecar && canonical(sidecar.losses) !== canonical(expected.losses))
     report.push({ objectId: null, field: 'sidecar.losses', category: 'conflict' });
   if (canonical(city.metadata) !== canonical(expected.cityJson.metadata))
@@ -204,6 +245,20 @@ export function compareExchange(expected: ReturnType<typeof buildExchange>, supp
   for (const id of Object.keys(city.CityObjects)) if (!expected.cityJson.CityObjects[id])
     report.push({ objectId: id, field: 'CityObject', category: 'conflict', detail: 'Unexpected object' });
   for (const record of expected.sidecar.records) {
+    // Sidecar facts are checked even when this profile has no CityObject representation.
+    const returned = sidecar?.records?.find((entry: Json) => entry?.id === record.id);
+    if (sidecar && canonical(returned) !== canonical(record))
+      report.push({ objectId: record.id, field: 'sidecar.record', category: 'conflict' });
+    for (const key of ['pin', 'bodySha256', 'sourceIds', 'licenceFamily', 'omittedFromCityJson'] as const)
+      report.push({ objectId: record.id, field: `sidecar.${key}`, category: !sidecar ? 'omitted_by_profile'
+        : canonical(record[key]) === canonical(returned?.[key]) ? 'exact' : 'conflict' });
+    for (const [key, value] of Object.entries(record.body)) report.push({ objectId: record.id,
+      field: `record.${key}`, category: !sidecar ? 'omitted_by_profile'
+        : !returned ? 'conflict' : canonical(value) === canonical(returned.body?.[key]) ? 'exact' : 'conflict' });
+    const capturedBody = record.body.body;
+    if (shape(capturedBody)) for (const [key, value] of Object.entries(capturedBody))
+      report.push({ objectId: record.id, field: `record.body.${key}`, category: !sidecar ? 'omitted_by_profile'
+        : !returned ? 'conflict' : canonical(value) === canonical(returned.body?.body?.[key]) ? 'exact' : 'conflict' });
     const object = city.CityObjects[record.id];
     const expectedObject = expected.cityJson.CityObjects[record.id];
     if (!expectedObject) {
@@ -211,20 +266,11 @@ export function compareExchange(expected: ReturnType<typeof buildExchange>, supp
       continue;
     }
     if (!object) { report.push({ objectId: record.id, field: 'CityObject', category: 'conflict' }); continue; }
-    for (const key of ['type', 'attributes', 'parents', 'geometry']) {
+    for (const key of ['type', 'attributes', 'parents', 'children', 'geometry']) {
       const a = expectedObject[key], b = object[key];
       report.push({ objectId: record.id, field: `CityObject.${key}`,
         category: canonical(a ?? null) === canonical(b ?? null) ? 'exact' : 'conflict' });
     }
-    const returned = sidecar?.records?.find((entry: Json) => entry?.id === record.id);
-    if (sidecar && canonical(returned) !== canonical(record))
-      report.push({ objectId: record.id, field: 'sidecar.record', category: 'conflict' });
-    for (const [key, value] of Object.entries(record.body)) report.push({ objectId: record.id,
-      field: `record.${key}`, category: !sidecar ? 'omitted_by_profile'
-        : !returned ? 'conflict' : canonical(value) === canonical(returned.body?.[key]) ? 'exact' : 'conflict' });
-    for (const key of ['sourceIds', 'licenceFamily']) report.push({ objectId: record.id,
-      field: key, category: !sidecar ? 'omitted_by_profile'
-        : canonical(record[key as keyof typeof record]) === canonical(returned?.[key]) ? 'exact' : 'conflict' });
   }
   for (const source of expected.sidecar.sources) report.push({ objectId: null,
     field: `source.${source.id}@${source.revision}.sha256`, category: sidecar ? 'exact' : 'omitted_by_profile' });
@@ -295,10 +341,11 @@ export async function compareCityJson(ctx: RequestContext, raw: unknown) {
   assertLocalUsp(ctx);
   const input = UspExchangeCompareSchema.parse(raw);
   if (!shape(input.cityJson.CityObjects)) throw new AppError(422, 'USP_EXCHANGE_CITYJSON', 'CityObjects are required.');
-  const ids = shape(input.sidecar) && Array.isArray(input.sidecar.records)
-    ? input.sidecar.records.map((record: unknown) => shape(record) ? record.id : null)
+  const ids = shape(input.sidecar) && Array.isArray(input.sidecar.requestedPins)
+    ? input.sidecar.requestedPins.map((pin: unknown) => shape(pin) && shape(pin.ref) ? pin.ref.id : null)
     : Object.keys(input.cityJson.CityObjects);
-  if (!ids.length || ids.length > 100 || ids.some(id => !uuid.safeParse(id).success))
+  if (!ids.length || ids.length > 100 || new Set(ids).size !== ids.length
+    || ids.some(id => !uuid.safeParse(id).success))
     throw new AppError(422, 'USP_EXCHANGE_TARGET', 'Choose 1 to 100 exact registry objects.');
   const manifest = await readManifest(ctx, input.scope);
   const pins = ids.map(id => manifest.members.find(member => member.pin.ref.namespace === 'registry_record' && member.pin.ref.id === id)?.pin);
