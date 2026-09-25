@@ -51,7 +51,8 @@ export async function readExternalScene(input: z.infer<typeof selection>): Promi
   if (!current || current.revision !== feature.revision || JSON.stringify(current.body) !== JSON.stringify(feature.body) ||
       currentSources.length !== 1 || currentSources[0].id !== source.id || currentSources[0].revision !== source.revision)
     fail(409, 'EXTERNAL_STALE', 'The source association changed. Reload its area.');
-  const geometryMetadata=UspGeometryMetadataSchema.parse({representation:'context_mesh',
+  // Preserve the source's semantic roof representation; display availability does not qualify analysis.
+  const geometryMetadata=UspGeometryMetadataSchema.parse({representation:'physical_semantic',
     geometryClass:'evidence_linked',analyticEligible:false,semanticLod:scene.lod,displayLevel:null,
     qualification:{state:'unqualified',reasons:['external_display_only','analytical_volume_unsupported']}});
   return { geometryMetadata, areaId: input.areaId, featureId: input.featureId, featureRevision: input.revision,
