@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T17:51:17.227118+00:00",
+  "updatedAt": "2026-09-25T18:13:01.675878+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -206,7 +206,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_UI-08",
+      "status": "assigned_UI-08_attempt_2",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1428,8 +1428,103 @@
         "Repository ui-design-check report required; use staged skill read-only from original checkout if absent on branch",
         "Relevant tests/typecheck/build guards plus fresh actual S1/S4/S5/S12 route captures where implemented; unavailable routes/data documented, no mock screenshots"
       ],
-      "status": "dispatched",
+      "status": "corrections_required_not_integrated",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/report.md",
+      "resultCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
+      "ownershipClarifications": [
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-workbench/ReferenceWorkbench.tsx",
+            "apps/web/features/spatial/reference-workbench/ImportReceipt.tsx",
+            "apps/web/app/studio/showcase/page.tsx",
+            "apps/web/lib/spatial-datasets.ts",
+            "apps/web/lib/work-queue.ts"
+          ],
+          "scope": "Remove bundled default/sample imports from reachable saved inspection; direct saved-record loading, explicit no-selection/loading/error states. Client library changes only if necessary for preserving saved URL routing; retain explicit legacy URL resolution without implicit sample fallback.",
+          "reason": "Showcase saved-record route currently selects demoDatasets[0] before record loading and exposes bundled sample imports. Preserve unique inspection while removing sample dependency.",
+          "confirmedAt": "2026-09-25T17:34:02.781758+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/dataset-processing/DatasetProcessing.tsx",
+            "apps/web/features/spatial/dataset-processing/Walkthrough.tsx",
+            "apps/web/features/spatial/reference-workbench/PropertyRegister.tsx"
+          ],
+          "scope": "Replace name-derived provenance and hard-coded evidence fallback with record-backed presentation and explicit missing/empty states; retain saved-source inspection. No storage, protected public evidence, renderer or analytical qualification changes.",
+          "reason": "Worker traced saved map links to processing and register views which still infer provenance from names or substitute public ML evidence.",
+          "confirmedAt": "2026-09-25T17:41:44.012532+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-runtime/map.js"
+          ],
+          "scope": "Exact-name display fix in displayName only, plus focused assertion in owned UI regression tests. Preserve safe rendering and existing absent-value behavior; no source normalization, records, geometry or renderer changes.",
+          "reason": "Saved-map displayName strips recorded label suffixes according to provenance-like words, altering source names. No conflicting active writer assigned.",
+          "confirmedAt": "2026-09-25T17:48:40.695281+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-import/source-normalizer.ts",
+            "apps/web/features/spatial/reference-runtime/map.js"
+          ],
+          "scope": "Wording only for the two surfaced resident/right validation errors and unqualified overlap inspector badge. Use Test fixture terminology tied to existing explicit synthetic classification, preserve all validation/status/normalization behavior. Geometry finding wording must not imply current analytical qualification.",
+          "reason": "Import errors surface banned fictional copy; local-overlap badge currently says Conflict detected despite absent analytical qualification.",
+          "confirmedAt": "2026-09-25T17:49:15.374997+00:00"
+        },
+        {
+          "paths": [
+            "scripts/usp/local-isolation.mjs",
+            "scripts/usp/ui/UI-08-isolated-preview.mjs",
+            "tests/usp-ui-preview-isolation.test.mjs",
+            "tests/e2e/usp-ui08-content.spec.ts"
+          ],
+          "scope": "Bounded read-only UI preview verification: explicit opt-in isolated preview profile on loopback3108 with existing nonce/context/database/bucket/secret/port checks preserved. Default profiles/build guard unchanged. Restore unchanged hash-pinned repository DB/object snapshot once into verified empty nonce-owned services; no seed/import/bundle install. Start owned Next dev in worker checkout only; capture actual available routes and clean up only owned processes/services.",
+          "reason": "Production build blocked by unrelated port3000 server; safe isolated preview can supply real UI evidence without changing protected services or data. Missing screenshots should not be declared unavoidable before trying this bounded route.",
+          "confirmedAt": "2026-09-25T17:51:17.227118+00:00"
+        }
+      ],
+      "testedCommit": "d8b95384bb802b3b1de121f650524aec21be7ab6",
+      "reviewRef": "docs/evidence/usp/orchestration/UI-08-attempt-1-review.json"
+    },
+    {
+      "assignmentId": "UI-08",
+      "attempt": 2,
+      "callbackId": "ulpin-UI-08-attempt-2",
+      "objective": "Remove hard-coded sample content and banned provenance labels from reachable finale screens/documents; show record-derived provenance and honest unavailable official reference state",
+      "baseCommit": "80e1e9cf46a49eefb1d4024efe14f82c177ec85d",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-08-record-backed-content",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "apps/web/features/officer/ and apps/web/features/studio/product/ record-backed copy/provenance and removal of reachable sample dependencies",
+        "apps/web/app/studio/ and reachable spatial components narrow copy/data binding changes; retain shared renderer and legacy URLs",
+        "apps/web/lib/server/block-export.ts and officer-investigations.ts generated-document copy/provenance only; preserve FND-04 guards",
+        "apps/web/lib/server/{area-resolver,spatial-datasets,studio-sources}.ts narrow removal of text-based record matching/sample fallbacks only",
+        "Shared record-provenance formatter under apps/web/lib/ and focused UI regression tests/captures",
+        "docs/evidence/usp/finale/GF-VIEW/UI-08/ new evidence"
+      ],
+      "exclusions": [
+        "Protected datasets, original bytes, seed/import/reset operations or synthesized data",
+        "New renderer, backend authority, schema/migrations, qualification/security guard changes",
+        "Ledger/plans/AGENTS/user-staged skills, credentials, remote pushes or deployment"
+      ],
+      "acceptance": [
+        "H29 UI-08/H99Z6 and current-delivery-policy; all displayed values from actual records, missing states honest",
+        "No visible fictional/demonstration-data/specimen copy in reachable finale routes/documents; fixed badges only from explicit record provenance",
+        "Retained samples and history protected; no code matching records by names containing FICTIONAL",
+        "DATA-09 not qualified for scene use, so do not auto-place/import it; report reference-area completion gap explicitly",
+        "Desktop/light-only preserve future seams, single shared runtime and legacy URL behavior",
+        "Repository ui-design-check report required; use staged skill read-only from original checkout if absent on branch",
+        "Relevant tests/typecheck/build guards plus fresh actual S1/S4/S5/S12 route captures where implemented; unavailable routes/data documented, no mock screenshots"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-2/report.md",
       "resultCommit": null,
       "ownershipClarifications": [
         {
@@ -1482,6 +1577,11 @@
           "reason": "Production build blocked by unrelated port3000 server; safe isolated preview can supply real UI evidence without changing protected services or data. Missing screenshots should not be declared unavoidable before trying this bounded route.",
           "confirmedAt": "2026-09-25T17:51:17.227118+00:00"
         }
+      ],
+      "continuationCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
+      "correctionFindings": [
+        "UI08-R1",
+        "UI08-R2"
       ]
     }
   ],
@@ -2230,8 +2330,8 @@
     }
   ],
   "nextSteps": [
-    "Review UI-08 record-backed content, provenance and reachable-route cleanup.",
-    "Keep DATA-09 real reference scene, positive qualification and independent runtime milestones explicitly pending."
+    "Review UI-08 legacy saved-record routing and same-corpus visual comparison corrections.",
+    "Keep production build/official scene/independent milestone qualification pending."
   ],
   "processedCallbacks": [
     {
@@ -2383,6 +2483,15 @@
       "resultCommit": "57bbc72a4f9f148c6f94017219cb09bd9b6ab42a",
       "result": "accepted_bounded_geometry_boundary",
       "normalization": "completed interpreted as ready for review; host alias normalized"
+    },
+    {
+      "callbackId": "ulpin-UI-08-attempt-1",
+      "assignmentId": "UI-08",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
+      "result": "corrections_required_not_integrated",
+      "normalization": "Pipe-delimited callback uniquely matches worker/assignment; interpreted as ready for review"
     }
   ],
   "observations": [
