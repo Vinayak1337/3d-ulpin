@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "ulpin-bounded-review/1",
+  "assignmentId": "UI-08",
+  "attempt": 1,
+  "reviewedAt": "2026-09-25T18:13:01.675878+00:00",
+  "reviewer": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "independence": "same_family"
+  },
+  "codeCommit": "d8b95384bb802b3b1de121f650524aec21be7ab6",
+  "resultCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
+  "verdict": "corrections_required_not_integrated",
+  "findings": [
+    {
+      "id": "UI08-R1",
+      "priority": "medium",
+      "file": "apps/web/app/studio/showcase/page.tsx",
+      "finding": "Every legacy dataset query now redirects to unselected /studio/showcase. Previously a known dataset URL resolved to an already-saved record by original SHA. The implementation removes that compatible saved-record resolution as well as the intended sample fallback.",
+      "required": "Preserve known legacy alias-to-saved-record resolution by immutable original hash/record metadata without importing sample display arrays/generators or bundled data. Explicit missing/ambiguous/unknown alias states must not silently substitute or discard selection. Add focused routing checks and a real saved-route capture if matching existing data is present."
+    },
+    {
+      "id": "UI08-R2",
+      "priority": "medium",
+      "file": "docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/report.md",
+      "finding": "Required same-corpus before/after S1/S4/S5/S12 evidence is still absent despite now functioning isolated unchanged-snapshot preview tooling. Historical different-corpus screenshots do not provide a valid comparison.",
+      "required": "Capture assigned baseline80e1e9c and final code against the same immutable corpus and exact selected area/building in separate owned preview runs. Use an isolated baseline worktree; keep test harness separate/explicit and preserve original data. Store new comparison manifest with source/code/route/viewport pins. Record a concrete blocker for genuinely unavailable views; production build remains blocked independently."
+    }
+  ],
+  "checks": [
+    {
+      "check": "Lead visual inspection of final S1/S4/S5/S12 captures",
+      "result": "light-mode active product, record-derived names, retained foreign/synthetic history and explicit missing interiors visible"
+    },
+    {
+      "check": "Lead source review of provenance mappings, saved-route resolution, source-only preview and isolation guard",
+      "result": "R1 compatibility regression; new profile preserves default port guards and isolated restore scope"
+    }
+  ],
+  "limits": [
+    "Worker tests and integrity reports not yet independently replayed pending R1 fix",
+    "No same-corpus baseline comparison yet",
+    "Production build blocked by unrelated server; DATA09 official reference scene unqualified",
+    "No runtime or independent milestone acceptance"
+  ]
+}
