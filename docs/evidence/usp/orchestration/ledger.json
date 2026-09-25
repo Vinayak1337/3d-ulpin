@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:05:27.883709+00:00",
+  "updatedAt": "2026-09-25T21:09:34.870127+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -266,7 +266,7 @@
         "model": "gpt-6-astra",
         "effort": "high"
       },
-      "status": "assigned_REVIEW-FND-03_attempt_1"
+      "status": "idle_review_complete"
     },
     {
       "threadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
@@ -277,10 +277,10 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-luna",
-        "effort": "xhigh"
+        "effort": "medium"
       },
       "observedAgent": null,
-      "status": "idle_waiting_corrected_manual_preview"
+      "status": "assigned_DATA-EXCHANGE-SCOPE-01"
     }
   ],
   "assignments": [
@@ -1862,7 +1862,7 @@
         "effort": "high"
       },
       "baseCommit": "8c52896cd2c5d47327e79fc12d7018c4133428a9",
-      "status": "delivered_risk_review_pending",
+      "status": "corrections_required_not_integrated",
       "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
       "worktree": "/Users/vinayak/.codex/worktrees/ulpin-sol-implementation/3D Ulpin",
       "branch": "agent/FND-03-exchange",
@@ -1995,12 +1995,66 @@
       },
       "baseCommit": "a6d2cbf12604400858dd311762e803f3c37821e0",
       "codeCommit": "297510c493c58478cc04e98c3ff70afcb71e7298",
-      "status": "dispatched",
+      "status": "completed_corrections_required",
       "ownership": [
         "read-only exact exchange/sidecar/licence/snapshot review",
         "own concise report only"
       ],
-      "reportPath": "docs/evidence/usp/orchestration/reviews/FND-03-attempt-1-astra.md"
+      "reportPath": "docs/evidence/usp/orchestration/reviews/FND-03-attempt-1-astra.md",
+      "resultCommit": "e356919be7a7994eaf9ae047697ebd28485fcd69",
+      "worktree": "/Users/vinayak/.codex/worktrees/fnd03-astra-review",
+      "findings": [
+        "licence withholding leaks sidecar content",
+        "sidecar-only omitted records skip comparison",
+        "children hierarchy not compared"
+      ]
+    },
+    {
+      "assignmentId": "FND-03",
+      "attempt": 2,
+      "callbackId": "ulpin-FND-03-attempt-2",
+      "status": "queued_after_FND-06_attempt_2",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "workerHostId": "local",
+      "baseCommit": "e356919be7a7994eaf9ae047697ebd28485fcd69",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "prior exchange leaf/contracts/route",
+        "focused verification and attempt2 evidence"
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-EXCHANGE/FND-03/attempt-2/report.md",
+      "findings": [
+        "filter excluded content across all artifacts",
+        "compare sidecar independently of CityObject support",
+        "compare and validate parent/children hierarchy"
+      ]
+    },
+    {
+      "assignmentId": "DATA-EXCHANGE-SCOPE-01",
+      "attempt": 1,
+      "callbackId": "data-exchange-scope-01",
+      "status": "dispatched",
+      "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "medium"
+      },
+      "ownership": [
+        "read-only existing source/snapshot inventory",
+        "own report only"
+      ],
+      "exclusions": [
+        "acquisition",
+        "service startup/restores",
+        "newsourcefacts",
+        "secret/private data output"
+      ]
     }
   ],
   "capabilityChecklist": [
@@ -2748,9 +2802,9 @@
     }
   ],
   "nextSteps": [
-    "Astra reviews pinned FND03 while Sol fixes FND06 and enables manual preview hold.",
-    "Luna resumes manual check when corrected pinned preview is ready.",
-    "Delegate integration only after specific acceptance, with open qualifications retained."
+    "Sol completes FND06 focused fixes/previewhold then FND03 three exchange fixes.",
+    "Luna checks existing eligible exchange source scope, then resumes corrected privacy UI manual test.",
+    "Astra verifies corrected risk boundaries before delegated integration."
   ],
   "processedCallbacks": [
     {
@@ -2967,6 +3021,14 @@
       "sourceThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "resultCommit": "a6d2cbf12604400858dd311762e803f3c37821e0",
       "result": "delivered_partial_exchange_review_pending"
+    },
+    {
+      "callbackId": "review-FND-03-attempt-1",
+      "assignmentId": "REVIEW-FND-03",
+      "attempt": 1,
+      "sourceThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "resultCommit": "e356919be7a7994eaf9ae047697ebd28485fcd69",
+      "result": "corrections_required"
     }
   ],
   "observations": [
