@@ -262,4 +262,14 @@ The [UI brief](../design-system/ui-brief.md) lists 33 screens. The finale builds
 
 - Offline visual test: no external font or icon requests; a Hindi label renders in the map and the inspector.
 - Contrast checks for every token pair used as text (4.5:1) and every control border (3:1) in both themes.
-- Screenshots for V1–V8 use the specimen data in the UI brief so fresh captures can be compared with the mockups.
+- Screenshots for V1–V8 use the qualified data for their gate ([H28](28-data-acquisition-and-finale-tests.md)) and are compared with the mockup reference in layout, components and state. Values are expected to differ from the mockup.
+
+### Z6. Mockup reference
+
+Added 25 September 2026. The team's interactive Claude Design mockup of every screen is recorded in [the Officer Studio mockup reference](../design-system/mockups/officer-studio/README.md): frame, interaction model, inspector variants, states, [per-screen layout by gate](../design-system/mockups/officer-studio/screens.md) and a [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) projected from the existing contracts.
+
+- Build the UI the mockup shows on the routes in section 3 and the shared map path; do not copy its data. Names, codes, numbers, files, dates and people from the mockup never enter code, fixtures, tests or captures.
+- Every varying value is a binding to a record. Levels, spaces, rights, utilities, legend rows and counts take their shape from the data; empty or partial data renders the Empty, *Unknown*, *Not assessed* or *Estimated* state.
+- No screen hard-codes a disclaimer about the data. The scope strip shows the dataset's recorded classification; fixture, seeded, replayed and illustrative badges come from record provenance.
+- The Studio layout never branches on file format. Intake reduces any upload to profile, frame, mapping and attributes ([H14](14-adaptive-ingestion-and-progressive-review.md) Z2–Z3); unmapped fields are shown as source attributes, not dropped.
+- The schema is a UI projection. FND and feature owners keep the domain contracts; UI adapters map port results onto it without a second store or manifest.

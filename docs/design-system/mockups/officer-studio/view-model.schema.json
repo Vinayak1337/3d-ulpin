@@ -1,0 +1,719 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3d-ulpin.local/schemas/officer-studio/view-model/1",
+  "title": "Officer Studio screen view model",
+  "description": "What every Officer Studio, Verify, Portal and Admin screen in the mockup reads. It is a UI binding contract, not a domain schema: each definition is a projection of the existing contracts named in x-source (packages/contracts/src/spatial/core and packages/contracts/src/usp). It carries no sample data. Any source format reaches these screens through an intake profile and a field mapping; unmapped source fields are kept as attributes, never dropped.",
+  "type": "object",
+  "required": ["schemaVersion", "scope"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": "officer-studio-view/1" },
+    "scope": { "$ref": "#/$defs/Scope" },
+    "area": { "$ref": "#/$defs/Area" },
+    "batches": { "type": "array", "items": { "$ref": "#/$defs/Batch" } },
+    "intake": { "$ref": "#/$defs/IntakeSession" },
+    "building": { "$ref": "#/$defs/Building" },
+    "selection": { "$ref": "#/$defs/Selection" },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/Finding" } },
+    "checks": { "type": "array", "items": { "$ref": "#/$defs/Check" } },
+    "underground": { "$ref": "#/$defs/Underground" },
+    "deviation": { "$ref": "#/$defs/Deviation" },
+    "revisions": { "type": "array", "items": { "$ref": "#/$defs/Revision" } },
+    "card": { "$ref": "#/$defs/PropertyCard" },
+    "verify": { "$ref": "#/$defs/VerifyResult" },
+    "counts": {
+      "description": "At most three scope-qualified counts for Batches (H99 Z3). Each links to the list behind it.",
+      "type": "array", "maxItems": 3, "items": { "$ref": "#/$defs/Count" }
+    }
+  },
+  "$defs": {
+    "Ref": {
+      "x-source": "CoreRefSchema",
+      "type": "object", "required": ["namespace", "id"], "additionalProperties": false,
+      "properties": { "namespace": { "type": "string" }, "id": { "type": "string", "description": "Literal id; leading zeros and case preserved" } }
+    },
+    "RevisionRef": {
+      "x-source": "CoreRevisionRefSchema",
+      "type": "object", "required": ["ref", "revision"], "additionalProperties": false,
+      "properties": { "ref": { "$ref": "#/$defs/Ref" }, "revision": { "type": "integer", "minimum": 0 } }
+    },
+    "Text": {
+      "description": "Display text taken from a source or a record. Never generated to fill a gap.",
+      "type": "string", "minLength": 1
+    },
+    "Unit": {
+      "description": "Unit as stated by the source or produced by a recorded conversion. Open list: new units arrive with new profiles.",
+      "type": "string",
+      "examples": ["m", "mm", "ft", "us_ft", "m2", "ft2", "m3", "percent", "count", "degree"]
+    },
+    "Derivation": {
+      "description": "How a value came to exist. Drives the honest-geometry encoding in map-and-3d.md.",
+      "type": "string",
+      "enum": ["measured", "documented", "declared", "computed", "estimated", "illustrative", "unknown"]
+    },
+    "Value": {
+      "x-source": "coreValueSchema (scalars.ts)",
+      "description": "Every displayed fact. The five states stay distinct; unknown, withheld, not_applicable and conflicting never render as 0, blank or success.",
+      "oneOf": [
+        {
+          "type": "object", "required": ["state", "value"], "additionalProperties": false,
+          "properties": {
+            "state": { "const": "known" },
+            "value": { "type": ["string", "number", "boolean", "object", "array"] },
+            "unit": { "$ref": "#/$defs/Unit" },
+            "derivation": { "$ref": "#/$defs/Derivation" },
+            "evidence": { "type": "array", "items": { "$ref": "#/$defs/EvidenceRef" } },
+            "sourceField": { "$ref": "#/$defs/SourceField" }
+          }
+        },
+        {
+          "type": "object", "required": ["state", "reason"], "additionalProperties": false,
+          "properties": {
+            "state": { "enum": ["unknown", "not_applicable", "withheld"] },
+            "reason": { "$ref": "#/$defs/Text" },
+            "requiredRole": { "type": "string", "description": "For withheld: the role that may see it (renders as Restricted)" },
+            "requestAction": { "type": "boolean", "description": "Show Request evidence" }
+          }
+        },
+        {
+          "type": "object", "required": ["state", "candidates", "reason"], "additionalProperties": false,
+          "properties": {
+            "state": { "const": "conflicting" },
+            "candidates": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/Value" } },
+            "reason": { "$ref": "#/$defs/Text" }
+          }
+        }
+      ]
+    },
+    "Rational": {
+      "description": "Exact share arithmetic (RIGHTS-01: no floating point). The UI formats percent from numerator/denominator.",
+      "type": "object", "required": ["numerator", "denominator"], "additionalProperties": false,
+      "properties": { "numerator": { "type": "string", "pattern": "^-?[0-9]+$" }, "denominator": { "type": "string", "pattern": "^[1-9][0-9]*$" } }
+    },
+    "SourceField": {
+      "description": "Where a mapped value came from in its original file, whatever the format.",
+      "type": "object", "required": ["name"], "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Literal column, attribute, key, tag or label as written in the source" },
+        "path": { "type": "string", "description": "Column index, JSON pointer, XPath, layer/attribute, IFC property path, band name" }
+      }
+    },
+    "Attribute": {
+      "description": "A source field that has no mapped concept yet. Shown under Source attributes in the inspector; never discarded.",
+      "type": "object", "required": ["field", "value"], "additionalProperties": false,
+      "properties": {
+        "field": { "$ref": "#/$defs/SourceField" },
+        "value": { "$ref": "#/$defs/Value" },
+        "evidence": { "$ref": "#/$defs/EvidenceRef" }
+      }
+    },
+    "Locator": {
+      "x-source": "CoreLocatorSchema",
+      "description": "Opens the exact place in the source. The evidence viewer picks its preview from kind, not from file extension.",
+      "type": "object", "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["whole_asset", "feature", "page", "image_region", "rows", "lines", "json_pointer", "model_element", "verbatim", "point_set", "raster_window", "time_range"] },
+        "label": { "type": "string", "description": "Human form of the locator, for example a page, row range or element id" }
+      }
+    },
+    "EvidenceRef": {
+      "x-source": "UspEvidencePointer / CoreEvidenceLinkSchema",
+      "type": "object", "required": ["state"], "additionalProperties": false,
+      "properties": {
+        "state": { "enum": ["linked", "missing", "estimated", "restricted"] },
+        "sourceLabel": { "type": "string" },
+        "sourceRevision": { "$ref": "#/$defs/RevisionRef" },
+        "kind": { "enum": ["document", "table", "feature", "image", "point_cloud", "raster", "model", "other"] },
+        "locator": { "$ref": "#/$defs/Locator" },
+        "purpose": { "enum": ["context", "geometry", "levels", "record", "appearance"] },
+        "access": { "enum": ["public", "operator", "restricted"] }
+      }
+    },
+    "ProvenanceFlags": {
+      "description": "Only data sets these. The UI never adds a disclaimer badge by itself.",
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "testFixture": { "type": "boolean", "description": "Renders the Test fixture badge on the object and in the legend" },
+        "seededCase": { "type": "boolean", "description": "Renders the Seeded test case badge" },
+        "replayedAt": { "type": "string", "format": "date-time", "description": "Model answer replayed from an offline rehearsal profile" },
+        "illustrative": { "type": "boolean" }
+      }
+    },
+    "Status": {
+      "description": "Fixed status words from the design system README. No synonyms.",
+      "enum": ["draft", "needs_evidence", "needs_review", "reviewed", "recorded", "assigned", "retired", "cancelled", "unknown", "not_assessed", "not_comparable", "provisional"]
+    },
+    "Scope": {
+      "x-source": "UspScope, CoreDatasetSchema.classification",
+      "description": "Top bar and scope strip.",
+      "type": "object", "required": ["areaLabel", "classification", "status"], "additionalProperties": false,
+      "properties": {
+        "areaLabel": { "$ref": "#/$defs/Text" },
+        "classification": {
+          "description": "Shown as-is in the scope strip. Comes from the dataset record, never hard-coded.",
+          "enum": ["observed", "planned", "hypothetical", "synthetic", "unknown", "mixed"]
+        },
+        "revisionLabel": { "type": "string" },
+        "status": {
+          "oneOf": [
+            { "type": "object", "required": ["kind"], "additionalProperties": false, "properties": { "kind": { "const": "live" } } },
+            { "type": "object", "required": ["kind", "at"], "additionalProperties": false, "properties": { "kind": { "const": "snapshot" }, "at": { "type": "string", "format": "date-time" } } }
+          ]
+        },
+        "replayedAt": { "type": "string", "format": "date-time" },
+        "principal": {
+          "type": "object", "required": ["displayName", "role"], "additionalProperties": false,
+          "properties": {
+            "displayName": { "type": "string" },
+            "initials": { "type": "string", "maxLength": 3 },
+            "role": { "type": "string" },
+            "readOnly": { "type": "boolean" }
+          }
+        },
+        "frame": { "$ref": "#/$defs/Frame" },
+        "stale": {
+          "type": "object", "required": ["sourceLabel"], "additionalProperties": false,
+          "properties": { "sourceLabel": { "type": "string" }, "action": { "const": "rebuild" } }
+        },
+        "error": { "$ref": "#/$defs/ActionableError" }
+      }
+    },
+    "ActionableError": {
+      "description": "Says what happened and what to do; originals are kept.",
+      "type": "object", "required": ["message", "fix"], "additionalProperties": false,
+      "properties": { "message": { "type": "string" }, "fix": { "type": "string" }, "subject": { "type": "string" } }
+    },
+    "Frame": {
+      "x-source": "CoreFrameSchema, CoreVerticalSchema",
+      "type": "object", "required": ["horizontal", "vertical"], "additionalProperties": false,
+      "properties": {
+        "horizontal": {
+          "type": "object", "required": ["state"], "additionalProperties": false,
+          "properties": {
+            "state": { "enum": ["declared", "verified", "unverified", "absent", "local_frame"] },
+            "crs": { "type": "string", "description": "As stated or chosen; shown in the readout" }
+          }
+        },
+        "vertical": {
+          "type": "object", "required": ["kind", "label"], "additionalProperties": false,
+          "properties": {
+            "kind": { "enum": ["benchmark", "datum", "surface_relative", "unknown"] },
+            "label": { "type": "string", "description": "Named once at the top of the level rail, for example 'm · <reference>'" },
+            "unit": { "$ref": "#/$defs/Unit" }
+          }
+        },
+        "groundElevation": { "$ref": "#/$defs/Value" }
+      }
+    },
+    "Count": {
+      "type": "object", "required": ["value", "label", "target"], "additionalProperties": false,
+      "properties": { "value": { "$ref": "#/$defs/Value" }, "label": { "type": "string" }, "target": { "type": "string", "description": "Route or list the count opens" } }
+    },
+    "Readiness": {
+      "x-source": "H11 scoped readiness",
+      "description": "Per named task; no single score. Unknown dimensions are hatched.",
+      "type": "object", "required": ["task", "dimensions"], "additionalProperties": false,
+      "properties": {
+        "task": { "type": "string" },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["name", "value"], "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "value": { "oneOf": [{ "type": "number", "minimum": 0, "maximum": 1 }, { "const": "unknown" }] },
+              "label": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "Area": {
+      "type": "object", "required": ["id", "label"], "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Ref" },
+        "label": { "$ref": "#/$defs/Text" },
+        "parcelCount": { "$ref": "#/$defs/Value" },
+        "buildingCount": { "$ref": "#/$defs/Value" },
+        "spaceCount": { "$ref": "#/$defs/Value" },
+        "buildings": { "type": "array", "items": { "$ref": "#/$defs/BuildingSummary" } },
+        "parcels": { "type": "array", "items": { "$ref": "#/$defs/Parcel" } },
+        "aiCandidates": { "type": "array", "items": { "$ref": "#/$defs/Candidate" } },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["id", "label", "available"], "additionalProperties": false,
+            "properties": { "id": { "type": "string" }, "label": { "type": "string" }, "group": { "enum": ["base", "imagery", "candidates", "context"] }, "available": { "type": "boolean" } }
+          }
+        }
+      }
+    },
+    "Parcel": {
+      "type": "object", "required": ["id"], "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Ref" },
+        "parcelUlpin": { "$ref": "#/$defs/IdentifierAssertion" },
+        "geometry": { "$ref": "#/$defs/GeometryRef" }
+      }
+    },
+    "IdentifierAssertion": {
+      "x-source": "UspIdentifierAssertionSchema",
+      "description": "The state's parcel code. Absent is a valid state; it is never fabricated.",
+      "type": "object", "required": ["state"], "additionalProperties": false,
+      "properties": {
+        "state": { "enum": ["asserted", "absent", "conflicting"] },
+        "scheme": { "type": "string" },
+        "value": { "type": "string" },
+        "anchorState": { "$ref": "#/$defs/Status" },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/EvidenceRef" } }
+      }
+    },
+    "GeometryRef": {
+      "description": "Opaque handle to renderable geometry held by the shared map runtime (H99). The view model never embeds meshes.",
+      "type": "object", "required": ["assetRef", "derivation"], "additionalProperties": false,
+      "properties": {
+        "assetRef": { "type": "string" },
+        "derivation": { "$ref": "#/$defs/Derivation" },
+        "representation": { "enum": ["footprint", "extrusion", "solid", "mesh", "point_cloud", "raster", "line", "volume"] }
+      }
+    },
+    "BuildingSummary": {
+      "type": "object", "required": ["id", "label"], "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Ref" },
+        "label": { "$ref": "#/$defs/Text" },
+        "geometry": { "$ref": "#/$defs/GeometryRef" },
+        "status": { "$ref": "#/$defs/Status" },
+        "levelsKnown": { "type": "boolean", "description": "False shows the building as massing only with 'height unknown'" },
+        "saved": { "type": "boolean", "description": "During import: present on the map once its chunk is saved" }
+      }
+    },
+    "Building": {
+      "type": "object", "required": ["id", "label", "levels"], "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Ref" },
+        "label": { "$ref": "#/$defs/Text" },
+        "address": { "$ref": "#/$defs/Value" },
+        "parcels": { "type": "array", "items": { "$ref": "#/$defs/Parcel" }, "description": "A building may span parcels" },
+        "status": { "$ref": "#/$defs/Status" },
+        "provenance": { "$ref": "#/$defs/ProvenanceFlags" },
+        "tenureRegime": { "$ref": "#/$defs/Value" },
+        "levelSummary": { "$ref": "#/$defs/Value", "description": "Short form built from levels, never typed by hand" },
+        "levels": { "type": "array", "items": { "$ref": "#/$defs/Level" } },
+        "spaces": { "type": "array", "items": { "$ref": "#/$defs/Space" } },
+        "spaceCount": { "$ref": "#/$defs/Value" },
+        "sharedSpaceCount": { "$ref": "#/$defs/Value" },
+        "readiness": { "$ref": "#/$defs/Readiness" },
+        "openFindings": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "blocking": { "type": "integer", "minimum": 0 }, "needsReview": { "type": "integer", "minimum": 0 } }
+        },
+        "shares": { "$ref": "#/$defs/ShareLedger" },
+        "documents": { "type": "array", "items": { "$ref": "#/$defs/EvidenceRef" } },
+        "exports": { "type": "array", "items": { "$ref": "#/$defs/ExportOption" } },
+        "attributes": { "type": "array", "items": { "$ref": "#/$defs/Attribute" } }
+      }
+    },
+    "Level": {
+      "x-source": "UspVerticalContextSchema, H16/H22 level kinds",
+      "description": "Levels come from data in their own order and labels. Nothing assumes a ground-plus-N pattern.",
+      "type": "object", "required": ["id", "label", "order", "kind"], "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Ref" },
+        "label": { "$ref": "#/$defs/Text" },
+        "order": { "type": "integer", "description": "Top-to-bottom rail order" },
+        "kind": {
+          "description": "Open list; unknown kinds render with their source label.",
+          "type": "string",
+          "examples": ["storey", "ground", "stilt", "mezzanine", "podium", "lower_ground", "basement", "terrace", "roof", "rooftop_structure", "service", "unknown"]
+        },
+        "belowGround": { "type": "boolean" },
+        "lower": { "$ref": "#/$defs/Value" },
+        "upper": { "$ref": "#/$defs/Value" },
+        "use": { "$ref": "#/$defs/Value" },
+        "status": { "$ref": "#/$defs/Status" },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/EvidenceRef" } }
+      }
+    },
+    "Space": {
+      "type": "object", "required": ["id", "label", "levelIds", "rights"], "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Ref" },
+        "label": { "$ref": "#/$defs/Text" },
+        "levelIds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Ref" }, "description": "A space may span levels" },
+        "kind": { "type": "string", "description": "Open list from the source or mapping" },
+        "rights": {
+          "description": "Drives Colour by Rights. Unknown is hatched.",
+          "enum": ["exclusive", "shared", "public", "unknown"]
+        },
+        "status": { "$ref": "#/$defs/Status" },
+        "code": { "$ref": "#/$defs/ProjectCode" },
+        "location": { "$ref": "#/$defs/LocationLine" },
+        "elevation": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "lower": { "$ref": "#/$defs/Value" }, "upper": { "$ref": "#/$defs/Value" } }
+        },
+        "area": { "$ref": "#/$defs/AreaComparison" },
+        "share": { "$ref": "#/$defs/ShareValue" },
+        "facts": {
+          "description": "Further labelled facts in inspector order (parking, use, occupancy and so on). Labels come from the mapping registry.",
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["label", "value"], "additionalProperties": false,
+            "properties": { "label": { "type": "string" }, "value": { "$ref": "#/$defs/Value" } }
+          }
+        },
+        "geometry": { "$ref": "#/$defs/GeometryRef" },
+        "provenance": { "$ref": "#/$defs/ProvenanceFlags" },
+        "attributes": { "type": "array", "items": { "$ref": "#/$defs/Attribute" } }
+      }
+    },
+    "ProjectCode": {
+      "x-source": "H26 P3/1",
+      "description": "3D ULPIN (proposed). Opaque; no segment tooltips on it.",
+      "type": "object", "required": ["state"], "additionalProperties": false,
+      "properties": {
+        "state": { "enum": ["none", "draft", "assigned", "retired", "cancelled"] },
+        "value": { "type": "string", "description": "Present only when assigned, retired or cancelled" },
+        "assignedAt": { "type": "string", "format": "date-time" },
+        "lineage": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "predecessors": { "type": "array", "items": { "type": "string" } },
+            "successors": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "LocationLine": {
+      "x-source": "H26 Z1",
+      "description": "Display-only location, separate from the code. Segments carry their own explanations.",
+      "type": "object", "required": ["segments"], "additionalProperties": false,
+      "properties": {
+        "segments": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["value", "meaning"], "additionalProperties": false,
+            "properties": { "value": { "type": "string" }, "meaning": { "enum": ["parcel", "structure", "level", "space", "other"] }, "note": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "AreaComparison": {
+      "x-source": "CarpetAreaCheck (H27)",
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "computed": { "$ref": "#/$defs/Value", "description": "From plan components" },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["label", "area"], "additionalProperties": false,
+            "properties": { "label": { "type": "string" }, "area": { "$ref": "#/$defs/Value" }, "sign": { "enum": ["add", "subtract"] } }
+          }
+        },
+        "declared": { "$ref": "#/$defs/Value" },
+        "definition": { "type": "string", "description": "Carpet, built-up, super built-up: differing definitions render Not comparable" },
+        "threshold": { "$ref": "#/$defs/Value" },
+        "result": { "enum": ["within_threshold", "needs_review", "not_comparable", "not_assessed"] }
+      }
+    },
+    "ShareValue": {
+      "type": "object", "required": ["share"], "additionalProperties": false,
+      "properties": { "share": { "$ref": "#/$defs/Rational" }, "basis": { "type": "string" }, "evidence": { "$ref": "#/$defs/EvidenceRef" } }
+    },
+    "ShareLedger": {
+      "x-source": "RIGHTS-01",
+      "type": "object", "required": ["regime", "rows", "total"], "additionalProperties": false,
+      "properties": {
+        "regime": { "$ref": "#/$defs/Value" },
+        "basis": { "type": "string" },
+        "populationDeclared": { "type": "integer", "minimum": 0 },
+        "populationTotal": { "$ref": "#/$defs/Value" },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["spaceId", "share"], "additionalProperties": false,
+            "properties": { "spaceId": { "$ref": "#/$defs/Ref" }, "share": { "$ref": "#/$defs/Rational" } }
+          }
+        },
+        "total": { "$ref": "#/$defs/Rational" },
+        "expected": { "$ref": "#/$defs/Rational" },
+        "evidence": { "$ref": "#/$defs/EvidenceRef" }
+      }
+    },
+    "Selection": {
+      "x-source": "H99 selection generation",
+      "description": "Survives 2D/3D, Model/Volumes, theme and panel changes.",
+      "type": "object", "required": ["mode"], "additionalProperties": false,
+      "properties": {
+        "mode": { "enum": ["area", "building", "level", "underground", "findings", "deviation"] },
+        "buildingId": { "$ref": "#/$defs/Ref" },
+        "levelId": { "$ref": "#/$defs/Ref" },
+        "spaceId": { "$ref": "#/$defs/Ref" },
+        "findingId": { "$ref": "#/$defs/Ref" },
+        "view": { "enum": ["3D", "2D"] },
+        "render": { "enum": ["model", "volumes"] },
+        "colourBy": { "enum": ["none", "rights", "utilities", "evidence", "record"] },
+        "panel": { "enum": ["none", "layers", "spaces", "sources", "checks", "evidence"] },
+        "generation": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Finding": {
+      "x-source": "FIND-01 findings port, H27 Z3",
+      "description": "Ordered blocking, then severity, then size. Arithmetic lines are computed by the check, never by the UI.",
+      "type": "object", "required": ["id", "check", "severity", "title"], "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Ref" },
+        "check": { "type": "string" },
+        "checkVersion": { "type": "string" },
+        "severity": { "enum": ["blocking", "needs_review", "info", "not_assessed"] },
+        "title": { "type": "string" },
+        "quantity": { "$ref": "#/$defs/Value" },
+        "calculation": { "type": "array", "items": { "type": "string" } },
+        "participants": { "type": "array", "items": { "$ref": "#/$defs/Ref" } },
+        "geometry": { "$ref": "#/$defs/GeometryRef" },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/EvidenceRef" } },
+        "actions": { "type": "array", "items": { "$ref": "#/$defs/Action" } },
+        "orderKey": { "type": "array", "items": { "type": ["number", "string"] } },
+        "provenance": { "$ref": "#/$defs/ProvenanceFlags" }
+      }
+    },
+    "Check": {
+      "type": "object", "required": ["name", "status"], "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "enum": ["blocking", "needs_review", "not_assessed", "passed"] },
+        "detail": { "type": "string" },
+        "findingId": { "$ref": "#/$defs/Ref" }
+      }
+    },
+    "Action": {
+      "description": "Fixed labels from the design system; the view model says whether each is allowed and why not.",
+      "type": "object", "required": ["id", "enabled"], "additionalProperties": false,
+      "properties": {
+        "id": { "enum": ["request_evidence", "apply_level_evidence", "review_area", "open_in_3d", "assign_code", "make_property_card", "record_reviewed_details", "create_finding", "export_screening_report", "request_survey", "rebuild", "choose_crs", "map_manually"] },
+        "enabled": { "type": "boolean" },
+        "blockedReason": { "type": "string" }
+      }
+    },
+    "Underground": {
+      "x-source": "IMPACT0 / H17",
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "depthRange": { "$ref": "#/$defs/Value", "description": "Ruler extent derived from the deepest known band" },
+        "trench": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "length": { "$ref": "#/$defs/Value" }, "geometry": { "$ref": "#/$defs/GeometryRef" } }
+        },
+        "bands": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["top", "bottom", "kind"], "additionalProperties": false,
+            "properties": {
+              "top": { "$ref": "#/$defs/Value" },
+              "bottom": { "$ref": "#/$defs/Value" },
+              "kind": { "type": "string", "description": "Utility type, corridor, basement or 'no_survey'. Utility types map to --ui-utility-* colours" },
+              "label": { "type": "string" },
+              "qualityLevel": { "$ref": "#/$defs/Value" },
+              "positionalTolerance": { "$ref": "#/$defs/Value", "description": "A sleeve is drawn only when this is known" },
+              "provenance": { "$ref": "#/$defs/ProvenanceFlags" },
+              "evidence": { "type": "array", "items": { "$ref": "#/$defs/EvidenceRef" } }
+            }
+          }
+        }
+      }
+    },
+    "Deviation": {
+      "x-source": "HISTORY-02",
+      "type": "object", "required": ["rows"], "additionalProperties": false,
+      "properties": {
+        "sanctionedLabel": { "type": "string" },
+        "observedLabel": { "type": "string" },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["measure", "sanctioned", "observed"], "additionalProperties": false,
+            "properties": {
+              "measure": { "type": "string" },
+              "sanctioned": { "$ref": "#/$defs/Value" },
+              "observed": { "$ref": "#/$defs/Value" },
+              "comparable": { "type": "boolean" },
+              "reason": { "type": "string" }
+            }
+          }
+        },
+        "exclusions": { "type": "array", "items": { "type": "string" } },
+        "differenceGeometry": { "$ref": "#/$defs/GeometryRef" },
+        "differenceLabel": { "type": "string" },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/EvidenceRef" } },
+        "provenance": { "$ref": "#/$defs/ProvenanceFlags" }
+      }
+    },
+    "Revision": {
+      "x-source": "UspCommitReceiptSchema, H10 chain",
+      "type": "object", "required": ["label", "kind", "at"], "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "kind": { "enum": ["draft", "evidence", "recorded", "retired"] },
+        "actor": { "type": "string", "description": "Display name or role from the principal record" },
+        "at": { "type": "string", "format": "date-time" },
+        "hash": { "type": "string" },
+        "previousHash": { "type": "string" },
+        "chain": { "enum": ["consistent", "broken", "signed_verified", "unknown"] }
+      }
+    },
+    "Batch": {
+      "x-source": "H14 import package / job projection",
+      "type": "object", "required": ["id", "label", "stage", "nextAction", "updatedAt"], "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Ref" },
+        "label": { "$ref": "#/$defs/Text" },
+        "areaLabel": { "type": "string" },
+        "fileCount": { "type": "integer", "minimum": 0 },
+        "stage": { "enum": ["add_files", "review_details", "check_and_record", "recorded"] },
+        "nextAction": {
+          "type": "object", "required": ["label", "target"], "additionalProperties": false,
+          "properties": { "label": { "type": "string", "description": "Exact next action built from the blocking item" }, "target": { "type": "string" } }
+        },
+        "readiness": { "$ref": "#/$defs/Readiness" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "IntakeSession": {
+      "x-source": "H14 ingestion, H25 all-format agent",
+      "description": "Add files and the live import tray. Any file is accepted: a profile is detected or marked unknown, a mapping is proposed, reused or done by hand, and every unmapped field stays as an attribute.",
+      "type": "object", "required": ["step", "files"], "additionalProperties": false,
+      "properties": {
+        "step": { "enum": ["drop", "check", "confirm", "importing", "done"] },
+        "provider": { "enum": ["available", "unavailable", "replayed"] },
+        "files": { "type": "array", "items": { "$ref": "#/$defs/IntakeFile" } },
+        "saved": { "$ref": "#/$defs/Value", "description": "Running count of saved objects for the scope strip" },
+        "controls": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "canPause": { "type": "boolean" }, "canCancel": { "type": "boolean" } }
+        }
+      }
+    },
+    "IntakeFile": {
+      "type": "object", "required": ["name", "state", "profile", "mapping"], "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Original file name, shown in mono" },
+        "mediaType": { "type": "string" },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string" },
+        "profile": {
+          "description": "Detected source profile. New profiles register in the ingestion profile registry; the screen needs no change.",
+          "type": "object", "required": ["state"], "additionalProperties": false,
+          "properties": {
+            "state": { "enum": ["detected", "unknown", "unsupported", "planned"] },
+            "id": { "type": "string" },
+            "label": { "type": "string" },
+            "family": { "enum": ["vector", "table", "document", "image", "raster", "point_cloud", "model_3d", "bim", "archive", "text", "other"] }
+          }
+        },
+        "contents": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "count": { "$ref": "#/$defs/Value" },
+            "unit": { "type": "string", "description": "What was counted: features, rows, pages, points, elements, tiles, layers" }
+          }
+        },
+        "crs": {
+          "type": "object", "required": ["state"], "additionalProperties": false,
+          "properties": {
+            "state": { "enum": ["declared", "verified", "unverified", "absent", "not_spatial"] },
+            "value": { "type": "string" }
+          }
+        },
+        "mapping": {
+          "type": "object", "required": ["state"], "additionalProperties": false,
+          "properties": {
+            "state": { "enum": ["proposed", "reused", "manual", "needs_review", "unavailable"] },
+            "recipe": { "$ref": "#/$defs/RevisionRef" },
+            "fields": { "type": "array", "items": { "$ref": "#/$defs/FieldMapping" } },
+            "unmappedFields": { "type": "array", "items": { "$ref": "#/$defs/SourceField" } }
+          }
+        },
+        "questions": { "type": "array", "items": { "$ref": "#/$defs/MappingQuestion" } },
+        "state": { "enum": ["queued", "running", "saved", "attention", "failed", "paused", "cancelled"] },
+        "progress": { "type": "number", "minimum": 0, "maximum": 1 },
+        "detail": { "type": "string" },
+        "error": { "$ref": "#/$defs/ActionableError" }
+      }
+    },
+    "FieldMapping": {
+      "type": "object", "required": ["source", "concept", "state"], "additionalProperties": false,
+      "properties": {
+        "source": { "$ref": "#/$defs/SourceField" },
+        "concept": { "type": "string", "description": "Target concept id from the conversion registry (H14 Z2)" },
+        "conversion": {
+          "type": "object", "additionalProperties": false,
+          "properties": { "from": { "$ref": "#/$defs/Unit" }, "to": { "$ref": "#/$defs/Unit" }, "registryId": { "type": "string" } }
+        },
+        "state": { "enum": ["proposed", "reused", "manual", "approved", "rejected"] },
+        "confidence": { "enum": ["high", "medium", "low"] }
+      }
+    },
+    "MappingQuestion": {
+      "description": "Only uncertain mappings ask. Text is generated from the field and the candidate concept, not stored copy.",
+      "type": "object", "required": ["field", "candidateConcept", "options"], "additionalProperties": false,
+      "properties": {
+        "field": { "$ref": "#/$defs/SourceField" },
+        "candidateConcept": { "type": "string" },
+        "conversion": { "$ref": "#/$defs/FieldMapping/properties/conversion" },
+        "options": { "type": "array", "items": { "enum": ["yes", "no", "choose_field"] } },
+        "answer": { "enum": ["yes", "no", "choose_field"] }
+      }
+    },
+    "Candidate": {
+      "description": "AI building or room candidate: a suggestion until an officer accepts it.",
+      "type": "object", "required": ["id", "confidence", "decision"], "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Ref" },
+        "label": { "type": "string" },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "decision": { "enum": ["pending", "accepted", "adjusted", "rejected"] },
+        "dimensions": { "$ref": "#/$defs/Value" },
+        "geometry": { "$ref": "#/$defs/GeometryRef" },
+        "evidence": { "$ref": "#/$defs/EvidenceRef" },
+        "provenance": { "$ref": "#/$defs/ProvenanceFlags" }
+      }
+    },
+    "ExportOption": {
+      "type": "object", "required": ["id", "label", "state"], "additionalProperties": false,
+      "properties": { "id": { "type": "string" }, "label": { "type": "string" }, "state": { "enum": ["available", "planned", "unavailable"] } }
+    },
+    "PropertyCard": {
+      "x-source": "PACK-01, H10",
+      "type": "object", "required": ["title", "scope", "audience", "revision"], "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "scope": { "enum": ["space", "level", "building"] },
+        "audience": { "enum": ["public", "owner", "officer"] },
+        "code": { "$ref": "#/$defs/ProjectCode" },
+        "location": { "$ref": "#/$defs/LocationLine" },
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["label", "value"], "additionalProperties": false,
+            "properties": { "label": { "type": "string" }, "value": { "$ref": "#/$defs/Value" }, "mono": { "type": "boolean" } }
+          }
+        },
+        "redactions": { "type": "array", "items": { "type": "string" } },
+        "qr": { "enum": ["local_operator", "public_planned"] },
+        "revision": { "$ref": "#/$defs/Revision" }
+      }
+    },
+    "VerifyResult": {
+      "x-source": "H10 local_operator resolver",
+      "type": "object", "required": ["state"], "additionalProperties": false,
+      "properties": {
+        "state": { "enum": ["valid", "superseded", "retired", "not_found", "resolver_unavailable", "loading"] },
+        "revision": { "$ref": "#/$defs/Revision" },
+        "successor": { "type": "string" },
+        "card": { "$ref": "#/$defs/PropertyCard" },
+        "timeline": { "type": "array", "maxItems": 3, "items": { "$ref": "#/$defs/Revision" } }
+      }
+    }
+  }
+}
