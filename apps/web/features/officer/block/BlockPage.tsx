@@ -6,6 +6,8 @@ import { useBlock } from "./useBlock";
 import { BlockLeftRail, BlockInspector } from "./BlockRails";
 import MapPlan from "./MapPlan";
 import FindingsTray from "./FindingsTray";
+import MapPresentation from "./MapPresentation";
+import { rightsClass } from "./mapStyleModel";
 import DataTools from "./DataTools";
 import {
   Badge,
@@ -20,6 +22,7 @@ import { routes } from "../shared/routes";
 import "./block.css";
 import "./data-tools.css";
 import "./frame.css";
+import "./map-replacement.css";
 export default function BlockPage({ areaId }: { areaId: string }) {
   const block = useBlock(areaId);
   const [tools, setTools] = useState<"import" | "export" | null>(null),
@@ -121,7 +124,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
             <div className="ui-block-title">
               <Link href={routes.block()} aria-label="Back to all areas"><Icon name="back" size={17} /></Link>
               <h1 title={context.area.name}>{context.area.name}</h1>
-              <span className="ui-scope-classification">{context.area.dataKind === "real" ? "Real source" : context.area.dataKind === "demonstration" ? "Test fixture" : context.area.dataKind === "mixed" ? "Mixed sources" : context.area.dataKind === "empty" ? "No source" : "Unclassified"}</span>
+              <span className="ui-scope-classification">{context.area.dataKind === "real" ? "Recorded source" : context.area.dataKind === "demonstration" ? "Historical source" : context.area.dataKind === "mixed" ? "Mixed sources" : context.area.dataKind === "empty" ? "No source" : "Unclassified"}</span>
               <span className="ui-scope-revision">Revision {context.area.revision}</span>
               {block.selected && <span className="ui-scope-selection" title={block.selectedRecord ? `${block.selected.name} / ${block.selectedRecord.name}` : block.selected.name}>/ {block.selected.name}{block.selectedRecord ? ` / ${block.selectedRecord.name}` : ""}</span>}
             </div>
@@ -220,6 +223,9 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                     onSelectDetail={block.selectRecord}
                     opacityByKind={block.preferences.opacity}
                     labels={block.preferences.labels}
+                    colourBy={block.preferences.colourBy}
+                    findingFeatureIds={context.latestCheck?.stale ? [] : context.latestCheck?.findings.flatMap(finding => finding.featureIds) ?? []}
+                    detailRights={Object.fromEntries(block.dossier.data?.records.filter(record => record.kind === "space").map(record => [record.id, rightsClass(record)]) ?? [])}
                   />
                 </div>
               </>
@@ -243,7 +249,8 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                 <Button icon="eye" aria-pressed={block.showConflicts} disabled={!block.conflictCount} onClick={block.toggleConflicts}>{block.showConflicts ? "Hide conflicts" : "Show conflicts"}</Button>
               </div>}
             </aside>}
-            <div className="ui-map-world" inert={sheetOpen} aria-hidden={sheetOpen}><label>Source world <select aria-label="Source world" value={block.world} onChange={e=>block.setWorld(e.target.value)}>{block.worlds.map(w=><option key={w} value={w}>{w==='synthetic'?'Test fixture':w==='observed'?'Observed sources':w==='planned'?'Planned sources':'Hypothetical sources'}</option>)}</select></label>{block.selected?.kind==='building'&&block.details.length>0&&<button className="ui-button" aria-pressed={explode>0} onClick={()=>setExplode(v=>v?0:1.8)}>{explode?'Stack floors':'Separate floors'}</button>}</div>
+            <div className="ui-map-world" inert={sheetOpen} aria-hidden={sheetOpen}><label>Source world <select aria-label="Source world" value={block.world} onChange={e=>block.setWorld(e.target.value)}>{block.worlds.map(w=><option key={w} value={w}>{w==='synthetic'?'Synthetic source world':w==='observed'?'Observed sources':w==='planned'?'Planned sources':'Hypothetical sources'}</option>)}</select></label>{block.selected?.kind==='building'&&block.details.length>0&&<button className="ui-button" aria-pressed={explode>0} onClick={()=>setExplode(v=>v?0:1.8)}>{explode?'Stack floors':'Separate floors'}</button>}{explode > 0 && <span role="status">Display only. Measurements unchanged.</span>}</div>
+            <div inert={sheetOpen} aria-hidden={sheetOpen}><MapPresentation block={block}/></div>
             <div className="ui-map-compass" inert={sheetOpen} aria-hidden={sheetOpen}>
               <Button
                 aria-label="Orient north"
@@ -271,20 +278,6 @@ export default function BlockPage({ areaId }: { areaId: string }) {
               />
             </div>
             <div className="ui-map-bottom" inert={sheetOpen} aria-hidden={sheetOpen}>
-              <div className="ui-map-legend">
-                <span>
-                  <i style={{ background: "#b9cbbb" }} />
-                  Buildings
-                </span>
-                <span>
-                  <i style={{ background: "#cfbb88" }} />
-                  Parcels
-                </span>
-                <span>
-                  <i style={{ background: "#6596af" }} />
-                  Utilities
-                </span>
-              </div>
               {!inspectorOpen && block.selected && (
                 <button className="ui-button" ref={inspectorButton} onClick={() => setInspectorOpen(true)}><Icon name="info" />Inspector</button>
               )}

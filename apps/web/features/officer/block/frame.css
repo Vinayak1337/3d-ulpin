@@ -169,7 +169,6 @@
 .ulpin-app.studio-operations .ui-map-compass button,
 .ulpin-app.studio-operations .ui-map-zoom button { min-width: 44px; min-height: 44px; }
 .ulpin-app.studio-operations .ui-map-status,
-.ulpin-app.studio-operations .ui-map-legend,
 .ulpin-app.studio-operations .ui-active-finding { font-size: 12px; }
 @media (max-width: 620px) {
   .ulpin-app.studio-operations .ui-block-page { min-height: 0; }

@@ -5,12 +5,12 @@ import type { AreaNavigation, SceneDetail } from "@/components/AreaViewer";
 import { hasGoogleAttribution, hasOsmAttribution } from "@/lib/map-attribution";
 import {
   featureBounds,
-  featureColor,
   geometryPath,
   geometryPoints,
   geometryPrimitives,
   type ViewBox,
 } from "./geometry";
+import { displayClass, recordOutline, rightColourToken, utilityType, type ColourBy, type SavedRightKind } from "./mapStyleModel";
 export default function MapPlan({
   features,
   extent,
@@ -24,6 +24,8 @@ export default function MapPlan({
   labels = false,
   interactive = true,
   selectedDetailId,onSelectDetail,opacityByKind,
+  colourBy = "none", findingFeatureIds = [],
+  detailRights = {},
 }: {
   features: PhysicalFeature[];
   extent?: [number, number, number, number] | null;
@@ -39,6 +41,9 @@ export default function MapPlan({
   selectedDetailId?:string|null;
   onSelectDetail?:(id:string)=>void;
   opacityByKind?:Readonly<Record<string,number>>;
+  colourBy?: ColourBy;
+  findingFeatureIds?: string[];
+  detailRights?: Record<string, SavedRightKind>;
 }) {
   const gridId=useId().replaceAll(':','');
   const [view, setView] = useState<ViewBox>(() =>
@@ -143,6 +148,8 @@ export default function MapPlan({
       }}
     >
       <defs>
+        <pattern id={`${gridId}-estimated`} width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M 0 0 V 8" stroke="var(--ui-map-building-edge)" strokeWidth="2"/></pattern>
+        <pattern id={`${gridId}-unknown`} width="8" height="8" patternUnits="userSpaceOnUse"><path d="M 0 0 L 8 8 M 8 0 L 0 8" stroke="var(--ui-map-building-edge)" strokeOpacity=".3" strokeWidth=".8"/></pattern>
         <pattern
           id={gridId}
           width={view[2] / 30}
@@ -152,7 +159,7 @@ export default function MapPlan({
           <path
             d={`M ${view[2] / 30} 0 L 0 0 0 ${view[2] / 30}`}
             fill="none"
-            stroke="#b8c9c1"
+            stroke="var(--ui-map-building-edge)"
             strokeOpacity=".24"
             strokeWidth={view[2] / 1500}
           />
@@ -163,7 +170,7 @@ export default function MapPlan({
         y={view[1]}
         width={view[2]}
         height={view[3]}
-        fill="#eaf0ea"
+        fill="var(--ui-map-ground)"
       />
       <rect
         x={view[0]}
@@ -181,15 +188,22 @@ export default function MapPlan({
           const active = selectedId === feature.id,
             hit = highlightedIds.includes(feature.id);
           const p = geometryPoints(feature.geometry)[0];
-          const color = active ? "#92b9a0" : featureColor(feature);
+          const evidence = displayClass(feature), status = recordOutline(feature);
+          const selectable = interactive && evidence !== "illustrative";
+          const base = feature.kind === "road" ? "var(--ui-map-road)" : feature.kind === "public_land" ? "var(--ui-map-public-land)" : "var(--ui-map-building)";
+          const type = utilityType(feature);
+          const colour = colourBy === "utilities" && feature.kind === "utility" && type !== "unknown" ? `var(--ui-utility-${type})`
+            : colourBy === "findings" && findingFeatureIds.includes(feature.id) ? "var(--ui-mark-warning)"
+            : base;
+          const color = active ? "var(--ui-map-selected)" : colourBy === "none" || colourBy === "rights" || colourBy === "readiness" ? base : colour;
           const select = () => {
-            if (!drag.current?.moved) onSelect?.(feature.id);
+            if (selectable && !drag.current?.moved) onSelect?.(feature.id);
           };
           return (
             <g
               key={feature.id}
-              role={interactive ? "button" : undefined}
-              tabIndex={interactive ? 0 : undefined}
+              role={selectable ? "button" : undefined}
+              tabIndex={selectable ? 0 : undefined}
               aria-label={feature.name}
               onClick={select}
               onKeyDown={(e) => {
@@ -198,7 +212,7 @@ export default function MapPlan({
                   select();
                 }
               }}
-              style={{ cursor: interactive ? "pointer" : "default" }}
+              style={{ cursor: selectable ? "pointer" : "default" }}
             >
               {geometryPrimitives(feature.geometry).map((primitive, i) =>
                 primitive.kind === "point" ? (
@@ -210,24 +224,27 @@ export default function MapPlan({
                     fill={color}
                   />
                 ) : (
+                  <g key={i}>
                   <path
-                    key={i}
                     d={primitive.path}
-                    fill={primitive.kind === "line" ? "none" : color}
-                    fillOpacity={(feature.kind === "parcel" ? 0.15 : 0.9)*(opacityByKind?.[feature.kind]??1)}
+                    fill={primitive.kind === "line" || feature.kind === "parcel" ? "none" : color}
+                    fillOpacity={(evidence === "illustrative" ? 0.2 : 0.9)*(opacityByKind?.[feature.kind]??1)}
                     fillRule="evenodd"
                     stroke={
                       hit
-                        ? "#c23c2e"
+                        ? "var(--ui-mark-warning)"
                         : active
-                          ? "#396e52"
+                          ? "var(--ui-map-selected)"
                           : feature.kind === "parcel"
-                            ? "#ac944f"
-                            : "#768f82"
+                            ? "var(--ui-map-parcel-line)"
+                            : "var(--ui-map-building-edge)"
                     }
                     strokeWidth={active || hit ? 2.5 : 1}
+                    strokeDasharray={status === "draft" ? "5 3" : status === "retired" ? "1 3" : status === "unknown" ? "3 3" : undefined}
                     vectorEffect="non-scaling-stroke"
                   />
+                  {primitive.kind === "polygon" && feature.kind !== "parcel" && (evidence === "estimated" || evidence === "unknown") && <path d={primitive.path} fill={`url(#${gridId}-${evidence})`} fillRule="evenodd" pointerEvents="none"/>}
+                  </g>
                 ),
               )}
               {(active || labels) && p && (
@@ -236,12 +253,12 @@ export default function MapPlan({
                   y={-p[1] - fontSize * 0.9}
                   fontSize={fontSize}
                   fontWeight={active ? 650 : 450}
-                  fill="#2d4b3e"
+                  fill="var(--ui-ink)"
                   paintOrder="stroke"
-                  stroke="#f6faf7"
+                  stroke="var(--ui-map-halo)"
                   strokeWidth={fontSize * 0.3}
                 >
-                  {featureLabels?.[feature.id] || feature.name}
+                  {featureLabels?.[feature.id] || feature.name}{feature.kind === "building" && (feature.height.value == null || feature.height.state === "unknown") ? " · height unknown" : ""}
                 </text>
               )}
               <title>
@@ -256,8 +273,8 @@ export default function MapPlan({
           <path
             key={d.id}
             d={geometryPath(d.localGeometry!)}
-            fill={selectedDetailId===d.id?'#dab767a0':'#568e8580'}
-            stroke="#285c53"
+            fill={selectedDetailId===d.id ? "var(--ui-map-selected)" : colourBy === "rights" && detailRights[d.id] && detailRights[d.id] !== "unknown" ? `var(--ui-${rightColourToken[detailRights[d.id] as Exclude<SavedRightKind, "unknown">]})` : "var(--ui-map-building)"}
+            stroke="var(--ui-map-building-edge)"
             strokeWidth={1.5}
             vectorEffect="non-scaling-stroke"
             role={interactive?'button':undefined}
