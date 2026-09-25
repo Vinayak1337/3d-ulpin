@@ -100,7 +100,7 @@ export function redactDerivative<T>(value: T): T {
     if (depth > 40) return '[redacted depth limit]';
     if (typeof input === 'string') {
       // Source cells and upstream envelopes sometimes contain JSON encoded as text.
-      if (/^[\s]*[\[{]/.test(input)) {
+      if (/^[\s]*[\[{]/.test(input) || /^\s*-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\s*$/.test(input)) {
         try { return JSON.stringify(visit(JSON.parse(maskJsonNumberTokens(input)), depth + 1)); }
         catch { /* ordinary text */ }
       }
