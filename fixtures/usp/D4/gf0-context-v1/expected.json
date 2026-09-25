@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "gf0-context-expected/1",
+  "sourceSha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+  "featureCount": 9,
+  "geometryType": "LineString",
+  "osmWayIds": [
+    "235103510",
+    "235115525",
+    "423590906",
+    "423591067",
+    "423591085",
+    "423591232",
+    "423591239",
+    "423591301",
+    "1081317173"
+  ],
+  "boundsLonLat": [
+    77.06239432592996,
+    28.619292929914288,
+    77.0652302,
+    28.620458040214583
+  ],
+  "sourceLicence": "ODbL-1.0",
+  "noLegalRoadWidthOrParcel": true
+}

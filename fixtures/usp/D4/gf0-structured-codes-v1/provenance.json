@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "gf0-source-provenance/1",
+  "packId": "D4",
+  "profile": "gf0-structured-codes-v1",
+  "assetId": "lgd-districts.csv",
+  "sourceFamily": "Local Government Directory districts, Ministry of Panchayati Raj",
+  "sourceRelease": "resource page updated 2026-09-23; CSV row epoch not stated",
+  "sourceUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts",
+  "sourceResourceId": "37231365-78ba-44d5-ac22-3deec40b9197",
+  "acquiredAt": "2026-09-25T00:17:42.756870Z",
+  "sourceOriginalSha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+  "sourceOriginalBytes": 89622,
+  "acquisitionChannel": "published data endpoint linked from public resource page; access query token omitted from repository evidence",
+  "format": "CSV UTF-8 with header",
+  "parser": "Python 3 standard csv.DictReader, no numeric coercion",
+  "nativeIdentifiers": [
+    "state_code",
+    "district_code",
+    "state_census2011_code",
+    "district_census2011_code"
+  ],
+  "horizontalCrs": null,
+  "horizontalUnit": null,
+  "verticalReference": null,
+  "verticalUnit": null,
+  "heightType": null,
+  "benchmark": null,
+  "coverage": {
+    "description": "785 district rows across 36 state/UT codes; administrative code table only",
+    "geometry": null
+  },
+  "sourceDate": null,
+  "licenceFamily": "GODL-India",
+  "attribution": "Ministry of Panchayati Raj, Local Government Directory (LGD), via data.gov.in",
+  "licenceReference": "https://www.meity.gov.in/static/uploads/2024/02/Gazette-Notification_OpenDataLicense_13.02.2017.pdf",
+  "redistributionPermission": "documented by OGD platform footer and GODL for published non-sensitive data, subject to attribution/exemptions",
+  "trainingPermission": "not assessed",
+  "purpose": "test_only",
+  "intendedRole": "structured_code_parser_only",
+  "dependencies": [],
+  "missingCapabilities": [
+    "spatial_geometry",
+    "parcel_identifiers",
+    "current_official_registration",
+    "ownership",
+    "height_or_floor_data"
+  ],
+  "stages": {
+    "discovered": "passed",
+    "acquired": "passed",
+    "inspected": "passed",
+    "qualified": "code_parser_only",
+    "tested": "passed_bounded_parser"
+  },
+  "sourceTermsEvidence": [
+    "https://www.data.gov.in/resource/local-government-directory-lgd-districts",
+    "https://www.meity.gov.in/static/uploads/2024/02/Gazette-Notification_OpenDataLicense_13.02.2017.pdf"
+  ],
+  "licenceFamilyByAsset": {
+    "lgd-districts.csv": "GODL-India",
+    "expected.json": "project_authored"
+  },
+  "limitations": [
+    "Portal page contains a sandbox warning; independent official-currentness check remains open.",
+    "Direct public CSV file URL returned HTTP 500; published data endpoint returned CSV 200."
+  ],
+  "privacy": "public_source_no_personal_records",
+  "authoredExpectedAsset": {
+    "id": "expected.json",
+    "packVersion": 1,
+    "sourceFamily": "project_authored_test_oracle",
+    "sourceRelease": "DATA-01 2026-09-25",
+    "nativeIdentifiers": null,
+    "sourceUrl": null,
+    "sourceResourceId": null,
+    "acquiredAt": "2026-09-25",
+    "originalSha256": "65ceb3f4b26487c9431823091b741f77e5657dec25f017765b5422676dce609a",
+    "originalBytes": 676,
+    "format": "JSON",
+    "parser": "Python 3 standard json",
+    "horizontalCrs": null,
+    "horizontalUnit": null,
+    "heightType": null,
+    "verticalReference": null,
+    "verticalUnit": null,
+    "benchmark": null,
+    "coverage": "only the named source asset in this pack",
+    "sourceDate": null,
+    "licenceFamily": "project_authored",
+    "attribution": "3D ULPIN DATA-01 bounded CSV oracle",
+    "redistributionPermission": "project authored",
+    "trainingPermission": "not applicable",
+    "privacy": "no personal records",
+    "purpose": "authored_demo",
+    "dependencies": [
+      "lgd-districts.csv"
+    ],
+    "subsetLineage": [],
+    "missingCapabilities": [
+      "spatial_geometry",
+      "parcel_identifiers",
+      "current_registration",
+      "ownership",
+      "height_or_floor_data"
+    ]
+  },
+  "testedEvidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+}
