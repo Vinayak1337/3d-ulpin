@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T15:40:19.798573+00:00",
+  "updatedAt": "2026-09-25T15:41:32.355033+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "d43b96b92ce554924b14f88b22694eaa07387c42",
+    "acceptedStagingBase": "1678c7fd70a242468d4d0ee9b68011b92d875a92",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -178,7 +178,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "redirecting_to_official_sources",
+      "status": "assigned_DATA-09",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1110,6 +1110,46 @@
         "DATA02-R3"
       ],
       "supersededAt": "2026-09-25T15:40:19.798573+00:00"
+    },
+    {
+      "assignmentId": "DATA-09",
+      "attempt": 1,
+      "callbackId": "ulpin-DATA-09-attempt-1",
+      "objective": "Acquire official-source Indian reference area inputs under D013; data.gov.in first; record unsupported coverage honestly",
+      "baseCommit": "1678c7fd70a242468d4d0ee9b68011b92d875a92",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/DATA-09-official-reference-area",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "fixtures/usp/D4/reference-area-*/ official-source manifests and permitted small extracts",
+        "scripts/usp/data/DATA-09* acquisition/format/source-integrity checks only",
+        "docs/evidence/usp/finale/GF-DATA/DATA-09/ new evidence"
+      ],
+      "exclusions": [
+        "Any authored synthetic/source/sample data or invented expected facts",
+        "Third-party community/vendor layers treated as official",
+        "Production processor/UI/shared schema/dependency edits",
+        "Old fixture/evidence modifications or deletion",
+        "Ledger/gate promotion",
+        "Staging/main merges,remote push,public deployment"
+      ],
+      "acceptance": [
+        "Read D013/rootAGENTS overriding older H29/H30 synthetic and community-source instructions",
+        "Choose0.5\u20132km2 Indian area associated with source-located official D5 plan where possible",
+        "data.gov.in-first discovery with official authority/source/licence/geography/hashes per asset",
+        "Each layer tested from actual downloaded bytes or failed with specific reason; no catalog-only implementation claims",
+        "Official original bytes protected outsideGit when large/restricted; derived extracts trace original",
+        "No synthetic replacement of unavailable cases; no real-source accuracy/runtime gate claim without evidence"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -1960,6 +2000,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "0871de2a85799791e1fea688a28ab6d85885ee5b",
       "result": "corrections_required_not_integrated"
+    },
+    {
+      "callbackId": "ulpin-DATA-02-attempt-2",
+      "assignmentId": "DATA-02",
+      "attempt": 2,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "0871de2a85799791e1fea688a28ab6d85885ee5b",
+      "result": "stopped_by_user_override_clean_no_new_files"
     }
   ],
   "observations": [
@@ -2035,7 +2083,7 @@
       "card": "DATA-09",
       "title": "Real reference area",
       "needs": "DATA-01, DATA-05",
-      "status": "pending"
+      "status": "dispatched_official_sources_only"
     },
     {
       "card": "LEAD-01",
