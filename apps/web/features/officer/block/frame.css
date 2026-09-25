@@ -120,7 +120,7 @@
   .ulpin-app.studio-operations .ui-panel-switches button { min-height: 34px; padding: 4px 5px; }
   .ulpin-app.studio-operations .ui-map-toolbar > .ui-button { min-height: 38px; padding: 5px; }
   .ulpin-app.studio-operations .ui-on-demand-panel { inset: 0; width: 100%; border-radius: 0; border: 0; box-shadow: none; }
-  .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { inset: 0; width: 100%; max-height: none; }
+  .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { inset: 42px 0 0; width: 100%; max-height: none; }
   .ulpin-app.studio-operations .ui-findings-tray { height: 172px; max-height: 172px; }
 }
 @media (prefers-reduced-motion: reduce) {

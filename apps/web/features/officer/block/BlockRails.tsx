@@ -349,7 +349,7 @@ export function BlockInspector({
                   }
                 >
                   {selected.worldStatus === "synthetic"
-                    ? "Fictional demo"
+                    ? "Test fixture"
                     : selected.worldStatus}
                 </Badge>
                 <h2>{selected.name}</h2>
@@ -440,7 +440,7 @@ export function BlockInspector({
                     <dt>Source status</dt>
                     <dd>
                       {feature.worldStatus === "synthetic"
-                        ? "Fictional training record"
+                        ? "Test fixture"
                         : feature.worldStatus}
                     </dd>
                     <dt>Land use / zoning</dt>
