@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "ulpin-lead-review/1",
+  "assignmentId": "UI-03",
+  "attempt": 1,
+  "reviewedAt": "2026-09-25T19:35:34.840292+00:00",
+  "baseCommit": "62a2802cb24c9760038a8c941c17b0b8677a6ab1",
+  "codeCommit": "dec00dc1b00a78c1172a1e6ed67622fc79cc7539",
+  "resultCommit": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
+  "disposition": "corrections_required_not_integrated",
+  "reviewer": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "independentModelFamily": false
+  },
+  "inspected": [
+    "source diff and report",
+    "new map presentation/model/unit tests",
+    "final actual selected-3d-1440 and selected-1024 screenshots"
+  ],
+  "checks": {
+    "workerReported": "typecheck,3 unit tests,icon/design scan,isolated baseline/final browser and integrity passed",
+    "leadTestRerun": false,
+    "reason": "Concrete source and scope failures found; do not treat worker report as independent acceptance.",
+    "productionBuild": "guard blocked by unrelated port3000 service; not run"
+  },
+  "findings": [
+    {
+      "id": "UI03-R1",
+      "priority": "P1",
+      "path": "apps/web/features/officer/block/BlockPage.tsx",
+      "line": 252,
+      "finding": "Affected area-map presentation remains the old BlockPage composition with a new absolute-positioned control/legend overlay and only the fixed legend removed. This does not meet the assigned progressive replacement of the map presentation.",
+      "required": "Within UI-03 replace the map presentation/composition from the design references (toolbar, canvas slots, level rail/legend/readout). Retain service/runtime hooks and unique inspection as explicit slots; do not rewrite unrelated screens. Remove superseded map markup/styles after consumer migration and record exact retained/pending dependencies."
+    },
+    {
+      "id": "UI03-R2",
+      "priority": "P1",
+      "path": "apps/web/features/officer/block/MapPresentation.tsx",
+      "line": 61,
+      "finding": "hasUnderground treats lower < 0 as below ground for any vertical reference and for utilities without checking reference. An absolute negative elevation is not proof of underground placement. The renderer also filters details at zero, while a stored underground preference can remain active when the control is disabled.",
+      "required": "Use explicit recorded ground-relative semantics or a sourced compatible ground comparison; otherwise unavailable. Apply the same eligibility to rendering, filtering, enabled/checked state and stored preference changes; never infer ground from numeric zero."
+    },
+    {
+      "id": "UI03-R3",
+      "priority": "P2",
+      "path": "apps/web/features/officer/block/MapPresentation.tsx",
+      "line": 24,
+      "finding": "LevelRail chooses the first available detail/area vertical reference and labels every floor elevation with it. Mixed or missing per-record references can be presented under another record datum.",
+      "required": "Show a shared datum only after proving all displayed elevations share it; otherwise show per-level recorded references or explicit mixed/missing state. Do not fall back to an area datum for unreferenced numeric levels without an explicit valid transform."
+    },
+    {
+      "id": "UI03-R4",
+      "priority": "P1",
+      "path": "apps/web/features/officer/block/BlockPage.tsx",
+      "line": 127,
+      "finding": "Recorded dataKind demonstration is changed from Test fixture to Historical source, concealing known synthetic classification. Inspector/source selectors also replace the required Test fixture status with an invented status phrase.",
+      "required": "Restore record-derived classification and fixed provenance labels from current policy. Preserve stored names exactly; no fabricated/inferred provenance or blanket historical relabeling."
+    },
+    {
+      "id": "UI03-R5",
+      "priority": "P1",
+      "path": "tests/usp-map-presentation.test.ts",
+      "line": 6,
+      "finding": "New tests author source-like geometry/height (12 m), a dummy Recorded party and constructed ownership/shared-use records, contrary to the explicit no agent-authored synthetic source/fixture rule.",
+      "required": "Remove these new invented source records from active tests, preserving attempt1 history. Use unchanged traceable official facts/fixtures where available and existing immutable historical corpus only for explicitly retained regression. Pure enum/format assertions may test constants without manufacturing source facts. Missing positive coverage stays unqualified."
+    },
+    {
+      "id": "UI03-R6",
+      "priority": "P2",
+      "path": "apps/web/features/studio/product/SavedSceneViewport.tsx",
+      "line": 135,
+      "finding": "Every non-evidence-linked feature receives map-building entity colour regardless of kind. Entity colours override kind colours in TileLayer, so unknown-class roads, parcels and public land get building grey instead of their defined base style.",
+      "required": "Separate geometry-class uncertainty styling from kind base colour; preserve roads/parcel/public-land encodings and one question colour without inventing geometry. Review opacity/selection precedence as part of the change."
+    }
+  ],
+  "retainedLimitations": [
+    "Qualified DATA09/H22 source coverage missing",
+    "3D hatching and numeric fixed-camera V-shot not qualified",
+    "All GF gates pending"
+  ]
+}
