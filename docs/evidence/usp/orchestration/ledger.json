@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:25:30.579865+00:00",
+  "updatedAt": "2026-09-25T21:27:15.423956+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -2199,7 +2199,7 @@
       "assignmentId": "REVIEW-FND-03",
       "attempt": 2,
       "callbackId": "review-FND-03-attempt-2",
-      "status": "dispatched",
+      "status": "accepted_bounded_source_review_runtime_qualification_open",
       "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
       "codeCommit": "9cb926bc54b87e5fa9da58983bfcd8fed05a87b9",
       "baseCommit": "36d2fe2cba4ec21c228ebbdca2475338488d5bb1",
@@ -2210,6 +2210,36 @@
       },
       "ownership": [
         "focused prior findings review and report only"
+      ],
+      "resultCommit": "4c95a783741563adde999958c4c9d184d7dca755"
+    },
+    {
+      "assignmentId": "UI-08-priority",
+      "attempt": 1,
+      "callbackId": "ulpin-UI-08-priority",
+      "status": "queued_after_scalar_privacy_fix",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "record-backed fresh Batches S1 presentation",
+        "remove reachable hardcoded sample content from finale routes",
+        "focused design check and report"
+      ],
+      "exclusions": [
+        "protected data purge or relabelling",
+        "invented data",
+        "new backend producers",
+        "serving preview changes before coordinated refresh"
+      ],
+      "reason": "User explicitly objected to legacy UI and forbidden fictional/sample content in persistent preview. UI08 has no producer dependency to start.",
+      "designReferences": [
+        "docs/design-system/README.md",
+        "docs/design-system/mockups/officer-studio/screens.md",
+        "/Users/vinayak/Downloads/3D_ULPIN_V2_REDESIGN_PACK_FINAL/images/anchors/"
       ]
     }
   ],
@@ -2958,9 +2988,10 @@
     }
   ],
   "nextSteps": [
-    "Keep persistent3187 preview running; Luna completes bounded read-only check.",
-    "Sol corrects remaining scalar JSON masking gap; Astra reviews exchange corrections independently.",
-    "Delegate accepted integration and coordinate preview refresh after manual check; subsequent handoffs name existing URL and served revision."
+    "Finish scalar privacy correction, then priority UI08 existing-record Batches replacement and remove reachable sample content.",
+    "Luna finishes current read-only check and returns exact visible violations; keep3187 running.",
+    "Coordinate manual check and safe preview refresh for UI replacement; do not present current legacy preview as completed design.",
+    "Delegate accepted exchange integration at a non-conflicting checkpoint; retain runtime qualification gaps."
   ],
   "processedCallbacks": [
     {
@@ -3223,6 +3254,11 @@
       "callbackId": "ulpin-FND-03-attempt-2",
       "resultCommit": "36d2fe2cba4ec21c228ebbdca2475338488d5bb1",
       "result": "follow-up review dispatched; route roundtrip remains unqualified"
+    },
+    {
+      "callbackId": "review-FND-03-attempt-2",
+      "resultCommit": "4c95a783741563adde999958c4c9d184d7dca755",
+      "result": "three prior issues resolved; same-family source-review acceptance only; official route roundtrip and standards qualification open"
     }
   ],
   "observations": [
