@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:47:07.208926+00:00",
+  "updatedAt": "2026-09-25T22:21:13Z",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -13,13 +13,13 @@
     "verification": "CODEX_THREAD_ID, list_threads and current session turn_context"
   },
   "integration": {
-    "branch": "feat/ulpin-finale-full-product",
-    "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
+    "branch": "staging",
+    "worktree": "/Users/vinayak/Desktop/3D Ulpin",
     "acceptedStagingBase": "80e1e9cf46a49eefb1d4024efe14f82c177ec85d",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
-    "existingCheckout": "Concurrent user-staged AGENTS/UI-skill edits preserved during plan integration.",
+    "existingCheckout": "Original user skill and AGENTS edits remain staged; one registered checkout after local consolidation.",
     "acceptedCommits": [
       {
         "sourceCommit": "ab179811aef412a6735b171928a63d8c9d3091c6",
@@ -100,7 +100,18 @@
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
     "remoteStaging": "f45bbc7ad69d826d2fdca19d83e0dcf568bf95fa",
-    "publication": "local integration only; not pushed"
+    "publication": "local integration only; not pushed",
+    "consolidation": {
+      "mergeHeadBeforeReceipt": "4e7588de69e583a8063ea029e42d9637502e5ec2",
+      "registeredWorktrees": 1,
+      "removedWorktrees": 20,
+      "backupRoot": "/Users/vinayak/.codex/backups/ulpin-consolidation-20260926",
+      "previewUrl": "http://127.0.0.1:3187/studio/work",
+      "previewAppPid": 50560,
+      "previewServices": "existing isolated PostgreSQL, MinIO and Redis containers and volumes retained",
+      "publication": "local staging only; no push, main change or deployment",
+      "receipt": "docs/evidence/usp/orchestration/consolidation-2026-09-26.md"
+    }
   },
   "scope": {
     "sequence": [
@@ -3129,10 +3140,9 @@
     }
   ],
   "nextSteps": [
-    "Sol corrects provenance and safely app-only refreshes same3187; retain existing service volumes.",
-    "Use completed DATA provenance report for correction; no duplicate discovery or inferred official status.",
-    "Luna visually checks corrected pin when ready; avoid duplicate check of intermediate candidate.",
-    "Delegate accepted integration at safe checkpoint; keep real-source/runtime qualifications open."
+    "Keep the single original staging checkout and coordinate the pinned preview on port 3187.",
+    "Complete independent manual UI-08 acceptance on the corrected provenance pin and retain official-source/runtime qualifications honestly.",
+    "Continue the next finale gate from release-plan.json without synthetic fixtures or public activation."
   ],
   "processedCallbacks": [
     {
@@ -3441,6 +3451,16 @@
       "callbackId": "data-UI08-provenance",
       "resultCommit": "0e941e423edca2f81f0ef979cf74c3ecf39665af",
       "result": "existing metadata findings delivered to Sol; no official classification invented"
+    },
+    {
+      "callbackId": "ulpin-UI08-provenance-fix",
+      "resultCommit": "de863a4",
+      "result": "Corrected provenance code and report integrated through local staging; manual acceptance remains open."
+    },
+    {
+      "callbackId": "consolidation-complete",
+      "mergeHeadBeforeReceipt": "4e7588de69e583a8063ea029e42d9637502e5ec2",
+      "result": "One original staging checkout; 20 extra worktrees removed after backup; guarded preview moved app-only to original checkout."
     }
   ],
   "observations": [

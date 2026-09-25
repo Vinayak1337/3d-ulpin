@@ -43,7 +43,7 @@ Worker finishes -> returns exact commit and concise evidence -> lead reviews the
 
 Testers/reviewers own reports, not production code. They return reproducible issues with route/action, expected versus actual behavior, severity and a screenshot only when useful. Send fixes to the implementation lane. If it is already coding, choose a safe checkpoint or queue the fix; never let two owners edit the same seam. Blocking defects prevent integration of that result, not unrelated work.
 
-Each implementation uses an isolated worktree and pinned base. Preserve original checkout changes. Integrate one accepted change at a time through a delegated execution assignment. Keep main unchanged; no push/deploy/public activation without authorization. Do not reset populated services, rewrite originals, overwrite credentials or kill unrelated processes.
+Current checkout policy, 26 September 2026: keep one registered checkout at the original `staging` directory. Record a pinned base for each assignment, use branches without creating worktrees, and coordinate file ownership before parallel work. Preserve original checkout changes and its index state. Integrate one accepted change at a time through a delegated execution assignment. Keep main unchanged; no push/deploy/public activation without authorization. Do not reset populated services, rewrite originals, overwrite credentials or kill unrelated processes.
 
 ## Lean verification
 
@@ -59,7 +59,7 @@ Use real unchanged official sources, data.gov.in first or the responsible issuer
 
 Reserve `http://127.0.0.1:3187` for the user-visible running preview; temporary verification must use other ports. Verify the port is free before first startup and never kill an unrelated listener. Keep this loopback-only server running after handoff until the user requests it stopped or maintenance requires a coordinated restart. No scheduler or polling automation is needed.
 
-The coding worker maintains a dedicated pinned preview worktree and owned isolated services using the existing guarded setup. Never serve from a worktree whose branch is changing during implementation. Preserve original/linked data and keep providers disabled. Record the served commit, URL, owned process/service identities and stop command without secrets. A candidate preview must be labelled as awaiting review; a running server is not release acceptance.
+The coding worker serves the pinned preview from the sole original checkout with owned isolated services and the existing guard. Coordinate app-only restarts at safe checkpoints when changing the served revision. Preserve original/linked data and keep providers disabled. Record the served commit, URL, owned process/service identities and stop command without secrets. A candidate preview must be labelled as awaiting review; a running server is not release acceptance.
 
 Reuse this URL for manual testing and user status checks. Every manual handoff and relevant shipped-work update names the already-running URL and served revision. Refresh the same preview only at a safe checkpoint coordinated with the active tester; do not silently test one revision while changing its files. Do not tear down the persistent preview as part of unrelated test cleanup. User-entered preview changes are not permission to overwrite originals or discard the preview's state.
 
