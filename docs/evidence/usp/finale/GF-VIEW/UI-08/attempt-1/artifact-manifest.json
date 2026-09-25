@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "ui08-artifact-manifest/1",
+  "codeSha": "d8b95384bb802b3b1de121f650524aec21be7ab6",
+  "run": "local-c4b63017534069b9",
+  "artifacts": [
+    {
+      "path": "runs/local-c4b63017534069b9/browser-report.json",
+      "bytes": 3484,
+      "sha256": "93392696ecd922d60d4adb95e65b5a5b2016808ada483f83c66f4e66bbd10bb8"
+    },
+    {
+      "path": "runs/local-c4b63017534069b9/next-dev.log",
+      "bytes": 1701,
+      "sha256": "459e66db1b11869c7e4ea90c2207f940c7f8dd5bab2fb171ffed4088c89902fb"
+    },
+    {
+      "path": "runs/local-c4b63017534069b9/runner-receipt.json",
+      "bytes": 2225,
+      "sha256": "daf4af92a93a8cfb4683768d3b3334da5cced9425137ae89d4f6b22e41d26ae3"
+    },
+    {
+      "path": "runs/local-c4b63017534069b9/screenshots/S1-batches.png",
+      "bytes": 103602,
+      "sha256": "252f77575b6b153307b6b38ce9a4519c2f495393626ef4a392d8b64510434300"
+    },
+    {
+      "path": "runs/local-c4b63017534069b9/screenshots/S12-property-register.png",
+      "bytes": 80385,
+      "sha256": "c3baab9e784bf6b3680b9a5372c190f4975c79f186077a80c3c8e32f6fd9f635"
+    },
+    {
+      "path": "runs/local-c4b63017534069b9/screenshots/S4-area-map.png",
+      "bytes": 88594,
+      "sha256": "e374fc707b6e384107de4b4813ef6d43d064a6f99b6cdd4bc4508d48453a419b"
+    },
+    {
+      "path": "runs/local-c4b63017534069b9/screenshots/S5-building-selection.png",
+      "bytes": 130297,
+      "sha256": "30ffd97af8070dfe14bf518413399e93b5e328781a082699b5da208067ccbca4"
+    },
+    {
+      "path": "runs/local-c4b63017534069b9/screenshots/capture-manifest.json",
+      "bytes": 1396,
+      "sha256": "b1ff1160e4000b81676265862f8c8b65245552ff53e78e8a6a682d10b191a4be"
+    },
+    {
+      "path": "runs/local-c4b63017534069b9/screenshots/saved-map-unselected.png",
+      "bytes": 38851,
+      "sha256": "29854a519f6da33bd233994f62ea4196c0ff1bdb733c26512f7f78be2ad87f69"
+    }
+  ]
+}

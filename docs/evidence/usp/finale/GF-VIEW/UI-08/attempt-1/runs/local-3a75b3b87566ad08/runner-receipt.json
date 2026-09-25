@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "ui08-isolated-preview/1",
+  "scopeId": "local-3a75b3b87566ad08",
+  "codeSha": "e2bc9f855b09d9db34bb1405e80e51e5d9b5e29a",
+  "status": "FAILED",
+  "source": "hash-pinned repo-data snapshot, retained historical regression only",
+  "commands": [
+    {
+      "label": "code-sha",
+      "exitCode": 0
+    },
+    {
+      "label": "docker-context",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-containers",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-volumes",
+      "exitCode": 0
+    },
+    {
+      "label": "owned-services-start",
+      "exitCode": 1
+    },
+    {
+      "label": "owned-services-cleanup",
+      "exitCode": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "pinned-originals",
+      "databaseSha256": "92cbdeb930c7b20f9a90f7857f92787ebe2562c65892ad835a758bdf1b6cfda8",
+      "objectCount": 497
+    },
+    {
+      "name": "new-project-and-loopback-ports"
+    }
+  ],
+  "screenshots": [],
+  "limitation": "No DATA-09 reference scene qualification or production build.",
+  "error": "Error: owned-services-start failed (1): st-3a75b3b87566ad08-redis-1 Created \n Container ulpin-usptest-3a75b3b87566ad08-minio-init-1 Created \n Container ulpin-usptest-3a75b3b87566ad08-postgres-1 Starting \n Container ulpin-usptest-3a75b3b87566ad08-redis-1 Starting \n Container ulpin-usptest-3a75b3b87566ad08-minio-1 Starting \n Container ulpin-usptest-3a75b3b87566ad08-postgres-1 Started \n Container ulpin-usptest-3a75b3b87566ad08-redis-1 Started \n Container ulpin-usptest-3a75b3b87566ad08-minio-1 Started \n Container ulpin-usptest-3a75b3b87566ad08-minio-1 Waiting \n Container ulpin-usptest-3a75b3b87566ad08-minio-1 Healthy \n Container ulpin-usptest-3a75b3b87566ad08-minio-init-1 Starting \n Container ulpin-usptest-3a75b3b87566ad08-minio-init-1 Started \n Container ulpin-usptest-3a75b3b87566ad08-postgres-1 Waiting \n Container ulpin-usptest-3a75b3b87566ad08-minio-1 Waiting \n Container ulpin-usptest-3a75b3b87566ad08-minio-init-1 Waiting \n Container ulpin-usptest-3a75b3b87566ad08-redis-1 Waiting \n Container ulpin-usptest-3a75b3b87566ad08-minio-1 Healthy \n Container ulpin-usptest-3a75b3b87566ad08-postgres-1 Healthy \n Container ulpin-usptest-3a75b3b87566ad08-redis-1 Healthy \ncontainer ulpin-usptest-3a75b3b87566ad08-minio-init-1 exited (0)\n\n    at command (file:///Users/vinayak/.codex/worktrees/51a5/3D%20Ulpin/scripts/usp/ui/UI-08-isolated-preview.mjs:54:25)\n    at async file:///Users/vinayak/.codex/worktrees/51a5/3D%20Ulpin/scripts/usp/ui/UI-08-isolated-preview.mjs:113:3"
+}

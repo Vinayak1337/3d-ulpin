@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "ui08-isolated-preview/1",
+  "scopeId": "local-fa4a73130fa9c5c8",
+  "codeSha": "e2bc9f855b09d9db34bb1405e80e51e5d9b5e29a",
+  "status": "FAILED",
+  "source": "hash-pinned repo-data snapshot, retained historical regression only",
+  "commands": [
+    {
+      "label": "code-sha",
+      "exitCode": 0
+    },
+    {
+      "label": "docker-context",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-containers",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-volumes",
+      "exitCode": 0
+    },
+    {
+      "label": "owned-services-start",
+      "exitCode": 0
+    },
+    {
+      "label": "private-bucket-init",
+      "exitCode": 0
+    },
+    {
+      "label": "exact-database-restore",
+      "exitCode": 0
+    },
+    {
+      "label": "browser-captures",
+      "exitCode": 1
+    },
+    {
+      "label": "owned-services-cleanup",
+      "exitCode": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "pinned-originals",
+      "databaseSha256": "92cbdeb930c7b20f9a90f7857f92787ebe2562c65892ad835a758bdf1b6cfda8",
+      "objectCount": 497
+    },
+    {
+      "name": "new-project-and-loopback-ports"
+    },
+    {
+      "name": "snapshot-exact",
+      "tables": 44,
+      "objects": 497
+    }
+  ],
+  "screenshots": [],
+  "limitation": "No DATA-09 reference scene qualification or production build.",
+  "error": "Error: browser-captures failed (1): ──────────────────\n    test-results/browser/usp-ui08-content-UI-08-sav-38e5a-and-explicit-unselected-map/test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────\n    test-results/browser/usp-ui08-content-UI-08-sav-38e5a-and-explicit-unselected-map/video.webm\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: test-results/browser/usp-ui08-content-UI-08-sav-38e5a-and-explicit-unselected-map/error-context.md\n\n    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/browser/usp-ui08-content-UI-08-sav-38e5a-and-explicit-unselected-map/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/browser/usp-ui08-content-UI-08-sav-38e5a-and-explicit-unselected-map/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    tests/e2e/usp-ui08-content.spec.ts:5:1 › UI-08 saved-record screens and explicit unselected map \n\n    at command (file:///Users/vinayak/.codex/worktrees/51a5/3D%20Ulpin/scripts/usp/ui/UI-08-isolated-preview.mjs:54:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/vinayak/.codex/worktrees/51a5/3D%20Ulpin/scripts/usp/ui/UI-08-isolated-preview.mjs:138:3"
+}

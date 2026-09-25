@@ -1,0 +1,27 @@
+[
+  {
+    "screen": "S1-batches",
+    "route": "/studio/work",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/runs/local-b345d5aa74f0683a/screenshots/S1-batches.png"
+  },
+  {
+    "screen": "S4-area-map",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/runs/local-b345d5aa74f0683a/screenshots/S4-area-map.png"
+  },
+  {
+    "screen": "S5-building-selection",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=05a784ee-358c-4835-860d-4c47d0876aa4",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/runs/local-b345d5aa74f0683a/screenshots/S5-building-selection.png"
+  },
+  {
+    "screen": "S12-property-register",
+    "route": "/studio/properties/05a784ee-358c-4835-860d-4c47d0876aa4/register",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/runs/local-b345d5aa74f0683a/screenshots/S12-property-register.png"
+  },
+  {
+    "screen": "saved-map-unselected",
+    "route": "/studio/showcase",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/runs/local-b345d5aa74f0683a/screenshots/saved-map-unselected.png"
+  }
+]
