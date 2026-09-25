@@ -188,14 +188,15 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   for (const width of [620, 900]) {
     await page.setViewportSize({ width, height: 900 });
     measurements.push(await frameGeometry(page, `${width}-dark`));
+    if (screenshots) await page.screenshot({ path: join(screenshots, `d0-frame-dark-${width}.png`) });
   }
 
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.evaluate(() => { document.documentElement.style.zoom = "2"; });
+  // A 1440px display at 200% browser zoom exposes a 720 CSS-pixel viewport.
+  await page.setViewportSize({ width: 720, height: 900 });
   await expect(page.getByRole("button", { name: "Layers", exact: true })).toBeVisible();
   await expect(scope).toBeVisible();
   measurements.push(await frameGeometry(page, "1440-zoom-200-dark"));
-  await page.evaluate(() => { document.documentElement.style.zoom = ""; });
+  if (screenshots) await page.screenshot({ path: join(screenshots, "d0-frame-dark-zoom-200.png") });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.getByRole("button", { name: "Layers", exact: true }).click();
   const motion = await sheet.evaluate(element => getComputedStyle(element).transitionDuration);

@@ -80,6 +80,7 @@
 .ulpin-app .city-header-actions button,
 .ulpin-app .city-mobile-menu { min-height: 44px; height: 44px; border-radius: 8px; }
 .ulpin-app .city-header-actions button[aria-label="Local workspace status"] { width: 44px; min-width: 44px; }
+.ulpin-app .city-theme-toggle { min-width: 44px; }
 .ulpin-app .city-mobile-menu { width: 44px; min-width: 44px; }
 .ulpin-app .city-search input,
 .ulpin-app .city-search-results small,
