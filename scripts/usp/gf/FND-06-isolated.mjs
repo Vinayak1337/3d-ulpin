@@ -13,6 +13,8 @@ import { redact } from '../../engineering/isolation.mjs';
 const root = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
 const env = uspProcessEnvironment(process.env, root);
 const manualHold = env.ULPIN_FND06_MANUAL_HOLD === '1';
+const previewPort = env.ULPIN_PERSISTENT_PREVIEW === '1' ? 3187 : 3108;
+if (previewPort === 3187) assert(manualHold, 'Persistent port requires manual hold');
 assert.equal(env.ULPIN_ISOLATION_PROFILE, 'local-preview');
 const scope = assertUspIsolation(env);
 await assert.rejects(lstat(resolve(root, '.env')), { code: 'ENOENT' });
@@ -113,7 +115,7 @@ try {
     ['containers', ['ps', '-a'], '{{.ID}}'], ['volumes', ['volume', 'ls'], '{{.Name}}'],
   ]) assert.equal((await command(`empty-${label}`, 'docker', ['--context', dockerContext, ...args,
     '--filter', `label=com.docker.compose.project=${scope.project}`, '--format', format])).trim(), '');
-  for (const port of [25432, 29000, 29001, 26379, 28000, 3108]) await portFree(port);
+  for (const port of [25432, 29000, 29001, 26379, 28000, previewPort]) await portFree(port);
   report.checks.push({ name: 'new-project-and-loopback-ports' });
   ownsProject = true;
   await compose('owned-services-start', ['up', '-d', '--wait', 'postgres', 'minio', 'redis']);
@@ -151,7 +153,7 @@ try {
   const target = (await pool.query("SELECT a.id AS area_id, f.id AS building_id FROM map_areas a JOIN physical_features f ON f.area_id=a.id WHERE f.revision>0 AND f.body->>'kind'='building' ORDER BY CASE WHEN f.body->>'worldStatus'='observed' THEN 0 ELSE 1 END,a.id,f.id LIMIT 1")).rows[0] ?? null;
   const log = await open(resolve(output, 'next-dev.log'), 'w', 0o600);
   server = spawn(process.execPath, ['apps/web/node_modules/next/dist/bin/next', 'dev', 'apps/web',
-    '--webpack', '--hostname', '127.0.0.1', '--port', '3108'], { cwd: root, env: {...env, NODE_OPTIONS: `--require=${JSON.stringify(resolve(root, 'scripts/usp/gf/FND-06-no-egress.cjs'))}`, ULPIN_EGRESS_RECEIPT: resolve(output,'server-egress.jsonl')}, stdio: ['ignore', log.fd, log.fd] });
+    '--webpack', '--hostname', '127.0.0.1', '--port', String(previewPort)], { cwd: root, env: {...env, NODE_OPTIONS: `--require=${JSON.stringify(resolve(root, 'scripts/usp/gf/FND-06-no-egress.cjs'))}`, ULPIN_EGRESS_RECEIPT: resolve(output,'server-egress.jsonl')}, stdio: ['ignore', log.fd, log.fd] });
   await waitServer();
   if (manualHold) {
     report.status = 'READY_FOR_MANUAL';
