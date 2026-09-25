@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T17:17:12.202780+00:00",
+  "updatedAt": "2026-09-25T17:30:51.851946+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -82,6 +82,13 @@
         "assignmentId": "LEAD-01B",
         "integrationMethod": "merge preserving tested code ancestry",
         "scope": "Governance metadata validation; no real approvals or gate promotion"
+      },
+      {
+        "sourceCommit": "57bbc72a4f9f148c6f94017219cb09bd9b6ab42a",
+        "integrationCommit": "e369b02ded4ea21e3415ffa62ed5d143b079e908",
+        "assignmentId": "FND-04",
+        "integrationMethod": "merge preserving both attempts and exact tested ancestry",
+        "scope": "Geometry contract/SQL separation, current analytical qualification and participant-complete finding guards; no source accuracy pass"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -199,7 +206,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_FND-04_attempt_2",
+      "status": "ready_for_next_assignment",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1358,9 +1365,9 @@
         "Only unchanged official-source data for new domain coverage; metadata and schema tests distinct, missing domain/SQL coverage not disguised as a pass",
         "Run typecheck and relevant existing regressions through isolation/build guards; new receipts pin exact code/source hashes and unqualified claims"
       ],
-      "status": "dispatched",
+      "status": "accepted_bounded_geometry_boundary",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/FND-04/attempt-2/report.md",
-      "resultCommit": null,
+      "resultCommit": "57bbc72a4f9f148c6f94017219cb09bd9b6ab42a",
       "ownershipClarifications": [
         {
           "paths": [
@@ -1379,7 +1386,10 @@
       "correctionFindings": [
         "FND04-R1",
         "FND04-R2"
-      ]
+      ],
+      "testedCommit": "051584595fabbd1a42480233c7c2f7ea05984ca6",
+      "acceptedAt": "2026-09-25T17:30:51.851946+00:00",
+      "reviewRef": "docs/evidence/usp/orchestration/FND-04-attempt-2-review.json"
     }
   ],
   "capabilityChecklist": [
@@ -2271,6 +2281,15 @@
       "resultCommit": "0d07d3442c3dcf983c23b645100c3bc65a58a976",
       "result": "corrections_required_not_integrated",
       "normalization": "completed interpreted as ready for review; host alias normalized"
+    },
+    {
+      "callbackId": "ulpin-FND-04-attempt-2",
+      "assignmentId": "FND-04",
+      "attempt": 2,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "57bbc72a4f9f148c6f94017219cb09bd9b6ab42a",
+      "result": "accepted_bounded_geometry_boundary",
+      "normalization": "completed interpreted as ready for review; host alias normalized"
     }
   ],
   "observations": [
@@ -2400,7 +2419,7 @@
       "card": "FND-04",
       "title": "Geometry classes and display-derivative separation",
       "needs": "FND-01",
-      "status": "dispatched"
+      "status": "accepted_bounded_geometry_boundary"
     },
     {
       "card": "FND-05",
