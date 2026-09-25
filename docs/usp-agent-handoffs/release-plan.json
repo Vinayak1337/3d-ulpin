@@ -273,7 +273,7 @@
   "requirements": [
     {
       "id": "R-DATA",
-      "title": "Matched evidence from any permitted geography (labelled), exact acquisition stages and independent truth",
+      "title": "Official-source matched evidence, acquisition stages and independently source-derived expectations",
       "owner": "DATA",
       "gate": "GF0",
       "docs": [
@@ -395,7 +395,7 @@
     },
     {
       "id": "R-VIEW",
-      "title": "Retain Cesium and qualify actual source-shaped Studio path",
+      "title": "Desktop-first light-only Studio on retained Cesium with official source-shaped geometry",
       "owner": "UI",
       "gate": "GF2",
       "docs": [
@@ -415,7 +415,7 @@
     },
     {
       "id": "R-SCENE",
-      "title": "Real reference area and deterministic Enhanced view kept in sync with records",
+      "title": "Official Indian reference scene and deterministic styling without invented scene data",
       "owner": "UI",
       "gate": "GF2",
       "docs": [
@@ -1059,7 +1059,7 @@
       "C24"
     ],
     "status": "passed",
-    "receipt": "docs/evidence/usp/orchestration/LEAD-01A-plan-validation.json"
+    "receipt": "docs/evidence/usp/orchestration/official-source-plan-alignment.json"
   },
   "receiptContract": {
     "schemaVersion": "ulpin-test-receipt/1",
@@ -1084,5 +1084,27 @@
       "unqualifiedClaims"
     ],
     "note": "Machine checks provenance shape, commit ancestry, timestamps, distinct reviewer and file hashes, not truth of execution. agent.id records the producer identity; review.reviewer must differ. Independent milestone acceptance remains mandatory."
+  },
+  "deliveryPolicy": {
+    "effectiveDate": "2026-09-25",
+    "authority": "explicit_user_direction",
+    "document": "docs/usp-agent-handoffs/current-delivery-policy.md",
+    "data": {
+      "officialSourcesOnly": true,
+      "discoveryPriority": "data.gov.in then responsible official issuer",
+      "allowAgentAuthoredSyntheticData": false,
+      "allowInventedSceneData": false,
+      "derivedExtractsRequireOriginalHashes": true,
+      "historicalData": "preserve_only_not_current_qualification",
+      "unavailableCoverage": "unqualified_not_passed_or_waived"
+    },
+    "ui": {
+      "target": "desktop_first",
+      "theme": "light_only",
+      "themeSwitch": false,
+      "mobileOptimizationRequired": false,
+      "preserveFutureThemeAndResponsiveSeams": true,
+      "desktopAccessibilityRequired": true
+    }
   }
 }

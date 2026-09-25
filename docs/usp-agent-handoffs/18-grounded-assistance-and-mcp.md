@@ -1,5 +1,7 @@
 # 18 · Grounded property assistance and optional public MCP
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Release: `full_product` (FP-ASSIST).** Conversational assistance/MCP is deferred beyond the finale. Existing deterministic source-linked explanations may be reused without claiming a deployed agent or MCP server. The finale ingestion agent follows H14/H27 and cannot publish registry facts.
 
 **Provider-plan update, 23 September 2026:** [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) is required for this feature's model integration. Use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) for development-worker selection. These instructions do not claim a live provider, funded account or passing new tests.

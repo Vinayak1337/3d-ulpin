@@ -1,5 +1,7 @@
 # Surfaces and layout
 
+**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+
 Three surfaces share tokens but not layouts. The **Officer Studio** is the finale product. The **Public Portal** and **Admin Console** are full_product (FP-PUBLIC and later); their rules are here so the Studio does not paint them into a corner.
 
 ## Officer Studio (finale_v1)
@@ -8,7 +10,7 @@ Routes are fixed by [H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) sec
 
 | Zone | Size | Contents |
 | --- | --- | --- |
-| Top bar | 56 px, full width | Wordmark, **Batches · Map · Register**, search (`/`), area switcher, Live or Snapshot status, theme, user |
+| Top bar | 56 px, full width | Wordmark, **Batches · Map · Register**, search (`/`), area switcher, Live or Snapshot status, user |
 | Scope strip | 36 px, top of the map column | Area, source classification, revision; **Add files** |
 | Canvas | Flexible majority | The Cesium scene |
 | Map toolbar | Floating, top-left of canvas | Tools and view toggles, one row |

@@ -1,5 +1,7 @@
 # 3D ULPIN design system
 
+**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+
 The visual and content rules for every 3D ULPIN screen: the design language agents build in. It is the repository copy of the team's design system (the private claude.ai Design System artifact and its Claude Design project), kept in sync with it and reconciled with the finale handoffs. Agents cannot open private claude.ai pages, so this folder is what they build from; [Sync with the team design system](#sync-with-the-team-design-system) records what was compared and what differs on purpose.
 
 **Authority.** [H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) owns routes, selection, caches, feature slots and the V1–V8 acceptance shots. This folder owns tokens, components, map styling and copy. Where they disagree, H99's "Z" addendum settles it. The retired `docs/v2-design/` pack (removed by CLEANUP-01, in Git history) is historical input; its forest green and layout sizes live on here.
@@ -46,7 +48,7 @@ The visual and content rules for every 3D ULPIN screen: the design language agen
 
 ## Visual foundations
 
-**Colour.** Build on `--ui-background`, `--ui-surface` and `--ui-surface-subtle`; text is `--ui-ink`, `--ui-ink-soft` or `--ui-muted` (4.5:1 on all three grounds in both themes). `--ui-primary` is the only accent: primary actions, active navigation, selection, links. Text on a primary fill uses `--ui-on-primary`, never literal white. Hairlines between rows are `--ui-divider`. Status text uses success, warning, danger and info on surface or their soft fills, always with an icon and a word. Red means a blocking finding and nothing else; amber means needs review or evidence. Map colours (`--ui-map-*`, `--ui-rights-*`, `--ui-mark-*`, `--ui-seq-*`, `--ui-utility-*`) are for geometry and charts only, never UI text.
+**Colour.** Build on `--ui-background`, `--ui-surface` and `--ui-surface-subtle`; text is `--ui-ink`, `--ui-ink-soft` or `--ui-muted` (4.5:1 on all three grounds in the delivered light theme). `--ui-primary` is the only accent: primary actions, active navigation, selection, links. Text on a primary fill uses `--ui-on-primary`, never literal white. Hairlines between rows are `--ui-divider`. Status text uses success, warning, danger and info on surface or their soft fills, always with an icon and a word. Red means a blocking finding and nothing else; amber means needs review or evidence. Map colours (`--ui-map-*`, `--ui-rights-*`, `--ui-mark-*`, `--ui-seq-*`, `--ui-utility-*`) are for geometry and charts only, never UI text.
 
 **Type.** Noto Sans for everything; Noto Sans Mono for codes, coordinates and measurements; Noto Sans Display only for the Portal home heading. Studio body 15 px (`--ui-text-md`), metadata at least 12 px; Portal body 16 px, never smaller for running text. Tabular figures for columns of numbers. One `studio-title` per screen. Devanagari uses line-height 1.8 and is never shrunk to fit.
 
@@ -124,7 +126,7 @@ No logo: the wordmark is **3D ULPIN** in Noto Sans 700 followed by the surface n
 
 ## Accessibility
 
-GIGW 3.0 and WCAG 2.1 AA on every surface. Every map view has a list or table equivalent (spaces list, findings list, levels table). Keyboard: Tab through panels, toolbar and inspector; arrow keys move the level rail; `Esc` clears the selection; `/` opens search. The Portal carries the UX4G accessibility bar (text size, contrast, language) on every page. Test 200 % zoom, reduced motion, contrast in both themes, and screen-reader announcements coalesced rather than one per stream event.
+GIGW 3.0 and WCAG 2.1 AA on every surface. Every map view has a list or table equivalent (spaces list, findings list, levels table). Keyboard: Tab through panels, toolbar and inspector; arrow keys move the level rail; `Esc` clears the selection; `/` opens search. The Portal carries the UX4G accessibility bar (text size, contrast, language) on every page. Test 200 % zoom, reduced motion, contrast in the delivered light theme, and screen-reader announcements coalesced rather than one per stream event.
 
 ## Sync with the team design system
 

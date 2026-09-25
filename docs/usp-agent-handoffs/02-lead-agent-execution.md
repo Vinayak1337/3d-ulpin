@@ -1,5 +1,7 @@
 # 02 · Implementation lead and bounded worker delegation
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 <!-- plan-next-gate: GF0 -->
 
 **Adopted execution update: 23 September 2026.** This is the ready-to-use lead assignment for the existing handoffs, not another product specification. It replaces H00's earlier Sol-first routing recommendation. Domain requirements, ownership, data preservation and qualification gates remain in [00](00-README.md), [01](01-shared-contracts-and-ownership.md) and [99](99-ui-ux-and-integration.md).

@@ -1,5 +1,7 @@
 # Map and 3D
 
+**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+
 The scene is quiet by default and colour appears only where a question is being asked: neutral massing, one green selection, and a **Colour by** control that swaps in exactly one legend at a time. Runtime is the existing Cesium path (H22, H99); these rules style it.
 
 ## Base scene

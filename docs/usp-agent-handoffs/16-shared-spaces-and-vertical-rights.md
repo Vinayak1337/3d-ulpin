@@ -1,5 +1,7 @@
 # 16 · Shared spaces, access relationships and vertical rights
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 Owner **RIGHTS**. Historical baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 24 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [26](26-identifiers-and-standard-exchange.md), [28](28-data-acquisition-and-finale-tests.md), compatibility rules in [12](12-rights-aware-spatial-findings.md), packet applicability in [10](10-scoped-evidence-packets.md), and [99](99-ui-ux-and-integration.md). ER-05/06/11/13/24 are incorporated. New code paths are implementation tasks.
 
 ## A. User outcome and product value

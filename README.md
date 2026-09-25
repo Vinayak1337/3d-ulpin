@@ -1,5 +1,7 @@
 # 3D ULPIN — adaptive, evidence-linked 3D property platform
 
+Current implementation follows the [25 September user scope](docs/usp-agent-handoffs/current-delivery-policy.md): official-source data only, desktop-first/light-only; no synthetic substitutes or current mobile optimization.
+
 <!-- plan-next-gate: GF0 -->
 
 **Current plan: [start here](docs/usp-agent-handoffs/00-README.md). Revised 24 September 2026.**

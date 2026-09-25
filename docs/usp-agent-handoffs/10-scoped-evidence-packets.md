@@ -1,5 +1,7 @@
 # 10 · Property-scoped evidence packets
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 Owner **PACK**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`. Revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md) and your UI slots in [99](99-ui-ux-and-integration.md). New paths below are implementation destinations, not existing functionality. Audit remedies ER-05/14/15/24 are incorporated here.
 
 The later retained D0/PACK0 receipt is the current implementation baseline; inspect its exact artifact and tests before assigning new work. PACK1 and the GF4 card/QR remain separate gates, not implied by that receipt.

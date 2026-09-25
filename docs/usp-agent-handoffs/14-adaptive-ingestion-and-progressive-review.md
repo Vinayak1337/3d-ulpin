@@ -1,5 +1,7 @@
 # 14 — Source-preserving chunks, progressive maps and learned handover
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Rewritten 24 September 2026. Owner: INGEST; shared APIs/jobs/contracts: FND; learner: LEARN; map: UI.** This replaces H14's earlier exclusion of concurrent learning. Read H00/H01/H21/H22/H23. Finale GF2 implements the qualified direct/exact and governed interpretation path with durable chunks/SSE. The learning branches, section G and learner-specific acceptance belong to `full_product` FP-LEARN; they cannot block finale ingestion. All new capabilities remain requirements until supported by execution evidence.
 
 ## A. User outcome

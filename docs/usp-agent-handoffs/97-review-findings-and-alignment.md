@@ -1,5 +1,7 @@
 # 97 · Cross-family review of the finale handoffs
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 Reviewed 24 September 2026 by Claude (a different model family from the handoffs' author), at staging commit `7472730`. Scope: all 25 handoffs, `release-plan.json`, the plan validator and its tests, `AGENTS.md`, the engineering-plan entry points and the v2 design pack, compared against the team's hardened plan review, dataset and test plan, design system and UI brief. The validator and its 29 tests were run before and after the edits in this change.
 
 ## Verdict
@@ -56,7 +58,7 @@ Status **Applied** means the handoff text now contains the fix; the code work is
 - **C15 · gap** — `release-plan.json` GF5. GF5 can complete on receipts from older commits, and failed attempts cannot be kept. **Applied:** GF5 freshness rule (H28 Z5). **Open:** LEAD-01.
 - **C16 · weak approach** — `release-plan.json` gates. A single chain plus one `nextGate` serialises work that could run in parallel (pure-code ID allocation waits on data acquisition). **Applied:** "gates order qualification, not the start of implementation" (H00, H29). **Open:** LEAD-01 for `activeGates[]` if the team wants it enforced.
 - **C17 · contradiction** — engineering-plan `00_START_HERE.md`, `PLAN_STATUS.json` (`T059`), `backlog.json` (`T080`), handoff baselines (`f623cff`, `2838e79`, `97146d6`, `45d033b`). Several "next" and "base" pointers disagree. **Open:** LEAD-02.
-- **C18 · edge case** — H16 declaration ledger. Co-operative societies, per-deed UDS, leasehold and association-held commons cannot be represented, and the plan recommended a housing society as the finale site (withdrawn 25 Sep; tenure cases are now synthetic fixtures). **Applied:** `tenureRegime` (H16 Z1). **Open:** RIGHTS-01.
+- **C18 · edge case** — H16 declaration ledger. Co-operative societies, per-deed UDS, leasehold and association-held commons cannot be represented, and the plan recommended a housing society as the finale site (withdrawn 25 Sep; the former synthetic-fixture fallback is superseded by the official-source-only user direction). **Applied:** `tenureRegime` (H16 Z1). **Open:** RIGHTS-01.
 - **C19 · edge case** — H16 "unsupported_scope". Metro tunnels, viaducts and pipeline rights of user cross many parcels and are named in SIH 26011. **Applied:** bounded `right_of_user` corridor and fixture (H16 Z2).
 - **C20 · edge case** — H23 A. The "inside India" check misses UTM 43N/44N swaps, Kalianpur labelled WGS84, swapped axes and missing `.prj`. **Applied:** H23 Z, H28 Z3. **Open:** DATA-02.
 - **C21 · edge case** — H22 D, GF-T19. Imagery outlines are roofprints (chajjas, balconies); parapets, stair cabins and tanks inflate heights; a compliant building can be flagged on stage. **Applied:** H27 Z1, H28 Z3.

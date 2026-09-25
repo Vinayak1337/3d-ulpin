@@ -1,5 +1,7 @@
 # Components
 
+**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+
 Thirty-two components, the same set as the team's design system in Claude Design, each with its reference CSS classes in [reference/components.css](reference/components.css). The first twenty-three come from the design system artifact; Panel, DataTable, DescriptionList, Tabs, Toggle, Icon, Wordmark, MapCanvas and MapPatterns were added in Claude Design and are used throughout the [reference mockups](mockups/officer-studio/README.md). "Data from" names the producer handoff whose contract feeds it. UI owns the component; the producer owns the data. Port a component into the owning feature's CSS with `--ui-*` tokens; do not add a component library.
 
 ## Identity and records
@@ -136,7 +138,7 @@ A 36 × 20 switch (`ul-toggle`, `role="switch"`) for layer visibility and Proper
 One wrapper over Phosphor Regular (`ul-ico`, `ul-ico--sm`): 20 px in the Studio, 16 px in dense cells, chips and small buttons, 24 px in the Portal. Inherits `currentColor`: `--ui-ink-soft` in toolbars, `--ui-muted` in chips, the status colour in badges. Never the only label for an action. The set and what each icon means are in the [README](README.md#icons-and-wordmark).
 
 ### StudioHeader
-56 px top bar: wordmark, **Batches · Map · Register**, search (`/`), area switcher, Live or "Snapshot <date>, <time>", theme, user. Active section uses `aria-current="page"`. One navigation row; the scope strip under it is context.
+56 px top bar: wordmark, **Batches · Map · Register**, search (`/`), area switcher, Live or "Snapshot <date>, <time>", user. Active section uses `aria-current="page"`. One navigation row; the scope strip under it is context.
 
 ### Inspector
 Single right-hand panel for the selection (360 px, 400 px with evidence preview): identity header (name, UlpinCode, status, Parcel ULPIN), tabs **Overview · Rights · Evidence · Checks · History**, footer with at most one primary and one secondary action. Every sourced value carries an EvidenceChip; unknown values say *Unknown* with a request action.

@@ -1,5 +1,7 @@
 # 19 · Governed AI and India-contained deployment
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Release boundary:** finale uses local isolated services and existing provider/no-key controls; production authentication, multiuser/public activation and India-hosted deployment are `full_product` gates. Local privacy and any permitted provider call still require their relevant checks.
 
 **Provider-plan update, 23 September 2026:** [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) is required for this feature's model integration. Use [02 - Astra Max lead and explicit worker delegation](02-lead-agent-execution.md) for development-worker selection. These instructions do not claim a live provider, funded account or passing new tests.
@@ -18,7 +20,7 @@ Implement actual gateway/scanner/mail adapters, capability policy, complete ingr
 
 ## C. Scope and non-goals
 
-DEPLOY0: policy schemas, disabled/unavailable states and no-AI local operation. DEPLOY1: governed Sarvam/local adapters and scanner/mail integration with measured synthetic tests. DEPLOY2: standalone protected stack, F2 route/page coverage, denied-egress and isolated backup/restore qualification. These gates are separate; none delays the local V0 map→unit→evidence slice.
+DEPLOY0: policy schemas, disabled/unavailable states and no-AI local operation. DEPLOY1: governed Sarvam/local adapters and scanner/mail integration with measured tests using permitted official-source inputs. DEPLOY2: standalone protected stack, F2 route/page coverage, denied-egress and isolated backup/restore qualification. These gates are separate; none delays the local V0 map→unit→evidence slice.
 
 No automatic cloud purchase/provisioning, secret collection in Git/chat, production launch, universal hardware support, blanket regulatory compliance or high-availability platform. Full air-gap operation is optional and needs disconnected tests with preloaded dependencies, not a checkbox.
 
@@ -107,7 +109,7 @@ Use `feat/usp-deployment`; own DEPLOY new adapters/reference/test files only. F0
 
 1. Inventory actual routes/destinations and build requirements; keep unknown entries unqualified.
 2. Implement default-deny policy and local no-AI capability behavior.
-3. Implement Sarvam/local/scanner/mail adapters and synthetic tests; govern legacy Nous through FND.
+3. Implement Sarvam/local/scanner/mail adapters and official-source input tests; govern legacy Nous through FND.
 4. Produce and launch standalone images/entrypoints in isolated volumes; prove no duplicated dispatcher and no accidental service ingress.
 5. Test F2 and all source/scene/SSR/public routes, browser egress, SSE proxy/reconnect and provider outages.
 6. Restore new volumes and validate hashes/manifests/jobs/events; report environment-specific qualification separately.
@@ -116,7 +118,7 @@ Use `feat/usp-deployment`; own DEPLOY new adapters/reference/test files only. F0
 
 Use D0 non-personal fixtures from [H28](28-data-acquisition-and-finale-tests.md), labelled restricted for policy testing: original upload, exact property, source preview, PACK derivative and INGEST draft asset. Source data need not be truly sensitive to test denial. Add one separately released sanitized derivative and verify public access without private originals. D1/D2 external fetching is an explicit allowed acquisition task, not an unapproved runtime tile dependency; cache/preserve permitted small assets for private-mode tests.
 
-Live provider qualification uses only bounded synthetic fields through a separately configured approved key. No key means adapter mocks plus deterministic operation, not a live Sarvam pass. Verify structured output, truncation, tool attempts, response limit, quota/timeout, missing key and model unavailable; deny the approved endpoint and assert no legacy/alternative call. No automatic credit purchase or unapproved model/funding/geography switch; only pre-authorised H20 rollover is permitted.
+Live provider qualification uses only bounded, permitted official-source fields through a separately configured approved key. No key means adapter mocks plus deterministic operation, not a live Sarvam pass. Verify structured output, truncation, tool attempts, response limit, quota/timeout, missing key and model unavailable; deny the approved endpoint and assert no legacy/alternative call. No automatic credit purchase or unapproved model/funding/geography switch; only pre-authorised H20 rollover is permitted.
 
 Scanner tests include a benign permitted test fixture, known antivirus test artifact under isolated test policy, scan-size limit, stale signatures and unavailable daemon; skipped work must never return clean. Email acknowledgement loss becomes unknown/reconciled, not claimed exactly once. Check wrong IdP audience, unguarded SSR, direct asset URLs, cached revocation, third-party browser tile request, secret-safe errors and blocked redirects. Kill a worker and interrupt restore, then resume idempotently with no duplicated records/notifications.
 
@@ -148,10 +150,10 @@ Venue Wi-Fi is unreliable. Add a sub-profile where the gateway serves hash-match
 
 | Obligation | Finale (local demo) | FP-DEPLOY |
 | --- | --- | --- |
-| DPDP Act 2023 and Rules: notice, purpose, retention, erasure, grievance, breach intimation | Synthetic or consented data only; retention table documented | Processor contract with the provider, per-table retention and erasure jobs, grievance contact, breach runbook |
+| DPDP Act 2023 and Rules: notice, purpose, retention, erasure, grievance, breach intimation | Permitted official-source data only; retention table documented | Processor contract with the provider, per-table retention and erasure jobs, grievance contact, breach runbook |
 | CERT-In directions (28 April 2022): incident reporting within 6 hours, 180-day log retention in India, NTP sync to NIC/NPL | Not applicable to a local demo; stated as such | Required and tested |
 | Retention for `usp_assist_runs` and model-call tables | 30 days in demo | Set by the approved policy |
-| Fine-resolution geospatial data (own drone ortho, DSM, LiDAR) | Processed on India-located machines; agents get downsampled or synthetic samples | Same; an FP-DEPLOY prerequisite in H90, not a finale input |
+| Fine-resolution geospatial data (own drone ortho, DSM, LiDAR) | Processed on India-located machines; agents get permitted traceable official-source extracts | Same; an FP-DEPLOY prerequisite in H90, not a finale input |
 
 ### Z4. Host and Origin checks
 

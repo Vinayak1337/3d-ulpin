@@ -1,5 +1,7 @@
 # 20 · Sarvam gateway, credit pools and credential lifecycle
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Release boundary:** the existing gateway/no-key and cost controls support the finale where needed. Live service qualification remains distinct from documentation. Concurrent schema learning belongs to `full_product` H21; this gateway never trains or records property facts itself.
 
 **Owner: DEPLOY, as a supporting part of [19](19-india-contained-deployment.md), not an eleventh independent USP.** FND owns shared contracts, migrations and route registration; UI owns shared settings mounts. **Decision date: 23 September 2026. Planning/code inspection base: `codex/fnd-f0-f1@97146d62d7e64c946abfc98b0d7e670845b17857`. Status: implementation plan, not installed or live-qualified.** Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [14](14-adaptive-ingestion-and-progressive-review.md), [18](18-grounded-assistance-and-mcp.md) and [19](19-india-contained-deployment.md).
@@ -199,7 +201,7 @@ Operator-only proposed routes under `/api/v1/usp/deployment/ai`: read settings/c
 | Existing `apps/web/lib/server/officer-ai-provider.ts` | FND routes or disables legacy external calls through policy; do not leave a bypass. |
 | Proposed `apps/web/features/usp/deployment/AiProviderSettings.tsx` | DEPLOY leaf content; UI mounts in Shell's workspace dialog, not another permanent dashboard. |
 | Proposed `tests/usp-model-gateway.test.ts`, `tests/usp-model-budget-integration.ts`, `tests/usp-model-gateway-recovery.ts`, `tests/e2e/usp-ai-settings.spec.ts` | DEPLOY/FND tests; DATA contributes source/oracle fixtures under existing ownership. |
-| Proposed `scripts/usp/verify-model-gateway.ts` | Bounded synthetic live qualifier; network/key/budget explicitly opt-in; never auto-top-up. |
+| Proposed `scripts/usp/verify-model-gateway.ts` | Bounded permitted official-source live qualifier; network/key/budget explicitly opt-in; never auto-top-up. |
 
 Only implement the paths needed by the next gate. Prefer a few cohesive modules over an unused generic provider framework. Initial support is one chat adapter plus the separately qualified document adapter; extensibility means a typed interface, not integrating every vendor.
 
@@ -213,7 +215,7 @@ Ordinary users see only `AI temporarily unavailable — continue with saved mapp
 
 ## H. Gates and dependencies
 
-**G0:** deterministic policy/cost/selection tests and no-key fallback. **G1:** actual PostgreSQL reservation/concurrency/retirement/restart integration with a local fake provider. **G2-chat:** bounded synthetic Sarvam chat qualification with operator-supplied credentials and confirmed funding. **G2-doc:** separate document endpoint, page billing and restart qualification. **G3:** deployment-mode/security/account approval. These refine DEPLOY0/1/2; none delays existing local V0 or ASSIST0.
+**G0:** deterministic policy/cost/selection tests and no-key fallback. **G1:** actual PostgreSQL reservation/concurrency/retirement/restart integration with a local fake provider. **G2-chat:** bounded permitted official-source Sarvam chat qualification with operator-supplied credentials and confirmed funding. **G2-doc:** separate document endpoint, page billing and restart qualification. **G3:** deployment-mode/security/account approval. These refine DEPLOY0/1/2; none delays existing local V0 or ASSIST0.
 
 The user supplied the account topology and reported ₹100 grant per account, not secret values or live balance evidence. No credentials were inspected; no real balance, endpoint compatibility, billing reconciliation or runtime quality is claimed passed. H90 contains the narrow account-owner prerequisites; agents implement everything else and exercise mocks/fixtures while those prerequisites are unavailable.
 
@@ -223,7 +225,7 @@ The user supplied the account topology and reported ₹100 grant per account, no
 2. Add exact money/price versions, pool/credential identity, append-only ledger and retirement tombstones. Test fake responses before any live key.
 3. Connect one V1 chat adapter; disable hidden SDK retries. Complete local simultaneous-request, timeout, crash, drift and revocation tests.
 4. Integrate INGEST's mapping proposal/recipe reuse and ASSIST's typed facts through the same gateway. H21 separately schedules eligible training batches in the full-product release; gateway calls are not a training trigger.
-5. Mount operator settings/history with actual persisted values, then qualify one synthetic live call with an explicit small allocation.
+5. Mount operator settings/history with actual persisted values, then qualify one permitted official-source live call with an explicit small allocation.
 6. Add the asynchronous document path and page billing only when its precise endpoint/SKU is confirmed. Qualify G2-doc separately.
 7. Run approved multi-pool rollover and terminal retirement using fake credentials first, then only legitimately funded approved live pools. Qualify restoration and full egress separately.
 

@@ -1,5 +1,7 @@
 # 23 — Indian operational data, modular delivery and problem-statement coverage
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Plan date: 24 September 2026.** Read H14/H21/H22. This document distinguishes the supplied problem statement, current code evidence, new engineering decisions and external publisher information. No dataset downloads, permissions, training, runtime tests or production deployment are claimed by this plan.
 
 ## A. Operational data policy
@@ -117,6 +119,6 @@ Added 24 September 2026 by the cross-family review in [H97](97-review-findings-a
 - **CRS checks cannot rely on "inside India".** UTM 43N data read as 44N moves about 600 km and still lands in India; Kalianpur/Everest data labelled WGS84 lands on the wrong parcel. Never infer zone or datum from coordinate ranges; send these cases to the unknown-CRS path and use a known control point residual. Fixtures are in [H28](28-data-acquisition-and-finale-tests.md) Z3.
 - **One India boundary.** The admission polygon is Survey of India's official boundary at a pinned release, with a coastal and island rule (an Andaman point is admitted, a Colombo point is rejected). No national overview map from a non-Survey of India boundary appears in the UI or PPT.
 - **Identifier matching.** Keep the literal ID and add a `normalizedKey` (NFKC, Indic digits converted to ASCII, subdivision separators kept) used only to propose review candidates. `१२३/४क` and `123/4क` become a candidate pair; `123/4` and `123/40` do not. Names and addresses never auto-link.
-- **Fine-resolution geospatial data.** Applies only if Indian fine-resolution capture is ever ingested: such orthophotos, DSMs and LiDAR are classed `india_restricted_geospatial`: processed only on India-located machines and CI runners; coding agents get downsampled or synthetic samples. Verify the current national geospatial guideline thresholds before quoting them.
+- **Fine-resolution geospatial data.** Applies only if Indian fine-resolution capture is ever ingested: such orthophotos, DSMs and LiDAR are classed `india_restricted_geospatial`: processed only on India-located machines and CI runners; coding agents get permitted, traceable downsampled official-source extracts only; no synthetic substitutes. Verify the current national geospatial guideline thresholds before quoting them.
 - **Coverage rows.** The SIH mapping table adds: a D0 elevated corridor and a stilt parking level (GF-T18 case and rehearsal beat); checkpoint RMSE in centimetres from held-out published GCPs (DATA-06), or `not_assessed`; DEM/DSM as nDSM height against checkpoints. FSI/TDR envelopes stay roadmap.
 - The Sarvam slide line is the one in [H24](24-product-method-and-ppt.md) Z3.
