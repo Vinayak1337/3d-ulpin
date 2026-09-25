@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "ulpin-fnd04-artifacts/1",
+  "codeCommit": "6ddc4e17b322ebf44d0b173a5a94da63fbb24aef",
+  "filesSha256": {
+    "checks.json": "fe153adb02b6a93a12145b67bf281c41ddd2edb28b0ed97ad0357da2b4a784ba",
+    "iterations/11fb326/checks.json": "5cead32b37b2e487f95d6b478aa35305186fe78a6e59be8f08ccd7aeb102eec9",
+    "iterations/11fb326/sql-command.json": "1548584b02969eae9c8315d9a21f5657d5c3826724a9bebc1d6096fe4c188930",
+    "iterations/11fb326/sql-fresh.json": "e71f17464ba4de0ecdcb47e2afe99b76fcecb24858e0255b47172b58136141a1",
+    "iterations/11fb326/sql-retained.json": "aff4898f0c057036f3da505fae27a6e8e3ce852928a77c4f88bacf1b977e26ab",
+    "iterations/11fb326/sql-run.json": "7f80c272d69caf24642e75e8dcfa7f2812b4269d48e29d2ee9d3dba96aa36c6c",
+    "iterations/3c88238/checks.json": "b33eb7dbea32dd0885fab1f5646d86e463b49d686987151cc7d1a600a1571f3e",
+    "iterations/3c88238/sql-command.json": "32711232a7bd86823c4b497848d5cc0d76415e066def0d2af60bb6bc250beab0",
+    "iterations/3c88238/sql-fresh.json": "e71f17464ba4de0ecdcb47e2afe99b76fcecb24858e0255b47172b58136141a1",
+    "iterations/3c88238/sql-retained.json": "aff4898f0c057036f3da505fae27a6e8e3ce852928a77c4f88bacf1b977e26ab",
+    "iterations/3c88238/sql-run.json": "3997a2699d975ab9144dc19d83eac9adbad741f1ebfe0fc320c6a0cd713bc1ad",
+    "iterations/3c88238/verification.json": "f08e8d95d63bf91333a74c6a6cb05d536ce2e4af87119d4ae1221e0e82e61a09",
+    "report.md": "3b69d495ce4d3a9724ef572540f39732c4b882dfac558aeea89363c9ee6b03dd",
+    "sql-command.json": "1548584b02969eae9c8315d9a21f5657d5c3826724a9bebc1d6096fe4c188930",
+    "sql-fresh.json": "e71f17464ba4de0ecdcb47e2afe99b76fcecb24858e0255b47172b58136141a1",
+    "sql-retained.json": "aff4898f0c057036f3da505fae27a6e8e3ce852928a77c4f88bacf1b977e26ab",
+    "sql-run.json": "7f80c272d69caf24642e75e8dcfa7f2812b4269d48e29d2ee9d3dba96aa36c6c",
+    "verification.json": "6f8c5055ef878ae4726de8903cb879f2c28ce79598754e546d6f41f31e3862fc"
+  }
+}

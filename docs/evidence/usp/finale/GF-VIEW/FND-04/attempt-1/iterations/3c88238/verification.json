@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "ulpin-fnd04-implementation-verification/1",
+  "status": "passed_bounded_checks",
+  "baseCommit": "1a6baf0d832117932c291fa6bfc08a536d8bd26e",
+  "codeCommit": "3c88238b61b46ee4925c88d2054e39e1ed281b01",
+  "checkedAt": "2026-09-25T17:03:18.135567+00:00",
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+    "host": "local",
+    "settingsEvidence": "Observed task session turn_context"
+  },
+  "filesSha256": {
+    "apps/web/lib/server/areas.ts": "bb62a85a9e4fb810b7c78b29be24c24d6224d6e22f4782f13d8940c8bae2514c",
+    "apps/web/lib/server/block-export.ts": "a9a2c9db9efccc493322c8f3c23be2d1cf79ff0f9101776326d52c9252ad8448",
+    "apps/web/lib/server/officer-investigations.ts": "9ff3ededc7ac8045ce34e2c1b24c57fca22fed6723d69693d90c29eee190ff9a",
+    "apps/web/lib/server/officer.ts": "1ae8593492c7fdded6f3c53cd3fe6dfb306186c869f49eefa694b20bc1b88821",
+    "apps/web/lib/server/registry.ts": "9be0d70c4f4daf3a6685f2aeb01baa2134fd03d412e5a2f80a6b3bbb782f9c4f",
+    "apps/web/lib/server/usp/commands.ts": "6a35ef2cd942e16bbdcea72122ebb073d67e81256944bbc21c0e95d63d1c30f4",
+    "apps/web/lib/server/usp/display-compiler.ts": "3912852431fcd184c2f495c193997f5bb4ec44e1269752726adbf120507e23bd",
+    "apps/web/lib/server/usp/external-scene.ts": "a1c0068568c306be27a411c20cf8b6a0d969ccf7d4ce16e3fe148e71189effbf",
+    "apps/web/lib/server/usp/geometry-migration.ts": "4aaf1853b0d213a77f98337fbbfcd3696396f70c1bc663aa1ded872cfcae63c0",
+    "apps/web/lib/server/usp/geometry.ts": "e980368572f2e8ae16fc9c11eed3020248bc56181eed7153d1f1e081db36416a",
+    "apps/web/lib/server/usp/migrations.ts": "18c4482da8d9b0317afecfcfbefa443058d17db6f7ac4a4389f09aa89b174954",
+    "apps/web/lib/server/usp/snapshots.ts": "97f375521e352e0aae1c9279df0b91ad6d2c23b51903576cdf41114dbe5d538a",
+    "packages/contracts/src/usp/domain.ts": "94c5ebf1f7b9160dcaaf931b6440435244e878df8935cb1e1c8ed4cac633de47",
+    "packages/contracts/src/usp/geometry.ts": "19c0cefb1b450ce327e6ff43405de8328734dfb8ec32e30d3e14679f64d23d2b",
+    "packages/contracts/src/usp/index.ts": "80239bceeae192a293af28dfe8d9ac3e8e521014b0d8cf50cf17e9acdc98d18a",
+    "scripts/usp/gf/FND-04-isolated.mjs": "71559162052e9d04ea4f5a67f955508ea542acb57354ced2a77b5a9425dc4db5",
+    "scripts/usp/gf/FND-04-sql.ts": "97852a0a733e01ab594df5a30cebe5c93a28f1dcc8dd3c16bd0d08de0c0e0cfc",
+    "tests/usp-geometry.test.ts": "2fc9d7229d3e1f047bc876873168232d08609d2316f02ffadd32e8578736e964"
+  },
+  "baselineMigrationSha256": "a83c3e4350ae82d05f8fae5920252528d7470888bbe2cdb47df1cb73f88498e7",
+  "retainedRegression": {
+    "manifestSha256": "ce083a3cd5ae6b0280c343f7d7ec55534c05ba3287481b0c7fcdccc11687c556",
+    "database": {
+      "file": "database.dump",
+      "bytes": 3939807,
+      "sha256": "92cbdeb930c7b20f9a90f7857f92787ebe2562c65892ad835a758bdf1b6cfda8"
+    },
+    "protectedTableCount": 44,
+    "allProtectedTableHashesPreserved": true,
+    "classification": "historical_regression_only"
+  },
+  "checks": {
+    "typecheck": {
+      "exitCode": 0
+    },
+    "uspContractApiEnvelopeRegression": {
+      "passed": 119,
+      "failed": 0
+    },
+    "registryRegression": {
+      "passed": 12,
+      "failed": 0
+    },
+    "registerScopeRegression": {
+      "passed": 3,
+      "failed": 0
+    },
+    "freshSql": {
+      "passed": 21
+    },
+    "retainedSql": {
+      "passed": 22
+    }
+  },
+  "runtimeGatesPassed": [],
+  "officialSourceAccuracyQualified": false,
+  "displayDerivativeRowsCreated": 0,
+  "runtimeModelHashes": [],
+  "limitations": [
+    "No real qualification-receipt producer is enabled by this task; new analytical eligibility requires the existing command authority to receive an accepted qualifier receipt. Domain AI and RIGHTS acceptance are outside scope.",
+    "Real positive analytical eligibility/source-accuracy cases and nonempty generated-display cases remain unqualified; no display data was generated.",
+    "PostgreSQL purpose roles enforce analytical read ACLs; the privileged migration/application session owner remains an administrator. This is not a protected multiuser deployment qualification.",
+    "Source inspection JSON can retain unqualified geometry with explicit not_assessed classification; analytical review and printable export fail closed.",
+    "No UI/browser/GPU, storage-byte round trip, official-source accuracy, rights workflow, or deployment gate was run. Independent lead/cross-family or human acceptance is required."
+  ]
+}
