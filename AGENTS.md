@@ -26,8 +26,6 @@ Keep semantic components, shared design tokens, flexible layout boundaries and i
 
 ## Official-source data only — user direction, 25 September 2026
 
-The active plans follow [current-delivery-policy.md](docs/usp-agent-handoffs/current-delivery-policy.md), including source-dependent coverage gaps and desktop/light-only scope.
-
 Do not create or invent synthetic data, sample records, dummy identifiers, simulated source documents, generated test images or agent-authored fixture datasets. Acquire real data from data.gov.in first, or directly from the responsible official government/public authority or official issuing institution. A third-party mirror, community dataset or vendor prediction is not an official source merely because it is publicly available.
 
 Keep the issuing authority, original URL, acquisition date, licence/permission, original bytes and hashes, geography, reference system and source limitations. Deterministic extraction or conversion of official data is allowed when it is traceable to the unchanged original; never invent missing values, relationships, geometry, controls, rights or expected source facts. If an official source cannot support a required test case, record that coverage as unavailable and leave the claim unqualified instead of manufacturing data.
