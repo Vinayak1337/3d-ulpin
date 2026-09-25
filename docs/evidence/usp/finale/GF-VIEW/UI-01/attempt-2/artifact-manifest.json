@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "ui-01-attempt-2-artifacts/1",
+  "codeCommit": "e7e533a702ab3fd5b594ab648bca6f908808ac74",
+  "files": {
+    "report.md": "d85b820346f6e46ec97fdc41494b97a5b6874917db8b01736f5025396818b6f4",
+    "run-summary.json": "60ec3b0201ae48df8e2bb147a38429c745220ed318f49c378c64069010fa601c"
+  },
+  "runArtifactHashes": "run-summary.json#runs"
+}

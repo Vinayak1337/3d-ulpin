@@ -1,0 +1,512 @@
+{
+  "themes": [
+    {
+      "theme": "light",
+      "immediate": {
+        "name": "Add files immediate",
+        "enabled": true,
+        "text": 10.052624502308138,
+        "icon": 10.052624502308138,
+        "boundary": 3.3304535649633427,
+        "foreground": "rgb(49, 69, 77)",
+        "background": "rgb(255, 255, 255)",
+        "opacity": 1,
+        "runningAnimations": 0,
+        "outline": null,
+        "outlineWidth": 3
+      },
+      "tokens": {
+        "text": [
+          {
+            "foreground": "--ui-ink",
+            "background": "--ui-background",
+            "ratio": 14.319614533002323
+          },
+          {
+            "foreground": "--ui-ink",
+            "background": "--ui-surface",
+            "ratio": 15.416073809358736
+          },
+          {
+            "foreground": "--ui-ink-soft",
+            "background": "--ui-surface",
+            "ratio": 10.052624502308138
+          },
+          {
+            "foreground": "--ui-muted",
+            "background": "--ui-surface",
+            "ratio": 5.600860364764648
+          },
+          {
+            "foreground": "--ui-on-primary",
+            "background": "--ui-primary",
+            "ratio": 8.750896835066866
+          },
+          {
+            "foreground": "--ui-info",
+            "background": "--ui-info-soft",
+            "ratio": 6.227604495532321
+          },
+          {
+            "foreground": "--ui-success",
+            "background": "--ui-success-soft",
+            "ratio": 5.271944845179256
+          },
+          {
+            "foreground": "--ui-warning",
+            "background": "--ui-warning-soft",
+            "ratio": 6.2208021319428815
+          },
+          {
+            "foreground": "--ui-danger",
+            "background": "--ui-danger-soft",
+            "ratio": 5.932714621240258
+          }
+        ],
+        "control": 3.404217322805017,
+        "actual": [
+          {
+            "name": "brand",
+            "ratio": 8.869975993367017
+          },
+          {
+            "name": "navigation",
+            "ratio": 10.052624502308138
+          },
+          {
+            "name": "area heading",
+            "ratio": 15.082032992479887
+          },
+          {
+            "name": "source world",
+            "ratio": 15.416073809358736
+          },
+          {
+            "name": "map mode",
+            "ratio": 10.052624502308138
+          },
+          {
+            "name": "selected map mode",
+            "ratio": 7.333208771419199
+          },
+          {
+            "name": "map status",
+            "ratio": 5.600860364764648
+          }
+        ],
+        "surface": "#ffffff",
+        "computedFont": "\"Noto Sans\", \"Noto Sans Devanagari\", system-ui, -apple-system, \"Segoe UI\", sans-serif"
+      },
+      "controls": [
+        {
+          "name": "Add files",
+          "enabled": true,
+          "text": 10.052624502308138,
+          "icon": 10.052624502308138,
+          "boundary": 3.3304535649633427,
+          "foreground": "rgb(49, 69, 77)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Export",
+          "enabled": true,
+          "text": 10.052624502308138,
+          "icon": 10.052624502308138,
+          "boundary": 3.3304535649633427,
+          "foreground": "rgb(49, 69, 77)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Layers",
+          "enabled": true,
+          "text": 10.052624502308138,
+          "icon": 10.052624502308138,
+          "boundary": 3.3652198792065353,
+          "foreground": "rgb(49, 69, 77)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Fit block",
+          "enabled": true,
+          "text": 10.052624502308138,
+          "icon": 10.052624502308138,
+          "boundary": 3.3652198792065353,
+          "foreground": "rgb(49, 69, 77)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Orient north",
+          "enabled": true,
+          "text": 9.748205906071322,
+          "icon": null,
+          "boundary": 2.6790223529981785,
+          "foreground": "rgb(49, 69, 77)",
+          "background": "rgba(255, 255, 255, 0.867)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Zoom in",
+          "enabled": true,
+          "text": 10.052624502308138,
+          "icon": 10.052624502308138,
+          "boundary": 2.6790223529981785,
+          "foreground": "rgb(49, 69, 77)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Zoom out",
+          "enabled": true,
+          "text": 10.052624502308138,
+          "icon": 10.052624502308138,
+          "boundary": 2.6790223529981785,
+          "foreground": "rgb(49, 69, 77)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Return to block view",
+          "enabled": true,
+          "text": 10.052624502308138,
+          "icon": 10.052624502308138,
+          "boundary": 2.6790223529981785,
+          "foreground": "rgb(49, 69, 77)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Checks",
+          "enabled": true,
+          "text": 10.052624502308138,
+          "icon": 10.052624502308138,
+          "boundary": 2.6790223529981785,
+          "foreground": "rgb(49, 69, 77)",
+          "background": "rgb(255, 255, 255)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "immediate": {
+        "name": "Add files immediate",
+        "enabled": true,
+        "text": 1.5797237225526102,
+        "icon": 1.5797237225526102,
+        "boundary": 4.888810047717505,
+        "foreground": "rgb(195, 208, 212)",
+        "background": "rgb(255, 255, 255)",
+        "opacity": 1,
+        "runningAnimations": 5,
+        "outline": null,
+        "outlineWidth": 3
+      },
+      "tokens": {
+        "text": [
+          {
+            "foreground": "--ui-ink",
+            "background": "--ui-background",
+            "ratio": 15.17533735345386
+          },
+          {
+            "foreground": "--ui-ink",
+            "background": "--ui-surface",
+            "ratio": 13.8938422564446
+          },
+          {
+            "foreground": "--ui-ink-soft",
+            "background": "--ui-surface",
+            "ratio": 10.535115485542693
+          },
+          {
+            "foreground": "--ui-muted",
+            "background": "--ui-surface",
+            "ratio": 6.444042256536943
+          },
+          {
+            "foreground": "--ui-on-primary",
+            "background": "--ui-primary",
+            "ratio": 8.48495072985736
+          },
+          {
+            "foreground": "--ui-info",
+            "background": "--ui-info-soft",
+            "ratio": 6.94136905114978
+          },
+          {
+            "foreground": "--ui-success",
+            "background": "--ui-success-soft",
+            "ratio": 7.524352193563096
+          },
+          {
+            "foreground": "--ui-warning",
+            "background": "--ui-warning-soft",
+            "ratio": 8.071892811937516
+          },
+          {
+            "foreground": "--ui-danger",
+            "background": "--ui-danger-soft",
+            "ratio": 6.996647268842906
+          }
+        ],
+        "control": 4.335435821644611,
+        "actual": [
+          {
+            "name": "brand",
+            "ratio": 13.8938422564446
+          },
+          {
+            "name": "navigation",
+            "ratio": 10.535115485542693
+          },
+          {
+            "name": "area heading",
+            "ratio": 13.8938422564446
+          },
+          {
+            "name": "source world",
+            "ratio": 13.8938422564446
+          },
+          {
+            "name": "map mode",
+            "ratio": 10.535115485542693
+          },
+          {
+            "name": "selected map mode",
+            "ratio": 8.48495072985736
+          },
+          {
+            "name": "map status",
+            "ratio": 13.8938422564446
+          }
+        ],
+        "surface": "#142024",
+        "computedFont": "\"Noto Sans\", \"Noto Sans Devanagari\", system-ui, -apple-system, \"Segoe UI\", sans-serif"
+      },
+      "controls": [
+        {
+          "name": "Add files",
+          "enabled": true,
+          "text": 10.535115485542693,
+          "icon": 10.535115485542693,
+          "boundary": 4.335435821644611,
+          "foreground": "rgb(195, 208, 212)",
+          "background": "rgb(20, 32, 36)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Export",
+          "enabled": true,
+          "text": 10.535115485542693,
+          "icon": 10.535115485542693,
+          "boundary": 4.335435821644611,
+          "foreground": "rgb(195, 208, 212)",
+          "background": "rgb(20, 32, 36)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Layers",
+          "enabled": true,
+          "text": 10.535115485542693,
+          "icon": 10.535115485542693,
+          "boundary": 4.335435821644611,
+          "foreground": "rgb(195, 208, 212)",
+          "background": "rgb(20, 32, 36)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Fit block",
+          "enabled": true,
+          "text": 10.535115485542693,
+          "icon": 10.535115485542693,
+          "boundary": 4.335435821644611,
+          "foreground": "rgb(195, 208, 212)",
+          "background": "rgb(20, 32, 36)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Orient north",
+          "enabled": true,
+          "text": 13.8938422564446,
+          "icon": null,
+          "boundary": 9.755051541451264,
+          "foreground": "rgb(228, 236, 238)",
+          "background": "rgb(20, 32, 36)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Zoom in",
+          "enabled": true,
+          "text": 13.8938422564446,
+          "icon": 13.8938422564446,
+          "boundary": 9.755051541451264,
+          "foreground": "rgb(228, 236, 238)",
+          "background": "rgb(20, 32, 36)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Zoom out",
+          "enabled": true,
+          "text": 13.8938422564446,
+          "icon": 13.8938422564446,
+          "boundary": 9.755051541451264,
+          "foreground": "rgb(228, 236, 238)",
+          "background": "rgb(20, 32, 36)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Return to block view",
+          "enabled": true,
+          "text": 13.8938422564446,
+          "icon": 13.8938422564446,
+          "boundary": 9.755051541451264,
+          "foreground": "rgb(228, 236, 238)",
+          "background": "rgb(20, 32, 36)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        },
+        {
+          "name": "Checks",
+          "enabled": true,
+          "text": 10.535115485542693,
+          "icon": 10.535115485542693,
+          "boundary": 3.02097227042539,
+          "foreground": "rgb(195, 208, 212)",
+          "background": "rgb(20, 32, 36)",
+          "opacity": 1,
+          "runningAnimations": 0,
+          "outline": null,
+          "outlineWidth": 3
+        }
+      ]
+    }
+  ],
+  "interaction": {
+    "hovered": {
+      "name": "Add files hover",
+      "enabled": true,
+      "text": 9.491609008052949,
+      "icon": 9.491609008052949,
+      "boundary": 7.886427249069021,
+      "foreground": "rgb(195, 208, 212)",
+      "background": "rgb(26, 41, 46)",
+      "opacity": 1,
+      "runningAnimations": 0,
+      "outline": null,
+      "outlineWidth": 3
+    },
+    "focused": {
+      "name": "Export keyboard focus",
+      "enabled": true,
+      "text": 10.535115485542693,
+      "icon": 10.535115485542693,
+      "boundary": 4.335435821644611,
+      "foreground": "rgb(195, 208, 212)",
+      "background": "rgb(20, 32, 36)",
+      "opacity": 1,
+      "runningAnimations": 0,
+      "outline": 3.8709179930793605,
+      "outlineWidth": 2
+    }
+  },
+  "fonts": {
+    "loaded": [
+      1,
+      1,
+      1
+    ],
+    "text": "भूमि अभिलेख",
+    "width": 96.96875,
+    "family": "\"Noto Sans Devanagari\", sans-serif"
+  },
+  "fontRequests": [
+    "http://127.0.0.1:3000/fonts/NotoSans-Variable.woff2",
+    "http://127.0.0.1:3000/fonts/NotoSansDevanagari-Variable.woff2",
+    "http://127.0.0.1:3000/fonts/NotoSansMono-Variable.woff2"
+  ],
+  "phone": [
+    {
+      "theme": "light",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "appWidth": 390,
+      "font": "\"Noto Sans\", \"Noto Sans Devanagari\", system-ui, -apple-system, \"Segoe UI\", sans-serif"
+    },
+    {
+      "theme": "dark",
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "appWidth": 390,
+      "font": "\"Noto Sans\", \"Noto Sans Devanagari\", system-ui, -apple-system, \"Segoe UI\", sans-serif"
+    }
+  ],
+  "zoom200": {
+    "normalHeight": 33.34375,
+    "zoomHeight": 66.6875,
+    "ratio": 2
+  },
+  "reducedMotion": {
+    "transition": "0s",
+    "animation": "none"
+  }
+}

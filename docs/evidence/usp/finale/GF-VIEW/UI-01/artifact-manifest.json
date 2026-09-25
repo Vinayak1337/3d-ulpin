@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "ui-01-artifacts/1",
+  "codeCommit": "693b224dbb5fa1a43c77e10d8b2c69c4309722f1",
+  "files": {
+    "report.md": "afec8868b0c9010401af7a224e526893c2e1e51bb5980616fab3f45f181fadad",
+    "run-summary.json": "127b33b4f3136f8dce58611ff419eab78649e55f8e11882451c1750d599031b2",
+    "screenshots/studio-light-desktop.png": "5f4c454571928ac574935194d93d35e10e9fd0a290e2d9139c6ac89225485f92",
+    "screenshots/studio-dark-desktop.png": "d59e44a733df44ca64419b34b41866a2530de57cf82835a77f82ef30a2547dfd",
+    "screenshots/hindi-label.png": "33aff5d9017d9e1b92c70a941ec374327c4956abfa62c8c1962a634268eef223"
+  }
+}

@@ -1,0 +1,678 @@
+{
+  "schemaVersion": "usp-isolated-live/1",
+  "codeSha": "9bb4e4c59382c03336652a4b41ce6a72e94180a8",
+  "scopeId": "local-1611f2e4a09b170c",
+  "result": "FAIL",
+  "checks": [
+    {
+      "name": "dedicated-loopback-ports"
+    },
+    {
+      "name": "restored-db-and-originals",
+      "tables": 44,
+      "objects": 497
+    },
+    {
+      "name": "additive-migration-replay"
+    },
+    {
+      "name": "migrated-bundle-preservation-and-replay",
+      "bundleSha256": "d5b08aa68a86bae4e6b45c18cdf8c7f7f1f96087ee0d2d7b031d460c5efcfb07",
+      "insertedRows": 4440,
+      "uploadedObjects": 53
+    },
+    {
+      "name": "fnd-live-receipt",
+      "receipt": {
+        "schemaVersion": "usp-fnd-live/1",
+        "codeSha": "9bb4e4c59382c03336652a4b41ce6a72e94180a8",
+        "environment": "local-disposable-isolation",
+        "data": "retained synthetic Nandan baseline; not full D0",
+        "status": "passed",
+        "siteId": "c65e220d-bb6c-4bb0-9fff-8c140789602b",
+        "sourceSha256": "56a25a4b687876612d2367afe3032562e91ababd6302cb6f8fd606041f64972a",
+        "manifestId": "482e59f2-3a94-49f5-8d9f-b48e0e752f6d",
+        "manifestDigest": "d1a8165f10357e22e6a8afb85de3ccff060d74e1f68c414a5201cf3d45352595",
+        "targetId": "3588021e-af7b-457c-8bdb-5c6f849c027e",
+        "targetRevisionBefore": 1,
+        "targetRevisionAfter": 2,
+        "packetId": "6292aeb9-1e5c-42bd-8c87-790fa3704dba",
+        "packetSha256": "fcaaeaccb58a32419c5732edbbdc9012431a787860113556577d6430a0257942",
+        "packetStatus": "incomplete",
+        "commitReceiptId": "7b5c7c23-6380-4c5e-acdc-42741c77a7d2",
+        "event": {
+          "streamId": "registry:c65e220d-bb6c-4bb0-9fff-8c140789602b",
+          "sequence": "2"
+        },
+        "originalBytes": 6228,
+        "fencedJobId": "6e483c55-ba31-453f-a40e-897329da18ec",
+        "fences": [
+          1,
+          2
+        ],
+        "cancelledJobId": "39283adf-a442-474d-a893-725f4a8974f0"
+      }
+    },
+    {
+      "name": "d0-replay-preservation",
+      "tables": {
+        "administrative_relationships": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "administrative_units": {
+          "rows": 3,
+          "sha256": "f9454ec611f8777450624875bf40544e32de65b746c425ef5a812c723d87c9c2"
+        },
+        "area_acquisitions": {
+          "rows": 1,
+          "sha256": "dc470e2ad0e84c81d4890a5cb78b0e4dc6d4806434d2a2fc5a3f3ba34c629f59"
+        },
+        "area_check_runs": {
+          "rows": 30,
+          "sha256": "74c538f037b0dc640e2a68548fcfae140b1cb05753844f56689c2e014efe9b9d"
+        },
+        "area_memberships": {
+          "rows": 3,
+          "sha256": "fe359af1433aef5a307347f924541d4eaf310c4338a086ab49176395a64e0f68"
+        },
+        "block_group_memberships": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "block_group_revisions": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "block_groups": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "building_preparation_revisions": {
+          "rows": 40,
+          "sha256": "676f1e6320f0e4263bb22388dcb5ce2775765cde8cc7ba983ea9e18a687888f5"
+        },
+        "building_preparations": {
+          "rows": 22,
+          "sha256": "760583adf62f5ee2db08847aadd665c284913e089b458693eb48923866aab5c6"
+        },
+        "cases": {
+          "rows": 221,
+          "sha256": "dab61ecc8e086d9d75e2f4da497c2173436160f670f0e00699c5444bf25db0b4"
+        },
+        "dataset_bundle_installs": {
+          "rows": 1,
+          "sha256": "8870073aa3ef248067cd8111de8917460ecb6a082b96b152ea660491970bd621"
+        },
+        "events": {
+          "rows": 1358,
+          "sha256": "e3d5cf2335135ca30bbedcc4dbb415e0a2ae293ab265172b88350f3a82ce2a37"
+        },
+        "external_identifiers": {
+          "rows": 640,
+          "sha256": "f0cc859c88ba735ca6419856317a2806eeec7a9f03a89de29a1a6204edd88305"
+        },
+        "identity_floors": {
+          "rows": 290,
+          "sha256": "b68e669e6f3e9ca5efd08061f8f3e73a4b73dd99f5593469a5677df3424d6b54"
+        },
+        "identity_spaces": {
+          "rows": 684,
+          "sha256": "b7c2a1f51dbb1d44bfcff2dc60716181250a4cb36e2a670b92a1aff5839e3f60"
+        },
+        "import_package_revisions": {
+          "rows": 1196,
+          "sha256": "5a2b3e8736c335ee44d3ae645bb5ef1c768da1fb46c28e76d28c3b9709e32c46"
+        },
+        "import_packages": {
+          "rows": 53,
+          "sha256": "f9598139e12b8a19c4a49f6ac4e584c6129c8ff069b7b26cf73cddb0adc351ac"
+        },
+        "jobs": {
+          "rows": 583,
+          "sha256": "73865833ec2b8f6ed1f45651ab5f3e837bfebbc42ea781436198de79a750ebeb"
+        },
+        "map_areas": {
+          "rows": 14,
+          "sha256": "d386592852a6ed13620c7cc59de8d40a4bbf8fe5ae7cb07f20caf68bbb1a6275"
+        },
+        "officer_ai_derivatives": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "officer_ai_runs": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "officer_investigation_revisions": {
+          "rows": 24,
+          "sha256": "8154a49d3007bbe5e79734cdef1579fa1001fac58f0abdfbb3992be618dba52b"
+        },
+        "officer_investigations": {
+          "rows": 7,
+          "sha256": "d8f6114ffd8ab8f79ec6d4e1b0b0139221b8874f5d83df886cbae1183a48148f"
+        },
+        "operations": {
+          "rows": 387,
+          "sha256": "8b4bfec18574b7b6d1753f52bb3c7c8d352180149ea80e7f6ee4f2547a656051"
+        },
+        "physical_feature_revisions": {
+          "rows": 564,
+          "sha256": "33e658dec86f1336b7876d56520c8203068565a7750f84a9bad63d40b67b17e7"
+        },
+        "physical_features": {
+          "rows": 564,
+          "sha256": "627b22c89e65703bc5f6dc07530367497028b3482b467eb43b5da2014a5dc7dd"
+        },
+        "property_association_revisions": {
+          "rows": 19,
+          "sha256": "f257ac7097e3eafe0a5fdb343ebe291b0167d6820c5d5fa39f5cf71968eaea44"
+        },
+        "property_associations": {
+          "rows": 19,
+          "sha256": "a8da6f47ac307357a427a4b7e0e27d26ba6bb5910ffd6e93b25c9959b0e26e0f"
+        },
+        "registry_aliases": {
+          "rows": 276,
+          "sha256": "c144a57d87ac7f253797bb9bb422bff1061629a02c2579a02e5aff64633b3293"
+        },
+        "registry_case_feature_mappings": {
+          "rows": 233,
+          "sha256": "6425fae8f9bf35f36f90cef2fc91310598e68fe3d9f4f703b673b66d0565bc8f"
+        },
+        "registry_case_import_operations": {
+          "rows": 28,
+          "sha256": "b97eefb4fbf045194a7329f7ce3c28baf197e41c035d403d2bf3935a897ab592"
+        },
+        "registry_drafts": {
+          "rows": 107,
+          "sha256": "9e40623caac63634251dc0876f49b8109c743063273cc944d3222e72f4b400cf"
+        },
+        "registry_links": {
+          "rows": 413,
+          "sha256": "300f6e5c369ffb577a7034d504225c06caaaf1708401e29b74fe0b5c7da8f051"
+        },
+        "registry_records": {
+          "rows": 654,
+          "sha256": "394be585b87d5746d93cae1908cc358356e96ae8ad75c9b3e2618c2824ee9466"
+        },
+        "registry_reviews": {
+          "rows": 128,
+          "sha256": "f61d0753b8dd01bc051ab735069d3ec399da2ed62992f5b88e75027c6de5ce1c"
+        },
+        "registry_revisions": {
+          "rows": 343,
+          "sha256": "84baa2e9282c9dae220eda1855c01a9e15dcbfa18b3547b8ac2eb0bd6fdab5ab"
+        },
+        "registry_rights": {
+          "rows": 104,
+          "sha256": "2b8b2dfc7f016606ce5bf03dbcaf19e7af1d02817a4991bede639ba1c3901497"
+        },
+        "registry_sites": {
+          "rows": 14,
+          "sha256": "f08cbca0f8157d30eec2bc8671a2e736d70085a4b9fb3c9f030f4145836a7b36"
+        },
+        "scene_asset_bindings": {
+          "rows": 10,
+          "sha256": "b36d57a4d573107d7c17b4c88eb2af02780c7f24bcf8f272a8f3a34714c393c9"
+        },
+        "snapshots": {
+          "rows": 153,
+          "sha256": "bd9618e8a45f952d60d553432da58823974ed20268a63aa50a0b85fd6394099a"
+        },
+        "source_feature_links": {
+          "rows": 564,
+          "sha256": "22012832f4a29d564eb191e752c28a371d393897b1754aeccf2bec02b76c08d7"
+        },
+        "sources": {
+          "rows": 553,
+          "sha256": "2ec55c0d687fcf52ebee7fd9702e5b554f6b37fd41bb61381b80edfb916ad0a1"
+        },
+        "spatial_ml_batches": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ml_footprint_drafts": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ml_items": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ref_sys": {
+          "rows": 8500,
+          "sha256": "2bb4adb27d115545b9293dfee0e259ddb19e8d93762511ee018a06a3c4850824"
+        },
+        "unit_revisions": {
+          "rows": 1011,
+          "sha256": "0f4fc1df169463fac278606420bd71e2e4c4a7c7b2bb4f407bf6072ca7fc8f40"
+        },
+        "units": {
+          "rows": 684,
+          "sha256": "2152ff93ecb1f44bcd71f56223898ab592178ba2492cfa325591c10fb379fa8e"
+        },
+        "usp_command_receipts": {
+          "rows": 3,
+          "sha256": "328e9b90d206e3688064237da1c1da9974a0db2cc0744065463166c13b14c22b"
+        },
+        "usp_job_attempts": {
+          "rows": 3,
+          "sha256": "bf7026b0366819a4fbcd43df39b29ba85af5d96ff39218073f1abb1ff569a177"
+        },
+        "usp_job_metadata": {
+          "rows": 2,
+          "sha256": "81d3d0cceac9058ec1a8403a885f67784d0ca77df28171a3a387a6322e7f474f"
+        },
+        "usp_migration_ledger": {
+          "rows": 2,
+          "sha256": "0191d8c1d30c9f16b21f6837ff1be8ee513881d6339112ae63944ed5d403749e"
+        },
+        "usp_outbox": {
+          "rows": 4,
+          "sha256": "e683405c4c9c0162429ab1aee2005d7e04b53aa0b7409fb4248bafa18145369c"
+        },
+        "usp_outbox_streams": {
+          "rows": 3,
+          "sha256": "3631138107ac7644ab98bb0c3f3123e3a56ee83aae5238eef00c895954e6d7b8"
+        },
+        "usp_packets": {
+          "rows": 1,
+          "sha256": "0ca2322e04e258d73a69179f3fda091882529723bff58c1e41e12d0426777ac5"
+        },
+        "usp_project_codes": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_audit": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_reviews": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_state": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_lineage": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_releases": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_snapshot_bodies": {
+          "rows": 140,
+          "sha256": "1ae86d35f6a774e1e75222bb76a184b40d98d35cc09e6ab01d836d1a7ec0f459"
+        },
+        "usp_snapshots": {
+          "rows": 5,
+          "sha256": "3a52cf948a3682763f6f7f7698134876687df801f8bfb82b7a2dc7eabb614ab1"
+        }
+      }
+    },
+    {
+      "name": "d1-replay-preservation",
+      "tables": {
+        "administrative_relationships": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "administrative_units": {
+          "rows": 3,
+          "sha256": "f9454ec611f8777450624875bf40544e32de65b746c425ef5a812c723d87c9c2"
+        },
+        "area_acquisitions": {
+          "rows": 1,
+          "sha256": "dc470e2ad0e84c81d4890a5cb78b0e4dc6d4806434d2a2fc5a3f3ba34c629f59"
+        },
+        "area_check_runs": {
+          "rows": 30,
+          "sha256": "74c538f037b0dc640e2a68548fcfae140b1cb05753844f56689c2e014efe9b9d"
+        },
+        "area_memberships": {
+          "rows": 3,
+          "sha256": "fe359af1433aef5a307347f924541d4eaf310c4338a086ab49176395a64e0f68"
+        },
+        "block_group_memberships": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "block_group_revisions": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "block_groups": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "building_preparation_revisions": {
+          "rows": 40,
+          "sha256": "676f1e6320f0e4263bb22388dcb5ce2775765cde8cc7ba983ea9e18a687888f5"
+        },
+        "building_preparations": {
+          "rows": 22,
+          "sha256": "760583adf62f5ee2db08847aadd665c284913e089b458693eb48923866aab5c6"
+        },
+        "cases": {
+          "rows": 222,
+          "sha256": "9494b66cf215e4ad6a8363e24142f56aeed6f5854e77a21ed12240e20c54980a"
+        },
+        "dataset_bundle_installs": {
+          "rows": 1,
+          "sha256": "8870073aa3ef248067cd8111de8917460ecb6a082b96b152ea660491970bd621"
+        },
+        "events": {
+          "rows": 1358,
+          "sha256": "e3d5cf2335135ca30bbedcc4dbb415e0a2ae293ab265172b88350f3a82ce2a37"
+        },
+        "external_identifiers": {
+          "rows": 641,
+          "sha256": "240ffa1479891e739056ef8e68609679ae2254c187b28bf35cf7ded36bb41978"
+        },
+        "identity_floors": {
+          "rows": 290,
+          "sha256": "b68e669e6f3e9ca5efd08061f8f3e73a4b73dd99f5593469a5677df3424d6b54"
+        },
+        "identity_spaces": {
+          "rows": 684,
+          "sha256": "b7c2a1f51dbb1d44bfcff2dc60716181250a4cb36e2a670b92a1aff5839e3f60"
+        },
+        "import_package_revisions": {
+          "rows": 1200,
+          "sha256": "218608d17bb4a7dd218ae0a907de4a8dff7fccf6c1afac548d449f7d3535e710"
+        },
+        "import_packages": {
+          "rows": 54,
+          "sha256": "8b5e6baf0ed4e5adf346c142ec4f47d297f19c669034747c30c76969a15c398f"
+        },
+        "jobs": {
+          "rows": 583,
+          "sha256": "73865833ec2b8f6ed1f45651ab5f3e837bfebbc42ea781436198de79a750ebeb"
+        },
+        "map_areas": {
+          "rows": 15,
+          "sha256": "e2b92e34ec34744b03bfb2d2c73b72e3d51f6d986f6df13cb8b8fa5e2ecf427c"
+        },
+        "officer_ai_derivatives": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "officer_ai_runs": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "officer_investigation_revisions": {
+          "rows": 24,
+          "sha256": "8154a49d3007bbe5e79734cdef1579fa1001fac58f0abdfbb3992be618dba52b"
+        },
+        "officer_investigations": {
+          "rows": 7,
+          "sha256": "d8f6114ffd8ab8f79ec6d4e1b0b0139221b8874f5d83df886cbae1183a48148f"
+        },
+        "operations": {
+          "rows": 388,
+          "sha256": "396de88410e86ff3ce1941ec6a67ccedb839768424a5af8fe71cf388c1b96b48"
+        },
+        "physical_feature_revisions": {
+          "rows": 565,
+          "sha256": "87680736b1884dc1d84e67c937af1af1785a931f8259578bc426035dfd40b7b8"
+        },
+        "physical_features": {
+          "rows": 565,
+          "sha256": "da93aa96340fba41f26bdad3d3dfd88036b81cd592b413e0cb3850f4f5e9b9ef"
+        },
+        "property_association_revisions": {
+          "rows": 19,
+          "sha256": "f257ac7097e3eafe0a5fdb343ebe291b0167d6820c5d5fa39f5cf71968eaea44"
+        },
+        "property_associations": {
+          "rows": 19,
+          "sha256": "a8da6f47ac307357a427a4b7e0e27d26ba6bb5910ffd6e93b25c9959b0e26e0f"
+        },
+        "registry_aliases": {
+          "rows": 276,
+          "sha256": "c144a57d87ac7f253797bb9bb422bff1061629a02c2579a02e5aff64633b3293"
+        },
+        "registry_case_feature_mappings": {
+          "rows": 233,
+          "sha256": "6425fae8f9bf35f36f90cef2fc91310598e68fe3d9f4f703b673b66d0565bc8f"
+        },
+        "registry_case_import_operations": {
+          "rows": 28,
+          "sha256": "b97eefb4fbf045194a7329f7ce3c28baf197e41c035d403d2bf3935a897ab592"
+        },
+        "registry_drafts": {
+          "rows": 107,
+          "sha256": "9e40623caac63634251dc0876f49b8109c743063273cc944d3222e72f4b400cf"
+        },
+        "registry_links": {
+          "rows": 413,
+          "sha256": "300f6e5c369ffb577a7034d504225c06caaaf1708401e29b74fe0b5c7da8f051"
+        },
+        "registry_records": {
+          "rows": 655,
+          "sha256": "71f994d384491d8af74a622b2a6854c061b445f3e1813a845d2a205b33790942"
+        },
+        "registry_reviews": {
+          "rows": 128,
+          "sha256": "f61d0753b8dd01bc051ab735069d3ec399da2ed62992f5b88e75027c6de5ce1c"
+        },
+        "registry_revisions": {
+          "rows": 343,
+          "sha256": "84baa2e9282c9dae220eda1855c01a9e15dcbfa18b3547b8ac2eb0bd6fdab5ab"
+        },
+        "registry_rights": {
+          "rows": 104,
+          "sha256": "2b8b2dfc7f016606ce5bf03dbcaf19e7af1d02817a4991bede639ba1c3901497"
+        },
+        "registry_sites": {
+          "rows": 15,
+          "sha256": "1282ec158199b5dc10467fca92c5268a8e9630c107c6b0f350767eab156a9b7f"
+        },
+        "scene_asset_bindings": {
+          "rows": 10,
+          "sha256": "b36d57a4d573107d7c17b4c88eb2af02780c7f24bcf8f272a8f3a34714c393c9"
+        },
+        "snapshots": {
+          "rows": 153,
+          "sha256": "bd9618e8a45f952d60d553432da58823974ed20268a63aa50a0b85fd6394099a"
+        },
+        "source_feature_links": {
+          "rows": 565,
+          "sha256": "70b220f83cb48f835ea5c61467d94aab5a2573236931ac1e407c3cb00cb2cadf"
+        },
+        "sources": {
+          "rows": 555,
+          "sha256": "69b0396f54e5f7de2271f944f6058c7b814cf38dc46f7e819dd127fa96d4b713"
+        },
+        "spatial_ml_batches": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ml_footprint_drafts": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ml_items": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "spatial_ref_sys": {
+          "rows": 8500,
+          "sha256": "2bb4adb27d115545b9293dfee0e259ddb19e8d93762511ee018a06a3c4850824"
+        },
+        "unit_revisions": {
+          "rows": 1011,
+          "sha256": "0f4fc1df169463fac278606420bd71e2e4c4a7c7b2bb4f407bf6072ca7fc8f40"
+        },
+        "units": {
+          "rows": 684,
+          "sha256": "2152ff93ecb1f44bcd71f56223898ab592178ba2492cfa325591c10fb379fa8e"
+        },
+        "usp_command_receipts": {
+          "rows": 4,
+          "sha256": "9e09eaa92214ea5ef0e1f320ac7ac394f3fcf8b88c85f0297af4315b34f39f94"
+        },
+        "usp_job_attempts": {
+          "rows": 3,
+          "sha256": "bf7026b0366819a4fbcd43df39b29ba85af5d96ff39218073f1abb1ff569a177"
+        },
+        "usp_job_metadata": {
+          "rows": 2,
+          "sha256": "81d3d0cceac9058ec1a8403a885f67784d0ca77df28171a3a387a6322e7f474f"
+        },
+        "usp_migration_ledger": {
+          "rows": 2,
+          "sha256": "0191d8c1d30c9f16b21f6837ff1be8ee513881d6339112ae63944ed5d403749e"
+        },
+        "usp_outbox": {
+          "rows": 4,
+          "sha256": "e683405c4c9c0162429ab1aee2005d7e04b53aa0b7409fb4248bafa18145369c"
+        },
+        "usp_outbox_streams": {
+          "rows": 3,
+          "sha256": "3631138107ac7644ab98bb0c3f3123e3a56ee83aae5238eef00c895954e6d7b8"
+        },
+        "usp_packets": {
+          "rows": 2,
+          "sha256": "12eeea57b2b77028ec91b93d6ef15ea8fe7147e04f6c54089262ebdbf579ae49"
+        },
+        "usp_project_codes": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_audit": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_reviews": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_identity_state": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_project_lineage": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_releases": {
+          "rows": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "usp_snapshot_bodies": {
+          "rows": 183,
+          "sha256": "79bc90b194b6937e20df7e05819ddd770b88afe5e06f39a09d9178516779bdb7"
+        },
+        "usp_snapshots": {
+          "rows": 6,
+          "sha256": "e648067a112a2e7324655a321cf3ce0019ee70e86283346085fbdaeef509b015"
+        }
+      }
+    }
+  ],
+  "commands": [
+    {
+      "label": "source-sha",
+      "exitCode": 0,
+      "durationMs": 6
+    },
+    {
+      "label": "docker-context",
+      "exitCode": 0,
+      "durationMs": 71
+    },
+    {
+      "label": "existing-project",
+      "exitCode": 0,
+      "durationMs": 21
+    },
+    {
+      "label": "existing-volumes",
+      "exitCode": 0,
+      "durationMs": 12
+    },
+    {
+      "label": "services-start",
+      "exitCode": 0,
+      "durationMs": 12831
+    },
+    {
+      "label": "database-restore",
+      "exitCode": 0,
+      "durationMs": 911
+    },
+    {
+      "label": "migration",
+      "exitCode": 0,
+      "durationMs": 430
+    },
+    {
+      "label": "repeat-migration",
+      "exitCode": 0,
+      "durationMs": 290
+    },
+    {
+      "label": "usp-verify-live",
+      "exitCode": 0,
+      "durationMs": 11373
+    },
+    {
+      "label": "d0-authored-pack",
+      "exitCode": 0,
+      "durationMs": 384
+    },
+    {
+      "label": "d0-import-plan",
+      "exitCode": 0,
+      "durationMs": 441
+    },
+    {
+      "label": "d0-import-apply",
+      "exitCode": 0,
+      "durationMs": 16233
+    },
+    {
+      "label": "d0-import-replay",
+      "exitCode": 0,
+      "durationMs": 3793
+    },
+    {
+      "label": "d0-live-verify",
+      "exitCode": 0,
+      "durationMs": 975
+    },
+    {
+      "label": "d1-import-plan",
+      "exitCode": 0,
+      "durationMs": 340
+    },
+    {
+      "label": "d1-import-apply",
+      "exitCode": 0,
+      "durationMs": 2128
+    },
+    {
+      "label": "d1-import-replay",
+      "exitCode": 0,
+      "durationMs": 1674
+    },
+    {
+      "label": "ui-01-foundations-browser",
+      "exitCode": 1,
+      "durationMs": 6040
+    },
+    {
+      "label": "owned-services-cleanup",
+      "exitCode": 0,
+      "durationMs": 2458
+    }
+  ],
+  "limitation": "Synthetic D0 and retained Nandan baseline; one real D1 exterior in a local engineering display. Global placement, interior records, analytical mesh volume and public deployment are unqualified.",
+  "error": "Error: ui-01-foundations-browser failed (1): >  98 |     if (sample.boundary !== null) expect(sample.boundary, `${theme} ${sample.name} border`).toBeGreaterThanOrEqual(3);\n          |                                                                                             ^\n       99 |   }\n      100 | }\n      101 |\n        at assertControls (/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui-foundations.spec.ts:98:93)\n        at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui-foundations.spec.ts:178:5\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────\n    test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/video.webm\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/error-context.md\n\n    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    tests/e2e/usp-ui-foundations.spec.ts:105:1 › UI-01 local fonts, Hindi glyphs, token contrast and controls in both themes \n\n    at command (file:///Users/vinayak/.codex/worktrees/51a5/3D%20Ulpin/scripts/usp/isolated-live.mjs:60:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/vinayak/.codex/worktrees/51a5/3D%20Ulpin/scripts/usp/isolated-live.mjs:228:3"
+}

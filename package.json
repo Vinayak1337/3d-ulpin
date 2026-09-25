@@ -26,6 +26,7 @@
     "platform:stop": "bash scripts/platform-stop.sh",
     "db:migrate": "tsx scripts/migrate.ts",
     "typecheck": "pnpm --filter @ulpin/web typecheck",
+    "lint:icons": "node scripts/usp/ui/icon-import-warning.mjs",
     "test:e2e": "playwright test",
     "test:scene": "tsx --test tests/building-scene.test.ts",
     "test:case-document-copy": "tsx scripts/verify-case-document-copy.ts",
