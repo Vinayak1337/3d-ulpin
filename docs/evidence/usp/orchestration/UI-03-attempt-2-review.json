@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "ulpin-lead-review/1",
+  "assignmentId": "UI-03",
+  "attempt": 2,
+  "reviewedAt": "2026-09-25T20:01:56.130048+00:00",
+  "codeCommit": "657e23fe16783270d58e96a214a15b08d046ba22",
+  "resultCommit": "65cc57fd5b8d42015c1e8d9a81b46166809510dc",
+  "disposition": "focused_corrections_required_not_integrated",
+  "reviewer": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "independentModelFamily": false
+  },
+  "resolvedByInspection": [
+    "R3 per-record reference handling",
+    "R4 explicit Test fixture labels restored",
+    "R5 new authored source-like tests removed from active tree",
+    "R6 kind styling no longer overridden by unknown class"
+  ],
+  "partial": [
+    "R1 composition replaced but zoom occlusion remains",
+    "R2 negative sign no longer directly enables mode, but source filtering and frontend-only ground semantics remain wrong"
+  ],
+  "findings": [
+    {
+      "id": "UI03-R2b",
+      "priority": "P1",
+      "paths": [
+        "apps/web/features/officer/block/undergroundEligibility.ts:6",
+        "apps/web/features/officer/block/BlockPage.tsx:245",
+        "apps/web/features/studio/product/SavedSceneViewport.tsx:79"
+      ],
+      "finding": "The correction still uses elevation sign to suppress ordinary source inspection: negative detail geometry is discarded unless underground-qualified, even when underground mode is off. Absolute negative elevation does not establish underground or make source inspection invalid. In addition, the only ground-relative: namespace definition is a new frontend regex, with no producer/contract supplying its claimed semantics. Evidence array length does not establish ground-zero semantics.",
+      "required": "Separate ordinary source geometry visibility/reference compatibility from underground eligibility. Do not discard negative source geometry solely by sign. Use actual source/contract semantics for underground qualification; if none is available, leave the mode explicitly unavailable rather than introducing a magic label as authority. Preserve reference-safe placement and original source inspection; do not expand backend ownership."
+    },
+    {
+      "id": "UI03-R1b",
+      "priority": "P2",
+      "paths": [
+        "apps/web/features/officer/block/area-map.css",
+        "docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/final/local-c536519a8455d8d6/screenshots/selected-equivalent-200-percent-zoom.png"
+      ],
+      "finding": "The 720x450 desktop zoom-equivalent capture shows the tall wrapped toolbar covering the top navigation controls; the level panel is clipped/overlapped by lower actions. Container width measurements do not verify that individual controls are visible/reachable.",
+      "required": "Prevent map toolbar/navigation/rail/action overlap at desktop zoom-equivalent sizes using flexible rows/collapsed optional panels or accessible scrolling. Keep buttons and content reachable by keyboard. Verify element bounds/occlusion for visible controls and capture after fix; no broad mobile redesign."
+    }
+  ],
+  "checks": {
+    "sourceReview": true,
+    "screenshotsViewed": [
+      "final selected-3d-1440",
+      "final selected-equivalent-200-percent-zoom"
+    ],
+    "workerReported": "typecheck/icon/design/isolated browser and protected snapshot integrity passed",
+    "leadTestRerun": false,
+    "reason": "Concrete source/visual regressions require correction before integration"
+  },
+  "limitations": [
+    "Actual browser zoom not instrumented",
+    "3D hatch and numeric camera missing",
+    "Source/mixed-datum/positive below-ground coverage unqualified",
+    "Same-family engineering review only; all GF gates pending"
+  ]
+}

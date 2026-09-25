@@ -10,6 +10,7 @@ import { createStore, type StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
 import { SpatialDataProvider } from "@/features/spatial/data/Provider";
 import type { FeatureKind } from "@ulpin/contracts";
+import type { ColourBy } from "../block/mapStyleModel";
 
 export type RecentProperty = {
   buildingId: string;
@@ -20,6 +21,7 @@ export type RecentProperty = {
 };
 export type MapPreferences = {
   mode: "3d" | "2d";
+  colourBy: ColourBy;
   labels: boolean;
   underground: boolean;
   hiddenLayers: FeatureKind[];
@@ -30,6 +32,7 @@ export type MapPreferences = {
 };
 export const defaultMapPreferences: MapPreferences = {
   mode: "3d",
+  colourBy: "none",
   labels: false,
   underground: false,
   hiddenLayers: [],
@@ -102,7 +105,7 @@ export function parseSavedMapSettings(raw:string|null):Record<string,MapPreferen
    if(!entry||typeof entry.id!=='string'||!/^[a-zA-Z0-9][a-zA-Z0-9:._-]{0,150}$/.test(entry.id)||['constructor','prototype','__proto__'].includes(entry.id)||!entry.preferences)continue;
    const p=entry.preferences,kinds=['building','parcel','road','utility','public_land'];
    const opacity=Object.fromEntries(Object.entries(p.opacity??{}).filter(([k,v])=>kinds.includes(k)&&typeof v==='number'&&Number.isFinite(v)&&v>=.05&&v<=1));
-   out[entry.id]={...defaultMapPreferences,mode:p.mode==='2d'?'2d':'3d',labels:p.labels===true,underground:p.underground===true,hiddenLayers:Array.isArray(p.hiddenLayers)?p.hiddenLayers.filter((x:unknown)=>typeof x==='string'&&kinds.includes(x)):[],inspector:['property','floors','evidence','parcel','utility','photos','history'].includes(p.inspector)?p.inspector:'property',rail:p.rail==='layers'?'layers':'properties',findingsOpen:p.findingsOpen===true,opacity};
+   out[entry.id]={...defaultMapPreferences,mode:p.mode==='2d'?'2d':'3d',colourBy:['rights','readiness','findings','utilities'].includes(p.colourBy)?p.colourBy:'none',labels:p.labels===true,underground:p.underground===true,hiddenLayers:Array.isArray(p.hiddenLayers)?p.hiddenLayers.filter((x:unknown)=>typeof x==='string'&&kinds.includes(x)):[],inspector:['property','floors','evidence','parcel','utility','photos','history'].includes(p.inspector)?p.inspector:'property',rail:p.rail==='layers'?'layers':'properties',findingsOpen:p.findingsOpen===true,opacity};
   }
  }catch{}return out;
 }

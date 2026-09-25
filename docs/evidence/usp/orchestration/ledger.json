@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T17:30:51.851946+00:00",
+  "updatedAt": "2026-09-25T21:47:07.208926+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "1a6baf0d832117932c291fa6bfc08a536d8bd26e",
+    "acceptedStagingBase": "80e1e9cf46a49eefb1d4024efe14f82c177ec85d",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -89,6 +89,13 @@
         "assignmentId": "FND-04",
         "integrationMethod": "merge preserving both attempts and exact tested ancestry",
         "scope": "Geometry contract/SQL separation, current analytical qualification and participant-complete finding guards; no source accuracy pass"
+      },
+      {
+        "sourceCommit": "363499ca749506ce77db0b452e90c5554ba54a3d",
+        "integrationCommit": "5141475ca3bd7581a1f85a983f0c235481e394bf",
+        "assignmentId": "UI-03",
+        "integrationMethod": "merge preserving all attempts and exact tested ancestry",
+        "scope": "Map composition/record encodings, honest unplaced/underground states, historical regression; full card qualification remains open"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -101,11 +108,38 @@
       "full_product"
     ],
     "nextGate": "GF0",
-    "formalUI": "deferred until complete mockup is linked and explicitly authorized; minimal functional test interfaces only",
+    "formalUI": "Authorized replacement from repository design system and supplied mockup references, progressively within existing plan cards; desktop/light-only, official-source only.",
     "workerLimit": 2,
     "defaultWorkers": 1,
     "nativeSubagents": false,
-    "callbackMode": "dispatch then end turn; resume on tool-based worker callback; no polling loops or automation"
+    "callbackMode": "dispatch then end turn; resume on tool-based worker callback; no polling loops or automation",
+    "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
+    "leadRole": "orchestrate_only_delegate_execution",
+    "coordination": "Fixed-model lanes; one coder plus bounded independent manual testing/review; callbacks, no polling loops",
+    "testing": "Lean feature-first manual checks plus targeted existing/high-risk tests; no blanket suite expansion",
+    "implementationOwnerLimit": 1,
+    "activeLaneLimit": 3,
+    "fixedModelLanes": true,
+    "persistentPreview": {
+      "status": "ui08_candidate_http_serving_provenance_correction_pending",
+      "url": "http://127.0.0.1:3187/studio/work",
+      "codeCommit": "8298d8afef62b0b7e753adddfd7315f61fbe6e97",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-preview-ui08-candidate/3D Ulpin",
+      "launcherPid": 45396,
+      "listenerPid": 45397,
+      "serviceProject": "ulpin-usptest-1ac33df1f895c45c",
+      "stopCommand": "kill -TERM 45396",
+      "stopSemantics": "App only. Preserve existing isolated service volumes; original guard runner no longer owns cleanup.",
+      "lifecycleRecord": "/Users/vinayak/.codex/preview/ulpin-3187.json",
+      "httpChecks": {
+        "workPage": 200,
+        "forgedHost": 403,
+        "database": true,
+        "storage": true,
+        "workQueueTotal": 38
+      },
+      "acceptance": "pending provenance correction and current-code manual design check"
+    }
   },
   "inputs": [
     {
@@ -188,6 +222,25 @@
       "decision": "Active handoffs,task cards,design docs and release-plan deliveryPolicy aligned with D012/D013. Official-source coverage gaps remain unqualified; no runtime gate changed.",
       "commit": "28d78fd038767bfb09f989d7874eb6b20dfd678b",
       "receipt": "docs/evidence/usp/orchestration/official-source-plan-alignment.json"
+    },
+    {
+      "id": "D015",
+      "recordedAt": "2026-09-25T19:01:20.510098+00:00",
+      "authority": "Direct user instruction and sequencing clarification, 26 September 2026",
+      "decision": "Replace legacy UI from scratch within existing plan execution; no separate redesign or legacy polishing detour. Retain backend/runtime/source data and compatible URLs. Apply UI-08 checks to each replacement."
+    },
+    {
+      "id": "D016",
+      "recordedAt": "2026-09-25T20:50:36.807250+00:00",
+      "authority": "Direct user direction",
+      "decision": "Orchestration-only lead, task-level hardening without rewriting product plans, stable GPT-6 Astra/Sol/Luna lanes, pipelined manual review and independent next feature, focused fixes, lean risk-based verification.",
+      "guide": "docs/orchestration/OPERATING_GUIDE.md"
+    },
+    {
+      "id": "D017",
+      "recordedAt": "2026-09-25T21:16:12.596154+00:00",
+      "authority": "Direct user request",
+      "decision": "Keep a persistent dedicated local preview running for UI status checks; reuse URL for manual handoffs and disclose served revision. Reserve3187; temporary tests separate."
     }
   ],
   "workers": [
@@ -206,8 +259,50 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "ready_for_next_assignment",
+      "status": "legacy_worker_stopped_result_pending_review",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
+    },
+    {
+      "threadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "hostId": "local",
+      "title": "3D ULPIN \u2014 Sol implementation",
+      "role": "implementation",
+      "fixedModel": "gpt-6-sol",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "observedAgent": null,
+      "status": "assigned_PREVIEW-UI08"
+    },
+    {
+      "threadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "hostId": "local",
+      "title": "3D ULPIN \u2014 Astra risk review",
+      "role": "review",
+      "fixedModel": "gpt-6-astra",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "medium"
+      },
+      "observedAgent": null,
+      "status": "idle_UI08_review_complete"
+    },
+    {
+      "threadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "hostId": "local",
+      "title": "3D ULPIN \u2014 Luna manual testing and research",
+      "role": "manual_test_research",
+      "fixedModel": "gpt-6-luna",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "medium"
+      },
+      "observedAgent": null,
+      "status": "idle_awaiting_corrected_preview_for_visual_check"
     }
   ],
   "assignments": [
@@ -1390,6 +1485,903 @@
       "testedCommit": "051584595fabbd1a42480233c7c2f7ea05984ca6",
       "acceptedAt": "2026-09-25T17:30:51.851946+00:00",
       "reviewRef": "docs/evidence/usp/orchestration/FND-04-attempt-2-review.json"
+    },
+    {
+      "assignmentId": "UI-08",
+      "attempt": 1,
+      "callbackId": "ulpin-UI-08-attempt-1",
+      "objective": "Remove hard-coded sample content and banned provenance labels from reachable finale screens/documents; show record-derived provenance and honest unavailable official reference state",
+      "baseCommit": "80e1e9cf46a49eefb1d4024efe14f82c177ec85d",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-08-record-backed-content",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "apps/web/features/officer/ and apps/web/features/studio/product/ record-backed copy/provenance and removal of reachable sample dependencies",
+        "apps/web/app/studio/ and reachable spatial components narrow copy/data binding changes; retain shared renderer and legacy URLs",
+        "apps/web/lib/server/block-export.ts and officer-investigations.ts generated-document copy/provenance only; preserve FND-04 guards",
+        "apps/web/lib/server/{area-resolver,spatial-datasets,studio-sources}.ts narrow removal of text-based record matching/sample fallbacks only",
+        "Shared record-provenance formatter under apps/web/lib/ and focused UI regression tests/captures",
+        "docs/evidence/usp/finale/GF-VIEW/UI-08/ new evidence"
+      ],
+      "exclusions": [
+        "Protected datasets, original bytes, seed/import/reset operations or synthesized data",
+        "New renderer, backend authority, schema/migrations, qualification/security guard changes",
+        "Ledger/plans/AGENTS/user-staged skills, credentials, remote pushes or deployment"
+      ],
+      "acceptance": [
+        "H29 UI-08/H99Z6 and current-delivery-policy; all displayed values from actual records, missing states honest",
+        "No visible fictional/demonstration-data/specimen copy in reachable finale routes/documents; fixed badges only from explicit record provenance",
+        "Retained samples and history protected; no code matching records by names containing FICTIONAL",
+        "DATA-09 not qualified for scene use, so do not auto-place/import it; report reference-area completion gap explicitly",
+        "Desktop/light-only preserve future seams, single shared runtime and legacy URL behavior",
+        "Repository ui-design-check report required; use staged skill read-only from original checkout if absent on branch",
+        "Relevant tests/typecheck/build guards plus fresh actual S1/S4/S5/S12 route captures where implemented; unavailable routes/data documented, no mock screenshots"
+      ],
+      "status": "corrections_required_not_integrated",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/report.md",
+      "resultCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
+      "ownershipClarifications": [
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-workbench/ReferenceWorkbench.tsx",
+            "apps/web/features/spatial/reference-workbench/ImportReceipt.tsx",
+            "apps/web/app/studio/showcase/page.tsx",
+            "apps/web/lib/spatial-datasets.ts",
+            "apps/web/lib/work-queue.ts"
+          ],
+          "scope": "Remove bundled default/sample imports from reachable saved inspection; direct saved-record loading, explicit no-selection/loading/error states. Client library changes only if necessary for preserving saved URL routing; retain explicit legacy URL resolution without implicit sample fallback.",
+          "reason": "Showcase saved-record route currently selects demoDatasets[0] before record loading and exposes bundled sample imports. Preserve unique inspection while removing sample dependency.",
+          "confirmedAt": "2026-09-25T17:34:02.781758+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/dataset-processing/DatasetProcessing.tsx",
+            "apps/web/features/spatial/dataset-processing/Walkthrough.tsx",
+            "apps/web/features/spatial/reference-workbench/PropertyRegister.tsx"
+          ],
+          "scope": "Replace name-derived provenance and hard-coded evidence fallback with record-backed presentation and explicit missing/empty states; retain saved-source inspection. No storage, protected public evidence, renderer or analytical qualification changes.",
+          "reason": "Worker traced saved map links to processing and register views which still infer provenance from names or substitute public ML evidence.",
+          "confirmedAt": "2026-09-25T17:41:44.012532+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-runtime/map.js"
+          ],
+          "scope": "Exact-name display fix in displayName only, plus focused assertion in owned UI regression tests. Preserve safe rendering and existing absent-value behavior; no source normalization, records, geometry or renderer changes.",
+          "reason": "Saved-map displayName strips recorded label suffixes according to provenance-like words, altering source names. No conflicting active writer assigned.",
+          "confirmedAt": "2026-09-25T17:48:40.695281+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-import/source-normalizer.ts",
+            "apps/web/features/spatial/reference-runtime/map.js"
+          ],
+          "scope": "Wording only for the two surfaced resident/right validation errors and unqualified overlap inspector badge. Use Test fixture terminology tied to existing explicit synthetic classification, preserve all validation/status/normalization behavior. Geometry finding wording must not imply current analytical qualification.",
+          "reason": "Import errors surface banned fictional copy; local-overlap badge currently says Conflict detected despite absent analytical qualification.",
+          "confirmedAt": "2026-09-25T17:49:15.374997+00:00"
+        },
+        {
+          "paths": [
+            "scripts/usp/local-isolation.mjs",
+            "scripts/usp/ui/UI-08-isolated-preview.mjs",
+            "tests/usp-ui-preview-isolation.test.mjs",
+            "tests/e2e/usp-ui08-content.spec.ts"
+          ],
+          "scope": "Bounded read-only UI preview verification: explicit opt-in isolated preview profile on loopback3108 with existing nonce/context/database/bucket/secret/port checks preserved. Default profiles/build guard unchanged. Restore unchanged hash-pinned repository DB/object snapshot once into verified empty nonce-owned services; no seed/import/bundle install. Start owned Next dev in worker checkout only; capture actual available routes and clean up only owned processes/services.",
+          "reason": "Production build blocked by unrelated port3000 server; safe isolated preview can supply real UI evidence without changing protected services or data. Missing screenshots should not be declared unavoidable before trying this bounded route.",
+          "confirmedAt": "2026-09-25T17:51:17.227118+00:00"
+        }
+      ],
+      "testedCommit": "d8b95384bb802b3b1de121f650524aec21be7ab6",
+      "reviewRef": "docs/evidence/usp/orchestration/UI-08-attempt-1-review.json"
+    },
+    {
+      "assignmentId": "UI-08",
+      "attempt": 2,
+      "callbackId": "ulpin-UI-08-attempt-2",
+      "objective": "Remove hard-coded sample content and banned provenance labels from reachable finale screens/documents; show record-derived provenance and honest unavailable official reference state",
+      "baseCommit": "80e1e9cf46a49eefb1d4024efe14f82c177ec85d",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-08-record-backed-content",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "apps/web/features/officer/ and apps/web/features/studio/product/ record-backed copy/provenance and removal of reachable sample dependencies",
+        "apps/web/app/studio/ and reachable spatial components narrow copy/data binding changes; retain shared renderer and legacy URLs",
+        "apps/web/lib/server/block-export.ts and officer-investigations.ts generated-document copy/provenance only; preserve FND-04 guards",
+        "apps/web/lib/server/{area-resolver,spatial-datasets,studio-sources}.ts narrow removal of text-based record matching/sample fallbacks only",
+        "Shared record-provenance formatter under apps/web/lib/ and focused UI regression tests/captures",
+        "docs/evidence/usp/finale/GF-VIEW/UI-08/ new evidence"
+      ],
+      "exclusions": [
+        "Protected datasets, original bytes, seed/import/reset operations or synthesized data",
+        "New renderer, backend authority, schema/migrations, qualification/security guard changes",
+        "Ledger/plans/AGENTS/user-staged skills, credentials, remote pushes or deployment"
+      ],
+      "acceptance": [
+        "H29 UI-08/H99Z6 and current-delivery-policy; all displayed values from actual records, missing states honest",
+        "No visible fictional/demonstration-data/specimen copy in reachable finale routes/documents; fixed badges only from explicit record provenance",
+        "Retained samples and history protected; no code matching records by names containing FICTIONAL",
+        "DATA-09 not qualified for scene use, so do not auto-place/import it; report reference-area completion gap explicitly",
+        "Desktop/light-only preserve future seams, single shared runtime and legacy URL behavior",
+        "Repository ui-design-check report required; use staged skill read-only from original checkout if absent on branch",
+        "Relevant tests/typecheck/build guards plus fresh actual S1/S4/S5/S12 route captures where implemented; unavailable routes/data documented, no mock screenshots"
+      ],
+      "status": "stopped_user_scope_change_no_attempt2_edits",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-2/report.md",
+      "resultCommit": null,
+      "ownershipClarifications": [
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-workbench/ReferenceWorkbench.tsx",
+            "apps/web/features/spatial/reference-workbench/ImportReceipt.tsx",
+            "apps/web/app/studio/showcase/page.tsx",
+            "apps/web/lib/spatial-datasets.ts",
+            "apps/web/lib/work-queue.ts"
+          ],
+          "scope": "Remove bundled default/sample imports from reachable saved inspection; direct saved-record loading, explicit no-selection/loading/error states. Client library changes only if necessary for preserving saved URL routing; retain explicit legacy URL resolution without implicit sample fallback.",
+          "reason": "Showcase saved-record route currently selects demoDatasets[0] before record loading and exposes bundled sample imports. Preserve unique inspection while removing sample dependency.",
+          "confirmedAt": "2026-09-25T17:34:02.781758+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/dataset-processing/DatasetProcessing.tsx",
+            "apps/web/features/spatial/dataset-processing/Walkthrough.tsx",
+            "apps/web/features/spatial/reference-workbench/PropertyRegister.tsx"
+          ],
+          "scope": "Replace name-derived provenance and hard-coded evidence fallback with record-backed presentation and explicit missing/empty states; retain saved-source inspection. No storage, protected public evidence, renderer or analytical qualification changes.",
+          "reason": "Worker traced saved map links to processing and register views which still infer provenance from names or substitute public ML evidence.",
+          "confirmedAt": "2026-09-25T17:41:44.012532+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-runtime/map.js"
+          ],
+          "scope": "Exact-name display fix in displayName only, plus focused assertion in owned UI regression tests. Preserve safe rendering and existing absent-value behavior; no source normalization, records, geometry or renderer changes.",
+          "reason": "Saved-map displayName strips recorded label suffixes according to provenance-like words, altering source names. No conflicting active writer assigned.",
+          "confirmedAt": "2026-09-25T17:48:40.695281+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-import/source-normalizer.ts",
+            "apps/web/features/spatial/reference-runtime/map.js"
+          ],
+          "scope": "Wording only for the two surfaced resident/right validation errors and unqualified overlap inspector badge. Use Test fixture terminology tied to existing explicit synthetic classification, preserve all validation/status/normalization behavior. Geometry finding wording must not imply current analytical qualification.",
+          "reason": "Import errors surface banned fictional copy; local-overlap badge currently says Conflict detected despite absent analytical qualification.",
+          "confirmedAt": "2026-09-25T17:49:15.374997+00:00"
+        },
+        {
+          "paths": [
+            "scripts/usp/local-isolation.mjs",
+            "scripts/usp/ui/UI-08-isolated-preview.mjs",
+            "tests/usp-ui-preview-isolation.test.mjs",
+            "tests/e2e/usp-ui08-content.spec.ts"
+          ],
+          "scope": "Bounded read-only UI preview verification: explicit opt-in isolated preview profile on loopback3108 with existing nonce/context/database/bucket/secret/port checks preserved. Default profiles/build guard unchanged. Restore unchanged hash-pinned repository DB/object snapshot once into verified empty nonce-owned services; no seed/import/bundle install. Start owned Next dev in worker checkout only; capture actual available routes and clean up only owned processes/services.",
+          "reason": "Production build blocked by unrelated port3000 server; safe isolated preview can supply real UI evidence without changing protected services or data. Missing screenshots should not be declared unavoidable before trying this bounded route.",
+          "confirmedAt": "2026-09-25T17:51:17.227118+00:00"
+        }
+      ],
+      "continuationCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
+      "correctionFindings": [
+        "UI08-R1",
+        "UI08-R2"
+      ],
+      "checkpointCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
+      "checkpointNote": "Worker confirms clean tree; owned orphan preview resources removed; port3108 free. Attempt1 preserved unmerged."
+    },
+    {
+      "assignmentId": "UI-03",
+      "attempt": 1,
+      "callbackId": "ulpin-UI-03-attempt-1",
+      "objective": "Implement planned map styling and honest geometry while rebuilding affected map presentation from design references; apply UI-08 content checks within the card.",
+      "baseCommit": "62a2802cb24c9760038a8c941c17b0b8677a6ab1",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-03-map-replacement",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "status": "corrections_required_not_integrated",
+      "ownership": [
+        "Affected area-map presentation in apps/web/features/officer/block/ (BlockPage, rails, MapPlan, FindingsTray and map-specific CSS) and new replacement map components; migrate consumers before deleting old files.",
+        "apps/web/features/studio/product/SavedSceneViewport.tsx and shared map presentation/state adapters only as needed by UI-03; preserve shared Cesium lifecycle, selection/cache contracts.",
+        "Area route mounts and compatibility redirects; narrow shared token/primitives composition as needed; no unrelated Batches/Register/workspace rewrite.",
+        "Current shared spatial runtime visual encodings and source-derived presentation adapters; no new renderer, invented geometry or qualification relaxation.",
+        "Focused frontend tests and docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/ evidence.",
+        "Guarded preview infrastructure may be selectively ported from c2e8529, with separate UI-03 outputs and all existing isolation checks retained."
+      ],
+      "exclusions": [
+        "Backend schema, migrations, registry/job/provider authority, FND-04 guards, protected sources/data, seeding/import/reset, generated fixtures.",
+        "Lead ledger/plans/AGENTS, user-staged skills, credentials, deploy/push/main, unrelated local processes."
+      ],
+      "acceptance": [
+        "H29 UI-03 with current delivery policy and supplied design references; rebuild presentation as part of this card, not a separate detour.",
+        "One Colour by mode/legend, record-derived evidence/outline encoding, source-backed level rail/reference and honest unavailable heights/underground states; no fabricated source facts.",
+        "Exact URL/selection/camera continuity and unique inspection preserved; legacy components removed only after consumers migrate.",
+        "Light-only desktop with useful reclaimed space; reusable tokens/theme/responsive seams and desktop keyboard/zoom access retained.",
+        "Record-derived provenance; no sample defaults, names-based provenance or mockup code/data; unavailable DATA-09 scene remains unavailable.",
+        "Inventory replaced/retained/pending UI surfaces; ui-design-check report, relevant tests/typecheck and real route before/after captures; do not claim unexecuted production build, official source accuracy or full runtime gate pass."
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/report.md",
+      "resultCommit": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
+      "codeCommit": "dec00dc1b00a78c1172a1e6ed67622fc79cc7539",
+      "reviewPath": "docs/evidence/usp/orchestration/UI-03-attempt-1-review.json"
+    },
+    {
+      "assignmentId": "UI-03",
+      "attempt": 2,
+      "callbackId": "ulpin-UI-03-attempt-2",
+      "objective": "Implement planned map styling and honest geometry while rebuilding affected map presentation from design references; apply UI-08 content checks within the card.",
+      "baseCommit": "62a2802cb24c9760038a8c941c17b0b8677a6ab1",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-03-map-replacement",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "status": "focused_corrections_required_not_integrated",
+      "ownership": [
+        "Affected area-map presentation in apps/web/features/officer/block/ (BlockPage, rails, MapPlan, FindingsTray and map-specific CSS) and new replacement map components; migrate consumers before deleting old files.",
+        "apps/web/features/studio/product/SavedSceneViewport.tsx and shared map presentation/state adapters only as needed by UI-03; preserve shared Cesium lifecycle, selection/cache contracts.",
+        "Area route mounts and compatibility redirects; narrow shared token/primitives composition as needed; no unrelated Batches/Register/workspace rewrite.",
+        "Current shared spatial runtime visual encodings and source-derived presentation adapters; no new renderer, invented geometry or qualification relaxation.",
+        "Focused frontend tests and docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/ evidence.",
+        "Guarded preview infrastructure may be selectively ported from c2e8529, with separate UI-03 outputs and all existing isolation checks retained."
+      ],
+      "exclusions": [
+        "Backend schema, migrations, registry/job/provider authority, FND-04 guards, protected sources/data, seeding/import/reset, generated fixtures.",
+        "Lead ledger/plans/AGENTS, user-staged skills, credentials, deploy/push/main, unrelated local processes."
+      ],
+      "acceptance": [
+        "H29 UI-03 with current delivery policy and supplied design references; rebuild presentation as part of this card, not a separate detour.",
+        "One Colour by mode/legend, record-derived evidence/outline encoding, source-backed level rail/reference and honest unavailable heights/underground states; no fabricated source facts.",
+        "Exact URL/selection/camera continuity and unique inspection preserved; legacy components removed only after consumers migrate.",
+        "Light-only desktop with useful reclaimed space; reusable tokens/theme/responsive seams and desktop keyboard/zoom access retained.",
+        "Record-derived provenance; no sample defaults, names-based provenance or mockup code/data; unavailable DATA-09 scene remains unavailable.",
+        "Inventory replaced/retained/pending UI surfaces; ui-design-check report, relevant tests/typecheck and real route before/after captures; do not claim unexecuted production build, official source accuracy or full runtime gate pass."
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/report.md",
+      "resultCommit": "65cc57fd5b8d42015c1e8d9a81b46166809510dc",
+      "continuationCommit": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
+      "correctionFindings": [
+        "UI03-R1",
+        "UI03-R2",
+        "UI03-R3",
+        "UI03-R4",
+        "UI03-R5",
+        "UI03-R6"
+      ],
+      "codeCommit": "657e23fe16783270d58e96a214a15b08d046ba22",
+      "reviewPath": "docs/evidence/usp/orchestration/UI-03-attempt-2-review.json"
+    },
+    {
+      "assignmentId": "UI-03",
+      "attempt": 3,
+      "callbackId": "ulpin-UI-03-attempt-3",
+      "objective": "Implement planned map styling and honest geometry while rebuilding affected map presentation from design references; apply UI-08 content checks within the card.",
+      "baseCommit": "62a2802cb24c9760038a8c941c17b0b8677a6ab1",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-03-map-replacement",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "status": "accepted_bounded_map_presentation_card_partial",
+      "ownership": [
+        "Affected area-map presentation in apps/web/features/officer/block/ (BlockPage, rails, MapPlan, FindingsTray and map-specific CSS) and new replacement map components; migrate consumers before deleting old files.",
+        "apps/web/features/studio/product/SavedSceneViewport.tsx and shared map presentation/state adapters only as needed by UI-03; preserve shared Cesium lifecycle, selection/cache contracts.",
+        "Area route mounts and compatibility redirects; narrow shared token/primitives composition as needed; no unrelated Batches/Register/workspace rewrite.",
+        "Current shared spatial runtime visual encodings and source-derived presentation adapters; no new renderer, invented geometry or qualification relaxation.",
+        "Focused frontend tests and docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/ evidence.",
+        "Guarded preview infrastructure may be selectively ported from c2e8529, with separate UI-03 outputs and all existing isolation checks retained."
+      ],
+      "exclusions": [
+        "Backend schema, migrations, registry/job/provider authority, FND-04 guards, protected sources/data, seeding/import/reset, generated fixtures.",
+        "Lead ledger/plans/AGENTS, user-staged skills, credentials, deploy/push/main, unrelated local processes."
+      ],
+      "acceptance": [
+        "H29 UI-03 with current delivery policy and supplied design references; rebuild presentation as part of this card, not a separate detour.",
+        "One Colour by mode/legend, record-derived evidence/outline encoding, source-backed level rail/reference and honest unavailable heights/underground states; no fabricated source facts.",
+        "Exact URL/selection/camera continuity and unique inspection preserved; legacy components removed only after consumers migrate.",
+        "Light-only desktop with useful reclaimed space; reusable tokens/theme/responsive seams and desktop keyboard/zoom access retained.",
+        "Record-derived provenance; no sample defaults, names-based provenance or mockup code/data; unavailable DATA-09 scene remains unavailable.",
+        "Inventory replaced/retained/pending UI surfaces; ui-design-check report, relevant tests/typecheck and real route before/after captures; do not claim unexecuted production build, official source accuracy or full runtime gate pass."
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-3/report.md",
+      "resultCommit": "363499ca749506ce77db0b452e90c5554ba54a3d",
+      "continuationCommit": "65cc57fd5b8d42015c1e8d9a81b46166809510dc",
+      "correctionFindings": [
+        "UI03-R2b",
+        "UI03-R1b"
+      ],
+      "codeCommit": "3c882b0dec484d5fb9e8c23f98d49ee19faf297f",
+      "reviewPath": "docs/evidence/usp/orchestration/UI-03-attempt-3-review.json",
+      "remaining": [
+        "Qualified official DATA09 reference scene",
+        "Backend sourced ground relation and positive underground behavior",
+        "Mixed-datum, real signed-elevation and Indian level examples",
+        "3D uncertainty hatch and full H22 encodings",
+        "Numeric camera V-shot and actual browser zoom",
+        "Production build (guard blocked unrelated port3000)",
+        "Independent cross-family/human milestone review"
+      ]
+    },
+    {
+      "assignmentId": "FND-06",
+      "attempt": 1,
+      "callbackId": "ulpin-FND-06-attempt-1",
+      "objective": "Implement shared privacy redaction, explicit non-India provider egress gating, truthful capability copy and loopback Host protection through existing services.",
+      "baseCommit": "4eef5a535b9d7e8940401d20a67c578188a31ea0",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-06-privacy-egress",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "status": "corrections_required_not_integrated",
+      "ownership": [
+        "Existing server privacy/redaction modules and direct call-site adapters across provider requests/responses, logs, derived previews/indexes. Preserve unchanged originals and access-controlled inspection.",
+        "apps/web/lib/server/officer-ai-provider.ts, officer-ai-validation.ts, officer-ai.ts and existing capability/status endpoints; no parallel gateway or job authority.",
+        "Loopback Host validation in actual Next request entry point and relevant configuration; read installed Next docs before changes.",
+        "Existing image derivative metadata-stripping path in services/geo or existing image processor; no original rewrites.",
+        "Narrow shared capability contract and Shell residency status slot/copy. Use design system and current light-only policy within this feature; no unrelated screen rewrite.",
+        "Focused tests, scripts/usp/gf/GF-PRIVACY verification and docs/evidence/usp/finale/GF-PRIVACY/FND-06/attempt-1/."
+      ],
+      "exclusions": [
+        "No new databases/queues/gateways or unrelated migrations/qualification/security relaxation.",
+        "No provider/network activation, real credentials, deployment/push/main or modification of populated data/env.",
+        "No authored synthetic source facts, dummy PII, generated image/doc fixtures or altered official sources.",
+        "Lead plans/ledger/AGENTS and user-staged skill changes."
+      ],
+      "acceptance": [
+        "H29 FND-06, H14Z2, H19Z1/Z4 and latest delivery policy; explicit producer/consumer coverage inventory.",
+        "One shared text redactor covers sourced Aadhaar with Verhoeff, VID, PAN, Indian mobiles and existing protections; minimized provider payloads and derivative/log redaction, exact source hashes preserved.",
+        "Strip EXIF/metadata on eligible image derivatives, do not represent metadata stripping as visual PII redaction; fail closed on unqualified image egress.",
+        "NOUS key ignored by default unless exact opt-in flag; all reachable legacy provider paths use guard before network calls; no secrets/error raw payload exposure.",
+        "Residency copy derived from capabilities, not assertion that local app/provider implies India residency.",
+        "Loopback Host allowlist validated before SSR/API/static data disclosure; forged Host403, safe parsing/IPv6/port/forwarded-header behavior, preserve legitimate local workflows.",
+        "Relevant tests and typecheck with no live provider calls; official source examples only where permitted, missing privacy/format case coverage explicit; retained corpus regression not new qualification.",
+        "No GF pass from configuration/unit tests; deployment egress firewall, real-source privacy and independent milestone review remain separate."
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-PRIVACY/FND-06/attempt-1/report.md",
+      "resultCommit": "bc115d2bc4815a2d91b7a44a286a0ed48c75cfd3",
+      "codeCommit": "66e3dffb9c653d52a13b8ee2046f3c72b550f587",
+      "leadObservation": "6 control tests passed; existing grounding suite19pass/3fail from intended policy changes; sent to risk reviewer for triage. No integration yet."
+    },
+    {
+      "assignmentId": "FND-03",
+      "attempt": 1,
+      "callbackId": "ulpin-FND-03-attempt-1",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "baseCommit": "8c52896cd2c5d47327e79fc12d7018c4133428a9",
+      "status": "corrections_required_not_integrated",
+      "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-sol-implementation/3D Ulpin",
+      "branch": "agent/FND-03-exchange",
+      "ownership": [
+        "apps/web/lib/server/usp/exchange.ts",
+        "packages/contracts/src/usp/exchange.ts and narrow index export",
+        "apps/web/app/api/v1/usp/[...path]/route.ts exchange additions",
+        "focused exchange verification/evidence",
+        "planValidation hash receipt/pointer bookkeeping only"
+      ],
+      "exclusions": [
+        "FND06 privacy/provider/Host/Shell",
+        "all unrelated shared schemas/migrations/dependencies",
+        "lead ledger/guide and original checkout changes"
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-EXCHANGE/FND-03/attempt-1/report.md",
+      "codeCommit": "297510c493c58478cc04e98c3ff70afcb71e7298",
+      "resultCommit": "a6d2cbf12604400858dd311762e803f3c37821e0",
+      "observedAgent": null,
+      "limitations": [
+        "New route not exercised by14adjacenttests",
+        "cjval/val3dity unavailable127",
+        "No qualified solid/current fullroundtrip; geometry omitted",
+        "Actualmodel/effort unverified"
+      ]
+    },
+    {
+      "assignmentId": "REVIEW-FND-06",
+      "attempt": 1,
+      "callbackId": "review-FND-06-attempt-1",
+      "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "baseCommit": "bc115d2bc4815a2d91b7a44a286a0ed48c75cfd3",
+      "status": "completed_corrections_required",
+      "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
+      "codeCommit": "66e3dffb9c653d52a13b8ee2046f3c72b550f587",
+      "ownership": [
+        "read-only risk review; own report only"
+      ],
+      "reportPath": "docs/evidence/usp/orchestration/reviews/FND-06-attempt-1-astra.md",
+      "resultCommit": "31fcc015c07d0aeff2d98ef12a9b028956d71f3d",
+      "worktree": "/Users/vinayak/.codex/worktrees/fnd06-astra-review",
+      "findings": [
+        "P1 numeric JSON derivative redaction bypass",
+        "P2 full-package generic name masking"
+      ],
+      "observedAgent": {
+        "product": "Codex desktop",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      }
+    },
+    {
+      "assignmentId": "MANUAL-FND-06",
+      "attempt": 1,
+      "callbackId": "manual-FND-06-attempt-1",
+      "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "xhigh"
+      },
+      "baseCommit": "bc115d2bc4815a2d91b7a44a286a0ed48c75cfd3",
+      "status": "blocked_preview_hold_missing_no_live_test",
+      "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
+      "codeCommit": "66e3dffb9c653d52a13b8ee2046f3c72b550f587",
+      "ownership": [
+        "read-only manual UI checks; isolated preview; own report only"
+      ],
+      "previewPort": 3108,
+      "reportPath": "docs/evidence/usp/orchestration/manual/FND-06-attempt-1-luna.md",
+      "resultCommit": "612aee820bc6047cbe2486fbfe88a0681e89ec7c",
+      "worktree": "/Users/vinayak/.codex/worktrees/manual-fnd06-attempt-1-luna",
+      "observedAgent": null,
+      "limitations": [
+        "Actual model settings not exposed; requested Luna/xhigh only",
+        "No browser interaction or product verdict",
+        "Existing runner always terminates after automatic captures; no manual hold"
+      ]
+    },
+    {
+      "assignmentId": "FND-06",
+      "attempt": 2,
+      "callbackId": "ulpin-FND-06-attempt-2",
+      "status": "delivered_followup_review_pending",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "workerHostId": "local",
+      "baseCommit": "31fcc015c07d0aeff2d98ef12a9b028956d71f3d",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "shared text redaction and typed AI boundaries",
+        "affected existing grounding tests",
+        "focused FND06 verification and attempt2 evidence",
+        "scripts/usp/local-isolation.mjs + existing FND-06-isolated.mjs minimal explicit manual-hold option; defaults/guards unchanged",
+        "Persistent manual preview profile3187 and dedicated pinned preview lifecycle; leave owned server running per user request"
+      ],
+      "exclusions": [
+        "FND03 exchange",
+        "Host/Shell redesign",
+        "schemas/migrations/original data",
+        "Luna3108previewresources"
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-PRIVACY/FND-06/attempt-2/report.md",
+      "findings": [
+        "numeric JSON text/provider derivative masking",
+        "typed apply response preserves nonpersonal package metadata",
+        "update3obsoletegrounding expectations",
+        "Manual preview hold setup missing; reuse existing runner and cleanup"
+      ],
+      "previewPriority": "deliver safe preview-ready handoff at next checkpoint before exchange fixes",
+      "codeCommit": "ec0a0459d515dca241a9a294c3cf8db3194f864c",
+      "resultCommit": "55d6c8642f4803e344f863e8e1952ea01c481975",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-sol-fnd06-fix/3D Ulpin",
+      "observedAgent": null
+    },
+    {
+      "assignmentId": "REVIEW-FND-03",
+      "attempt": 1,
+      "callbackId": "review-FND-03-attempt-1",
+      "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "baseCommit": "a6d2cbf12604400858dd311762e803f3c37821e0",
+      "codeCommit": "297510c493c58478cc04e98c3ff70afcb71e7298",
+      "status": "completed_corrections_required",
+      "ownership": [
+        "read-only exact exchange/sidecar/licence/snapshot review",
+        "own concise report only"
+      ],
+      "reportPath": "docs/evidence/usp/orchestration/reviews/FND-03-attempt-1-astra.md",
+      "resultCommit": "e356919be7a7994eaf9ae047697ebd28485fcd69",
+      "worktree": "/Users/vinayak/.codex/worktrees/fnd03-astra-review",
+      "findings": [
+        "licence withholding leaks sidecar content",
+        "sidecar-only omitted records skip comparison",
+        "children hierarchy not compared"
+      ]
+    },
+    {
+      "assignmentId": "FND-03",
+      "attempt": 2,
+      "callbackId": "ulpin-FND-03-attempt-2",
+      "status": "delivered_followup_review_pending",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "workerHostId": "local",
+      "baseCommit": "e356919be7a7994eaf9ae047697ebd28485fcd69",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "prior exchange leaf/contracts/route",
+        "focused verification and attempt2 evidence"
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-EXCHANGE/FND-03/attempt-2/report.md",
+      "findings": [
+        "filter excluded content across all artifacts",
+        "compare sidecar independently of CityObject support",
+        "compare and validate parent/children hierarchy"
+      ],
+      "sourceScopeSearch": "DATA-EXCHANGE-SCOPE-01 found no eligible captured scope in inventories; real route roundtrip unqualified. No further acquisition/search assigned.",
+      "codeCommit": "9cb926bc54b87e5fa9da58983bfcd8fed05a87b9",
+      "resultCommit": "36d2fe2cba4ec21c228ebbdca2475338488d5bb1"
+    },
+    {
+      "assignmentId": "DATA-EXCHANGE-SCOPE-01",
+      "attempt": 1,
+      "callbackId": "data-exchange-scope-01",
+      "status": "completed_inventory_no_eligible_scope_established",
+      "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "medium"
+      },
+      "ownership": [
+        "read-only existing source/snapshot inventory",
+        "own report only"
+      ],
+      "exclusions": [
+        "acquisition",
+        "service startup/restores",
+        "newsourcefacts",
+        "secret/private data output"
+      ],
+      "resultCommit": "7fe51ae3a6d228b1761a075d6796146573a5c671",
+      "worktree": "/Users/vinayak/.codex/worktrees/data-exchange-scope-01-luna",
+      "reportPath": "docs/evidence/usp/orchestration/manual/DATA-EXCHANGE-SCOPE-01-luna.md",
+      "observedAgent": null,
+      "limitations": [
+        "No database query; not a full database absence claim",
+        "Historical D1 lacks captured registry/source pin; other bundles lack required source/permission/placement coverage"
+      ]
+    },
+    {
+      "assignmentId": "PREVIEW-01",
+      "attempt": 1,
+      "callbackId": "preview-ready",
+      "status": "serving_visual_confirmed_manual_check_running",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "workerHostId": "local",
+      "baseCommit": "55d6c8642f4803e344f863e8e1952ea01c481975",
+      "ownership": [
+        "small existing manual-hold profile extension to3187",
+        "dedicated pinned preview lifecycle and report"
+      ],
+      "url": "http://127.0.0.1:3187",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "codeCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-persistent-preview/3D Ulpin",
+      "httpChecks": {
+        "workPage": 200,
+        "health": 200,
+        "forgedHost": 403
+      }
+    },
+    {
+      "assignmentId": "REVIEW-FND-06",
+      "attempt": 2,
+      "callbackId": "review-FND-06-attempt-2",
+      "status": "completed_scalar_json_correction_required",
+      "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "workerHostId": "local",
+      "baseCommit": "55d6c8642f4803e344f863e8e1952ea01c481975",
+      "codeCommit": "ec0a0459d515dca241a9a294c3cf8db3194f864c",
+      "ownership": [
+        "read-only focused follow-up and report"
+      ],
+      "reportPath": "docs/evidence/usp/orchestration/reviews/FND-06-attempt-2-astra.md",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "resultCommit": "b09e1b4c870480cb9b21ced568159a68552a67f4"
+    },
+    {
+      "assignmentId": "MANUAL-FND-06",
+      "attempt": 2,
+      "callbackId": "manual-FND-06-attempt-2",
+      "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "xhigh"
+      },
+      "status": "completed_issues_sent_to_UI_worker",
+      "codeCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
+      "appUrl": "http://127.0.0.1:3187/studio/work",
+      "ownership": [
+        "read-only live UI interaction and report only"
+      ],
+      "exclusions": [
+        "server stop/restart",
+        "serving worktree edits",
+        "imports/data mutation/provider calls"
+      ],
+      "reportPath": "docs/evidence/usp/orchestration/manual/FND-06-attempt-2-luna.md",
+      "resultCommit": "9099c05af1aef6bb89c9becc1a7123dde6390eb9",
+      "findings": [
+        "P1 page-level sample import/download panel and legacy saved names; distinguish static content from protected records",
+        "P2 saved native-preparation route shows Next runtime404; exact request undiagnosed"
+      ],
+      "passes": [
+        "saved list and history filter load",
+        "recorded map shows source reference and unknowns",
+        "light workspace status and Escape focus return"
+      ],
+      "limitations": [
+        "enlarged layout unverified",
+        "no design-fidelity comparison",
+        "no data mutation or provider calls"
+      ],
+      "correctedReportCommit": "6887f9c8e8d4b0ade4a490152f3d27a30ef6b614"
+    },
+    {
+      "assignmentId": "FND-06",
+      "attempt": 3,
+      "callbackId": "ulpin-FND-06-attempt-3",
+      "status": "accepted_bounded_review_pending_integration",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "baseCommit": "b09e1b4c870480cb9b21ced568159a68552a67f4",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "medium"
+      },
+      "ownership": [
+        "scalar JSON text redaction correction",
+        "directly affected existing assertion and report"
+      ],
+      "exclusions": [
+        "persistent preview changes",
+        "new synthetic data",
+        "expanded suite"
+      ],
+      "codeCommit": "727e506064321dff76ba72c7374fd68d22cf2b5a",
+      "resultCommit": "027471bda3d2a35eb70b82e1372b138e80b64cf0",
+      "reviewCommit": "41290b2a5e7680d9d2280bd77f0ab73b44eb7e09"
+    },
+    {
+      "assignmentId": "REVIEW-FND-03",
+      "attempt": 2,
+      "callbackId": "review-FND-03-attempt-2",
+      "status": "accepted_bounded_source_review_runtime_qualification_open",
+      "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "codeCommit": "9cb926bc54b87e5fa9da58983bfcd8fed05a87b9",
+      "baseCommit": "36d2fe2cba4ec21c228ebbdca2475338488d5bb1",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "ownership": [
+        "focused prior findings review and report only"
+      ],
+      "resultCommit": "4c95a783741563adde999958c4c9d184d7dca755"
+    },
+    {
+      "assignmentId": "UI-08-priority",
+      "attempt": 1,
+      "callbackId": "ulpin-UI-08-priority",
+      "status": "provenance_correction_required",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "record-backed fresh Batches S1 presentation",
+        "remove reachable hardcoded sample content from finale routes",
+        "focused design check and report"
+      ],
+      "exclusions": [
+        "protected data purge or relabelling",
+        "invented data",
+        "new backend producers",
+        "serving preview changes before coordinated refresh"
+      ],
+      "reason": "User explicitly objected to legacy UI and forbidden fictional/sample content in persistent preview. UI08 has no producer dependency to start.",
+      "designReferences": [
+        "docs/design-system/README.md",
+        "docs/design-system/mockups/officer-studio/screens.md",
+        "/Users/vinayak/Downloads/3D_ULPIN_V2_REDESIGN_PACK_FINAL/images/anchors/"
+      ],
+      "codeCommit": "f3eaeccab9b4e6c8f28942728b2cda92f6191ad4",
+      "resultCommit": "9527e105224c2ae6430fad01c0ac8576928a8471",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-sol-ui08/3D Ulpin",
+      "limitations": [
+        "not visually checked on code pin",
+        "protected historical names unchanged",
+        "saved adapter hardcoded synthetic classification unresolved",
+        "native preparation404 not reproduced; not declared fixed"
+      ]
+    },
+    {
+      "assignmentId": "REVIEW-UI-08-priority",
+      "attempt": 1,
+      "callbackId": "review-UI-08-priority",
+      "status": "completed_provenance_correction_required",
+      "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "codeCommit": "f3eaeccab9b4e6c8f28942728b2cda92f6191ad4",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "medium"
+      },
+      "ownership": [
+        "source review and report only"
+      ],
+      "resultCommit": "0d68c3730232232e83b7918ab65df9ee2841ca24",
+      "findings": [
+        "WorkQueue discards reliable dataKind",
+        "saved views omit classification without Unknown",
+        "BlockHome groups all saved datasets as synthetic"
+      ]
+    },
+    {
+      "assignmentId": "PREVIEW-UI08",
+      "attempt": 1,
+      "callbackId": "preview-UI08-ready",
+      "status": "candidate_serving_provenance_correction_pending",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "candidate UI and accepted privacy fix integration in isolated preview branch",
+        "safe3187 refresh preserving current data and owned services"
+      ],
+      "exclusions": [
+        "main/staging merge",
+        "data purge/reseed",
+        "linked environment",
+        "lead ledger edits"
+      ],
+      "codeCommit": "8298d8afef62b0b7e753adddfd7315f61fbe6e97",
+      "preview": {
+        "status": "ui08_candidate_http_serving_provenance_correction_pending",
+        "url": "http://127.0.0.1:3187/studio/work",
+        "codeCommit": "8298d8afef62b0b7e753adddfd7315f61fbe6e97",
+        "worktree": "/Users/vinayak/.codex/worktrees/ulpin-preview-ui08-candidate/3D Ulpin",
+        "launcherPid": 45396,
+        "listenerPid": 45397,
+        "serviceProject": "ulpin-usptest-1ac33df1f895c45c",
+        "stopCommand": "kill -TERM 45396",
+        "stopSemantics": "App only. Preserve existing isolated service volumes; original guard runner no longer owns cleanup.",
+        "lifecycleRecord": "/Users/vinayak/.codex/preview/ulpin-3187.json",
+        "httpChecks": {
+          "workPage": 200,
+          "forgedHost": 403,
+          "database": true,
+          "storage": true,
+          "workQueueTotal": 38
+        },
+        "acceptance": "pending provenance correction and current-code manual design check"
+      }
+    },
+    {
+      "assignmentId": "DATA-UI08-provenance",
+      "attempt": 1,
+      "callbackId": "data-UI08-provenance",
+      "status": "completed_report_sent_to_coder",
+      "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "medium"
+      },
+      "ownership": [
+        "read-only existing metadata contract lookup",
+        "report for official-source listing and truthful provenance"
+      ],
+      "exclusions": [
+        "data mutation or renaming",
+        "acquisition",
+        "providers",
+        "preview services or browser checks"
+      ],
+      "resultCommit": "0e941e423edca2f81f0ef979cf74c3ecf39665af",
+      "worktree": "/Users/vinayak/.codex/worktrees/data-ui08-provenance-luna",
+      "reportPath": "docs/evidence/usp/orchestration/reviews/DATA-UI08-provenance-luna.md",
+      "findings": [
+        "case/import dataKind and area aggregate have recorded worldStatus basis; not official status",
+        "saved spatial listing synthetic/demonstration is compatibility default, not qualified classification",
+        "source provenance fields exist but are not joined to listing; unknown/unverified without qualified basis"
+      ],
+      "limitations": [
+        "read-only contract lookup, no individual record classification",
+        "no production data/code changes or tests"
+      ]
+    },
+    {
+      "assignmentId": "UI08-provenance-fix",
+      "attempt": 1,
+      "callbackId": "ulpin-UI08-provenance-fix",
+      "status": "queued_at_preview_safe_checkpoint",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "explicit transfer of existing read-time classification/basis projection contract and consumers",
+        "UI record-backed value or Unknown and consistent grouping"
+      ],
+      "exclusions": [
+        "schema migration",
+        "protected data rewriting",
+        "official status inferred from labels/URLs",
+        "new registry"
+      ]
     }
   ],
   "capabilityChecklist": [
@@ -2137,8 +3129,10 @@
     }
   ],
   "nextSteps": [
-    "Review FND-04 stale-qualification projection and finding-participant corrections.",
-    "Do not integrate FND-04 until correctness findings are resolved; source accuracy and independent milestones remain unqualified."
+    "Sol corrects provenance and safely app-only refreshes same3187; retain existing service volumes.",
+    "Use completed DATA provenance report for correction; no duplicate discovery or inferred official status.",
+    "Luna visually checks corrected pin when ready; avoid duplicate check of intermediate candidate.",
+    "Delegate accepted integration at safe checkpoint; keep real-source/runtime qualifications open."
   ],
   "processedCallbacks": [
     {
@@ -2290,6 +3284,163 @@
       "resultCommit": "57bbc72a4f9f148c6f94017219cb09bd9b6ab42a",
       "result": "accepted_bounded_geometry_boundary",
       "normalization": "completed interpreted as ready for review; host alias normalized"
+    },
+    {
+      "callbackId": "ulpin-UI-08-attempt-1",
+      "assignmentId": "UI-08",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
+      "result": "corrections_required_not_integrated",
+      "normalization": "Pipe-delimited callback uniquely matches worker/assignment; interpreted as ready for review"
+    },
+    {
+      "callbackId": "ulpin-UI-03-attempt-1",
+      "assignmentId": "UI-03",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
+      "result": "corrections_required_not_integrated"
+    },
+    {
+      "callbackId": "ulpin-UI-03-attempt-2",
+      "assignmentId": "UI-03",
+      "attempt": 2,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "65cc57fd5b8d42015c1e8d9a81b46166809510dc",
+      "result": "focused_corrections_required_not_integrated"
+    },
+    {
+      "callbackId": "ulpin-UI-03-attempt-3",
+      "assignmentId": "UI-03",
+      "attempt": 3,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "363499ca749506ce77db0b452e90c5554ba54a3d",
+      "result": "accepted_bounded_map_presentation_card_partial"
+    },
+    {
+      "callbackId": "ulpin-FND-06-attempt-1",
+      "assignmentId": "FND-06",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "bc115d2bc4815a2d91b7a44a286a0ed48c75cfd3",
+      "result": "delivered_pending_review"
+    },
+    {
+      "callbackId": "review-FND-06-attempt-1",
+      "assignmentId": "REVIEW-FND-06",
+      "attempt": 1,
+      "sourceThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "resultCommit": "31fcc015c07d0aeff2d98ef12a9b028956d71f3d",
+      "result": "corrections_required"
+    },
+    {
+      "callbackId": "manual-FND-06-attempt-1",
+      "assignmentId": "MANUAL-FND-06",
+      "attempt": 1,
+      "sourceThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "resultCommit": "612aee820bc6047cbe2486fbfe88a0681e89ec7c",
+      "result": "setup_blocked_no_live_test"
+    },
+    {
+      "callbackId": "ulpin-FND-03-attempt-1",
+      "assignmentId": "FND-03",
+      "attempt": 1,
+      "sourceThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "resultCommit": "a6d2cbf12604400858dd311762e803f3c37821e0",
+      "result": "delivered_partial_exchange_review_pending"
+    },
+    {
+      "callbackId": "review-FND-03-attempt-1",
+      "assignmentId": "REVIEW-FND-03",
+      "attempt": 1,
+      "sourceThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "resultCommit": "e356919be7a7994eaf9ae047697ebd28485fcd69",
+      "result": "corrections_required"
+    },
+    {
+      "callbackId": "data-exchange-scope-01",
+      "assignmentId": "DATA-EXCHANGE-SCOPE-01",
+      "attempt": 1,
+      "sourceThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "resultCommit": "7fe51ae3a6d228b1761a075d6796146573a5c671",
+      "result": "inventory_only_no_eligible_scope_established"
+    },
+    {
+      "callbackId": "ulpin-FND-06-attempt-2",
+      "assignmentId": "FND-06",
+      "attempt": 2,
+      "sourceThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "resultCommit": "55d6c8642f4803e344f863e8e1952ea01c481975",
+      "result": "delivered_followup_review_pending"
+    },
+    {
+      "callbackId": "preview-ready",
+      "assignmentId": "PREVIEW-01",
+      "attempt": 1,
+      "sourceThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "codeCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
+      "result": "http_serving_kept_running"
+    },
+    {
+      "callbackId": "preview-visual-ready",
+      "result": "Batches page visually confirmed on existing3187 at9c6c578; saved work loading; legacy Lake View fictional copy recorded for UI-08"
+    },
+    {
+      "callbackId": "review-FND-06-attempt-2",
+      "resultCommit": "b09e1b4c870480cb9b21ced568159a68552a67f4",
+      "result": "scalar exponential JSON text gap remains; correction delegated"
+    },
+    {
+      "callbackId": "ulpin-FND-03-attempt-2",
+      "resultCommit": "36d2fe2cba4ec21c228ebbdca2475338488d5bb1",
+      "result": "follow-up review dispatched; route roundtrip remains unqualified"
+    },
+    {
+      "callbackId": "review-FND-03-attempt-2",
+      "resultCommit": "4c95a783741563adde999958c4c9d184d7dca755",
+      "result": "three prior issues resolved; same-family source-review acceptance only; official route roundtrip and standards qualification open"
+    },
+    {
+      "callbackId": "ulpin-FND-06-attempt-3",
+      "codeCommit": "727e506064321dff76ba72c7374fd68d22cf2b5a",
+      "resultCommit": "027471bda3d2a35eb70b82e1372b138e80b64cf0",
+      "result": "focused22/22 and typecheck reported; UI priority started"
+    },
+    {
+      "callbackId": "review-FND-06-attempt-3",
+      "resultCommit": "41290b2a5e7680d9d2280bd77f0ab73b44eb7e09",
+      "result": "bounded scalar correction accepted; same-family review only, full privacy qualification open"
+    },
+    {
+      "callbackId": "manual-FND-06-attempt-2",
+      "resultCommit": "9099c05af1aef6bb89c9becc1a7123dde6390eb9",
+      "result": "P1 UI08 and P2 native preparation404 sent to Sol; persistent3187 left running"
+    },
+    {
+      "callbackId": "manual-FND-06-attempt-2-report-correction",
+      "resultCommit": "6887f9c8e8d4b0ade4a490152f3d27a30ef6b614",
+      "result": "report now states design fidelity not checked; no claim references absent; no preview operations"
+    },
+    {
+      "callbackId": "ulpin-UI-08-priority",
+      "resultCommit": "9527e105224c2ae6430fad01c0ac8576928a8471",
+      "result": "code delivered; not manual accepted; historical data provenance gap remains"
+    },
+    {
+      "callbackId": "review-UI-08-priority",
+      "resultCommit": "0d68c3730232232e83b7918ab65df9ee2841ca24",
+      "result": "one P2 provenance correction sent to existing UI owner; affected surfaces not accepted"
+    },
+    {
+      "callbackId": "PREVIEW-UI08-checkpoint",
+      "codeCommit": "8298d8afef62b0b7e753adddfd7315f61fbe6e97",
+      "result": "same3187 new UI candidate serving; original service data preserved; app-only stop45396 supersedes runner38560"
+    },
+    {
+      "callbackId": "data-UI08-provenance",
+      "resultCommit": "0e941e423edca2f81f0ef979cf74c3ecf39665af",
+      "result": "existing metadata findings delivered to Sol; no official classification invented"
     }
   ],
   "observations": [
@@ -2413,7 +3564,7 @@
       "card": "FND-03",
       "title": "CityJSON 2.0 plus sidecar, LADM mapping",
       "needs": "FND-02",
-      "status": "pending"
+      "status": "dispatched_independent_exchange"
     },
     {
       "card": "FND-04",
@@ -2431,7 +3582,7 @@
       "card": "FND-06",
       "title": "Redaction module, egress guard and Host allowlist",
       "needs": "none",
-      "status": "pending"
+      "status": "delivered_review_and_manual_check"
     },
     {
       "card": "INGEST-01",
@@ -2515,7 +3666,7 @@
       "card": "UI-03",
       "title": "Map styling and honest geometry",
       "needs": "UI-01, FND-04",
-      "status": "pending"
+      "status": "partial_map_implementation_accepted_qualification_open"
     },
     {
       "card": "UI-04",
@@ -2525,9 +3676,9 @@
     },
     {
       "card": "UI-08",
-      "title": "No hard-coded demo content or \"fictional\" labels",
+      "title": "Record-backed content and provenance in replacement screens",
       "needs": "none to start; DATA-09 to finish",
-      "status": "pending"
+      "status": "applied_progressively_with_ui_cards"
     },
     {
       "card": "UI-09",

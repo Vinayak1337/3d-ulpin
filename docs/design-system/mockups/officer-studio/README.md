@@ -1,5 +1,7 @@
 # Officer Studio reference mockups
 
+**Frontend replacement:** Rebuild affected legacy screens from this design language as their existing plan cards are implemented, then remove the superseded UI. This is progressive work within the plan, not a separate redesign phase. Preserve shared runtime/data contracts and saved-link compatibility; mockup data/code must not be copied. See the [delivery policy](../../../usp-agent-handoffs/current-delivery-policy.md).
+
 **Current implementation scope:** [User delivery policy](../../../usp-agent-handoffs/current-delivery-policy.md) takes precedence. These reference screens may show mobile layouts, theme controls and scene embellishments; do not implement those as current requirements. Deliver desktop/light-only with official-source data and no invented scene objects.
 
 A description of the team's interactive mockup of every Studio, Verify, Portal and Admin screen, made in Claude Design (project "Officer Studio mockups transfer", `OfficerStudio.dc.html`, imported 25 September 2026). Coding agents cannot open the private project, so this folder records what it shows.

@@ -1,5 +1,7 @@
 # 3D ULPIN — current agent entry point
 
+**Before orchestrating:** read [the orchestration operating guide](docs/orchestration/OPERATING_GUIDE.md). The user's 26 September direction makes the lead orchestration-only, uses fixed Astra/Sol/Luna tasks, and requires lean, risk-based verification. This overrides older lead-codes, Sol/Astra-only and exhaustive-testing instructions; product plans and release requirements stay intact.
+
 <!-- plan-next-gate: GF0 -->
 
 ## Adopted direction, 24 September 2026
@@ -23,6 +25,8 @@ Keep Next.js/TypeScript, existing Three/Cesium runtime boundaries, PostgreSQL/Po
 Ship the current product desktop-first and light-mode only. Do not add a theme switch or reserve header space for one; let search, navigation and content use the released space. Ignore previously saved dark-mode preferences. Mobile UI optimization is not a current implementation or acceptance requirement.
 
 Keep semantic components, shared design tokens, flexible layout boundaries and isolated responsive styles so mobile responsiveness and additional themes can be added later without rewriting the product. Preserve useful existing responsive behavior and theme tokens; do not spend current work expanding mobile or dark-mode variants. This direction overrides older plan, design-system and task-card requirements for a theme switch, dark-mode product delivery or mobile optimization. Retain desktop accessibility, keyboard operation, readable contrast and browser zoom support.
+
+Replace legacy UI with fresh screens built from `docs/design-system/` and the supplied Officer Studio mockups as each existing plan card reaches that surface. This is ongoing work within the plan, not a separate redesign or polishing phase. Remove replaced components/styles after their consumers migrate; retain the backend, canonical records, shared runtime, unique inspection capabilities and compatible saved URLs (redirects are allowed). UI-08 content/provenance requirements apply to every replacement. The [current delivery policy](docs/usp-agent-handoffs/current-delivery-policy.md) records the 26 September sequencing clarification. Never copy mockup sample data or invent scene content.
 
 ## Official-source data only — user direction, 25 September 2026
 

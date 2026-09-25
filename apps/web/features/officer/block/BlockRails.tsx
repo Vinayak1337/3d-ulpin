@@ -121,7 +121,6 @@ export function BlockLeftRail({
               }
             />
           </label>
-          <label className="ui-layer"><Icon name="utility" /><span>Underground</span><input type="checkbox" checked={preferences.underground} onChange={event => block.setPreferences({ underground: event.target.checked })} /></label>
           <div className="ui-layer-info">
             <Icon name="info" />
             <span>
