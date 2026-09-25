@@ -1,3 +1,4 @@
+import { geometryPin, requireQualifiedGeometry, requireQualifiedGeometryRecords, qualifiedGeometryRecordPins, isQualifiedPin } from './usp/geometry';
 import { sourceBundle } from "./source-bundle";
 import { hasGoogleAttribution, hasOsmAttribution } from "../map-attribution";
 import { selectRegisterScope } from "../register-scope";
@@ -44,6 +45,8 @@ export async function createInvestigation(input: {
 }) {
   const d = await buildingDossier(input.buildingId);
   if (d.building.revision !== input.expectedRevision) conflict();
+  if (input.checkId) await requireQualifiedGeometry('FIND', [geometryPin('area_feature', d.building),
+    ...d.records.filter(record => record.geometry).map(record => geometryPin('registry_record', record))]);
   const check = input.checkId
     ? (
         await query(
@@ -258,6 +261,9 @@ export async function updateInvestigation(
               )
             ).rows[0]?.body
           : null;
+      if (['READY_FOR_REVIEW', 'REVIEWED', 'CLOSED'].includes(input.status))
+        await requireQualifiedGeometry('READY', [geometryPin('area_feature', d.building),
+          ...d.records.filter(record => record.geometry).map(record => geometryPin('registry_record', record))], client);
       if (
         ["READY_FOR_REVIEW", "REVIEWED", "CLOSED"].includes(input.status) &&
         (d.area.revision !== i.inputSnapshot.areaRevision ||
@@ -487,6 +493,18 @@ export async function exportRegister(
     );
   const d = scoped.dossier;
   const selection = scoped.selection;
+  const geometryPins = [geometryPin('area_feature', d.building),
+    ...d.parcels.map(parcel => geometryPin('area_feature', parcel.feature)),
+    ...d.records.filter(record => record.geometry).map(record => geometryPin('registry_record', record))];
+  const qualified = new Set([
+    ...await qualifiedGeometryRecordPins('export','area_feature',[d.building,...d.parcels.map(parcel=>parcel.feature)]),
+    ...await qualifiedGeometryRecordPins('export','registry_record',d.records.filter(record=>record.geometry)),
+  ]);
+  const geometryAvailable = geometryPins.every(pin => isQualifiedPin(qualified, pin));
+  if (format !== 'json') {
+    await requireQualifiedGeometryRecords('PACK','area_feature',[d.building,...d.parcels.map(parcel=>parcel.feature)]);
+    await requireQualifiedGeometryRecords('PACK','registry_record',d.records.filter(record=>record.geometry));
+  }
   // Older snapshots may cite a parcel/finding original without duplicating its
   // metadata in sources. Resolve those immutable revision IDs, never current
   // participant geometry, so the exported evidence set remains complete.
@@ -515,10 +533,14 @@ export async function exportRegister(
     ulpin3d: selection.ulpin3d,
     buildingUlpin3d: d.building.identifier,
     findingsScope: "building",
-    findings: i ? i.findings : d.issues,
+    geometryQualification: { state: geometryAvailable ? 'qualified' : 'not_assessed',
+      purpose: geometryAvailable ? 'analytical_export' : 'retained_source_inspection',
+      missing: geometryPins.filter(pin => !isQualifiedPin(qualified, pin)) },
+    findings: geometryAvailable ? (i ? i.findings : d.issues) : [],
     // The sanitized register above is the exact saved snapshot. Do not export
     // a second raw copy containing unrelated rights/party fields.
-    investigation: i ? { ...i, registerSnapshot: undefined } : undefined,
+    investigation: i ? { ...i, registerSnapshot: undefined, findings: geometryAvailable ? i.findings : [],
+      analysisState: geometryAvailable ? 'qualified' : 'not_assessed' } : undefined,
     scope:
       "Local technical investigation; no official title, certificate or legal order. Sources remain immutable; unresolved conditions are retained.",
   };

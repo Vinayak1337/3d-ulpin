@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { UspGeometryMetadataSchema, type UspGeometryMetadata } from '@ulpin/contracts/usp';
 import { query } from '../db';
 import { readObject, sha256 } from '../storage';
 import { localRequest } from '../spatial-core-http';
@@ -14,7 +15,7 @@ const fail = (status: number, code: string, message: string): never => {
 };
 
 /** Uses existing feature, import and private source authorities, with no new store. */
-export async function readExternalScene(input: z.infer<typeof selection>): Promise<ExternalSceneResource> {
+export async function readExternalScene(input: z.infer<typeof selection>): Promise<ExternalSceneResource & { geometryMetadata: UspGeometryMetadata }> {
   const feature = (await query('SELECT revision,body FROM physical_features WHERE id=$1 AND area_id=$2 AND revision>0',
     [input.featureId, input.areaId])).rows[0];
   if (!feature) fail(404, 'EXTERNAL_TARGET', 'The selected source exterior is unavailable.');
@@ -50,7 +51,10 @@ export async function readExternalScene(input: z.infer<typeof selection>): Promi
   if (!current || current.revision !== feature.revision || JSON.stringify(current.body) !== JSON.stringify(feature.body) ||
       currentSources.length !== 1 || currentSources[0].id !== source.id || currentSources[0].revision !== source.revision)
     fail(409, 'EXTERNAL_STALE', 'The source association changed. Reload its area.');
-  return { areaId: input.areaId, featureId: input.featureId, featureRevision: input.revision,
+  const geometryMetadata=UspGeometryMetadataSchema.parse({representation:'context_mesh',
+    geometryClass:'evidence_linked',analyticEligible:false,semanticLod:scene.lod,displayLevel:null,
+    qualification:{state:'unqualified',reasons:['external_display_only','analytical_volume_unsupported']}});
+  return { geometryMetadata, areaId: input.areaId, featureId: input.featureId, featureRevision: input.revision,
     source: { id: source.id, revision: source.revision, sha256: input.sha256, bytes: bytes.length }, scene };
 }
 

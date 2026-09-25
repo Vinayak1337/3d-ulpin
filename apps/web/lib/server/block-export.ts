@@ -1,3 +1,4 @@
+import { geometryPin, requireQualifiedGeometryRecords, qualifiedGeometryRecordPins, isQualifiedPin } from './usp/geometry';
 import type {
   DossierSource,
   PhysicalFeature,
@@ -59,6 +60,10 @@ export async function exportBlock(
   format: "json" | "pdf" | "zip",
 ) {
   const context = await areaContext(areaId);
+  const geometryPins = context.features.map(feature => geometryPin('area_feature', feature));
+  const qualified = await qualifiedGeometryRecordPins('export','area_feature',context.features);
+  const geometryAvailable = geometryPins.every(pin => isQualifiedPin(qualified, pin));
+  if (format !== 'json') await requireQualifiedGeometryRecords('PACK','area_feature',context.features);
   const site = (
     await query("SELECT identifier,revision FROM registry_sites WHERE id=$1", [
       context.area.siteId,
@@ -76,6 +81,9 @@ export async function exportBlock(
     const response = await exportRegister(building.id, "json");
     properties.push(await response.json());
   }
+  const allGeometryAvailable = geometryAvailable && properties.every(property => property.geometryQualification?.state === 'qualified');
+  if (format !== 'json' && !allGeometryAvailable) throw new AppError(422,'USP_GEOMETRY_NOT_QUALIFIED',
+    'The block contains unqualified property geometry. Source-inspection JSON remains available.');
   const extra = await dossierSources(
     [
       ...new Set([
@@ -113,7 +121,10 @@ export async function exportBlock(
     features: context.features,
     properties,
     sources,
-    check: context.latestCheck,
+    geometryQualification: { state: allGeometryAvailable ? 'qualified' : 'not_assessed',
+      purpose: allGeometryAvailable ? 'analytical_export' : 'retained_source_inspection',
+      missing: geometryPins.filter(pin => !isQualifiedPin(qualified, pin)) },
+    check: allGeometryAvailable ? context.latestCheck : undefined,
     note: "3D ULPINs are application identifiers. Parcel 2D ULPINs retain their source assertion or fictional demo status. Originals may cover multiple floors.",
   };
   if (format === "json")
