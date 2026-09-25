@@ -1,0 +1,396 @@
+{
+  "schemaVersion": "ui-01-attempt-2-evidence/1",
+  "assignmentId": "UI-01",
+  "attempt": 2,
+  "callbackId": "ulpin-UI-01-attempt-2",
+  "baseCommit": "7d056675c766d81280ac81c69572d2d01d3cde0b",
+  "previousResultCommit": "fea3055813c050a694cc6ed76e97c3b8d470c144",
+  "codeCommit": "e7e533a702ab3fd5b594ab648bca6f908808ac74",
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-sol",
+    "effort": "high"
+  },
+  "finalRunner": {
+    "result": "PASS",
+    "scopeId": "local-dce7a5b0a94e03b1",
+    "commands": [
+      {
+        "label": "source-sha",
+        "exitCode": 0
+      },
+      {
+        "label": "docker-context",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-project",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-volumes",
+        "exitCode": 0
+      },
+      {
+        "label": "services-start",
+        "exitCode": 0
+      },
+      {
+        "label": "database-restore",
+        "exitCode": 0
+      },
+      {
+        "label": "migration",
+        "exitCode": 0
+      },
+      {
+        "label": "repeat-migration",
+        "exitCode": 0
+      },
+      {
+        "label": "usp-verify-live",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-authored-pack",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-live-verify",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "ui-01-foundations-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-d1-studio-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "gf-t15-project-identity",
+        "exitCode": 0
+      },
+      {
+        "label": "owned-services-cleanup",
+        "exitCode": 0
+      }
+    ],
+    "rawReceiptSha256": "d1e200c65c1afe076bae83a0202ef16863b494970b60f1d75aa22a388fcb5510"
+  },
+  "measurements": {
+    "themes": [
+      {
+        "theme": "light",
+        "immediateAddFiles": {
+          "text": 10.052624502308138,
+          "icon": 10.052624502308138,
+          "runningAnimations": 0
+        },
+        "controls": [
+          {
+            "name": "Add files",
+            "text": 10.052624502308138,
+            "icon": 10.052624502308138,
+            "boundary": 3.3304535649633427,
+            "enabled": true
+          },
+          {
+            "name": "Export",
+            "text": 10.052624502308138,
+            "icon": 10.052624502308138,
+            "boundary": 3.3304535649633427,
+            "enabled": true
+          },
+          {
+            "name": "Layers",
+            "text": 10.052624502308138,
+            "icon": 10.052624502308138,
+            "boundary": 3.3652198792065353,
+            "enabled": true
+          },
+          {
+            "name": "Fit block",
+            "text": 10.052624502308138,
+            "icon": 10.052624502308138,
+            "boundary": 3.3652198792065353,
+            "enabled": true
+          },
+          {
+            "name": "Orient north",
+            "text": 9.748205906071322,
+            "icon": 5.763205918008061,
+            "boundary": 4.407718042179017,
+            "enabled": true
+          },
+          {
+            "name": "Zoom in",
+            "text": 10.052624502308138,
+            "icon": 10.052624502308138,
+            "boundary": 4.407718042179017,
+            "enabled": true
+          },
+          {
+            "name": "Zoom out",
+            "text": 10.052624502308138,
+            "icon": 10.052624502308138,
+            "boundary": 4.407718042179017,
+            "enabled": true
+          },
+          {
+            "name": "Return to block view",
+            "text": 10.052624502308138,
+            "icon": 10.052624502308138,
+            "boundary": 4.407718042179017,
+            "enabled": true
+          },
+          {
+            "name": "Checks",
+            "text": 10.052624502308138,
+            "icon": 10.052624502308138,
+            "boundary": 4.407718042179017,
+            "enabled": true
+          },
+          {
+            "name": "Checks status",
+            "text": 9.124063123397498,
+            "icon": null,
+            "boundary": null,
+            "enabled": true
+          }
+        ]
+      },
+      {
+        "theme": "dark",
+        "immediateAddFiles": {
+          "text": 10.535115485542693,
+          "icon": 10.535115485542693,
+          "runningAnimations": 0
+        },
+        "controls": [
+          {
+            "name": "Add files",
+            "text": 10.535115485542693,
+            "icon": 10.535115485542693,
+            "boundary": 4.335435821644611,
+            "enabled": true
+          },
+          {
+            "name": "Export",
+            "text": 10.535115485542693,
+            "icon": 10.535115485542693,
+            "boundary": 4.335435821644611,
+            "enabled": true
+          },
+          {
+            "name": "Layers",
+            "text": 10.535115485542693,
+            "icon": 10.535115485542693,
+            "boundary": 4.335435821644611,
+            "enabled": true
+          },
+          {
+            "name": "Fit block",
+            "text": 10.535115485542693,
+            "icon": 10.535115485542693,
+            "boundary": 4.335435821644611,
+            "enabled": true
+          },
+          {
+            "name": "Orient north",
+            "text": 13.8938422564446,
+            "icon": 10.535115485542693,
+            "boundary": 9.755051541451264,
+            "enabled": true
+          },
+          {
+            "name": "Zoom in",
+            "text": 13.8938422564446,
+            "icon": 13.8938422564446,
+            "boundary": 9.755051541451264,
+            "enabled": true
+          },
+          {
+            "name": "Zoom out",
+            "text": 13.8938422564446,
+            "icon": 13.8938422564446,
+            "boundary": 9.755051541451264,
+            "enabled": true
+          },
+          {
+            "name": "Return to block view",
+            "text": 13.8938422564446,
+            "icon": 13.8938422564446,
+            "boundary": 9.755051541451264,
+            "enabled": true
+          },
+          {
+            "name": "Checks",
+            "text": 10.535115485542693,
+            "icon": 10.535115485542693,
+            "boundary": 3.02097227042539,
+            "enabled": true
+          },
+          {
+            "name": "Checks status",
+            "text": 9.491609008052949,
+            "icon": null,
+            "boundary": null,
+            "enabled": true
+          }
+        ]
+      }
+    ],
+    "disabledControl": {
+      "name": "Focus selected property",
+      "disabled": true
+    },
+    "keyboardFocusOutline": 3.8709179930793605,
+    "phone": [
+      {
+        "theme": "light",
+        "viewport": [
+          390,
+          844
+        ],
+        "documentWidth": 390,
+        "appWidth": 390,
+        "font": "\"Noto Sans\", \"Noto Sans Devanagari\", system-ui, -apple-system, \"Segoe UI\", sans-serif"
+      },
+      {
+        "theme": "dark",
+        "viewport": [
+          390,
+          844
+        ],
+        "documentWidth": 390,
+        "appWidth": 390,
+        "font": "\"Noto Sans\", \"Noto Sans Devanagari\", system-ui, -apple-system, \"Segoe UI\", sans-serif"
+      }
+    ],
+    "zoom200": {
+      "normalHeight": 33.34375,
+      "zoomHeight": 66.6875,
+      "ratio": 2
+    },
+    "reducedMotion": {
+      "transition": "0s",
+      "animation": "none"
+    },
+    "fontRequests": [
+      "http://127.0.0.1:3000/fonts/NotoSans-Variable.woff2",
+      "http://127.0.0.1:3000/fonts/NotoSansDevanagari-Variable.woff2",
+      "http://127.0.0.1:3000/fonts/NotoSansMono-Variable.woff2"
+    ]
+  },
+  "sources": {
+    "apps/web/features/studio/product/theme.css": "65398d33c1300bd16262d2ce31158a46b6d5692bd8bef5b1e8aa7db533987896",
+    "scripts/usp/isolated-live.mjs": "6e039fce9709575040d4a5d8468edbb79208a5bd2bccf2fd5b88fadac4a3b6ed",
+    "tests/e2e/usp-ui-foundations.spec.ts": "1e7bd5a65bce069fcfd9414082eded07fd11459125c8650b320702f71de84d34"
+  },
+  "runs": {
+    "local-1611f2e4a09b170c": {
+      "result": "FAIL",
+      "codeSha": "9bb4e4c59382c03336652a4b41ce6a72e94180a8",
+      "failedCommands": [
+        {
+          "label": "ui-01-foundations-browser",
+          "exitCode": 1
+        }
+      ],
+      "cleanupExit": 0,
+      "files": {
+        "browser-report.json": "a6f6974642c862ec0ee11b439cd4d5208151cc8bfa4b48904996039a5ef632b5",
+        "runner-receipt.json": "c7818a514976b98db74d3360ff54760b4775b644f02e26679831f250c925e022"
+      }
+    },
+    "local-76aa2679fba8a175": {
+      "result": "FAIL",
+      "codeSha": "a1ad8cb5fc056d0fd2929ae07c2fb4254e0f2003",
+      "failedCommands": [
+        {
+          "label": "ui-01-foundations-browser",
+          "exitCode": 1
+        }
+      ],
+      "cleanupExit": 0,
+      "files": {
+        "browser-report.json": "e90b7879c12030d05f288f0f948024392836dabbd7fe3938a440ca16eb3065b6",
+        "runner-receipt.json": "9443518452ab1129069c2ae0a74c87f474c5a4b554a4af293c8dd5b6e057f0b2",
+        "screenshots/hindi-label.png": "33aff5d9017d9e1b92c70a941ec374327c4956abfa62c8c1962a634268eef223",
+        "screenshots/measurements.json": "1aa4ef738902049eb913b41d5258131566fe7ea1c1899dbe7848b1bbb2acf364",
+        "screenshots/studio-dark-desktop.png": "7746b6dbd3b8732e2f8782a89cc76d06f5b355e48bdeadd6e265c2d6298bae3c",
+        "screenshots/studio-dark-phone.png": "c9d70a149ff2dcf1db98f333c0edc3e8297ca1afa418e75a62b059ca1e1b59b4",
+        "screenshots/studio-light-200-percent.png": "64aa6506d3bd303916eb7fc09a51ed883e540aecbdeae19fc2554b9b3f3385d3",
+        "screenshots/studio-light-desktop.png": "5f4c454571928ac574935194d93d35e10e9fd0a290e2d9139c6ac89225485f92",
+        "screenshots/studio-light-phone.png": "5bb666f076caf038b0c63d2ea7218fb71c0d3826faf66eacc61b3f9b4f1b7361"
+      }
+    },
+    "local-dce7a5b0a94e03b1": {
+      "result": "PASS",
+      "codeSha": "e7e533a702ab3fd5b594ab648bca6f908808ac74",
+      "failedCommands": [],
+      "cleanupExit": 0,
+      "files": {
+        "browser-report.json": "c837067af4c5f118454b32fd720b30aeade8e16bcb8e8b29b11e3ac16a75e28f",
+        "d0-d1-browser-report.json": "8caca98f42abf8a415de2930420dc705412cad744c75dc3703e6e6f656d72e70",
+        "runner-receipt.json": "d1e200c65c1afe076bae83a0202ef16863b494970b60f1d75aa22a388fcb5510",
+        "screenshots/hindi-label.png": "33aff5d9017d9e1b92c70a941ec374327c4956abfa62c8c1962a634268eef223",
+        "screenshots/measurements.json": "4cd39704b6629f8b416851b65f3d2474789fa1769187ba6edee9c4141a9da6d9",
+        "screenshots/studio-dark-desktop.png": "8558b8f7daccf4c394fd2353201944763092fb815b3916b1379d67a2c75f80da",
+        "screenshots/studio-dark-phone.png": "6bce16309013d1ea361a5e3973730893752c837df19c90267346e034a6722809",
+        "screenshots/studio-light-200-percent.png": "508e1d2336f2e1ff41d04298fabf0a14bd39f6edca86f9f1fd8a0e07b7d1adf9",
+        "screenshots/studio-light-desktop.png": "949d268f4b949d9d2245e9a20fae0695e8b9dafecf726a35fc11fb54bc45f110",
+        "screenshots/studio-light-phone.png": "00e6c11bc2ed65536834d4c8036a09f1de972a748cd5aff6583106939b0eef95"
+      }
+    }
+  },
+  "checks": [
+    {
+      "command": "pnpm build",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm lint:icons",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test:ui",
+      "exitCode": 0,
+      "passed": 20
+    },
+    {
+      "command": "node scripts/usp/local-isolation.mjs --run",
+      "exitCode": 0,
+      "internalCommands": 21
+    }
+  ]
+}
