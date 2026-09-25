@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Badge, Button, EmptyState, Icon, formatNumber } from "../shared/ui";
 import type { BlockController } from "./useBlock";
-export default function FindingsTray({ block, onClose }: { block: BlockController; onClose?: () => void }) {
+export default function FindingsTray({ block, onClose, obscured = false }: { block: BlockController; onClose?: () => void; obscured?: boolean }) {
   const [filter, setFilter] = useState("all");
   const check = block.context.data?.latestCheck;
   const findings = check?.findings || [];
@@ -22,13 +22,13 @@ export default function FindingsTray({ block, onClose }: { block: BlockControlle
     return label.charAt(0).toUpperCase() + label.slice(1);
   };
   return (
-    <section className="ui-findings-tray" aria-label="Block findings">
+    <section className="ui-findings-tray" aria-label="Block findings" inert={obscured} aria-hidden={obscured} data-sheet-hidden={obscured ? "true" : undefined}>
       <header>
         <div>
           <Icon name="warning" />
           <h2>Checks</h2>
           <Badge tone={findings.length ? "warning" : "neutral"}>
-            {findings.length}
+            {check ? findings.length : "Not assessed"}
           </Badge>
           {check?.stale && <Badge tone="warning">Out of date</Badge>}
         </div>

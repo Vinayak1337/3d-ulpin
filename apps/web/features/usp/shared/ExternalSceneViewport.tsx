@@ -5,6 +5,7 @@ import type { BlockController } from '../../officer/block/useBlock';
 import { useSharedResource } from '../../spatial/data/useResource';
 import type { ExternalSceneResource } from './external-resource';
 import type { TileNavigation } from '../../spatial/layers/TileLayer';
+import '../../spatial/viewport.css';
 const MapViewport = dynamic(() => import('../../spatial/MapViewport').then(module => module.MapViewport), { ssr: false });
 
 export default function ExternalSceneViewport({ feature, block, opacity = 1 }: { feature: PhysicalFeature; block: BlockController; opacity?: number }) {

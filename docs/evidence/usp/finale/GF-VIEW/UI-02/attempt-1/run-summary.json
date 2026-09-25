@@ -1,0 +1,215 @@
+{
+  "schemaVersion": "ui-02-attempt-1-evidence/1",
+  "assignmentId": "UI-02",
+  "attempt": 1,
+  "callbackId": "ulpin-UI-02-attempt-1",
+  "baseCommit": "c597d5252518b336d1cafc8852db21bdfcea13db",
+  "codeCommit": "9495b36d8eed12cb7bf1fc05142a1c9468aeadac",
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-sol",
+    "effort": "xhigh"
+  },
+  "localCommands": [
+    {
+      "command": "pnpm --filter @ulpin/web typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/web build",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec playwright test tests/e2e/usp-studio-frame.spec.ts --list",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/usp/local-isolation.mjs --run",
+      "exitCode": 0
+    }
+  ],
+  "finalRunner": {
+    "result": "PASS",
+    "scopeId": "local-5bc2828c25c5188f",
+    "codeSha": "9495b36d8eed12cb7bf1fc05142a1c9468aeadac",
+    "commands": [
+      {
+        "label": "source-sha",
+        "exitCode": 0
+      },
+      {
+        "label": "docker-context",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-project",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-volumes",
+        "exitCode": 0
+      },
+      {
+        "label": "services-start",
+        "exitCode": 0
+      },
+      {
+        "label": "database-restore",
+        "exitCode": 0
+      },
+      {
+        "label": "migration",
+        "exitCode": 0
+      },
+      {
+        "label": "repeat-migration",
+        "exitCode": 0
+      },
+      {
+        "label": "usp-verify-live",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-authored-pack",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-live-verify",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "ui-01-foundations-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "ui-02-studio-frame-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-d1-studio-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "gf-t15-project-identity",
+        "exitCode": 0
+      },
+      {
+        "label": "owned-services-cleanup",
+        "exitCode": 0
+      }
+    ],
+    "checks": [
+      "dedicated-loopback-ports",
+      "restored-db-and-originals",
+      "additive-migration-replay",
+      "migrated-bundle-preservation-and-replay",
+      "fnd-live-receipt",
+      "d0-replay-preservation",
+      "d1-replay-preservation",
+      "ui-01-fonts-contrast-and-hindi",
+      "ui-02-studio-frame",
+      "d0-v0-live-receipts",
+      "d1-local-source-display",
+      "gf-t15-project-identity"
+    ]
+  },
+  "ui02Browser": {
+    "startTime": "2026-09-25T14:06:07.478Z",
+    "duration": 14752.407,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "sourceSha256": {
+    "apps/web/features/officer/block/BlockPage.tsx": "5562023ba3d9638a879136eae27213ea8b9b5530ab44844ef3f358a3ab7d36f0",
+    "apps/web/features/officer/block/BlockRails.tsx": "caabe1511ad08bcaa80ea7d56dda648f64b88b8e10961a504619cbb779d4078d",
+    "apps/web/features/officer/block/FindingsTray.tsx": "5d1afa3a0fc0a022ca319bb5b797a95efa82baa3172d2c8d21f4b65c3aacb6d6",
+    "apps/web/features/officer/block/frame.css": "ac6e472f7029d93401f8b449af02e0e2f6088e1b4e361f874ed66093dcf1f63c",
+    "apps/web/features/officer/shared/Shell.tsx": "2a01ac74b00825762f990f03fa403401bd4bd4014d1a63dd6e8223340a7345a9",
+    "apps/web/features/officer/shared/shell.css": "623c30235b476af7a2e221c5436227308d58f12b4cd4794d38ee1969f9b19f22",
+    "apps/web/features/studio/product/ProductHeader.tsx": "7e436bf841ffcb6d568cc009984f1e7745d7789b92fd6da11f77a7f5bd465b7e",
+    "apps/web/features/studio/product/header.css": "1f2b5e4b477df1eb986ee61c8845859c63e79a72bfb951b32193c5544b560243",
+    "apps/web/features/studio/product/operations.css": "8f1704494aab6eae2ec7e158f590df6084f933357dbb1bb15b3de433ea9e5bf3",
+    "apps/web/features/studio/product/theme.css": "78a88757b4d9f7aa62ce19cc5ccd37170b361a9becb29200175e1c40bd54343a",
+    "apps/web/features/usp/shared/ExternalSceneViewport.tsx": "6df91bcf6d2886dc7814bc76e55c139c6da89bfac4c48657d42963e6af19e967",
+    "scripts/usp/isolated-live.mjs": "20cfbc4c89d9bc604a4410e5b415dfeefe74676174f26f8d96ffc56a5a073b86",
+    "tests/e2e/usp-d1-journey.spec.ts": "c7baaf7f8eecc796dcdad30527f73ecd67575ccc593f944c7e85ce5a395be539",
+    "tests/e2e/usp-studio-frame.spec.ts": "256efd51b568cde765325cac0d2a0d1a11a1e5e3424bfd41a67fd17195d288b6",
+    "tests/e2e/usp-ui-foundations.spec.ts": "60d0bfea8938a6aad025e41d031482b356dddea12c90323fe23a053ab1105dc2"
+  },
+  "artifactSha256": {
+    "runs/local-85a703d1db6f2e2e/browser-report.json": "3634c806b980e22c24e7b564d1c1d6d33a6c88fcc0931d7016287ade3e606b80",
+    "runs/local-85a703d1db6f2e2e/runner-receipt.json": "3cce172ebd6a39ab6c5e77ad06c421c5418167a7cced0b43c55f0ad261e3a578",
+    "runs/local-85a703d1db6f2e2e/screenshots/d0-layers-dark-1440.png": "ab8ae9828f0da164a6fe97cdb08e763394ec5615ab057c9b39ba2dd3d829acd1",
+    "runs/local-85a703d1db6f2e2e/screenshots/d0-layers-dark-390.png": "0215c9d380bcd4ffd2b4371eb9fa70622cc22e47862d7a1aa35bf78bd892bf2b",
+    "runs/local-85a703d1db6f2e2e/screenshots/d0-layers-light-1440.png": "a2a7a3a4ed0ec5e17405b89a8ad17acd136f201e4819f4be766ed99d1b663100",
+    "runs/local-85a703d1db6f2e2e/screenshots/d0-selected-dark-390.png": "31147aedd1dee3c9165bbcf1f3c37f21845c4d960f42d37c1b701b77bff452d9",
+    "runs/local-85a703d1db6f2e2e/screenshots/d0-selected-light-1440.png": "15d234a2ae890fc1cbfa7efaed7922eecea5735f33c06f7fb773f4349eb27483",
+    "runs/local-85a703d1db6f2e2e/screenshots/d1-mobile-roof.png": "0ccf404b26570fa6efb8f3d41e9e6e0bf1b668b13810f39ce5ff0870f4ad637a",
+    "runs/local-85a703d1db6f2e2e/screenshots/d1-roof-desktop.png": "0d7835fae0dfbdcbe55e5df9e63bec1ac9c2e0471701c682fd495593000e70d0",
+    "runs/local-85a703d1db6f2e2e/screenshots/measurements.json": "09413b845bbb9d259391b59a01d46ee53fe0dcddcedd9b5c1ff1383f9142ef73",
+    "runs/local-85a703d1db6f2e2e/d0-d1-browser-report.json": "4e375bac84b24b2b6f95cd83f21b87137a143bdd3ca957106525e40e81fdb6f6",
+    "runs/local-85a703d1db6f2e2e/foundation-browser-report.json": "0004ed9fe7c66fbc15b96395696ad6c40cc18dc293b6f2d016444576612770fb",
+    "runs/local-5bc2828c25c5188f/runner-receipt.json": "cbe91dca38b4ef6a1673d8e4618b8ce22a8bcbcc3f8d679821d21273833e92f8",
+    "runs/local-5bc2828c25c5188f/foundation-browser-report.json": "fdacbbf5c14922bb54a95b02bab0f01ace31a8c2e092e1eea0f7f07503434871",
+    "runs/local-5bc2828c25c5188f/browser-report.json": "e1dd9d3e18da8703748e9ad6a4869b5c06452992f76cd977a84b52b2ae6e0931",
+    "runs/local-5bc2828c25c5188f/d0-d1-browser-report.json": "2e025b00ab0c67c1cd92a33677254231c6348a1ca93ab8ae456db05bb8585f4c",
+    "runs/local-5bc2828c25c5188f/screenshots/d0-layers-dark-1440.png": "575c79f6267942c9e26c04fdb402873f16d35895eae77597f555da2488ab8155",
+    "runs/local-5bc2828c25c5188f/screenshots/d0-selected-dark-390.png": "e78c6c59b06c679958be3b5541995dc9dbb81ed9f63eb14c69734dbf7d742317",
+    "runs/local-5bc2828c25c5188f/screenshots/d1-mobile-roof.png": "0ccf404b26570fa6efb8f3d41e9e6e0bf1b668b13810f39ce5ff0870f4ad637a",
+    "runs/local-5bc2828c25c5188f/screenshots/measurements.json": "60ebdaf884e8507b52df52291549acf7684ce066a9b6ea847aa9a83d5408de16",
+    "runs/local-5bc2828c25c5188f/screenshots/d0-selected-light-1440.png": "b9e5ee6908454fe30926ed04a64ef433da1168bf83b22530d780eb452b4da30d",
+    "runs/local-5bc2828c25c5188f/screenshots/d0-layers-light-1440.png": "17c0d1f6798a1a0f17f22a682642c6dfed08a08fc7220529154eae4529138380",
+    "runs/local-5bc2828c25c5188f/screenshots/d1-roof-desktop.png": "0d7835fae0dfbdcbe55e5df9e63bec1ac9c2e0471701c682fd495593000e70d0",
+    "runs/local-5bc2828c25c5188f/screenshots/d0-layers-dark-390.png": "0215c9d380bcd4ffd2b4371eb9fa70622cc22e47862d7a1aa35bf78bd892bf2b"
+  },
+  "coverage": "UI-02 shared Studio frame and local integration only. D0 is synthetic; D1 is one real source exterior. This is not a real-source accuracy, GPU-performance, learning or deployment pass.",
+  "limitations": "Synthetic D0 and retained Nandan baseline; one real D1 exterior in a local engineering display. Global placement, interior records, analytical mesh volume and public deployment are unqualified.",
+  "foundationBrowser": {
+    "startTime": "2026-09-25T14:05:58.140Z",
+    "duration": 8891.145,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "d0D1Browser": {
+    "startTime": "2026-09-25T14:06:22.793Z",
+    "duration": 46629.196,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "priorPass": {
+    "codeCommit": "8ea930b609da9a4f0b87f30f4f02f2edf6cd288f",
+    "scopeId": "local-85a703d1db6f2e2e",
+    "result": "PASS",
+    "artifactDirectory": "runs/local-85a703d1db6f2e2e"
+  }
+}

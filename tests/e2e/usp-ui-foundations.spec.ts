@@ -81,7 +81,7 @@ async function visibleControls(page: Page) {
     ['Zoom in', page.getByRole('button', { name: 'Zoom in' })],
     ['Zoom out', page.getByRole('button', { name: 'Zoom out' })],
     ['Return to block view', page.getByRole('button', { name: 'Return to block view' })],
-    ['Checks', page.getByRole('button', { name: /Checks/ })],
+    ['Checks', page.locator('.ui-map-bottom').getByRole('button', { name: /Checks/ })],
     ['Checks status', page.locator('.ui-map-bottom .ui-badge')],
   ];
   return Promise.all(targets.map(async ([name, locator]) => {
