@@ -380,6 +380,7 @@
         "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
         "docs/design-system/README.md",
         "docs/design-system/ui-brief.md",
+        "docs/design-system/mockups/officer-studio/README.md",
         "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
       ],
       "tests": [
@@ -711,7 +712,8 @@
         "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
         "docs/design-system/README.md",
-        "docs/design-system/ui-brief.md"
+        "docs/design-system/ui-brief.md",
+        "docs/design-system/mockups/officer-studio/README.md"
       ],
       "tests": [
         "GF-REHEARSAL"
