@@ -3,6 +3,7 @@ import copy
 import hashlib
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -18,6 +19,12 @@ class PlanGuardTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
+        subprocess.run(['git', 'init', '-q', str(self.root)], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(self.root), '-c', 'user.name=Receipt test', '-c',
+                        'user.email=receipt@example.invalid', '-c', 'commit.gpgsign=false',
+                        '-c', 'core.hooksPath=/dev/null', 'commit', '--allow-empty', '-qm', 'fixture'],
+                       check=True, capture_output=True)
+        self.commit = subprocess.check_output(['git', '-C', str(self.root), 'rev-parse', 'HEAD'], text=True).strip()
         self.h = self.root / 'docs/usp-agent-handoffs'
         self.h.mkdir(parents=True)
         (self.h / '00.md').write_text('# Start\n\n[Other](other.md#part)\n')
@@ -37,6 +44,9 @@ class PlanGuardTests(unittest.TestCase):
             'requirements':[{'id':'R0','owner':'FND','gate':'GF0','docs':['docs/usp-agent-handoffs/00.md'],'tests':['GF-T0']}],
             'tests':{'GF-T0':{'kind':'runtime','owner':'FND','specs':['docs/usp-agent-handoffs/other.md'],'status':'planned','receipts':[]}},
             'entryPoints':[], 'activeDocDirectory':'docs/usp-agent-handoffs',
+            'receiptContract': {'requiredFields': ['testId', 'status', 'codeCommit', 'manifestHash',
+                'sourceHashes', 'modelHashes', 'runAt', 'environment', 'command', 'exitCode',
+                'expectedActual', 'artifacts', 'agent', 'review', 'limitations', 'unqualifiedClaims']},
             'planValidation':{'validator':'check.py','tests':'check.py','status':'pending','receipt':None}}
 
     def errors(self):
@@ -98,7 +108,7 @@ class PlanGuardTests(unittest.TestCase):
         self.rejects('complete before dependencies')
 
     def test_document_status_never_advances_runtime(self):
-        self.plan['planValidation'].update(status='passed',receipt='receipt.md')
+        self.plan_validation_receipt()
         self.assertEqual(self.errors(), [])
         self.assertEqual(self.plan['nextGate'],'GF0')
         self.assertEqual(self.plan['gates'][0]['status'],'pending')
@@ -139,15 +149,20 @@ class PlanGuardTests(unittest.TestCase):
         self.rejects('planValidation passed receipt')
 
     def passing_runtime_receipt(self):
-        artifact=self.root/'execution.txt';artifact.write_text('expected 20; actual 20; passed')
         path=self.root/'docs/evidence/usp/finale/GF-T0/receipt.json'
         path.parent.mkdir(parents=True)
+        artifact=path.parent/'execution.txt';artifact.write_text('expected 20; actual 20; passed')
         data={'schemaVersion':'ulpin-test-receipt/1','testId':'GF-T0','status':'passed',
-              'codeCommit':'a'*40,'manifestHash':'b'*64,'sourceHashes':['c'*64],
+              'codeCommit':self.commit,'manifestHash':'b'*64,'sourceHashes':['c'*64],
               'modelHashes':[],'runAt':'2026-09-24T10:00:00Z',
+              'agent':{'id':'producer-1','product':'Codex','model':'gpt-6-sol','effort':'high'},
+              'review':{'reviewer':'reviewer-1','kind':'agent','modelFamily':'other-family',
+                        'independence':'cross_family','reviewedAt':'2026-09-24T10:01:00Z','verdict':'accepted'},
+              'limitations':[], 'unqualifiedClaims':[],
               'environment':{'runtime':'isolated fixture'},'command':'fixture-check','exitCode':0,
               'expectedActual':[{'caseId':'volume','expected':20,'actual':20,'result':'passed'}],
-              'artifacts':[{'path':'execution.txt','sha256':hashlib.sha256(artifact.read_bytes()).hexdigest()}]}
+              'artifacts':[{'path':str(artifact.relative_to(self.root)),
+                            'sha256':hashlib.sha256(artifact.read_bytes()).hexdigest()}]}
         path.write_text(json.dumps(data))
         self.plan['tests']['GF-T0'].update(status='passed',receipts=[str(path.relative_to(self.root))])
         return path,data
@@ -173,7 +188,7 @@ class PlanGuardTests(unittest.TestCase):
         self.rejects('invalid sourceHashes')
 
     def test_artifact_tampering(self):
-        self.passing_runtime_receipt();(self.root/'execution.txt').write_text('changed')
+        path,_=self.passing_runtime_receipt();(path.parent/'execution.txt').write_text('changed')
         self.rejects('artifact hash mismatch')
 
     def test_gate_cannot_reuse_unrelated_evidence(self):
@@ -197,6 +212,108 @@ class PlanGuardTests(unittest.TestCase):
         p.write_text('<!-- plan-next-gate: GF0 -->\nNext gate: **GF1**')
         self.plan['entryPoints']=['README.md']
         self.rejects('visible next gate disagrees')
+
+    def test_receipt_contract_additional_required_field_is_enforced(self):
+        path, data = self.passing_runtime_receipt()
+        self.plan['receiptContract']['requiredFields'].append('executionId')
+        self.rejects('missing required receipt field executionId')
+        data['executionId'] = 'run-1'; path.write_text(json.dumps(data))
+        self.assertEqual(self.errors(), [])
+
+    def test_receipt_contract_cannot_drop_provenance_fields(self):
+        self.plan['receiptContract']['requiredFields'].remove('review')
+        self.rejects('must include the runtime provenance contract')
+
+    def test_receipt_rejects_nonexistent_and_unmerged_commits(self):
+        path, data = self.passing_runtime_receipt()
+        data['codeCommit'] = '0' * 40; path.write_text(json.dumps(data))
+        self.rejects('not a verified ancestor')
+        subprocess.run(['git', '-C', str(self.root), 'checkout', '-qb', 'other'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(self.root), '-c', 'user.name=Receipt test', '-c',
+                        'user.email=receipt@example.invalid', '-c', 'commit.gpgsign=false',
+                        '-c', 'core.hooksPath=/dev/null', 'commit', '--allow-empty', '-qm', 'other'],
+                       check=True, capture_output=True)
+        data['codeCommit'] = subprocess.check_output(['git', '-C', str(self.root), 'rev-parse', 'HEAD'], text=True).strip()
+        subprocess.run(['git', '-C', str(self.root), 'checkout', '-q', self.commit], check=True, capture_output=True)
+        path.write_text(json.dumps(data)); self.rejects('not a verified ancestor')
+        data['codeCommit'] = self.commit; path.write_text(json.dumps(data))
+        self.assertEqual(self.errors(), [])
+
+    def test_receipt_rejects_future_execution_or_review(self):
+        path, data = self.passing_runtime_receipt()
+        for field in ('runAt', 'reviewedAt'):
+            target = data if field == 'runAt' else data['review']
+            old = target[field]; target[field] = '2999-01-01T00:00:00Z'
+            path.write_text(json.dumps(data)); self.rejects('timestamp is in the future')
+            target[field] = old
+        path.write_text(json.dumps(data)); self.assertEqual(self.errors(), [])
+
+    def test_receipt_requires_distinct_reviewer_and_observed_agent(self):
+        path, data = self.passing_runtime_receipt()
+        original = copy.deepcopy(data)
+        for mutation, error in [
+            (lambda d: d.pop('review'), 'missing receipt review'),
+            (lambda d: d['review'].update(reviewer='producer-1'), 'reviewer must differ'),
+            (lambda d: d['review'].update(verdict='pending'), 'review is not accepted'),
+            (lambda d: d['review'].update(reviewedAt='2026-09-23T10:00:00Z'), 'review predates'),
+            (lambda d: d['agent'].pop('effort'), 'missing producer agent identity/settings'),
+            (lambda d: d['review'].pop('modelFamily'), 'missing reviewer model family'),
+            (lambda d: d.update(limitations=None), 'invalid limitations'),
+            (lambda d: d.update(unqualifiedClaims=[None]), 'invalid unqualifiedClaims'),
+        ]:
+            with self.subTest(error=error):
+                data = copy.deepcopy(original); mutation(data)
+                path.write_text(json.dumps(data)); self.rejects(error)
+        path.write_text(json.dumps(original)); self.assertEqual(self.errors(), [])
+
+    def test_receipt_artifacts_stay_inside_test_namespace(self):
+        path, data = self.passing_runtime_receipt()
+        outside = self.root/'elsewhere.txt'; outside.write_text('same hash is insufficient')
+        data['artifacts'] = [{'path':'elsewhere.txt','sha256':hashlib.sha256(outside.read_bytes()).hexdigest()}]
+        path.write_text(json.dumps(data)); self.rejects('artifact outside its test namespace')
+
+    def test_not_applicable_case_requires_reason(self):
+        path, data = self.passing_runtime_receipt()
+        data['expectedActual'].append({'caseId':'optional','expected':None,'actual':None,'result':'not_applicable'})
+        path.write_text(json.dumps(data)); self.rejects('failed or duplicate expected/actual case')
+        data['expectedActual'][-1]['reason'] = 'No optional solid profile in this test'
+        path.write_text(json.dumps(data)); self.assertEqual(self.errors(), [])
+        data['expectedActual'] = data['expectedActual'][1:]
+        path.write_text(json.dumps(data)); self.rejects('no executed passing case')
+
+    def test_nested_markdown_and_gate_declarations(self):
+        nested = self.h/'nested'; nested.mkdir()
+        p = nested/'detail.md'; p.write_text('[bad](missing.md)')
+        self.rejects('broken local link')
+        for content in ('<!-- plan-next-gate: GF0 -->', 'Next gate: **GF0**'):
+            p.write_text(content); self.rejects('gate declarations are allowed only in entry points')
+        p.write_text('# Detail\n'); self.assertEqual(self.errors(), [])
+
+    def test_non_utf8_markdown_is_a_named_error(self):
+        p = self.h/'bad.md'; p.write_bytes(b'\xff\xfe')
+        self.rejects('bad.md: unreadable UTF-8 Markdown')
+        p.write_text('Valid UTF-8'); self.assertEqual(self.errors(), [])
+
+    def plan_validation_receipt(self):
+        self.plan['planValidation'].update(status='passed', receipt='plan-receipt.json')
+        (self.root/validator.PLAN).write_text(json.dumps(self.plan))
+        paths = [validator.PLAN, 'check.py'] + [str(p.relative_to(self.root)) for p in self.h.rglob('*.md')]
+        data = {'filesSha256':{p:hashlib.sha256((self.root/p).read_bytes()).hexdigest() for p in paths}}
+        path = self.root/'plan-receipt.json'; path.write_text(json.dumps(data))
+        return path, data
+
+    def test_plan_validation_hashes_expire_and_require_coverage(self):
+        path, data = self.plan_validation_receipt()
+        self.assertEqual(self.errors(), [])
+        (self.h/'other.md').write_text('# Part\nChanged')
+        self.rejects('stale filesSha256')
+        path, data = self.plan_validation_receipt(); self.assertEqual(self.errors(), [])
+        del data['filesSha256']['check.py']; path.write_text(json.dumps(data))
+        self.rejects('filesSha256 omits active plan inputs')
+
+    def test_plan_validation_cannot_use_plain_text_as_hash_receipt(self):
+        self.plan['planValidation'].update(status='passed', receipt='receipt.md')
+        self.rejects('unreadable hash receipt')
 
 
 if __name__ == '__main__':
