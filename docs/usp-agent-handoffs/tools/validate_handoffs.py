@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
 from urllib.parse import unquote, urlsplit
 
 PLAN = 'docs/usp-agent-handoffs/release-plan.json'
@@ -48,6 +49,27 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
     def fail(message: str) -> None:
         errors.append(message)
 
+    markdown_cache: dict[Path, str] = {}
+
+    def markdown(path: Path) -> str:
+        if path not in markdown_cache:
+            try:
+                markdown_cache[path] = path.read_text(encoding='utf-8')
+            except (OSError, UnicodeError) as exc:
+                fail(f'{path.relative_to(root)}: unreadable UTF-8 Markdown: {exc}')
+                markdown_cache[path] = ''
+        return markdown_cache[path]
+
+    def utc_timestamp(value: object, context: str) -> datetime | None:
+        try:
+            result = datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError):
+            fail(f'{context}: missing UTC run timestamp')
+            return None
+        if result > datetime.now(timezone.utc):
+            fail(f'{context}: timestamp is in the future')
+        return result
+
     def exists(relative: str, context: str, *, file: bool = True) -> Path | None:
         if not isinstance(relative, str) or not relative:
             fail(f'{context}: missing path')
@@ -75,12 +97,25 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
         if not isinstance(receipt, dict):
             fail(f'{test_id}: runtime receipt must be an object')
             return
+        required = plan.get('receiptContract', {}).get('requiredFields', [])
+        for field in required:
+            if field not in receipt:
+                fail(f'{test_id}: missing required receipt field {field}')
         if receipt.get('schemaVersion') != 'ulpin-test-receipt/1' or receipt.get('testId') != test_id:
             fail(f'{test_id}: wrong runtime receipt schema/test ID')
         if receipt.get('status') != 'passed' or type(receipt.get('exitCode')) is not int or receipt.get('exitCode') != 0:
             fail(f'{test_id}: receipt does not record a passing command')
         if not re.fullmatch(r'[0-9a-f]{40}', str(receipt.get('codeCommit', ''))):
             fail(f'{test_id}: missing pinned code commit')
+        else:
+            try:
+                ancestor = subprocess.run(
+                    ['git', '-C', str(root), 'merge-base', '--is-ancestor', receipt['codeCommit'], 'HEAD'],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10, check=False)
+                if ancestor.returncode != 0:
+                    fail(f'{test_id}: codeCommit is not a verified ancestor of HEAD')
+            except (OSError, subprocess.TimeoutExpired):
+                fail(f'{test_id}: cannot verify codeCommit ancestry')
         if not re.fullmatch(r'[0-9a-f]{64}', str(receipt.get('manifestHash', ''))):
             fail(f'{test_id}: missing manifest hash')
         for field in ('sourceHashes', 'modelHashes'):
@@ -90,10 +125,31 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
                 fail(f'{test_id}: invalid {field}')
         if test_id == 'GF-AI' and not receipt.get('modelHashes'):
             fail('GF-AI: learned routes require model hashes')
-        try:
-            datetime.strptime(receipt.get('runAt', ''), '%Y-%m-%dT%H:%M:%SZ')
-        except (ValueError, TypeError):
-            fail(f'{test_id}: missing UTC run timestamp')
+        run_at = utc_timestamp(receipt.get('runAt'), test_id)
+        agent = receipt.get('agent')
+        if not isinstance(agent, dict) or any(not isinstance(agent.get(k), str) or not agent[k].strip()
+                                             for k in ('id', 'product', 'model', 'effort')):
+            fail(f'{test_id}: missing producer agent identity/settings')
+            agent = {}
+        review = receipt.get('review')
+        if not isinstance(review, dict):
+            fail(f'{test_id}: missing receipt review')
+        else:
+            if not isinstance(review.get('reviewer'), str) or not review['reviewer'].strip() or review['reviewer'] == agent.get('id'):
+                fail(f'{test_id}: reviewer must differ from producer')
+            if review.get('kind') not in ('human', 'agent') or review.get('verdict') != 'accepted':
+                fail(f'{test_id}: receipt review is not accepted')
+            if review.get('independence') not in ('human', 'same_family', 'cross_family'):
+                fail(f'{test_id}: invalid review independence')
+            if review.get('kind') == 'agent' and not review.get('modelFamily'):
+                fail(f'{test_id}: missing reviewer model family')
+            reviewed_at = utc_timestamp(review.get('reviewedAt'), test_id + ' review')
+            if run_at and reviewed_at and reviewed_at < run_at:
+                fail(f'{test_id}: review predates execution')
+        for field in ('limitations', 'unqualifiedClaims'):
+            values = receipt.get(field)
+            if not isinstance(values, list) or any(not isinstance(v, str) or not v.strip() for v in values):
+                fail(f'{test_id}: invalid {field}')
         if not isinstance(receipt.get('environment'), dict) or not receipt['environment']:
             fail(f'{test_id}: missing execution environment')
         if not isinstance(receipt.get('command'), str) or not receipt['command'].strip():
@@ -107,9 +163,13 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
                 if not isinstance(case, dict) or not all(k in case for k in ('caseId','expected','actual','result')):
                     fail(f'{test_id}: malformed expected/actual case')
                     continue
-                if case['result'] != 'passed' or not case['caseId'] or case['caseId'] in case_ids:
+                valid_result = case['result'] == 'passed' or (
+                    case['result'] == 'not_applicable' and isinstance(case.get('reason'), str) and case['reason'].strip())
+                if not valid_result or not case['caseId'] or case['caseId'] in case_ids:
                     fail(f'{test_id}: failed or duplicate expected/actual case')
                 case_ids.add(case['caseId'])
+            if not any(isinstance(case, dict) and case.get('result') == 'passed' for case in cases):
+                fail(f'{test_id}: receipt has no executed passing case')
         artifacts = receipt.get('artifacts')
         if not isinstance(artifacts, list) or not artifacts:
             fail(f'{test_id}: missing execution artifacts')
@@ -120,6 +180,9 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
                     continue
                 artifact_path = exists(artifact.get('path'), test_id + ' artifact')
                 if artifact_path:
+                    if not artifact_path.is_relative_to(expected_dir):
+                        fail(f'{test_id}: artifact outside its test namespace')
+                        continue
                     hasher = hashlib.sha256()
                     with artifact_path.open('rb') as stream:
                         for block in iter(lambda: stream.read(1024 * 1024), b''):
@@ -134,6 +197,15 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
         return [f'plan unreadable: {exc}']
     if plan.get('schemaVersion') != 'ulpin-release-plan/1':
         fail('unsupported schemaVersion')
+    required_fields = plan.get('receiptContract', {}).get('requiredFields')
+    mandatory_fields = {'testId', 'status', 'codeCommit', 'manifestHash', 'sourceHashes', 'modelHashes',
+                        'runAt', 'environment', 'command', 'exitCode', 'expectedActual', 'artifacts',
+                        'agent', 'review', 'limitations', 'unqualifiedClaims'}
+    if (not isinstance(required_fields, list) or any(not isinstance(f, str) for f in required_fields)
+            or not mandatory_fields.issubset(required_fields)):
+        fail('receiptContract.requiredFields must include the runtime provenance contract')
+        # Keep malformed plan metadata from causing a traceback while checking receipts.
+        plan['receiptContract'] = {'requiredFields': sorted(mandatory_fields)}
     owners = plan.get('owners', {})
     tests = plan.get('tests', {})
     releases = plan.get('releases', {})
@@ -268,33 +340,36 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
     docs: set[Path] = set()
     directory = exists(plan.get('activeDocDirectory'), 'activeDocDirectory', file=False)
     if directory:
-        docs.update(directory.glob('*.md'))
+        docs.update(directory.rglob('*.md'))
     for entry in plan.get('entryPoints', []):
         path = exists(entry, 'entry point')
         if path:
             docs.add(path)
-            declarations = re.findall(r'<!-- plan-next-gate: ([A-Z0-9-]+|none) -->', path.read_text())
+            declarations = re.findall(r'<!-- plan-next-gate: ([A-Z0-9-]+|none) -->', markdown(path))
             if declarations != [next_gate or 'none']:
                 fail(f'{entry}: next-gate declaration disagrees with manifest')
-            visible = re.findall(r'Next gate:\s*([A-Z0-9-]+)', path.read_text().replace('*', ''))
+            visible = re.findall(r'Next gate:\s*([A-Z0-9-]+)', markdown(path).replace('*', ''))
             if visible and visible != [next_gate]:
                 fail(f'{entry}: visible next gate disagrees with manifest')
     if not docs:
         fail('no active documents')
     current_path = root / 'docs/engineering-plan/CURRENT_WORK.md'
     if current_path in docs and next_gate and not re.search(
-            rf'Next gate:\s*{re.escape(next_gate)}\b', current_path.read_text()):
+            rf'Next gate:\s*{re.escape(next_gate)}\b', markdown(current_path)):
         fail('CURRENT_WORK next gate disagrees with manifest')
     # Strongly pin the active entry points; old dated hashes in body history are allowed.
     for entry in ('AGENTS.md', 'docs/usp-agent-handoffs/00-README.md',
                   'docs/usp-agent-handoffs/02-lead-agent-execution.md',
                   'docs/engineering-plan/CURRENT_WORK.md'):
         path = root / entry
-        if path in docs and baseline.get('commit') not in path.read_text():
+        if path in docs and baseline.get('commit') not in markdown(path):
             fail(f'{entry}: consolidated baseline missing or stale')
     for path in sorted(docs):
-        content = path.read_text()
+        content = markdown(path)
         name = str(path.relative_to(root))
+        if name not in plan.get('entryPoints', []) and (
+                '<!-- plan-next-gate:' in content or re.search(r'Next gate:\s*[A-Z0-9-]+', prose(content).replace('*', ''))):
+            fail(f'{name}: gate declarations are allowed only in entry points')
         for retired in RETIRED:
             if re.search(retired, content, flags=re.IGNORECASE):
                 fail(f'{name}: retired instruction/reference: {retired}')
@@ -307,13 +382,29 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
             if not dest.is_relative_to(root) or not dest.exists():
                 fail(f'{name}: broken local link {target}')
                 continue
-            if url.fragment and dest.suffix == '.md' and unquote(url.fragment) not in anchors(dest.read_text()):
+            if url.fragment and dest.suffix == '.md' and unquote(url.fragment) not in anchors(markdown(dest)):
                 fail(f'{name}: broken heading anchor {target}')
     check = plan.get('planValidation', {})
     for field in ('validator', 'tests'):
         exists(check.get(field), 'planValidation ' + field)
     if check.get('status') == 'passed':
-        exists(check.get('receipt'), 'planValidation passed receipt')
+        receipt_path = exists(check.get('receipt'), 'planValidation passed receipt')
+        if receipt_path:
+            try:
+                receipt = json.loads(receipt_path.read_text(encoding='utf-8'))
+                hashes = receipt.get('filesSha256') if isinstance(receipt, dict) else None
+                if not isinstance(hashes, dict) or not hashes:
+                    fail('planValidation: missing filesSha256')
+                else:
+                    needed = {str(p.relative_to(root)) for p in docs} | {relative_plan, check.get('validator'), check.get('tests')}
+                    if not needed.issubset(hashes):
+                        fail('planValidation: filesSha256 omits active plan inputs')
+                    for filename, expected_hash in hashes.items():
+                        file_path = exists(filename, 'planValidation hash')
+                        if file_path and hashlib.sha256(file_path.read_bytes()).hexdigest() != expected_hash:
+                            fail(f'planValidation: stale filesSha256 for {filename}')
+            except (OSError, ValueError) as exc:
+                fail(f'planValidation: unreadable hash receipt: {exc}')
     elif check.get('status') != 'pending':
         fail('invalid planValidation status')
     return errors

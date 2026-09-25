@@ -991,7 +991,7 @@
       "C08",
       "C24"
     ],
-    "status": "passed",
+    "status": "pending",
     "receipt": "docs/evidence/usp/claude-review-alignment-2026-09-24/verification.json"
   },
   "receiptContract": {
@@ -1010,8 +1010,12 @@
       "command",
       "exitCode",
       "expectedActual",
-      "artifacts"
+      "artifacts",
+      "agent",
+      "review",
+      "limitations",
+      "unqualifiedClaims"
     ],
-    "note": "Machine checks provenance shape and file hashes, not truth of execution. Independent review remains mandatory."
+    "note": "Machine checks provenance shape, commit ancestry, timestamps, distinct reviewer and file hashes, not truth of execution. agent.id records the producer identity; review.reviewer must differ. Independent milestone acceptance remains mandatory."
   }
 }
