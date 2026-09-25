@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T00:59:27.902962+00:00",
+  "updatedAt": "2026-09-25T11:58:08.251544+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "584428eb2006db5d2a91973ea5569dc59d59644c",
+    "acceptedStagingBase": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -102,6 +102,22 @@
     {
       "id": "D007",
       "decision": "Reconciled external staging commit 364bd561bfa1edf879ebc170a6f5035c4cd9dd22, which committed the pre-existing 194 design-package deletions. This orchestration did not originate those removals."
+    },
+    {
+      "id": "D008",
+      "decision": "2026-09-25 user authorizes full UI/design implementation under newly integrated staging@545c0301dadd11393c9a0b97dfe1ee76c472ff4b. This supersedes D003 only for its formal-UI hold; data preservation and no wholesale legacy deletion remain. Repository H99/design system governs; mockups are reference only."
+    },
+    {
+      "id": "D009",
+      "decision": "Adopt H30 and updated H29: R-SCENE, R-SUFFICIENCY, DATA-09, UI-08/UI-09 and INGEST-04/05 are finale scope. Do not copy prototype data/code or treat planned formats as qualified."
+    },
+    {
+      "id": "D010",
+      "decision": "H30 E requires at least 3 correspondences for global placement while G says at least 2. Until reconciled, use the explicit conservative task minimum of 3, independently qualified; no placement by name/proximity."
+    },
+    {
+      "id": "D011",
+      "decision": "Worker attempt-2 acknowledged then ended without execution. Resume explicitly on updated integration base, preserving original assignment base and unmerged implementation ancestry. Default remains one worker and one accepted integration at a time."
     }
   ],
   "workers": [
@@ -113,14 +129,14 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "high"
+        "effort": "xhigh"
       },
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "high"
+        "effort": "xhigh"
       },
-      "status": "available",
+      "status": "assigned_FND-02_attempt_2",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -400,6 +416,126 @@
           "No ML, real rights, Indian multi-unit, runtime or independent gate qualification"
         ]
       }
+    },
+    {
+      "assignmentId": "FND-02",
+      "attempt": 1,
+      "callbackId": "ulpin-FND-02-attempt-1",
+      "objective": "P3/1 immutable project identity, reviewed allocation/lifecycle and derived vertical locator through existing registry transactions",
+      "baseCommit": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-02-project-identity",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "packages/contracts/src/usp identity schema/exports and minimal registry type extensions",
+        "apps/web/lib/server/usp identity services, additive migration, command/snapshot integration",
+        "apps/web/lib/server/registry identity transaction/projection hooks only",
+        "apps/web/app/api/v1/usp/[...path]/route.ts identity command/resolver routes only",
+        "tests/usp-project-identity* and authored identity fixtures",
+        "scripts/usp/gf/GF-T15* and minimal isolated runner registration",
+        "docs/evidence/usp/finale/GF-T15/FND-02/"
+      ],
+      "exclusions": [
+        "formal UI or redesign",
+        "unrelated registry/ingestion/job/model behavior",
+        "existing data, originals, credentials and historical receipts",
+        "DATA packs and LEAD validator work",
+        "orchestration ledger and release-plan gate promotion",
+        "deployment, remote push and staging/main merges"
+      ],
+      "acceptance": [
+        "H26 A-C/Z1-Z2 and H28 GF-T15 identity cases",
+        "Independent fixed vectors plus exhaustive substitutions and adjacent transpositions",
+        "Real isolated DB two-writer, rollback, stale manifest 409, authorization and idempotency checks",
+        "Cancel/retire/split/merge/boundary_adjustment preserve identity history and exact receipts",
+        "Locator corrections preserve code; MULTI(2), missing anchors and resolver 422",
+        "Actual executed source commit and receipts with remaining unqualified cases explicit"
+      ],
+      "status": "corrections_required",
+      "reportPath": "docs/evidence/usp/finale/GF-T15/FND-02/report.md",
+      "resultCommit": "716fde1577231f210002a6ad4458bb75e57ee197",
+      "ownershipClarifications": [
+        {
+          "path": "scripts/usp/isolated-live.mjs",
+          "scope": "One GF-T15 command invocation after migration and before disposable runner cleanup; existing lifecycle, isolation and historical checks preserved.",
+          "reason": "Worker requested explicit confirmation for real isolated DB concurrency/rollback execution; already covered by minimal isolated runner registration.",
+          "confirmedAt": "2026-09-25T01:10:53.430186+00:00"
+        }
+      ],
+      "testedCommit": "87568510183d4be50a85fcc8dc1e2e17cc71ad8d",
+      "review": {
+        "verdict": "corrections_required",
+        "independence": "same_family",
+        "report": "docs/evidence/usp/orchestration/FND-02-attempt-1-review.json"
+      }
+    },
+    {
+      "assignmentId": "FND-02",
+      "attempt": 2,
+      "callbackId": "ulpin-FND-02-attempt-2",
+      "objective": "P3/1 immutable project identity, reviewed allocation/lifecycle and derived vertical locator through existing registry transactions",
+      "baseCommit": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-02-project-identity",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "packages/contracts/src/usp identity schema/exports and minimal registry type extensions",
+        "apps/web/lib/server/usp identity services, additive migration, command/snapshot integration",
+        "apps/web/lib/server/registry identity transaction/projection hooks only",
+        "apps/web/app/api/v1/usp/[...path]/route.ts identity command/resolver routes only",
+        "tests/usp-project-identity* and authored identity fixtures",
+        "scripts/usp/gf/GF-T15* and minimal isolated runner registration",
+        "docs/evidence/usp/finale/GF-T15/FND-02/",
+        "packages/contracts/src/usp/domain.ts canonical receipt extension only, preserving existing receipt consumers"
+      ],
+      "exclusions": [
+        "formal UI or redesign",
+        "unrelated registry/ingestion/job/model behavior",
+        "existing data, originals, credentials and historical receipts",
+        "DATA packs and LEAD validator work",
+        "orchestration ledger and release-plan gate promotion",
+        "deployment, remote push and staging/main merges"
+      ],
+      "acceptance": [
+        "H26 A-C/Z1-Z2 and H28 GF-T15 identity cases",
+        "Independent fixed vectors plus exhaustive substitutions and adjacent transpositions",
+        "Real isolated DB two-writer, rollback, stale manifest 409, authorization and idempotency checks",
+        "Cancel/retire/split/merge/boundary_adjustment preserve identity history and exact receipts",
+        "Locator corrections preserve code; MULTI(2), missing anchors and resolver 422",
+        "Actual executed source commit and receipts with remaining unqualified cases explicit"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-T15/FND-02/attempt-2/report.md",
+      "resultCommit": null,
+      "ownershipClarifications": [
+        {
+          "path": "scripts/usp/isolated-live.mjs",
+          "scope": "One GF-T15 command invocation after migration and before disposable runner cleanup; existing lifecycle, isolation and historical checks preserved.",
+          "reason": "Worker requested explicit confirmation for real isolated DB concurrency/rollback execution; already covered by minimal isolated runner registration.",
+          "confirmedAt": "2026-09-25T01:10:53.430186+00:00"
+        }
+      ],
+      "continuationCommit": "716fde1577231f210002a6ad4458bb75e57ee197",
+      "correctionFindings": [
+        "FND02-R1",
+        "FND02-R2",
+        "FND02-R3",
+        "FND02-R4",
+        "FND02-R5",
+        "FND02-R6"
+      ]
     }
   ],
   "capabilityChecklist": [
@@ -560,6 +696,7 @@
         "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
         "docs/design-system/README.md",
         "docs/design-system/ui-brief.md",
+        "docs/design-system/mockups/officer-studio/README.md",
         "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
       ],
       "tasks": [
@@ -1005,7 +1142,8 @@
         "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
         "docs/design-system/README.md",
-        "docs/design-system/ui-brief.md"
+        "docs/design-system/ui-brief.md",
+        "docs/design-system/mockups/officer-studio/README.md"
       ],
       "tasks": [
         "DEPLOY-02",
@@ -1053,6 +1191,63 @@
       "acceptanceCriteria": "H20 Z1 fake-provider qualification before permitted live calls",
       "status": "pending_current_evidence",
       "evidence": []
+    },
+    {
+      "id": "R-SCENE",
+      "capability": "Real reference area and deterministic Enhanced view kept in sync with records",
+      "plans": [
+        "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md",
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/design-system/map-and-3d.md",
+        "docs/design-system/mockups/officer-studio/README.md"
+      ],
+      "tasks": [
+        "DATA-09",
+        "FND-04",
+        "UI-03",
+        "UI-08",
+        "UI-09",
+        "DOMAIN-01"
+      ],
+      "gate": "GF2",
+      "gateDependencies": [
+        "GF1"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-SCENE"
+      ],
+      "acceptanceCriteria": "H30 test matrix and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
+    },
+    {
+      "id": "R-SUFFICIENCY",
+      "capability": "Every input family accepted; incomplete data filled for display, asked, parked or rejected for 3D within a question budget",
+      "plans": [
+        "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md",
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "tasks": [
+        "DATA-02",
+        "INGEST-02",
+        "INGEST-04",
+        "INGEST-05"
+      ],
+      "gate": "GF2",
+      "gateDependencies": [
+        "GF1"
+      ],
+      "taskDependencies": "H29 Needs fields; qualification follows release-plan.json",
+      "acceptanceTests": [
+        "GF-SUFFICIENCY"
+      ],
+      "acceptanceCriteria": "H30 test matrix and H29 Done when",
+      "status": "pending_current_evidence",
+      "evidence": []
     }
   ],
   "checks": [
@@ -1075,12 +1270,17 @@
       "command": "git merge --ff-only feat/ulpin-finale-full-product (local staging)",
       "exitCode": 0,
       "result": "staging at 10503934234055faf5dc23f26007b717062b68bf; byte-identical pre-existing porcelain status, main SHA unchanged"
+    },
+    {
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py; python3 -m unittest discover -s docs/usp-agent-handoffs/tools/tests -q",
+      "exitCode": 0,
+      "result": "Updated plan consistency and 40 mutation tests; no runtime qualification"
     }
   ],
   "nextSteps": [
-    "Assign FND-02 after accepted local integration; H29 permits implementation with ready contracts while qualification remains at GF0.",
-    "Remaining GF0: adversarial data, holdouts/oracles, AI preregistration, drone/source suitability and site decision; finish LEAD-01B.",
-    "No formal UI, deployment or gate promotion."
+    "Finish FND-02 attempt-2 corrections on integrated updated plan; verify before staging integration.",
+    "Then UI-01 foundations and UI-02 frame; execute remaining H29 cards one by one as inputs become ready, including H30 data and sufficiency.",
+    "Keep GF0-GF5 qualification and full_product gates evidence-driven; finish LEAD-01B and data prerequisites."
   ],
   "processedCallbacks": [
     {
@@ -1115,6 +1315,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "90616d7c603e6dc5d530e4503e81cd252c0eabc4",
       "result": "accepted_bounded_source_tests"
+    },
+    {
+      "callbackId": "ulpin-FND-02-attempt-1",
+      "assignmentId": "FND-02",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "716fde1577231f210002a6ad4458bb75e57ee197",
+      "result": "corrections_required_not_integrated"
     }
   ],
   "observations": [
@@ -1129,6 +1337,320 @@
     {
       "id": "OBS-003",
       "finding": "D0/PACK0 and retained D1 locally passed at dfe0d36: 101 USP unit tests, typecheck/build, 19 isolated commands, 3 browser journeys, 3 register-scope tests. Does not qualify real rights/interiors, global placement, solids, GPU/scale or deployment."
+    }
+  ],
+  "taskBacklog": [
+    {
+      "card": "FND-01",
+      "title": "Contract and seam inventory",
+      "needs": "none",
+      "status": "accepted_bounded_scope"
+    },
+    {
+      "card": "DATA-01",
+      "title": "Matched source bundle (any permitted geography)",
+      "needs": "none",
+      "status": "accepted_bounded_scope"
+    },
+    {
+      "card": "DATA-02",
+      "title": "Adversarial and Indian-reality fixtures",
+      "needs": "none",
+      "status": "pending"
+    },
+    {
+      "card": "DATA-03",
+      "title": "Licences, India boundary and ID normalisation data",
+      "needs": "none",
+      "status": "pending"
+    },
+    {
+      "card": "DATA-04",
+      "title": "GF-AI preregistration",
+      "needs": "DATA-07, DATA-08",
+      "status": "pending"
+    },
+    {
+      "card": "DATA-05",
+      "title": "Public plan bundle (D5)",
+      "needs": "none \u00b7 replaces H90 H1/H1a",
+      "status": "accepted_bounded_scope"
+    },
+    {
+      "card": "DATA-06",
+      "title": "Open drone capture bundle",
+      "needs": "none \u00b7 replaces H90 H7",
+      "status": "pending"
+    },
+    {
+      "card": "DATA-07",
+      "title": "Third-party labelled holdouts (D6)",
+      "needs": "none \u00b7 replaces H90 H6 (labels)",
+      "status": "pending"
+    },
+    {
+      "card": "DATA-08",
+      "title": "Cross-family oracles",
+      "needs": "DATA-02 \u00b7 replaces H90 H6 (hand calculations)",
+      "status": "pending"
+    },
+    {
+      "card": "DATA-09",
+      "title": "Real reference area",
+      "needs": "DATA-01, DATA-05",
+      "status": "pending"
+    },
+    {
+      "card": "LEAD-01",
+      "title": "Plan machinery that can tell the truth",
+      "needs": "none",
+      "status": "partial_LEAD-01A_remaining_LEAD-01B"
+    },
+    {
+      "card": "LEAD-02",
+      "title": "Retire stale pointers",
+      "needs": "none",
+      "status": "pending"
+    },
+    {
+      "card": "LEAD-05",
+      "title": "Finale dataset decision",
+      "needs": "DATA-01, DATA-05, DATA-06, DATA-09 \u00b7 replaces H90 H5",
+      "status": "pending"
+    },
+    {
+      "card": "CLEANUP-01",
+      "title": "Remove obsolete and duplicate files",
+      "needs": "none",
+      "status": "pending"
+    },
+    {
+      "card": "CLEANUP-02",
+      "title": "Retire the historical engineering plan and prototypes",
+      "needs": "CLEANUP-01",
+      "status": "pending"
+    },
+    {
+      "card": "FND-02",
+      "title": "Proposed IDs, lifecycle and location line",
+      "needs": "FND-01",
+      "status": "corrections_in_progress"
+    },
+    {
+      "card": "HISTORY-01",
+      "title": "Exact reads, diff and lineage",
+      "needs": "FND-02",
+      "status": "pending"
+    },
+    {
+      "card": "FND-03",
+      "title": "CityJSON 2.0 plus sidecar, LADM mapping",
+      "needs": "FND-02",
+      "status": "pending"
+    },
+    {
+      "card": "FND-04",
+      "title": "Geometry classes and display-derivative separation",
+      "needs": "FND-01",
+      "status": "pending"
+    },
+    {
+      "card": "FND-05",
+      "title": "Receipts and GF test commands",
+      "needs": "LEAD-01 for the schema",
+      "status": "pending"
+    },
+    {
+      "card": "FND-06",
+      "title": "Redaction module, egress guard and Host allowlist",
+      "needs": "none",
+      "status": "pending"
+    },
+    {
+      "card": "INGEST-01",
+      "title": "Hostile-input guards",
+      "needs": "DATA-02 for fixtures",
+      "status": "pending"
+    },
+    {
+      "card": "INGEST-02",
+      "title": "Constrained mapping agent",
+      "needs": "FND-06, DEPLOY-01",
+      "status": "pending"
+    },
+    {
+      "card": "INGEST-03",
+      "title": "Manual mapping, duplicates and recovery",
+      "needs": "INGEST-02 schema",
+      "status": "pending"
+    },
+    {
+      "card": "INGEST-04",
+      "title": "Sufficiency decisions and question budget",
+      "needs": "INGEST-02, DATA-02",
+      "status": "pending"
+    },
+    {
+      "card": "INGEST-05",
+      "title": "One real sample per finale input family",
+      "needs": "INGEST-01",
+      "status": "pending"
+    },
+    {
+      "card": "DOMAIN-01",
+      "title": "Building extraction and the site model pipeline",
+      "needs": "DATA-04, DATA-06",
+      "status": "pending"
+    },
+    {
+      "card": "DOMAIN-02",
+      "title": "Plan segmentation and vertical delineation",
+      "needs": "DATA-04, FND-04",
+      "status": "pending"
+    },
+    {
+      "card": "DOMAIN-03",
+      "title": "Carpet components",
+      "needs": "DOMAIN-02",
+      "status": "pending"
+    },
+    {
+      "card": "FIND-01",
+      "title": "Qualified operations and topology",
+      "needs": "FND-04",
+      "status": "pending"
+    },
+    {
+      "card": "RIGHTS-01",
+      "title": "Shares, commons and tenure",
+      "needs": "FND-04",
+      "status": "pending"
+    },
+    {
+      "card": "DEPLOY-01",
+      "title": "Finale model gateway subset",
+      "needs": "FND-06",
+      "status": "pending"
+    },
+    {
+      "card": "UI-01",
+      "title": "Tokens, fonts and icons",
+      "needs": "none",
+      "status": "pending"
+    },
+    {
+      "card": "UI-02",
+      "title": "Studio frame",
+      "needs": "UI-01",
+      "status": "pending"
+    },
+    {
+      "card": "UI-03",
+      "title": "Map styling and honest geometry",
+      "needs": "UI-01, FND-04",
+      "status": "pending"
+    },
+    {
+      "card": "UI-04",
+      "title": "Batches, intake and workspace",
+      "needs": "INGEST-02, DOMAIN-02",
+      "status": "pending"
+    },
+    {
+      "card": "UI-08",
+      "title": "No hard-coded demo content or \"fictional\" labels",
+      "needs": "none to start; DATA-09 to finish",
+      "status": "pending"
+    },
+    {
+      "card": "UI-09",
+      "title": "Enhanced view and scene sync",
+      "needs": "UI-03, FND-04, DATA-09; DOMAIN-01 for tier 1",
+      "status": "pending"
+    },
+    {
+      "card": "READY-01",
+      "title": "Scoped readiness",
+      "needs": "FIND-01, RIGHTS-01",
+      "status": "pending"
+    },
+    {
+      "card": "READY-02",
+      "title": "Sourced review policy",
+      "needs": "DATA-02 \u00b7 replaces H90 H2",
+      "status": "pending"
+    },
+    {
+      "card": "HISTORY-02",
+      "title": "Sanctioned versus observed",
+      "needs": "DOMAIN-01, FIND-01",
+      "status": "pending"
+    },
+    {
+      "card": "IMPACT-01",
+      "title": "Screening with honest coverage",
+      "needs": "FIND-01, DATA-02 corridor",
+      "status": "pending"
+    },
+    {
+      "card": "UI-05",
+      "title": "Register, evidence, deviation and underground screens",
+      "needs": "HISTORY-02, IMPACT-01",
+      "status": "pending"
+    },
+    {
+      "card": "PACK-01",
+      "title": "Property Card and local QR",
+      "needs": "FND-02, RIGHTS-01, DOMAIN-03",
+      "status": "pending"
+    },
+    {
+      "card": "FND-07",
+      "title": "Release isolation",
+      "needs": "PACK-01, FND-06",
+      "status": "pending"
+    },
+    {
+      "card": "DEPLOY-02",
+      "title": "Offline rehearsal profile",
+      "needs": "DEPLOY-01",
+      "status": "pending"
+    },
+    {
+      "card": "DEPLOY-03",
+      "title": "Compliance note",
+      "needs": "none",
+      "status": "pending"
+    },
+    {
+      "card": "UI-06",
+      "title": "Captures and rehearsal UI",
+      "needs": "all GF4 cards",
+      "status": "pending"
+    },
+    {
+      "card": "UI-07",
+      "title": "Automated task-completion and timing checks",
+      "needs": "UI-04, UI-05 \u00b7 replaces H90 H4 and the H9 study",
+      "status": "pending"
+    },
+    {
+      "card": "DEPLOY-04",
+      "title": "Finale kit",
+      "needs": "DEPLOY-02 \u00b7 replaces H90 H9 logistics",
+      "status": "pending"
+    },
+    {
+      "card": "LEAD-03",
+      "title": "Rehearsal and gate sign-off",
+      "needs": "every finale card",
+      "status": "pending"
+    },
+    {
+      "card": "LEAD-04",
+      "title": "PPT",
+      "needs": "receipts from each test",
+      "status": "pending"
     }
   ]
 }

@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "fnd-02-lead-review/1",
+  "reviewedAt": "2026-09-25T01:30:35.122828+00:00",
+  "assignmentId": "FND-02",
+  "attempt": 1,
+  "codeCommit": "87568510183d4be50a85fcc8dc1e2e17cc71ad8d",
+  "resultCommit": "716fde1577231f210002a6ad4458bb75e57ee197",
+  "reviewer": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "independence": "same_family"
+  },
+  "verdict": "corrections_required_not_integrated",
+  "checks": [
+    "artifact/source/raw runner and GF-T15 receipt hashes verified",
+    "tested commit is ancestor of result",
+    "actual worker context gpt-6-sol/xhigh confirmed",
+    "four codec/location tests rerun: exit 0",
+    "source review of identity contract, service, migration, snapshot, route and integration cases"
+  ],
+  "findings": [
+    {
+      "id": "FND02-R1",
+      "priority": 1,
+      "file": "apps/web/lib/server/usp/project-identity.ts",
+      "lines": "177-192",
+      "finding": "finish returns a parallel unvalidated receipt: before/after contain recordId rather than TargetPin ref; proposalId is missing; details is an undeclared extra. It fails the existing strict UspCommitReceiptSchema. after is guessed from pre-write revision rather than querying persisted pins.",
+      "required": "Use a registered canonical receipt contract and actual post-write pins; preserve compatibility. Assert every identity HTTP result and stored/replayed receipt parses the shared contract."
+    },
+    {
+      "id": "FND02-R2",
+      "priority": 1,
+      "file": "apps/web/lib/server/usp/project-identity.ts",
+      "lines": "315-329",
+      "finding": "Resolver validates an old scope but reads current status/location/revision and current lineage from live tables. An old snapshot can report a later code or correction, contrary to exact snapshot reads. Successor IDs are not filtered through authorized snapshot membership.",
+      "required": "Read frozen identity and relevant lineage from exact hash-checked captured bodies, or reject unavailable exact state explicitly. Preserve selection in resulting snapshots. Test pre-allocation, pre-correction, pre-retirement and target-selection snapshots after later mutations."
+    },
+    {
+      "id": "FND02-R3",
+      "priority": 1,
+      "file": "apps/web/lib/server/usp/project-identity.ts",
+      "lines": "203-208,244-248",
+      "finding": "An idempotent replay returns prior receipt before scopedManifestTx checks current accessViewId/policyVersion. The officer role check does not validate current snapshot access context.",
+      "required": "Reauthorize stored-receipt access against current server context before returning it without requiring old data to remain current. Test changed access view/policy and removed reviewer capability for replay and fresh commands."
+    },
+    {
+      "id": "FND02-R4",
+      "priority": 1,
+      "file": "apps/web/lib/server/usp/project-identity.ts",
+      "lines": "255-262,285-297,325-326",
+      "finding": "Boundary adjustment checks assigned status only for the predecessor; the recipient can be unassigned, retired or cancelled. Resolver treats boundary counterpart edges as successor identities even though both identities continue.",
+      "required": "Require both boundary participants assigned, reject all invalid participant statuses with no partial writes, and distinguish boundary events from split/merge successor identity links. Keep temporal boundary events from imposing an unintended prohibition on later reverse transfers."
+    },
+    {
+      "id": "FND02-R5",
+      "priority": 2,
+      "file": "apps/web/lib/server/usp/project-identity.ts",
+      "lines": "273-279",
+      "finding": "Split uses one review.location for every successor; distinct successor spaces necessarily receive the same reviewed location and space sequence. There is no way to supply per-successor evidence-backed locations.",
+      "required": "Use exact per-record location inputs/pins for successor identities; reject missing/mismatched target locations. Test distinct split successor locators and merge location without changing original codes."
+    },
+    {
+      "id": "FND02-R6",
+      "priority": 2,
+      "file": "packages/contracts/src/usp/project-identity.ts",
+      "lines": "34-39",
+      "finding": "Parcel assertions retain only trimmed ULPIN, role, sourceId and reviewed boolean. H26 A requires literal value, issuer/source/revision, review state and validity, preserving unknown/absent distinctions. Anchor-state consistency also permits reviewed_complete with an unreviewed member.",
+      "required": "Retain explicit source/revision/locator, issuer and validity unknowns and review state; validate evidence pins and compatible aggregate anchor state. Never invent metadata. Test literal preservation, missing issuer/validity, stale source, mixed review states and contradictory complete status."
+    }
+  ]
+}

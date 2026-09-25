@@ -7,7 +7,7 @@
 requirements in [release-plan.json](../usp-agent-handoffs/release-plan.json).
 The historical T-number backlog remains CI/evidence history.
 
-**Next gate: GF0.** Reuse the recorded [D0/PACK0 and real D1 milestone](../evidence/usp/continuation-2026-09-23/README.md), inventory the current implementation and pin the H28 matched-data/independent-test contract. Then execute GF1–GF5 in dependency order. All new finale gates remain pending; this is a plan alignment, not a fresh application test pass. Concurrent learning, public portal, MCP, enrichment, renderer experiments and scale remain `full_product` work.
+**Next gate: GF0.** Reuse the recorded [D0/PACK0 and real D1 milestone](../evidence/usp/continuation-2026-09-23/README.md), inventory the current implementation and pin the H28 matched-data/independent-test contract. Then execute GF1–GF5 in dependency order. All new finale gates remain pending; this is a plan alignment, not a fresh application test pass. Concurrent learning, public portal, MCP, generative enrichment, renderer experiments and scale remain `full_product` work. The real reference area, the deterministic Enhanced view and incomplete-data handling are finale work in [H30](../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md).
 
 Consolidated application baseline: `staging@45d033baae7ec4e5a572d82459b0062c70a12c95`. Fetch/recheck the live head before implementation. Main remains unchanged. Read [H26](../usp-agent-handoffs/26-identifiers-and-standard-exchange.md), [H27](../usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md), [H28](../usp-agent-handoffs/28-data-acquisition-and-finale-tests.md), shared H01 and UI H99. Do not seed or empty the product to prepare data.
 
