@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T22:21:13Z",
+  "updatedAt": "2026-09-25T22:25:04Z",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -106,11 +106,12 @@
       "registeredWorktrees": 1,
       "removedWorktrees": 20,
       "backupRoot": "/Users/vinayak/.codex/backups/ulpin-consolidation-20260926",
-      "previewUrl": "http://127.0.0.1:3187/studio/work",
-      "previewAppPid": 50560,
-      "previewServices": "existing isolated PostgreSQL, MinIO and Redis containers and volumes retained",
+      "previewUrl": null,
+      "previewAppPid": null,
+      "previewServices": "nonce-owned PostgreSQL, MinIO and Redis containers stopped; volumes and data retained",
       "publication": "local staging only; no push, main change or deployment",
-      "receipt": "docs/evidence/usp/orchestration/consolidation-2026-09-26.md"
+      "receipt": "docs/evidence/usp/orchestration/consolidation-2026-09-26.md",
+      "previewStatus": "stopped by user after verification"
     }
   },
   "scope": {
@@ -3140,7 +3141,7 @@
     }
   ],
   "nextSteps": [
-    "Keep the single original staging checkout and coordinate the pinned preview on port 3187.",
+    "Keep the single original staging checkout; start the loopback preview only on demand.",
     "Complete independent manual UI-08 acceptance on the corrected provenance pin and retain official-source/runtime qualifications honestly.",
     "Continue the next finale gate from release-plan.json without synthetic fixtures or public activation."
   ],
@@ -3461,6 +3462,10 @@
       "callbackId": "consolidation-complete",
       "mergeHeadBeforeReceipt": "4e7588de69e583a8063ea029e42d9637502e5ec2",
       "result": "One original staging checkout; 20 extra worktrees removed after backup; guarded preview moved app-only to original checkout."
+    },
+    {
+      "callbackId": "preview-stopped",
+      "result": "User released standing preview; verified app PID 51364 and three preview-owned containers stopped; retained volumes and data."
     }
   ],
   "observations": [

@@ -55,13 +55,13 @@ Do not add mirrored implementation tests, broad speculative matrices, screenshot
 
 Use real unchanged official sources, data.gov.in first or the responsible issuer. Never invent operational records, dummy PII, geometry, documents/images or adverse source fixtures. Existing historic corpora are retained regression only. Missing official coverage stays unqualified; do not manufacture it or halt unrelated implementation.
 
-## Persistent local preview
+## On-demand local preview
 
-Reserve `http://127.0.0.1:3187` for the user-visible running preview; temporary verification must use other ports. Verify the port is free before first startup and never kill an unrelated listener. Keep this loopback-only server running after handoff until the user requests it stopped or maintenance requires a coordinated restart. No scheduler or polling automation is needed.
+The user released the standing preview on 26 September 2026. Start the loopback preview at `http://127.0.0.1:3187` only when a task needs it; temporary verification can use other ports. Verify the port is free before startup and never kill an unrelated listener. Stop owned app processes after the task unless the user asks to keep them running. No scheduler or polling automation is needed.
 
 The coding worker serves the pinned preview from the sole original checkout with owned isolated services and the existing guard. Coordinate app-only restarts at safe checkpoints when changing the served revision. Preserve original/linked data and keep providers disabled. Record the served commit, URL, owned process/service identities and stop command without secrets. A candidate preview must be labelled as awaiting review; a running server is not release acceptance.
 
-Reuse this URL for manual testing and user status checks. Every manual handoff and relevant shipped-work update names the already-running URL and served revision. Refresh the same preview only at a safe checkpoint coordinated with the active tester; do not silently test one revision while changing its files. Do not tear down the persistent preview as part of unrelated test cleanup. User-entered preview changes are not permission to overwrite originals or discard the preview's state.
+When a preview is running, record its URL and served revision for manual testing and status checks. Refresh it only at a safe checkpoint coordinated with the active tester; do not silently test one revision while changing its files. Preserve its isolated data volumes during app or container shutdown. User-entered preview changes are not permission to overwrite originals or discard data.
 
 ## Compact assignment and return
 
