@@ -92,6 +92,7 @@ test('UI-03 area map reads one unchanged saved snapshot', async ({ page }) => {
     await page.getByRole('button', { name: '3D', exact: true }).click();
     try {
       await page.locator('[data-scene-ready="true"]').first().waitFor({ timeout: 10000 });
+      await expect(page.locator('[data-underground-cutaway]')).toHaveAttribute('data-underground-cutaway', 'false');
       const file = join(directory, 'selected-3d-1440.png');
       await page.screenshot({ path: file, animations: 'disabled' });
       captures.push({ screen: 'selected-3d', route: `/studio/areas/${area}?feature=${building}`, width: 1440, height: 900, ready: 'scene-ready', file });
