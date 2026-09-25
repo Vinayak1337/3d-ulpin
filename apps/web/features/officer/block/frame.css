@@ -122,14 +122,6 @@
   .ulpin-app.studio-operations .ui-on-demand-panel { inset: 0; width: 100%; border-radius: 0; border: 0; box-shadow: none; }
   .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { inset: 42px 0 0; width: 100%; max-height: none; }
   .ulpin-app.studio-operations .ui-findings-tray { height: 172px; max-height: 172px; }
-  .ulpin-app.studio-operations .ui-map-stage .spatial-loading[role="alert"] {
-    z-index: 10;
-    top: 118px;
-    left: 10px;
-    right: 10px;
-    transform: none;
-    max-width: none;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .ulpin-app.studio-operations .ui-on-demand-panel,
