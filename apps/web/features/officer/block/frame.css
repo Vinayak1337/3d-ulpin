@@ -40,17 +40,6 @@
 .ulpin-app.studio-operations .ui-scope-selection { color: var(--ui-ink-soft); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
 .ulpin-app.studio-operations .ui-context-actions { gap: 4px; flex: none; }
 .ulpin-app.studio-operations .ui-context-actions .ui-button { min-height: 30px; padding: 4px 7px; font-size: 11px; }
-.ulpin-app.studio-operations .ui-map-stage { min-height: 0; }
-.ulpin-app.studio-operations .ui-map-toolbar {
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  width: auto;
-  background: transparent;
-  box-shadow: none;
-  gap: 5px;
-}
-.ulpin-app.studio-operations .ui-map-toolbar > .ui-button { background: var(--ui-surface); color: var(--ui-ink); border: 1px solid var(--ui-muted); }
 .ulpin-app.studio-operations .ui-map-mode { background: var(--ui-surface); border-color: var(--ui-line-control); }
 .ulpin-app.studio-operations .ui-panel-switches { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--ui-line-control); border-radius: 6px; background: var(--ui-surface); box-shadow: 0 2px 8px #14251a14; }
 .ulpin-app.studio-operations .ui-panel-switches button {
@@ -105,7 +94,7 @@
   .ulpin-app.studio-operations .ui-panel-switches button { padding: 5px 7px; }
   .ulpin-app.studio-operations .ui-block-grid.ui-focused-map { grid-template-columns: minmax(0, 1fr); position: relative; }
   .ulpin-app.studio-operations .ui-block-grid.ui-focused-map:has(.ui-block-inspector[data-evidence-open="true"]) { grid-template-columns: minmax(0, 1fr); }
-  .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { position: absolute; z-index: 30; right: 0; top: 0; bottom: 0; width: min(360px, 90vw); box-shadow: -8px 0 28px #10291e26; }
+  .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { position: absolute; z-index: 30; left: auto; right: 0; top: 0; bottom: 0; width: min(360px, 90vw); box-shadow: var(--ui-shadow-floating); }
   .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector[data-evidence-open="true"] { width: min(400px, 90vw); }
 }
 @media (max-width: 620px) {
@@ -118,24 +107,13 @@
   .ulpin-app.studio-operations .ui-context-actions { width: auto; padding: 0; }
   .ulpin-app.studio-operations .ui-context-actions .ui-button { width: 30px; min-width: 30px; height: 30px; min-height: 30px; padding: 5px; font-size: 0; }
   .ulpin-app.studio-operations .ui-context-actions .ui-button span { display: none; }
-  .ulpin-app.studio-operations .ui-map-toolbar { top: 8px; left: 6px; right: 6px; gap: 3px; }
   .ulpin-app.studio-operations .ui-map-mode { padding: 2px; }
   .ulpin-app.studio-operations .ui-map-mode button { min-height: 34px; padding: 5px; font-size: 11px; }
   .ulpin-app.studio-operations .ui-panel-switches { padding: 2px; }
   .ulpin-app.studio-operations .ui-panel-switches button { min-height: 34px; padding: 4px 5px; }
-  .ulpin-app.studio-operations .ui-map-toolbar > .ui-button { min-height: 38px; padding: 5px; }
   .ulpin-app.studio-operations .ui-on-demand-panel { inset: 0; width: 100%; border-radius: 0; border: 0; box-shadow: none; }
   .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { inset: 42px 0 0; width: 100%; max-height: none; }
   .ulpin-app.studio-operations .ui-findings-tray { height: 172px; max-height: 172px; }
-  .ulpin-app.studio-operations .ui-map-stage .spatial-loading[role="alert"] {
-    position: absolute;
-    z-index: 10;
-    top: 118px;
-    left: 10px;
-    right: 10px;
-    transform: none;
-    max-width: none;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .ulpin-app.studio-operations .ui-on-demand-panel,
@@ -151,8 +129,7 @@
 .ulpin-app.studio-operations .ui-panel-list small { font-size: 12px; }
 .ulpin-app.studio-operations .ui-context-actions .ui-button { min-width: 44px; min-height: 44px; padding: 8px; font-size: 12px; border-radius: 8px; }
 .ulpin-app.studio-operations .ui-map-mode button,
-.ulpin-app.studio-operations .ui-panel-switches button,
-.ulpin-app.studio-operations .ui-map-toolbar > .ui-button { min-width: 44px; min-height: 44px; font-size: 12px; border-radius: 8px; }
+.ulpin-app.studio-operations .ui-panel-switches button { min-width: 44px; min-height: 44px; font-size: 12px; border-radius: 8px; }
 .ulpin-app.studio-operations .ui-panel-switches { border-radius: 12px; }
 .ulpin-app.studio-operations .ui-on-demand-panel { top: 66px; border-radius: 12px; }
 .ulpin-app.studio-operations .ui-on-demand-panel > header { min-height: 52px; }
@@ -164,13 +141,9 @@
 .ulpin-app.studio-operations .saved-layer-opacity label { color: var(--ui-ink-soft); font-size: 12px; }
 .ulpin-app.studio-operations .ui-source-details summary { display: flex; align-items: center; min-height: 44px; color: var(--ui-ink-soft); font-size: 12px; }
 .ulpin-app.studio-operations .ui-findings-tray nav button { min-height: 44px; font-size: 12px; border-radius: 8px; }
-.ulpin-app.studio-operations .ui-map-world { top: 66px; font-size: 12px; border-radius: 12px; }
-.ulpin-app.studio-operations .ui-map-world select { min-height: 44px; font-size: 12px; border-radius: 8px; }
 .ulpin-app.studio-operations .ui-map-compass button,
 .ulpin-app.studio-operations .ui-map-zoom button { min-width: 44px; min-height: 44px; }
-.ulpin-app.studio-operations .ui-map-status,
-.ulpin-app.studio-operations .ui-map-legend,
-.ulpin-app.studio-operations .ui-active-finding { font-size: 12px; }
+.ulpin-app.studio-operations .ui-map-status { font-size: 12px; }
 @media (max-width: 620px) {
   .ulpin-app.studio-operations .ui-block-page { min-height: 0; }
   .ulpin-app.studio-operations .ui-contextbar { height: 104px; min-height: 104px; flex-wrap: wrap; align-content: center; gap: 0; padding: 4px 8px; }
@@ -182,20 +155,15 @@
   .ulpin-app.studio-operations .ui-context-actions { width: 100%; justify-content: flex-end; gap: 6px; padding: 0; }
   .ulpin-app.studio-operations .ui-context-actions .ui-button { width: auto; min-width: 44px; height: 44px; min-height: 44px; font-size: 12px; padding: 8px; }
   .ulpin-app.studio-operations .ui-context-actions .ui-button span { display: inline; }
-  .ulpin-app.studio-operations .ui-map-toolbar { top: 6px; flex-wrap: wrap; gap: 4px; }
   .ulpin-app.studio-operations .ui-map-mode { padding: 2px; }
   .ulpin-app.studio-operations .ui-map-mode button,
-  .ulpin-app.studio-operations .ui-panel-switches button,
-  .ulpin-app.studio-operations .ui-map-toolbar > .ui-button { min-height: 44px; min-width: 44px; font-size: 12px; }
+  .ulpin-app.studio-operations .ui-panel-switches button { min-height: 44px; min-width: 44px; font-size: 12px; }
   .ulpin-app.studio-operations .ui-toolbar-spacer { display: none; }
   .ulpin-app.studio-operations .ui-panel-switches { order: 5; width: 100%; justify-content: space-around; }
   .ulpin-app.studio-operations .ui-panel-switches button { flex: 1; justify-content: center; }
-  .ulpin-app.studio-operations .ui-map-toolbar > .ui-button:nth-last-child(2) { margin-left: auto; }
-  .ulpin-app.studio-operations .ui-map-world { top: 112px; left: 6px; }
   .ulpin-app.studio-operations .ui-map-compass { top: 112px; right: 6px; }
   .ulpin-app.studio-operations .ui-on-demand-panel { inset: 0; width: 100%; border-radius: 16px 16px 0 0; z-index: 41; }
   .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { inset: 104px 0 0; width: 100%; max-height: none; border-radius: 16px 16px 0 0; }
   .ulpin-app.studio-operations .ui-block-inspector[data-sheet-hidden="true"],
   .ulpin-app.studio-operations .ui-findings-tray[data-sheet-hidden="true"] { display: none; }
-  .ulpin-app.studio-operations .ui-map-stage .spatial-loading[role="alert"] { top: 168px; }
 }

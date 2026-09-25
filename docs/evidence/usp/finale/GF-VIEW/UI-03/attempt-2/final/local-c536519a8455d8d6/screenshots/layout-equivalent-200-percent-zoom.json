@@ -1,0 +1,32 @@
+{
+  ".ui-block-grid": {
+    "width": 720,
+    "left": 0,
+    "right": 720,
+    "columns": "720px"
+  },
+  ".ui-map-column": {
+    "width": 720,
+    "left": 0,
+    "right": 720,
+    "columns": "none"
+  },
+  ".area-map-surface": {
+    "width": 720,
+    "left": 0,
+    "right": 720,
+    "columns": "8px 526px 160px 8px"
+  },
+  ".area-map-toolbar": {
+    "width": 692,
+    "left": 14,
+    "right": 706,
+    "columns": "none"
+  },
+  ".area-map-canvas": {
+    "width": 720,
+    "left": 0,
+    "right": 720,
+    "columns": "none"
+  }
+}

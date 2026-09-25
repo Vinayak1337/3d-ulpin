@@ -6,6 +6,8 @@ import { useBlock } from "./useBlock";
 import { BlockLeftRail, BlockInspector } from "./BlockRails";
 import MapPlan from "./MapPlan";
 import FindingsTray from "./FindingsTray";
+import { LevelRail, MapColourControl, MapLegend } from "./MapPresentation";
+import { rightsClass } from "./mapStyleModel";
 import DataTools from "./DataTools";
 import {
   Badge,
@@ -20,6 +22,7 @@ import { routes } from "../shared/routes";
 import "./block.css";
 import "./data-tools.css";
 import "./frame.css";
+import "./area-map.css";
 export default function BlockPage({ areaId }: { areaId: string }) {
   const block = useBlock(areaId);
   const [tools, setTools] = useState<"import" | "export" | null>(null),
@@ -76,6 +79,11 @@ export default function BlockPage({ areaId }: { areaId: string }) {
   }, [panel, compact, inspectorOpen, block.selected]);
   const check = useMutation();
   const context = block.context.data;
+  useEffect(() => {
+    if (block.preferences.underground) block.setPreferences({ underground: false });
+    // No dossier field currently ties a saved grade to this scene's display frame.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [areaId, block.world, block.selectedId, block.preferences.underground]);
   const runCheck = () => {
     void check.run(async () => {
       if (!context) return;
@@ -121,7 +129,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
             <div className="ui-block-title">
               <Link href={routes.block()} aria-label="Back to all areas"><Icon name="back" size={17} /></Link>
               <h1 title={context.area.name}>{context.area.name}</h1>
-              <span className="ui-scope-classification">{context.area.dataKind === "real" ? "Real source" : context.area.dataKind === "demonstration" ? "Test fixture" : context.area.dataKind === "mixed" ? "Mixed sources" : context.area.dataKind === "empty" ? "No source" : "Unclassified"}</span>
+              <span className="ui-scope-classification">{context.area.dataKind === "real" ? "Recorded source" : context.area.dataKind === "demonstration" ? "Test fixture" : context.area.dataKind === "mixed" ? "Mixed sources" : context.area.dataKind === "empty" ? "No source" : "Unclassified"}</span>
               <span className="ui-scope-revision">Revision {context.area.revision}</span>
               {block.selected && <span className="ui-scope-selection" title={block.selectedRecord ? `${block.selected.name} / ${block.selectedRecord.name}` : block.selected.name}>/ {block.selected.name}{block.selectedRecord ? ` / ${block.selectedRecord.name}` : ""}</span>}
             </div>
@@ -131,8 +139,8 @@ export default function BlockPage({ areaId }: { areaId: string }) {
               <Button icon="download" aria-label="Export" onClick={() => setTools("export")}><span>Export</span></Button>
             </div>
           </div>
-          <div className="ui-map-stage">
-            <div className="ui-map-toolbar" inert={sheetOpen} aria-hidden={sheetOpen}>
+          <div className="area-map-surface" aria-label="Area map canvas">
+            <div className="area-map-toolbar" role="group" aria-label="Map controls" tabIndex={0} inert={sheetOpen} aria-hidden={sheetOpen}>
               <div className="ui-map-mode">
                 <button
                   aria-pressed={block.preferences.mode === "3d"}
@@ -156,6 +164,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                   </button>
                 ))}
               </div>
+              <MapColourControl block={block}/>
               <span className="ui-toolbar-spacer" />
               <Button icon="expand" onClick={() => block.navigate("fit")}>
                 Fit block
@@ -167,6 +176,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                 aria-label="Focus selected property"
               />
             </div>
+            <div className="area-map-canvas" inert={sheetOpen} aria-hidden={sheetOpen}>
             {!block.features.length ? (
               <div inert={sheetOpen} aria-hidden={sheetOpen}>
                 <EmptyState
@@ -215,15 +225,19 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                     issueGeometry={block.issueGeometry}
                     highlightedIds={block.highlightedIds}
                     featureLabels={block.featureLabels}
-                    details={block.recordId?block.details.filter(d=>d.id===block.recordId||block.dossier.data?.records.find(r=>r.id===d.id)?.links.some(l=>l.type==='floor'&&l.targetId===block.recordId)):block.preferences.underground?block.details:[]}
+                    details={block.recordId?block.details.filter(d=>d.id===block.recordId||block.dossier.data?.records.find(r=>r.id===d.id)?.links.some(l=>l.type==='floor'&&l.targetId===block.recordId)):[]}
                     selectedDetailId={block.recordId}
                     onSelectDetail={block.selectRecord}
                     opacityByKind={block.preferences.opacity}
                     labels={block.preferences.labels}
+                    colourBy={block.preferences.colourBy}
+                    findingFeatureIds={context.latestCheck?.stale ? [] : context.latestCheck?.findings.flatMap(finding => finding.featureIds) ?? []}
+                    detailRights={Object.fromEntries(block.dossier.data?.records.filter(record => record.kind === "space").map(record => [record.id, rightsClass(record)]) ?? [])}
                   />
                 </div>
               </>
             )}
+            </div>
             {panel && <aside className="ui-on-demand-panel" aria-label={`${panel.charAt(0).toUpperCase() + panel.slice(1)} panel`}>
               <header><h2>{panel.charAt(0).toUpperCase() + panel.slice(1)}</h2><Button variant="ghost" icon="close" aria-label={`Close ${panel} panel`} onClick={closePanel} /></header>
               {panel === "layers" && <BlockLeftRail block={block} mode="layers" />}
@@ -243,8 +257,11 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                 <Button icon="eye" aria-pressed={block.showConflicts} disabled={!block.conflictCount} onClick={block.toggleConflicts}>{block.showConflicts ? "Hide conflicts" : "Show conflicts"}</Button>
               </div>}
             </aside>}
-            <div className="ui-map-world" inert={sheetOpen} aria-hidden={sheetOpen}><label>Source world <select aria-label="Source world" value={block.world} onChange={e=>block.setWorld(e.target.value)}>{block.worlds.map(w=><option key={w} value={w}>{w==='synthetic'?'Test fixture':w==='observed'?'Observed sources':w==='planned'?'Planned sources':'Hypothetical sources'}</option>)}</select></label>{block.selected?.kind==='building'&&block.details.length>0&&<button className="ui-button" aria-pressed={explode>0} onClick={()=>setExplode(v=>v?0:1.8)}>{explode?'Stack floors':'Separate floors'}</button>}</div>
-            <div className="ui-map-compass" inert={sheetOpen} aria-hidden={sheetOpen}>
+            <div className="area-map-world" inert={sheetOpen} aria-hidden={sheetOpen}><label>Source world <select aria-label="Source world" value={block.world} onChange={e=>block.setWorld(e.target.value)}>{block.worlds.map(w=><option key={w} value={w}>{w==='synthetic'?'Synthetic · test fixture':w==='observed'?'Observed':w==='planned'?'Planned':'Hypothetical'}</option>)}</select></label>{block.selected?.kind==='building'&&block.details.length>0&&<button className="ui-button" aria-pressed={explode>0} onClick={()=>setExplode(v=>v?0:1.8)}>{explode?'Stack floors':'Separate floors'}</button>}{explode > 0 && <span role="status">Display only. Measurements unchanged.</span>}</div>
+            <div className="area-map-level" inert={sheetOpen} aria-hidden={sheetOpen}><LevelRail block={block}/></div>
+            <div className="area-map-legend" inert={sheetOpen} aria-hidden={sheetOpen}><MapLegend block={block}/></div>
+            <div className="area-map-nav" inert={sheetOpen} aria-hidden={sheetOpen}>
+            <div className="ui-map-compass">
               <Button
                 aria-label="Orient north"
                 onClick={() => block.navigate("north")}
@@ -270,21 +287,8 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                 onClick={() => block.navigate("return")}
               />
             </div>
-            <div className="ui-map-bottom" inert={sheetOpen} aria-hidden={sheetOpen}>
-              <div className="ui-map-legend">
-                <span>
-                  <i style={{ background: "#b9cbbb" }} />
-                  Buildings
-                </span>
-                <span>
-                  <i style={{ background: "#cfbb88" }} />
-                  Parcels
-                </span>
-                <span>
-                  <i style={{ background: "#6596af" }} />
-                  Utilities
-                </span>
-              </div>
+            </div>
+            <div className="area-map-actions" inert={sheetOpen} aria-hidden={sheetOpen}>
               {!inspectorOpen && block.selected && (
                 <button className="ui-button" ref={inspectorButton} onClick={() => setInspectorOpen(true)}><Icon name="info" />Inspector</button>
               )}
@@ -309,7 +313,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
               </button>
             </div>
             {block.finding && (
-              <div className="ui-active-finding" inert={sheetOpen} aria-hidden={sheetOpen}>
+              <div className="area-map-finding" inert={sheetOpen} aria-hidden={sheetOpen}>
                 <Badge tone="danger">Finding selected</Badge>
                 <span>
                   {block.finding.geometry
@@ -326,7 +330,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
             )}
           </div>
           {block.preferences.findingsOpen && <FindingsTray block={block} onClose={closeChecks} obscured={sheetOpen} />}
-          <footer className="ui-map-status" inert={sheetOpen} aria-hidden={sheetOpen}>
+          <footer className="ui-map-status area-map-readout" role="group" aria-label="Map readout" inert={sheetOpen} aria-hidden={sheetOpen}>
             {context.features.some((feature) =>
               String(feature.properties.source_provider || "").includes("OpenStreetMap"),
             ) && (
