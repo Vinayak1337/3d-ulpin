@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T17:30:51.851946+00:00",
+  "updatedAt": "2026-09-25T17:32:08.413427+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "1a6baf0d832117932c291fa6bfc08a536d8bd26e",
+    "acceptedStagingBase": "80e1e9cf46a49eefb1d4024efe14f82c177ec85d",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -198,15 +198,15 @@
       "title": "3D ULPIN worker \u2014 bootstrap and contracts",
       "requestedAgent": {
         "product": "Codex",
-        "model": "gpt-6-astra",
-        "effort": "high"
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
       },
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "ready_for_next_assignment",
+      "status": "assigned_UI-08",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1390,6 +1390,47 @@
       "testedCommit": "051584595fabbd1a42480233c7c2f7ea05984ca6",
       "acceptedAt": "2026-09-25T17:30:51.851946+00:00",
       "reviewRef": "docs/evidence/usp/orchestration/FND-04-attempt-2-review.json"
+    },
+    {
+      "assignmentId": "UI-08",
+      "attempt": 1,
+      "callbackId": "ulpin-UI-08-attempt-1",
+      "objective": "Remove hard-coded sample content and banned provenance labels from reachable finale screens/documents; show record-derived provenance and honest unavailable official reference state",
+      "baseCommit": "80e1e9cf46a49eefb1d4024efe14f82c177ec85d",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-08-record-backed-content",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "apps/web/features/officer/ and apps/web/features/studio/product/ record-backed copy/provenance and removal of reachable sample dependencies",
+        "apps/web/app/studio/ and reachable spatial components narrow copy/data binding changes; retain shared renderer and legacy URLs",
+        "apps/web/lib/server/block-export.ts and officer-investigations.ts generated-document copy/provenance only; preserve FND-04 guards",
+        "apps/web/lib/server/{area-resolver,spatial-datasets,studio-sources}.ts narrow removal of text-based record matching/sample fallbacks only",
+        "Shared record-provenance formatter under apps/web/lib/ and focused UI regression tests/captures",
+        "docs/evidence/usp/finale/GF-VIEW/UI-08/ new evidence"
+      ],
+      "exclusions": [
+        "Protected datasets, original bytes, seed/import/reset operations or synthesized data",
+        "New renderer, backend authority, schema/migrations, qualification/security guard changes",
+        "Ledger/plans/AGENTS/user-staged skills, credentials, remote pushes or deployment"
+      ],
+      "acceptance": [
+        "H29 UI-08/H99Z6 and current-delivery-policy; all displayed values from actual records, missing states honest",
+        "No visible fictional/demonstration-data/specimen copy in reachable finale routes/documents; fixed badges only from explicit record provenance",
+        "Retained samples and history protected; no code matching records by names containing FICTIONAL",
+        "DATA-09 not qualified for scene use, so do not auto-place/import it; report reference-area completion gap explicitly",
+        "Desktop/light-only preserve future seams, single shared runtime and legacy URL behavior",
+        "Repository ui-design-check report required; use staged skill read-only from original checkout if absent on branch",
+        "Relevant tests/typecheck/build guards plus fresh actual S1/S4/S5/S12 route captures where implemented; unavailable routes/data documented, no mock screenshots"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -2137,8 +2178,8 @@
     }
   ],
   "nextSteps": [
-    "Review FND-04 stale-qualification projection and finding-participant corrections.",
-    "Do not integrate FND-04 until correctness findings are resolved; source accuracy and independent milestones remain unqualified."
+    "Review UI-08 record-backed content, provenance and reachable-route cleanup.",
+    "Keep DATA-09 real reference scene, positive qualification and independent runtime milestones explicitly pending."
   ],
   "processedCallbacks": [
     {
@@ -2527,7 +2568,7 @@
       "card": "UI-08",
       "title": "No hard-coded demo content or \"fictional\" labels",
       "needs": "none to start; DATA-09 to finish",
-      "status": "pending"
+      "status": "dispatched_record_content_cleanup"
     },
     {
       "card": "UI-09",
