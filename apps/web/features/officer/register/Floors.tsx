@@ -101,9 +101,7 @@ export default function Floors({
             <Panel title="Floors & spaces">
               {hasParties && (
                 <p className={styles.note}>
-                  {spaces.every((record) => record.synthetic)
-                    ? "Fictional resident / shared-use entries. These are not actual occupants, owners or registered deeds."
-                    : "Source-recorded party claims. Geometry alone does not establish occupancy or ownership."}
+                  Saved party claims. Geometry alone does not establish occupancy or ownership.
                 </p>
               )}
               <div className={styles.filters}>
@@ -212,11 +210,11 @@ export default function Floors({
                   <p className={styles.note}>Level reference: {dossier.detailedScene.find(item => item.record.id === selected.id)?.verticalReference || dossier.area.reference?.verticalReference || "Not supplied"}</p>
                   {selected.rights.length > 0 && (
                     <section aria-label="Recorded parties and source evidence">
-                      <h3>{selected.synthetic ? "Fictional residents / shared use" : "Recorded parties / claims"}</h3>
+                      <h3>Recorded parties / claims</h3>
                       {selected.rights.map((right, index) => (
                         <div key={`${right.party}:${index}`}>
                           <strong>{right.party}</strong>
-                          <p className={styles.note}>{words(right.type)} · {selected.synthetic ? "Fictional demonstration, not an actual resident or ownership right." : "A recorded claim, not an ownership determination."}</p>
+                          <p className={styles.note}>{words(right.type)} · A recorded claim, not an ownership determination.</p>
                           <p className={styles.note}>{right.evidence.locator}</p>
                           {dossier.sources.some((source) => source.id === right.evidence.sourceId) && (
                             <Button variant="ghost" icon="document" onClick={() => onEvidence(right.evidence.sourceId)}>

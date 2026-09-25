@@ -3,6 +3,8 @@ import Link from 'next/link';
 import {useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,Layers,RefreshCw,ChevronLeft,ChevronRight} from 'lucide-react';
 import type {DatasetMlOverview,DatasetMlRun} from '@/lib/dataset-ml';
+import type {SavedSpatialDataset} from '@/lib/spatial-datasets';
+import {classificationLabel} from '@/lib/ui/provenance';
 import {useResource} from '@/features/officer/shared/hooks';
 import {useSpatialServices} from '../data/Provider';
 import Review from './Review';
@@ -15,6 +17,7 @@ export function runLabel(run:DatasetMlRun){return run.status==='succeeded'?run.r
 export default function DatasetProcessing({id,initialRun='',initialStage='review'}:{id:string;initialRun?:string;initialStage?:'sources'|'review'|'explain'}){
  const {resources}=useSpatialServices();
  const path=`/spatial-datasets/${id}/ml`,resource=useResource<DatasetMlOverview>(path),data=resource.data;
+ const savedDataset=useResource<SavedSpatialDataset>(`/spatial-datasets/${id}`);
  const [stage,setStage]=useState<'sources'|'review'|'explain'>(initialStage),[active,setActive]=useState(initialRun),[choices,setChoices]=useState<Record<string,ExtractionChoice>>({}),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  useEffect(()=>{const q=new URLSearchParams({view:stage});if(active)q.set('run',active);window.history.replaceState(null,'',`/studio/processing/${id}?${q}`);},[id,stage,active]);
  const lock=useRef(false),file=useRef<HTMLInputElement>(null);
@@ -31,7 +34,7 @@ export default function DatasetProcessing({id,initialRun='',initialStage='review
  if(data&&stage==='explain')return <Walkthrough data={data} run={run} onReview={()=>setStage('review')}/>;
  return <main className={styles.page}>
   <header className={styles.header}><Link href={`/studio/showcase?saved=${id}`}><ArrowLeft size={16}/>Back to map</Link><button onClick={()=>setStage('explain')}>Present <ArrowRight size={16}/></button></header>
-  <div className={styles.heading}><div><h1>ML extraction</h1><p>{data?.name.split(' · ')[0]??'Loading…'}</p></div>{data?.name.toLowerCase().includes('fictional')&&<span className={styles.badge}>Fictional dataset</span>}</div>
+  <div className={styles.heading}><div><h1>ML extraction</h1><p>{data?.name??'Loading…'}</p></div><span className={styles.badge}>Classification: {classificationLabel(savedDataset.data?.classification)}</span></div>
   <nav className={styles.tabs} aria-label="ML processing">{(['sources','review'] as const).map(s=><button key={s} aria-current={stage===s?'page':undefined} onClick={()=>setStage(s)}>{s==='sources'?'Sources':'Results'}{data&&<span>{s==='sources'?data.sources.length:data.runs.length}</span>}</button>)}</nav>
   {(error||resource.error)&&<p role="alert" className={styles.error}>{error||resource.error} <button onClick={()=>resource.reload()}>Reload</button></p>}
   {notice&&<p role="status" className={styles.notice}>{notice}</p>}

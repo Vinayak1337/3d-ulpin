@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { featureClassification } from '@/lib/ui/provenance';
 import { useEffect, useRef, useState } from "react";
 import SavedSceneViewport from "../../studio/product/SavedSceneViewport";
 import { useBlock } from "./useBlock";
@@ -121,7 +122,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
             <div className="ui-block-title">
               <Link href={routes.block()} aria-label="Back to all areas"><Icon name="back" size={17} /></Link>
               <h1 title={context.area.name}>{context.area.name}</h1>
-              <span className="ui-scope-classification">{context.area.dataKind === "real" ? "Real source" : context.area.dataKind === "demonstration" ? "Test fixture" : context.area.dataKind === "mixed" ? "Mixed sources" : context.area.dataKind === "empty" ? "No source" : "Unclassified"}</span>
+              <span className="ui-scope-classification">Classification: {featureClassification(context.features)}</span>
               <span className="ui-scope-revision">Revision {context.area.revision}</span>
               {block.selected && <span className="ui-scope-selection" title={block.selectedRecord ? `${block.selected.name} / ${block.selectedRecord.name}` : block.selected.name}>/ {block.selected.name}{block.selectedRecord ? ` / ${block.selectedRecord.name}` : ""}</span>}
             </div>

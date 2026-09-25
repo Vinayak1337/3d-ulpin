@@ -22,6 +22,7 @@ import {
 } from "../shared/ui";
 import ParcelIdentity from "../shared/ParcelIdentity";
 import { hasGoogleAttribution } from "@/lib/map-attribution";
+import { classificationLabel } from '@/lib/ui/provenance';
 import Evidence, { SourcePreview } from "./Evidence";
 import Investigation from "./Investigation";
 import { words } from "./model";
@@ -189,9 +190,7 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
                   : "neutral"
               }
             >
-              {dossier.building.worldStatus === "synthetic"
-                ? "Fictional demo"
-                : words(dossier.building.worldStatus)}
+              {classificationLabel(dossier.building.worldStatus)}
             </Badge>
           </div>
           <p>
@@ -202,12 +201,11 @@ export default function RegisterPage({ buildingId }: { buildingId: string }) {
           </p>
           <ParcelIdentity identifiers={dossier.parcelIdentifiers} />
           {hasGoogleAttribution([dossier.building]) && (
-            <p>Reference outline: <a href="https://sites.research.google/gr/open-buildings/" target="_blank" rel="noreferrer">Google Open Buildings V3</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> (selection / road context) · ODbL. {dossier.building.worldStatus === "synthetic" && "Heights, interiors and occupants are fictional."}</p>
+            <p>Reference outline: <a href="https://sites.research.google/gr/open-buildings/" target="_blank" rel="noreferrer">Google Open Buildings V3</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> (selection / road context) · ODbL.</p>
           )}
           {String(dossier.building.properties.source_provider || "").includes("OpenStreetMap") && (
             <p>
               Footprint source: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> · ODbL.
-              {dossier.building.worldStatus === "synthetic" && " Heights, rooms, residents and parcel links in this scenario are fictional."}
             </p>
           )}
         </div>

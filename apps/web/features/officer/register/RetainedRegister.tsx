@@ -99,9 +99,7 @@ export default function RetainedRegister({
           <p>Local-frame register · {detail.site.frame.id}</p>
         </div>
         <Badge tone={detail.site.synthetic ? "warning" : "neutral"}>
-          {detail.site.synthetic
-            ? "Fictional demonstration"
-            : "Retained records"}
+          {detail.site.synthetic ? "Synthetic" : "Retained records"}
         </Badge>
       </header>
       {mutation.error && (

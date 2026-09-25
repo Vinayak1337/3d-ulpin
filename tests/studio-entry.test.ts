@@ -66,9 +66,9 @@ test('directories classify by stored metadata, retain empty datasets, and do not
  assert.equal(filterAreas(areas,'missing','all').length,0);
  assert.equal(filterAreas(areas,'','all').length,3);
  assert.equal(datasetLabel(undefined),'Source status unclassified');
- assert.equal(datasetLabel('mixed'),'Mixed real and fictional sources');
+ assert.equal(datasetLabel('mixed'),'Mixed');
  assert.equal(datasetLabel('empty'),'No mapped sources yet');
- assert.equal(datasetLabel('demonstration'),'Fictional demonstration');
+ assert.equal(datasetLabel('demonstration'),'Synthetic');
  assert.equal(areas.length,3);
 });
 test('workspace retrieval searches source and property names with assignment and stable recency',()=>{

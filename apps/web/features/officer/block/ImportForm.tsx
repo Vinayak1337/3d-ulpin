@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import type { MapArea, ImportPackage, GisInspection } from "@ulpin/contracts";
+import { areaClassification } from '@/lib/ui/provenance';
 import { Button, Icon } from "../shared/ui";
 import { useGisInspection } from "./useGisInspection";
 const boundaries = [
@@ -174,7 +175,7 @@ export default function ImportForm({
       <p className="ui-intake-context">
         Destination:{" "}
         {destination === "current" && area
-          ? `${area.name} · ${area.dataKind === "demonstration" ? "Fictional demonstration" : area.dataKind === "mixed" ? "Mixed source origins" : "Saved block"}`
+          ? `${area.name} · ${areaClassification(area)}`
           : "New block"}
         . Change destination in advanced settings.
       </p>

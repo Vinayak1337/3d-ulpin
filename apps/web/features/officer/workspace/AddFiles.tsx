@@ -9,6 +9,7 @@ import { routes } from "../shared/routes";
 import { Button, ErrorState, Icon } from "../shared/ui";
 import {intakeFileKind,type IntakeFileKind} from "@/lib/intake-file-kind";
 import DatasetIntake from "./DatasetIntake";
+import { areaClassification } from '@/lib/ui/provenance';
 import ImportForm from "../block/ImportForm";
 import ImportReview from "../block/ImportReview";
 import "../block/data-tools.css";
@@ -93,8 +94,8 @@ export default function AddFiles() {
     {files.length>0 && <section aria-label="Selected files" className="source-intake-files">{files.map(row=><div className="ui-intake-file" key={row.id}><Icon name="document"/><div><strong>{row.file.name}</strong><span>{row.state==="retained"?"Original retained":row.error || documentSizeError(row.file) || (row.kind==="checking"?"Reading file type…":row.kind==="dataset"?"Area dataset · review below":row.kind==="unsupported"?"Unsupported format — remove to continue":row.kind==="gis"?"GIS source · inspect and review below":`${documentFormat(row.file.name)?.toUpperCase()} · ready to read`)}</span></div>{row.state==="selected"?<Button variant="ghost" disabled={mutation.busy} onClick={()=>setFiles(old=>old.filter(f=>f.id!==row.id))}>Remove</Button>:row.kind==="gis"?<Button onClick={()=>setReview(row.package!)}>Review GIS draft</Button>:<Icon name="check"/>}</div>)}</section>}
     {(mutation.error || dossier.error || existing.error || areas.error) && <ErrorState message={mutation.error || dossier.error || existing.error || areas.error || ""}/>}
     {!buildingId && !target && contextOnly && <fieldset className="source-intake-questions" disabled={mutation.busy}><legend>Where will these sources be reviewed?</legend>
-      <label>Destination block<select value={areaId} onChange={e=>setAreaId(e.target.value)}><option value="">Choose a saved block…</option>{areas.data?.map(a=><option key={a.id} value={a.id}>{a.name}{a.dataKind==="demonstration"?" · Fictional demonstration":""}</option>)}</select></label>
-      <label>Source origin<select value={origin} onChange={e=>setOrigin(e.target.value)}><option value="">Declare source origin…</option><option value="observed">Real observed source</option><option value="planned">Planned source</option><option value="hypothetical">Hypothetical proposal</option><option value="synthetic">Fictional demonstration</option></select></label>
+      <label>Destination block<select value={areaId} onChange={e=>setAreaId(e.target.value)}><option value="">Choose a saved block…</option>{areas.data?.map(a=><option key={a.id} value={a.id}>{a.name} · {areaClassification(a)}</option>)}</select></label>
+      <label>Source origin<select value={origin} onChange={e=>setOrigin(e.target.value)}><option value="">Declare source origin…</option><option value="observed">Observed</option><option value="planned">Planned</option><option value="hypothetical">Hypothetical</option><option value="synthetic">Synthetic</option></select></label>
       <p>Originals are already retained. Choose a block and declare origin only to start spatial extraction. Its retained metre frame is reused; image controls still need evidence and review.</p>
     </fieldset>}
     {!buildingId && !target && contextOnly && <Button variant="primary" disabled={mutation.busy || !area || !origin} onClick={()=>void mutation.run(async()=>{const pkg=await destination();if(pkg?.sourceWorkspace)router.push(withQuery(routes.case(pkg.sourceWorkspace.caseId),{mode:"build"}));})}>Continue to extraction</Button>}

@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AreaContext, BuildingDossier } from "@ulpin/contracts";
+import { classificationLabel } from '@/lib/ui/provenance';
 import type { AreaNavigation, SceneDetail } from "@/components/AreaViewer";
 import { useResource } from "../shared/hooks";
 import { routes } from "../shared/routes";
@@ -163,9 +164,7 @@ function InteractivePropertyScene({
             </>
           ) : (
             <span>
-              {dossier.building.worldStatus === "synthetic"
-                ? "Fictional demonstration"
-                : "Source-supported exterior"}
+              Classification: {classificationLabel(dossier.building.worldStatus)} · Display exterior with illustrative details
             </span>
           )}
         </div>
