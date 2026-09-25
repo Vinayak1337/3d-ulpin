@@ -174,7 +174,7 @@ export default function ImportForm({
       <p className="ui-intake-context">
         Destination:{" "}
         {destination === "current" && area
-          ? `${area.name} · ${area.dataKind === "demonstration" ? "Fictional demonstration" : area.dataKind === "mixed" ? "Mixed source origins" : "Saved block"}`
+          ? `${area.name} · ${area.dataKind === "demonstration" ? "Synthetic" : area.dataKind === "mixed" ? "Mixed" : "Saved block"}`
           : "New block"}
         . Change destination in advanced settings.
       </p>
