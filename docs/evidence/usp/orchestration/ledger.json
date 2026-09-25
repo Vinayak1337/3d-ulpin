@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T13:13:42.014795+00:00",
+  "updatedAt": "2026-09-25T13:14:57.927306+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "7d056675c766d81280ac81c69572d2d01d3cde0b",
+    "acceptedStagingBase": "c597d5252518b336d1cafc8852db21bdfcea13db",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -147,14 +147,14 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "high"
+        "effort": "xhigh"
       },
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "available",
+      "status": "assigned_UI-02",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -798,6 +798,53 @@
           "No all-route accessibility, UI-02 layout, runtime theme toggle or independent milestone pass"
         ]
       }
+    },
+    {
+      "assignmentId": "UI-02",
+      "attempt": 1,
+      "callbackId": "ulpin-UI-02-attempt-1",
+      "objective": "Studio frame, on-demand panels, single inspector/tray and responsive behavior preserving canonical selection and shared map runtime",
+      "baseCommit": "c597d5252518b336d1cafc8852db21bdfcea13db",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-02-studio-frame",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "apps/web/features/studio/product/ProductHeader.tsx and header.css",
+        "apps/web/features/studio/product/operations.css and theme.css frame compatibility",
+        "apps/web/features/officer/shared/Shell.tsx and shell.css",
+        "apps/web/features/officer/shared/ui.tsx minimal required icon additions only",
+        "apps/web/features/officer/block/BlockPage.tsx, BlockRails.tsx, FindingsTray.tsx and block.css frame/panel presentation",
+        "apps/web/features/officer/shared/store.tsx and block/useBlock.ts minimal camera/selection persistence only if needed",
+        "tests/e2e/usp-studio-frame.spec.ts and existing USP UI browser selectors retaining assertions",
+        "scripts/usp/isolated-live.mjs minimal frame check hook",
+        "docs/evidence/usp/finale/GF-VIEW/UI-02/"
+      ],
+      "exclusions": [
+        "backend/contracts/migrations and new provider/services",
+        "UI-03 semantic geometry and renderer changes",
+        "UI-04 ingestion/domain workflows",
+        "UI-08 wholesale content cleanup or dataset rewriting",
+        "mockup sample values/prototype code",
+        "historical receipts and orchestration ledger",
+        "public deployment or staging/main merges"
+      ],
+      "acceptance": [
+        "H99 sections3-4/Z2/Z6 and H29 UI-02; design system overrides reference-only mockup",
+        "56px top bar,36px scope strip,308px one-at-a-time left panel closed by default,360/400px inspector,172px single collapsible tray",
+        "Existing record-backed panels only; unavailable feature states explicit",
+        "Same Cesium runtime, camera and selection survive panel/theme/2D-3D transitions and supported back navigation",
+        "390x844 scope header/action reachable; 900/620 breakpoints, keyboard/focus/Escape,200% and reduced motion",
+        "Live production isolated screenshots and state/instance assertions; existing D0/D1,identity and UI-01 regressions retained"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-02/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -1544,9 +1591,9 @@
     }
   ],
   "nextSteps": [
-    "Complete UI-01 active-control contrast and focused accessibility corrections, then review/integrate.",
-    "UI-02 Studio frame follows accepted UI-01.",
-    "No whole GF-VIEW or independent milestone pass from foundation-only evidence."
+    "End turn after UI-02 dispatch; resume on callback.",
+    "Review frame state persistence and responsive behavior; integrate bounded accepted work.",
+    "Next remaining GF0 data and plan machinery, then FND-04/UI-03 and other dependency-ready cards."
   ],
   "processedCallbacks": [
     {
@@ -1840,7 +1887,7 @@
       "card": "UI-02",
       "title": "Studio frame",
       "needs": "UI-01",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "card": "UI-03",
