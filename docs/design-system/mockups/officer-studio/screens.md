@@ -1,6 +1,6 @@
 # Screens: layout and bindings
 
-Each screen as the mockup lays it out. Sizes are at 1440 × 900 unless stated. `Name` in code font is a definition in [view-model.schema.json](view-model.schema.json); a path such as `space.area.declared` is a field. Quoted text is fixed interface copy. Nothing here is sample data: where the mockup showed a value, this file names the field it came from.
+Each screen as the reference mockup lays it out. It is a design reference, not a production specification ([why](README.md#reference-only-not-production-ui)): sizes and arrangements are the mockup's starting point, and the plan and design-system tokens govern. Sizes are at 1440 × 900 unless stated. `Name` in code font is a definition in [view-model.schema.json](view-model.schema.json); a path such as `space.area.declared` is a field. Quoted text is the mockup's copy; production copy follows the design system and H99 Z4. Nothing here is sample data: where the mockup showed a value, this file names the field it came from.
 
 Read the [README](README.md) first for the frame, interaction model and states shared by every map screen.
 

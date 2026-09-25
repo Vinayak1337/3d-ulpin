@@ -15,7 +15,7 @@ The visual and content rules for every 3D ULPIN screen. It is the repository cop
 | [components.md](components.md) | The 23 components: anatomy, states, content and who supplies the data |
 | [reference/components.css](reference/components.css) | Reference CSS for those components (read, then port) |
 | [ui-brief.md](ui-brief.md) | Screens, where each feature lives, flows and states |
-| [mockups/officer-studio/](mockups/officer-studio/README.md) | The assembled screens from the team's interactive mockup: frame, interaction model, per-screen layout and the [view model schema](mockups/officer-studio/view-model.schema.json) every screen binds to. Replicate the UI, never its data |
+| [mockups/officer-studio/](mockups/officer-studio/README.md) | **Reference only, not production UI.** A description of the team's interactive mockup: frame, interactions, per-screen layout and the [view model schema](mockups/officer-studio/view-model.schema.json). Take ideas for look and behaviour from it; production requirements come from the plan. Never copy its data or code |
 
 ## Principles
 
