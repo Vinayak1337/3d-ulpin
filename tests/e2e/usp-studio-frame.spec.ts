@@ -220,6 +220,7 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   await expect(sourcesPanel).not.toContainText("No sources in this scope");
   if (area.packages.length) await expect(sourcesPanel).toContainText(area.packages[0].name);
   await page.unroute(`**/api/v1/buildings/${buildingId}/dossier`);
+  if (screenshots) await writeFile(join(screenshots, "measurements.json"), JSON.stringify({ areaId: receipt.areaId, selectedFeatureId: buildingId, runtimeId, camera, measurements, pageErrors: errors }, null, 2) + "\n");
   for (const item of measurements) {
     if (typeof item !== "object" || !item || !("targets" in item)) continue;
     const geometry = item as { label: string; overflow: number; targets: { name: string; width: number; height: number; x: number; right: number; hit: boolean }[] };
