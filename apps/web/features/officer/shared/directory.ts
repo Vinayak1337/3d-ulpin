@@ -1,9 +1,9 @@
 import type { MapArea } from "@ulpin/contracts";
 
 export function datasetLabel(kind?: MapArea["dataKind"]): string {
-  if (kind === "demonstration") return "Fictional demonstration";
-  if (kind === "real") return "Real sources";
-  if (kind === "mixed") return "Mixed real and fictional sources";
+  if (kind === "demonstration") return "Synthetic";
+  if (kind === "real") return "Observed";
+  if (kind === "mixed") return "Mixed";
   if (kind === "empty") return "No mapped sources yet";
   return "Source status unclassified";
 }

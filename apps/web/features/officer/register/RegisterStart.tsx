@@ -162,9 +162,9 @@ export default function RegisterStart({ identifier }: { identifier?: string } = 
             >
               <option value="">Choose a saved block</option>
               {[
-                ["real", "Real sources"],
-                ["demonstration", "Fictional demonstrations"],
-                ["mixed", "Mixed real and fictional sources"],
+                ["real", "Observed sources"],
+                ["demonstration", "Synthetic sources"],
+                ["mixed", "Mixed sources"],
                 ["other", "Source status unclassified"],
               ].map(([kind,label]) => <optgroup label={label} key={kind}>{(areas.data || []).filter(a => a.featureCount && (kind === 'other' ? a.dataKind !== 'real' && a.dataKind !== 'demonstration' && a.dataKind !== 'mixed' : a.dataKind === kind)).map(a => <option value={a.id} key={a.id}>{a.name}</option>)}</optgroup>)}
             </select>
@@ -192,7 +192,7 @@ export default function RegisterStart({ identifier }: { identifier?: string } = 
                       <h3>{feature.name}</h3>
                       <p>
                         {feature.worldStatus === "synthetic"
-                          ? "Fictional demonstration"
+                          ? "Synthetic"
                           : feature.height.state.replaceAll("_", " ")}{" "}
                         <span>·</span> {feature.areaM2?.toFixed(1) || "—"} m²
                       </p>
