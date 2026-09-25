@@ -51,6 +51,15 @@ test('UI-03 area map reads one unchanged saved snapshot', async ({ page }) => {
             }
             await page.getByLabel('Colour by').selectOption('none');
           }
+          if (width === 1440) {
+            const layers = page.getByRole('button', { name: 'Layers', exact: true });
+            await layers.focus();
+            await layers.press('Enter');
+            await expect(page.getByRole('complementary', { name: 'Layers panel' })).toBeVisible();
+            await page.keyboard.press('Escape');
+            await expect(layers).toBeFocused();
+            await expect(page.getByRole('contentinfo', { name: 'Map readout' })).toBeVisible();
+          }
         }
       }
     }
