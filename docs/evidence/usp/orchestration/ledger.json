@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:32:19.992520+00:00",
+  "updatedAt": "2026-09-25T21:41:13.393177+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -278,7 +278,7 @@
         "effort": "high"
       },
       "observedAgent": null,
-      "status": "assigned_UI-08-priority"
+      "status": "assigned_PREVIEW-UI08"
     },
     {
       "threadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
@@ -291,12 +291,8 @@
         "model": "gpt-6-astra",
         "effort": "medium"
       },
-      "observedAgent": {
-        "product": "Codex desktop",
-        "model": "gpt-6-astra",
-        "effort": "medium"
-      },
-      "status": "idle_review_complete"
+      "observedAgent": null,
+      "status": "assigned_REVIEW-UI-08-priority"
     },
     {
       "threadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
@@ -307,10 +303,10 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-luna",
-        "effort": "xhigh"
+        "effort": "medium"
       },
       "observedAgent": null,
-      "status": "idle_manual_report_complete"
+      "status": "assigned_DATA-UI08-provenance"
     }
   ],
   "assignments": [
@@ -2236,7 +2232,7 @@
       "assignmentId": "UI-08-priority",
       "attempt": 1,
       "callbackId": "ulpin-UI-08-priority",
-      "status": "in_progress",
+      "status": "code_delivered_source_review_and_preview_pending",
       "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "requestedAgent": {
         "product": "Codex",
@@ -2259,6 +2255,75 @@
         "docs/design-system/README.md",
         "docs/design-system/mockups/officer-studio/screens.md",
         "/Users/vinayak/Downloads/3D_ULPIN_V2_REDESIGN_PACK_FINAL/images/anchors/"
+      ],
+      "codeCommit": "f3eaeccab9b4e6c8f28942728b2cda92f6191ad4",
+      "resultCommit": "9527e105224c2ae6430fad01c0ac8576928a8471",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-sol-ui08/3D Ulpin",
+      "limitations": [
+        "not visually checked on code pin",
+        "protected historical names unchanged",
+        "saved adapter hardcoded synthetic classification unresolved",
+        "native preparation404 not reproduced; not declared fixed"
+      ]
+    },
+    {
+      "assignmentId": "REVIEW-UI-08-priority",
+      "attempt": 1,
+      "callbackId": "review-UI-08-priority",
+      "status": "dispatched",
+      "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "codeCommit": "f3eaeccab9b4e6c8f28942728b2cda92f6191ad4",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "medium"
+      },
+      "ownership": [
+        "source review and report only"
+      ]
+    },
+    {
+      "assignmentId": "PREVIEW-UI08",
+      "attempt": 1,
+      "callbackId": "preview-UI08-ready",
+      "status": "dispatched",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "candidate UI and accepted privacy fix integration in isolated preview branch",
+        "safe3187 refresh preserving current data and owned services"
+      ],
+      "exclusions": [
+        "main/staging merge",
+        "data purge/reseed",
+        "linked environment",
+        "lead ledger edits"
+      ]
+    },
+    {
+      "assignmentId": "DATA-UI08-provenance",
+      "attempt": 1,
+      "callbackId": "data-UI08-provenance",
+      "status": "dispatched",
+      "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "medium"
+      },
+      "ownership": [
+        "read-only existing metadata contract lookup",
+        "report for official-source listing and truthful provenance"
+      ],
+      "exclusions": [
+        "data mutation or renaming",
+        "acquisition",
+        "providers",
+        "preview services or browser checks"
       ]
     }
   ],
@@ -3007,10 +3072,10 @@
     }
   ],
   "nextSteps": [
-    "Sol completes priority UI08 existing-record Batches replacement and removal of reachable sample content.",
-    "Sol handles recorded UI violations and scopes native-preparation404 without changing protected data; Luna available for replacement UI check.",
-    "Coordinate manual check and safe preview refresh for UI replacement; do not present current legacy preview as completed design.",
-    "Delegate accepted exchange integration at a non-conflicting checkpoint; retain runtime qualification gaps."
+    "Sol assembles and safely refreshes candidate3187 with UI08 and accepted scalar privacy fix, preserving preview state.",
+    "Astra reviews bounded UI route/provenance effects; Luna identifies existing source metadata needed for honest production listing.",
+    "After ready callback, Luna visually checks changed Batches against supplied design and main navigation; resolve findings before acceptance.",
+    "Delegate accepted integration at safe checkpoint; keep real-source/runtime qualifications open."
   ],
   "processedCallbacks": [
     {
@@ -3299,6 +3364,11 @@
       "callbackId": "manual-FND-06-attempt-2-report-correction",
       "resultCommit": "6887f9c8e8d4b0ade4a490152f3d27a30ef6b614",
       "result": "report now states design fidelity not checked; no claim references absent; no preview operations"
+    },
+    {
+      "callbackId": "ulpin-UI-08-priority",
+      "resultCommit": "9527e105224c2ae6430fad01c0ac8576928a8471",
+      "result": "code delivered; not manual accepted; historical data provenance gap remains"
     }
   ],
   "observations": [
