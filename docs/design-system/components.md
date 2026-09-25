@@ -1,6 +1,6 @@
 # Components
 
-Twenty-three components, each with its reference CSS class in [reference/components.css](reference/components.css). "Data from" names the producer handoff whose contract feeds it. UI owns the component; the producer owns the data. Port a component into the owning feature's CSS with `--ui-*` tokens; do not add a component library.
+Thirty-two components, the same set as the team's design system in Claude Design, each with its reference CSS classes in [reference/components.css](reference/components.css). The first twenty-three come from the design system artifact; Panel, DataTable, DescriptionList, Tabs, Toggle, Icon, Wordmark, MapCanvas and MapPatterns were added in Claude Design and are used throughout the [reference mockups](mockups/officer-studio/README.md). "Data from" names the producer handoff whose contract feeds it. UI owns the component; the producer owns the data. Port a component into the owning feature's CSS with `--ui-*` tokens; do not add a component library.
 
 ## Identity and records
 
@@ -95,9 +95,45 @@ Vertical level picker on the right edge of the canvas: rooftop structures, terra
 Schematic vertical section of one parcel: airspace, levels, ground line, basements, utilities and corridors, each with elevation and reference. Selected space in primary; below ground in soil tones; test fixtures labelled. Used in the inspector and on the card.
 
 ### SegmentedControl
-Pill of 2–4 exclusive view options (2D/3D, Model/Volumes, Plan/Oblique/Section). Changes the view only, never data, selection or camera target. `aria-pressed` on each.
+Pill of 2–4 exclusive view options (2D/3D, Model/Volumes, Plan/Oblique/Section). Changes the view only, never data, selection or camera target. The selected segment is a primary fill with on-primary text. `aria-pressed` on each.
+
+### MapCanvas
+The map canvas frame (`ul-canvas`): `--ui-map-ground` fill, 12 px radius, clipped. The scene is the child; floating chrome sits in absolutely positioned overlays: MapToolbar top-left, LevelRail right edge, Legend bottom-left, a mono coordinate readout on the bottom edge. Only the thing being asked about has colour; everything else is neutral massing at context opacity.
+- Flat (SVG or 2D) scene classes: `m-ground`, `m-road`, `m-public`, `m-water`, `m-water-line`, `m-parcel`, `m-bldg`, `m-ctx` (context opacity), `m-halo` + `m-sel` (selection), `m-est` (hatched estimate), `m-crit` (finding solid), `m-sleeve`, `m-label`, `m-code`. In the Cesium scene the same tokens drive materials ([map-and-3d.md](map-and-3d.md)).
+
+### MapPatterns
+The two map fill patterns, defined once per scene: `hatch` (estimated geometry: 45° muted hatch over `--ui-map-building`, used by `m-est`) and `crit` (a finding solid: `--ui-mark-critical` with a halo-coloured hatch). Unknown uses the same hatch over `--ui-readiness-unknown`.
 
 ## Frame and controls
+
+### Wordmark
+**3D ULPIN** in Noto Sans 700 followed by the surface name (Studio, Portal, Admin, Property Card) in `studio-label`. No logo; never an emblem or seal.
+
+### Panel
+The standard container (`ul-panel`, with `__head`, `__title`, `__body`, `__foot`) for Studio rails, inspector sections, checks and dialog bodies: surface fill, 1 px `--ui-border-strong`, 12 px radius, `--ui-shadow-card`.
+- Head: title in `studio-heading` with a badge, caption or icon on the right.
+- Body padded 16 px; flush content (Tabs, a DataTable) runs edge to edge under the head.
+- Footer on `--ui-surface-subtle` with at most one primary and one secondary action.
+- Panels float on the background 16 px apart. Never stack a border, a shadow and a tinted fill on one element.
+
+### DataTable
+Dense Studio table (`ul-table`): 13 px cells, 36 px rows, `--ui-surface-subtle` header row, `--ui-divider` hairlines, bold totals footer.
+- Numbers right-aligned (`ul-r`) with tabular figures; areas and volumes to 2 decimals. Codes and hashes in mono.
+- Units in the column header ("Carpet m²"). A muted "<n> more" row stands in for truncated rows. Unknown cells say *Unknown*, never blank.
+
+### DescriptionList
+Label and value rows (`ul-dl`): muted label on the left (40 %), value on the right. Used for inspector facts, check results and the Property Card.
+- Every sourced value carries an inline EvidenceChip; unknown values say *Unknown* with a request action. Mono values use `ul-mono`.
+- Units always shown; heights name their vertical reference.
+
+### Tabs
+Underlined tab row (`ul-tabs`, `ul-tab`) for inspector and register sections. Inspector: **Overview · Rights · Evidence · Checks · History**. Register: **Units · Shares · Documents · Checks · History**. The selected tab is primary with a 2 px underline; sentence case. Parcel, utility, photos and history are tabs, not pages.
+
+### Toggle
+A 36 × 20 switch (`ul-toggle`, `role="switch"`) for layer visibility and Property Card redaction. Always beside a visible text label in the same row (`ul-layer` with `ul-grow`), with the same text as `aria-label`. Primary fill when on; `--ui-surface-subtle` with a `--ui-line-control` outline when off.
+
+### Icon
+One wrapper over Phosphor Regular (`ul-ico`, `ul-ico--sm`): 20 px in the Studio, 16 px in dense cells, chips and small buttons, 24 px in the Portal. Inherits `currentColor`: `--ui-ink-soft` in toolbars, `--ui-muted` in chips, the status colour in badges. Never the only label for an action. The set and what each icon means are in the [README](README.md#icons-and-wordmark).
 
 ### StudioHeader
 56 px top bar: wordmark, **Batches · Map · Register**, search (`/`), area switcher, Live or "Snapshot <date>, <time>", theme, user. Active section uses `aria-current="page"`. One navigation row; the scope strip under it is context.
@@ -106,13 +142,13 @@ Pill of 2–4 exclusive view options (2D/3D, Model/Volumes, Plan/Oblique/Section
 Single right-hand panel for the selection (360 px, 400 px with evidence preview): identity header (name, UlpinCode, status, Parcel ULPIN), tabs **Overview · Rights · Evidence · Checks · History**, footer with at most one primary and one secondary action. Every sourced value carries an EvidenceChip; unknown values say *Unknown* with a request action.
 
 ### Button
-Primary (one per view), secondary, soft, ghost, danger (always confirmed). 40 px in the Studio, 44 px in the Portal. Labels 1–3 words, sentence case. Disabled buttons explain why beneath.
+Primary (`ul-btn--primary`, one per view), secondary (default), soft (`ul-btn--soft`, repeated positive actions in lists), ghost (`ul-btn--ghost`, tertiary actions in toolbars), danger (`ul-btn--danger`, always followed by a confirmation). 40 px in the Studio; Portal buttons add `ul-btn--lg` (44 px). Optional leading Phosphor icon. Labels 1–3 words, sentence case, never wrapped. Disabled buttons explain why beneath or in a tooltip.
 
 ### Badge
 Icon plus fixed status word; colour never carries meaning alone. Success: reviewed, recorded, assigned, passed. Warning: needs review, needs evidence, stale. Danger: blocking and failures only. Info: counts. Neutral: draft, unknown, not assessed, test fixture.
 
 ### Field
-Label above, helper below, error below that; no placeholder as label. Units in the label ("Lower limit (m, <named reference>)"). Errors name the problem and the fix.
+Label above, helper below, error below that; no placeholder as label. Units in the label ("Lower limit (m, <named reference>)"). Errors name the problem and the fix and set `aria-invalid`. Portal forms use the UX4G input components themed with these tokens; the anatomy is the same.
 
 ### PortalHeader (FP-PUBLIC)
-UX4G accessibility bar, then header with an empty department-mark slot, wordmark, **English / हिन्दी** and **Sign in**. Never a seal or emblem.
+UX4G accessibility bar (text size, contrast, language), then header with an empty dashed department-mark slot, wordmark, **English / हिन्दी** (both scripts) and **Sign in**. Built from the UX4G Accessibility Bar and Navbar themed with these tokens. Never a seal or emblem.
