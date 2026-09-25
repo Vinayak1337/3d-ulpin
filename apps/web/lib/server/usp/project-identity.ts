@@ -3,7 +3,7 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import {
   AssignProjectCodeSchema, ProjectIdentityMutationSchema, ProjectIdentityReviewSchema,
-  ProjectLocationSchema, ResolveProjectIdentitySchema, normalizeProjectCode,
+  ProjectLocationSchema, ResolveProjectIdentitySchema, UspCommitReceiptSchema, normalizeProjectCode,
   verticalLocator, type ProjectLocation, type RequestContext,
 } from '@ulpin/contracts/usp';
 import { transaction } from '../db';
@@ -50,9 +50,9 @@ async function lockedRecords(client: PoolClient, scopeId: string, ids: string[])
 
 function validateMembers(manifest: Awaited<ReturnType<typeof scopedManifestTx>>,
   rows: { id: string; revision: number; body: any }[], versions: Record<string, number>, evidence: Review['evidence']) {
-  const sourceIds = new Set(manifest.members.filter(member => member.pin.ref.namespace === 'source_revision')
-    .map(member => member.pin.ref.id));
-  if (!evidence.length || evidence.some(item => !sourceIds.has(item.sourceId))) {
+  const sourcePins = new Set(manifest.members.filter(member => member.pin.ref.namespace === 'source_revision')
+    .map(member => `${member.pin.ref.id}@${member.pin.revision}`));
+  if (!evidence.length || evidence.some(item => !sourcePins.has(`${item.sourceId}@${item.revision}`))) {
     throw new AppError(422, 'USP_IDENTITY_EVIDENCE', 'Reviewed source evidence must belong to the exact snapshot.');
   }
   for (const row of rows) {
@@ -70,14 +70,22 @@ function validateLocation(raw: ProjectLocation) {
   const location = ProjectLocationSchema.parse(raw);
   const seen = new Set<string>();
   for (const parcel of location.parcels) {
-    if (seen.has(parcel.ulpin)) throw new AppError(422, 'USP_DUPLICATE_ANCHOR', 'A parcel assertion is duplicated.');
-    seen.add(parcel.ulpin);
-  }
-  const primary = location.parcels.filter(parcel => parcel.reviewed && parcel.role === 'primary');
-  if (primary.length > 1 || location.anchorState === 'reviewed_complete' && location.parcels.every(parcel => !parcel.reviewed)) {
-    throw new AppError(422, 'USP_ANCHOR_STATE', 'The reviewed anchor state and assertions disagree.');
+    if (seen.has(parcel.literalValue)) throw new AppError(422, 'USP_DUPLICATE_ANCHOR', 'A parcel assertion is duplicated.');
+    seen.add(parcel.literalValue);
   }
   return location;
+}
+
+function validateLocationEvidence(location: ProjectLocation, evidence: Review['evidence'],
+  rows: { id: string; body: any }[]) {
+  for (const parcel of location.parcels) {
+    if (!evidence.some(item => item.sourceId === parcel.source.sourceId
+      && item.revision === parcel.source.revision && item.locator === parcel.source.locator)
+      || !rows.some(row => (row.body?.evidence ?? []).some((binding: { sourceId: string; locator: string }) =>
+        binding.sourceId === parcel.source.sourceId && binding.locator === parcel.source.locator))) {
+      throw new AppError(422, 'USP_ANCHOR_EVIDENCE', 'The literal parcel assertion needs its exact pinned source and locator.');
+    }
+  }
 }
 
 export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Review) {
@@ -86,11 +94,13 @@ export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Rev
   if (review.recordIds.length !== new Set(review.recordIds).size
     || Object.keys(review.expectedVersions).sort().join(',') !== [...review.recordIds].sort().join(',')) unsupported();
   if (review.location) validateLocation(review.location);
-  if (review.location?.parcels.some(parcel => !review.evidence.some(item => item.sourceId === parcel.sourceId))) {
-    throw new AppError(422, 'USP_ANCHOR_EVIDENCE', 'Each parcel association needs reviewed source evidence.');
-  }
+  if (review.locations) for (const location of Object.values(review.locations)) validateLocation(location);
   if (review.operation === 'assign' && (review.recordIds.length !== 1 || !review.location)) unsupported();
   if (review.operation === 'correct' && (review.recordIds.length !== 1 || !review.location)) unsupported();
+  if (['split', 'merge'].includes(review.operation) && (!review.successors || !review.locations || review.location
+    || Object.keys(review.locations).sort().join(',') !== [...review.successors].sort().join(','))) unsupported();
+  if (review.operation === 'split' && review.locations
+    && new Set(Object.values(review.locations).map(verticalLocator)).size !== Object.keys(review.locations).length) unsupported();
   if (review.operation === 'boundary_adjustment' && (review.recordIds.length !== 2
     || !review.transferredGeometry || !review.predecessors || !review.successors
     || review.predecessors.length !== 1 || review.successors.length !== 1)) unsupported();
@@ -110,6 +120,12 @@ export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Rev
     const rows = await lockedRecords(client, review.scope.scopeId, review.recordIds);
     const manifest = await pinnedManifest(client, ctx, review.scope);
     validateMembers(manifest, rows, review.expectedVersions, review.evidence);
+    if (review.location) validateLocationEvidence(review.location, review.evidence, rows);
+    if (review.locations) for (const [id, location] of Object.entries(review.locations)) {
+      const target = rows.find(row => row.id === id);
+      if (!target) unsupported();
+      validateLocationEvidence(location, review.evidence, [target]);
+    }
     const id = randomUUID();
     await client.query(`INSERT INTO usp_project_identity_reviews
       (id,scope_id,manifest_id,operation,command_hash,reviewer_subject,body)
@@ -171,17 +187,27 @@ async function bumpRevisions(client: PoolClient, scopeId: string, rows: { id: st
 
 async function finish(client: PoolClient, ctx: RequestContext, scope: Assign['scope'],
   operation: string, requestKey: string, commandHash: string, reviewId: string,
-  rows: { id: string; revision: number; body: any }[], details: object) {
-  const before = rows.map(row => ({ recordId: row.id, revision: Number(row.revision) }));
-  const after = before.map(row => ({ ...row, revision: row.revision + 1 }));
+  rows: { id: string; revision: number; body: any }[], codes: Record<string, string>) {
+  const before = rows.map(row => ({ ref: { namespace: 'registry_record', id: row.id }, revision: Number(row.revision) }));
+  const persisted = (await client.query('SELECT id,revision FROM registry_records WHERE id=ANY($1::uuid[]) ORDER BY id',
+    [rows.map(row => row.id)])).rows;
+  if (persisted.length !== rows.length || persisted.some(row => Number(row.revision) < 1)) {
+    throw new AppError(503, 'USP_POSTWRITE_MISSING', 'The identity post-state is unavailable.');
+  }
+  const after = persisted.map(row => ({ ref: { namespace: 'registry_record', id: row.id }, revision: Number(row.revision) }));
   const event = await appendUspOutboxTx(client, `registry:${scope.scopeId}`, {
     type: `project_identity.${operation}`, recordIds: rows.map(row => row.id), reviewId,
     correlationId: ctx.requestId,
   });
-  const snapshot = await captureRegistrySnapshotTx(client, ctx, scope.scopeId, { kind: 'site' });
-  const receipt = { receiptId: randomUUID(), operation: `project_identity_${operation}`,
-    requestKey, commandSha256: commandHash, reviewId, before, after, details,
-    snapshot: snapshot.scope, event, committedAt: new Date().toISOString() };
+  const sourceManifest = await scopedManifestTx(client, ctx, scope);
+  const selection = sourceManifest.selection.kind === 'site' ? { kind: 'site' as const }
+    : { kind: 'targets' as const, pins: sourceManifest.selection.pins.map(pin =>
+      after.find(item => item.ref.namespace === pin.ref.namespace && item.ref.id === pin.ref.id) ?? pin) };
+  const snapshot = await captureRegistrySnapshotTx(client, ctx, scope.scopeId, selection);
+  const receipt = UspCommitReceiptSchema.parse({ kind: 'project_identity', receiptId: randomUUID(),
+    operation: `project_identity_${operation}`, requestKey, commandSha256: commandHash,
+    reviewId, before, after, outcome: { codes },
+    snapshot: snapshot.scope, event, committedAt: new Date().toISOString() });
   await client.query(`INSERT INTO usp_project_identity_audit
     (id,scope_id,review_id,operation,record_ids,receipt_id,body) VALUES($1,$2,$3,$4,$5,$6,$7)`,
   [randomUUID(), scope.scopeId, reviewId, operation, rows.map(row => row.id), receipt.receiptId, receipt]);
@@ -201,7 +227,10 @@ export async function assignProjectCode(ctx: RequestContext, raw: Assign,
     await lockRecording(client);
     const operation = 'project_identity_assign', hash = fingerprint(command);
     const previous = await requestReceiptTx(client, ctx, command.scope.scopeId, operation, command.requestKey, hash);
-    if (previous) return previous;
+    if (previous) {
+      await scopedManifestTx(client, ctx, command.scope);
+      return UspCommitReceiptSchema.parse(previous);
+    }
     const rows = await lockedRecords(client, command.scope.scopeId, [command.recordId]);
     const versions = { [command.recordId]: command.expectedRecordVersion };
     const review = await checkedReview(client, ctx, command.reviewId, command.scope, 'assign',
@@ -217,7 +246,7 @@ export async function assignProjectCode(ctx: RequestContext, raw: Assign,
       VALUES($1,$2,$3,$4)`, [command.recordId, validateLocation(review.location!), command.reviewId, rows[0].revision + 1]);
     await bumpRevisions(client, command.scope.scopeId, rows);
     return finish(client, ctx, command.scope, 'assign', command.requestKey, hash,
-      command.reviewId, rows, { codes: { [command.recordId]: code } });
+      command.reviewId, rows, { [command.recordId]: code });
   });
 }
 
@@ -244,7 +273,10 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
     await lockRecording(client);
     const operation = `project_identity_${command.operation}`, hash = fingerprint(command);
     const previous = await requestReceiptTx(client, ctx, command.scope.scopeId, operation, command.requestKey, hash);
-    if (previous) return previous;
+    if (previous) {
+      await scopedManifestTx(client, ctx, command.scope);
+      return UspCommitReceiptSchema.parse(previous);
+    }
     const rows = await lockedRecords(client, command.scope.scopeId, ids);
     const review = await checkedReview(client, ctx, command.reviewId, command.scope, command.operation,
       ids, command.expectedVersions, command.predecessors, command.successors);
@@ -255,6 +287,9 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
     const status = new Map(statusRows.map(row => [row.record_id as string, row.status as string]));
     for (const id of command.predecessors) {
       if (status.get(id) !== 'assigned') conflict('A predecessor is not an assigned continuing space.');
+    }
+    if (command.operation === 'boundary_adjustment' && status.get(command.successors[0]) !== 'assigned') {
+      conflict('Both boundary participants must be assigned continuing spaces.');
     }
     if (['split', 'merge'].includes(command.operation)) {
       for (const id of command.successors) if (status.has(id)) conflict('A successor already has a reserved code.');
@@ -268,14 +303,14 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
       await client.query('UPDATE usp_project_codes SET status=$2,updated_at=now() WHERE record_id=$1',
         [command.predecessors[0], command.operation === 'cancel' ? 'cancelled_error' : 'retired']);
     } else if (command.operation === 'split' || command.operation === 'merge') {
-      if (!review.location) unsupported();
+      if (!review.locations || Object.keys(review.locations).sort().join(',') !== [...command.successors].sort().join(',')) unsupported();
       for (const id of command.predecessors) await client.query(
         "UPDATE usp_project_codes SET status='retired',updated_at=now() WHERE record_id=$1", [id]);
       for (const id of command.successors) {
         codes[id] = await allocate(client, id, command.scope.scopeId, command.reviewId, codeFactory);
         const row = rows.find(item => item.id === id)!;
         await client.query('INSERT INTO usp_project_identity_state(record_id,location,review_id,version) VALUES($1,$2,$3,$4)',
-          [id, validateLocation(review.location!), command.reviewId, row.revision + 1]);
+          [id, validateLocation(review.locations![id]), command.reviewId, row.revision + 1]);
       }
       for (const prior of command.predecessors) for (const next of command.successors) await client.query(
         `INSERT INTO usp_project_lineage(id,scope_id,kind,predecessor_id,successor_id,review_id,evidence)
@@ -285,11 +320,6 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
     } else {
       if (!review.transferredGeometry) unsupported();
       const [prior, next] = [command.predecessors[0], command.successors[0]];
-      const cycle = (await client.query(`WITH RECURSIVE walk(id) AS (
-        SELECT successor_id FROM usp_project_lineage WHERE predecessor_id=$1
-        UNION SELECT l.successor_id FROM usp_project_lineage l JOIN walk w ON l.predecessor_id=w.id
-      ) SELECT 1 FROM walk WHERE id=$2 LIMIT 1`, [next, prior])).rowCount;
-      if (cycle) unsupported();
       await client.query(`INSERT INTO usp_project_lineage
         (id,scope_id,kind,predecessor_id,successor_id,review_id,evidence,transferred_geometry)
         VALUES($1,$2,'boundary_adjustment',$3,$4,$5,$6,$7)`,
@@ -298,7 +328,7 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
     }
     await bumpRevisions(client, command.scope.scopeId, rows);
     return finish(client, ctx, command.scope, command.operation, command.requestKey, hash,
-      command.reviewId, rows, { codes });
+      command.reviewId, rows, codes);
   });
 }
 
@@ -314,18 +344,35 @@ export async function resolveProjectIdentity(ctx: RequestContext, raw: z.infer<t
   }
   return transaction(async client => {
     const manifest = await scopedManifestTx(client, ctx, input.scope);
-    const row = (await client.query(`SELECT c.code,c.status,c.record_id,r.revision,r.identifier,s.location
-      FROM registry_records r JOIN usp_project_codes c ON c.record_id=r.id
-      JOIN usp_project_identity_state s ON s.record_id=r.id
-      WHERE c.scope_id=$1 AND (c.code=$2 OR r.id::text=$3 OR r.identifier=$3
-        OR r.id IN (SELECT record_id FROM registry_aliases WHERE alias=$3))`,
-      [input.scope.scopeId, code ?? '', input.identifier])).rows[0] ?? notFound();
-    if (!manifest.members.some(member => member.pin.ref.namespace === 'registry_record'
-      && member.pin.ref.id === row.record_id)) throw new AppError(403, 'USP_IDENTITY_SCOPE', 'The record is outside this authorized scope.');
-    const successors = (await client.query(`SELECT successor_id FROM usp_project_lineage
-      WHERE predecessor_id=$1 ORDER BY successor_id`, [row.record_id])).rows.map(item => item.successor_id);
-    return { recordId: row.record_id, projectCode: row.code, profile: 'P3/1', status: row.status,
-      recordVersion: row.revision, registryIdentifier: row.identifier,
-      location: verticalLocator(ProjectLocationSchema.parse(row.location)), successors };
+    const captured = (await client.query(`SELECT object_id,revision,body,body_sha256 FROM usp_snapshot_bodies
+      WHERE manifest_id=$1 AND namespace='registry_record' ORDER BY object_id`, [input.scope.manifestId])).rows;
+    const selected = (id: string, revision: number) => manifest.selection.kind === 'site'
+      || manifest.selection.pins.some(pin => pin.ref.namespace === 'registry_record'
+        && pin.ref.id === id && pin.revision === revision);
+    const candidate = captured.find(row => row.body.projectIdentity?.code === code
+      || row.object_id === input.identifier || row.body.identifier === input.identifier
+      || (row.body.historicalAliases ?? []).includes(input.identifier));
+    if (!candidate) throw new AppError(409, 'USP_IDENTITY_UNAVAILABLE_IN_SNAPSHOT', 'This identity is unavailable in the exact snapshot.');
+    const member = manifest.members.find(item => item.pin.ref.namespace === 'registry_record'
+      && item.pin.ref.id === candidate.object_id && item.pin.revision === Number(candidate.revision));
+    if (!member || !selected(candidate.object_id, Number(candidate.revision))) {
+      throw new AppError(403, 'USP_IDENTITY_SCOPE', 'The record is outside this authorized selection.');
+    }
+    if (fingerprint(candidate.body) !== candidate.body_sha256 || member.bodySha256 !== candidate.body_sha256
+      || member.bodyRef !== fingerprint(['registry_record', candidate.object_id, Number(candidate.revision), candidate.body])) {
+      throw new AppError(409, 'USP_IDENTITY_SNAPSHOT_CORRUPT', 'The captured identity body no longer matches its manifest.');
+    }
+    const identity = candidate.body.projectIdentity;
+    if (!identity?.code) throw new AppError(409, 'USP_IDENTITY_UNAVAILABLE_IN_SNAPSHOT', 'This space had no project code in the exact snapshot.');
+    const successors = (identity.successors as string[]).filter(id => {
+      const successor = captured.find(row => row.object_id === id);
+      return successor && selected(id, Number(successor.revision))
+        && manifest.members.some(item => item.pin.ref.namespace === 'registry_record'
+          && item.pin.ref.id === id && item.pin.revision === Number(successor.revision));
+    });
+    return { recordId: candidate.object_id, projectCode: identity.code, profile: 'P3/1',
+      status: identity.status, recordVersion: Number(candidate.revision),
+      registryIdentifier: candidate.body.identifier,
+      location: verticalLocator(ProjectLocationSchema.parse(identity.location)), successors };
   });
 }

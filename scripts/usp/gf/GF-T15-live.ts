@@ -6,7 +6,8 @@ import { execFileSync } from 'node:child_process';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { assertUspIsolation } from '../local-isolation.mjs';
-import { projectCodeForPayload } from '../../../packages/contracts/src/usp/project-identity';
+import { ProjectLocationSchema, UspCommitReceiptSchema,
+  projectCodeForPayload } from '../../../packages/contracts/src/usp/index';
 import { localRequestContext } from '../../../apps/web/lib/server/usp/principal';
 import { captureRegistrySnapshot } from '../../../apps/web/lib/server/usp/snapshots';
 import { assignProjectCode, mutateProjectIdentity, prepareProjectIdentityReview,
@@ -24,7 +25,12 @@ const ctx = () => localRequestContext(randomUUID());
 const siteId = randomUUID(), caseId = randomUUID(), sourceId = randomUUID();
 const names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const;
 const ids = Object.fromEntries(names.map(name => [name, randomUUID()])) as Record<typeof names[number], string>;
-const evidence = [{ sourceId, locator: 'authored identity fixture, line 1' }];
+const evidence = [{ sourceId, revision: 1, locator: 'authored identity fixture, line 1' }];
+const parcel = (literalValue: string, role: 'primary' | 'associated',
+  reviewState: 'supplied_unreviewed' | 'reviewed' | 'disputed' | 'withdrawn') => ({
+  literalValue, role, source: { ...evidence[0] }, issuer: { state: 'unknown' as const },
+  validity: { state: 'unknown' as const }, reviewState,
+});
 const location = { anchorState: 'not_supplied' as const, parcels: [], locator: {
   structureKind: 'S' as const, structureNumber: 1, levels: ['F07'],
   spaceKind: 'R' as const, spaceNumber: 3 } };
@@ -123,11 +129,23 @@ try {
     && (result.reason as { status?: number }).status === 409).length, 1);
   const winning = simultaneous[0].status === 'fulfilled' ? first : competing;
   const receiptA = await assignProjectCode(ctx(), winning);
+  UspCommitReceiptSchema.parse(receiptA);
+  const storedA = (await pool.query('SELECT body FROM usp_command_receipts WHERE id=$1', [receiptA.receiptId])).rows[0].body;
+  assert.deepEqual(UspCommitReceiptSchema.parse(storedA), receiptA);
+  const httpReplay = (await api('identity/assign', winning, 200)).data;
+  assert.deepEqual(UspCommitReceiptSchema.parse(httpReplay), receiptA);
   assert.equal(receiptA.receiptId, (simultaneous.find(result => result.status === 'fulfilled') as PromiseFulfilledResult<any>).value.receiptId);
+  await assert.rejects(assignProjectCode({ ...ctx(), accessViewId: 'changed-view' }, winning),
+    (error: { status?: number }) => error.status === 409);
+  await assert.rejects(assignProjectCode({ ...ctx(), policyVersion: 'changed-policy' }, winning),
+    (error: { status?: number }) => error.status === 409);
+  await assert.rejects(assignProjectCode({ ...ctx(), principal: { ...ctx().principal, roles: [] } }, winning),
+    (error: { status?: number }) => error.status === 403);
   await assert.rejects(assignProjectCode(ctx(), { ...winning, expectedRecordVersion: 2 }),
     (error: { status?: number }) => error.status === 409);
   assert.equal((await pool.query('SELECT count(*)::int AS n FROM usp_project_codes WHERE record_id=$1', [ids.A])).rows[0].n, 1);
   checks.push('two-writer same-record race, exact replay and changed-payload 409');
+  checks.push('canonical stored/HTTP/replayed receipts and changed access, policy or role rejection');
 
   await assert.rejects(prepareProjectIdentityReview(ctx(), { operation: 'assign', scope: initial,
     recordIds: [ids.B], expectedVersions: { [ids.B]: 1 }, reason: 'stale manifest', evidence, location }),
@@ -170,30 +188,72 @@ try {
     identifier: 'NO-ANCHOR / S01 / F07 / R003' }, 422);
   checks.push('status-aware project-code resolver and locator string 422');
 
+  await assert.rejects(resolveProjectIdentity(ctx(), { scope: initial, identifier: ids.A }),
+    (error: { status?: number; code?: string }) => error.status === 409 && error.code === 'USP_IDENTITY_UNAVAILABLE_IN_SNAPSHOT');
+  const selectedA = await captureRegistrySnapshot(ctx(), siteId, { kind: 'targets', pins: [
+    { ref: { namespace: 'registry_record', id: ids.A }, revision: await version(ids.A) },
+  ] });
+  await assert.rejects(resolveProjectIdentity(ctx(), { scope: selectedA.scope, identifier: available }),
+    (error: { status?: number }) => error.status === 403 || error.status === 409);
+  checks.push('pre-assignment and selected-target snapshots do not expose later or unrelated identities');
+
   const revisedLocation = { ...location, anchorState: 'reviewed_partial' as const,
     parcels: [
-      { ulpin: 'AUTHORED-PARCEL-1', role: 'associated' as const, sourceId, reviewed: true },
-      { ulpin: 'AUTHORED-PARCEL-2', role: 'associated' as const, sourceId, reviewed: true },
+      parcel(' AUTHORED-PARCEL-1 ', 'associated', 'reviewed'),
+      parcel('AUTHORED-PARCEL-2', 'associated', 'reviewed'),
     ], locator: { ...location.locator, levels: ['F07', 'F08'] } };
   await mutation('correct', [ids.A], [], { location: revisedLocation });
   assert.equal(await assertStatus(ids.A, 'assigned'), aCode);
   const revised = await resolveProjectIdentity(ctx(), { scope: (await capture()).scope, identifier: aCode });
   assert.equal(revised.location, 'MULTI(2) / S01 / F07-F08 / R003');
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: resolveScope, identifier: aCode })).location,
+    'NO-ANCHOR / S01 / F07 / R003');
+  const identityBody = (await pool.query(`SELECT location FROM usp_project_identity_state WHERE record_id=$1`, [ids.A])).rows[0].location;
+  assert.equal(identityBody.parcels[0].literalValue, ' AUTHORED-PARCEL-1 ');
+  assert.deepEqual(identityBody.parcels[0].issuer, { state: 'unknown' });
+  assert.deepEqual(identityBody.parcels[0].validity, { state: 'unknown' });
   checks.push('reviewed two-parcel duplex locator correction preserves code');
 
   const hCode = await assertStatus(ids.H, 'assigned');
   const unreviewedLocation = { ...location, anchorState: 'supplied_unreviewed' as const,
-    parcels: [{ ulpin: 'AUTHORED-UNREVIEWED', role: 'primary' as const, sourceId, reviewed: false }] };
-  await mutation('correct', [ids.H], [], { location: unreviewedLocation });
+    parcels: [parcel('AUTHORED-UNREVIEWED', 'primary', 'supplied_unreviewed')] };
+  const hTargetScope = (await captureRegistrySnapshot(ctx(), siteId, { kind: 'targets', pins: [
+    { ref: { namespace: 'registry_record', id: ids.H }, revision: await version(ids.H) },
+  ] })).scope;
+  const hTargetReview = await review('correct', hTargetScope, [ids.H],
+    { predecessors: [ids.H], successors: [], location: unreviewedLocation });
+  const hTargetReceipt = await mutateProjectIdentity(ctx(), { operation: 'correct',
+    predecessors: [ids.H], successors: [], scope: hTargetScope,
+    expectedVersions: hTargetReview.expectedVersions, expectedManifestId: hTargetScope.manifestId,
+    reviewId: hTargetReview.reviewId, requestKey: randomUUID() });
+  UspCommitReceiptSchema.parse(hTargetReceipt);
+  const hPostManifest = (await pool.query('SELECT body FROM usp_snapshots WHERE id=$1',
+    [hTargetReceipt.snapshot.manifestId])).rows[0].body;
+  assert.equal(hPostManifest.selection.kind, 'targets');
+  assert.equal(hPostManifest.selection.pins.length, 1);
+  assert.equal(hPostManifest.selection.pins[0].revision, await version(ids.H));
   assert.equal((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
     identifier: hCode })).location, 'NO-ANCHOR / S01 / F07 / R003');
   const completeLocation = { ...location, anchorState: 'reviewed_complete' as const,
-    parcels: [{ ulpin: 'AUTHORED-PRIMARY', role: 'primary' as const, sourceId, reviewed: true }] };
+    parcels: [parcel('AUTHORED-PRIMARY', 'primary', 'reviewed')] };
   await mutation('correct', [ids.H], [], { location: completeLocation });
   assert.equal((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
     identifier: hCode })).location, 'AUTHORED-PRIMARY / S01 / F07 / R003');
   assert.equal(await assertStatus(ids.H, 'assigned'), hCode);
   checks.push('unreviewed parcel stays NO-ANCHOR; reviewed primary appears without changing identity');
+  checks.push('identity mutation post-state snapshot retains exact target selection and persisted pin');
+
+  assert.equal(ProjectLocationSchema.safeParse({ ...completeLocation,
+    parcels: [...completeLocation.parcels, parcel('UNREVIEWED-SECONDARY', 'associated', 'supplied_unreviewed')] }).success, false);
+  const anchorScope = (await capture()).scope;
+  await assert.rejects(review('correct', anchorScope, [ids.H], { predecessors: [ids.H], successors: [],
+    location: completeLocation, evidence: [{ ...evidence[0], revision: 2 }] }),
+  (error: { status?: number }) => error.status === 422);
+  await assert.rejects(review('correct', anchorScope, [ids.H], { predecessors: [ids.H], successors: [],
+    location: { ...completeLocation, parcels: [{ ...completeLocation.parcels[0],
+      source: { ...completeLocation.parcels[0].source, revision: 2 } }] } }),
+  (error: { status?: number }) => error.status === 422);
+  checks.push('literal assertion metadata, mixed-complete rejection and stale source/revision pins');
 
   const invalidScope = (await capture()).scope;
   await assert.rejects(mutateProjectIdentity(ctx(), { operation: 'split',
@@ -203,26 +263,62 @@ try {
   (error: { status?: number; code?: string }) => error.status === 422 && error.code === 'unsupported_lineage_kind');
   checks.push('unsupported 1-to-1 split returns 422 before mutation');
 
-  await mutation('split', [ids.A], [ids.C, ids.D], { location });
+  const cLocation = { ...location, locator: { ...location.locator, spaceNumber: 101 } };
+  const dLocation = { ...location, locator: { ...location.locator, levels: ['F08'], spaceNumber: 102 } };
+  const splitScope = (await capture()).scope;
+  await assert.rejects(review('split', splitScope, [ids.A, ids.C, ids.D], {
+    predecessors: [ids.A], successors: [ids.C, ids.D], locations: { [ids.C]: cLocation } }),
+  (error: { status?: number; code?: string }) => error.status === 422 && error.code === 'unsupported_lineage_kind');
+  await assert.rejects(review('split', splitScope, [ids.A, ids.C, ids.D], {
+    predecessors: [ids.A], successors: [ids.C, ids.D], locations: { [ids.C]: cLocation, [ids.D]: dLocation,
+      [ids.E]: location } }),
+  (error: { status?: number; code?: string }) => error.status === 422 && error.code === 'unsupported_lineage_kind');
+  await assert.rejects(review('split', splitScope, [ids.A, ids.C, ids.D], {
+    predecessors: [ids.A], successors: [ids.C, ids.D], locations: { [ids.C]: cLocation,
+      [ids.D]: { ...dLocation, anchorState: 'reviewed_complete', parcels: [{
+        ...parcel('UNPINNED-PARCEL', 'primary', 'reviewed'),
+        source: { ...evidence[0], sourceId: randomUUID() } }] } } }),
+  (error: { status?: number; code?: string }) => error.status === 422 && error.code === 'USP_ANCHOR_EVIDENCE');
+  await mutation('split', [ids.A], [ids.C, ids.D], { locations: { [ids.C]: cLocation, [ids.D]: dLocation } });
   assert.equal(await assertStatus(ids.A, 'retired'), aCode);
   const cCode = await assertStatus(ids.C, 'assigned'), dCode = await assertStatus(ids.D, 'assigned');
   assert.notEqual(cCode, dCode);
+  const afterSplitScope = (await capture()).scope;
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: afterSplitScope,
+    identifier: cCode })).location, 'NO-ANCHOR / S01 / F07 / R101');
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: afterSplitScope,
+    identifier: dCode })).location, 'NO-ANCHOR / S01 / F08 / R102');
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: splitScope,
+    identifier: aCode })).status, 'assigned');
   const old = await resolveProjectIdentity(ctx(), { scope: (await capture()).scope, identifier: aCode });
   assert.deepEqual(old.successors, [ids.C, ids.D].sort());
   const legacy = (await pool.query('SELECT identifier FROM registry_records WHERE id=$1', [ids.A])).rows[0].identifier;
   assert.equal((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
     identifier: legacy })).status, 'retired');
-  await mutation('merge', [ids.C, ids.D], [ids.E], { location });
+  const selectedOld = (await captureRegistrySnapshot(ctx(), siteId, { kind: 'targets', pins: [
+    { ref: { namespace: 'registry_record', id: ids.A }, revision: await version(ids.A) },
+  ] })).scope;
+  assert.deepEqual((await resolveProjectIdentity(ctx(), { scope: selectedOld, identifier: aCode })).successors, []);
+  const eLocation = { ...location, locator: { ...location.locator, structureNumber: 2, levels: ['F09'], spaceNumber: 9 } };
+  await mutation('merge', [ids.C, ids.D], [ids.E], { locations: { [ids.E]: eLocation } });
   assert.equal(await assertStatus(ids.C, 'retired'), cCode);
   assert.equal(await assertStatus(ids.D, 'retired'), dCode);
   const eCode = await assertStatus(ids.E, 'assigned');
   assert(![aCode, cCode, dCode].includes(eCode));
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
+    identifier: eCode })).location, 'NO-ANCHOR / S02 / F09 / R009');
   checks.push('atomic split and merge with fresh successor UUID/code, retirement and retained old resolver');
 
+  const beforeCancelScope = (await capture()).scope;
   await mutation('cancel', [ids.B], []);
   assert.equal(await assertStatus(ids.B, 'cancelled_error'), available);
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: beforeCancelScope,
+    identifier: available })).status, 'assigned');
+  const beforeRetireScope = (await capture()).scope;
   await mutation('retire', [ids.E], []);
   assert.equal(await assertStatus(ids.E, 'retired'), eCode);
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: beforeRetireScope,
+    identifier: eCode })).status, 'assigned');
   const nonreuseScope = (await capture()).scope;
   const nonreuseReview = await review('assign', nonreuseScope, [ids.B], { location });
   await assert.rejects(assignProjectCode(ctx(), assignInput(nonreuseScope, ids.B, nonreuseReview, randomUUID(), await version(ids.B))),
@@ -233,6 +329,23 @@ try {
     (error: { code?: string }) => error.code === 'P0001');
   checks.push('error cancellation and terminal retirement retain nonreusable tombstones');
 
+  const transferredGeometry = { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] };
+  const beforeInvalid = {
+    audit: (await pool.query('SELECT count(*)::int AS n FROM usp_project_identity_audit WHERE scope_id=$1', [siteId])).rows[0].n,
+    outbox: (await pool.query('SELECT count(*)::int AS n FROM usp_outbox WHERE stream_id=$1', [`registry:${siteId}`])).rows[0].n,
+    h: await version(ids.H), f: await version(ids.F), e: await version(ids.E), b: await version(ids.B),
+  };
+  for (const recipient of [ids.F, ids.E, ids.B]) {
+    await assert.rejects(mutation('boundary_adjustment', [ids.H], [recipient], { transferredGeometry }),
+      (error: { status?: number }) => error.status === 409);
+  }
+  assert.deepEqual({
+    audit: (await pool.query('SELECT count(*)::int AS n FROM usp_project_identity_audit WHERE scope_id=$1', [siteId])).rows[0].n,
+    outbox: (await pool.query('SELECT count(*)::int AS n FROM usp_outbox WHERE stream_id=$1', [`registry:${siteId}`])).rows[0].n,
+    h: await version(ids.H), f: await version(ids.F), e: await version(ids.E), b: await version(ids.B),
+  }, beforeInvalid);
+  checks.push('boundary adjustment rejects unassigned, retired and cancelled recipients without writes');
+
   for (const id of [ids.F, ids.G]) {
     const scope = (await capture()).scope;
     const reviewed = await review('assign', scope, [id], { location });
@@ -240,7 +353,6 @@ try {
   }
   const fCode = await assertStatus(ids.F, 'assigned'), gCode = await assertStatus(ids.G, 'assigned');
   const beforeF = await version(ids.F), beforeG = await version(ids.G);
-  const transferredGeometry = { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] };
   await mutation('boundary_adjustment', [ids.F], [ids.G], { transferredGeometry });
   assert.equal(await assertStatus(ids.F, 'assigned'), fCode);
   assert.equal(await assertStatus(ids.G, 'assigned'), gCode);
@@ -249,7 +361,24 @@ try {
   assert.equal((await pool.query(`SELECT count(*)::int AS n FROM usp_project_lineage
     WHERE kind='boundary_adjustment' AND predecessor_id=$1 AND successor_id=$2
       AND transferred_geometry IS NOT NULL`, [ids.F, ids.G])).rows[0].n, 1);
+  assert.deepEqual((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
+    identifier: fCode })).successors, []);
+  await mutation('boundary_adjustment', [ids.G], [ids.F], { transferredGeometry });
+  assert.equal(await assertStatus(ids.F, 'assigned'), fCode);
+  assert.equal(await assertStatus(ids.G, 'assigned'), gCode);
+  assert.deepEqual((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
+    identifier: gCode })).successors, []);
   checks.push('boundary adjustment preserves both codes, advances both revisions and records geometry/evidence');
+  checks.push('reverse temporal boundary adjustment succeeds and never appears as identity successor');
+
+  assert.deepEqual(UspCommitReceiptSchema.parse(await assignProjectCode(ctx(), winning)), receiptA);
+  const tamperScope = (await capture()).scope;
+  await pool.query(`UPDATE usp_snapshot_bodies
+    SET body=jsonb_set(body,'{projectIdentity,status}','"retired"'::jsonb)
+    WHERE manifest_id=$1 AND namespace='registry_record' AND object_id=$2`, [tamperScope.manifestId, ids.H]);
+  await assert.rejects(resolveProjectIdentity(ctx(), { scope: tamperScope, identifier: hCode }),
+    (error: { status?: number; code?: string }) => error.status === 409 && error.code === 'USP_IDENTITY_SNAPSHOT_CORRUPT');
+  checks.push('old receipt replays after later data revisions; altered captured identity fails hash check');
 
   const finalRows = (await pool.query(`SELECT status,count(*)::int AS n FROM usp_project_codes
     WHERE scope_id=$1 GROUP BY status ORDER BY status`, [siteId])).rows;
