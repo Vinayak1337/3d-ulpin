@@ -1169,8 +1169,8 @@
       "C08",
       "C24"
     ],
-    "status": "pending",
-    "receipt": "docs/evidence/usp/orchestration/LEAD-01B/attempt-1/plan-validation.json"
+    "status": "passed",
+    "receipt": "docs/evidence/usp/orchestration/UI-replacement-sequencing/plan-validation.json"
   },
   "receiptContract": {
     "schemaVersion": "ulpin-test-receipt/1",
