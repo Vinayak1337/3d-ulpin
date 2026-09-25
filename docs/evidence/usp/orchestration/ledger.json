@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T20:16:57.051844+00:00",
+  "updatedAt": "2026-09-25T20:17:42.516993+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -211,15 +211,15 @@
       "title": "3D ULPIN worker \u2014 bootstrap and contracts",
       "requestedAgent": {
         "product": "Codex",
-        "model": "gpt-6-sol",
-        "effort": "xhigh"
+        "model": "gpt-6-astra",
+        "effort": "high"
       },
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "available",
+      "status": "assigned_FND-06_attempt_1",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1744,6 +1744,49 @@
         "Production build (guard blocked unrelated port3000)",
         "Independent cross-family/human milestone review"
       ]
+    },
+    {
+      "assignmentId": "FND-06",
+      "attempt": 1,
+      "callbackId": "ulpin-FND-06-attempt-1",
+      "objective": "Implement shared privacy redaction, explicit non-India provider egress gating, truthful capability copy and loopback Host protection through existing services.",
+      "baseCommit": "4eef5a535b9d7e8940401d20a67c578188a31ea0",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-06-privacy-egress",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "status": "dispatched",
+      "ownership": [
+        "Existing server privacy/redaction modules and direct call-site adapters across provider requests/responses, logs, derived previews/indexes. Preserve unchanged originals and access-controlled inspection.",
+        "apps/web/lib/server/officer-ai-provider.ts, officer-ai-validation.ts, officer-ai.ts and existing capability/status endpoints; no parallel gateway or job authority.",
+        "Loopback Host validation in actual Next request entry point and relevant configuration; read installed Next docs before changes.",
+        "Existing image derivative metadata-stripping path in services/geo or existing image processor; no original rewrites.",
+        "Narrow shared capability contract and Shell residency status slot/copy. Use design system and current light-only policy within this feature; no unrelated screen rewrite.",
+        "Focused tests, scripts/usp/gf/GF-PRIVACY verification and docs/evidence/usp/finale/GF-PRIVACY/FND-06/attempt-1/."
+      ],
+      "exclusions": [
+        "No new databases/queues/gateways or unrelated migrations/qualification/security relaxation.",
+        "No provider/network activation, real credentials, deployment/push/main or modification of populated data/env.",
+        "No authored synthetic source facts, dummy PII, generated image/doc fixtures or altered official sources.",
+        "Lead plans/ledger/AGENTS and user-staged skill changes."
+      ],
+      "acceptance": [
+        "H29 FND-06, H14Z2, H19Z1/Z4 and latest delivery policy; explicit producer/consumer coverage inventory.",
+        "One shared text redactor covers sourced Aadhaar with Verhoeff, VID, PAN, Indian mobiles and existing protections; minimized provider payloads and derivative/log redaction, exact source hashes preserved.",
+        "Strip EXIF/metadata on eligible image derivatives, do not represent metadata stripping as visual PII redaction; fail closed on unqualified image egress.",
+        "NOUS key ignored by default unless exact opt-in flag; all reachable legacy provider paths use guard before network calls; no secrets/error raw payload exposure.",
+        "Residency copy derived from capabilities, not assertion that local app/provider implies India residency.",
+        "Loopback Host allowlist validated before SSR/API/static data disclosure; forged Host403, safe parsing/IPv6/port/forwarded-header behavior, preserve legitimate local workflows.",
+        "Relevant tests and typecheck with no live provider calls; official source examples only where permitted, missing privacy/format case coverage explicit; retained corpus regression not new qualification.",
+        "No GF pass from configuration/unit tests; deployment egress firewall, real-source privacy and independent milestone review remain separate."
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-PRIVACY/FND-06/attempt-1/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -2491,7 +2534,7 @@
     }
   ],
   "nextSteps": [
-    "Dispatch FND-06 shared redaction, provider egress and loopback Host validation.",
+    "Review FND-06 privacy, provider egress and Host checks on callback.",
     "Continue UI replacement with dependent screen cards; retain UI-03 remaining obligations.",
     "All runtime and independent milestone qualification remain pending."
   ],
@@ -2819,7 +2862,7 @@
       "card": "FND-06",
       "title": "Redaction module, egress guard and Host allowlist",
       "needs": "none",
-      "status": "pending"
+      "status": "dispatched"
     },
     {
       "card": "INGEST-01",
