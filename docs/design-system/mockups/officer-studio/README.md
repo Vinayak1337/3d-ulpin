@@ -95,7 +95,7 @@ Labels are HTML overlays projected from 3D anchors (selected: primary pill; code
 
 ## Inspector variants
 
-The inspector holds one thing and re-keys (220 ms slide-in) when that thing changes.
+The inspector holds one thing and re-keys (220 ms slide-in) when that thing changes. The mockup shows only the Overview content; production inspectors carry the tabs **Overview · Rights · Evidence · Checks · History** from [surfaces-and-layout.md](../../surfaces-and-layout.md), with the facts below on Overview.
 
 | Selection | Title and status | Facts (all bound) | Footer |
 | --- | --- | --- | --- |
@@ -141,7 +141,7 @@ Pick work from [H29](../../../usp-agent-handoffs/29-agent-task-cards.md) as usua
 
 | Gate | Cards | Screens |
 | --- | --- | --- |
-| GF2 | UI-01, UI-02, UI-03, UI-04 | frame and tokens; S1–S5, S9–S11 |
+| GF2 | UI-01, UI-02, UI-03, UI-04, UI-08 | frame and tokens; S1–S5, S9–S11; removal of hard-coded demo content and "fictional" labels |
 | GF3 | UI-05 | S6–S8, S12, S13 |
 | GF4 | PACK-01 with UI | S14, P4L |
 | GF5 | UI-06, UI-07 | captures and journeys over all finale screens |
