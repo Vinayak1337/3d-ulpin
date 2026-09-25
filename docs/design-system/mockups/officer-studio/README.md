@@ -85,6 +85,7 @@ Selection state is `{mode, building, level, space, finding, view, render, colour
 | level | Levels above the chosen one are ghosts; the chosen level's shell is replaced by its spaces, coloured by the active Colour by with labels; the selected space in primary with a halo; estimated levels hatched |
 | underground | Ground and flats at `--ui-opacity-ground-cut`; soil section; depth ruler with ticks every 5 m to the deepest known band; below-ground levels shown; each utility band as a tube in its `--ui-utility-*` colour with "quality · tolerance" label and a sleeve only when tolerance is known; unknown bands hatched "No survey"; the trench as a dashed outline with the column above it highlighted |
 | findings | Volumes render, everything ghosted except the participants (ink outline); the finding's own geometry as a `--ui-mark-critical` hatched solid with its quantity label |
+| any, Enhanced view on | The same mode dressed with real-layer terrain, roads, water, trees, context massing, window bands, sun and shadows ([map-and-3d.md](../../map-and-3d.md) "Evidence view and Enhanced view", [H30](../../../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C). The mockup draws only the Evidence view; the Enhanced view has no mockup yet |
 | deviation | Split viewport with one synced camera: left sanctioned, right observed; the difference geometry hatched critical with its label on the right pane only |
 
 Labels are HTML overlays projected from 3D anchors (selected: primary pill; codes: mono muted; critical: danger pill; depth ticks: bare mono; space labels: white with a soft shadow, the selected one as a primary pill). Hide a label when its anchor is behind the camera or off screen.
@@ -95,7 +96,7 @@ Labels are HTML overlays projected from 3D anchors (selected: primary pill; code
 
 ## Inspector variants
 
-The inspector holds one thing and re-keys (220 ms slide-in) when that thing changes.
+The inspector holds one thing and re-keys (220 ms slide-in) when that thing changes. The mockup shows only the Overview content; production inspectors carry the tabs **Overview · Rights · Evidence · Checks · History** from [surfaces-and-layout.md](../../surfaces-and-layout.md), with the facts below on Overview.
 
 | Selection | Title and status | Facts (all bound) | Footer |
 | --- | --- | --- | --- |
@@ -103,6 +104,7 @@ The inspector holds one thing and re-keys (220 ms slide-in) when that thing chan
 | Space, reviewed | `space.label`, status; code if assigned; location line | level with lower–upper elevation and vertical reference; computed area with its evidence chip; declared area with its chip and difference badge; share; further facts; restricted fields as *Restricted* with the role | **Assign code** → then **Property Card** · **Review area** |
 | Space, draft | `space.label`, *Draft*; location line | level; anything missing as *Unknown* | **Request evidence** |
 | Finding | FindingCard: severity, check version, title, calculation lines, evidence chips | — | the finding's allowed actions |
+| Context building (Enhanced view) | "Context building · no record"; source layer and the rule that shaped it | — | **Add files** |
 | Underground | DigColumn over the depth range: each band with its depth, colour and label; unknown bands hatched | — | **Export screening report** · **Request survey** |
 
 A read-only role sees the same inspector with the primary action disabled and "Blocked: read-only role…" beneath it.
@@ -121,6 +123,8 @@ Every screen renders these from data. The mockup's state switcher (Default, Empt
 | No 3D | WebGL unavailable or a phone | the level's plan sheet plus the spaces list, same selection; info banner |
 | Replayed | `replayedAt` on a model answer | neutral badge with the date wherever that answer shows |
 | Restricted | `Value.state = withheld` with `requiredRole` | *Restricted* badge and the role; actions disabled with the reason |
+| Needs input | `SufficiencyDecision.outcome` is `ask` or `park` ([H30](../../../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) E) | At most five class-level questions with the evidence and "Not sure"; the rest listed under "Needs input" on the batch with what each unlocks; the object stays unplaced, never guessed |
+| Rejected for 3D | `SufficiencyDecision.outcome = reject_for_3d` | The file stays in the batch's sources as evidence with the reason; nothing on the map |
 | Mapping unavailable | `intake.provider = unavailable` | proposed mappings become *Manual*; warning "Automatic mapping unavailable. Map manually or save for later." |
 | Unknown, Estimated, Not assessed, Not comparable, Blocked, CRS unverified | per-value states | as in the [UI brief states table](../../ui-brief.md#states-every-screen-needs) |
 
@@ -141,7 +145,7 @@ Pick work from [H29](../../../usp-agent-handoffs/29-agent-task-cards.md) as usua
 
 | Gate | Cards | Screens |
 | --- | --- | --- |
-| GF2 | UI-01, UI-02, UI-03, UI-04 | frame and tokens; S1–S5, S9–S11 |
+| GF2 | UI-01, UI-02, UI-03, UI-04, UI-08 | frame and tokens; S1–S5, S9–S11; removal of hard-coded demo content and "fictional" labels |
 | GF3 | UI-05 | S6–S8, S12, S13 |
 | GF4 | PACK-01 with UI | S14, P4L |
 | GF5 | UI-06, UI-07 | captures and journeys over all finale screens |

@@ -40,7 +40,7 @@ The visual and content rules for every 3D ULPIN screen: the design language agen
   - the proposed project code (format in [H26](../usp-agent-handoffs/26-identifiers-and-standard-exchange.md)), labelled **3D ULPIN (proposed)**;
   - the separate **Location** line (parcel / structure / level / space segments), display only (H26 Z1);
   - the state's parcel code, labelled **Parcel ULPIN**, with its anchor state.
-- Fixed status words: *Draft*, *Needs evidence*, *Needs review*, *Reviewed*, *Recorded*, *Assigned*, *Retired*, *Cancelled*, *Unknown*, *Not assessed*, *Not comparable*, *Test fixture*. No synonyms.
+- Fixed status words: *Draft*, *Needs evidence*, *Needs review*, *Reviewed*, *Recorded*, *Assigned*, *Retired*, *Cancelled*, *Unknown*, *Not assessed*, *Not comparable*, *Test fixture* (an authored deviation shows *Seeded test case*). No synonyms. Never label data "fictional", "demo" or "demonstration data"; provenance comes from the record ([AGENTS.md](../../AGENTS.md)).
 - Errors say what happened and what to do: "parcels.shp has no CRS. Choose the coordinate system to continue." No "Oops", no apologies.
 - Portal copy ships in English and Hindi; Studio labels are English with Hindi-ready layouts (text expansion up to 30 %).
 

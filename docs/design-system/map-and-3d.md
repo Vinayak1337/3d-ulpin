@@ -59,7 +59,33 @@ A finding highlights only its participants and the exact geometry at issue. An o
 
 ## Tools and readouts
 
-Floating toolbar (top-left of the canvas): Select, Measure distance, Measure area, Section, Impact screening (draw a trench or volume), Underground, then 2D/3D, Model/Volumes, Reset camera. Bottom-right: zoom, north arrow, scale bar. Bottom edge: coordinate readout in mono with easting, northing, height and the named frames, for example "<CRS> · <height> m · <named reference>".
+Floating toolbar (top-left of the canvas): Select, Measure distance, Measure area, Section, Impact screening (draw a trench or volume), Underground, then 2D/3D, Model/Volumes, Reset camera. Bottom-right: zoom, north arrow, scale bar. Bottom edge: coordinate readout in mono with easting, northing, height and the named frames, for example "<CRS> · <height> m · <named reference>". Beside the readout, an attribution line names every layer on screen (for example "© OpenStreetMap contributors"); it never hides while that layer is visible.
+
+## Evidence view and Enhanced view
+
+The map has two views, switched in the toolbar and remembered per viewer. Rules and data are in [H30](../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C–D.
+
+- **Evidence view** (default for recording, checks and measurement) is the quiet scene above: neutral massing, one green selection, unknown shown as *Unknown*.
+- **Enhanced view** has two tiers of context:
+  - Where a permitted drone capture covers the area, its photoreal mesh is the context layer, labelled with its capture date. Picks pass through it to the recorded building, and floor isolation, sections and underground mode clip it away.
+  - Elsewhere, the view dresses the same real area with deterministic context built from real layers:
+    - terrain from the DEM with a soft hillshade;
+    - road ribbons, water and green areas;
+    - seeded tree instances;
+    - context buildings massed by the height precedence;
+    - a slab line per storey and window bands.
+  - Both tiers share one sun from date, time and place, with soft shadows and ambient occlusion.
+- Colour stays calm in the Enhanced view:
+  - terrain, vegetation, water and roads use muted natural tones derived from the `--ui-map-*` tokens;
+  - buildings are light concrete and plaster greys with slightly darker window bands;
+  - the hero building keeps the Colour by and selection rules above.
+  - Proposed Enhanced-view tokens are added under UI-01 and synced back to the team design system before use.
+- Generated content never looks like evidence:
+  - it carries a fine pattern visible on hover and focus;
+  - the legend reads "Enhanced view: generated context";
+  - exports and screenshots keep that legend.
+- A context building is not a property. Selecting it shows "Context building · no record" with its source layer and the rule that shaped it, plus **Add files**.
+- Switching views never moves the camera, changes the selection or changes any number in the inspector.
 
 ## Camera
 
