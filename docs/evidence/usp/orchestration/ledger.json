@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T12:23:17.630227+00:00",
+  "updatedAt": "2026-09-25T12:24:38.603809+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "604ab6521e75618fe57dd284bfaa84b97a133dbf",
+    "acceptedStagingBase": "7d056675c766d81280ac81c69572d2d01d3cde0b",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -141,14 +141,14 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "xhigh"
+        "effort": "high"
       },
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "available",
+      "status": "assigned_UI-01",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -645,6 +645,55 @@
           "UI/history/exchange/QR/scale/deployment and independent milestone review remain pending"
         ]
       }
+    },
+    {
+      "assignmentId": "UI-01",
+      "attempt": 1,
+      "callbackId": "ulpin-UI-01-attempt-1",
+      "objective": "Adopt shared design tokens, offline Noto fonts and canonical Phosphor Icon foundation with verified contrast and live renders",
+      "baseCommit": "7d056675c766d81280ac81c69572d2d01d3cde0b",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-01-design-foundations",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "apps/web/features/officer/shared/tokens.css",
+        "apps/web/features/officer/shared/ui.tsx Icon only",
+        "apps/web/features/officer/shared/ui.css token-driven foundation rules only",
+        "apps/web/app/base.css font registration only; separate local font CSS if useful",
+        "apps/web/public/fonts/ new licensed font assets and licence",
+        "scripts/usp/ui/UI-01* and icon-import warning checker",
+        "tests/usp-ui-foundations*",
+        "package.json one lint:icons script if needed; no dependency changes",
+        "scripts/usp/isolated-live.mjs minimal UI-01 verification hook",
+        "docs/evidence/usp/finale/GF-VIEW/UI-01/"
+      ],
+      "exclusions": [
+        "UI-02 frame/navigation behavior",
+        "UI-03 map materials/selection",
+        "UI-08 content cleanup or protected dataset edits",
+        "backend/contracts/migrations",
+        "dependency version changes",
+        "historical receipts",
+        "release plan/ledger edits",
+        "remote publication/deployment"
+      ],
+      "acceptance": [
+        "H29 UI-01 and H99 Z1/Z6",
+        "Runtime --ui-* values include map/rights/marks/ramps/utilities/dark; scoped styles preserved",
+        "Self-hosted Noto Sans/Devanagari/Mono load without external font requests; Hindi glyph shaping checked",
+        "Reuse existing Phosphor wrapper, regular weight, appropriate sizes/currentColor and accessibility",
+        "Warn on newly introduced lucide imports without removing untouched legacy screens",
+        "Actual contrast checks for used text/control pairs in both themes, focused tests/typecheck/build and fresh live browser evidence"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-01/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -1389,9 +1438,9 @@
     }
   ],
   "nextSteps": [
-    "Finish bounded command selection correction R7, then accept FND-02 if its isolated regression passes.",
-    "Next UI-01 foundations with frontend-design skill, followed by UI-02 frame.",
-    "Retain pending GF0 and independent qualification; no gate promotion."
+    "End turn after UI-01 dispatch; resume on callback.",
+    "Review offline font/contrast/live-render evidence, integrate accepted UI-01, then UI-02 Studio frame.",
+    "Retain pending GF0 data/LEAD-01B and all runtime qualification limits; follow H29 remaining dependencies."
   ],
   "processedCallbacks": [
     {
@@ -1663,7 +1712,7 @@
       "card": "UI-01",
       "title": "Tokens, fonts and icons",
       "needs": "none",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "card": "UI-02",
