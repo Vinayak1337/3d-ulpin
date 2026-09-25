@@ -28,6 +28,9 @@ test('missing production consumer or test evidence changes the reported status',
     for (const [name, body] of [['producer.ts', 'produce()'], ['consumer.ts', 'produce()'],
       ['contract.ts', 'shape'], ['test.ts', 'assert']]) await writeFile(join(root, name), body);
     assert.equal((await inspectSeam(root, spec)).status, 'works');
+    const noConsumer = await inspectSeam(root, { ...spec, consumer: null, consumerMarker: null });
+    assert.equal(noConsumer.status, 'partial');
+    assert.deepEqual(noConsumer.problems, ['production_consumer_not_found']);
     await rm(join(root, 'consumer.ts'));
     assert.deepEqual((await inspectSeam(root, spec)).problems, ['consumer_file_missing']);
     assert.equal((await inspectSeam(root, spec)).status, 'missing');

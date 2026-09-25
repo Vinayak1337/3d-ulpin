@@ -108,7 +108,8 @@ export async function inspectSeam(root, spec) {
   return {
     id: spec.id, producer: spec.producer, consumer: spec.consumer, contract: spec.contract,
     test: spec.test, testCommand: spec.testCommand,
-    status: problems.some(problem => problem !== 'production_consumer_not_found') ? 'missing' : spec.declaredStatus,
+    status: problems.some(problem => problem !== 'production_consumer_not_found') ? 'missing'
+      : !spec.consumer && spec.declaredStatus === 'works' ? 'partial' : spec.declaredStatus,
     evidence: spec.evidence, limitation: spec.limitation, problems,
     fileEvidence: { producer, consumer, contract, test },
   };
