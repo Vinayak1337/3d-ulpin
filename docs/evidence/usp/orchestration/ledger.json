@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T12:54:15.381829+00:00",
+  "updatedAt": "2026-09-25T13:13:42.014795+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -56,6 +56,12 @@
         "assignmentId": "FND-02",
         "integrationMethod": "merge preserving all attempts and tested-commit ancestry",
         "scope": "Local reviewed identity transactions, exact resolver and authored isolated integration"
+      },
+      {
+        "sourceCommit": "15eda07dd62c282c7b17952321e981f0747479a4",
+        "assignmentId": "UI-01",
+        "integrationMethod": "merge preserving failed and passed attempts",
+        "scope": "Offline fonts, shared tokens/icon foundation and focused light/dark contrast"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -148,7 +154,7 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "assigned_UI-01_attempt_2",
+      "status": "available",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -768,14 +774,30 @@
         "Warn on newly introduced lucide imports without removing untouched legacy screens",
         "Actual contrast checks for used text/control pairs in both themes, focused tests/typecheck/build and fresh live browser evidence"
       ],
-      "status": "dispatched",
+      "status": "accepted_bounded_ui_foundations",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-01/attempt-2/report.md",
-      "resultCommit": null,
+      "resultCommit": "15eda07dd62c282c7b17952321e981f0747479a4",
       "continuationCommit": "fea3055813c050a694cc6ed76e97c3b8d470c144",
       "correctionFindings": [
         "UI01-R1",
         "UI01-R2"
-      ]
+      ],
+      "testedCommit": "e7e533a702ab3fd5b594ab648bca6f908808ac74",
+      "acceptedAt": "2026-09-25T13:13:42.014795+00:00",
+      "review": {
+        "independence": "same_family",
+        "verdict": "R1/R2 addressed; accepted UI-01 foundations, not whole GF-VIEW qualification",
+        "checks": [
+          "All evidence/source/run hashes and ancestry verified",
+          "21 final internal zero exits; failed diagnostics retained",
+          "Dark desktop, dark phone and 200% captures visually inspected",
+          "Merged integration: 20 UI tests, typecheck and lint:icons pass"
+        ],
+        "limits": [
+          "Phone compact actions and 200% below-fold map deferred to UI-02",
+          "No all-route accessibility, UI-02 layout, runtime theme toggle or independent milestone pass"
+        ]
+      }
     }
   ],
   "capabilityChecklist": [
@@ -953,8 +975,10 @@
         "GF-VIEW"
       ],
       "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
-      "status": "pending_current_evidence",
-      "evidence": []
+      "status": "partial_ui_foundations",
+      "evidence": [
+        "docs/evidence/usp/finale/GF-VIEW/UI-01/attempt-2/report.md"
+      ]
     },
     {
       "id": "R-RIGHTS",
@@ -1589,6 +1613,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "fea3055813c050a694cc6ed76e97c3b8d470c144",
       "result": "corrections_required_not_integrated"
+    },
+    {
+      "callbackId": "ulpin-UI-01-attempt-2",
+      "assignmentId": "UI-01",
+      "attempt": 2,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "15eda07dd62c282c7b17952321e981f0747479a4",
+      "result": "accepted_bounded_ui_foundations"
     }
   ],
   "observations": [
@@ -1802,7 +1834,7 @@
       "card": "UI-01",
       "title": "Tokens, fonts and icons",
       "needs": "none",
-      "status": "in_progress"
+      "status": "accepted_bounded_scope"
     },
     {
       "card": "UI-02",
