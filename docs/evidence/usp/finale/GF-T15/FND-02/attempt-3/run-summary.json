@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "fnd-02-attempt-3-evidence/1",
+  "originalBaseCommit": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
+  "planRefreshCommit": "604ab6521e75618fe57dd284bfaa84b97a133dbf",
+  "priorResultCommit": "7e3a2166f7372199b4b309ffbc0470964459e48a",
+  "codeCommit": "f138320d3f8070d93e5730ce035935b7a2718482",
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-sol",
+    "effort": "xhigh"
+  },
+  "runner": {
+    "result": "PASS",
+    "scopeId": "local-03df105c64e59734",
+    "commands": [
+      {
+        "label": "source-sha",
+        "exitCode": 0
+      },
+      {
+        "label": "docker-context",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-project",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-volumes",
+        "exitCode": 0
+      },
+      {
+        "label": "services-start",
+        "exitCode": 0
+      },
+      {
+        "label": "database-restore",
+        "exitCode": 0
+      },
+      {
+        "label": "migration",
+        "exitCode": 0
+      },
+      {
+        "label": "repeat-migration",
+        "exitCode": 0
+      },
+      {
+        "label": "usp-verify-live",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-authored-pack",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-live-verify",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-d1-studio-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "gf-t15-project-identity",
+        "exitCode": 0
+      },
+      {
+        "label": "owned-services-cleanup",
+        "exitCode": 0
+      }
+    ],
+    "rawReceiptSha256": "5b8c9cd565d61f9761d9bb4405491006d0ba8372d53754ba2486b99b3124ce01"
+  },
+  "gfT15": {
+    "status": "passed",
+    "scopeId": "cd30e983-9d1f-4777-af37-5d7f9e433dc7",
+    "sourceSha256": "783719ada119a459da27816e97ae23db2741462575b664109b65b23bf17db4de",
+    "checks": [
+      "authored synthetic site, source and eight independent space UUIDs inserted in disposable database",
+      "two-writer same-record race, exact replay and changed-payload 409",
+      "canonical stored/HTTP/replayed receipts and changed access, policy or role rejection",
+      "stale manifest 409 before code reservation",
+      "stale version 409 and namespace unique-index savepoint retry",
+      "injected fault rolls back code and receipt; exact request subsequently succeeds",
+      "status-aware project-code resolver and locator string 422",
+      "pre-assignment and selected-target snapshots do not expose later or unrelated identities",
+      "A-only selection rejects unselected assignment, correction, split, merge and boundary reviews with no writes",
+      "already-prepared unselected review cannot commit; shared command validator rolls back cleanly",
+      "reviewed two-parcel duplex locator correction preserves code",
+      "unreviewed parcel stays NO-ANCHOR; reviewed primary appears without changing identity",
+      "identity mutation post-state snapshot retains exact target selection and persisted pin",
+      "literal assertion metadata, mixed-complete rejection and stale source/revision pins",
+      "unsupported 1-to-1 split returns 422 before mutation",
+      "atomic split and merge with fresh successor UUID/code, retirement and retained old resolver",
+      "error cancellation and terminal retirement retain nonreusable tombstones",
+      "boundary adjustment rejects unassigned, retired and cancelled recipients without writes",
+      "boundary adjustment preserves both codes, advances both revisions and records geometry/evidence",
+      "fully selected two-target boundary review and commit retain both post-state pins",
+      "reverse temporal boundary adjustment succeeds and never appears as identity successor",
+      "old receipt replays after later data revisions; altered captured identity fails hash check"
+    ],
+    "rows": [
+      {
+        "status": "assigned",
+        "n": 3
+      },
+      {
+        "status": "cancelled_error",
+        "n": 1
+      },
+      {
+        "status": "retired",
+        "n": 4
+      }
+    ],
+    "auditCount": 14,
+    "receiptCount": 14,
+    "representativeReceipts": [
+      "ac34acd3-b98b-4f56-b091-69c6ac4b848f",
+      "3d2bf434-57dd-47e9-bda7-12cdb16d908a",
+      "77405791-745c-444b-823d-5d75e81ec101"
+    ],
+    "rawReceiptSha256": "d217389764faa277f31a94237ccce6a340ba07a1237e7a4f7ed21b3bf6a3e94c"
+  },
+  "screenshots": {
+    "d0-unit-desktop.png": "9660f07937ed51a26286de8f212835766d13114833b37d81355f1529de1c09a3",
+    "d1-roof-desktop.png": "2172e22b009b0aee60e651b8834a75db6840e9d40aeb36b87dd05fea0c17f40c"
+  },
+  "qualification": "authored local identity scope integration only; full GF0/GF1/GF-T15 pending independent review and other owner work"
+}
