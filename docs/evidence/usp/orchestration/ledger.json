@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T17:49:15.374997+00:00",
+  "updatedAt": "2026-09-25T17:51:17.227118+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -1470,6 +1470,17 @@
           "scope": "Wording only for the two surfaced resident/right validation errors and unqualified overlap inspector badge. Use Test fixture terminology tied to existing explicit synthetic classification, preserve all validation/status/normalization behavior. Geometry finding wording must not imply current analytical qualification.",
           "reason": "Import errors surface banned fictional copy; local-overlap badge currently says Conflict detected despite absent analytical qualification.",
           "confirmedAt": "2026-09-25T17:49:15.374997+00:00"
+        },
+        {
+          "paths": [
+            "scripts/usp/local-isolation.mjs",
+            "scripts/usp/ui/UI-08-isolated-preview.mjs",
+            "tests/usp-ui-preview-isolation.test.mjs",
+            "tests/e2e/usp-ui08-content.spec.ts"
+          ],
+          "scope": "Bounded read-only UI preview verification: explicit opt-in isolated preview profile on loopback3108 with existing nonce/context/database/bucket/secret/port checks preserved. Default profiles/build guard unchanged. Restore unchanged hash-pinned repository DB/object snapshot once into verified empty nonce-owned services; no seed/import/bundle install. Start owned Next dev in worker checkout only; capture actual available routes and clean up only owned processes/services.",
+          "reason": "Production build blocked by unrelated port3000 server; safe isolated preview can supply real UI evidence without changing protected services or data. Missing screenshots should not be declared unavoidable before trying this bounded route.",
+          "confirmedAt": "2026-09-25T17:51:17.227118+00:00"
         }
       ]
     }
