@@ -8,6 +8,10 @@
   color: var(--ui-primary);
 }
 
+.ulpin-app.studio-operations .ui-map-mode button[aria-pressed="true"] {
+  color: var(--ui-on-primary);
+}
+
 /* Dark compatibility while UI-02 migrates the remaining frame styles. */
 .ulpin-app.studio-operations[data-theme="dark"] :is(
   .city-header,
