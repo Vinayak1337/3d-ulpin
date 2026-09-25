@@ -127,7 +127,7 @@ Label and value rows (`ul-dl`): muted label on the left (40 %), value on the rig
 - Units always shown; heights name their vertical reference.
 
 ### Tabs
-Underlined tab row (`ul-tabs`, `ul-tab`) for inspector and register sections. Inspector: **Overview · Rights · Evidence · Checks · History**. Register: **Units · Shares · Documents · Checks · History**. The selected tab is primary with a 2 px underline; sentence case. Parcel, utility, photos and history are tabs, not pages.
+Underlined tab row (`ul-tabs`, `ul-tab`) for inspector and register sections. Inspector: **Overview · Rights · Evidence · Checks · History**. Register: **Units · Shares · Documents · Checks · History** (Documents answers `tab=evidence`). The selected tab is primary with a 2 px underline; sentence case. Parcel, utility, photos and history are tabs, not pages.
 
 ### Toggle
 A 36 × 20 switch (`ul-toggle`, `role="switch"`) for layer visibility and Property Card redaction. Always beside a visible text label in the same row (`ul-layer` with `ul-grow`), with the same text as `aria-label`. Primary fill when on; `--ui-surface-subtle` with a `--ui-line-control` outline when off.

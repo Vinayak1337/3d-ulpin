@@ -73,7 +73,7 @@ Helsinki and 3DBAG both build two products from one capture: a textured context 
 | Step | Tool (conditional on the suitability gate above) | Output artefact and contract |
 | --- | --- | --- |
 | 1. Capture | Open drone dataset with overlapping imagery and published GCPs, split into control and at least 3 held-out checkpoints (leave-one-out when fewer than 8) | `capture-manifest.csv`: images, camera, GCP and checkpoint coordinates with horizontal CRS and named vertical reference |
-| 2. Reconstruct | OpenDroneMap | Orthophoto, DSM, DTM, point cloud and the reconstruction report with checkpoint residuals |
+| 2. Reconstruct | OpenDroneMap | Orthophoto, DSM, DTM, point cloud, textured mesh (the display-only context layer of [H30](30-reference-scene-and-incomplete-data.md) C tier 1) and the reconstruction report with checkpoint residuals |
 | 3. Classify | PDAL | Ground/non-ground cloud; building labels still come from step 4 |
 | 4. Footprints | Learned building-mask route (GF-AI) plus officer review | Reviewed **roofprints** (imagery outlines include chajjas and balconies; they are not ground footprints) |
 | 5. LoD1.2 prism | Deterministic | `groundZ` = median DTM sample in a 1–3 m ring outside the footprint, storing min and max for slope; roof height = 70th percentile of nDSM inside the roofprint (record 50p, 70p and max as 3DBAG does; freeze 70p for the prism in GF0). CityJSON `lod: "1.2"` |

@@ -36,6 +36,7 @@ Built by [UI-01 to UI-04](../../../usp-agent-handoffs/29-agent-task-cards.md#gf2
 - One inline question at a time from `files[].questions[]`, on an info-soft band: "<field> looks like <concept> in <from>. Convert to <to>?" with **Yes**, **No**, **Choose field**; once answered it shows a *Reviewed* badge with the outcome.
 - Provider down (`intake.provider = unavailable`): proposed mappings show *Manual* and a warning band "Automatic mapping unavailable. Map manually or save for later." with **Map manually**.
 - A muted line lists profiles that are *Planned* rather than hiding them.
+- Beneath the table, a "Needs input" list shows parked objects with the exact missing item and what it unlocks, and a "Kept as evidence" list shows files rejected for 3D with the reason ([H30](../../../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) E). Questions never exceed five per batch.
 - Footer: **Save and continue later** (ghost), **Start import** (primary).
 
 ### S3 Live import on map — `/studio/imports/:importPackageId`
@@ -104,7 +105,7 @@ Built by [UI-05](../../../usp-agent-handoffs/29-agent-task-cards.md#ui-05--regis
 
 - Identity header once (surface, bottom divider): title `building.label` with status and provenance badges; muted line with address, Parcel ULPIN (mono) and tenure regime. Actions: **Back to map**, **Deviation check** (toggles S13), **Export** menu from `building.exports` (planned items disabled with a *Planned* badge), **Property Card** (primary; disabled with "Blocked: assign a proposed code first" or "Blocked: read-only role").
 - Stale or error banner under the header when present.
-- Body `minmax(0,55fr) minmax(0,45fr)`: left the model with the level rail (clicking a level isolates it); right tabs **Units · Shares · Documents · Checks · History**:
+- Body `minmax(0,55fr) minmax(0,45fr)`: left the model with the level rail (clicking a level isolates it); right tabs **Units · Shares · Documents · Checks · History** (Documents is H99's `tab=evidence`):
   - Units: DataTable of spaces — Level, Unit (600), Code (mono or "After review"), computed area m², share %, Status; unknown numbers as *Unknown*; a "<n> more units" footer when paged.
   - Shares: `ShareLedger` with regime, basis, population declared of total, rows and a footer flag when `total` differs from `expected`.
   - Documents: `building.documents` as chips with their locators.
