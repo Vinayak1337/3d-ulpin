@@ -48,7 +48,7 @@
   box-shadow: none;
   gap: 5px;
 }
-.ulpin-app.studio-operations .ui-map-toolbar > .ui-button { background: var(--ui-surface); color: var(--ui-ink); border: 1px solid var(--ui-line-control); }
+.ulpin-app.studio-operations .ui-map-toolbar > .ui-button { background: var(--ui-surface); color: var(--ui-ink); border: 1px solid var(--ui-muted); }
 .ulpin-app.studio-operations .ui-map-mode { background: var(--ui-surface); border-color: var(--ui-line-control); }
 .ulpin-app.studio-operations .ui-panel-switches { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--ui-line-control); border-radius: 6px; background: var(--ui-surface); box-shadow: 0 2px 8px #14251a14; }
 .ulpin-app.studio-operations .ui-panel-switches button {
