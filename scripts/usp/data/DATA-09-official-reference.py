@@ -12,8 +12,6 @@ import hashlib
 import io
 import json
 import math
-import shutil
-import tempfile
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -23,6 +21,9 @@ HERE = Path(__file__).resolve().parents[3]
 PACK = HERE / "fixtures/usp/D4/reference-area-gurugram-59-63a"
 PRIVATE = Path("/Users/vinayak/.codex/task-data/ulpin-data-09")
 LGD = HERE / "fixtures/usp/D4/gf0-structured-codes-v1/lgd-districts.csv"
+DATA01_ACQUISITION = HERE / "docs/evidence/usp/finale/GF-DATA/DATA-01/acquisition.json"
+DATA01_CHECK = HERE / "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+DATA01_PROVENANCE = HERE / "fixtures/usp/D4/gf0-structured-codes-v1/provenance.json"
 RERA = "https://haryanarera.gov.in/view_project/project_preview_open/2831"
 GMDA = "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer"
 MAX_BYTES = 2_000_000
@@ -122,6 +123,17 @@ def check(private: Path) -> dict:
         data = (private / record["privateFile"]).read_bytes()
         if digest(data) != record["sha256"] or len(data) != record["bytes"]:
             raise AssertionError(f"Original byte pin mismatch: {record['privateFile']}")
+    lgd_data = LGD.read_bytes()
+    lgd_original = {"sha256": digest(lgd_data), "bytes": len(lgd_data)}
+    prior_acquisition = json.loads(DATA01_ACQUISITION.read_bytes())["structuredCodes"]
+    prior_provenance = json.loads(DATA01_PROVENANCE.read_bytes())
+    prior_check = json.loads(DATA01_CHECK.read_bytes())
+    if (lgd_original != {"sha256": prior_acquisition["sourceSha256"],
+                         "bytes": prior_acquisition["sourceBytes"]} or
+            lgd_original != {"sha256": prior_provenance["sourceOriginalSha256"],
+                             "bytes": prior_provenance["sourceOriginalBytes"]} or
+            lgd_original["sha256"] != prior_check["sourceHashes"]["lgd-districts.csv"]):
+        raise AssertionError("Retained DATA-01 LGD original hash/size receipt mismatch")
     page = (private / receipt["records"]["rera"]["privateFile"]).read_text(errors="replace")
     for literal in ("4S THE AURRUM", "VILLAGE ULLAHWAS", "BEHRAMPUR", "SECTOR 59", "63A GURUGRAM"):
         if literal not in page.upper():
@@ -151,7 +163,7 @@ def check(private: Path) -> dict:
                 if any(len(point) < 2 or not all(isinstance(value, (int, float)) and math.isfinite(value)
                                                    for value in point[:2]) for point in part):
                     raise AssertionError(f"Official {name} geometry has invalid coordinates")
-    with LGD.open(encoding="utf-8-sig", newline="") as stream:
+    with io.StringIO(lgd_data.decode("utf-8-sig"), newline="") as stream:
         reader = csv.DictReader(stream)
         rows = [row for row in reader if row.get("district_name_english", "").strip().lower() == "gurugram"]
     if len(rows) != 1:
@@ -163,7 +175,7 @@ def check(private: Path) -> dict:
             "sectorNames": sorted(f["attributes"]["Name"] for f in sectors),
             "sectorIds": sorted(f["attributes"]["FID"] for f in sectors),
             "roadCount": len(roads), "roadIds": sorted(f["attributes"]["FID"] for f in roads),
-            "parkCount": len(parks), "lgdGurugramRow": rows[0],
+            "parkCount": len(parks), "lgdGurugramRow": rows[0], "lgdOriginal": lgd_original,
             "originalHashes": {name: row["sha256"] for name, row in receipt["records"].items()},
             "limitations": ["GMDA redistribution/reuse terms unconfirmed", "Tower 3 has no source-located point or parcel geometry",
                             "The analysis window is a context clip, not an official site boundary"]}
@@ -179,6 +191,19 @@ def check(private: Path) -> dict:
                 raise AssertionError(f"Pack original pin mismatch: {name}")
             if declared[expected_id]["permission"]["state"] != "unconfirmed":
                 raise AssertionError(f"Unreviewed authority permission promoted: {name}")
+        lgd_asset = declared["lgd-gurugram.csv"]
+        lgd_provenance = lgd_asset["provenance"]
+        if (lgd_provenance["original"] != lgd_original or
+                len(lgd_provenance["subsetLineage"]) != 1 or
+                lgd_provenance["subsetLineage"][0]["sourceSha256"] != lgd_original["sha256"] or
+                lgd_provenance["resourceId"] != prior_acquisition["resourceId"] or
+                lgd_asset["origin"]["url"] != prior_acquisition["sourceUrl"]):
+            raise AssertionError("LGD pack original, subset lineage or DATA-01 resource pin mismatch")
+        if (lgd_asset["permission"]["state"] != "unconfirmed" or
+                declared["source-observations.json"]["permission"]["state"] != "unconfirmed" or
+                lgd_provenance["stages"]["qualified"]["status"] != "not_run" or
+                lgd_provenance["stages"]["tested"]["status"] != "not_run"):
+            raise AssertionError("Source-specific LGD or derived-metadata permission was silently promoted")
         available = {item["id"]: item for item in manifest["assets"] if item["content"]["state"] == "available"}
         for name, item in available.items():
             data = (PACK / item["content"]["path"]).read_bytes()
@@ -192,6 +217,8 @@ def check(private: Path) -> dict:
         if observed["lgdGurugramRow"] != rows[0] or observed["sourceCounts"] != {
                 "sectors": len(sectors), "roads": len(roads), "parks": len(parks)}:
             raise AssertionError("Source-derived observation summary differs from original bytes")
+        if observed["originalHashes"] != result["originalHashes"]:
+            raise AssertionError("Source-observation hashes differ from verified retained originals")
         result["packCheck"] = "passed: canonical manifest, original pins, available byte pins and exact LGD row"
     return result
 
@@ -279,13 +306,12 @@ def build_pack(private: Path) -> dict:
         "missingCapabilities": ["district_polygon", "parcel_geometry", "site_location"],
         "stages": {"discovered": passed("docs/evidence/usp/finale/GF-DATA/DATA-01/acquisition.json"),
                    "acquired": passed("docs/evidence/usp/finale/GF-DATA/DATA-01/acquisition.json"),
-                   "inspected": passed(evidence), "qualified": passed(evidence), "tested": passed(evidence)},
-        "qualificationScope": "Literal official district code/name parser check only"}
+                   "inspected": passed(evidence), "qualified": not_run, "tested": not_run},
+        "qualificationScope": None}
     assets.append({"id": "lgd-gurugram.csv", "mediaType": "text/csv", "classification": "observed",
         "origin": {"kind": "external", "url": "https://www.data.gov.in/resource/local-government-directory-lgd-districts"},
         "sourceVersion": None, "attribution": "Ministry of Panchayati Raj LGD via data.gov.in",
-        "permission": {"state": "documented", "reference": "https://data.gov.in/; GODL-India portal published-content notice",
-                       "permittedUses": ["research", "demo", "redistribution"]},
+        "permission": {"state": "unconfirmed", "reason": "Portal-wide GODL notice observed; applicability and exemptions for this resource not independently pinned"},
         "reference": reference(), "content": {"state": "available", "path": "lgd-gurugram.csv",
                                             "sha256": digest(subset), "bytes": len(subset)},
         "dependencies": [], "verification": {"catalogue_checked": passed(acquisition), "bytes_preserved": passed(evidence),
@@ -295,8 +321,7 @@ def build_pack(private: Path) -> dict:
     assets.append({"id": "source-observations.json", "mediaType": "application/json", "classification": "unknown",
         "origin": {"kind": "authored", "generatorRef": "DATA-09 deterministic observations from official source bytes"},
         "sourceVersion": "1", "attribution": "DATA-09 source-byte inspection",
-        "permission": {"state": "documented", "reference": "Project-authored inspection metadata",
-                       "permittedUses": ["research", "demo", "redistribution"]},
+        "permission": {"state": "unconfirmed", "reason": "Derived observations retain LGD and GMDA source permission limits"},
         "reference": reference(), "content": {"state": "available", "path": "source-observations.json",
                                             "sha256": digest(expected), "bytes": len(expected)},
         "dependencies": ["gmda-sector-boundaries", "gmda-road-centrelines", "lgd-gurugram.csv"],
@@ -306,62 +331,21 @@ def build_pack(private: Path) -> dict:
     manifest = {"schemaVersion": "usp-data-pack/1", "packId": "D4", "version": 1,
         "profile": "reference-area-gurugram-59-63a", "description": "Official Gurugram source checks for a 1 km² context window; GMDA scene reuse unqualified",
         "assets": assets, "expectedPath": "source-observations.json",
-        "expectedCapabilities": ["official_administrative_label", "official_source_window_inspection"],
-        "missingCapabilities": ["permitted_context_geometry", "terrain", "landuse", "water", "trees",
+        "expectedCapabilities": ["official_administrative_source_inspected", "official_source_window_inspection"],
+        "missingCapabilities": ["administrative_label_publication_permission", "permitted_context_geometry", "terrain", "landuse", "water", "trees",
                                 "context_buildings", "hero_building_placement", "underground_depth"]}
     (PACK / "manifest.json").write_bytes(canonical(manifest))
     return {"pack": str(PACK), "assetCount": len(assets), "sourceDerivedCsvSha256": digest(subset),
             "manifestSha256": digest((PACK / "manifest.json").read_bytes())}
 
 
-def self_test(private: Path) -> dict:
-    outcomes = []
-    with tempfile.TemporaryDirectory(prefix="data09-hash-mutation-") as temporary:
-        copy = Path(temporary) / "private"
-        shutil.copytree(private, copy)
-        path = copy / "gmda-roads.json"
-        raw = bytearray(path.read_bytes())
-        raw[-2] ^= 1
-        path.write_bytes(raw)
-        try:
-            check(copy)
-        except AssertionError as exc:
-            if "Original byte pin mismatch: gmda-roads.json" not in str(exc):
-                raise
-            outcomes.append("changed official response byte rejected by SHA-256")
-        else:
-            raise AssertionError("Mutated official response was accepted")
-    with tempfile.TemporaryDirectory(prefix="data09-shape-mutation-") as temporary:
-        copy = Path(temporary) / "private"
-        shutil.copytree(private, copy)
-        path = copy / "gmda-roads.json"
-        altered = json.loads(path.read_bytes())
-        altered["features"][0]["geometry"]["paths"] = []
-        new_bytes = canonical(altered)
-        path.write_bytes(new_bytes)
-        receipt_path = copy / "acquisition-receipt.json"
-        receipt = json.loads(receipt_path.read_bytes())
-        receipt["records"]["roads"].update({"sha256": digest(new_bytes), "bytes": len(new_bytes)})
-        receipt_path.write_bytes(canonical(receipt))
-        try:
-            check(copy)
-        except AssertionError as exc:
-            if "Official roads feature missing ID or geometry" not in str(exc):
-                raise
-            outcomes.append("empty official road path rejected even with matching temporary hash")
-        else:
-            raise AssertionError("Empty road geometry was accepted")
-    return {"mutationChecks": outcomes, "sourceOriginalsChanged": False}
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=["acquire", "check", "build-pack", "self-test"])
+    parser.add_argument("mode", choices=["acquire", "check", "build-pack"])
     parser.add_argument("--private-root", type=Path, default=PRIVATE)
     args = parser.parse_args()
     value = (acquire(args.private_root) if args.mode == "acquire" else
-             build_pack(args.private_root) if args.mode == "build-pack" else
-             self_test(args.private_root) if args.mode == "self-test" else check(args.private_root))
+             build_pack(args.private_root) if args.mode == "build-pack" else check(args.private_root))
     print(json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2))
 
 

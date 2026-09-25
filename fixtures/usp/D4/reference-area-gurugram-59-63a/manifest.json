@@ -415,13 +415,8 @@
         "url": "https://www.data.gov.in/resource/local-government-directory-lgd-districts"
       },
       "permission": {
-        "permittedUses": [
-          "research",
-          "demo",
-          "redistribution"
-        ],
-        "reference": "https://data.gov.in/; GODL-India portal published-content notice",
-        "state": "documented"
+        "reason": "Portal-wide GODL notice observed; applicability and exemptions for this resource not independently pinned",
+        "state": "unconfirmed"
       },
       "provenance": {
         "acquiredAt": "2026-09-25T00:17:42.756870Z",
@@ -447,7 +442,7 @@
         },
         "privacy": null,
         "purpose": "test_only",
-        "qualificationScope": "Literal official district code/name parser check only",
+        "qualificationScope": null,
         "resourceId": "37231365-78ba-44d5-ac22-3deec40b9197",
         "schemaVersion": "usp-pack-provenance/1",
         "sourceFamily": "Ministry of Panchayati Raj LGD districts",
@@ -466,12 +461,10 @@
             "status": "passed"
           },
           "qualified": {
-            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
-            "status": "passed"
+            "status": "not_run"
           },
           "tested": {
-            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
-            "status": "passed"
+            "status": "not_run"
           }
         },
         "subsetLineage": [
@@ -536,13 +529,8 @@
         "kind": "authored"
       },
       "permission": {
-        "permittedUses": [
-          "research",
-          "demo",
-          "redistribution"
-        ],
-        "reference": "Project-authored inspection metadata",
-        "state": "documented"
+        "reason": "Derived observations retain LGD and GMDA source permission limits",
+        "state": "unconfirmed"
       },
       "reference": {
         "horizontalCrs": null,
@@ -576,11 +564,12 @@
   ],
   "description": "Official Gurugram source checks for a 1 km² context window; GMDA scene reuse unqualified",
   "expectedCapabilities": [
-    "official_administrative_label",
+    "official_administrative_source_inspected",
     "official_source_window_inspection"
   ],
   "expectedPath": "source-observations.json",
   "missingCapabilities": [
+    "administrative_label_publication_permission",
     "permitted_context_geometry",
     "terrain",
     "landuse",
