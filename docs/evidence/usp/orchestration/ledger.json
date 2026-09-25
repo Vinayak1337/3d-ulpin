@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T11:58:08.251544+00:00",
+  "updatedAt": "2026-09-25T12:14:56.985421+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -142,7 +142,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_FND-02_attempt_2",
+      "status": "assigned_FND-02_attempt_3",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -522,9 +522,9 @@
         "Locator corrections preserve code; MULTI(2), missing anchors and resolver 422",
         "Actual executed source commit and receipts with remaining unqualified cases explicit"
       ],
-      "status": "dispatched",
+      "status": "corrections_required",
       "reportPath": "docs/evidence/usp/finale/GF-T15/FND-02/attempt-2/report.md",
-      "resultCommit": null,
+      "resultCommit": "7e3a2166f7372199b4b309ffbc0470964459e48a",
       "ownershipClarifications": [
         {
           "path": "scripts/usp/isolated-live.mjs",
@@ -541,6 +541,83 @@
         "FND02-R4",
         "FND02-R5",
         "FND02-R6"
+      ],
+      "planRefreshBase": "604ab6521e75618fe57dd284bfaa84b97a133dbf",
+      "resumeReason": "Worker acknowledged corrections without executing; user requested continuing full implementation on updated UI/H30 plans.",
+      "testedCommit": "d68a9f6416c09c2afd65c4febb1f0115592b4fbd",
+      "review": {
+        "verdict": "R1-R6 addressed; R7 command selection gap remains",
+        "independence": "same_family",
+        "checks": [
+          "111 USP tests rerun passed",
+          "artifact/source/raw receipt hashes and code ancestry verified",
+          "actual gpt-6-sol/xhigh confirmed",
+          "fresh D0/D1 screenshots inspected"
+        ],
+        "finding": {
+          "id": "FND02-R7",
+          "file": "apps/web/lib/server/usp/project-identity.ts",
+          "function": "validateMembers",
+          "issue": "Target-scoped manifest contains whole-site members; validateMembers checks only membership, allowing review and mutation of an unselected record while resolver denies that record.",
+          "required": "Require each mutation target to match a selected TargetPin when selection.kind is targets. Preserve full-site commands and normal replay semantics. Add isolated review/mutation tests proving an A-only scope cannot change B or use B as split/merge/boundary participant, and no review/reservation/revision/audit/outbox partial writes."
+        }
+      }
+    },
+    {
+      "assignmentId": "FND-02",
+      "attempt": 3,
+      "callbackId": "ulpin-FND-02-attempt-3",
+      "objective": "P3/1 immutable project identity, reviewed allocation/lifecycle and derived vertical locator through existing registry transactions",
+      "baseCommit": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-02-project-identity",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "packages/contracts/src/usp identity schema/exports and minimal registry type extensions",
+        "apps/web/lib/server/usp identity services, additive migration, command/snapshot integration",
+        "apps/web/lib/server/registry identity transaction/projection hooks only",
+        "apps/web/app/api/v1/usp/[...path]/route.ts identity command/resolver routes only",
+        "tests/usp-project-identity* and authored identity fixtures",
+        "scripts/usp/gf/GF-T15* and minimal isolated runner registration",
+        "docs/evidence/usp/finale/GF-T15/FND-02/",
+        "packages/contracts/src/usp/domain.ts canonical receipt extension only, preserving existing receipt consumers"
+      ],
+      "exclusions": [
+        "formal UI or redesign",
+        "unrelated registry/ingestion/job/model behavior",
+        "existing data, originals, credentials and historical receipts",
+        "DATA packs and LEAD validator work",
+        "orchestration ledger and release-plan gate promotion",
+        "deployment, remote push and staging/main merges"
+      ],
+      "acceptance": [
+        "H26 A-C/Z1-Z2 and H28 GF-T15 identity cases",
+        "Independent fixed vectors plus exhaustive substitutions and adjacent transpositions",
+        "Real isolated DB two-writer, rollback, stale manifest 409, authorization and idempotency checks",
+        "Cancel/retire/split/merge/boundary_adjustment preserve identity history and exact receipts",
+        "Locator corrections preserve code; MULTI(2), missing anchors and resolver 422",
+        "Actual executed source commit and receipts with remaining unqualified cases explicit"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-T15/FND-02/attempt-3/report.md",
+      "resultCommit": null,
+      "ownershipClarifications": [
+        {
+          "path": "scripts/usp/isolated-live.mjs",
+          "scope": "One GF-T15 command invocation after migration and before disposable runner cleanup; existing lifecycle, isolation and historical checks preserved.",
+          "reason": "Worker requested explicit confirmation for real isolated DB concurrency/rollback execution; already covered by minimal isolated runner registration.",
+          "confirmedAt": "2026-09-25T01:10:53.430186+00:00"
+        }
+      ],
+      "continuationCommit": "7e3a2166f7372199b4b309ffbc0470964459e48a",
+      "correctionFindings": [
+        "FND02-R7"
       ],
       "planRefreshBase": "604ab6521e75618fe57dd284bfaa84b97a133dbf",
       "resumeReason": "Worker acknowledged corrections without executing; user requested continuing full implementation on updated UI/H30 plans."
@@ -1286,9 +1363,9 @@
     }
   ],
   "nextSteps": [
-    "Finish FND-02 attempt-2 corrections on integrated updated plan; verify before staging integration.",
-    "Then UI-01 foundations and UI-02 frame; execute remaining H29 cards one by one as inputs become ready, including H30 data and sufficiency.",
-    "Keep GF0-GF5 qualification and full_product gates evidence-driven; finish LEAD-01B and data prerequisites."
+    "Finish bounded command selection correction R7, then accept FND-02 if its isolated regression passes.",
+    "Next UI-01 foundations with frontend-design skill, followed by UI-02 frame.",
+    "Retain pending GF0 and independent qualification; no gate promotion."
   ],
   "processedCallbacks": [
     {
@@ -1331,6 +1408,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "716fde1577231f210002a6ad4458bb75e57ee197",
       "result": "corrections_required_not_integrated"
+    },
+    {
+      "callbackId": "ulpin-FND-02-attempt-2",
+      "assignmentId": "FND-02",
+      "attempt": 2,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "7e3a2166f7372199b4b309ffbc0470964459e48a",
+      "result": "six_findings_resolved_command_selection_correction_required"
     }
   ],
   "observations": [
