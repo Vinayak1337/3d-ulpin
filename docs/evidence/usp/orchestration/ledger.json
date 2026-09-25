@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:41:13.393177+00:00",
+  "updatedAt": "2026-09-25T21:44:07.532160+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -292,7 +292,7 @@
         "effort": "medium"
       },
       "observedAgent": null,
-      "status": "assigned_REVIEW-UI-08-priority"
+      "status": "idle_UI08_review_complete"
     },
     {
       "threadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
@@ -2232,7 +2232,7 @@
       "assignmentId": "UI-08-priority",
       "attempt": 1,
       "callbackId": "ulpin-UI-08-priority",
-      "status": "code_delivered_source_review_and_preview_pending",
+      "status": "provenance_correction_required",
       "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "requestedAgent": {
         "product": "Codex",
@@ -2270,7 +2270,7 @@
       "assignmentId": "REVIEW-UI-08-priority",
       "attempt": 1,
       "callbackId": "review-UI-08-priority",
-      "status": "dispatched",
+      "status": "completed_provenance_correction_required",
       "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
       "codeCommit": "f3eaeccab9b4e6c8f28942728b2cda92f6191ad4",
       "requestedAgent": {
@@ -2280,6 +2280,12 @@
       },
       "ownership": [
         "source review and report only"
+      ],
+      "resultCommit": "0d68c3730232232e83b7918ab65df9ee2841ca24",
+      "findings": [
+        "WorkQueue discards reliable dataKind",
+        "saved views omit classification without Unknown",
+        "BlockHome groups all saved datasets as synthetic"
       ]
     },
     {
@@ -2324,6 +2330,28 @@
         "acquisition",
         "providers",
         "preview services or browser checks"
+      ]
+    },
+    {
+      "assignmentId": "UI08-provenance-fix",
+      "attempt": 1,
+      "callbackId": "ulpin-UI08-provenance-fix",
+      "status": "queued_at_preview_safe_checkpoint",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "explicit transfer of existing read-time classification/basis projection contract and consumers",
+        "UI record-backed value or Unknown and consistent grouping"
+      ],
+      "exclusions": [
+        "schema migration",
+        "protected data rewriting",
+        "official status inferred from labels/URLs",
+        "new registry"
       ]
     }
   ],
@@ -3072,8 +3100,8 @@
     }
   ],
   "nextSteps": [
-    "Sol assembles and safely refreshes candidate3187 with UI08 and accepted scalar privacy fix, preserving preview state.",
-    "Astra reviews bounded UI route/provenance effects; Luna identifies existing source metadata needed for honest production listing.",
+    "Sol completes preview lifecycle at safe checkpoint and corrects shared read-time provenance projection; avoid redundant refresh if correction can be incorporated first.",
+    "Luna delivers bounded existing provenance metadata findings to Sol; no synthetic-to-official relabelling.",
     "After ready callback, Luna visually checks changed Batches against supplied design and main navigation; resolve findings before acceptance.",
     "Delegate accepted integration at safe checkpoint; keep real-source/runtime qualifications open."
   ],
@@ -3369,6 +3397,11 @@
       "callbackId": "ulpin-UI-08-priority",
       "resultCommit": "9527e105224c2ae6430fad01c0ac8576928a8471",
       "result": "code delivered; not manual accepted; historical data provenance gap remains"
+    },
+    {
+      "callbackId": "review-UI-08-priority",
+      "resultCommit": "0d68c3730232232e83b7918ab65df9ee2841ca24",
+      "result": "one P2 provenance correction sent to existing UI owner; affected surfaces not accepted"
     }
   ],
   "observations": [
