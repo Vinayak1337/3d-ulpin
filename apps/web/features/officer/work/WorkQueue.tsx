@@ -5,6 +5,7 @@ import {useSearchParams} from 'next/navigation';
 import {useDebouncedValue,useResource} from '../shared/hooks';
 import {Button,EmptyState,ErrorState,Icon,LoadingState} from '../shared/ui';
 import {workItemAction,type WorkItem,type WorkQueueResult} from '@/lib/work-queue';
+import {sourceClassificationLabel} from '@/lib/spatial-datasets';
 import './work.css';
 
 function stage(item:WorkItem):string {
@@ -31,7 +32,7 @@ export default function WorkQueue(){
   <div className="work-layout"><section className="work-list" aria-label="Saved work">
    <div className="work-toolbar"><div className="work-filters" role="group" aria-label="Filter work">{[['all','All work'],['processing','Processing'],['recorded','Recorded']].map(([value,label])=><button key={value} aria-pressed={status===value} onClick={()=>update('status',value==='all'?'':value)}>{label}</button>)}</div><label className="work-search"><Icon name="search" size={18}/><input aria-label="Find saved work" placeholder="Search saved work" maxLength={150} value={search} onChange={e=>{setSearch(e.target.value);update('q',e.target.value);}}/></label></div>
    {pending?<LoadingState label="Loading saved work"/>:work.error?<ErrorState message={work.error} retry={work.reload}/>:work.data?.items.length?<><div className="work-columns" aria-hidden="true"><span>Batch and area</span><span>Stage</span><span>Next action</span><span>Updated</span></div><div className="work-rows">{work.data.items.map(item=>{const action=workItemAction(item);const itemStage=stage(item);return <article className="work-row" key={item.kind+item.id}>
-    <div className="work-name"><h2><Link href={action.href}>{item.name}</Link></h2><p>{item.areaName||'Area unknown'} <span aria-hidden="true">·</span> {item.sourceCount} source file{item.sourceCount===1?'':'s'}</p></div>
+    <div className="work-name"><h2><Link href={action.href}>{item.name}</Link></h2><p>{item.areaName||'Area unknown'} <span aria-hidden="true">·</span> {item.sourceCount} source file{item.sourceCount===1?'':'s'}</p><small className="work-provenance">{sourceClassificationLabel(item.provenance)}</small></div>
     <span className="work-status" data-status={itemStage}>{itemStage}</span><Link className="work-next" href={action.href}>{action.label}<Icon name="arrow" size={16}/></Link><time dateTime={item.updatedAt}>{new Date(item.updatedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</time>
    </article>;})}</div></>:<div className="work-empty"><EmptyState title={search||status!=='all'?'No batches match':'No batches yet'} description={search||status!=='all'?'Change the search or filter to find saved work.':'Add files to start a batch.'} icon="document"/>{!search&&status==='all'&&<Link href="/studio/add-files" className="work-empty-action">Add files <Icon name="arrow" size={16}/></Link>}</div>}
    {work.data&&!pending&&work.data.total>0&&<footer className="work-pagination"><span>{(page-1)*work.data.pageSize+1}–{Math.min(page*work.data.pageSize,work.data.total)} of {work.data.total} matching work items</span><div><Button disabled={page<=1} onClick={()=>update('page',String(page-1))}>Previous</Button><Button disabled={page*work.data.pageSize>=work.data.total} onClick={()=>update('page',String(page+1))}>Next</Button></div></footer>}
