@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T15:58:53.196867+00:00",
+  "updatedAt": "2026-09-25T16:06:13.658141+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -68,6 +68,13 @@
         "assignmentId": "UI-02",
         "integrationMethod": "merge preserving both attempts and actual tested ancestry",
         "scope": "Studio header/frame/panels, responsive sheet and runtime continuity"
+      },
+      {
+        "sourceCommit": "9b564a87d41157f6a5b7d14768b040263804c7ce",
+        "integrationCommit": "c2e3570c8639398f49a597fea27503fabdee25e1",
+        "assignmentId": "DATA-09",
+        "integrationMethod": "merge preserving both attempts and tested ancestry",
+        "scope": "Bounded official source inspection and unchanged-original integrity only; scene and reuse qualifications open"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -185,7 +192,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_DATA-09_attempt_2",
+      "status": "ready_for_next_assignment",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1196,15 +1203,18 @@
         "Official original bytes protected outsideGit when large/restricted; derived extracts trace original",
         "No synthetic replacement of unavailable cases; no real-source accuracy/runtime gate claim without evidence"
       ],
-      "status": "dispatched",
+      "status": "accepted_bounded_acquisition_only",
       "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-2/report.md",
-      "resultCommit": null,
+      "resultCommit": "9b564a87d41157f6a5b7d14768b040263804c7ce",
       "continuationCommit": "650969d573a41756630ea259dc196173aa5497ce",
       "correctionFindings": [
         "DATA09-R1",
         "DATA09-R2",
         "DATA09-R3"
-      ]
+      ],
+      "testedCommit": "04c69335342942fdb89709c447ff5fef79dd0203",
+      "acceptedAt": "2026-09-25T16:06:13.658141+00:00",
+      "reviewRef": "docs/evidence/usp/orchestration/DATA-09-attempt-2-review.json"
     }
   ],
   "capabilityChecklist": [
@@ -2070,6 +2080,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "650969d573a41756630ea259dc196173aa5497ce",
       "result": "corrections_required_not_integrated"
+    },
+    {
+      "callbackId": "ulpin-DATA-09-attempt-2",
+      "assignmentId": "DATA-09",
+      "attempt": 2,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "9b564a87d41157f6a5b7d14768b040263804c7ce",
+      "result": "accepted_bounded_acquisition_only"
     }
   ],
   "observations": [
@@ -2145,7 +2163,7 @@
       "card": "DATA-09",
       "title": "Real reference area",
       "needs": "DATA-01, DATA-05",
-      "status": "dispatched_official_sources_only"
+      "status": "partial_acquisition_accepted_scene_qualification_open"
     },
     {
       "card": "LEAD-01",
