@@ -51,7 +51,7 @@ Next gate: **GF0**. Existing D0/PACK0 and D1 are the baseline to reuse, not a re
 | Full product: public, assistance, learner, enrichment | [H13](13-citizen-evidence-and-corrections.md), [H18](18-grounded-assistance-and-mcp.md), [H21](21-concurrent-schema-learning.md), [H25](25-all-format-agent-and-ux4g.md) |
 | PPT, human prerequisites, audit history, UI | [H24](24-product-method-and-ppt.md), [H90](90-required-human-tasks.md), [H98](98-engineering-readiness-audit.md), [H99](99-ui-ux-and-integration.md) |
 | Task cards for any agent, review findings | [H29](29-agent-task-cards.md), [H97](97-review-findings-and-alignment.md) |
-| Design system, UI brief and specimen data | [Design system](../design-system/README.md), [UI brief](../design-system/ui-brief.md) |
+| Design system, UI brief and reference mockups | [Design system](../design-system/README.md), [UI brief](../design-system/ui-brief.md), [Officer Studio reference mockups](../design-system/mockups/officer-studio/README.md) (reference only, not production UI) |
 
 ## Fixed decisions
 

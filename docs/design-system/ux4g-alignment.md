@@ -27,9 +27,13 @@ Using UX4G guidance is not a claim of government approval, affiliation, STQC cer
 | `--ux4g-space-*` | `--ui-space-*` | Same 4 px grid |
 | Dark theme attribute | `data-theme="dark"` | Same attribute |
 
+## Components taken from UX4G (Portal only)
+
+Accessibility Bar, Navbar, Footer, Breadcrumb, Search, Input-Textfield, Input-OTP, Combobox, Select, Checkbox, Radio, Toggle, Date Picker, File Upload, Stepper, Journey Timeline, Status Pipeline, SLA Progress Indicator, Alert, Modal, Drawer, Tabs, Tables, Pagination, Tooltip, Empty State, Feedback. Use them as they are, themed with our tokens (UX4G Theme Craft); don't restyle their structure. In the Studio, where the bundle is not installed, the same patterns come from our own Panel, DataTable, Tabs, Toggle, Field and Button.
+
 ## Components we add
 
-UlpinCode, LevelRail, StrataSection, MapToolbar, LayerPanel, Legend, MapStyle, Inspector, EvidenceChip, ReadinessMeter, FindingCard, ShareLedger, CarpetAreaCheck, DigColumn (impact screening), ImportStream, RevisionTimeline, PropertyCard, StudioHeader. UX4G has no map, 3D, evidence or cadastral components, so these follow its tokens, spacing and states. See [components.md](components.md).
+UlpinCode, LevelRail, StrataSection, MapCanvas, MapPatterns, MapToolbar, LayerPanel, Legend, MapStyle, Inspector, EvidenceChip, ReadinessMeter, FindingCard, ShareLedger, CarpetAreaCheck, DigColumn (impact screening), ImportStream, RevisionTimeline, PropertyCard, StudioHeader. UX4G has no map, 3D, evidence or cadastral components, so these follow its tokens, spacing and states. See [components.md](components.md).
 
 ## Checklist
 
