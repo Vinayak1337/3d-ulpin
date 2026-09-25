@@ -26,6 +26,8 @@ import { checkStorage, readObject } from "@/lib/server/storage";
 import { query } from "@/lib/server/db";
 import { settings } from "@/lib/server/config";
 import { assertLocalRequest } from "@/lib/server/usp/principal";
+import { workspaceCapabilities } from "@/lib/server/workspace-capabilities";
+import { redactDerivative } from "@/lib/server/usp/ingest/redact";
 import {
   addUnitSchema,
   applyLevelsSchema,
@@ -63,6 +65,7 @@ async function handle(request: Request, context: Context): Promise<Response> {
     localOnly(request);
     const { path: p } = await context.params;
     const method = request.method;
+    if (p.length === 1 && p[0] === 'workspace-capabilities' && method === 'GET') return json(workspaceCapabilities());
     const officerResponse = await officerRoutes(request, p);
     if (officerResponse) return officerResponse;
     const aiResponse = await officerAiRoutes(request, p);
@@ -272,8 +275,8 @@ async function handle(request: Request, context: Context): Promise<Response> {
         {
           error: {
             code: error.code,
-            message: error.message,
-            details: error.details,
+            message: redactDerivative(error.message),
+            details: redactDerivative(error.details),
             requestId,
           },
         },
@@ -292,7 +295,7 @@ async function handle(request: Request, context: Context): Promise<Response> {
         409,
       );
     console.error(
-      `API request ${requestId} failed (${error instanceof Error ? error.name : "unknown error"}).`,
+      `API request ${requestId} failed.`,
     );
     return json(
       {

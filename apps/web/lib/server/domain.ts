@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { redactDocumentViews } from './usp/ingest/redact';
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { PoolClient } from "pg";
@@ -73,7 +74,7 @@ export function sourceFrom(row: Row): SourceRevision {
     sha256: row.sha256,
     status: row.status,
     createdAt: iso(row.created_at),
-    inspection: row.inspection,
+    inspection: redactDocumentViews(row.inspection),
   };
 }
 export function jobFrom(row: Row): ProcessingJob {

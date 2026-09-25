@@ -9,12 +9,15 @@ import "./shell.css";
 import ProductHeader from "../../studio/product/ProductHeader";
 import "../../studio/product/operations.css";
 import "../../studio/product/theme.css";
+import { workspacePrivacyCopy, type WorkspaceCapabilities } from "@/lib/workspace-capabilities";
 function Navigation({ children }: { children: ReactNode }) {
   const [statusOpen, setStatusOpen] = useState(false);
   const health = useResource<{
     ok: boolean;
     services: Record<string, boolean>;
   }>(statusOpen ? "/health" : null);
+  const capabilities = useResource<WorkspaceCapabilities>(statusOpen ? "/workspace-capabilities" : null);
+  const privacy = workspacePrivacyCopy(capabilities.data ?? undefined);
   const [online, setOnline] = useState(true);
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
@@ -42,13 +45,16 @@ function Navigation({ children }: { children: ReactNode }) {
         title="Local workspace"
       >
         <div className="ui-status-summary">
-          <Icon name="check" size={30} />
+          <Icon name="info" size={30} />
           <div>
-            <h3>Your evidence stays here</h3>
-            <p>One operator · local services · original sources retained</p>
+            <h3>Evidence processing</h3>
+            <p>{privacy.runtime}</p>
+            <p>{privacy.provider}</p>
+            <p>{privacy.residency}</p>
           </div>
         </div>
         {health.error && <p role="alert">{health.error}</p>}
+        {capabilities.error && <p role="alert">Processing status is unavailable. Data residency is unverified.</p>}
         <div className="ui-service-list">
           {Object.entries(health.data?.services || {}).map(([key, ready]) => (
             <div key={key}>
