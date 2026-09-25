@@ -1,0 +1,165 @@
+{
+  "config": {
+    "argv": [
+      "/Users/vinayak/.hermes/node/bin/node",
+      "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/usp-ui-foundations.spec.ts"
+    ],
+    "configFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/playwright.config.ts",
+    "rootDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-01/attempt-2/runs/local-1611f2e4a09b170c/browser-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "usp-ui-foundations.spec.ts",
+      "file": "usp-ui-foundations.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "UI-01 local fonts, Hindi glyphs, token contrast and controls in both themes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4982,
+                  "error": {
+                    "message": "Error: light Orient north border\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m2.6790223529981785\u001b[39m",
+                    "stack": "Error: light Orient north border\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m2.6790223529981785\u001b[39m\n    at assertControls (/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui-foundations.spec.ts:98:93)\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui-foundations.spec.ts:178:5",
+                    "location": {
+                      "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui-foundations.spec.ts",
+                      "column": 93,
+                      "line": 98
+                    },
+                    "snippet": "   96 |     expect(sample.text, `${theme} ${sample.name} text`).toBeGreaterThanOrEqual(4.5);\n   97 |     if (sample.icon !== null) expect(sample.icon, `${theme} ${sample.name} icon`).toBeGreaterThanOrEqual(3);\n>  98 |     if (sample.boundary !== null) expect(sample.boundary, `${theme} ${sample.name} border`).toBeGreaterThanOrEqual(3);\n      |                                                                                             ^\n   99 |   }\n  100 | }\n  101 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui-foundations.spec.ts",
+                        "column": 93,
+                        "line": 98
+                      },
+                      "message": "Error: light Orient north border\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m3\u001b[39m\nReceived:    \u001b[31m2.6790223529981785\u001b[39m\n\n   96 |     expect(sample.text, `${theme} ${sample.name} text`).toBeGreaterThanOrEqual(4.5);\n   97 |     if (sample.icon !== null) expect(sample.icon, `${theme} ${sample.name} icon`).toBeGreaterThanOrEqual(3);\n>  98 |     if (sample.boundary !== null) expect(sample.boundary, `${theme} ${sample.name} border`).toBeGreaterThanOrEqual(3);\n      |                                                                                             ^\n   99 |   }\n  100 | }\n  101 |\n    at assertControls (/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui-foundations.spec.ts:98:93)\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui-foundations.spec.ts:178:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T13:01:07.429Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui-foundations.spec.ts",
+                    "column": 93,
+                    "line": 98
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "7a411bb586a0bac500a6-e620c2e8f4d4a9c67754",
+          "file": "usp-ui-foundations.spec.ts",
+          "line": 105,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-25T13:01:07.226Z",
+    "duration": 5598.565,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
