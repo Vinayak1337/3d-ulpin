@@ -1170,7 +1170,7 @@
       "C24"
     ],
     "status": "passed",
-    "receipt": "docs/evidence/usp/orchestration/UI-replacement-sequencing/plan-validation.json"
+    "receipt": "docs/evidence/usp/finale/GF-EXCHANGE/FND-03/attempt-1/plan-validation.json"
   },
   "receiptContract": {
     "schemaVersion": "ulpin-test-receipt/1",
