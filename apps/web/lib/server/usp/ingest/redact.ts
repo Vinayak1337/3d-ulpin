@@ -47,9 +47,39 @@ export function redactPrivateText(text: string): string {
   });
 }
 
+/** Replace identifier-shaped JSON number tokens before parsing can erase their text form. */
+function maskJsonNumberTokens(text: string): string {
+  let result = '', quoted = false, escaped = false;
+  for (let index = 0; index < text.length;) {
+    const character = text[index];
+    if (quoted) {
+      result += character;
+      if (escaped) escaped = false;
+      else if (character === '\\') escaped = true;
+      else if (character === '"') quoted = false;
+      index++;
+      continue;
+    }
+    if (character === '"') { quoted = true; result += character; index++; continue; }
+    if (character === '-' || /[0-9]/.test(character)) {
+      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/.exec(text.slice(index));
+      const end = index + (match?.[0].length ?? 0);
+      if (match && (index === 0 || /[\s:[,]/.test(text[index - 1])) && (end === text.length || /[\s,}\]]/.test(text[end]))) {
+        const token = match[0];
+        const normalized = Number.isSafeInteger(Number(token)) ? String(Number(token)) : token;
+        const masked = redactPrivateText(normalized);
+        result += masked === normalized ? token : JSON.stringify(masked);
+        index = end;
+        continue;
+      }
+    }
+    result += character; index++;
+  }
+  return result;
+}
+
 export function redactMessageText(text: string): string {
-  try { return JSON.stringify(redactDerivative(JSON.parse(text))); }
-  catch { return redactPrivateText(text); }
+  return redactDerivative(text);
 }
 
 /** Read-time protection for historic document previews, without mutating their revisions. */
@@ -71,7 +101,8 @@ export function redactDerivative<T>(value: T): T {
     if (typeof input === 'string') {
       // Source cells and upstream envelopes sometimes contain JSON encoded as text.
       if (/^[\s]*[\[{]/.test(input)) {
-        try { return JSON.stringify(visit(JSON.parse(input), depth + 1)); } catch { /* ordinary text */ }
+        try { return JSON.stringify(visit(JSON.parse(maskJsonNumberTokens(input)), depth + 1)); }
+        catch { /* ordinary text */ }
       }
       return redactPrivateText(input);
     }

@@ -9,7 +9,7 @@ import { appendPreparationFacts } from './officer-preparation';
 import { aiBudget, callNous, extractionMessages, inspectNous } from './officer-ai-provider';
 import { AI_PROPERTIES, digest, PROMPT_VERSION, redactPrivateText, SCHEMA_VERSION, validateExtraction } from './officer-ai-validation';
 import { selectedImageCrops } from './officer-ai-images';
-import { assertNoImageEgress, redactDerivative } from './usp/ingest/redact';
+import { assertNoImageEgress, redactDerivative, redactDocumentViews } from './usp/ingest/redact';
 
 export async function migrateOfficerAi() {
   await query(`CREATE TABLE IF NOT EXISTS officer_ai_runs (
@@ -158,6 +158,15 @@ async function applyRun(packageId:string,runId:string,expectedRevision:number,ca
   });
 }
 const json=(data:unknown)=>Response.json(redactDerivative(data),{headers:{'Cache-Control':'no-store'}});
+/** Match the canonical package read boundary while preserving typed technical names and geometry. */
+const packageJson=(pkg:ImportPackage)=>{
+  const visible=redactDocumentViews(pkg);
+  return Response.json({...visible,
+    questions:visible.questions.map(question=>({...question,message:redactPrivateText(question.message),
+      ...(question.answer?{answer:{...question.answer,reason:redactPrivateText(question.answer.reason)}}:{})})),
+    warnings:visible.warnings.map(redactPrivateText),
+  },{headers:{'Cache-Control':'no-store'}});
+};
 export async function officerAiRoutes(request:Request,p:string[]):Promise<Response|null> {
   if(p.length===2&&p[0]==='ai'&&p[1]==='status'&&request.method==='GET') return json((await inspectNous()).status);
   if(p[0]!=='import-packages'||p[2]!=='ai-extractions') return null;
@@ -171,7 +180,7 @@ export async function officerAiRoutes(request:Request,p:string[]):Promise<Respon
   if(request.method==='POST'&&p.length===3) return json(await extract(packageId,inputSchema.parse(await request.json())));
   if(request.method==='POST'&&p.length===5&&p[4]==='apply') {
     const input=z.object({expectedRevision:revision,candidateIds:z.array(uuid).min(1).max(40)}).strict().parse(await request.json());
-    return json(await applyRun(packageId,uuid.parse(p[3]),input.expectedRevision,input.candidateIds));
+    return packageJson(await applyRun(packageId,uuid.parse(p[3]),input.expectedRevision,input.candidateIds));
   }
   return null;
 }

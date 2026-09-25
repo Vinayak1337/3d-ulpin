@@ -12,13 +12,14 @@ import { redact } from '../../engineering/isolation.mjs';
 
 const root = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
 const env = uspProcessEnvironment(process.env, root);
+const manualHold = env.ULPIN_FND06_MANUAL_HOLD === '1';
 assert.equal(env.ULPIN_ISOLATION_PROFILE, 'local-preview');
 const scope = assertUspIsolation(env);
 await assert.rejects(lstat(resolve(root, '.env')), { code: 'ENOENT' });
 const temporary = await realpath(resolve(env.ULPIN_LOCAL_ENV_FILE, '..'));
 const envFile = await realpath(env.ULPIN_LOCAL_ENV_FILE);
 assert.equal(relative(temporary, envFile), 'ulpin-local.env');
-const output = resolve(root, `docs/evidence/usp/finale/GF-PRIVACY/FND-06/attempt-1/${scope.id}`);
+const output = resolve(root, `docs/evidence/usp/finale/GF-PRIVACY/FND-06/${manualHold ? 'attempt-2' : 'attempt-1'}/${scope.id}`);
 await mkdir(output, { recursive: true });
 const report = { schemaVersion: 'fnd06-isolated-privacy/1', scopeId: scope.id,
   codeSha: null, status: 'RUNNING', source: 'hash-pinned repo-data snapshot, retained historical regression only',
@@ -37,6 +38,9 @@ const composeArgs = [...(colima ? [] : ['--context', 'default', 'compose']), '--
   '--env-file', envFile, '-p', scope.project, '-f', resolve(root, 'compose.yaml')];
 let ownsProject = false;
 let server;
+let stopRequested = false, releaseHold;
+const requestStop = () => { stopRequested = true; releaseHold?.(); };
+process.on('SIGINT', requestStop); process.on('SIGTERM', requestStop);
 
 async function command(label, executable, args, { input, timeout = 180000, childEnv = env } = {}) {
   const chunks = []; let size = 0;
@@ -92,6 +96,8 @@ async function waitServer() {
 
 try {
   report.codeSha = (await command('code-sha', 'git', ['rev-parse', 'HEAD'])).trim();
+  if (manualHold && (await command('code-clean', 'git', ['status', '--porcelain'])).trim())
+    throw new Error('Manual preview requires a clean committed code pin.');
   const manifest = JSON.parse(await readFile(resolve(root, 'repo-data/manifest.json'), 'utf8'));
   assert.equal(manifest.version, 1);
   const corpus = resolve(root, 'repo-data');
@@ -147,9 +153,20 @@ try {
   server = spawn(process.execPath, ['apps/web/node_modules/next/dist/bin/next', 'dev', 'apps/web',
     '--webpack', '--hostname', '127.0.0.1', '--port', '3108'], { cwd: root, env: {...env, NODE_OPTIONS: `--require=${JSON.stringify(resolve(root, 'scripts/usp/gf/FND-06-no-egress.cjs'))}`, ULPIN_EGRESS_RECEIPT: resolve(output,'server-egress.jsonl')}, stdio: ['ignore', log.fd, log.fd] });
   await waitServer();
-  await command('privacy-http-browser', process.execPath, ['scripts/usp/gf/FND-06-browser.mjs'], {
-    childEnv: {...env, ULPIN_FND06_OUTPUT: output}, timeout:240000 });
-  report.screenshots = (await readdir(resolve(output, 'screenshots'))).filter(name => name.endsWith('.png')).sort();
+  if (manualHold) {
+    report.status = 'READY_FOR_MANUAL';
+    report.target = target;
+    await writeFile(resolve(output, 'runner-receipt.json'), JSON.stringify(report, null, 2) + '\n');
+    console.log(JSON.stringify({status:report.status, appUrl:env.ULPIN_TEST_URL,
+      codePin:report.codeSha, nonce:scope.id, output,
+      stop:`Send SIGTERM to runner PID ${process.pid} or interrupt the foreground command; owned services and preview will be stopped.`}));
+    if (!stopRequested) await new Promise(done => { releaseHold = done; });
+    report.checks.push({name:'manual-preview-held-until-stop'});
+  } else {
+    await command('privacy-http-browser', process.execPath, ['scripts/usp/gf/FND-06-browser.mjs'], {
+      childEnv: {...env, ULPIN_FND06_OUTPUT: output}, timeout:240000 });
+    report.screenshots = (await readdir(resolve(output, 'screenshots'))).filter(name => name.endsWith('.png')).sort();
+  }
   for (const table of manifest.tables) assert.deepEqual(await tableDigest(table), migratedRows.get(table.name), `post-browser ${table.name}`);
   const storedObjects = (await s3.send(new ListObjectsV2Command({ Bucket: scope.bucket }))).Contents ?? [];
   assert.deepEqual(storedObjects.map(item => item.Key).sort(), manifest.objects.map(item => item.key).sort());
@@ -163,8 +180,8 @@ try {
   assert(denials.every(event=>event.category==='next-development-version-check'));
   report.checks.push({name:'provider-fetch-tripwire',installedProcesses:egress.filter(event=>event.event==='fetch-tripwire-installed').length,
     deniedDevelopmentVersionLookups:denials.length,providerAttempts:0,nonLoopbackFetchesDispatched:0});
-  report.checks.push({ name: 'protected-data-unchanged-after-browser' });
-  report.status = 'PASSED';
+  report.checks.push({ name: manualHold ? 'protected-data-unchanged-after-manual-preview' : 'protected-data-unchanged-after-browser' });
+  report.status = manualHold ? 'STOPPED_INTEGRITY_PASSED' : 'PASSED';
   report.target = target;
   console.log(JSON.stringify({ status: report.status, scopeId: scope.id, output }));
 } catch (error) {
@@ -173,6 +190,7 @@ try {
   console.error(report.error);
   process.exitCode = 1;
 } finally {
+  process.off('SIGINT', requestStop); process.off('SIGTERM', requestStop);
   if (server) {
     server.kill('SIGTERM');
     await new Promise(done => { if (server.exitCode !== null) done(); else { server.once('close', done); setTimeout(done, 5000); } });
