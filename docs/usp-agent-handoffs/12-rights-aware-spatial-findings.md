@@ -1,5 +1,7 @@
 # 12 · Explainable spatial findings and a complete review action
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 Owner **FIND**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), the RIGHTS projection in [16](16-shared-spaces-and-vertical-rights.md) when enabled and UI slots in [99](99-ui-ux-and-integration.md). ER-08/11/12/13/24 are incorporated. New code paths below must be implemented.
 
 ## A. User outcome and product value

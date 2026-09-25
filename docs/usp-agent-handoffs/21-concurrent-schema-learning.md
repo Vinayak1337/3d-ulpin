@@ -1,5 +1,7 @@
 # 21 — Concurrent schema learner and safe automatic handover
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Release: `full_product` (FP-LEARN).** Real training, qualification and pending-only same-import handover remain committed scope, after the finale. They do not block GF0–GF5. H27 domain AI is a different capability and stays in the finale.
 
 **Full-product handoff, 24 September 2026. Owner: LEARN; FND owns shared contracts, persistence and dispatch; DEPLOY owns provider permission.** This is a real ML implementation plan, not a description of an existing trained model.
@@ -34,7 +36,7 @@ This is an intentionally bounded baseline, supported by documented incremental-l
 
 Create a durable, append-only `MappingExample` with source family/revision/hash and locator, raw profile, target/operation label, negatives/abstention, label origin, independent-check receipt, permission scope, eligible usage, tenant/project, and split assignment. Preserve the original evidence separately.
 
-High-quality labels come from source documentation with an independently checked mapping, approved human corrections, permitted authored fixtures, or an explicitly permitted teacher workflow plus independent source checks. JSON validity or agreement with Sarvam alone does not make a semantic label true. Many identical rows under one header are not many independent schema examples. Weight/deduplicate by layout and decision; include rare/missing/conflicting patterns.
+High-quality labels come from source documentation with an independently checked mapping, approved human corrections, permitted official reference examples, or an explicitly permitted teacher workflow plus independent source checks. JSON validity or agreement with Sarvam alone does not make a semantic label true. Many identical rows under one header are not many independent schema examples. Weight/deduplicate by layout and decision; include rare/missing/conflicting patterns.
 
 **Sarvam training gate:** its published Terms of Service, effective 29 July 2026, section 10.5(a), restrict developing/training/testing/improving ML from its offerings or derived outputs without express written permission. Product-specific terms may govern. DEPLOY must record applicable written permission before Sarvam-derived outputs enter training, model evaluation or a teacher-agreement dataset. Human correction is not an assumed workaround. Default those outputs to `trainingEligible=false`.
 

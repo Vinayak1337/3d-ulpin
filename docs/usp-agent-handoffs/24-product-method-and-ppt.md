@@ -1,5 +1,7 @@
 # 24 — Product story, measurable claims and PPT plan
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Aligned 24 September 2026.** This is presentation guidance, not evidence of completed implementation. [H00](00-README.md) and [release-plan.json](release-plan.json) define release scope; H26–H28 define the technical/data/test claims. Present equal emphasis on adaptive ingestion and the officer outcome.
 
 ## What we are building

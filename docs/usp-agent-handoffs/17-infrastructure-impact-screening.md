@@ -1,5 +1,7 @@
 # 17 · Saved infrastructure impact screening
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 Owner **IMPACT**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), the qualified operation in [12](12-rights-aware-spatial-findings.md) and [99](99-ui-ux-and-integration.md). ER-08/11/24 are incorporated. New paths are implementation tasks.
 
 ## A. User outcome and product value

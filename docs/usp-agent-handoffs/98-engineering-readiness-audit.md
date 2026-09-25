@@ -1,5 +1,7 @@
 # Historical audit and remediation ledger
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Updated 22 September 2026. This is history, not an additional implementation handoff.** The user authorized applying the remedies directly to the original files. The current instructions are [00](00-README.md), [01](01-shared-contracts-and-ownership.md), each feature's A–K handoff, [90](90-required-human-tasks.md) and [99](99-ui-ux-and-integration.md). An implementing agent does not need this audit or prior chat to execute its assignment.
 
 ## Grand Finale alignment — 24 September 2026

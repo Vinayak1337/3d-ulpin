@@ -1,5 +1,7 @@
 # 29 · Task cards for any coding agent
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 Written 24 September 2026 with the review in [H97](97-review-findings-and-alignment.md). Each card is one pull-request-sized piece of work that Codex, Claude Code, Gemini CLI or any other user-authorized coding agent can pick up without reading all 25 handoffs. A card names what to read, what to build, where it goes, and how to prove it is done. The handoffs stay the specification; a card never overrides them, and a handoff's "Z. Hardening addendum (H97)" section overrides older text in that handoff.
 
 ## How to use a card
@@ -20,13 +22,13 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 | --- | --- |
 | FND-01 contract inventory | Reads current code only |
 | DATA-01 source bundle | Acquisition and manifests only |
-| DATA-02 adversarial fixtures | Synthetic files with oracles |
+| DATA-02 official difficult cases | Official discovery, provenance and coverage gaps |
 | LEAD-01 plan machinery | Validator code and tests only |
 | UI-01 tokens, fonts, icons | Styling layer; no producer needed |
 | UI-08 no demo content or "fictional" labels | Display cleanup over existing records; no producer needed |
 | DATA-09 real reference area | Open downloads (data.gov.in, OpenStreetMap, open DEMs); no person needed |
 | INGEST-01 hostile-input guards | Reader hardening with negative fixtures |
-| DATA-05 to DATA-08 public data, labels, drone set, oracles | Open downloads and synthetic oracles; no person needed |
+| DATA-05 to DATA-08 public data, labels, drone set, oracles | Official downloads and source-derived expectations; gaps remain explicit |
 | READY-02, UI-07, LEAD-05, DEPLOY-04 | Replace former human tasks with agent work |
 | CLEANUP-01 remove obsolete files | Manifest already verified; one change |
 
@@ -42,17 +44,17 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 ### DATA-01 · Matched source bundle (any permitted geography)
 **Owner** DATA · **Tier** T-work · **Test** GF-DATA · **Needs** none
 - **Read:** [H28](28-data-acquisition-and-finale-tests.md) sections 1–5 and Z4; [H23](23-india-data-and-delivery-plan.md) Z.
-- **Build:** acquire one Indian context resource and one structured-code resource to stage `tested`, data.gov.in first (publisher-hosted files such as the NWIC rivers shapefile and the LGD district list need no key). The existing Uttam Nagar OSM and Open Buildings pack can serve as the Indian context resource once re-receipted as a `usp-data-pack/1` manifest. Record D7 as `failed(permission_required)` citing `demo-data/real-block/SOURCE_ACCESS.md`. Record licence family per asset. Request-access datasets (ManipalUAVid) and sign-up-only tiles (Bhuvan CartoDEM) are dropped for the finale.
+- **Build:** acquire one Indian context resource and one structured-code resource to stage `tested`, data.gov.in first (publisher-hosted files such as the NWIC rivers shapefile and the LGD district list need no key). Existing community/ML packs are historical only; acquire a verified official context resource for current acceptance. Record D7 as `failed(permission_required)` citing `demo-data/real-block/SOURCE_ACCESS.md`. Record licence family per asset. Request-access datasets (ManipalUAVid) and sign-up-only tiles (Bhuvan CartoDEM) are dropped for the finale.
 - **Owns:** `fixtures/usp/D*/`, `scripts/usp/data/`, `docs/evidence/usp/finale/GF-DATA/`.
 - **Done when:** every asset has the H28 section 5 metadata including `licenceFamily`; no share-alike asset is marked for a non-share-alike export; failures are recorded, not hidden.
 - **Don't:** harvest WMS tiles, bypass logins or treat third-party ML footprints as truth.
 
-### DATA-02 · Adversarial and Indian-reality fixtures
+### DATA-02 · Official difficult-case coverage and source-derived expectations
 **Owner** DATA · **Tier** T-work · **Tests** GF-DATA, GF-RECOVERY, GF-AGENT, GF-SUFFICIENCY, GF-T16, GF-T18, GF-T19 · **Needs** none
-- **Read:** [H28](28-data-acquisition-and-finale-tests.md) Z2–Z3; [H16](16-shared-spaces-and-vertical-rights.md) Z1–Z2; [H22](22-rendering-and-sparse-data.md) Z3; [H30](30-reference-scene-and-incomplete-data.md) I.
-- **Build:** CRS mistakes (43N as 44N, Kalianpur as WGS84, swapped axes, missing `.prj`); the Indian messy CSV; injection fixtures; the synthetic deed with dummy Aadhaar/PAN/mobile and a GPS-tagged JPEG; a metro segment crossing two sites; co-op and per-deed UDS cases; clean twins for every adverse topology case; rooftop mumty/tank/parapet and chajja negatives; a sloped-site fixture; a 480-beneficiary lift core; stilt and mezzanine levels; the GF-SUFFICIENCY mixed-gap batch (H30 I) with an expected `SufficiencyDecision` per object.
-- **Owns:** `fixtures/usp/D0/adversarial/` and each fixture's `oracle.json`.
-- **Done when:** each fixture has an oracle written before any implementation runs on it, with author and date.
+- **Read:** current delivery policy; H28 Z2–Z3; H16 Z1–Z2; H22 Z3; H30 I.
+- **Build:** discover official records that actually contain difficult CRS/axis metadata, mixed Indian units and scripts, privacy-sensitive fields, cross-site infrastructure, co-operative/per-deed rights, topology/contact/hole cases, roof structures, slopes, shared cores and sparse levels. Index real naturally incomplete inputs for H30. Never generate a source, corrupt metadata, insert hostile text, fabricate a clean twin or dummy identity to fill this list.
+- **Owns:** source-family pack manifests and permitted extracts under `fixtures/usp/`, acquisition checks under `scripts/usp/data/`, and `docs/evidence/usp/finale/GF-DATA/DATA-02/`. New leaf ownership is assigned explicitly; historical D0 is read-only.
+- **Done when:** every required case names official original bytes, issuer, permission and an independently source-derived expectation, or a specific unavailable reason. Freeze available expectations before implementation/evaluation; an unavailable row is not a runtime pass. Prior synthetic attempt branches remain unmerged historical work.
 
 ### DATA-03 · Licences, India boundary and ID normalisation data
 **Owner** DATA · **Tier** T-read · **Test** GF-DATA · **Needs** none
@@ -69,30 +71,30 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 ### DATA-05 · Public plan bundle (D5)
 **Owner** DATA · **Tier** T-work · **Tests** GF-DATA, GF-T17, GF-AI (plans) · **Needs** none · replaces H90 H1/H1a
 - **Read:** [H28](28-data-acquisition-and-finale-tests.md) sections 2, 4, 5 and Z4.
-- **Build:** download the Bihar RERA sanctioned layout PDF and retry the Haryana RERA 2831/2079 attachments at most twice (no login or CAPTCHA). Pin page, revision and feet-inch dimensions. Add one openly licensed multi-unit vector dataset as `test_only` (for example Swiss Dwellings, CC BY 4.0, Zenodo record 7070952; check its class list and licence at download). Write `fixtures/usp/D5/<profile>/manifest.json` (`usp-data-pack/1`) and `sample-manifest.csv` with unknowns stated. RERA bytes stay outside Git with `permission: unconfirmed`.
+- **Build:** download the Bihar RERA sanctioned layout PDF and retry the Haryana RERA 2831/2079 attachments at most twice (no login or CAPTCHA). Pin page, revision and feet-inch dimensions. Add an official-issuer multi-unit vector dataset as `test_only` only after authority and permission verification; previous third-party candidates remain historical leads, not approved substitutes. Write `fixtures/usp/D5/<profile>/manifest.json` (`usp-data-pack/1`) and `sample-manifest.csv` with unknowns stated. RERA bytes stay outside Git with `permission: unconfirmed`.
 - **Done when:** D5 is `acquired` or `failed(<reason>)`; every plan is labelled "planned drawing" or "foreign multi-unit test", never as-built.
 
-### DATA-06 · Open drone capture bundle
-**Owner** DATA · **Tier** T-work · **Tests** GF-AI, GF-T19, site pipeline · **Needs** none · replaces H90 H7
-- **Read:** [H27](27-domain-ai-and-cadastral-checks.md) Z1.
-- **Build:** pick an openly licensed OpenDroneMap sample dataset that publishes ground control points (candidates on github.com/OpenDroneMap: `copr`, `boruszyn`, `helenenschacht`; recount GCPs and confirm the licence at download). Generate `capture-manifest.csv` from `gcp_list.txt` and image EXIF. Hold out at least 3 GCPs as checkpoints (leave-one-out when there are fewer than 8). Label the bundle `test_only` with its geography.
-- **Done when:** checkpoint residuals in cm come from the ODM report; no Digital Sky, pilot or consent step is involved.
+### DATA-06 · Official drone capture bundle
+**Owner** DATA · **Tier** T-work · **Tests** GF-AI, GF-T19, site pipeline · **Needs** none
+- **Read:** current delivery policy; H27 Z1; H28 source permissions.
+- **Build:** acquire a permitted capture directly issued by an official authority/institution, including original images, calibration and surveyed controls when provided. Derive the capture manifest from unchanged official files. Community sample repositories are not automatic substitutes. Hold out source-supplied checkpoints before evaluation; do not invent control points.
+- **Done when:** actual source/permission and checkpoint geometry/residual evidence exist, or missing capture/control coverage is explicitly unavailable and the associated reconstruction claim remains unqualified.
 
-### DATA-07 · Third-party labelled holdouts (D6)
-**Owner** DATA · **Tier** T-work · **Test** GF-AI · **Needs** none · replaces H90 H6 (labels)
-- **Read:** [H27](27-domain-ai-and-cadastral-checks.md) section A; `services/geo/ml-models.json`; `docs/evidence/t061/` (two learned routes already pinned and evaluated on small third-party samples).
-- **Build:** buildings: the HOTOSM `vhr-building-segmentation` test split plus a second family that is open to download (SpaceNet on AWS open data, ISPRS Potsdam/Vaihingen, or WHU). Plans: the CubiCasa5K published test split, plus the D5 multi-unit set for unit and level association. Freeze tile and sheet IDs with hashes in the GF-AI preregistration before any evaluation.
-- **Done when:** holdouts are human-labelled by third parties before this project, frozen and hashed. Third-party ML footprints are never truth. Record the caveat that the RF-DETR checkpoint's training set is undocumented: show no overlap, or evaluate the documented DeepLabV3 baseline fine-tuned on HOTOSM train instead. Reconcile the CubiCasa5K licence string (repo says CC BY-NC 4.0; the Zenodo record says CC BY-NC-SA 4.0).
+### DATA-07 · Officially issued labelled holdouts (D6)
+**Owner** DATA · **Tier** T-work · **Test** GF-AI · **Needs** none
+- **Read:** current delivery policy; H27 A; existing model receipts as history only.
+- **Build:** discover officially issued, permitted human-labelled imagery, plans or point-cloud benchmarks. Verify the original issuing institution and licence; do not treat a community mirror, vendor prediction or public bucket as proof of official status. Freeze actual tile/sheet IDs and hashes before evaluation, and check training overlap.
+- **Done when:** eligible labels, permission and independent holdouts are pinned; unsupported families remain coverage gaps. Agent-drawn labels and ML predictions cannot replace official reference labels.
 
 ### DATA-08 · Cross-family oracles
 **Owner** DATA (a model family different from the implementer) · **Tier** T-work · **Tests** GF-T16, GF-T17, GF-T18, site pipeline · **Needs** DATA-02 · replaces H90 H6 (hand calculations)
-- **Build:** stdlib-only scripts with exact `fractions` for carpet components, UDS totals, prism volumes and `groundZ`, committed and hashed before the implementing commit (Git history proves the order).
+- **Build:** independent calculations over unchanged official source facts, using exact `fractions` where justified for carpet components, UDS totals, prism volumes and `groundZ`; no invented numerical inputs. Commit source pins and derivations before the implementing commit (Git history proves the order).
 - **Done when:** each oracle receipt records `review.kind: agent` and `independence: cross_family`.
 
 ### DATA-09 · Real reference area
 **Owner** DATA · **Tier** T-work · **Tests** GF-DATA, GF-SCENE · **Needs** DATA-01, DATA-05
 - **Read:** [H30](30-reference-scene-and-incomplete-data.md) B and G; [H28](28-data-acquisition-and-finale-tests.md) sections 3–5 and Z4.
-- **Build:** choose one Indian area of about 0.5–2 km² by H30 B's criteria (open context layers; a D5 planned building whose location its source record states; small enough to stream). Acquire the layers in H30 B's table as `usp-data-pack/1` assets under `fixtures/usp/D4/reference-area-<name>/` (D4 already holds DATA-01's real context layers; no new pack ID): LGD and boundary context (data.gov.in first), a 30 m open DEM, OpenStreetMap roads, water, land use, trees and buildings, and Open Buildings footprints where licensed. Record licence, attribution, CRS, vertical reference and stage per layer. Large bytes stay outside Git.
+- **Build:** choose one Indian area of about 0.5–2 km² by H30 B's criteria (open context layers; a D5 planned building whose location its source record states; small enough to stream). Acquire the layers in H30 B's table as `usp-data-pack/1` assets under `fixtures/usp/D4/reference-area-<name>/` (D4 already holds DATA-01's real context layers; no new pack ID): LGD and boundary context (data.gov.in first), a permitted official DEM and official roads, water, land use, trees and buildings where published; no community/vendor substitute. Record licence, attribution, CRS, vertical reference and stage per layer. Large bytes stay outside Git.
 - **Done when:** every layer is `tested` or `failed(<reason>)`; the attribution list is complete; ODbL layers are marked so they never enter record exports; the area and its geography are named in LEAD-05's decision.
 
 ### LEAD-01 · Plan machinery that can tell the truth
@@ -117,7 +119,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### LEAD-05 · Finale dataset decision
 **Owner** LEAD · **Tier** T-read · **Needs** DATA-01, DATA-05, DATA-06, DATA-09 · replaces H90 H5
-- **Build:** `docs/evidence/usp/finale/GF-DATA/site-decision.md` naming the chosen public bundles with licence and geography: the DATA-09 reference area the Studio opens on, the drone set (DATA-06), the D1 3DBAG building, the D5 plans, D0 for rights, and synthetic co-op and per-deed tenure cases (DATA-02). Any permitted geography is fine; no consent step.
+- **Build:** `docs/evidence/usp/finale/GF-DATA/site-decision.md` naming the chosen public bundles with licence and geography: the DATA-09 reference area the Studio opens on, the drone set (DATA-06), the D1 3DBAG building, the D5 plans, official rights and tenure cases where available, with DATA-02 gaps recorded; historical D0 is not replacement qualification. Any permitted geography is fine; no consent step.
 - **Done when:** GF0 checklist row 6 in H28 Z1 points at this file.
 
 ### CLEANUP-01 · Remove obsolete and duplicate files
@@ -168,7 +170,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 **Owner** FND · **Tier** T-risk · **Tests** GF-AGENT, GF-PRIVACY · **Needs** none
 - **Read:** [H14](14-adaptive-ingestion-and-progressive-review.md) Z2; [H19](19-india-contained-deployment.md) Z1, Z4.
 - **Build:** one shared redaction module (Aadhaar with Verhoeff, VID, PAN, Indian mobile, EXIF strip); ignore `NOUS_API_KEY` unless `ULPIN_ALLOW_NON_INDIA_PROVIDER=1`; capability-driven residency copy in the Shell; `Host` allowlist on the loopback app.
-- **Done when:** seeded PII never appears in provider logs, previews, indexes or app logs; a forged `Host` gets 403.
+- **Done when:** PII from permitted official source cases never appears in provider logs, previews, indexes or app logs; a forged `Host` gets 403.
 
 ### INGEST-01 · Hostile-input guards
 **Owner** INGEST · **Tier** T-work · **Test** GF-RECOVERY · **Needs** DATA-02 for fixtures
@@ -236,14 +238,14 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 ### UI-01 · Tokens, fonts and icons
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW (visual) · **Needs** none
 - **Read:** [H99](99-ui-ux-and-integration.md) Z1 and Z6; [design system README](../design-system/README.md); [`tokens.css`](../design-system/tokens.css); [reference mockups](../design-system/mockups/officer-studio/README.md) (reference only, not production UI) and their rules.
-- **Build:** extend `--ui-*` tokens with map, rights, marks, ramps, utility and dark values; self-host Noto Sans, Noto Sans Devanagari and Noto Sans Mono; an `Icon` wrapper on Phosphor; a lint warning for new `lucide-react` imports.
-- **Done when:** no external font request offline; contrast checks pass in both themes; a Hindi label renders.
+- **Build:** extend `--ui-*` tokens with map, rights, marks, ramps and utility values; retain reusable theme tokens without adding a switch; self-host Noto Sans, Noto Sans Devanagari and Noto Sans Mono; an `Icon` wrapper on Phosphor; a lint warning for new `lucide-react` imports.
+- **Done when:** no external font request offline; contrast checks pass in the delivered light theme; additional themes remain future work; a Hindi label renders.
 
 ### UI-02 · Studio frame
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01
 - **Read:** [H99](99-ui-ux-and-integration.md) sections 3–4 and Z2; [UI brief](../design-system/ui-brief.md) "How the map should look"; [reference mockups](../design-system/mockups/officer-studio/README.md) "The Studio frame" and "Interaction model" and [screens](../design-system/mockups/officer-studio/screens.md) "Frame", as design reference.
-- **Build:** 56 px top bar with Batches · Map · Register; scope strip; on-demand left panel; single tray; inspector widths; breakpoints.
-- **Done when:** selection and camera survive every panel change; 390 × 844 shows the scope header and action.
+- **Build:** 56 px top bar with Batches · Map · Register; scope strip; on-demand left panel; single tray; inspector widths and flexible layout seams; desktop-first/light-only, no theme control or reserved gap.
+- **Done when:** selection and camera survive every panel change; desktop scope/actions, keyboard access and zoom remain usable; mobile optimization is deferred.
 
 ### UI-03 · Map styling and honest geometry
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01, FND-04
@@ -268,7 +270,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 ### UI-09 · Enhanced view and scene sync
 **Owner** UI · **Tier** T-work · **Test** GF-SCENE · **Needs** UI-03, FND-04, DATA-09; DOMAIN-01 for tier 1
 - **Read:** [H30](30-reference-scene-and-incomplete-data.md) C, D and I; [H22](22-rendering-and-sparse-data.md) C, Z1 and Z5; [map and 3D rules](../design-system/map-and-3d.md) "Enhanced view"; [reference mockups](../design-system/mockups/officer-studio/README.md) (design reference, not production UI).
-- **Build:** the Enhanced view on the shared Cesium path. Tier 1: load a capture's OpenDroneMap mesh (DOMAIN-01, H27 Z1) as a clipped, non-pickable `context_mesh` whose picks pass through to `recordId`; qualify it on the DATA-06 scene. Tier 2, where no capture exists, is the deterministic dressing: DEM terrain, road ribbons, water and green fills, seeded tree instances, context massing by H30 G, storey slab lines and window bands, sun and shadows. Derivatives go to the display-derivative store with input pins, generator version, seed and hash; they go stale and regenerate on record change. Add the attribution line and the "Context building · no record" selection.
+- **Build:** the Enhanced view on the shared Cesium path. Tier 1: load a capture's OpenDroneMap mesh (DOMAIN-01, H27 Z1) as a clipped, non-pickable `context_mesh` whose picks pass through to `recordId`; qualify it on the DATA-06 scene. Tier 2, where no capture exists, is the deterministic dressing: official DEM terrain, sourced road/water/green geometry and sourced building surfaces; no invented trees, widths, roofs, heights or storeys; display lighting and shadows. Derivatives go to the display-derivative store with input pins, generator version, seed and hash; they go stale and regenerate on record change. Add the attribution line and the "Context building · no record" selection.
 - **Done when:** GF-SCENE passes, including the no-change check across the view switch and byte-identical rebuilds.
 
 ## GF3 — govern
@@ -280,7 +282,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### READY-02 · Sourced review policy
 **Owner** READY · **Tier** T-work · **Test** GF-READY · **Needs** DATA-02 · replaces H90 H2
-- **Build:** fill `review-cases.csv` for the six D0 review cases; `rule_reference` cites public text (RERA 2016 s.2(k) and s.17; the apartment and co-operative acts in H16 Z1); `reviewer_role: agent` with a cross-family review receipt.
+- **Build:** fill `review-cases.csv` for available official review cases, with absent rule/case coverage left unqualified; `rule_reference` cites public text (RERA 2016 s.2(k) and s.17; the apartment and co-operative acts in H16 Z1); `reviewer_role: agent` with a cross-family review receipt.
 - **Done when:** every rule is labelled "sourced policy, not a departmental rule".
 
 ### HISTORY-02 · Sanctioned versus observed
@@ -329,7 +331,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-07 · Automated task-completion and timing checks
 **Owner** UI · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** UI-04, UI-05 · replaces H90 H4 and the H9 study
-- **Build:** Playwright journeys (select building and unit, open evidence, make the card), wrong-unit guard, keyboard, focus, axe accessibility checks, 1440 × 900 and 390 × 844. Timing receipts: first selectable scene, time to card, and officer input count on the assisted path versus `manual_mapping`.
+- **Build:** Playwright journeys (select building and unit, open evidence, make the card), wrong-unit guard, keyboard, focus, axe accessibility checks, desktop 1440 × 900 and browser zoom; mobile optimization deferred. Timing receipts: first selectable scene, time to card, and officer input count on the assisted path versus `manual_mapping`.
 - **Done when:** receipts exist and are labelled "scripted, not a human study"; the status reads "intended-user usability: untested" unless a person volunteers.
 
 ### DEPLOY-04 · Finale kit

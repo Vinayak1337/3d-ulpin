@@ -1,5 +1,7 @@
 # 3D ULPIN UI and UX brief
 
+**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+
 Which screens exist, what goes on each, how the map looks and where every feature lives. Repository copy of the team's UI brief, reconciled on 24 September 2026 with the finale handoffs ([H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) Z, [H97](../usp-agent-handoffs/97-review-findings-and-alignment.md)). Use it with the [design system](README.md) and the [Officer Studio reference mockups](mockups/officer-studio/README.md) (reference UIs, not production UI), which show every screen assembled.
 
 ## Rules for every screen
@@ -81,7 +83,7 @@ A quiet, light-grey model city where only the thing you are asking about has col
 
 | Zone | Position and size | Contents |
 | --- | --- | --- |
-| Top bar | Full width, 56 px | Wordmark, Batches · Map · Register, search, area switcher, Live or Snapshot, theme, user |
+| Top bar | Full width, 56 px | Wordmark, Batches · Map · Register, search, area switcher, Live or Snapshot, user |
 | Scope strip | Top of the map column, 36 px | Area, recorded source classification, revision, Add files |
 | Left panel | 308 px, closed by default | One of Layers, Spaces, Sources, Checks, opened on demand |
 | Canvas | Remaining width | The 3D or 2D scene |

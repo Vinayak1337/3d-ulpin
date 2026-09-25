@@ -1,5 +1,7 @@
 # Unified Studio UI/UX, real 3D display and integration
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Dataset policy update, 24 September 2026:** general map/load qualification uses real data from any suitable geography under [H28](28-data-acquisition-and-finale-tests.md). No Delhi/Uttam Nagar acquisition is required. D0/D1 smoke acceptance remains distinct from the larger real corpus, sparse-source and concurrent-ingestion interaction tests below; this documentation update does not claim those tests passed.
 
 **AI settings/delegation update, 23 September 2026:** use [02 - implementation lead, role tiers and worker delegation](02-lead-agent-execution.md) for worker ownership and [20 - Sarvam gateway, credit pools and permanent credential retirement](20-model-gateway-and-budget-pools.md) for the DEPLOY settings leaf. These are not new top-level product screens or a reason to delay the existing V0 scene.
@@ -75,11 +77,11 @@ Area / supplied scope       Source classification · revision       Add files
 
 Map gets the flexible majority; desktop inspector approximately 360–420 px. Optional layers/property lists open on demand, not a permanent left tree plus right inspector plus another dock. Selected building/floor/unit, classification/stage/revision and action remain visible while detail scrolls. Full register expands long tables/evidence/history; returning preserves camera and selection.
 
-Reuse restrained sage/green tokens and existing [product](../../apps/web/features/studio/product/product.css), [operations](../../apps/web/features/studio/product/operations.css) and [shared UI](../../apps/web/features/officer/shared/ui.css) styles/icons. Normal task text ≥14 px desktop/16 px mobile, essential metadata ≥12 px, readable line-height, 8/12/16/24 spacing and approximately 44 px primary touch targets. Consolidate tokens rather than stacking global overrides or another component library. One accent action per context. Details may be dense; do not replace necessary labels with tiny icons or tooltips.
+Reuse restrained sage/green tokens and existing [product](../../apps/web/features/studio/product/product.css), [operations](../../apps/web/features/studio/product/operations.css) and [shared UI](../../apps/web/features/officer/shared/ui.css) styles/icons. Normal task text ≥14 px desktop, essential metadata ≥12 px, readable line-height, 8/12/16/24 spacing and approximately 44 px primary touch targets. Consolidate tokens rather than stacking global overrides or another component library. One accent action per context. Details may be dense; do not replace necessary labels with tiny icons or tooltips.
 
-For D0 architectural quality, use stable materials, controlled exposure/contact shadows, legible silhouettes, selected-space outlines, depth hierarchy and calm background/context. Authored fixtures may contain detailed roofs/terraces/stairs because their source explicitly defines them. Real geometry retains source shapes; no invented facade/floor/road-width detail enters measured facts. Ornament is display-only. Building height unknown is shown as footprint/unavailable height, not a random attractive extrusion. Roof overhangs and recorded ground footprints remain separate roles.
+For D0 architectural quality, use stable materials, controlled exposure/contact shadows, legible silhouettes, selected-space outlines, depth hierarchy and calm background/context. New detail must come from verified official sources; historical authored fixtures do not qualify the current release. Real geometry retains source shapes; no invented facade/floor/road-width detail enters measured facts. Ornament is display-only. Building height unknown is shown as footprint/unavailable height, not a random attractive extrusion. Roof overhangs and recorded ground footprints remain separate roles.
 
-Approximately 900 px collapses optional rails; approximately 620 px uses one full-height sheet. At 390×844 keep the scope header/action visible, form labels readable and search usable without a hidden placeholder. Long IDs wrap/copy. Use local/approved fonts/textures in private mode. No screenshot or satellite image substituted for an interactive 3D scene.
+Deliver the desktop frame in light mode only, without a theme control or reserved header gap. Keep flexible layout boundaries for later responsive work; phone breakpoints and mobile optimization are deferred. Long IDs wrap/copy. Use local/approved fonts/textures in private mode. No screenshot or satellite image substituted for an interactive 3D scene.
 
 ## 5. Two geometry lanes, one shared viewport
 
@@ -153,9 +155,9 @@ Retrieve the actual committed reference images via [comparison-manifest.json](..
 | V5 evidence action | U-A101 mixed source and PACK | Exact locator and applicable clause; NEVER_A102 absent from relevant preview/packet; text PACK0 passes only its profile, PDF requires PACK1; GF4 card/QR retains exact revision and independent release checks; invalid unit cannot export building |
 | V6 history | Two actual D0 manifests | Explicit dates/stages, correct old sources and supported overlay, no current-data substitution; one camera/viewer |
 | V7 progressive draft | Three real INGEST chunks with failure/reversed completion | Selectable persisted geometry before batch completion; restart/replay matches fresh manifest; no duplicated/resurrected objects or global scene reload per event |
-| V8 mobile/failure | 390×844, denied source, missing tile, empty record and reconnect | Readable selected-scope sheet and action; focus/touch work; failures do not show another property's private content or erase saved context |
+| V8 desktop/failure | Desktop, denied source, missing tile, empty record and reconnect | Readable selected scope/action and keyboard focus; failures do not expose another property or erase context. Mobile optimization deferred. |
 
-V0 requires relevant D0 V1–V5/V8 plus the separate D1 geometry/identity gate. V6/V7 and unfinished feature-specific behavior are later gates, not fake screenshots to satisfy V0. Capture V1–V8 for their enabled phases at 1440×900, 1024×768 and 390×844 as appropriate, with fixed pack/hash/camera/fonts and explicit scene-ready condition. Compare fresh baseline/final side by side at the same settings. Record actual interaction/DOM IDs/asset requests, not subjective claims of pixel-perfect generated-image equivalence. Do not claim user approval without it.
+V0 requires relevant D0 V1–V5/V8 plus the separate D1 geometry/identity gate. V6/V7 and unfinished feature-specific behavior are later gates, not fake screenshots to satisfy V0. Capture V1–V8 for their enabled phases at desktop 1440×900 and 1024×768, with browser zoom as appropriate, with fixed pack/hash/camera/fonts and explicit scene-ready condition. Compare fresh baseline/final side by side at the same settings. Record actual interaction/DOM IDs/asset requests, not subjective claims of pixel-perfect generated-image equivalence. Do not claim user approval without it.
 
 ### Measured budgets, not invented performance
 
@@ -167,7 +169,7 @@ If a budget fails, reduce resident LoD/texture resolution/draw calls within the 
 
 ## 9. Dataset acquisition, test use and fallback
 
-**D0:** DATA prepares the named aliases/sentinels/oracles in H28 from existing authored material without touching populated datasets. Import through actual services; images, plans, records and 3D must share the same fixture truth. Keep intentional invalid draft cases distinct from the clean V0 example.
+**Historical D0:** retain previous aliases/sentinels/oracles and receipts without extending them. Current qualification uses official-source records under the delivery policy. Import through actual services; images, plans, records and 3D must share the same fixture truth. Keep intentional invalid draft cases distinct from the clean V0 example.
 
 **D1:** [preserve this full 3DBAG response](https://api.3dbag.nl/collections/pand/items/NL.IMBAG.Pand.1655100000500568), read [delivery/CRS/extension documentation](https://docs.3dbag.nl/en/delivery/webservices/), save hash and original metadata, and compare decoded coordinates/source face topology before rendering. One asset must pass roof shape, identity, placement and null-interior handling before a larger sample. External access failure → retain D0 visual work and report D1 unqualified; do not manufacture a replacement source.
 
@@ -261,7 +263,7 @@ The [UI brief](../design-system/ui-brief.md) lists 33 screens. The finale builds
 ### Z5. Acceptance additions
 
 - Offline visual test: no external font or icon requests; a Hindi label renders in the map and the inspector.
-- Contrast checks for every token pair used as text (4.5:1) and every control border (3:1) in both themes.
+- Contrast checks for every token pair used as text (4.5:1) and every control border (3:1) in the delivered light theme.
 - Screenshots for V1–V8 use the qualified data for their gate ([H28](28-data-acquisition-and-finale-tests.md)) and pass on the V-shot contract above. Reviewers may compare them with the reference mockups (Z6) as a design aid; that comparison is not a pass or fail, and values will differ.
 
 ### Z6. Reference mockups

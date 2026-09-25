@@ -1,5 +1,7 @@
 # 22 — Progressive rendering, visual completion and late evidence
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **New handoff, 24 September 2026. Owner: UI; shared geometry/source services: FND; learned estimators: LEARN.** Preserve existing H99 selection, permission, disposal, V1–V8 and actual-product acceptance. This document adds the revised visual direction; none of its new capabilities has been runtime-qualified in this task.
 
 ## A. Rendering decision
@@ -20,7 +22,10 @@ Start with the existing 25–100 visible exteriors / 25 MiB visible-geometry pro
 
 Visual quality comes from source-shaped geometry, roof silhouette, consistent units, stable lighting/materials, selective contact shadows, outlines and careful interaction. Render decorative repetitions with instancing where qualified. Dispose assets/materials and keep selection IDs stable across LoD and tile seams. Prioritize a coherent local view and connected roads, while retaining fair queue scheduling.
 
-## C. Three distinct layers, not one truth flag
+## C. Layer vocabulary and future enrichment (current scope restricted)
+
+Current delivery renders official-source geometry and its traceable derivatives. The estimated/illustrative vocabulary below is retained for existing records and future design; it does not authorize generating missing source objects or facts. Generative expansion needs a new explicit user scope decision.
+
 
 | Layer | Permitted content | Permitted use |
 | --- | --- | --- |
@@ -90,8 +95,8 @@ Plus `DataSufficiencyVerdict {task, requirements[], outcome: sufficient | partia
 | Height source | `geometryClass` | Analytic? |
 | --- | --- | --- |
 | Own nDSM with qualified control (H27 Z1) | `evidence_linked` | Yes, after checkpoint residual test |
-| Third-party ML heights (Open Buildings 2.5D, Microsoft) | `estimated` | No; display only |
-| OpenStreetMap `building:levels` or `height` tags | `evidence_linked` attribute from a volunteered source | No |
+| Historical third-party ML heights | `estimated`; not a current official-source input | No |
+| Historical volunteered height/level tags | Retain provenance in history; not a current official-source input | No |
 | Sanctioned storey count ("G+3", "S+4") | `evidence_linked` count | Count yes; count × assumed floor height is `illustrative` |
 | CartoDEM (about 30 m) | Terrain context only | No |
 
@@ -106,5 +111,5 @@ Add `levelKind`: `stilt`, `basement`, `lower_ground`, `ground`, `mezzanine`, `ty
 
 ### Z5. Finale Enhanced view and real reference area (25 September 2026)
 
-[H30](30-reference-scene-and-incomplete-data.md) brings a bounded part of section C's Enhanced preview into `finale_v1`: deterministic scene dressing (DEM terrain, road ribbons, water and green fills, seeded trees, context massing by H30 G precedence, slab lines and window bands, sun and shadows) over a real Indian reference area (DATA-09), with the sync rules in H30 D. The no-change assertion in section G moves from full-product enrichment qualification into GF-SCENE for this bounded view. Learned height estimates and generative detail remain FP-ENRICH. Section D's poor-data table is extended by H30 E's fill / ask / park / reject decisions and question budget.
+[H30](30-reference-scene-and-incomplete-data.md) brings a bounded part of section C's Enhanced preview into `finale_v1`: deterministic presentation of official DEM, road/water/green and building geometry, with neutral materials, sun and shadows; no invented trees, dimensions or building detail over a real Indian reference area (DATA-09), with the sync rules in H30 D. The no-change assertion in section G moves from full-product enrichment qualification into GF-SCENE for this bounded view. Generative detail is a future option subject to renewed user authorization; it is not part of current implementation. Section D's poor-data table is extended by H30 E's fill / ask / park / reject decisions and question budget.
 

@@ -1,5 +1,7 @@
 # 30 — Real reference scene, incomplete data and every input family
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Added 25 September 2026. Release: `finale_v1` for requirements R-SCENE and R-SUFFICIENCY (GF2); the parts marked full_product stay in FP-ENRICH and FP-FORMATS. Owners: DATA for the reference area, INGEST for intake and sufficiency decisions, UI for the scene, DOMAIN for reconstruction routes, FND for shared fields.** Everything here is planned; nothing in it has passed a runtime gate.
 
 The finale map must look good and stay honest. It looks good because it is built from a real Indian area: its photoreal drone mesh where a permitted capture exists, and real open layers dressed by deterministic rules everywhere else. It stays honest because every generated visual is a labelled display derivative of the formal records, never a record. Incomplete input is handled one way everywhere: fill for display, ask one bounded question, park the object, or reject it for 3D. The ingestion agent accepts every data family (GIS, tables, plans, CAD/BIM, 3D models, LiDAR, elevation, imagery, survey, services) and mixes of them.
@@ -34,29 +36,29 @@ The Studio's area map, the 3D view and every capture use one real Indian referen
 3. It is small: roughly 0.5–2 km², so the scene streams within the H22 budgets.
 4. Preferably, a permitted drone capture covers it (C, tier 1). Without one, the open layers alone carry the scene (tier 2); this is not a reason to reject an area.
 
-Candidates from sources already acquired: the Haryana RERA project 2831 site (tower plan, basement plan and section acquired by DATA-05), if the RERA record gives its location, and the Uttam Nagar area (D4 OpenStreetMap context from DATA-01). Any permitted Indian geography qualifies; none is a prerequisite.
+Candidates from sources already acquired: the Haryana RERA project 2831 site (tower plan, basement plan and section acquired by DATA-05), if the RERA record gives its location, or another area covered by official D4 context; the old Uttam Nagar community-source pack is historical only. Any permitted Indian geography qualifies; none is a prerequisite.
 
 | Layer | First choice, then alternatives | Role in the scene | `geometryClass` |
 | --- | --- | --- | --- |
 | Administrative codes and boundaries | LGD (data.gov.in, acquired); municipal or PMRDA-style boundary GIS where published on data.gov.in; pincode boundary GeoJSON (data.gov.in) | Area context, labels, scope strip | `evidence_linked` context, never parcels |
 | Terrain | Copernicus DEM GLO-30 or SRTM (open, attribution as downloaded); CartoDEM from Bhuvan where the download terms allow | Ground surface and hillshade | Context only; never floor, basement or height measurement |
-| Roads, water, land use, parks, trees | OpenStreetMap (ODbL); NWIC rivers (data.gov.in) | Road ribbons, water, green areas, tree points | `evidence_linked` lines and polygons; ribbon width and tree shapes are `illustrative` |
-| Context building footprints | OpenStreetMap buildings; Google Open Buildings; Overture or Microsoft footprints (record each licence) | Surrounding massing | Footprint `evidence_linked` (volunteered or ML-derived, never truth); heights per section G |
-| Imagery | OpenAerialMap orthophotos (licence per image); a permitted drone set (DATA-06) | Optional ground texture, extraction input | Context; Bhuvan or other WMS is view-only and never baked into assets |
+| Roads, water, land use, parks, trees | Official road/water/land-use/tree releases; NWIC rivers via data.gov.in where permitted | Road ribbons, water, green areas, tree points | Sourced lines/polygons only; do not invent widths or tree shapes |
+| Context building footprints | Official municipal/survey building footprints with issuer and licence verified | Surrounding massing | Footprint `evidence_linked` only with source provenance; missing heights remain unknown |
+| Imagery | Officially issued permitted orthophotos or drone capture (DATA-06) | Optional ground texture, extraction input | Context; Bhuvan or other WMS is view-only and never baked into assets |
 | Hero building | D5 sanctioned plans and section → level register → unit prisms (H27) | The building officers inspect | `evidence_linked` planned geometry, labelled *Planned*; not as-built |
 | Point cloud | A permitted LiDAR or drone point cloud of the same area, if one exists; otherwise IIT Hyderabad LiDAR as a separate `test_only` scene | Heights, roofs, terrain | Per H27 qualification |
-| Underground | Only real depth or profile data; usually none is open | Underground mode | Without data the column shows *No survey*; a corridor fixture exists only in the D0 scene |
+| Underground | Only real depth or profile data; usually none is open | Underground mode | Without data the column shows *No survey*; missing official corridor/depth coverage stays unqualified |
 
 Rules:
 
 - Every layer is a pack asset under H28 section 5: source, release, hash, licence, attribution, CRS, vertical reference and the stage reached (`discovered → acquired → inspected → qualified → tested`).
-- The map carries an attribution line for every layer shown (for example "© OpenStreetMap contributors"). ODbL share-alike stays with derived exports (H28 Z4); the CityJSON and LADM exports carry only records, not OpenStreetMap-derived context.
+- The map carries the official issuer and required attribution for every layer shown. Source-specific redistribution limits remain attached to each derivative; context layers are not silently included in property-record exports.
 - The scope strip shows the area's geography and each dataset's recorded classification. Nothing is labelled "fictional", "demo" or "demonstration data" (AGENTS.md).
-- Hard-coded generators (the Lake View district and document generators) are not reachable from finale routes. D0 authored cases stay test fixtures under `fixtures/usp/D0`. Protected datasets are kept, not deleted or re-seeded.
+- Hard-coded generators (the Lake View district and document generators) are not reachable from finale routes. D0 authored cases remain protected historical material; create no new synthetic fixtures. Protected datasets are kept, not deleted or re-seeded.
 
 ## C. Evidence view and Enhanced view
 
-H22's two views stay. The **Evidence view** is the default for recording, checks and measurement. The **Enhanced view** is a toggle, remembered per viewer. The finale Enhanced view uses only real capture and deterministic rules over real layers and records. Learned or generative content (predicted heights, AI façades, textures) remains FP-ENRICH.
+H22's two views stay. The **Evidence view** is the default for recording, checks and measurement. The **Enhanced view** is a toggle, remembered per viewer. The finale Enhanced view uses only real capture and deterministic rules over real layers and records. Generative enrichment remains a future design option requiring a new explicit user scope decision; it is not authorized source data.
 
 **Two tiers of context, following the hardened plan review's Helsinki lesson (two models from one capture):**
 
@@ -69,15 +71,15 @@ H22's two views stay. The **Evidence view** is the default for recording, checks
 
 **Tier 2: no capture of the area.** The deterministic dressing in the table below, from open layers.
 
-DATA-06's open drone set is foreign and `test_only`. It qualifies tier 1 as a separate labelled scene; it is never moved onto an Indian area.
+If DATA-06 acquires a foreign official capture, it is `test_only`. It qualifies tier 1 as a separate labelled scene; it is never moved onto an Indian area.
 
 | Element | Rule (finale) |
 | --- | --- |
 | Terrain | Mesh from the DEM with soft hillshade; context layers draped. No DEM: a flat ground at the site's stated level, labelled "terrain unknown" |
-| Roads | Ribbons from centrelines; width from tags, else a width per road class (illustrative); lane markings only where tagged |
-| Water, parks, land use | Fills from polygons; tree instances placed with a seeded random pattern inside parks and green land use, plus tagged tree points |
-| Context buildings | Height by the precedence in section G. Massing with a slab line per storey; flat roof with parapet as the Indian default when roof shape is unknown (illustrative); no rooftop tanks or stair cabins unless sourced |
-| Façades | Window bands per storey from the level register or storey count; no invented balconies |
+| Roads | Render official centrelines; use ribbon widths or lane markings only when supplied by the source |
+| Water, parks, land use | Fills from official polygons; tree locations only from official tree records, no seeded placement |
+| Context buildings | Use only source-supplied building geometry/heights and levels under section G. Missing roofs/storeys/heights remain unavailable; no default parapet or massing |
+| Façades | Source-supplied façade geometry only; no invented windows or balconies |
 | Hero building | Evidence-linked levels and unit prisms; Colour by applies only here; context around it at context opacity |
 | Light | Sun from date, time and latitude; soft shadows and ambient occlusion within the H22 frame budget; atmosphere and fog; reduced-motion safe |
 
@@ -109,7 +111,7 @@ The outcome is one of `complete`, `fill_display`, `ask`, `park` or `reject_for_3
 | Outcome | When | What the user sees |
 | --- | --- | --- |
 | `complete` | Everything the task needs is present | Normal |
-| `fill_display` | The gap only affects appearance and a deterministic rule exists | Enhanced view fills it as illustrative; Evidence view shows *Unknown* |
+| `fill_display` | Only presentation styling is missing; official geometry already exists | Apply neutral colour, lighting or material to that geometry. Do not add missing objects, dimensions or source facts; those remain *Unknown*. |
 | `ask` | One fact the files cannot supply would unlock a whole class of objects or a critical task | One bounded question, with the evidence and choices |
 | `park` | A needed fact is missing and asking is not allowed or over budget | The object stays unplaced or unbuilt. It is listed under "Needs input" on the batch with the exact missing item and what it would unlock; **Request evidence** |
 | `reject_for_3d` | The source cannot yield placement or geometry for the task at all | Kept as evidence (documents list), not on the map, with the reason. The original is never deleted |
@@ -129,7 +131,7 @@ The outcome is one of `complete`, `fill_display`, `ask`, `park` or `reject_for_3
 
 1. Read it from the file itself: `.prj`, GeoTIFF tags, LAS header, IFC units and storeys, EXIF, title block, legend or scale bar.
 2. Reuse an approved mapping recipe.
-3. Propose an inference from other sources for review, for example a CRS from bounds inside India with H23 Z checks, or a scale from a dimension string.
+3. Propose a traceable association or calculation from other official source evidence for review, such as scale from drawn endpoints and a source dimension. Never infer a CRS solely from bounds or fill a source fact from a visual default.
 4. Ask.
 5. Park.
 
@@ -146,8 +148,8 @@ The outcome is one of `complete`, `fill_display`, `ask`, `park` or `reject_for_3
 | Task | Minimum evidence | Otherwise |
 | --- | --- | --- |
 | Place on the map | Declared or verified CRS; or at least 3 control correspondences with a georeferenced layer, as a reviewed proposal | Local-frame preview only (named); `park` for global placement |
-| Building massing (evidence) | Footprint plus height from section G's evidence tiers | Footprint only: 2D in Evidence view, illustrative massing in Enhanced |
-| Floors | Level register or a section with scale and a named vertical reference | Storey count only: illustrative slab lines; no level analysis |
+| Building massing (evidence) | Footprint plus height from section G's evidence tiers | Footprint only: retain 2D in both views; height remains unavailable |
+| Floors | Level register or a section with scale and a named vertical reference | Storey count only: retain the literal count; no invented slab positions or level analysis |
 | Units | Plan with scale (or one confirmed dimension to calibrate) plus level association | `ask` for one known dimension, then `park` |
 | Underground | Depth or profile plus quality level | *No survey* band, never shown as clear |
 | Anything | Aggregate statistics only; text with no location; photos without overlap, position or scale; a DEM alone for buildings | `reject_for_3d` for that task; kept as evidence |
@@ -178,11 +180,11 @@ Each field of a fused object lists every contributing source (H14 `NormalizedObs
 
 | Field | Precedence, highest first |
 | --- | --- |
-| Building height | Control-checked point-cloud or DSM-minus-DTM height (`evidence_linked`) → supplied 3D model height → sanctioned section or level schedule (documented, *Planned*) → OpenStreetMap height tag → OpenStreetMap levels × class storey height (`illustrative`) → ML height such as Open Buildings (`estimated`, display only) → class default (`illustrative`) |
-| Footprint | Survey or cadastral polygon → georeferenced plan → reviewed AI extraction → OpenStreetMap, Open Buildings or Overture footprint (context). A roofprint is not a footprint (H27) |
-| Levels | Level register from a section or schedule → IFC storeys → point-cloud slab evidence (`estimated`) → storey count (`illustrative` spacing) |
-| Terrain | Local survey or LiDAR ground model → drone ground model → 30 m DEM → flat plane at the stated site level |
-| Placement of a local-frame plan | At least two reviewed control correspondences with a georeferenced footprint; never name or proximity |
+| Building height | Official control-checked point cloud or DSM-minus-DTM → official supplied model → official sanctioned section/level schedule, labelled *Planned*. Keep provenance and conflicts; if none qualifies, height is unknown. No class defaults or multiplied storey guesses. |
+| Footprint | Official survey/cadastral polygon → officially sourced georeferenced plan → reviewed extraction from official imagery as a candidate. No community/vendor substitute. A roofprint is not a footprint. |
+| Levels | Official section/schedule or IFC storeys with elevations/reference → qualified source slab evidence. Count alone does not establish elevations or equal spacing. |
+| Terrain | Local survey or LiDAR ground model → drone ground model → official DEM → otherwise terrain unavailable (a neutral display plane is not terrain data) |
+| Placement of a local-frame plan | At least three reviewed, source-supplied control correspondences with a georeferenced footprint; never name or proximity |
 | Planned against observed | Never fused: kept as separate revisions and compared by the deviation check ([H15](15-property-history-and-comparison.md)) |
 
 ## H. Proposed shared fields
@@ -209,7 +211,7 @@ UI adds proposed Enhanced-view tokens (terrain, vegetation, façade and window t
 - screenshots keep the legend;
 - the H22 G frame and first-scene targets are met on declared hardware.
 
-**GF-SUFFICIENCY (INGEST, GF2).** One mixed batch, built by DATA-02 with independent expected outcomes, containing:
+**GF-SUFFICIENCY (INGEST, GF2).** One mixed batch of unchanged official-source inputs acquired by DATA-02, with independent source-derived expectations. Seek the cases below as naturally occurring source conditions; do not remove metadata or manufacture samples. Each unavailable case stays a named coverage gap:
 
 - a vector layer without `.prj` whose bounds are inside India;
 - a table with an ambiguous area unit;

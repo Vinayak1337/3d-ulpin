@@ -1,5 +1,7 @@
 # 3D ULPIN — what we are building and in what order
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 <!-- plan-next-gate: GF0 -->
 
 **Aligned 24 September 2026 after the Grand Finale audit. Status: implementation plan; new gates are pending.** The consolidated application baseline is staging commit `45d033baae7ec4e5a572d82459b0062c70a12c95`. Main remains separate. Fetch and verify the live staging head before starting implementation.
@@ -19,7 +21,7 @@ Build an evidence-linked 3D property workbench for SIH 26011. Give equal emphasi
 | Release | Build and demonstrate | Boundary |
 | --- | --- | --- |
 | `finale_v1` | Supported progressive ingestion/SSE; constrained agent assistance; proposed immutable IDs and official-anchor assertions; CityJSON plus sidecar exchange; domain-AI candidates; qualified vertical/shared/underground geometry; scoped UDS/carpet/deviation/topology/impact checks; evidence card and revision QR; a real Indian reference area with a deterministic Enhanced view, and fill/ask/park/reject handling of incomplete input from every data family ([H30](30-reference-scene-and-incomplete-data.md)); measured rehearsal | One local operator, current shared Cesium path. Unsupported inputs/analyses remain explicit. No statutory issuance or production deployment claim. |
-| `full_product` | Concurrent schema learner and mid-import handover; separate privacy-preserving public request/evidence dashboard; grounded conversational assistance/MCP; qualified generative enrich-first previews (learned heights, AI façades and textures); broader format coverage beyond H30's finale families; measured renderer alternatives; large-scale and protected multiuser deployment | Retained commitments, not prerequisites for `finale_v1`. Each needs its own data, permission, accuracy and operational qualification. |
+| `full_product` | Concurrent schema learner and mid-import handover; separate privacy-preserving public request/evidence dashboard; grounded conversational assistance/MCP; generative previews only after a new explicit user scope decision; future mobile/themes; broader format coverage beyond H30's finale families; measured renderer alternatives; large-scale and protected multiuser deployment | Retained commitments, not prerequisites for `finale_v1`. Each needs its own data, permission, accuracy and operational qualification. |
 
 The finale still includes real domain AI/ML: building extraction, plan segmentation, evidence-supported vertical delineation and explainable topology validation under H27. Schema learning is a separate full-product capability; exact mapping reuse must not be described as trained ML. The constrained ingestion agent proposes mappings and orchestrates allowlisted tools; deterministic processors and accountable review govern recording.
 
@@ -27,12 +29,12 @@ The finale still includes real domain AI/ML: building extraction, plan segmentat
 
 | Gate | What we build | Evidence needed to exit |
 | --- | --- | --- |
-| GF0 — data and contracts | Inventory current implementation; select matched sources (Indian preferred, any permitted geography, labelled); pin pack manifests, coordinate/height metadata, parser/processor capabilities and shared contracts | GF-CONTRACT/GF-DATA: existing D0/D1 regression receipts rechecked; independent expected cases; authentic-data gaps named; no resets or invented survey facts |
+| GF0 — data and contracts | Inventory current implementation; select matched official sources (Indian operational geography; foreign official tests labelled separately); pin pack manifests, coordinate/height metadata, parser/processor capabilities and shared contracts | GF-CONTRACT/GF-DATA: existing D0/D1 regression receipts rechecked; independent expectations derived from official sources; authentic-data gaps named; no resets or invented survey facts |
 | GF1 — identify and exchange | H26 project ID allocator/lifecycle, supplied official assertions, semantic CityJSON + rights/provenance sidecar, LADM mapping | GF-T15 and GF-EXCHANGE: race/idempotency/lifecycle cases and independent loss-aware round trip |
 | GF2 — prove spaces | H14 progressive source path and constrained mapping agent; H27 domain-AI candidates and site model pipeline, floor/space review, qualified solids/prisms and reference operations; H16 shared rights | GF-AI, GF-AGENT, GF-T16–18, GF-RECOVERY, GF-VIEW, GF-SCENE and GF-SUFFICIENCY; predictions versus truth, quantities versus source components, unsupported versus zero |
 | GF3 — govern | H11/H12 evidence/readiness, H15 exact-revision deviations/history and H17 dig/impact screening | GF-READY and GF-T19–20: independent control cases, coverage gaps and stale/unknown utility depth; no automatic illegality or safe-to-dig verdict |
 | GF4 — share scoped proof | H10 property-card subtype of existing packet service and access-checked exact-revision QR | GF-T21 and GF-PRIVACY; excluded-unit pixels/metadata absent, revoked/retired/wrong-unit tests, explicit local-only delivery mode and separately gated phone access |
-| GF5 — rehearse and report | Complete officer journey, known limitations, timed metrics, loss reports and PPT evidence | GF-REHEARSAL plus all finale test receipts, local browser rehearsal, honest measured/target/unavailable labels; no inferred runtime pass from this plan |
+| GF5 — rehearse and report | Complete officer journey, known limitations, timed metrics, loss reports and PPT evidence | GF-REHEARSAL plus all finale test receipts, desktop light-mode browser rehearsal, honest measured/target/unavailable labels; no inferred runtime pass from this plan |
 
 Next gate: **GF0**. Existing D0/PACK0 and D1 are the baseline to reuse, not a request to restart F0/F1-min/V0. The [23 September receipt](../evidence/usp/continuation-2026-09-23/README.md) covers a bounded authored vertical workflow, saved text/CSV packet and one real exterior's local geometry/identity. It does not qualify new IDs, domain AI, solids, the card, global placement, scale or production.
 

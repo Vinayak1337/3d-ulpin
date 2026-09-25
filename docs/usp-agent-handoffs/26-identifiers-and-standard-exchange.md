@@ -1,5 +1,7 @@
 # 26 · Proposed project identifiers and standard exchange
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 Owner **FND** for allocation, transactions and registry projection; **HISTORY** for lineage reads; **DATA** for independent fixtures; **UI/PACK** consume the resolver. This is a `finale_v1` implementation specification, not an assertion that the code, official issuance or standards conformance exists. Read [01](01-shared-contracts-and-ownership.md), [15](15-property-history-and-comparison.md), [16](16-shared-spaces-and-vertical-rights.md) and the acquisition/test authority [28](28-data-acquisition-and-finale-tests.md). Implement after GF0 data/contracts; qualify at GF1 identity/exchange. The complete product retains wider exchange formats as later profiles.
 
 ## A. Identity and authority

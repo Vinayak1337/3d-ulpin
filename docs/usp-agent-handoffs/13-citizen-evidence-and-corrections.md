@@ -1,5 +1,7 @@
 # 13 · Citizen evidence, corrections and scoped notifications
 
+**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+
 **Release: `full_product` (FP-PUBLIC).** The separate public data-request/evidence/correction dashboard remains planned with private submissions, released-only discovery, tracking and authorization. It is not a finale prerequisite. GF4 reuses the release/access contracts for the card without enabling a public portal.
 
 Owner **CITIZEN**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), DEPLOY ports in [19](19-india-contained-deployment.md) and UI slots in [99](99-ui-ux-and-integration.md). ER-04/06/15/16/22 are incorporated. Local synthetic integration can precede F2; public activation cannot.
@@ -92,7 +94,7 @@ Public Find my property supports identifier/address/map with optional location p
 
 ## H. Ownership and dependencies
 
-`feat/usp-citizen`, only feature files/tests/migration. F0 enables fixtures; F1-feature enables real local synthetic workflow with explicit test identities; F2/DEPLOY and live scanner are mandatory for public activation. Email outage does not block completion of in-app workflow. UI/FND shared changes are patch requests. Public external records are not required for D0 testing; H1 supplies permitted D5 only for real-data qualification.
+`feat/usp-citizen`, only feature files/tests/migration. F0 enables fixtures; F1-feature enables local workflow with permitted official-source records and existing authenticated test accounts; F2/DEPLOY and live scanner are mandatory for public activation. Email outage does not block completion of in-app workflow. UI/FND shared changes are patch requests. Public external records are not required for D0 testing; H1 supplies permitted D5 only for real-data qualification.
 
 ## I. Implementation sequence
 
@@ -105,7 +107,7 @@ Public Find my property supports identifier/address/map with optional location p
 
 ## J. Test data and acceptance
 
-**D0 before/after:** A selects B-A/U-A101, uploads a synthetic mixed-page plan, receives clarification and a linked draft. B cannot read A's submission/upload/preview/notification/packet by changing any ID. Officer records through normal review; only then does A see recorded. Test same Flat 101 in B-B, missing ULPIN, absent unit, two-parcel building and incomplete target. A contact-verified email yields no ownership grant.
+**Historical D0 example (not current acceptance):** A selects B-A/U-A101, uploads a permitted official mixed-page plan, receives clarification and a linked draft. B cannot read A's submission/upload/preview/notification/packet by changing any ID. Officer records through normal review; only then does A see recorded. Test same Flat 101 in B-B, missing ULPIN, absent unit, two-parcel building and incomplete target. A contact-verified email yields no ownership grant.
 
 **D5 after local completion:** attempt one permitted plan/section/related clause from [RERA 2831](https://haryanarera.gov.in/view_project/project_preview_open/2831) or [2079](https://haryanarera.gov.in/view_project/project_preview_open/2079), or an openly licensed public document. These are acquisition leads; previous attachments failed. Preserve matched drawing metadata and de-identify permitted fixture. No sensitive original in public Git. If blocked, continue D0 and report real-source gate unmet, not ask teammates to implement the workflow.
 
@@ -137,4 +139,4 @@ Per-subject and per-target submission quotas (429), a required `relationshipToPr
 - Citizen sign-in: MeriPehchaan or DigiLocker OIDC first; OTP over SMS as fallback (needs TRAI DLT registration, a full-product prerequisite in [H90](90-required-human-tasks.md)); no Aadhaar e-KYC unless an approved purpose exists.
 - The public ingress allowlists only `/public/*` and the citizen API routes; everything else returns 404 at the proxy. Public sessions use a separate cookie. Test that `/studio/*` and other USP routes return 404 from the public origin.
 - Public pages meet GIGW 3.0 and WCAG 2.1 AA, ship English and Hindi, and follow the Portal rules in [the design system](../design-system/README.md).
-- Replace the D5 RERA-attachment step with the DATA-02 synthetic redacted deed.
+- Use a permitted official D5 attachment or other official source under DATA-02; do not substitute an agent-generated deed. If private-data permission is missing, retain the test as unqualified.

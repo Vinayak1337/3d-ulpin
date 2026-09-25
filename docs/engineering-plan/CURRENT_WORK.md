@@ -1,5 +1,7 @@
 # Current work — adopted USP handoffs
 
+Current implementation follows the [25 September user scope](../usp-agent-handoffs/current-delivery-policy.md): official-source data only, desktop-first/light-only; no synthetic substitutes or current mobile optimization.
+
 <!-- plan-next-gate: GF0 -->
 
 **Updated 24 September 2026 after finale alignment.** The current plan is
