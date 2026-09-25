@@ -232,3 +232,21 @@ body { margin: 0; font-family: var(--font-sans); font-size: 15px; line-height: 2
 .s-text { font: 400 10px/1 var(--font-mono); fill: var(--ink-muted); }
 .s-name { font: 500 11px/1 var(--font-sans); fill: var(--ink-soft); }
 .s-onsel { font: 600 11px/1 var(--font-sans); fill: var(--on-primary); }
+
+/* Type styles, as the design system defines them (its tokens.css). In the app, sizes are the
+   --ui-text-* and --ui-portal-* tokens; port these as classes or as the same property sets. */
+.studio-title { font: 650 22px/30px var(--font-sans); letter-spacing: -0.01em; }
+.studio-heading { font: 600 17px/24px var(--font-sans); }
+.studio-body { font: 400 15px/22px var(--font-sans); }
+.studio-body-sm { font: 400 13px/19px var(--font-sans); }
+.studio-label { font: 500 12px/16px var(--font-sans); letter-spacing: 0.01em; }
+.portal-display { font: 600 40px/52px var(--font-display); }
+.portal-h1 { font: 600 32px/36px var(--font-sans); }
+.portal-h2 { font: 600 24px/28px var(--font-sans); }
+.portal-h3 { font: 600 20px/24px var(--font-sans); }
+.portal-body { font: 400 16px/24px var(--font-sans); }
+.portal-body-sm { font: 400 14px/20px var(--font-sans); }
+.portal-label { font: 500 14px/18px var(--font-sans); }
+.body-devanagari { font: 400 16px/1.8 var(--font-sans); }
+.id-code { font: 500 13px/18px var(--font-mono); letter-spacing: 0.02em; }
+.data-num { font: 400 13px/18px var(--font-mono); }

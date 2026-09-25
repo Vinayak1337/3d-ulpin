@@ -46,20 +46,46 @@ AI candidates (building outlines, rooms) are dashed primary outlines labelled "A
 
 ## Findings
 
-A finding highlights only its participants and the exact geometry at issue. An overlap is its own solid in `--ui-mark-critical` with a 45° hatch and a value label ("6.4 m³ overlap"). Contact and containment are never red. `Not assessed` shows as a grey hatched box with the reason, never as "no conflict". Selecting a finding switches to Volumes, frames all participants and opens it in the inspector. Findings are listed in deterministic order: blocking, then severity, then size.
+A finding highlights only its participants and the exact geometry at issue. An overlap is its own solid in `--ui-mark-critical` with a 45° hatch and a value label ("<volume> m³ overlap"). Contact and containment are never red. `Not assessed` shows as a grey hatched box with the reason, never as "no conflict". Selecting a finding switches to Volumes, frames all participants and opens it in the inspector. Findings are listed in deterministic order: blocking, then severity, then size.
 
 ## Floors, sections and underground
 
-- **Level rail** on the right edge of the canvas lists every level top to bottom: rooftop structures, terrace, floors, mezzanines, ground, stilt, lower ground, basements. Each shows its lower elevation with the vertical reference once at the top ("m · site datum SD-1"). Level order comes from the source, not elevation. Unknown elevations show "?" with the hatch. Arrow keys move; shift-select keeps upper levels as ghosts.
+- **Level rail** on the right edge of the canvas lists every level top to bottom: rooftop structures, terrace, floors, mezzanines, ground, stilt, lower ground, basements. Each shows its lower elevation with the vertical reference once at the top ("m · <named reference>"). Level order comes from the source, not elevation. Unknown elevations show "?" with the hatch. Arrow keys move; shift-select keeps upper levels as ghosts.
 - **Explode** separates floors for explanation with a banner "Display only. Measurements unchanged."
 - **Section** is a draggable plane; cut faces are hatched `--ui-map-soil-top` below ground. Clipping is display only; FIND results remain the analytical authority.
 - **Underground:** ground drops to `--ui-opacity-ground-cut`, a depth ruler appears on the left in metres below ground, basements and utilities become pickable. Utilities are tubes in their APWA colour. **A sleeve appears only when the source states a positional tolerance;** otherwise the tube shows its quality letter badge (A–D) and "tolerance not stated". Quality letters are never converted to metre buffers. Areas with no utility survey show the unknown hatch labelled "No survey"; absence is never drawn as clear.
-- **Corridors** (metro tunnel or viaduct, pipeline right of user) are labelled volumes over or under the parcels they burden, with "Test fixture" when authored.
+- **Corridors** (metro tunnel or viaduct, pipeline right of user) are labelled volumes over or under the parcels they burden, with "Test fixture" when their record says so.
 - **Air-rights envelope** (full_product): a dashed `--ui-rights-public` wireframe over `--ui-map-sky-band`, labelled "remaining permissible floor area, not a right".
 
 ## Tools and readouts
 
-Floating toolbar (top-left of the canvas): Select, Measure distance, Measure area, Section, Impact screening (draw a trench or volume), Underground, then 2D/3D, Model/Volumes, Reset camera. Bottom-right: zoom, north arrow, scale bar. Bottom edge: coordinate readout in mono with easting, northing, height and the named frames, for example "EPSG:32643 · 212.40 m · site datum SD-1".
+Floating toolbar (top-left of the canvas): Select, Measure distance, Measure area, Section, Impact screening (draw a trench or volume), Underground, then 2D/3D, Model/Volumes, Reset camera. Bottom-right: zoom, north arrow, scale bar. Bottom edge: coordinate readout in mono with easting, northing, height and the named frames, for example "<CRS> · <height> m · <named reference>". Beside the readout, an attribution line names every layer on screen (for example "© OpenStreetMap contributors"); it never hides while that layer is visible.
+
+## Evidence view and Enhanced view
+
+The map has two views, switched in the toolbar and remembered per viewer. Rules and data are in [H30](../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C–D.
+
+- **Evidence view** (default for recording, checks and measurement) is the quiet scene above: neutral massing, one green selection, unknown shown as *Unknown*.
+- **Enhanced view** has two tiers of context:
+  - Where a permitted drone capture covers the area, its photoreal mesh is the context layer, labelled with its capture date. Picks pass through it to the recorded building, and floor isolation, sections and underground mode clip it away.
+  - Elsewhere, the view dresses the same real area with deterministic context built from real layers:
+    - terrain from the DEM with a soft hillshade;
+    - road ribbons, water and green areas;
+    - seeded tree instances;
+    - context buildings massed by the height precedence;
+    - a slab line per storey and window bands.
+  - Both tiers share one sun from date, time and place, with soft shadows and ambient occlusion.
+- Colour stays calm in the Enhanced view:
+  - terrain, vegetation, water and roads use muted natural tones derived from the `--ui-map-*` tokens;
+  - buildings are light concrete and plaster greys with slightly darker window bands;
+  - the hero building keeps the Colour by and selection rules above.
+  - Proposed Enhanced-view tokens are added under UI-01 and synced back to the team design system before use.
+- Generated content never looks like evidence:
+  - it carries a fine pattern visible on hover and focus;
+  - the legend reads "Enhanced view: generated context";
+  - exports and screenshots keep that legend.
+- A context building is not a property. Selecting it shows "Context building · no record" with its source layer and the rule that shaped it, plus **Add files**.
+- Switching views never moves the camera, changes the selection or changes any number in the inspector.
 
 ## Camera
 
