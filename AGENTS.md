@@ -18,6 +18,12 @@ Current consolidated baseline is `staging@45d033baae7ec4e5a572d82459b0062c70a12c
 
 Keep Next.js/TypeScript, existing Three/Cesium runtime boundaries, PostgreSQL/PostGIS, private source/object storage, Redis/Celery, dispatcher and Python processing. Use one canonical registry, one job authority, one provider gateway, one conversion/validation contract and one active shared map runtime. Extend actual existing services rather than inventing competing databases, uploaders, brokers or per-page maps. Preserve compatible legacy URLs and unique document/GIS/raster/point-cloud inspection capabilities.
 
+## Current UI delivery scope — user direction, 25 September 2026
+
+Ship the current product desktop-first and light-mode only. Do not add a theme switch or reserve header space for one; let search, navigation and content use the released space. Ignore previously saved dark-mode preferences. Mobile UI optimization is not a current implementation or acceptance requirement.
+
+Keep semantic components, shared design tokens, flexible layout boundaries and isolated responsive styles so mobile responsiveness and additional themes can be added later without rewriting the product. Preserve useful existing responsive behavior and theme tokens; do not spend current work expanding mobile or dark-mode variants. This direction overrides older plan, design-system and task-card requirements for a theme switch, dark-mode product delivery or mobile optimization. Retain desktop accessibility, keyboard operation, readable contrast and browser zoom support.
+
 ## Data and evidence invariants
 
 Preserve originals/hashes, source and geometry revisions, identifiers, locators, reference frames/units, attribution, permissions and review history. Unknown, absent, null, withheld and conflicting remain distinct. Official supplied parcel ULPINs differ from application building/floor/space IDs. A floor is not necessarily a unit; one building can span parcels and one unit can span floors. Source or display geometry does not grant ownership or official issuance.
