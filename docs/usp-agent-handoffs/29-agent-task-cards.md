@@ -1,6 +1,8 @@
 # 29 · Task cards for any coding agent
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**26 September sequencing:** Replace legacy UI afresh from the design system and reference mockups while implementing each existing card; delete that surface's superseded components after migration. Do not divert into a separate redesign or continue polishing legacy screens. Reuse shared contracts/runtime, preserve unique inspection and saved URLs, and apply UI-08 record/provenance checks in every replacement. See [delivery policy](current-delivery-policy.md).
+
+**Current scope:** [Current delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
 
 Written 24 September 2026 with the review in [H97](97-review-findings-and-alignment.md). Each card is one pull-request-sized piece of work that Codex, Claude Code, Gemini CLI or any other user-authorized coding agent can pick up without reading all 25 handoffs. A card names what to read, what to build, where it goes, and how to prove it is done. The handoffs stay the specification; a card never overrides them, and a handoff's "Z. Hardening addendum (H97)" section overrides older text in that handoff.
 
@@ -25,7 +27,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 | DATA-02 official difficult cases | Official discovery, provenance and coverage gaps |
 | LEAD-01 plan machinery | Validator code and tests only |
 | UI-01 tokens, fonts, icons | Styling layer; no producer needed |
-| UI-08 no demo content or "fictional" labels | Display cleanup over existing records; no producer needed |
+| UI-08 record-backed content and provenance | Applied within every screen replacement; no standalone legacy-polishing stream |
 | DATA-09 real reference area | Open downloads (data.gov.in, OpenStreetMap, open DEMs); no person needed |
 | INGEST-01 hostile-input guards | Reader hardening with negative fixtures |
 | DATA-05 to DATA-08 public data, labels, drone set, oracles | Official downloads and source-derived expectations; gaps remain explicit |
@@ -263,9 +265,10 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 **Owner** UI, with DATA for stored names · **Tier** T-work · **Tests** GF-VIEW, GF-SCENE · **Needs** none to start; DATA-09 to finish
 - **Read:** [AGENTS.md](../../AGENTS.md) data invariants; [H99](99-ui-ux-and-integration.md) Z6; [reference mockups](../design-system/mockups/officer-studio/README.md) rules 3–4; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Scope.classification` and `ProvenanceFlags`.
 - **Find:** `grep -rIli "fictional\|demonstration data\|specimen" apps/web --exclude-dir=node_modules --exclude-dir=.next` (35 source files outside `public/` on 25 September 2026: officer block, register, workspace, scene and work screens; `features/studio/data`; the reference import, runtime and workbench; `lib/server`; plus three protected files under `public/`).
+- **Sequencing:** apply this acceptance checklist within UI-03/UI-04/UI-05/PACK-01 and every other UI-bearing card. Replace the affected presentation from the design references, rather than patching old screens solely to satisfy this checklist. Preserve the unmerged attempt-1 checkpoint; no further standalone legacy-polishing attempt. DATA-09 scene qualification remains open; until qualified, show an explicit unselected or unavailable state, never auto-import a substitute.
 - **Build:** remove "Fictional demonstration" and similar disclaimers from screens and generated documents. Show each dataset's recorded classification in the scope strip, and *Test fixture* or a seeded-case badge only where the record's provenance says so. Finale screens read records through the ports; hard-coded sample arrays (for example the Lake View district and document generators) are not reachable from finale routes, and the Studio opens on the DATA-09 real reference area instead (H30 B). Keep legacy URLs working (AGENTS.md).
 - **Do not:** delete, re-seed or rewrite protected datasets, originals or files under `apps/web/public/datasets/`. A stored dataset or area name containing "FICTIONAL" is data. DATA may add a display label through a recorded, reversible revision; code must stop matching records by that text.
-- **Done when:** the grep above finds no user-visible string in finale screens (code comments and protected data files excepted, listed in the receipt); each finale screen shows provenance from the record; before and after screenshots of S1, S4, S5 and S12 are attached.
+- **Done when:** the grep above finds no user-visible string in finale screens (code comments and protected data files excepted, listed in the receipt); each finale screen shows provenance from the record; before and after screenshots of S1, S4, S5 and S12 are attached with their respective replacement cards, using the same unchanged corpus where available and explicitly recording missing baseline coverage.
 
 ### UI-09 · Enhanced view and scene sync
 **Owner** UI · **Tier** T-work · **Test** GF-SCENE · **Needs** UI-03, FND-04, DATA-09; DOMAIN-01 for tier 1

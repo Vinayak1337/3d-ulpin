@@ -1169,7 +1169,7 @@
       "C08",
       "C24"
     ],
-    "status": "passed",
+    "status": "pending",
     "receipt": "docs/evidence/usp/orchestration/LEAD-01B/attempt-1/plan-validation.json"
   },
   "receiptContract": {
@@ -1197,7 +1197,7 @@
     "note": "Machine checks provenance shape, commit ancestry, timestamps, distinct reviewer and file hashes, not truth of execution. agent.id records the producer identity; review.reviewer must differ. Independent milestone acceptance remains mandatory."
   },
   "deliveryPolicy": {
-    "effectiveDate": "2026-09-25",
+    "effectiveDate": "2026-09-26",
     "authority": "explicit_user_direction",
     "document": "docs/usp-agent-handoffs/current-delivery-policy.md",
     "data": {
@@ -1215,7 +1215,11 @@
       "themeSwitch": false,
       "mobileOptimizationRequired": false,
       "preserveFutureThemeAndResponsiveSeams": true,
-      "desktopAccessibilityRequired": true
+      "desktopAccessibilityRequired": true,
+      "legacyPresentation": "replace_from_design_references",
+      "replacementSequence": "within_existing_plan_cards",
+      "standaloneRedesignPhase": false,
+      "preserveSharedRuntimeAndSavedURLs": true
     }
   },
   "waivers": [],

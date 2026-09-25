@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T18:13:01.675878+00:00",
+  "updatedAt": "2026-09-25T19:01:20.510098+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -101,7 +101,7 @@
       "full_product"
     ],
     "nextGate": "GF0",
-    "formalUI": "deferred until complete mockup is linked and explicitly authorized; minimal functional test interfaces only",
+    "formalUI": "Authorized replacement from repository design system and supplied mockup references, progressively within existing plan cards; desktop/light-only, official-source only.",
     "workerLimit": 2,
     "defaultWorkers": 1,
     "nativeSubagents": false,
@@ -188,6 +188,12 @@
       "decision": "Active handoffs,task cards,design docs and release-plan deliveryPolicy aligned with D012/D013. Official-source coverage gaps remain unqualified; no runtime gate changed.",
       "commit": "28d78fd038767bfb09f989d7874eb6b20dfd678b",
       "receipt": "docs/evidence/usp/orchestration/official-source-plan-alignment.json"
+    },
+    {
+      "id": "D015",
+      "recordedAt": "2026-09-25T19:01:20.510098+00:00",
+      "authority": "Direct user instruction and sequencing clarification, 26 September 2026",
+      "decision": "Replace legacy UI from scratch within existing plan execution; no separate redesign or legacy polishing detour. Retain backend/runtime/source data and compatible URLs. Apply UI-08 checks to each replacement."
     }
   ],
   "workers": [
@@ -206,7 +212,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_UI-08_attempt_2",
+      "status": "checkpointed_awaiting_UI-03",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1523,7 +1529,7 @@
         "Repository ui-design-check report required; use staged skill read-only from original checkout if absent on branch",
         "Relevant tests/typecheck/build guards plus fresh actual S1/S4/S5/S12 route captures where implemented; unavailable routes/data documented, no mock screenshots"
       ],
-      "status": "dispatched",
+      "status": "stopped_user_scope_change_no_attempt2_edits",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-2/report.md",
       "resultCommit": null,
       "ownershipClarifications": [
@@ -1582,7 +1588,9 @@
       "correctionFindings": [
         "UI08-R1",
         "UI08-R2"
-      ]
+      ],
+      "checkpointCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
+      "checkpointNote": "Worker confirms clean tree; owned orphan preview resources removed; port3108 free. Attempt1 preserved unmerged."
     }
   ],
   "capabilityChecklist": [
@@ -2330,8 +2338,9 @@
     }
   ],
   "nextSteps": [
-    "Review UI-08 legacy saved-record routing and same-corpus visual comparison corrections.",
-    "Keep production build/official scene/independent milestone qualification pending."
+    "Dispatch UI-03 map presentation replacement and honest geometry within existing plan sequence.",
+    "Apply UI-08 checks to subsequent UI-bearing cards; no separate legacy polishing pass.",
+    "Keep source/scene/independent runtime gate qualification pending."
   ],
   "processedCallbacks": [
     {
@@ -2727,9 +2736,9 @@
     },
     {
       "card": "UI-08",
-      "title": "No hard-coded demo content or \"fictional\" labels",
+      "title": "Record-backed content and provenance in replacement screens",
       "needs": "none to start; DATA-09 to finish",
-      "status": "dispatched_record_content_cleanup"
+      "status": "applied_progressively_with_ui_cards"
     },
     {
       "card": "UI-09",

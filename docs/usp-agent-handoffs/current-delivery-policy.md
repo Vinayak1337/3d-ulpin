@@ -1,4 +1,4 @@
-# Current delivery policy — 25 September 2026
+# Current delivery policy — updated 26 September 2026
 
 This records the user's direct instructions and applies to all current implementation assignments. It takes precedence over older handoff text, H97 hardening addenda, task cards, design references and worked examples. [AGENTS.md](../../AGENTS.md) carries the same operating rules. Historical evidence remains evidence only at its recorded revision.
 
@@ -23,6 +23,14 @@ The safety and correctness requirements remain: unsupported must not read as zer
 Deliver the current product for desktop in light mode only. Remove the theme switch and its reserved space; search, navigation and useful content take that space. Ignore stored dark-mode preferences. Mobile UI optimization and dark-mode product delivery are not current acceptance requirements.
 
 Keep shared semantic components, design tokens, flexible layout boundaries and isolated responsive styles so themes and mobile layouts can be added later. Preserve working responsive behavior without expanding its scope now. Desktop keyboard access, focus, readable contrast, reduced motion and browser zoom remain required. Existing dark tokens, phone captures and reference designs are historical/future material, not a new delivery obligation or permission to claim mobile accessibility.
+
+## Frontend replacement within the existing plan
+
+The user requires the legacy UI to be deleted and rebuilt from the design system and supplied Officer Studio mockups. Carry this out progressively while executing the existing task cards in dependency order; do not start a separate redesign programme, bulk deletion pass or legacy-polishing detour. Each UI-bearing card builds its affected screens afresh, wires their actual capabilities, then removes the superseded components and styles once their consumers have migrated. Record the replaced, retained and still-pending surfaces in that card's receipt; an untouched screen is not a completed replacement.
+
+Reuse the established tokens, semantic primitives, backend APIs, canonical registry, shared selection/cache contracts and single Cesium runtime where they satisfy the plan. Preserve unique document, GIS, raster and point-cloud inspection capabilities and compatible saved URLs; redirects into the replacement UI are acceptable. Rebuilding presentation is not authorization to delete records, originals, historical evidence or runtime infrastructure. Mockups supply layout and interaction references only, never production code or sample data.
+
+UI-03 replaces the map presentation as map capabilities are implemented; UI-04 replaces Batches, intake and workspace; UI-05 replaces Register and its evidence, deviation and underground surfaces; PACK-01 supplies the card surfaces. Apply UI-08's record-backed content and provenance checks within each replacement. Preserve the unmerged UI-08 attempt-1 checkpoint as history; its standalone legacy-polishing attempt is stopped. Selectively reuse reviewed, neutral helpers or isolation tooling with explicit provenance, rather than importing the old presentation wholesale. Capture the affected real routes and test their interactions at each step. Full replacement and runtime gate acceptance remain pending until all assigned surfaces and tests are complete.
 
 ## Scene and future work
 
