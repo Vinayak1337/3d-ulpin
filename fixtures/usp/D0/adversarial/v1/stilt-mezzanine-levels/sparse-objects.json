@@ -1,0 +1,19 @@
+{
+  "address_point": {
+    "footprint": null,
+    "x": 5,
+    "y": 5
+  },
+  "building": {
+    "footprint_xy": [
+      0,
+      0,
+      10,
+      10
+    ],
+    "recorded_height": null,
+    "storey_count": 4
+  },
+  "reference": "LOCAL-SYN-LEVEL",
+  "z_reference": null
+}

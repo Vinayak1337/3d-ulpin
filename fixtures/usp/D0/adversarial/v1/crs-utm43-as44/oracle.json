@@ -1,0 +1,55 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "crs-utm43-as44",
+  "classification": "test_only",
+  "expected": {
+    "analytic_eligible": false,
+    "crs_status": "crs_unverified",
+    "known_control_residual": "fails for 44N declaration; zone central meridian differs by 6 degrees",
+    "no_zone_inference_from_ranges": true,
+    "publication": "blocked",
+    "synthetic_control_count": 3
+  },
+  "files": [
+    {
+      "bytes": 232,
+      "path": "points-and-synthetic-controls.csv",
+      "sha256": "cbf276c37b3172f9cfd60b9172e11977af0baa0724ae87b2989be261179c7ac9"
+    },
+    {
+      "bytes": 143,
+      "path": "source-metadata.json",
+      "sha256": "1007aedc39cf4c3ddacdb0ca5366c51a7aff9dcc9d790d78faf4ddd1ce861e59"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "Controls test rejection only; they cannot qualify an operational georeference."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H28-Z3-GF-DATA-CRS",
+      "H23-Z-INDIA-REFERENCE"
+    ],
+    "tests": [
+      "GF-DATA"
+    ]
+  },
+  "preconditions": [
+    "Coordinates are authored in WGS84 UTM 43N; controls are synthetic and share that authored frame.",
+    "A declared 44N CRS is a hostile metadata mismatch, not a surveyed datum operation."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "declared_crs": "EPSG:32644",
+    "family": "projected_table",
+    "geometry": "synthetic three-point control set",
+    "native_crs": "EPSG:32643"
+  }
+}

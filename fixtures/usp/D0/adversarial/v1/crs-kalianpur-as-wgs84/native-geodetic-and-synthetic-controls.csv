@@ -1,0 +1,4 @@
+id,native_lon_deg,native_lat_deg,synthetic_wgs84_control_lon,synthetic_wgs84_control_lat
+DATUM-SYN-1,77.121000,28.538000,77.121300,28.538100
+DATUM-SYN-2,77.122000,28.539000,77.122300,28.539100
+DATUM-SYN-3,77.123000,28.540000,77.123300,28.540100

@@ -1,0 +1,7 @@
+source_order,literal_label,level_kind,elevation_m,unit_count
+1,B1,basement,,
+2,LGF,lower_ground,,
+3,Stilt,stilt,,
+4,G,ground,,
+5,Mezz,mezzanine,,
+6,Terrace,terrace,,

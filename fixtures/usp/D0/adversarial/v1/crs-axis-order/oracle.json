@@ -1,0 +1,58 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "crs-axis-order",
+  "classification": "test_only",
+  "expected": {
+    "actually_swapped": {
+      "crs_status": "crs_unverified",
+      "india_bounds": false,
+      "publication": "blocked"
+    },
+    "indian_bounds_declaration_conflict": {
+      "crs_status": "crs_unverified",
+      "india_bounds": true,
+      "publication": "blocked"
+    },
+    "resolution": "review axis declaration/source; never silently swap or move geography"
+  },
+  "files": [
+    {
+      "bytes": 271,
+      "path": "actually-swapped.geojson",
+      "sha256": "64f36c67e66a524d57bf92b05927bc3e7dc97b3c5a438a8db1df7b4d1d0ed31b"
+    },
+    {
+      "bytes": 324,
+      "path": "indian-bounds-declaration-conflict.geojson",
+      "sha256": "f6c69e73104a2eec16d78e3e22a1ba0f4c8640bf9098f436ff42c550c97b894c"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "H28 Z3's literal 'swapped GeoJSON that still falls inside India' is geometrically impossible for these non-overlapping ranges; the valid adversarial in-India case is a conflicting axis declaration, not fabricated coordinates."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H28-Z3-GF-DATA-CRS"
+    ],
+    "tests": [
+      "GF-DATA"
+    ]
+  },
+  "preconditions": [
+    "In Indian WGS84 ranges longitude is about 68-98E and latitude about 6-38N.",
+    "A literal swap moves the test point to 28.55E,77.11N and cannot also be inside India."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "axis_declaration": "conflicting",
+    "crs": "WGS84",
+    "family": "GeoJSON"
+  }
+}

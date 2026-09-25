@@ -1,0 +1,371 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "mixed-gap-batch",
+  "classification": "test_only",
+  "expected": {
+    "answers_unlock_without_reimport": true,
+    "batch_continues": true,
+    "decisions": [
+      {
+        "missing": [
+          "horizontal CRS"
+        ],
+        "object": "vector-no-prj",
+        "outcome": "ask",
+        "question": "Q-CRS-VECTOR",
+        "task": "global_placement",
+        "unlocks": [
+          "reviewed global placement"
+        ]
+      },
+      {
+        "missing": [
+          "local area unit definition"
+        ],
+        "object": "ambiguous-area",
+        "outcome": "ask",
+        "question": "Q-AREA-UNIT",
+        "task": "normalize_area",
+        "unlocks": [
+          "all two area literals"
+        ]
+      },
+      {
+        "missing": [
+          "confirmed drawn dimension and level association"
+        ],
+        "object": "plan-one-dimension",
+        "outcome": "ask",
+        "question": "Q-PLAN-DIMENSION",
+        "task": "unit_geometry",
+        "unlocks": [
+          "plan scale calibration proposal"
+        ]
+      },
+      {
+        "missing": [
+          "overlap",
+          "ground control"
+        ],
+        "object": "drone-no-overlap",
+        "outcome": "reject_for_3d",
+        "question": null,
+        "task": "measured_3d",
+        "unlocks": []
+      },
+      {
+        "missing": [],
+        "object": "dem-only",
+        "outcome": "complete",
+        "question": null,
+        "task": "terrain_context",
+        "unlocks": [
+          "context terrain only"
+        ]
+      },
+      {
+        "missing": [
+          "DSM or roof observation"
+        ],
+        "object": "dem-only",
+        "outcome": "reject_for_3d",
+        "question": null,
+        "task": "building_height",
+        "unlocks": []
+      },
+      {
+        "missing": [
+          "DTM for nDSM"
+        ],
+        "object": "dsm-no-dtm",
+        "outcome": "fill_display",
+        "question": null,
+        "task": "enhanced_display",
+        "unlocks": [
+          "labelled estimated surface only"
+        ]
+      },
+      {
+        "missing": [
+          "DTM",
+          "qualified height controls"
+        ],
+        "object": "dsm-no-dtm",
+        "outcome": "park",
+        "question": null,
+        "task": "analytical_building_height",
+        "unlocks": []
+      },
+      {
+        "missing": [],
+        "object": "point-cloud-no-crs",
+        "outcome": "complete",
+        "question": null,
+        "task": "local_preview",
+        "unlocks": [
+          "named local-frame preview"
+        ]
+      },
+      {
+        "missing": [
+          "reviewed common-frame georeference or >=3 synthetic-test control correspondences"
+        ],
+        "object": "point-cloud-no-crs",
+        "outcome": "ask",
+        "question": "Q-LOCAL-FRAME",
+        "task": "global_placement",
+        "unlocks": [
+          "LAS and IFC placement after review"
+        ]
+      },
+      {
+        "missing": [],
+        "object": "local-ifc-no-georef",
+        "outcome": "complete",
+        "question": null,
+        "task": "local_preview",
+        "unlocks": [
+          "local metre storey preview"
+        ]
+      },
+      {
+        "missing": [
+          "reviewed common-frame georeference"
+        ],
+        "object": "local-ifc-no-georef",
+        "outcome": "park",
+        "question": null,
+        "task": "global_placement",
+        "unlocks": []
+      },
+      {
+        "missing": [
+          "coordinates or exact geometry join"
+        ],
+        "object": "address-list",
+        "outcome": "reject_for_3d",
+        "question": null,
+        "task": "spatial_reconstruction",
+        "unlocks": []
+      },
+      {
+        "missing": [
+          "object-level locations and geometry"
+        ],
+        "object": "aggregate-statistics",
+        "outcome": "reject_for_3d",
+        "question": null,
+        "task": "spatial_reconstruction",
+        "unlocks": []
+      },
+      {
+        "missing": [],
+        "object": "mixed-archive/supported-levels.csv",
+        "outcome": "complete",
+        "question": null,
+        "task": "literal_intake",
+        "unlocks": [
+          "retained level label"
+        ]
+      },
+      {
+        "missing": [
+          "qualified adapter"
+        ],
+        "object": "mixed-archive/unsupported-model.qzx",
+        "outcome": "park",
+        "question": null,
+        "task": "3d_conversion",
+        "unlocks": []
+      }
+    ],
+    "display_derivative_excluded_from": [
+      "measurement",
+      "readiness",
+      "rights",
+      "card",
+      "training truth"
+    ],
+    "max_open_questions": 5,
+    "never_fill": [
+      "coordinates",
+      "CRS",
+      "vertical reference",
+      "analysis level elevation",
+      "unit boundary",
+      "ownership",
+      "share",
+      "right",
+      "identifier",
+      "utility depth",
+      "control point"
+    ],
+    "not_sure_outcome": "park affected class",
+    "open_question_count": 4,
+    "originals_deleted": 0,
+    "questions": [
+      {
+        "choices": [
+          "source metadata supplied",
+          "reviewed control proposal",
+          "Not sure"
+        ],
+        "class": "all vector-no-prj features",
+        "id": "Q-CRS-VECTOR",
+        "prompt": "Which sourced horizontal CRS applies to this layer?"
+      },
+      {
+        "choices": [
+          "provide district-specific source",
+          "retain literal only",
+          "Not sure"
+        ],
+        "class": "all local area literals",
+        "id": "Q-AREA-UNIT",
+        "prompt": "Which sourced area unit definition applies?"
+      },
+      {
+        "choices": [
+          "confirmed from plan",
+          "needs another dimension",
+          "Not sure"
+        ],
+        "class": "all dimensions on PLAN-SYN-1",
+        "id": "Q-PLAN-DIMENSION",
+        "prompt": "Confirm the 10 ft 6 in drawn span and its level association?"
+      },
+      {
+        "choices": [
+          "supply reviewed frame and controls",
+          "separate frames",
+          "Not sure"
+        ],
+        "class": "LAS and IFC local-frame sources",
+        "id": "Q-LOCAL-FRAME",
+        "prompt": "Do these sources share a reviewed georeference and at least three control correspondences?"
+      }
+    ],
+    "questions_are_class_level": true,
+    "unqualified_global_placement": true
+  },
+  "files": [
+    {
+      "bytes": 90,
+      "path": "address-list.csv",
+      "sha256": "f5cfc19cdde0751fbcbc9d30166d09ac1765d1910d733925ff7a10a3109ad930"
+    },
+    {
+      "bytes": 44,
+      "path": "aggregate-statistics.csv",
+      "sha256": "f76c816b88dae5f9258be33b2727c3f3fcdfe824250d04ac09e387a2a0d778ba"
+    },
+    {
+      "bytes": 115,
+      "path": "ambiguous-area.csv",
+      "sha256": "dd7bbfd6b02d0b5ec40e56124b41b9acbc343a07bd3a04171eb01499dd74589a"
+    },
+    {
+      "bytes": 367,
+      "path": "batch-metadata.json",
+      "sha256": "cbdbf8ea2931455757af6711c44c55a8622ae8140a04b04c0173317625b4ab3a"
+    },
+    {
+      "bytes": 288,
+      "path": "dem-only.tif",
+      "sha256": "03c43b292779a8b07407044c877ccb61e078072a9aa7a79a9ad8eb1332978f45"
+    },
+    {
+      "bytes": 4978,
+      "path": "drone-no-overlap/frame-a.jpeg",
+      "sha256": "c0357bb0790990f1c305e02cef5c730db86ba3a93bb04ab5020e09c50ec94cb2"
+    },
+    {
+      "bytes": 4979,
+      "path": "drone-no-overlap/frame-b.jpeg",
+      "sha256": "8abd6f14603728510144c770dcd4061bf237476666dd9fc102aea75085f5270a"
+    },
+    {
+      "bytes": 288,
+      "path": "dsm-no-dtm.tif",
+      "sha256": "37b3f7bfa19b7ea660500730796de73eac6a7b27b7ec1492c0587dae136108aa"
+    },
+    {
+      "bytes": 1218,
+      "path": "local-ifc-no-georef.ifc",
+      "sha256": "cc10cefd50ee8a2ca50b75b58cf861859c98d2a165dcc863606ce3c5192ea166"
+    },
+    {
+      "bytes": 319,
+      "path": "mixed-archive.zip",
+      "sha256": "17411c1940722a7c06407add7094d3ed7b588941028d109019bbca90378be8c3"
+    },
+    {
+      "bytes": 897,
+      "path": "plan-one-dimension.pdf",
+      "sha256": "fab83428794c533207587685f5a2c417a396cc0ea1676c85ae10e6836e33623a"
+    },
+    {
+      "bytes": 287,
+      "path": "point-cloud-no-crs.las",
+      "sha256": "0980a3c6c26a6f932704f1619d937223c1545cb3d22cb8a58e33e1b304491fe9"
+    },
+    {
+      "bytes": 88,
+      "path": "vector-no-prj/points.dbf",
+      "sha256": "5fa74ce7d6dfcef9cbe334f067a470181d72b47b1feaf0d9cbaca1d725a5ec84"
+    },
+    {
+      "bytes": 156,
+      "path": "vector-no-prj/points.shp",
+      "sha256": "6e6ddec0c3ad6fa6570697e6aaad205b8d908d7304da5895d66a2eab96e05bed"
+    },
+    {
+      "bytes": 116,
+      "path": "vector-no-prj/points.shx",
+      "sha256": "56c7970d0b8ac67d647474118b72d1d2fad35fc08dde6c59f534af1fa494d69b"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "The PDF plan has a dimension string but no scale or confirmed measurement.",
+    "The two generated photos have non-overlapping synthetic GPS locations and no control; no photogrammetry claim.",
+    "The IFC is a small semantic local project, not a qualified building geometry."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H30-I-GF-SUFFICIENCY",
+      "H30-E-QUESTION-BUDGET",
+      "H28-GF-SUFFICIENCY"
+    ],
+    "tests": [
+      "GF-SUFFICIENCY",
+      "GF-RECOVERY"
+    ]
+  },
+  "preconditions": [
+    "The raster reference is authored test metadata, not a surveyed vertical control.",
+    "The LAS and IFC share only an unverified local-frame hint; the question does not itself grant a transform.",
+    "The four questions each cover an input class; uncertain answers park rather than fill evidence."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "families": [
+      "Shapefile",
+      "CSV",
+      "PDF",
+      "JPEG",
+      "GeoTIFF",
+      "LAS",
+      "IFC4",
+      "ZIP"
+    ],
+    "geography": "synthetic India where coordinates are present",
+    "source_order": "each original remains independent"
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_count": 17,
+  "cases": [
+    {
+      "case_id": "crs-utm43-as44",
+      "oracle": "crs-utm43-as44/oracle.json",
+      "requirements": [
+        "H28-Z3-GF-DATA-CRS",
+        "H23-Z-INDIA-REFERENCE"
+      ],
+      "tests": [
+        "GF-DATA"
+      ]
+    },
+    {
+      "case_id": "crs-kalianpur-as-wgs84",
+      "oracle": "crs-kalianpur-as-wgs84/oracle.json",
+      "requirements": [
+        "H28-Z3-GF-DATA-CRS"
+      ],
+      "tests": [
+        "GF-DATA"
+      ]
+    },
+    {
+      "case_id": "crs-axis-order",
+      "oracle": "crs-axis-order/oracle.json",
+      "requirements": [
+        "H28-Z3-GF-DATA-CRS"
+      ],
+      "tests": [
+        "GF-DATA"
+      ]
+    },
+    {
+      "case_id": "crs-missing-prj",
+      "oracle": "crs-missing-prj/oracle.json",
+      "requirements": [
+        "H28-Z3-GF-DATA-CRS",
+        "H30-I-GF-SUFFICIENCY"
+      ],
+      "tests": [
+        "GF-DATA",
+        "GF-SUFFICIENCY"
+      ]
+    },
+    {
+      "case_id": "indian-messy-csv",
+      "oracle": "indian-messy-csv/oracle.json",
+      "requirements": [
+        "H28-Z3-INDIAN-MESSY-CSV",
+        "H22-Z3-INDIAN-LEVELS"
+      ],
+      "tests": [
+        "GF-DATA",
+        "GF-RECOVERY"
+      ]
+    },
+    {
+      "case_id": "agent-injection",
+      "oracle": "agent-injection/oracle.json",
+      "requirements": [
+        "H28-Z2-GF-AGENT-INJECTION",
+        "H14-Z1-HOSTILE-INPUT"
+      ],
+      "tests": [
+        "GF-AGENT",
+        "GF-PRIVACY"
+      ]
+    },
+    {
+      "case_id": "privacy-synthetic-deed",
+      "oracle": "privacy-synthetic-deed/oracle.json",
+      "requirements": [
+        "H28-Z2-GF-AGENT-PII-EGRESS",
+        "H19-Z4-REDACTION"
+      ],
+      "tests": [
+        "GF-AGENT",
+        "GF-PRIVACY"
+      ]
+    },
+    {
+      "case_id": "cross-site-metro",
+      "oracle": "cross-site-metro/oracle.json",
+      "requirements": [
+        "H16-Z2-CORRIDOR",
+        "H28-Z3-GF-T18-CORRIDOR",
+        "H17-IMPACT"
+      ],
+      "tests": [
+        "GF-T18",
+        "GF-T20"
+      ]
+    },
+    {
+      "case_id": "tenure-cooperative",
+      "oracle": "tenure-cooperative/oracle.json",
+      "requirements": [
+        "H16-Z1-COOPERATIVE",
+        "H28-Z3-GF-T16-TENURE"
+      ],
+      "tests": [
+        "GF-T16"
+      ]
+    },
+    {
+      "case_id": "tenure-per-deed-uds",
+      "oracle": "tenure-per-deed-uds/oracle.json",
+      "requirements": [
+        "H16-Z1-PER-DEED-UDS",
+        "H16-Z2-PARKING",
+        "H28-GF-T16-UDS"
+      ],
+      "tests": [
+        "GF-T16",
+        "GF-PRIVACY"
+      ]
+    },
+    {
+      "case_id": "topology-adverse-clean-pairs",
+      "oracle": "topology-adverse-clean-pairs/oracle.json",
+      "requirements": [
+        "H28-GF-T18-TOPOLOGY",
+        "H28-Z3-CLEAN-TWINS",
+        "H16-J-COMPONENTS"
+      ],
+      "tests": [
+        "GF-T18"
+      ]
+    },
+    {
+      "case_id": "roof-and-chajja-negatives",
+      "oracle": "roof-and-chajja-negatives/oracle.json",
+      "requirements": [
+        "H28-Z3-GF-T19-ROOF-NEGATIVES"
+      ],
+      "tests": [
+        "GF-T19"
+      ]
+    },
+    {
+      "case_id": "sloped-site",
+      "oracle": "sloped-site/oracle.json",
+      "requirements": [
+        "H22-Z3-SLOPE-LEVELS",
+        "H28-GF-VIEW-SPARSE"
+      ],
+      "tests": [
+        "GF-VIEW",
+        "GF-T18"
+      ]
+    },
+    {
+      "case_id": "stilt-mezzanine-levels",
+      "oracle": "stilt-mezzanine-levels/oracle.json",
+      "requirements": [
+        "H22-Z3-STILT-MEZZ",
+        "H30-E-SPARSE-VIEW"
+      ],
+      "tests": [
+        "GF-VIEW",
+        "GF-SUFFICIENCY"
+      ]
+    },
+    {
+      "case_id": "lift-core-480",
+      "oracle": "lift-core-480/oracle.json",
+      "requirements": [
+        "H16-Z2-LARGE-BENEFICIARIES"
+      ],
+      "tests": [
+        "GF-T16"
+      ]
+    },
+    {
+      "case_id": "mixed-gap-batch",
+      "oracle": "mixed-gap-batch/oracle.json",
+      "requirements": [
+        "H30-I-GF-SUFFICIENCY",
+        "H30-E-QUESTION-BUDGET",
+        "H28-GF-SUFFICIENCY"
+      ],
+      "tests": [
+        "GF-SUFFICIENCY",
+        "GF-RECOVERY"
+      ]
+    },
+    {
+      "case_id": "agent-heldout-and-protocol",
+      "oracle": "agent-heldout-and-protocol/oracle.json",
+      "requirements": [
+        "H28-Z2-GF-AGENT-HELDOUT",
+        "H28-Z2-GF-AGENT-LITERAL-OUTAGE-BUDGET"
+      ],
+      "tests": [
+        "GF-AGENT"
+      ]
+    }
+  ],
+  "production_evaluation": "none before oracle commit",
+  "schema_version": "usp-adversarial-catalogue/1"
+}

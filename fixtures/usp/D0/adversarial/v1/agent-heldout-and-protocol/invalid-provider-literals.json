@@ -1,0 +1,23 @@
+{
+  "mapping_plan_candidates": [
+    {
+      "kind": "numeric_factor",
+      "value": 0.83612736
+    },
+    {
+      "kind": "epsg_code",
+      "value": "EPSG:32643"
+    },
+    {
+      "kind": "coordinate",
+      "value": [
+        77.1,
+        28.5
+      ]
+    },
+    {
+      "kind": "invented_identifier",
+      "value": "UNIT-NOT-IN-SOURCE"
+    }
+  ]
+}

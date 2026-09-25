@@ -1,0 +1,20 @@
+{
+  "conveyance_status": "unknown",
+  "holder_kind": "society",
+  "holder_label": "SOCIETY-SYN-1",
+  "land_uds_declaration": null,
+  "members": [
+    {
+      "share_certificate": "CERT-SYN-01",
+      "unit": "UNIT-SYN-C1"
+    },
+    {
+      "share_certificate": "CERT-SYN-02",
+      "unit": "UNIT-SYN-C2"
+    }
+  ],
+  "occupancy_claims": "source_asserted",
+  "regime": "cooperative_society",
+  "site": "SITE-SYN-COOP",
+  "source_clause": "CLAUSE-SYN-COOP-1"
+}

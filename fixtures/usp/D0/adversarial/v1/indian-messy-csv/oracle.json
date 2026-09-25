@@ -1,0 +1,67 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "indian-messy-csv",
+  "classification": "test_only",
+  "expected": {
+    "dates": "DD/MM/YYYY; no locale-free reinterpretation",
+    "khasra_type": "string",
+    "known_exact_conversions": {
+      "10ft6in": "3.2004 m",
+      "125 sq yd": "104.51592 m2",
+      "83.5 m2": "83.5 m2"
+    },
+    "legacy_font_outcome": "needs_input; preserve glyph literal until encoding/font mapping reviewed",
+    "level_outcome": "labels retained; integer level and elevation not_assessed without a reviewed schedule",
+    "literal_retention": "all headers, strings, grouping, leading zeros, dates and feet-inch text",
+    "regional_unit_outcome": "needs_input; no district-specific factor supplied",
+    "regional_units": [
+      "bigha",
+      "biswa",
+      "guntha",
+      "marla",
+      "kanal"
+    ]
+  },
+  "files": [
+    {
+      "bytes": 710,
+      "path": "literal-records.csv",
+      "sha256": "a3b3bd4f5e264104b79d901f3bc9b97172181f41642a595cf8a11e0b031d65a3"
+    },
+    {
+      "bytes": 206,
+      "path": "source-metadata.json",
+      "sha256": "750dc212316750cbaddd26d9b4d8e77f78e94320a615de2507bedb76e82764b5"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "Known unit conversion arithmetic does not turn a source's area definition into statutory carpet area."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H28-Z3-INDIAN-MESSY-CSV",
+      "H22-Z3-INDIAN-LEVELS"
+    ],
+    "tests": [
+      "GF-DATA",
+      "GF-RECOVERY"
+    ]
+  },
+  "preconditions": [
+    "The table is authored synthetic; no recorded floor elevations or regional conversion source exists."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "encoding": "UTF-8",
+    "family": "CSV",
+    "geography": "synthetic India",
+    "level_schedule": null
+  }
+}

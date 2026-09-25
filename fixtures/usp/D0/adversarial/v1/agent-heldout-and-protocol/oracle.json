@@ -1,0 +1,97 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "agent-heldout-and-protocol",
+  "classification": "test_only",
+  "expected": {
+    "budget_cap": "remaining layouts needs_input; no silent completion",
+    "committed_mapping_precision_target": 1.0,
+    "heldout_layouts": [
+      {
+        "file": "heldout-a.csv",
+        "mapping": {
+          "identifier": "इकाई",
+          "quantity": "दावा क्षेत्र m²",
+          "unit": "m2"
+        }
+      },
+      {
+        "file": "heldout-b.csv",
+        "mapping": {
+          "identifier": "ref",
+          "quantity": "area_literal",
+          "unit": "sq yd"
+        }
+      },
+      {
+        "file": "heldout-c.jsonl",
+        "mapping": {
+          "identifier": "id",
+          "quantity": "measurement.value",
+          "unit": "measurement.unit"
+        }
+      }
+    ],
+    "invalid_provider_literals": "all four rejected by MappingPlan schema; no record commit",
+    "mid_batch_failure": "partial exact work continues",
+    "no_key": "manual_mapping remains available",
+    "uncertain_mapping": "needs_input"
+  },
+  "files": [
+    {
+      "bytes": 69,
+      "path": "heldout-a.csv",
+      "sha256": "2b4c5a5973cd039c3a7cbf46c1992a52f2c5fffe577c99ae1682e07661f43ce9"
+    },
+    {
+      "bytes": 44,
+      "path": "heldout-b.csv",
+      "sha256": "de695571b7a3598a970c563a425b059e9301526d442e2c750bf1e8c5a8f59d56"
+    },
+    {
+      "bytes": 63,
+      "path": "heldout-c.jsonl",
+      "sha256": "c1352c3ea04af4a510a5413075eb9fbb71efa12a29f99e62ea4b311751d45020"
+    },
+    {
+      "bytes": 356,
+      "path": "invalid-provider-literals.json",
+      "sha256": "b5554bf704aee79f06963c51ee4c5bd9e2be3c9f9add503aecddf8dacac19b43"
+    },
+    {
+      "bytes": 164,
+      "path": "outage-and-budget.json",
+      "sha256": "33ff62855a6e2c0a5105dfecf0f93a20c656afe3ce9d2c3cbca05ef44dc48158"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "This oracle states targets; no provider or implementation was run on it."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H28-Z2-GF-AGENT-HELDOUT",
+      "H28-Z2-GF-AGENT-LITERAL-OUTAGE-BUDGET"
+    ],
+    "tests": [
+      "GF-AGENT"
+    ]
+  },
+  "preconditions": [
+    "These three layouts are independent authored test sources; they must remain out of training and mapping recipes before evaluation."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "families": [
+      "CSV",
+      "JSONL",
+      "provider test response"
+    ],
+    "layout_use": "held out from implementation; authored now"
+  }
+}

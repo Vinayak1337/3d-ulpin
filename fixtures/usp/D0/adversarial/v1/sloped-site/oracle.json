@@ -1,0 +1,53 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "sloped-site",
+  "classification": "test_only",
+  "expected": {
+    "basement_from_negative_global_z": false,
+    "global_height": "not_assessed",
+    "ground_label": "Ground at road entrance, not lowest terrain point",
+    "level_order": [
+      "LGF",
+      "Ground",
+      "Mezz",
+      "Terrace"
+    ],
+    "source_order_preserved": true,
+    "z_difference_road_to_low_ground_m": 6.0
+  },
+  "files": [
+    {
+      "bytes": 460,
+      "path": "section-and-road.json",
+      "sha256": "40764c7816dd5ba30cadee095dbe99fd0acdc6cab26ac65742783661ed827647"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "No tie to a national vertical datum is supplied."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H22-Z3-SLOPE-LEVELS",
+      "H28-GF-VIEW-SPARSE"
+    ],
+    "tests": [
+      "GF-VIEW",
+      "GF-T18"
+    ]
+  },
+  "preconditions": [
+    "The local benchmark and elevation values are invented for the synthetic case only."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "family": "synthetic section and road profile",
+    "z_reference": "BM-SYN-SLOPE"
+  }
+}

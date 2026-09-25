@@ -1,0 +1,59 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "cross-site-metro",
+  "classification": "test_only",
+  "expected": {
+    "claim_status": "proposed; review required",
+    "common_site_created": false,
+    "crossed_sites": [
+      "SITE-SYN-A",
+      "SITE-SYN-B"
+    ],
+    "depth": "unknown",
+    "intersection_count": 2,
+    "per_parcel_extents": "unresolved",
+    "title_or_clear_to_dig": "not_assessed"
+  },
+  "files": [
+    {
+      "bytes": 445,
+      "path": "claim.json",
+      "sha256": "c19b9b1136a2d7b2fb127dfdf1a1062c40f5fb662c207b88c0ec6e42c582af27"
+    },
+    {
+      "bytes": 1555,
+      "path": "corridor-and-sites.geojson",
+      "sha256": "6cfae9816878319dcc8e996e33af023956b9d6f6da41b9bd42449feb1f4c217d"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "A line intersection is not a legal right, ownership or depth assertion."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H16-Z2-CORRIDOR",
+      "H28-Z3-GF-T18-CORRIDOR",
+      "H17-IMPACT"
+    ],
+    "tests": [
+      "GF-T18",
+      "GF-T20"
+    ]
+  },
+  "preconditions": [
+    "The line crosses authored site polygons, but no actual corridor survey or legal instrument is provided."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "family": "GeoJSON and synthetic claim",
+    "horizontal_crs": "EPSG:4326",
+    "vertical_reference": null
+  }
+}

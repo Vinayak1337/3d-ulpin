@@ -1,0 +1,76 @@
+{
+  "amendment": {
+    "consent_evidence": null,
+    "revision": "R2",
+    "supersedes": "R1"
+  },
+  "basis": "source_declared",
+  "complete_995_control": {
+    "declared_population": 3,
+    "fractions": [
+      "1/2",
+      "3/10",
+      "39/200"
+    ],
+    "population_status": "complete"
+  },
+  "deeds": [
+    {
+      "denominator": 2,
+      "instrument": "DEED-SYN-P1",
+      "literal": "50%",
+      "numerator": 1,
+      "unit": "UNIT-SYN-P1"
+    },
+    {
+      "denominator": 3,
+      "instrument": "DEED-SYN-P2",
+      "literal": "33 1/3%",
+      "numerator": 1,
+      "unit": "UNIT-SYN-P2"
+    },
+    {
+      "denominator": 6,
+      "instrument": "DEED-SYN-P3",
+      "literal": "16 2/3%",
+      "numerator": 1,
+      "unit": "UNIT-SYN-P3"
+    }
+  ],
+  "limited_common": {
+    "beneficiaries": [
+      "UNIT-SYN-P1"
+    ],
+    "review_state": "under_review",
+    "source_clause": "CLAUSE-SYN-LIMITED-1",
+    "space": "PARK-SYN-1"
+  },
+  "partial_995_control": {
+    "declared_population": "unknown",
+    "fractions": [
+      "1/2",
+      "3/10",
+      "39/200"
+    ],
+    "population_status": "partial"
+  },
+  "population": [
+    "UNIT-SYN-P1",
+    "UNIT-SYN-P2",
+    "UNIT-SYN-P3"
+  ],
+  "population_status": "complete",
+  "regime": "per_deed_uds",
+  "review_state": "under_review",
+  "stilt_sale_claim": {
+    "grant_mode": "sold_with_unit",
+    "parking_category": "covered_stilt",
+    "space": "PARK-SYN-STILT",
+    "status": "proposed"
+  },
+  "subject": "land_interest",
+  "unapproved_clause": {
+    "locator": "CLAUSE-SYN-UNAPPROVED",
+    "review_state": "proposed"
+  }
+}
