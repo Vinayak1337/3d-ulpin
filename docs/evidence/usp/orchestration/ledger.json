@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T15:08:57.025124+00:00",
+  "updatedAt": "2026-09-25T15:10:07.341050+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "c597d5252518b336d1cafc8852db21bdfcea13db",
+    "acceptedStagingBase": "55ee5b82f1587b31f4a97aa1723d83a33cf4dc1f",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -159,14 +159,14 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "xhigh"
+        "effort": "high"
       },
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_UI-02_attempt-2",
+      "status": "assigned_DATA-02",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -981,6 +981,46 @@
           "Source accuracy, analytical mesh volume, GPU, learning and deployment remain unqualified"
         ]
       }
+    },
+    {
+      "assignmentId": "DATA-02",
+      "attempt": 1,
+      "callbackId": "ulpin-DATA-02-attempt-1",
+      "objective": "Author versioned adversarial and Indian-reality fixtures with preimplementation oracles for H28/H30",
+      "baseCommit": "55ee5b82f1587b31f4a97aa1723d83a33cf4dc1f",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/DATA-02-adversarial-fixtures",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "fixtures/usp/D0/adversarial/ versioned fixture bytes, oracle.json files, authored generators and self-contained integrity/format checks",
+        "docs/evidence/usp/finale/GF-DATA/DATA-02/ new evidence only"
+      ],
+      "exclusions": [
+        "production processor/domain/provider/runtime implementation",
+        "existing golden-v1 or historic oracle modifications",
+        "protected data/credentials/services",
+        "shared schema or dependencies",
+        "UI/mockup/sample content",
+        "ledger/release gate edits",
+        "remote push/deploy or staging/main merges"
+      ],
+      "acceptance": [
+        "Every H29 DATA-02/H28Z2-Z3/H16Z1-Z2/H22Z3/H30I case mapped to authored fixture and oracle",
+        "Oracles committed before any production implementation runs on new fixtures; author/date/agent and immutable hash pins",
+        "Format-aware fixture validation, mathematical/schematic expected outcomes independent of production outputs",
+        "GF-SUFFICIENCY outcomes per object/task and five class-level question maximum; never-filled values preserved",
+        "Source/control truth explicitly authored, unknown/noncomparability retained; clean twins and numerical tolerances explicit",
+        "DATA-08 cross-family oracle review pending; no runtime gate claim"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-1/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -1728,9 +1768,9 @@
     }
   ],
   "nextSteps": [
-    "End turn after UI-02 attempt-2 dispatch; resume on callback.",
-    "Review frame state persistence and responsive behavior; integrate bounded accepted work.",
-    "Next remaining GF0 data and plan machinery, then FND-04/UI-03 and other dependency-ready cards."
+    "End turn after DATA-02 dispatch; resume on callback.",
+    "Review fixture coverage, prior oracle commit and format/hash checks before bounded integration.",
+    "Complete LEAD-01B plan machinery and remaining GF0 acquisition/oracle cards; then dependency-ready FND-04/UI-03."
   ],
   "processedCallbacks": [
     {
@@ -1856,7 +1896,7 @@
       "card": "DATA-02",
       "title": "Adversarial and Indian-reality fixtures",
       "needs": "none",
-      "status": "pending"
+      "status": "dispatched"
     },
     {
       "card": "DATA-03",
