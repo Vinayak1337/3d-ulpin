@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T13:14:57.927306+00:00",
+  "updatedAt": "2026-09-25T14:03:21.159513+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -844,7 +844,15 @@
       ],
       "status": "dispatched",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-02/report.md",
-      "resultCommit": null
+      "resultCommit": null,
+      "ownershipClarifications": [
+        {
+          "path": "apps/web/features/usp/shared/ExternalSceneViewport.tsx",
+          "scope": "Import existing ../../spatial/viewport.css before dynamic map mount; no source/resource/geometry changes. Frame fallback positioning remains in owned frame CSS.",
+          "reason": "Phone source-error Retry must remain reachable when dynamic map does not mount. Lead verified net diff against accepted base is exactly one stylesheet import.",
+          "confirmedAt": "2026-09-25T14:03:21.159513+00:00"
+        }
+      ]
     }
   ],
   "capabilityChecklist": [
