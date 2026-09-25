@@ -1,0 +1,75 @@
+{
+  "agent": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "setting_verified_from": "latest turn_context of worker session"
+  },
+  "artifacts": [
+    {
+      "bytes": 4635,
+      "path": "fixtures/usp/D0/adversarial/v1/catalogue.json",
+      "sha256": "9ed873fd2c29178813fff129808fefd9f8901ec6968920e78db250245f6fa739"
+    },
+    {
+      "bytes": 51174,
+      "path": "fixtures/usp/D0/adversarial/generate.py",
+      "sha256": "3e76ba371d837041615e37c567138300a8f546a9b090480bf9d71ae06b88db36"
+    },
+    {
+      "bytes": 28399,
+      "path": "fixtures/usp/D0/adversarial/validate.py",
+      "sha256": "c7a46da71f3f34b3f00a83ec02d98606bd45a9a0c26492e7488ad7cf952e3870"
+    },
+    {
+      "bytes": 11000,
+      "path": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-1/format-validation.json",
+      "sha256": "f25efed328985a6091a85d161f403515b59abcf21863b105293c5d8a9e088ceb"
+    },
+    {
+      "bytes": 13227,
+      "path": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-1/coverage-manifest.json",
+      "sha256": "b5c093681ac5f68eaa6178f3224fc8294c19296b296ed1af9584e309a44c5c43"
+    },
+    {
+      "bytes": 32758,
+      "path": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-1/pdf-renders/synthetic-deed.png",
+      "sha256": "d594e9d852de9d0ebfe04345d63b0b6600d63a5e49b549e337ab3cb990bdf554"
+    },
+    {
+      "bytes": 22733,
+      "path": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-1/pdf-renders/plan-one-dimension.png",
+      "sha256": "9d05e2a9e84405662595d3c350c9dcd3bf0177e6cb6c3eed791ac17a4e6473f5"
+    },
+    {
+      "bytes": 13134,
+      "path": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-1/pdf-renders/white-text.png",
+      "sha256": "c628314c4fb3cda2bfbda5ef4812f3fe84bc43c073811b46b5e9ff2d5ba322f1"
+    }
+  ],
+  "assignment_id": "DATA-02",
+  "attempt": 1,
+  "base_commit": "55ee5b82f1587b31f4a97aa1723d83a33cf4dc1f",
+  "command": "python3 fixtures/usp/D0/adversarial/validate.py --self-test --rebuild-compare > docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-1/format-validation.json",
+  "environment": "local isolated git worktree; Python 3.9.6; Pillow 11.3.0; pypdf 6.16.2; pypdfium2 bundled",
+  "exit_code": 0,
+  "expected_actual": {
+    "case_count": 17,
+    "class_level_questions": 4,
+    "deterministic_rebuild_files": 68,
+    "mixed_gap_decisions": 16,
+    "negative_mutations_rejected": 4,
+    "source_count": 50
+  },
+  "limitations": [
+    "This is a packaging/format/arithmetic validation, not a GF-DATA runtime receipt or gate pass.",
+    "External IFC4 schema validation was unavailable; the local STEP structure, references and geometry entities were checked.",
+    "All source controls, rights, PII and locations are authored synthetic; no real-source accuracy or legal claim follows."
+  ],
+  "oracle_commit": "89bdcb534f297a404796a628d1c067dbfb1e9a48",
+  "run_at": "2026-09-25T15:31:02.897246Z",
+  "schema_version": "usp-data02-packaging-receipt/1",
+  "source_tree_sha256": "b4d06076f2f245e13f845f0474243b63d1e6278d1ab6b1c17ff18868e17cc78a",
+  "status": "passed_packaging_only",
+  "validator_code_commit": "fc1e933b1eecb74681a38d4f779ca20734832496"
+}
