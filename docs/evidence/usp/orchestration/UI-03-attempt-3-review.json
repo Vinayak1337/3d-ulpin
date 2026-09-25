@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "ulpin-lead-review/1",
+  "assignmentId": "UI-03",
+  "attempt": 3,
+  "reviewedAt": "2026-09-25T20:16:57.051844+00:00",
+  "codeCommit": "3c882b0dec484d5fb9e8c23f98d49ee19faf297f",
+  "resultCommit": "363499ca749506ce77db0b452e90c5554ba54a3d",
+  "integrationCommit": "5141475ca3bd7581a1f85a983f0c235481e394bf",
+  "disposition": "accepted_bounded_map_presentation_card_partial",
+  "reviewer": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "independentModelFamily": false
+  },
+  "resolved": [
+    "R1/R1b new map grid composition and unobscured desktop zoom-equivalent controls",
+    "R2/R2b no invented ground-reference namespace/sign-based ordinary source filter; underground explicitly unavailable",
+    "R3 per-record vertical reference handling",
+    "R4 fixed Test fixture labels restored",
+    "R5 invented source-like tests removed from active tree",
+    "R6 kind base colours preserved"
+  ],
+  "leadEvidence": {
+    "tests": "docs/evidence/usp/orchestration/UI-03-attempt-3-lead-checks.json",
+    "typecheckExit": 0,
+    "uiTests": 20,
+    "sceneTests": 7,
+    "spatialTests": 30,
+    "studioTests": 55,
+    "planValidatorExit": 0,
+    "inspectedScreenshots": [
+      "selected-3d-1440 attempt2",
+      "selected-equivalent-200-percent-zoom attempt3"
+    ],
+    "verifiedScreenshotHashes": 3,
+    "verifiedOcclusionControls": 16,
+    "verifiedPinnedRunnerCommands": 12
+  },
+  "remaining": [
+    "Qualified official DATA09 reference scene",
+    "Backend sourced ground relation and positive underground behavior",
+    "Mixed-datum, real signed-elevation and Indian level examples",
+    "3D uncertainty hatch and full H22 encodings",
+    "Numeric camera V-shot and actual browser zoom",
+    "Production build (guard blocked unrelated port3000)",
+    "Independent cross-family/human milestone review"
+  ],
+  "gateDisposition": "All GF gates remain pending; UI-03 full acceptance remains open."
+}

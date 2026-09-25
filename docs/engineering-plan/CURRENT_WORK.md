@@ -1,6 +1,8 @@
 # Current work — adopted USP handoffs
 
-Current implementation follows the [25 September user scope](../usp-agent-handoffs/current-delivery-policy.md): official-source data only, desktop-first/light-only; no synthetic substitutes or current mobile optimization.
+Current implementation follows the [Current user scope](../usp-agent-handoffs/current-delivery-policy.md): official-source data only, desktop-first/light-only; no synthetic substitutes or current mobile optimization.
+
+Rebuild and remove legacy UI progressively within each existing plan card, using the new design system and mockups. This is not a separate redesign phase. Apply UI-08 provenance/content checks to every replacement; preserve shared runtime, records and saved URLs.
 
 <!-- plan-next-gate: GF0 -->
 

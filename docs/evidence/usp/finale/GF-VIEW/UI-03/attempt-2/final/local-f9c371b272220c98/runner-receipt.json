@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "ui03-isolated-preview/1",
+  "scopeId": "local-f9c371b272220c98",
+  "phase": "final",
+  "codeSha": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
+  "status": "PASSED",
+  "source": "hash-pinned repo-data snapshot, retained historical regression only",
+  "commands": [
+    {
+      "label": "code-sha",
+      "exitCode": 0
+    },
+    {
+      "label": "docker-context",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-containers",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-volumes",
+      "exitCode": 0
+    },
+    {
+      "label": "owned-services-start",
+      "exitCode": 0
+    },
+    {
+      "label": "private-bucket-init",
+      "exitCode": 0
+    },
+    {
+      "label": "spatial-extension",
+      "exitCode": 0
+    },
+    {
+      "label": "exact-database-restore",
+      "exitCode": 0
+    },
+    {
+      "label": "additive-schema-migration",
+      "exitCode": 0
+    },
+    {
+      "label": "additive-schema-migration-replay",
+      "exitCode": 0
+    },
+    {
+      "label": "browser-captures",
+      "exitCode": 0
+    },
+    {
+      "label": "owned-services-cleanup",
+      "exitCode": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "pinned-originals",
+      "databaseSha256": "92cbdeb930c7b20f9a90f7857f92787ebe2562c65892ad835a758bdf1b6cfda8",
+      "objectCount": 497
+    },
+    {
+      "name": "new-project-and-loopback-ports"
+    },
+    {
+      "name": "snapshot-exact",
+      "tables": 44,
+      "objects": 497
+    },
+    {
+      "name": "migrated-schema-baseline",
+      "tables": 44,
+      "migrationChanges": [
+        {
+          "table": "jobs",
+          "beforeRows": 566,
+          "afterRows": 566,
+          "beforeSha256": "1f1a21036f99bed6c2e4b34a397caf67b4134ee86a89bff966a1290a22895b75",
+          "afterSha256": "7612ec3fbfb94c5457f151911a3f8a76b8b85195cdc64b6255b7209be5abfb88"
+        }
+      ]
+    },
+    {
+      "name": "protected-data-unchanged-after-browser"
+    }
+  ],
+  "screenshots": [
+    "area-1024.png",
+    "area-1440.png",
+    "selected-1024.png",
+    "selected-1440.png",
+    "selected-3d-1440.png",
+    "selected-equivalent-200-percent-zoom.png",
+    "selected-findings-1440.png"
+  ],
+  "limitation": "No DATA-09 reference scene qualification or production build.",
+  "target": {
+    "area_id": "9e77c608-bac7-4d56-9ac7-3032cc49074d",
+    "building_id": "05a784ee-358c-4835-860d-4c47d0876aa4"
+  }
+}

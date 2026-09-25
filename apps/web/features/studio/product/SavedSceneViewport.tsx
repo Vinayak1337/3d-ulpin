@@ -3,11 +3,12 @@ import dynamic from 'next/dynamic';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {enuToEcef,transformPoint,geometryBounds,validateSpatialSnapshot,type SpatialGeometry,type SpatialRepresentation,type SpatialFrame,type WorldState,type AreaGeometry} from '@ulpin/contracts';
 import {useSharedResource} from '../../spatial/data/useResource';
-import {displayProjector,type NeighbourhoodView} from '../../spatial/data/core-display';
+import {DISPLAY_REFERENCE,displayProjector,type NeighbourhoodView} from '../../spatial/data/core-display';
 import type {MapSelection} from '../../spatial/data/session';
 import type {TileNavigation,TileOverlay,TileTelemetry} from '../../spatial/layers/TileLayer';
 import type {BlockController} from '../../officer/block/useBlock';
 import ExternalSceneViewport from '../../usp/shared/ExternalSceneViewport';
+import { displayClass, rightsClass, rightColourToken, utilityType } from '../../officer/block/mapStyleModel';
 const MapViewport=dynamic(()=>import('../../spatial/MapViewport').then(m=>m.MapViewport),{ssr:false});
 type Saved=NeighbourhoodView&{manifestUrl:string;publicationId:string};
 function geometryParts(g:AreaGeometry):SpatialGeometry[]{
@@ -45,10 +46,20 @@ function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,op
  const selected=view?.items.find(i=>i.canonicalRef.id===block.selectedId);
  const baseRep=scene?.representations.find(r=>r.entityId===selected?.id);
  const [telemetry,setTelemetry]=useState<TileTelemetry|null>(null);
+ const [palette,setPalette]=useState<Record<string,string>>({});
+ useEffect(()=>{
+  const root=document.querySelector('.ulpin-app');if(!root)return;
+  const css=getComputedStyle(root),names=['map-building','map-road','map-ground','map-public-land','map-selected','map-parcel-line','mark-warning','rights-exclusive','rights-shared','rights-public','utility-electric','utility-gas','utility-telecom','utility-water','utility-reclaimed','utility-sewer'];
+  const hex=(value:string)=>{const match=value.match(/rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/);return match?'#'+match.slice(1,4).map(channel=>Number(channel).toString(16).padStart(2,'0')).join(''):value.trim();};
+  setPalette(Object.fromEntries(names.map(name=>[name,hex(css.getPropertyValue(name==='map-selected'?'--ui-primary':`--ui-${name}`))])));
+ },[]);
  const details=block.dossier.data?.detailedScene??[];
+ const selectedDetail=recordId?details.find(d=>d.record.id===recordId):undefined;
+ const unplacedSelectedDetail=!!selectedDetail?.geographicGeometry&&
+  (frame?.verticalReference===DISPLAY_REFERENCE||!frame?.verticalReference||selectedDetail.verticalReference!==frame.verticalReference);
  const floor=block.dossier.data?.records.find(r=>r.id===recordId&&r.kind==='floor');
  const spaces=block.dossier.data?.records.filter(r=>r.kind==='space'&&(r.id===recordId||floor&&r.links.some(l=>l.type==='floor'&&l.targetId===floor.id)))??[];
- const showInterior=!!recordId||explode>0;
+ const showInterior=!!recordId||explode>0||block.preferences.colourBy==='rights';
  const roadCenterlines=useMemo<TileOverlay[]>(()=>{
   if(!scene||!frame||block.preferences.hiddenLayers.includes('road'))return [];
   const roads=new Set(scene.entities.filter(entity=>entity.kind==='road').map(entity=>entity.id));
@@ -66,24 +77,30 @@ function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,op
    }
   };
   if(showInterior){
-   const floors=[...new Set(details.map(d=>d.lower).filter((x):x is number=>Number.isFinite(x)))].sort((a,b)=>a-b);
+   const floors=[...new Set(details.filter(d=>d.verticalReference===reference&&reference!==DISPLAY_REFERENCE).map(d=>d.lower).filter((x):x is number=>Number.isFinite(x)))].sort((a,b)=>a-b);
    const chosen=new Set(spaces.map(r=>r.id));
    for(const d of details){
     if(!d.geographicGeometry||d.lower==null||d.upper==null||!Number.isFinite(d.lower)||!Number.isFinite(d.upper)||d.upper<=d.lower||!d.verticalReference)continue;
+    // The source's signed elevation is retained; 3D placement needs the exact same non-display datum.
+    if(reference===DISPLAY_REFERENCE||d.verticalReference!==reference)continue;
     if(!explode&&recordId&&d.record.id!==recordId&&!chosen.has(d.record.id))continue;
     if(explode&&d.record.kind==='floor')continue;
     const offset=Math.max(0,floors.indexOf(d.lower))*explode;
-    add('record:'+d.record.id,d.geographicGeometry,d.lower+offset,d.upper+offset,d.record.id===recordId?'#dbb764':d.record.kind==='space'?'#82b8a0':'#7dbaae',{opacity:d.record.id===recordId?.8:.6});
+    const rights=rightsClass(d.record);
+    const tone=block.preferences.colourBy==='rights'&&d.record.kind==='space'&&rights!=='unknown'?palette[rightColourToken[rights]]:palette['map-building'];
+    add('record:'+d.record.id,d.geographicGeometry,d.lower+offset,d.upper+offset,d.record.id===recordId?palette['map-selected']??palette['map-building']??'white':tone??palette['map-building']??'white',{opacity:d.record.id===recordId?.8:.6});
    }
   }
   if(block.geographicIssueGeometry)add('finding:'+(block.finding?.id??'all'),block.geographicIssueGeometry,.21,.22,'#df6e3e',{opacity:.72,selectable:false});
   for(const boundary of block.boundaries)if(boundary.geographicGeometry)add('boundary:'+boundary.id,boundary.geographicGeometry,.25,.25,'#987743',{opacity:.1,outlineOnly:true,selectable:false});
   return result;
- },[frame,roadCenterlines,details,showInterior,recordId,explode,spaces.map(r=>r.id).join('|'),block.geographicIssueGeometry,block.boundaries,block.finding?.id]);
+ },[frame,roadCenterlines,details,showInterior,recordId,explode,spaces.map(r=>r.id).join('|'),block.geographicIssueGeometry,block.boundaries,block.finding?.id,block.preferences.colourBy,palette]);
  const onSelect=useCallback((selection:MapSelection|null)=>{
   if(!selection)return;
   if(selection.entityId.startsWith('record:')){const id=selection.entityId.slice(7);if(block.dossier.data?.records.some(r=>r.id===id))onRecord(id);return;}
-  const item=view?.items.find(i=>i.id===selection.entityId);if(item)block.select(item.canonicalRef.id);
+  const item=view?.items.find(i=>i.id===selection.entityId);
+  const feature=item&&block.features.find(feature=>feature.id===item.canonicalRef.id);
+  if(feature&&displayClass(feature)!=='illustrative')block.select(feature.id);
  },[view,block.select,block.dossier.data,onRecord]);
  const navigation=useMemo<TileNavigation>(()=>{
   const old=block.navigation,action=old.action==='return'?'fit':old.action==='angle'?'reverse':old.action==='issue'?'focus':old.action;
@@ -93,33 +110,31 @@ function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,op
   return {action:['fit','focus','north','zoom_in','zoom_out','reverse','neighbourhood'].includes(action)?action as TileNavigation['action']:'reverse',sequence:old.sequence,target,targetRadius};
  },[block.navigation,baseRep,frame,recordId,overlays]);
  const visibleKinds=useMemo(()=>['building','building_part','parcel','road','rail','public_land','vegetation','utility','terrain'].filter(k=>!block.preferences.hiddenLayers.includes(k as never)),[block.preferences.hiddenLayers]);
- const cutaway=useMemo(()=>{
-  const below=overlays.filter(o=>o.representation.entityId.startsWith('record:')&&(o.representation.vertical?.lower??0)<0);
-  const hidden:string[]=[],outlines:TileOverlay[]=[];
-  if(!scene||!frame||!below.length)return {hidden,outlines};
-  const bounds=below.map(o=>geometryBounds(o.representation.geometry));
-  // Conservative bounds determine display occlusion only, never a spatial finding.
-  for(const entity of scene.entities){
-   if(!['terrain','parcel','road','rail','public_land'].includes(entity.kind))continue;
-   const covering=scene.representations.filter(rep=>rep.entityId===entity.id&&rep.frameId===frame.id&&['Polygon','MultiPolygon'].includes(rep.geometry.type)).filter(rep=>{
-    const b=geometryBounds(rep.geometry);
-    return below.some((item,index)=>(rep.vertical?.upper??0)>=(item.representation.vertical?.lower??0)&&
-      bounds[index][0]<=b[2]&&bounds[index][2]>=b[0]&&bounds[index][1]<=b[3]&&bounds[index][3]>=b[1]);
-   });
-   if(!covering.length)continue;
-   hidden.push(entity.id);
-   if(entity.kind==='parcel'&&!block.preferences.hiddenLayers.includes('parcel'))for(const rep of covering)
-    outlines.push({representation:rep,frame,color:'#987743',outlineOnly:true,selectable:false,strokeWidth:2});
+ const entityColors=useMemo(()=>{
+  if(!view)return {};
+  const result:Record<string,string>={};
+  if(block.preferences.colourBy==='utilities')for(const item of view.items){
+   const feature=block.features.find(feature=>feature.id===item.canonicalRef.id);if(!feature)continue;
+   const type=utilityType(feature),colour=palette[`utility-${type}`];if(type!=='unknown'&&colour)result[item.id]=colour;
   }
-  return {hidden,outlines};
- },[scene,frame,overlays,block.preferences.hiddenLayers]);
- const displayOverlays=useMemo(()=>[...overlays,...cutaway.outlines],[overlays,cutaway.outlines]);
+  if(block.preferences.colourBy==='findings'&&!block.context.data?.latestCheck?.stale){
+   const ids=new Set(block.context.data?.latestCheck?.findings.flatMap(finding=>finding.featureIds)??[]);
+   for(const item of view.items)if(ids.has(item.canonicalRef.id)&&palette['mark-warning'])result[item.id]=palette['mark-warning'];
+  }
+ return result;
+ },[view,block.preferences.colourBy,block.features,block.context.data?.latestCheck,palette]);
+ const entityOpacity=useMemo(()=>Object.fromEntries((view?.items??[]).flatMap(item=>{
+  const feature=block.features.find(feature=>feature.id===item.canonicalRef.id),kind=feature&&displayClass(feature);
+  return kind==='illustrative'?[[item.id,.22]]:kind==='estimated'?[[item.id,.55]]:[];
+ })),[view,block.features]);
+ const kindColors=useMemo(()=>({building:palette['map-building'],building_part:palette['map-building'],parcel:palette['map-parcel-line'],road:palette['map-road'],rail:palette['map-road'],public_land:palette['map-public-land'],terrain:palette['map-ground']}),[palette]);
  if(!view||!scene||!frame)return <div className="spatial-loading" role={resource.error||validated.error?'alert':'status'}><span>{resource.error||validated.error||'Preparing source-linked 3D neighbourhood…'}</span>{(resource.error||validated.error)&&<button className="ui-button" onClick={()=>void resource.reload()}>Retry scene</button>}</div>;
  const buildings=view.items.filter(item=>item.kind==='building'),unknownHeights=buildings.filter(item=>item.height===null).length;
- const sceneSummary=unknownHeights===buildings.length&&buildings.length?`${buildings.length} source outlines · heights unavailable`:unknownHeights?`${buildings.length} buildings · ${unknownHeights} heights unavailable`:`${buildings.length} buildings`;
- return <div style={{height:'100%',position:'relative'}} data-normalized-scene={view.readDigest} data-world={world} data-underground-cutaway={cutaway.hidden.length>0}>
-  <MapViewport source={{kind:'tiles',props:{manifestUrl:view.manifestUrl,sessionKey:`product:${areaId}:${world}`,selection:selected?{entityId:selected.id}:null,onSelect,mode:'3d',navigation,visibleKinds,shadows:true,opacityByKind,highlightedIds:block.highlightedIds.map(id=>view.items.find(i=>i.canonicalRef.id===id)?.id??'').filter(Boolean),hiddenEntityIds:[...(showInterior&&overlays.some(o=>o.representation.entityId.startsWith('record:'))&&selected?[selected.id]:[]),...cutaway.hidden],overlays:displayOverlays,outline:baseRep&&selected&&block.preferences.labels?{representation:baseRep,frame,label:selected.label}:undefined,onTelemetry:setTelemetry}}}/>
-  {cutaway.hidden.length>0&&<div className="saved-cutaway-notice" role="status">Lower-level cutaway · overlapping surface fills hidden; recorded levels unchanged</div>}
+ const estimatedHeights=buildings.filter(item=>item.heightState==='estimated').length;
+ const sceneSummary=(unknownHeights===buildings.length&&buildings.length?`${buildings.length} source outlines · heights unavailable`:unknownHeights?`${buildings.length} buildings · ${unknownHeights} heights unavailable`:`${buildings.length} buildings`)+(estimatedHeights?` · ${estimatedHeights} estimated heights`:'');
+ return <div style={{height:'100%',position:'relative'}} data-normalized-scene={view.readDigest} data-world={world} data-underground-cutaway="false">
+  <MapViewport source={{kind:'tiles',props:{manifestUrl:view.manifestUrl,sessionKey:`product:${areaId}:${world}`,selection:selected?{entityId:selected.id}:null,onSelect,mode:'3d',navigation,visibleKinds,shadows:true,opacityByKind,entityColors,entityOpacity,kindColors,selectionColor:palette['map-selected'],highlightColor:palette['mark-warning'],baseColor:palette['map-building'],highlightedIds:block.highlightedIds.map(id=>view.items.find(i=>i.canonicalRef.id===id)?.id??'').filter(Boolean),hiddenEntityIds:showInterior&&overlays.some(o=>o.representation.entityId.startsWith('record:'))&&selected?[selected.id]:[],overlays,outline:baseRep&&selected?{representation:baseRep,frame,label:selected.height===null?`${selected.label} · height unknown`:selected.heightState==='estimated'?`${selected.label} · height estimated`:selected.label}:undefined,onTelemetry:setTelemetry}}}/>
+  {unplacedSelectedDetail&&<div className="saved-scene-reference-notice" role="status">Saved detail remains available in 2D and the record. Its vertical reference is not linked to this 3D scene.</div>}
   {resource.error&&<div className="normalized-map-notice" role="alert">Scene refresh failed. Previous records remain visible.<button onClick={()=>void resource.reload()}>Retry</button></div>}
   <div className="saved-scene-proof"><i/>{telemetry?.ready?sceneSummary:'Loading geometry'}{roadCenterlines.length>0&&<span title="Recorded road centerlines. The screen stroke does not establish physical road width."> · Road centerlines</span>} <span>Revision {scene.revision} · {world}</span></div>
  </div>;
