@@ -287,13 +287,6 @@
   display: flex;
   flex-direction: column;
 }
-.ulpin-app .ui-map-stage {
-  min-height: 280px;
-  flex: 1;
-  position: relative;
-  background: var(--ui-map-ground);
-  overflow: hidden;
-}
 .ulpin-app .ui-renderer {
   position: absolute;
   inset: 0;
@@ -303,26 +296,6 @@
   height: 100%;
   display: block;
   touch-action: none;
-}
-.ulpin-app .ui-map-toolbar {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  right: 14px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  z-index: 5;
-  pointer-events: none;
-}
-.ulpin-app .ui-map-toolbar > * {
-  pointer-events: auto;
-}
-.ulpin-app .ui-map-toolbar .ui-button {
-  padding: 8px 10px;
-  min-height: 40px;
-  box-shadow: 0 2px 6px #25432b0a;
-  font-size: 11px;
 }
 .ulpin-app .ui-map-mode {
   display: flex;
@@ -391,34 +364,6 @@
   padding: 9px;
   border-radius: 0;
   border-bottom: 0;
-}
-.ulpin-app .ui-map-bottom {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 14px;
-  z-index: 5;
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
-  align-items: center;
-}
-.ulpin-app .ui-active-finding {
-  position: absolute;
-  top: 68px;
-  left: 14px;
-  right: 72px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  padding: 4px 8px;
-  background: white;
-  border-radius: 7px;
-  box-shadow: 0 2px 6px #0001;
-}
-.ulpin-app .ui-active-finding span:nth-child(2) {
-  flex: 1;
 }
 .ulpin-app .ui-map-status {
   display: flex;
@@ -799,10 +744,6 @@
   .ulpin-app .ui-block-grid.ui-inspector-closed {
     grid-template-columns: 216px minmax(0, 1fr);
   }
-  .ulpin-app .ui-map-toolbar .ui-button {
-    font-size: 0;
-    gap: 0;
-  }
   .ulpin-app .ui-block-title > .ui-badge {
     display: none;
   }
@@ -876,9 +817,6 @@
   .ulpin-app .ui-findings-tray > header > .ui-button {
     margin-left: auto;
   }
-  .ulpin-app .ui-active-finding {
-    top: 118px;
-  }
   .ulpin-app .area-scene-note {
     max-width: calc(100% - 76px);
     font-size: 9px;
@@ -910,9 +848,6 @@
 .ulpin-app .ui-block-grid {
   grid-template-columns: 248px minmax(0, 1fr) 312px;
 }
-.ulpin-app .ui-map-stage {
-  background: var(--ui-map-ground);
-}
 .ulpin-app .ui-inspector-content > .property-scene {
   margin-bottom: 12px;
 }
@@ -938,7 +873,6 @@
 .ulpin-app .ui-focused-map .ui-block-inspector { position: static; width: auto; box-shadow: none; }
 .ulpin-app .ui-dialog .ui-block-left { display: flex; position: static; width: auto; border: 0; max-height: 65vh; box-shadow: none; }
 .ulpin-app .ui-dialog .ui-rail-tabs > .ui-button { display: none; }
-.ulpin-app .ui-map-toolbar .ui-button, .ulpin-app .ui-map-mode button { min-height: 44px; font-size: 13px; }
 .ulpin-app .ui-inspector-heading { min-height: 54px; }
 .ulpin-app .ui-inspector-selection { display: none; }
 .ulpin-app .ui-inspector-content { padding: 20px; }

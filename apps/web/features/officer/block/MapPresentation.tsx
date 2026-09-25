@@ -18,31 +18,45 @@ function namedKind(record: RegistryRecord): string {
     ? candidate.replaceAll("_", " ") : "Level kind not supplied";
 }
 
-function LevelRail({ block }: { block: BlockController }) {
+export function LevelRail({ block }: { block: BlockController }) {
   const floors = block.dossier.data?.records.filter(record => record.kind === "floor") ?? [];
   if (block.selected?.kind !== "building") return null;
-  const reference = block.dossier.data?.detailedScene.find(detail => detail.verticalReference)?.verticalReference
-    ?? block.context.data?.area.reference?.verticalReference ?? "Vertical reference not supplied";
+  const levels = floors.map(record => {
+    const detail = block.dossier.data?.detailedScene.find(item => item.record.id === record.id);
+    const lower = detail?.lower ?? record.geometry?.lower;
+    return { record, lower, reference: detail?.verticalReference };
+  });
+  const numeric = levels.filter(level => typeof level.lower === "number" && Number.isFinite(level.lower));
+  const references = [...new Set(numeric.map(level => level.reference))];
+  const sharedReference = references.length === 1 && references[0] ? references[0] : null;
   const selected = block.recordId;
   const move = (index: number, delta: number) => {
     const next = floors[index + delta];
     if (next) { block.selectRecord(next.id); document.getElementById(`ui-level-${next.id}`)?.focus(); }
   };
   return <aside className="ui-level-rail" aria-label="Recorded levels">
-    <header><Icon name="layers" size={16}/><span>Levels <small>m · {reference}</small></span></header>
+    <header><Icon name="layers" size={16}/><span>Levels {numeric.length > 0 && <small>{sharedReference ? `m · ${sharedReference}` : "Per-level source references"}</small>}</span></header>
     {block.dossier.loading ? <p>Loading recorded levels…</p> : !floors.length ? <p>Levels not supplied</p> :
-      <div className="ui-level-list">{floors.map((record, index) => {
-        const detail = block.dossier.data?.detailedScene.find(item => item.record.id === record.id);
-        const lower = detail?.lower ?? record.geometry?.lower;
+      <div className="ui-level-list">{levels.map(({record,lower,reference}, index) => {
         return <button id={`ui-level-${record.id}`} key={record.id} aria-pressed={selected === record.id} onClick={() => block.selectRecord(record.id)}
           onKeyDown={event => { if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); move(index, event.key === "ArrowDown" ? 1 : -1); } }}>
-          <strong>{record.name}</strong><small>{namedKind(record)}</small><span>{typeof lower === "number" && Number.isFinite(lower) ? `${lower} m` : "? · elevation unknown"}</span>
+          <strong>{record.name}</strong><small>{namedKind(record)}</small><span>{typeof lower === "number" && Number.isFinite(lower) ? `${lower} m${sharedReference ? "" : ` · ${reference || "reference not supplied"}`}` : "? · elevation unknown"}</span>
         </button>;
       })}</div>}
   </aside>;
 }
 
-export default function MapPresentation({ block }: { block: BlockController }) {
+export function MapColourControl({ block, undergroundAvailable, undergroundActive }: { block: BlockController; undergroundAvailable: boolean; undergroundActive: boolean }) {
+  const mode = block.preferences.colourBy;
+  return <div className="ui-map-presentation" role="group" aria-label="Map presentation">
+    <label>Colour by <select aria-label="Colour by" value={mode} onChange={event => block.setPreferences({ colourBy: event.target.value as ColourBy })}>
+      {modes.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+    </select></label>
+    <label className="ui-underground-switch" title={undergroundAvailable ? "Show source-qualified below-grade geometry" : "No source-qualified below-grade geometry in the active scene"}><input type="checkbox" checked={undergroundActive} disabled={!undergroundAvailable} onChange={event => block.setPreferences({ underground: event.target.checked })}/>Underground</label>
+  </div>;
+}
+
+export function MapLegend({ block, undergroundActive }: { block: BlockController; undergroundActive: boolean }) {
   const mode = block.preferences.colourBy;
   const features = block.visibleFeatures;
   const records = block.dossier.data?.records.filter(record => record.kind === "space") ?? [];
@@ -58,22 +72,13 @@ export default function MapPresentation({ block }: { block: BlockController }) {
   ] : mode === "findings" ? [["finding", "Saved finding participant"], ["unknown", "Not highlighted"]]
     : mode === "utilities" ? utilityTypes.filter(type => type !== "unknown").map(type => [type, type.charAt(0).toUpperCase() + type.slice(1)])
     : [];
-  const hasUnderground = block.details.some(detail => detail.lower < 0 && !!detail.verticalReference) || features.some(feature => feature.kind === "utility" && feature.verticalExtent && feature.verticalExtent.lower < 0);
   const unknownHeight = features.filter(feature => feature.kind === "building" && (feature.height.value == null || feature.height.state === "unknown" || feature.height.state === "unresolved")).length;
   const estimated = features.filter(feature => displayClass(feature) === "estimated").length;
   const illustrative = features.filter(feature => displayClass(feature) === "illustrative").length;
   const evidenceLinked = features.filter(feature => displayClass(feature) === "evidence_linked").length;
   const evidenceUnknown = features.filter(feature => displayClass(feature) === "unknown").length;
   const statuses = [...new Set(features.map(recordOutline))];
-  return <>
-    <div className="ui-map-presentation" role="group" aria-label="Map presentation">
-      <label>Colour by <select aria-label="Colour by" value={mode} onChange={event => block.setPreferences({ colourBy: event.target.value as ColourBy })}>
-        {modes.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select></label>
-      <label className="ui-underground-switch"><input type="checkbox" checked={block.preferences.underground} disabled={!hasUnderground} onChange={event => block.setPreferences({ underground: event.target.checked })}/>Underground</label>
-    </div>
-    <LevelRail block={block}/>
-    <aside className="ui-presentation-legend" aria-label="Map legend">
+  return <aside className="ui-presentation-legend" aria-label="Map legend">
       {mode !== "none" && <section><h2>{modes.find(item => item.value === mode)?.label}</h2>
         {mode === "readiness" ? <p>Not assessed for a named task in this area.</p> :
           mode === "findings" && (!findings || findings.stale) ? <p>{findings?.stale ? "Saved check out of date" : "Not assessed"}</p> :
@@ -93,8 +98,7 @@ export default function MapPresentation({ block }: { block: BlockController }) {
         {statuses.includes("unknown") && <li><i className="ui-legend-outline ui-legend-unknown-outline"/>Record status unknown</li>}
         {unknownHeight > 0 && <li>{unknownHeight} building{unknownHeight === 1 ? "" : "s"} · height unknown</li>}
         {mode === "utilities" && features.some(feature => feature.kind === "utility" && !feature.verticalExtent) && <li>Depth not supplied for some utilities</li>}
-        {block.preferences.underground && <li>{hasUnderground ? "Recorded below-ground geometry only" : "No recorded below-ground geometry"}</li>}
+        {undergroundActive && <li>Source-qualified below-grade geometry only</li>}
       </ul></section>
-    </aside>
-  </>;
+    </aside>;
 }

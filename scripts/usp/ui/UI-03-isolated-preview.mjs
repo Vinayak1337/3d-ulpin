@@ -20,7 +20,8 @@ const envFile = await realpath(env.ULPIN_LOCAL_ENV_FILE);
 assert.equal(relative(temporary, envFile), 'ulpin-local.env');
 const phase = process.env.ULPIN_UI03_PHASE || 'final';
 assert(['baseline', 'final'].includes(phase));
-const output = resolve(root, `docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/${phase}/${scope.id}`);
+const attempt = process.env.ULPIN_UI03_ATTEMPT === '2' ? '2' : '1';
+const output = resolve(root, `docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-${attempt}/${phase}/${scope.id}`);
 await mkdir(output, { recursive: true });
 const report = { schemaVersion: 'ui03-isolated-preview/1', scopeId: scope.id, phase,
   codeSha: null, status: 'RUNNING', source: 'hash-pinned repo-data snapshot, retained historical regression only',

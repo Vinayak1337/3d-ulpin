@@ -28,21 +28,23 @@ function projectGeometry(g:SpatialGeometry,project:(xy:readonly[number,number])=
  if(g.type==='Polygon')return {...g,coordinates:g.coordinates.map(r=>r.map(point))};
  return {...g,coordinates:g.coordinates.map(p=>p.map(r=>r.map(point)))};
 }
-type SavedSceneProps={block:BlockController;world:WorldState;recordId:string|null;onRecord:(id:string)=>void;explode?:number;opacityByKind?:Readonly<Record<string,number>>};
+type SavedSceneProps={block:BlockController;world:WorldState;recordId:string|null;onRecord:(id:string)=>void;explode?:number;opacityByKind?:Readonly<Record<string,number>>;undergroundActive?:boolean;eligibleUndergroundIds?:ReadonlySet<string>;onSceneFrame?:(reference:string|null)=>void};
 export default function SavedSceneViewport(props:SavedSceneProps){
  const visible=props.block.features.filter(feature=>feature.worldStatus===props.world);
  const external=visible.filter(feature=>feature.kind==='building'&&typeof feature.properties.external_cityjson_sha256==='string');
  const feature=external.find(item=>item.id===props.block.selectedId)??(visible.length===1&&external.length===1?external[0]:null);
- if(feature)return <ExternalSceneViewport key={`${feature.id}:${feature.revision}`} feature={feature} block={props.block} opacity={props.opacityByKind?.building}/>;
+ if(feature)return <><SceneFrameUnavailable onSceneFrame={props.onSceneFrame}/><ExternalSceneViewport key={`${feature.id}:${feature.revision}`} feature={feature} block={props.block} opacity={props.opacityByKind?.building}/></>;
  return <CanonicalSavedSceneViewport {...props}/>;
 }
-function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,opacityByKind}:SavedSceneProps){
+function SceneFrameUnavailable({onSceneFrame}:{onSceneFrame?:SavedSceneProps['onSceneFrame']}){useEffect(()=>onSceneFrame?.(null),[onSceneFrame]);return null;}
+function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,opacityByKind,undergroundActive=false,eligibleUndergroundIds,onSceneFrame}:SavedSceneProps){
  const areaId=block.context.data!.area.id;
  const resource=useSharedResource<Saved>(`/spatial/core/areas/${areaId}/scene/${world}/descriptor.json`);
  const loadedRevision=useRef(block.context.data!.area.revision);
  useEffect(()=>{const next=block.context.data?.area.revision;if(next!==loadedRevision.current){loadedRevision.current=next!;void resource.reload();}},[block.context.data?.area.revision,resource.reload]);
  const validated=useMemo(()=>{if(!resource.data)return {view:null,error:''};try{validateSpatialSnapshot(resource.data.snapshot);if(resource.data.areaId!==areaId||resource.data.world!==world)throw new Error('The scene does not match this dataset and source world');return {view:resource.data,error:''};}catch(e){return {view:null,error:e instanceof Error?e.message:'Invalid scene'};}},[resource.data,areaId,world]);
  const view=validated.view,scene=view?.snapshot,frame=scene?.frames[0];
+ useEffect(()=>onSceneFrame?.(frame?.verticalReference??null),[onSceneFrame,frame?.verticalReference]);
  const selected=view?.items.find(i=>i.canonicalRef.id===block.selectedId);
  const baseRep=scene?.representations.find(r=>r.entityId===selected?.id);
  const [telemetry,setTelemetry]=useState<TileTelemetry|null>(null);
@@ -56,7 +58,7 @@ function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,op
  const details=block.dossier.data?.detailedScene??[];
  const floor=block.dossier.data?.records.find(r=>r.id===recordId&&r.kind==='floor');
  const spaces=block.dossier.data?.records.filter(r=>r.kind==='space'&&(r.id===recordId||floor&&r.links.some(l=>l.type==='floor'&&l.targetId===floor.id)))??[];
- const showInterior=!!recordId||explode>0||block.preferences.underground||block.preferences.colourBy==='rights';
+ const showInterior=!!recordId||explode>0||undergroundActive||block.preferences.colourBy==='rights';
  const roadCenterlines=useMemo<TileOverlay[]>(()=>{
   if(!scene||!frame||block.preferences.hiddenLayers.includes('road'))return [];
   const roads=new Set(scene.entities.filter(entity=>entity.kind==='road').map(entity=>entity.id));
@@ -74,12 +76,13 @@ function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,op
    }
   };
   if(showInterior){
-   const floors=[...new Set(details.map(d=>d.lower).filter((x):x is number=>Number.isFinite(x)))].sort((a,b)=>a-b);
+   const floors=[...new Set(details.filter(d=>d.lower!=null&&(d.lower>=0||eligibleUndergroundIds?.has(d.record.id))).map(d=>d.lower).filter((x):x is number=>Number.isFinite(x)))].sort((a,b)=>a-b);
    const chosen=new Set(spaces.map(r=>r.id));
    for(const d of details){
     if(!d.geographicGeometry||d.lower==null||d.upper==null||!Number.isFinite(d.lower)||!Number.isFinite(d.upper)||d.upper<=d.lower||!d.verticalReference)continue;
+    if(d.lower<0&&!eligibleUndergroundIds?.has(d.record.id))continue;
     if(!explode&&recordId&&d.record.id!==recordId&&!chosen.has(d.record.id))continue;
-    if(!recordId&&!explode&&block.preferences.underground&&block.preferences.colourBy!=='rights'&&d.lower>=0)continue;
+    if(!recordId&&!explode&&undergroundActive&&block.preferences.colourBy!=='rights'&&!eligibleUndergroundIds?.has(d.record.id))continue;
     if(explode&&d.record.kind==='floor')continue;
     const offset=Math.max(0,floors.indexOf(d.lower))*explode;
     const rights=rightsClass(d.record);
@@ -90,7 +93,7 @@ function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,op
   if(block.geographicIssueGeometry)add('finding:'+(block.finding?.id??'all'),block.geographicIssueGeometry,.21,.22,'#df6e3e',{opacity:.72,selectable:false});
   for(const boundary of block.boundaries)if(boundary.geographicGeometry)add('boundary:'+boundary.id,boundary.geographicGeometry,.25,.25,'#987743',{opacity:.1,outlineOnly:true,selectable:false});
   return result;
- },[frame,roadCenterlines,details,showInterior,recordId,explode,spaces.map(r=>r.id).join('|'),block.geographicIssueGeometry,block.boundaries,block.finding?.id,block.preferences.underground,block.preferences.colourBy,palette]);
+ },[frame,roadCenterlines,details,showInterior,recordId,explode,spaces.map(r=>r.id).join('|'),block.geographicIssueGeometry,block.boundaries,block.finding?.id,undergroundActive,eligibleUndergroundIds,block.preferences.colourBy,palette]);
  const onSelect=useCallback((selection:MapSelection|null)=>{
   if(!selection)return;
   if(selection.entityId.startsWith('record:')){const id=selection.entityId.slice(7);if(block.dossier.data?.records.some(r=>r.id===id))onRecord(id);return;}
@@ -107,7 +110,7 @@ function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,op
  },[block.navigation,baseRep,frame,recordId,overlays]);
  const visibleKinds=useMemo(()=>['building','building_part','parcel','road','rail','public_land','vegetation','utility','terrain'].filter(k=>!block.preferences.hiddenLayers.includes(k as never)),[block.preferences.hiddenLayers]);
  const cutaway=useMemo(()=>{
-  const below=overlays.filter(o=>o.representation.entityId.startsWith('record:')&&(o.representation.vertical?.lower??0)<0);
+  const below=undergroundActive?overlays.filter(o=>eligibleUndergroundIds?.has(o.representation.entityId.slice(7))):[];
   const hidden:string[]=[],outlines:TileOverlay[]=[];
   if(!scene||!frame||!below.length)return {hidden,outlines};
   const bounds=below.map(o=>geometryBounds(o.representation.geometry));
@@ -125,15 +128,11 @@ function CanonicalSavedSceneViewport({block,world,recordId,onRecord,explode=0,op
     outlines.push({representation:rep,frame,color:'#987743',outlineOnly:true,selectable:false,strokeWidth:2});
   }
   return {hidden,outlines};
- },[scene,frame,overlays,block.preferences.hiddenLayers]);
+ },[scene,frame,overlays,block.preferences.hiddenLayers,undergroundActive,eligibleUndergroundIds]);
  const displayOverlays=useMemo(()=>[...overlays,...cutaway.outlines],[overlays,cutaway.outlines]);
  const entityColors=useMemo(()=>{
   if(!view)return {};
   const result:Record<string,string>={};
-  for(const item of view.items){
-   const feature=block.features.find(feature=>feature.id===item.canonicalRef.id);
-   if(feature&&displayClass(feature)!=='evidence_linked'&&palette['map-building'])result[item.id]=palette['map-building'];
-  }
   if(block.preferences.colourBy==='utilities')for(const item of view.items){
    const feature=block.features.find(feature=>feature.id===item.canonicalRef.id);if(!feature)continue;
    const type=utilityType(feature),colour=palette[`utility-${type}`];if(type!=='unknown'&&colour)result[item.id]=colour;
