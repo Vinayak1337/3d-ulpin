@@ -1,0 +1,154 @@
+{
+  "authorityBySource": {
+    "gis": "Gurugram Metropolitan Development Authority",
+    "rera": "Haryana Real Estate Regulatory Authority"
+  },
+  "discoveryAttempts": [
+    {
+      "method": "official portal page GET",
+      "result": "HTTP 200 HTML; no resource file acquired from this page; not counted as polygon bytes",
+      "url": "https://www.data.gov.in/catalog/all-india-pincode-boundary-geo-json"
+    },
+    {
+      "method": "official portal discovery",
+      "result": "Maharashtra PMRDA geography, not Gurugram; no data acquired",
+      "url": "https://www.data.gov.in/resource/taluka-wise-pmrda-administrative-boundaries-gis-dataset-30-june-2025"
+    },
+    {
+      "method": "official portal discovery",
+      "result": "National broad administrative catalogue; no 1 km sector geometry acquired",
+      "url": "https://www.data.gov.in/catalog/admin-boundaries"
+    },
+    {
+      "method": "official GMDA bounded Feature Layer query",
+      "result": "two sector polygons acquired privately; format passed; reuse permission unconfirmed",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/18"
+    },
+    {
+      "method": "official GMDA bounded Feature Layer query",
+      "result": "two road lines acquired privately; format passed; reuse permission unconfirmed",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/7"
+    },
+    {
+      "method": "official GMDA bounded Feature Layer query",
+      "result": "zero park features in window",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/8"
+    },
+    {
+      "method": "official NATMO metadata GET",
+      "result": "metadata page accessible; API reports private=true and no licence ID; map resource not acquired or qualified",
+      "url": "https://geoportal.natmo.gov.in/dataset/gurgaon"
+    },
+    {
+      "method": "official NASA terrain discovery",
+      "result": "SRTMGL1 30 m identified; Earthdata login required for granule download; no DEM acquired",
+      "url": "https://www.earthdata.nasa.gov/centers/lp-daac"
+    },
+    {
+      "method": "official NRSC CartoDEM discovery",
+      "result": "no specific permitted tile/version/download established; no DEM acquired",
+      "url": "https://bhuvan.nrsc.gov.in/wiki/index.php/Frequently_Asked_Questions"
+    }
+  ],
+  "excludedSources": [
+    {
+      "family": "OpenStreetMap",
+      "reason": "community source, excluded by current user official-source-only policy"
+    },
+    {
+      "family": "Google Open Buildings",
+      "reason": "vendor prediction, excluded by current user official-source-only policy"
+    },
+    {
+      "family": "OpenAerialMap",
+      "reason": "third-party imagery catalogue; no official issuing authority and scene permission qualified"
+    }
+  ],
+  "noPaidAccessOrCredentialsUsed": true,
+  "observedAtUtc": "2026-09-25T15:55:27.131093+00:00",
+  "privateRoot": "/Users/vinayak/.codex/task-data/ulpin-data-09",
+  "reusedD5Haryana2831": [
+    {
+      "bytes": 1711314,
+      "label": "BUILDING PLAN-BASEMENT-01",
+      "retainedOriginalHashRechecked": true,
+      "sha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c59456d263NDg2NTE="
+    },
+    {
+      "bytes": 1655334,
+      "label": "BUILDING PLAN-TOWER-3 PLAN-1",
+      "retainedOriginalHashRechecked": true,
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc="
+    },
+    {
+      "bytes": 2448909,
+      "label": "BUILDING PLAN-TOWER-3 SECTION ELEVATION",
+      "retainedOriginalHashRechecked": true,
+      "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA="
+    }
+  ],
+  "reusedLGD": {
+    "authority": "Ministry of Panchayati Raj, Local Government Directory",
+    "licenceFamily": "GODL-India portal notice; resource-specific field unverified",
+    "originalSha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+    "resourceId": "37231365-78ba-44d5-ac22-3deec40b9197",
+    "resourceUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts",
+    "sourceDerivedExtractSha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce"
+  },
+  "schemaVersion": "data-09-acquisition-ledger/1",
+  "scope": "source acquisition and metadata only; no runtime scene pass",
+  "sourceOriginals": {
+    "parks": {
+      "acquiredAt": "2026-09-25T15:47:12.130393+00:00",
+      "authority": "Gurugram Metropolitan Development Authority",
+      "bytes": 410,
+      "contentType": "application/json",
+      "httpStatus": 200,
+      "originalHashRechecked": true,
+      "originalRetainedOutsideGit": true,
+      "privateFile": "gmda-parks.json",
+      "sha256": "86d35a9b3635c9d61e1d25fca2a8bbdd27ff40be51914c701270105bdf2da31a",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/8/query?where=1%3D1&geometry=705564.1052549062%2C3142356.2916905787%2C706564.1052549062%2C3143356.2916905787&geometryType=esriGeometryEnvelope&inSR=32643&spatialRel=esriSpatialRelIntersects&outFields=FID%2CPark_Code%2CArea&returnGeometry=true&outSR=32643&f=json"
+    },
+    "rera": {
+      "acquiredAt": "2026-09-25T15:47:11.646187+00:00",
+      "authority": "Haryana Real Estate Regulatory Authority",
+      "bytes": 108086,
+      "contentType": "text/html",
+      "httpStatus": 200,
+      "originalHashRechecked": true,
+      "originalRetainedOutsideGit": true,
+      "privateFile": "rera-2831.html",
+      "sha256": "e2cbe2b5324067f47055761bf223e7b562c6b30e163c0f3d0b76e9ad7b24b05e",
+      "url": "https://haryanarera.gov.in/view_project/project_preview_open/2831"
+    },
+    "roads": {
+      "acquiredAt": "2026-09-25T15:47:11.941964+00:00",
+      "authority": "Gurugram Metropolitan Development Authority",
+      "bytes": 1773,
+      "contentType": "application/json",
+      "httpStatus": 200,
+      "originalHashRechecked": true,
+      "originalRetainedOutsideGit": true,
+      "privateFile": "gmda-roads.json",
+      "sha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/7/query?where=1%3D1&geometry=705564.1052549062%2C3142356.2916905787%2C706564.1052549062%2C3143356.2916905787&geometryType=esriGeometryEnvelope&inSR=32643&spatialRel=esriSpatialRelIntersects&outFields=FID%2CRoad_ID%2CRd_Name%2CType&returnGeometry=true&outSR=32643&f=json"
+    },
+    "sectors": {
+      "acquiredAt": "2026-09-25T15:47:11.790714+00:00",
+      "authority": "Gurugram Metropolitan Development Authority",
+      "bytes": 1728,
+      "contentType": "application/json",
+      "httpStatus": 200,
+      "originalHashRechecked": true,
+      "originalRetainedOutsideGit": true,
+      "privateFile": "gmda-sectors-59-63a.json",
+      "sha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+      "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/18/query?where=Name+IN+%28%2759%27%2C%2763+A%27%29&outFields=FID%2CName%2CArea&returnGeometry=true&outSR=32643&f=json"
+    }
+  },
+  "task": "DATA-09"
+}
