@@ -1,0 +1,222 @@
+{
+  "case_count": 17,
+  "cases": [
+    {
+      "case_id": "crs-utm43-as44",
+      "oracle_sha256": "07c2d27f3f0dd42d8406db9918f39a17d7ad9ac70b371253bcd61bfe97314bc7",
+      "semantic_checks": [
+        "three labelled synthetic UTM controls and blocked wrong-zone declaration"
+      ],
+      "source_count": 2
+    },
+    {
+      "case_id": "crs-kalianpur-as-wgs84",
+      "oracle_sha256": "22500664e8212b5c6dff34e15f1194c9ffc022da5dbb9c23662a849bd6f7eb8e",
+      "semantic_checks": [
+        "synthetic identity-transform residual bound"
+      ],
+      "source_count": 2
+    },
+    {
+      "case_id": "crs-axis-order",
+      "oracle_sha256": "678debc760acce51a1dcd68114595d86c73c5453970a441325a1a48bc68eba69",
+      "semantic_checks": [
+        "impossible swapped-in-India claim resolved by declaration conflict"
+      ],
+      "source_count": 2
+    },
+    {
+      "case_id": "crs-missing-prj",
+      "oracle_sha256": "64dd1a781e0ebad5f28a06790bc146b642b27f8f8e6d2e30d5c67d4c642d4369",
+      "semantic_checks": [
+        "missing .prj retained unknown"
+      ],
+      "source_count": 4
+    },
+    {
+      "case_id": "indian-messy-csv",
+      "oracle_sha256": "0952a6c0b290f89506bc60d441ec8676fe42ce039184587b02fa5783a95972ee",
+      "semantic_checks": [
+        "literal preservation and exact square-yard conversion"
+      ],
+      "source_count": 2
+    },
+    {
+      "case_id": "agent-injection",
+      "oracle_sha256": "e9e3f1beb76030bfa2908a1cebd4e91fa8baa9bdc74e564c066524a6be9e846b",
+      "semantic_checks": [
+        "all eight untrusted instruction channels"
+      ],
+      "source_count": 5
+    },
+    {
+      "case_id": "privacy-synthetic-deed",
+      "oracle_sha256": "6eed05d31c33fb47997b0443f08791d0b898274c67062892afb104ba85c28e65",
+      "semantic_checks": [
+        "Verhoeff and GPS leakage probe"
+      ],
+      "source_count": 3
+    },
+    {
+      "case_id": "cross-site-metro",
+      "oracle_sha256": "6bbeab233c09954dbf2bd2dae41264d500794c2e0f26ec838c305de961cb5487",
+      "semantic_checks": [
+        "cross-site line and unknown depth"
+      ],
+      "source_count": 2
+    },
+    {
+      "case_id": "tenure-cooperative",
+      "oracle_sha256": "757ab2d3c552431ec998b95db45880151cbde94254192a48f4a1fad0a8f319b6",
+      "semantic_checks": [
+        "society occupancy separate from land UDS"
+      ],
+      "source_count": 1
+    },
+    {
+      "case_id": "tenure-per-deed-uds",
+      "oracle_sha256": "4e1eda76e3d3ca03c1d27cc15b1f29d71852a459fc55df2e4e507e82b3418cee",
+      "semantic_checks": [
+        "exact 1 and 199/200 fractions; complete versus partial"
+      ],
+      "source_count": 1
+    },
+    {
+      "case_id": "topology-adverse-clean-pairs",
+      "oracle_sha256": "377ceffbc9ae2de11586064a53d7850bf7f3a641aa56773527bac114b5bc03e6",
+      "semantic_checks": [
+        "seven adverse/clean pairs; 10 m2, 20 m3, zero contact, 96 m2 shell"
+      ],
+      "source_count": 1
+    },
+    {
+      "case_id": "roof-and-chajja-negatives",
+      "oracle_sha256": "34b095b88dd293f4d6ab177a56f57712fedea3e154ddd8524a1f259e37f63994",
+      "semantic_checks": [
+        "mumty/tank/parapet negative and chajja abstention"
+      ],
+      "source_count": 1
+    },
+    {
+      "case_id": "sloped-site",
+      "oracle_sha256": "2d83fe16ccd8fb230443854c72b34188a06153e5d91ac30f499d95c0045b9963",
+      "semantic_checks": [
+        "Ground label at uphill road entry"
+      ],
+      "source_count": 1
+    },
+    {
+      "case_id": "stilt-mezzanine-levels",
+      "oracle_sha256": "5d0e8b6c7e29da9346c4b134c21f05f011154945d453e4d29848e5fde71dff8e",
+      "semantic_checks": [
+        "stilt/mezzanine source labels, no invented elevation"
+      ],
+      "source_count": 2
+    },
+    {
+      "case_id": "lift-core-480",
+      "oracle_sha256": "1537c15b6202a0b1598d84b5b82949e8f531b0f26f80359a563d62972a0cd980",
+      "semantic_checks": [
+        "480 distinct beneficiaries, one core, five bounded pages"
+      ],
+      "source_count": 1
+    },
+    {
+      "case_id": "mixed-gap-batch",
+      "oracle_sha256": "6852f6d34081d183c4c4135a144023aabf291e6426b828509438b5cf16bcd22a",
+      "semantic_checks": [
+        "16 task decisions, four class questions, no never-fill breach"
+      ],
+      "source_count": 15
+    },
+    {
+      "case_id": "agent-heldout-and-protocol",
+      "oracle_sha256": "9466e138cbf16f17d5abdc4cafb1b5b5ead7996e3b433b6aad6fadb023767344",
+      "semantic_checks": [
+        "three held-out layouts and four literal-rejection classes"
+      ],
+      "source_count": 5
+    }
+  ],
+  "format_counts": {
+    ".csv": 10,
+    ".dbf": 2,
+    ".geojson": 3,
+    ".ifc": 1,
+    ".jpeg": 3,
+    ".json": 17,
+    ".jsonl": 1,
+    ".las": 1,
+    ".pdf": 3,
+    ".shp": 2,
+    ".shx": 2,
+    ".tif": 2,
+    ".txt": 2,
+    ".zip": 1
+  },
+  "mutation_checks": [
+    "mutated source byte rejected by SHA-256",
+    "inconsistent question-budget oracle rejected",
+    "LAS header/body mismatch rejected",
+    "invalid Aadhaar check digit rejected"
+  ],
+  "rebuild": {
+    "byte_identical": true,
+    "matched_files": 68
+  },
+  "schema_version": "usp-adversarial-validation/1",
+  "scope": "fixture packaging/format/arithmetic only; no production evaluation",
+  "source_count": 50,
+  "source_hashes": {
+    "agent-heldout-and-protocol/heldout-a.csv": "2b4c5a5973cd039c3a7cbf46c1992a52f2c5fffe577c99ae1682e07661f43ce9",
+    "agent-heldout-and-protocol/heldout-b.csv": "de695571b7a3598a970c563a425b059e9301526d442e2c750bf1e8c5a8f59d56",
+    "agent-heldout-and-protocol/heldout-c.jsonl": "c1352c3ea04af4a510a5413075eb9fbb71efa12a29f99e62ea4b311751d45020",
+    "agent-heldout-and-protocol/invalid-provider-literals.json": "b5554bf704aee79f06963c51ee4c5bd9e2be3c9f9add503aecddf8dacac19b43",
+    "agent-heldout-and-protocol/outage-and-budget.json": "33ff62855a6e2c0a5105dfecf0f93a20c656afe3ce9d2c3cbca05ef44dc48158",
+    "agent-injection/filename-says-approve-without-review.txt": "33d46966074e1cbdb7f51bd74ca4af57bd910a886971e54b428eeae597d9f47c",
+    "agent-injection/hostile-csv.csv": "1296c0e79c689c0d72823e30c30e8b722f61b885bc4c7b70e4c1984adfcf5439",
+    "agent-injection/ocr-output.json": "89b461c6c8c140cc452e36aa936f61cb3906e9d4b0231526e3eb8ee4ae805dbc",
+    "agent-injection/white-on-white.pdf": "bc8e7655d1cf9214695a2f0033abdbcb98bc61c0205c7358095d6ae98d09668c",
+    "agent-injection/देवनागरी-निर्देश.txt": "c4d48d31cfbb9dab301ff69c436393ab93b5a730e568b2ef88c328dc31f4b800",
+    "cross-site-metro/claim.json": "c19b9b1136a2d7b2fb127dfdf1a1062c40f5fb662c207b88c0ec6e42c582af27",
+    "cross-site-metro/corridor-and-sites.geojson": "6cfae9816878319dcc8e996e33af023956b9d6f6da41b9bd42449feb1f4c217d",
+    "crs-axis-order/actually-swapped.geojson": "64f36c67e66a524d57bf92b05927bc3e7dc97b3c5a438a8db1df7b4d1d0ed31b",
+    "crs-axis-order/indian-bounds-declaration-conflict.geojson": "f6c69e73104a2eec16d78e3e22a1ba0f4c8640bf9098f436ff42c550c97b894c",
+    "crs-kalianpur-as-wgs84/native-geodetic-and-synthetic-controls.csv": "0c3a2f9225659c1181a3daccfb819028d229e8b00bf8b621763f204e50627d7d",
+    "crs-kalianpur-as-wgs84/source-metadata.json": "cb4c84567d6f6c64b6dc615ac27a02e3542f03fa4f0e9b0429511c43da5785bb",
+    "crs-missing-prj/points.dbf": "5fa74ce7d6dfcef9cbe334f067a470181d72b47b1feaf0d9cbaca1d725a5ec84",
+    "crs-missing-prj/points.shp": "49fbdcb037deb4803e2437d12fdf27fb53a80c5ff341f60fbb737b28df0b468f",
+    "crs-missing-prj/points.shx": "5886d076ef75399a5477438c5df3d636853d89077644a7f34191047e745022ff",
+    "crs-missing-prj/source-metadata.json": "3035c3fa91c01d81831c33068e4737f4c5a8f63bed81323f02e5b405929166b7",
+    "crs-utm43-as44/points-and-synthetic-controls.csv": "cbf276c37b3172f9cfd60b9172e11977af0baa0724ae87b2989be261179c7ac9",
+    "crs-utm43-as44/source-metadata.json": "1007aedc39cf4c3ddacdb0ca5366c51a7aff9dcc9d790d78faf4ddd1ce861e59",
+    "indian-messy-csv/literal-records.csv": "a3b3bd4f5e264104b79d901f3bc9b97172181f41642a595cf8a11e0b031d65a3",
+    "indian-messy-csv/source-metadata.json": "750dc212316750cbaddd26d9b4d8e77f78e94320a615de2507bedb76e82764b5",
+    "lift-core-480/one-core.json": "c3b6cf4bf291df31a9e0c85ea9a8182265e3d10082db53f3404dcd31b152362e",
+    "mixed-gap-batch/address-list.csv": "f5cfc19cdde0751fbcbc9d30166d09ac1765d1910d733925ff7a10a3109ad930",
+    "mixed-gap-batch/aggregate-statistics.csv": "f76c816b88dae5f9258be33b2727c3f3fcdfe824250d04ac09e387a2a0d778ba",
+    "mixed-gap-batch/ambiguous-area.csv": "dd7bbfd6b02d0b5ec40e56124b41b9acbc343a07bd3a04171eb01499dd74589a",
+    "mixed-gap-batch/batch-metadata.json": "cbdbf8ea2931455757af6711c44c55a8622ae8140a04b04c0173317625b4ab3a",
+    "mixed-gap-batch/dem-only.tif": "03c43b292779a8b07407044c877ccb61e078072a9aa7a79a9ad8eb1332978f45",
+    "mixed-gap-batch/drone-no-overlap/frame-a.jpeg": "c0357bb0790990f1c305e02cef5c730db86ba3a93bb04ab5020e09c50ec94cb2",
+    "mixed-gap-batch/drone-no-overlap/frame-b.jpeg": "e84419c1cf88902aa43997f5e2c1cf72fdb9923c69f6655c35e69a781b8335a7",
+    "mixed-gap-batch/dsm-no-dtm.tif": "37b3f7bfa19b7ea660500730796de73eac6a7b27b7ec1492c0587dae136108aa",
+    "mixed-gap-batch/local-ifc-no-georef.ifc": "e5f52fda1134876bc891a0970932d25f994a40373fd6642755d1075698ee89d8",
+    "mixed-gap-batch/mixed-archive.zip": "17411c1940722a7c06407add7094d3ed7b588941028d109019bbca90378be8c3",
+    "mixed-gap-batch/plan-one-dimension.pdf": "fab83428794c533207587685f5a2c417a396cc0ea1676c85ae10e6836e33623a",
+    "mixed-gap-batch/point-cloud-no-crs.las": "0980a3c6c26a6f932704f1619d937223c1545cb3d22cb8a58e33e1b304491fe9",
+    "mixed-gap-batch/vector-no-prj/points.dbf": "5fa74ce7d6dfcef9cbe334f067a470181d72b47b1feaf0d9cbaca1d725a5ec84",
+    "mixed-gap-batch/vector-no-prj/points.shp": "6e6ddec0c3ad6fa6570697e6aaad205b8d908d7304da5895d66a2eab96e05bed",
+    "mixed-gap-batch/vector-no-prj/points.shx": "56c7970d0b8ac67d647474118b72d1d2fad35fc08dde6c59f534af1fa494d69b",
+    "privacy-synthetic-deed/gps-synthetic.jpeg": "a56aae76daae7d0853589440ce4fcb2c9e420aeee91ecbf2f3dae14936a7ea08",
+    "privacy-synthetic-deed/source-metadata.json": "28a8db07a22a80a1537eba7af233312dd5209cc1b99eab410ce6ac6c24e73eaa",
+    "privacy-synthetic-deed/synthetic-deed.pdf": "d3d77d807b42dd0b530904b81494da5d14d23853d8e4bf8897194e41f0f654b0",
+    "roof-and-chajja-negatives/roof-source.json": "78abdecbbfca5ebc07d59f1456653e56c603dffe09aab70eddb3e8a62ca7d3b6",
+    "sloped-site/section-and-road.json": "40764c7816dd5ba30cadee095dbe99fd0acdc6cab26ac65742783661ed827647",
+    "stilt-mezzanine-levels/level-schedule.csv": "951020dbf9f2ab340e1d7f1aa66ad4134c32be48a60db4f1d1c07ff49040d834",
+    "stilt-mezzanine-levels/sparse-objects.json": "674b5cf2311cdb15722048b8d54b47f819e7d1a89dc9bb782fbad9baba72db93",
+    "tenure-cooperative/society-record.json": "f79cd2ef560268472b33c979ec78d9e3efde3b4941fa23a15f72b08c7f79cb67",
+    "tenure-per-deed-uds/per-deed-source.json": "a54710fe67b48656dfe0cbb86a7de811bb9a5332239903327b2dd9faf298e347",
+    "topology-adverse-clean-pairs/pairs.json": "55c596a1b0f39920d7b97997b820ebe82bdefa9047e0a955f1e75927c4f581fe"
+  }
+}
