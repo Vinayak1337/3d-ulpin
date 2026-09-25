@@ -22,8 +22,9 @@ const endpoint = (value, protocol, port, path) => {
 };
 
 export function assertUspIsolation(env) {
-  if (!['local-colima', 'local-docker'].includes(env.ULPIN_ISOLATION_PROFILE)) return assertHostedIsolation(env);
-  const colima = env.ULPIN_ISOLATION_PROFILE === 'local-colima';
+  if (!['local-colima', 'local-docker', 'local-preview'].includes(env.ULPIN_ISOLATION_PROFILE)) return assertHostedIsolation(env);
+  const preview = env.ULPIN_ISOLATION_PROFILE === 'local-preview';
+  const colima = env.ULPIN_ISOLATION_PROFILE === 'local-colima' || (preview && process.platform === 'darwin');
   assert.equal(process.platform, colima ? 'darwin' : 'linux');
   assert.equal(env.DOCKER_CONTEXT, colima ? 'colima-ulpin' : 'default');
   assert.equal(env.REPO_DATA, 'false');
@@ -43,7 +44,7 @@ export function assertUspIsolation(env) {
   assert.equal(db.password, env.POSTGRES_PASSWORD);
   for (const [key, protocol, port, path] of [
     ['S3_ENDPOINT', 'http:', 29000, '/'], ['GEO_URL', 'http:', 28000, '/'],
-    ['REDIS_URL', 'redis:', 26379, '/0'], ['ULPIN_TEST_URL', 'http:', colima ? 3000 : 23000, '/'],
+    ['REDIS_URL', 'redis:', 26379, '/0'], ['ULPIN_TEST_URL', 'http:', preview ? 3108 : colima ? 3000 : 23000, '/'],
   ]) {
     const url = endpoint(env[key], protocol, port, path);
     assert.equal(url.username + url.password, '');
@@ -60,8 +61,9 @@ export function uspProcessEnvironment(env, repositoryRoot) {
 }
 
 async function run() {
-  assert.equal(process.argv.length, 3, 'Usage: local-isolation.mjs --run');
-  assert.equal(process.argv[2], '--run');
+  assert.equal(process.argv.length, 3, 'Usage: local-isolation.mjs --run|--preview-run');
+  assert(['--run', '--preview-run'].includes(process.argv[2]));
+  const preview = process.argv[2] === '--preview-run';
   await assert.rejects(lstat(resolve(root, '.env')), { code: 'ENOENT' });
   const temporary = await mkdtemp(join(tmpdir(), 'ulpin-usptest-'));
   const nonce = randomBytes(8).toString('hex');
@@ -71,7 +73,7 @@ async function run() {
   const database = `ulpin_usptest_${nonce}`;
   const password = randomBytes(32).toString('hex');
   const values = {
-    ULPIN_ISOLATION_PROFILE: colima ? 'local-colima' : 'local-docker', ULPIN_LOCAL_NONCE: nonce,
+    ULPIN_ISOLATION_PROFILE: preview ? 'local-preview' : colima ? 'local-colima' : 'local-docker', ULPIN_LOCAL_NONCE: nonce,
     DOCKER_CONTEXT: colima ? 'colima-ulpin' : 'default', REPO_DATA: 'false', ULPIN_BASELINE_PROJECT: project,
     POSTGRES_DB: database, POSTGRES_USER: 'ulpin_usptest', POSTGRES_PASSWORD: password,
     POSTGRES_PORT: '25432', DATABASE_URL: `postgresql://ulpin_usptest:${password}@127.0.0.1:25432/${database}`,
@@ -80,7 +82,7 @@ async function run() {
     S3_PORT: '29000', S3_CONSOLE_PORT: '29001', REDIS_URL: 'redis://127.0.0.1:26379/0',
     REDIS_PORT: '26379', GEO_URL: 'http://127.0.0.1:28000', GEO_PORT: '28000',
     GEO_SERVICE_TOKEN: randomBytes(32).toString('hex'),
-    ULPIN_TEST_URL: `http://127.0.0.1:${colima ? 3000 : 23000}`, NEXT_TELEMETRY_DISABLED: '1',
+    ULPIN_TEST_URL: `http://127.0.0.1:${preview ? 3108 : colima ? 3000 : 23000}`, NEXT_TELEMETRY_DISABLED: '1',
   };
   const env = { ...process.env, ...values };
   for (const key of ['DOCKER_HOST', 'DOCKER_CERT_PATH', 'NOUS_API_KEY', 'OPENROUTER_API_KEY']) delete env[key];
@@ -90,7 +92,7 @@ async function run() {
     .map(([key, value]) => `${key}=${value}`).join('\n') + '\n', { flag: 'wx', mode: 0o600 });
   env.ULPIN_LOCAL_ENV_FILE = await realpath(file);
   try {
-    const child = spawn(process.execPath, ['scripts/usp/isolated-live.mjs'], { cwd: root, env, stdio: 'inherit' });
+    const child = spawn(process.execPath, [preview ? 'scripts/usp/ui/UI-08-isolated-preview.mjs' : 'scripts/usp/isolated-live.mjs'], { cwd: root, env, stdio: 'inherit' });
     const code = await new Promise((done, reject) => { child.once('error', reject); child.once('close', done); });
     process.exitCode = code ?? 1;
   } finally {
