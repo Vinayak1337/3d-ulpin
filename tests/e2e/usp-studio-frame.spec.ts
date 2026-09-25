@@ -213,6 +213,7 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
     await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "Source dossier temporarily unavailable" }) });
   });
   await page.reload({ waitUntil: "domcontentloaded" });
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Back to map" }).click();
   await page.getByRole("button", { name: "Sources", exact: true }).click();
   const sourcesPanel = page.getByRole("complementary", { name: "Sources panel" });
