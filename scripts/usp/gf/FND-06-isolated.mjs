@@ -144,7 +144,7 @@ try {
   for (const table of manifest.tables) assert.deepEqual(await tableDigest(table), migratedRows.get(table.name), `migration replay ${table.name}`);
   const target = (await pool.query("SELECT a.id AS area_id, f.id AS building_id FROM map_areas a JOIN physical_features f ON f.area_id=a.id WHERE f.revision>0 AND f.body->>'kind'='building' ORDER BY CASE WHEN f.body->>'worldStatus'='observed' THEN 0 ELSE 1 END,a.id,f.id LIMIT 1")).rows[0] ?? null;
   const log = await open(resolve(output, 'next-dev.log'), 'w', 0o600);
-  server = spawn(process.execPath, ['--require', resolve(root, 'scripts/usp/gf/FND-06-no-egress.cjs'), 'apps/web/node_modules/next/dist/bin/next', 'dev', 'apps/web',
+  server = spawn(process.execPath, ['apps/web/node_modules/next/dist/bin/next', 'dev', 'apps/web',
     '--webpack', '--hostname', '127.0.0.1', '--port', '3108'], { cwd: root, env: {...env, NODE_OPTIONS: `--require=${JSON.stringify(resolve(root, 'scripts/usp/gf/FND-06-no-egress.cjs'))}`, ULPIN_EGRESS_RECEIPT: resolve(output,'server-egress.jsonl')}, stdio: ['ignore', log.fd, log.fd] });
   await waitServer();
   await command('privacy-http-browser', process.execPath, ['scripts/usp/gf/FND-06-browser.mjs'], {

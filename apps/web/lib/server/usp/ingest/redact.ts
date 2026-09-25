@@ -1,4 +1,5 @@
 /** Derivatives only. Never rewrite canonical source bytes, hashes or measurements. */
+import { AppError } from '../../errors';
 export const REDACTION_VERSION = 'indian-personal-fields/1';
 const d = [
   [0,1,2,3,4,5,6,7,8,9], [1,2,3,4,0,6,7,8,9,5],
@@ -86,5 +87,5 @@ export function redactDerivative<T>(value: T): T {
 
 /** No visual PII qualification exists yet. EXIF removal and a checkbox cannot provide it. */
 export function assertNoImageEgress(images: readonly unknown[]): void {
-  if (images.length) throw new Error('AI_IMAGE_PRIVACY: Image egress is unavailable until visual personal-field redaction is qualified. Inspect the retained original locally.');
+  if (images.length) throw new AppError(403, 'AI_IMAGE_PRIVACY', 'AI_IMAGE_PRIVACY: Image egress is unavailable until visual personal-field redaction is qualified. Inspect the retained original locally.');
 }
