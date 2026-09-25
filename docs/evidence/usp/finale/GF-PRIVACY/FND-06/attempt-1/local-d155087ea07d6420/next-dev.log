@@ -1,0 +1,28 @@
+▲ Next.js 16.3.5 (webpack)
+- Local:         http://127.0.0.1:3108
+- Network:       http://127.0.0.1:3108
+✓ Ready in 246ms
+✓ Running next.config.ts took 17ms
+
+ GET /api/v1/health 200 in 1250ms (next.js: 877ms, proxy.ts: 80ms, application-code: 294ms)
+ GET /api/v1/workspace-capabilities 200 in 6ms (next.js: 3ms, proxy.ts: 1.0ms, application-code: 1.6ms)
+ GET /api/v1/workspace-capabilities 200 in 5ms (next.js: 1.6ms, proxy.ts: 1.1ms, application-code: 1.9ms)
+ GET /api/v1/workspace-capabilities 200 in 60ms (next.js: 34ms, proxy.ts: 24ms, application-code: 2ms)
+ GET /api/v1/ai/status 200 in 7ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 3ms)
+○ Compiling /studio/[[...view]] ...
+ GET /studio/workspaces 200 in 3.9s (next.js: 3.7s, proxy.ts: 1.2ms, application-code: 140ms)
+ GET /api/v1/areas 200 in 96ms (next.js: 9ms, proxy.ts: 3ms, application-code: 84ms)
+ GET /api/v1/workspace-directory 200 in 121ms (next.js: 28ms, proxy.ts: 3ms, application-code: 90ms)
+[browser] Uncaught TypeError: b.updatedAt.localeCompare is not a function
+    at eval (features/officer/shared/directory.ts:26:31)
+    at Array.sort (<anonymous>)
+    at filterWorkspaces (features/officer/shared/directory.ts:26:5)
+    at WorkspaceStart (features/officer/workspace/WorkspaceStart.tsx:39:34)
+    at StudioPage (app/studio/[[...view]]/page.tsx:32:49)
+  24 |     (status === "all" || (status === "linked" ? !!item.buildingId : !item.buildingId)) &&
+  25 |     `${item.name} ${item.propertyName ?? ""} ${item.id} ${item.buildingId ?? ""}`.toLocaleLowerCase().includes(needle),
+> 26 |   ).sort((a,b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id));
+     |                               ^
+  27 | }
+  28 |
+[?25h

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "fnd06-http-browser/1",
+  "checks": [
+    {
+      "name": "forged-host-before-content",
+      "path": "/studio/workspaces",
+      "denied": 5
+    },
+    {
+      "name": "forged-host-before-content",
+      "path": "/api/v1/workspace-capabilities",
+      "denied": 5
+    },
+    {
+      "name": "forged-host-before-content",
+      "path": "/api/v1/health",
+      "denied": 5
+    },
+    {
+      "name": "forged-host-before-content",
+      "path": "/cesium/Widgets/widgets.css",
+      "denied": 5
+    },
+    {
+      "name": "forged-host-before-content",
+      "path": "/_next/image?url=%2Ffavicon.ico&w=64&q=75",
+      "denied": 5
+    },
+    {
+      "name": "canonical-loopback-authorities",
+      "accepted": 3
+    },
+    {
+      "name": "no-key-provider-status-blocked"
+    }
+  ],
+  "browserExternalDenied": 0
+}
