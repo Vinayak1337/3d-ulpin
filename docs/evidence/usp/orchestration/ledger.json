@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:20:53.144938+00:00",
+  "updatedAt": "2026-09-25T21:25:30.579865+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -122,7 +122,7 @@
     "fixedModelLanes": true,
     "persistentPreview": {
       "url": "http://127.0.0.1:3187/studio/work",
-      "status": "http_serving_visual_check_dispatched",
+      "status": "serving_visual_confirmed_manual_check_running",
       "ownerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "temporaryTestPort": 3108,
       "policy": "dedicated pinned worktree, loopback only, owned isolated snapshot, no provider calls, stays running after handoff",
@@ -275,10 +275,10 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "high"
+        "effort": "medium"
       },
       "observedAgent": null,
-      "status": "assigned_FND-03_attempt_2"
+      "status": "assigned_FND-06_attempt_3"
     },
     {
       "threadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
@@ -296,7 +296,7 @@
         "model": "gpt-6-astra",
         "effort": "high"
       },
-      "status": "assigned_REVIEW-FND-06_attempt_2"
+      "status": "assigned_REVIEW-FND-03_attempt_2"
     },
     {
       "threadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
@@ -2049,7 +2049,7 @@
       "assignmentId": "FND-03",
       "attempt": 2,
       "callbackId": "ulpin-FND-03-attempt-2",
-      "status": "resuming_after_preview_ready",
+      "status": "delivered_followup_review_pending",
       "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "workerHostId": "local",
       "baseCommit": "e356919be7a7994eaf9ae047697ebd28485fcd69",
@@ -2068,7 +2068,9 @@
         "compare sidecar independently of CityObject support",
         "compare and validate parent/children hierarchy"
       ],
-      "sourceScopeSearch": "DATA-EXCHANGE-SCOPE-01 found no eligible captured scope in inventories; real route roundtrip unqualified. No further acquisition/search assigned."
+      "sourceScopeSearch": "DATA-EXCHANGE-SCOPE-01 found no eligible captured scope in inventories; real route roundtrip unqualified. No further acquisition/search assigned.",
+      "codeCommit": "9cb926bc54b87e5fa9da58983bfcd8fed05a87b9",
+      "resultCommit": "36d2fe2cba4ec21c228ebbdca2475338488d5bb1"
     },
     {
       "assignmentId": "DATA-EXCHANGE-SCOPE-01",
@@ -2105,7 +2107,7 @@
       "assignmentId": "PREVIEW-01",
       "attempt": 1,
       "callbackId": "preview-ready",
-      "status": "serving_http_manual_visual_pending",
+      "status": "serving_visual_confirmed_manual_check_running",
       "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "workerHostId": "local",
       "baseCommit": "55d6c8642f4803e344f863e8e1952ea01c481975",
@@ -2131,7 +2133,7 @@
       "assignmentId": "REVIEW-FND-06",
       "attempt": 2,
       "callbackId": "review-FND-06-attempt-2",
-      "status": "dispatched",
+      "status": "completed_scalar_json_correction_required",
       "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
       "workerHostId": "local",
       "baseCommit": "55d6c8642f4803e344f863e8e1952ea01c481975",
@@ -2144,7 +2146,8 @@
         "product": "Codex",
         "model": "gpt-6-astra",
         "effort": "high"
-      }
+      },
+      "resultCommit": "b09e1b4c870480cb9b21ced568159a68552a67f4"
     },
     {
       "assignmentId": "MANUAL-FND-06",
@@ -2169,6 +2172,45 @@
         "imports/data mutation/provider calls"
       ],
       "reportPath": "docs/evidence/usp/orchestration/manual/FND-06-attempt-2-luna.md"
+    },
+    {
+      "assignmentId": "FND-06",
+      "attempt": 3,
+      "callbackId": "ulpin-FND-06-attempt-3",
+      "status": "dispatched",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "baseCommit": "b09e1b4c870480cb9b21ced568159a68552a67f4",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "medium"
+      },
+      "ownership": [
+        "scalar JSON text redaction correction",
+        "directly affected existing assertion and report"
+      ],
+      "exclusions": [
+        "persistent preview changes",
+        "new synthetic data",
+        "expanded suite"
+      ]
+    },
+    {
+      "assignmentId": "REVIEW-FND-03",
+      "attempt": 2,
+      "callbackId": "review-FND-03-attempt-2",
+      "status": "dispatched",
+      "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "codeCommit": "9cb926bc54b87e5fa9da58983bfcd8fed05a87b9",
+      "baseCommit": "36d2fe2cba4ec21c228ebbdca2475338488d5bb1",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "ownership": [
+        "focused prior findings review and report only"
+      ]
     }
   ],
   "capabilityChecklist": [
@@ -2916,9 +2958,9 @@
     }
   ],
   "nextSteps": [
-    "Luna verifies and manually checks existing3187 preview; keep running.",
-    "Astra completes focused privacy review while Sol fixes exchange.",
-    "Subsequent manual handoffs reuse3187 and disclose exact served revision."
+    "Keep persistent3187 preview running; Luna completes bounded read-only check.",
+    "Sol corrects remaining scalar JSON masking gap; Astra reviews exchange corrections independently.",
+    "Delegate accepted integration and coordinate preview refresh after manual check; subsequent handoffs name existing URL and served revision."
   ],
   "processedCallbacks": [
     {
@@ -3167,6 +3209,20 @@
       "sourceThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "codeCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
       "result": "http_serving_kept_running"
+    },
+    {
+      "callbackId": "preview-visual-ready",
+      "result": "Batches page visually confirmed on existing3187 at9c6c578; saved work loading; legacy Lake View fictional copy recorded for UI-08"
+    },
+    {
+      "callbackId": "review-FND-06-attempt-2",
+      "resultCommit": "b09e1b4c870480cb9b21ced568159a68552a67f4",
+      "result": "scalar exponential JSON text gap remains; correction delegated"
+    },
+    {
+      "callbackId": "ulpin-FND-03-attempt-2",
+      "resultCommit": "36d2fe2cba4ec21c228ebbdca2475338488d5bb1",
+      "result": "follow-up review dispatched; route roundtrip remains unqualified"
     }
   ],
   "observations": [
