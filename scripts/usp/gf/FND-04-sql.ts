@@ -10,6 +10,9 @@ import { qualifiedGeometryPins, requireQualifiedGeometry, withUspAnalyticalReade
 import { captureRegistrySnapshot, resolveRegistryTarget } from '../../../apps/web/lib/server/usp/snapshots';
 import { readDisplayDerivativesForCompiler, displayInputsCurrentTx } from '../../../apps/web/lib/server/usp/display-compiler';
 import { assertUspIsolation } from '../local-isolation.mjs';
+import { qualifyFindingParticipants } from '../../../apps/web/lib/server/usp/finding-qualification';
+import { getInvestigation, exportRegister } from '../../../apps/web/lib/server/officer-investigations';
+import { exportBlock } from '../../../apps/web/lib/server/block-export';
 
 const scope = assertUspIsolation(process.env);
 const mode = process.env.FND04_MODE;
@@ -102,6 +105,32 @@ try {
       assert.equal(await displayInputsCurrentTx(client,record.site_id,[{...pin,revision:pin.revision+1}]),false);
     });
     checks.push({name:'real-retained-snapshot-source-inspection-with-no-analytic-upgrade',declarations:'not_assessed',displayDerivativeRows:0});
+    const investigation=(await pool().query(`SELECT i.body FROM officer_investigations i
+      JOIN physical_features f ON f.id=i.building_id WHERE jsonb_array_length(i.body->'findings')>0
+      AND i.body->'registerSnapshot' IS NOT NULL ORDER BY i.id LIMIT 1`)).rows[0]?.body;
+    assert.ok(investigation,'Retained regression must supply an unchanged saved investigation with findings');
+    const participantQualification=await qualifyFindingParticipants('export',investigation.findings);
+    assert.equal(participantQualification.state,'not_assessed');
+    const projection=await getInvestigation(investigation.id) as Awaited<ReturnType<typeof getInvestigation>> & {
+      analysisState:string;historicalFindings:{currentAnalyticalEligibility:boolean;findings:unknown[]}};
+    assert.deepEqual(projection.findings,[]);assert.equal(projection.analysisState,'not_assessed');
+    assert.deepEqual(projection.historicalFindings.findings,investigation.findings);
+    assert.equal(projection.historicalFindings.currentAnalyticalEligibility,false);
+    const exported=await (await exportRegister(investigation.buildingId,'json',investigation.id)).json();
+    assert.deepEqual(exported.findings,[]);assert.deepEqual(exported.investigation.findings,[]);
+    assert.equal(exported.findingQualification.state,'not_assessed');
+    assert.deepEqual(exported.historicalFindings.findings,investigation.findings);
+    assert.equal(exported.geometryQualification.state,'not_assessed');
+    await assert.rejects(exportRegister(investigation.buildingId,'pdf',investigation.id),
+      (error:any)=>error.status===422);
+    checks.push({name:'retained-saved-investigation-projection-and-export-abstain',investigationId:investigation.id,
+      savedFindings:investigation.findings.length,missingParticipantChecks:participantQualification.missing.length,
+      historyPreserved:true,printableExport:'rejected_422'});
+    const block=await (await exportBlock(investigation.areaId,'json')).json();
+    assert.equal(block.geometryQualification.state,'not_assessed');
+    assert.equal(block.check,undefined);
+    assert.equal(block.historicalCheck?.currentAnalyticalEligibility,false);
+    checks.push({name:'retained-block-withholds-current-check-and-preserves-explicit-history',areaId:investigation.areaId});
     assert.deepEqual(await preservedTables(),before);
   }
   await writeFile(out,JSON.stringify({schemaVersion:'usp-fnd04-sql/1',status:'passed',mode,checks,

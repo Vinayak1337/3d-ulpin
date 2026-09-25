@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { UspGeometryMetadataSchema, DataSufficiencyVerdictSchema, UspDeclarationChangeSchema,
-  UspPrepareProposalSchema, UspSnapshotManifestSchema } from '../packages/contracts/src/usp';
+  UspPrepareProposalSchema, UspSnapshotManifestSchema, UspGeometryProjectionSchema } from '../packages/contracts/src/usp';
 import { geometryProjection, sameCanonicalGeometryPayload } from '../apps/web/lib/server/usp/geometry';
 import { uspFixtures as existing } from './fixtures/usp-common';
 
@@ -32,6 +32,25 @@ test('missing legacy metadata produces explicit insufficiency, never inferred el
   assert.equal(projection.sufficiency.outcome, 'insufficient_for_spatial_reconstruction');
   assert.ok(projection.sufficiency.missing.includes('geometry_qualification'));
   assert.equal(geometryProjection(existing.pin, metadata, 1, true).sufficiency.outcome, 'insufficient_for_spatial_reconstruction');
+});
+test('revoked or superseded qualification projects consistent current ineligibility', () => {
+  // UUID reuses an existing schema example; this is no accepted operational receipt.
+  const qualified = UspGeometryMetadataSchema.parse({ ...metadata, analyticEligible: true,
+    qualification: { state: 'qualified', receiptId: '00000000-0000-4000-8000-000000000001',
+      targetBodySha256: existing.scope.snapshotDigest,
+      sources: [{source:existing.evidence.sourceRevision,sha256:existing.scope.snapshotDigest}] } });
+  const current = geometryProjection(existing.pin, qualified, 1, true);
+  assert.equal(current.metadata?.analyticEligible, true);
+  // SQL eligibility is false for either a superseded source or a revoked/superseded annotation.
+  const unavailable = geometryProjection(existing.pin, qualified, 1, false);
+  assert.equal(unavailable.metadata?.analyticEligible, false);
+  assert.equal(unavailable.metadata?.qualification.state, 'unqualified');
+  assert.equal(unavailable.sufficiency.outcome, 'insufficient_for_spatial_reconstruction');
+  assert.equal(qualified.qualification.state, 'qualified', 'retained annotation is not mutated');
+  assert.equal(geometryProjection(existing.pin, qualified, null, true).metadata?.analyticEligible, false);
+  assert.equal(UspGeometryProjectionSchema.safeParse({...unavailable,metadata:qualified}).success,false);
+  assert.equal(UspGeometryProjectionSchema.safeParse({...current,metadata:unavailable.metadata}).success,false);
+  assert.equal(UspGeometryProjectionSchema.safeParse({...current,qualificationRevision:null}).success,false);
 });
 test('sufficiency rejects unknown gaps, fake complete results and duplicate requirements', () => {
   const verdict = {task:'spatial_analysis',requirements:['reference','qualification'],outcome:'partial',missing:['qualification']};

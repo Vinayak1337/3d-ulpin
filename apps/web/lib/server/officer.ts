@@ -1,4 +1,5 @@
 import { geometryPin, qualifiedGeometryRecordPins, isQualifiedPin } from './usp/geometry';
+import { projectFindingHistory, qualifyFindingParticipants, type FindingQualification } from './usp/finding-qualification';
 import { randomUUID } from "node:crypto";
 import { legacyUrl } from "../legacy-url";
 import type { PoolClient } from "pg";
@@ -296,7 +297,10 @@ export async function dossierSources(
     evidence: evidence.filter((e) => e.sourceRevisionId === r.id),
   }));
 }
-export async function buildingDossier(id: string): Promise<BuildingDossier> {
+export async function buildingDossier(id: string): Promise<BuildingDossier & {
+  findingQualification: FindingQualification;
+  historicalFindings?: { purpose: string; currentAnalyticalEligibility: boolean; findings: AreaFinding[] };
+}> {
   const building = await physicalFeature(id),
     area = await getArea(building.areaId);
   const associations = (
@@ -505,21 +509,17 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
       [id, building.revision],
     )
   ).rows.map((r) => r.body);
-  const findingParticipantIds = [...new Set((staleCheck ? [] : (latest?.findings ?? []))
-    .filter((finding: AreaFinding)=>finding.featureIds.includes(id))
-    .flatMap((finding: AreaFinding)=>finding.featureIds))];
-  const findingParticipants = findingParticipantIds.length ? (await query(
-    'SELECT body FROM physical_features WHERE id=ANY($1::uuid[]) AND revision>0',[findingParticipantIds])).rows.map(row=>row.body as PhysicalFeature) : [];
+  const relevantFindings: AreaFinding[] = (latest?.findings ?? []).filter((finding: AreaFinding) => finding.featureIds.includes(id));
+  const findingQualification = await qualifyFindingParticipants('READY', relevantFindings);
   const geometryPins = [geometryPin('area_feature', building),
     ...parcels.map(parcel => geometryPin('area_feature', parcel.feature)),
-    ...findingParticipants.map(feature=>geometryPin('area_feature',feature)),
     ...records.filter(record => record.geometry).map(record => geometryPin('registry_record', record))];
   const qualified = new Set([
-    ...await qualifiedGeometryRecordPins('READY','area_feature',[building,...parcels.map(parcel=>parcel.feature),...findingParticipants]),
+    ...await qualifiedGeometryRecordPins('READY','area_feature',[building,...parcels.map(parcel=>parcel.feature)]),
     ...await qualifiedGeometryRecordPins('READY','registry_record',records.filter(record=>record.geometry)),
   ]);
   const geometryAvailable = geometryPins.every(pin => isQualifiedPin(qualified, pin))
-    && findingParticipantIds.every(participant=>findingParticipants.some(feature=>feature.id===participant));
+    && findingQualification.state === 'qualified';
   return {
     building,
     canonicalBuildingId: id,
@@ -535,17 +535,19 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
     preparations,
     packages,
     check: latest
-      ? { id: latest.id, areaRevision: latest.areaRevision, stale: staleCheck }
+      ? { id: latest.id, areaRevision: latest.areaRevision, stale: staleCheck || findingQualification.state !== 'qualified' }
       : undefined,
     issues: (staleCheck || !geometryAvailable ? [] : (latest?.findings ?? [])).filter(
       (f: AreaFinding) => f.featureIds.includes(id),
     ),
-    investigations: (
+    ...{ findingQualification, historicalFindings: staleCheck || !geometryAvailable
+      ? { purpose: 'retained_history_inspection', currentAnalyticalEligibility: false, findings: relevantFindings } : undefined },
+    investigations: await Promise.all((
       await query(
         "SELECT body FROM officer_investigations WHERE building_id=$1 ORDER BY body->>'createdAt' DESC",
         [id],
       )
-    ).rows.map((r) => r.body),
+    ).rows.map((r) => projectFindingHistory('READY', r.body))),
     missing: [
       ...(!geometryAvailable ? ['Spatial analysis not assessed: canonical geometry qualification is unavailable. Retained geometry is available for source inspection only.'] : []),
       ...staleDetailLinks.map(
