@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T16:32:54.740502+00:00",
+  "updatedAt": "2026-09-25T17:17:12.202780+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -199,7 +199,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_FND-04",
+      "status": "assigned_FND-04_attempt_2",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1302,8 +1302,64 @@
         "Only unchanged official-source data for new domain coverage; metadata and schema tests distinct, missing domain/SQL coverage not disguised as a pass",
         "Run typecheck and relevant existing regressions through isolation/build guards; new receipts pin exact code/source hashes and unqualified claims"
       ],
-      "status": "dispatched",
+      "status": "corrections_required_not_integrated",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/FND-04/attempt-1/report.md",
+      "resultCommit": "0d07d3442c3dcf983c23b645100c3bc65a58a976",
+      "ownershipClarifications": [
+        {
+          "paths": [
+            "apps/web/lib/server/registry.ts",
+            "apps/web/lib/server/areas.ts",
+            "apps/web/lib/server/officer.ts",
+            "apps/web/lib/server/officer-investigations.ts",
+            "apps/web/lib/server/block-export.ts"
+          ],
+          "scope": "Narrow qualification projection/measurement/review/export guards and required canonical write validation only. Preserve source inspection, identifiers, record history and permissions; no broad refactor or invented qualification.",
+          "reason": "Existing consumers read raw registry_records/physical_features geometry, so contract-only changes would not enforce analytical separation.",
+          "confirmedAt": "2026-09-25T16:32:54.740113+00:00"
+        }
+      ],
+      "testedCommit": "6ddc4e17b322ebf44d0b173a5a94da63fbb24aef",
+      "reviewRef": "docs/evidence/usp/orchestration/FND-04-attempt-1-review.json"
+    },
+    {
+      "assignmentId": "FND-04",
+      "attempt": 2,
+      "callbackId": "ulpin-FND-04-attempt-2",
+      "objective": "Enforce geometry qualification and isolate display derivatives from canonical analytical readers; add sufficiency and declaration contracts",
+      "baseCommit": "1a6baf0d832117932c291fa6bfc08a536d8bd26e",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-04-geometry-separation",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "ownership": [
+        "packages/contracts/src/usp/ geometry/sufficiency/declaration contract additions and exports",
+        "apps/web/lib/server/usp/ additive migrations, canonical projection guards and separate display-only access adapter",
+        "Existing canonical registry geometry producer/reader hooks narrowly necessary for these invariants; report exact seam transfer before widening scope",
+        "tests/usp-* focused contract tests and scripts/usp/gf/ FND-04 SQL verification using existing isolation guards",
+        "docs/evidence/usp/finale/GF-VIEW/FND-04/ new evidence"
+      ],
+      "exclusions": [
+        "UI/component/map redesign, new renderer or invented scene geometry",
+        "DATA fixture authoring or alteration of official originals",
+        "Full RIGHTS workflow, LEARN/domain inference or parallel database/storage authority",
+        "Ledger/plan/AGENTS changes, volume reset, implicit reseed, credentials, deployment, staging/main merge or push"
+      ],
+      "acceptance": [
+        "H29 FND-04 and H01Z1/H22Z1-2: representation, geometryClass, analyticEligible, semanticLod versus displayLevel, DataSufficiencyVerdict, declaration proposal kind and revision pins",
+        "Qualification fails closed: evidence_linked alone is insufficient; context mesh never measurement eligible; unknown legacy qualification stays unqualified",
+        "Separate display store read by display compiler only; FIND/READY/PACK/export cannot read it; canonical analytical tables cannot accept illustrative rows",
+        "Existing migrations run correctly on fresh and already-migrated isolated databases; additive changes preserve original/history data",
+        "Only unchanged official-source data for new domain coverage; metadata and schema tests distinct, missing domain/SQL coverage not disguised as a pass",
+        "Run typecheck and relevant existing regressions through isolation/build guards; new receipts pin exact code/source hashes and unqualified claims"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/FND-04/attempt-2/report.md",
       "resultCommit": null,
       "ownershipClarifications": [
         {
@@ -1318,6 +1374,11 @@
           "reason": "Existing consumers read raw registry_records/physical_features geometry, so contract-only changes would not enforce analytical separation.",
           "confirmedAt": "2026-09-25T16:32:54.740113+00:00"
         }
+      ],
+      "continuationCommit": "0d07d3442c3dcf983c23b645100c3bc65a58a976",
+      "correctionFindings": [
+        "FND04-R1",
+        "FND04-R2"
       ]
     }
   ],
@@ -2066,8 +2127,8 @@
     }
   ],
   "nextSteps": [
-    "Review FND-04 geometry qualification and display-store separation.",
-    "Keep official-source acquisition/reuse gaps and independent milestone review unqualified."
+    "Review FND-04 stale-qualification projection and finding-participant corrections.",
+    "Do not integrate FND-04 until correctness findings are resolved; source accuracy and independent milestones remain unqualified."
   ],
   "processedCallbacks": [
     {
@@ -2201,6 +2262,15 @@
       "resultCommit": "ab93a303e20dab6a14fbb3a5e7ec35b8df4b5fce",
       "result": "accepted_bounded_plan_validation",
       "normalization": "completed callback interpreted as ready for review; host alias normalized"
+    },
+    {
+      "callbackId": "ulpin-FND-04-attempt-1",
+      "assignmentId": "FND-04",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "0d07d3442c3dcf983c23b645100c3bc65a58a976",
+      "result": "corrections_required_not_integrated",
+      "normalization": "completed interpreted as ready for review; host alias normalized"
     }
   ],
   "observations": [
