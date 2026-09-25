@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T20:50:36.807250+00:00",
+  "updatedAt": "2026-09-25T20:53:40.449568+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -116,7 +116,10 @@
     "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
     "leadRole": "orchestrate_only_delegate_execution",
     "coordination": "Fixed-model lanes; one coder plus bounded independent manual testing/review; callbacks, no polling loops",
-    "testing": "Lean feature-first manual checks plus targeted existing/high-risk tests; no blanket suite expansion"
+    "testing": "Lean feature-first manual checks plus targeted existing/high-risk tests; no blanket suite expansion",
+    "implementationOwnerLimit": 1,
+    "activeLaneLimit": 3,
+    "fixedModelLanes": true
   },
   "inputs": [
     {
@@ -230,8 +233,50 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_FND-06_attempt_1",
+      "status": "legacy_worker_stopped_result_pending_review",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
+    },
+    {
+      "threadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "hostId": "local",
+      "title": "3D ULPIN \u2014 Sol implementation",
+      "role": "implementation",
+      "fixedModel": "gpt-6-sol",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "observedAgent": null,
+      "status": "assigned_FND-03"
+    },
+    {
+      "threadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "hostId": "local",
+      "title": "3D ULPIN \u2014 Astra risk review",
+      "role": "review",
+      "fixedModel": "gpt-6-astra",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "observedAgent": null,
+      "status": "assigned_REVIEW-FND-06"
+    },
+    {
+      "threadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "hostId": "local",
+      "title": "3D ULPIN \u2014 Luna manual testing and research",
+      "role": "manual_test_research",
+      "fixedModel": "gpt-6-luna",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "xhigh"
+      },
+      "observedAgent": null,
+      "status": "assigned_MANUAL-FND-06"
     }
   ],
   "assignments": [
@@ -1771,7 +1816,7 @@
         "model": "gpt-6-astra",
         "effort": "high"
       },
-      "status": "dispatched",
+      "status": "delivered_external_review_and_manual_check",
       "ownership": [
         "Existing server privacy/redaction modules and direct call-site adapters across provider requests/responses, logs, derived previews/indexes. Preserve unchanged originals and access-controlled inspection.",
         "apps/web/lib/server/officer-ai-provider.ts, officer-ai-validation.ts, officer-ai.ts and existing capability/status endpoints; no parallel gateway or job authority.",
@@ -1797,7 +1842,80 @@
         "No GF pass from configuration/unit tests; deployment egress firewall, real-source privacy and independent milestone review remain separate."
       ],
       "reportPath": "docs/evidence/usp/finale/GF-PRIVACY/FND-06/attempt-1/report.md",
-      "resultCommit": null
+      "resultCommit": "bc115d2bc4815a2d91b7a44a286a0ed48c75cfd3",
+      "codeCommit": "66e3dffb9c653d52a13b8ee2046f3c72b550f587",
+      "leadObservation": "6 control tests passed; existing grounding suite19pass/3fail from intended policy changes; sent to risk reviewer for triage. No integration yet."
+    },
+    {
+      "assignmentId": "FND-03",
+      "attempt": 1,
+      "callbackId": "ulpin-FND-03-attempt-1",
+      "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "baseCommit": "8c52896cd2c5d47327e79fc12d7018c4133428a9",
+      "status": "dispatched",
+      "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-sol-implementation/3D Ulpin",
+      "branch": "agent/FND-03-exchange",
+      "ownership": [
+        "apps/web/lib/server/usp/exchange.ts",
+        "packages/contracts/src/usp/exchange.ts and narrow index export",
+        "apps/web/app/api/v1/usp/[...path]/route.ts exchange additions",
+        "focused exchange verification/evidence",
+        "planValidation hash receipt/pointer bookkeeping only"
+      ],
+      "exclusions": [
+        "FND06 privacy/provider/Host/Shell",
+        "all unrelated shared schemas/migrations/dependencies",
+        "lead ledger/guide and original checkout changes"
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-EXCHANGE/FND-03/attempt-1/report.md"
+    },
+    {
+      "assignmentId": "REVIEW-FND-06",
+      "attempt": 1,
+      "callbackId": "review-FND-06-attempt-1",
+      "workerThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "baseCommit": "bc115d2bc4815a2d91b7a44a286a0ed48c75cfd3",
+      "status": "dispatched",
+      "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
+      "codeCommit": "66e3dffb9c653d52a13b8ee2046f3c72b550f587",
+      "ownership": [
+        "read-only risk review; own report only"
+      ],
+      "reportPath": "docs/evidence/usp/orchestration/reviews/FND-06-attempt-1-astra.md"
+    },
+    {
+      "assignmentId": "MANUAL-FND-06",
+      "attempt": 1,
+      "callbackId": "manual-FND-06-attempt-1",
+      "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "xhigh"
+      },
+      "baseCommit": "bc115d2bc4815a2d91b7a44a286a0ed48c75cfd3",
+      "status": "dispatched",
+      "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
+      "codeCommit": "66e3dffb9c653d52a13b8ee2046f3c72b550f587",
+      "ownership": [
+        "read-only manual UI checks; isolated preview; own report only"
+      ],
+      "previewPort": 3108,
+      "reportPath": "docs/evidence/usp/orchestration/manual/FND-06-attempt-1-luna.md"
     }
   ],
   "capabilityChecklist": [
@@ -2545,9 +2663,10 @@
     }
   ],
   "nextSteps": [
-    "Create fixed-model coding, manual-test/research and risk-review chats.",
-    "Review/test FND-06 while Sol implements independent FND-03.",
-    "Delegate AGENTS input-hash receipt refresh only; product requirements unchanged."
+    "Receive Astra FND06 risk review and Luna manual report; route concrete fixes to Sol at safe checkpoint.",
+    "Sol implements FND03 exchange independently; no unaccepted FND06 dependency.",
+    "Delegate integration of accepted commits and minimal relevant combined check; lead does not execute code/tests/integration.",
+    "Refresh stale AGENTS plan-input hash receipt through Sol bookkeeping assignment; no product plan changes."
   ],
   "processedCallbacks": [
     {
@@ -2732,6 +2851,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "363499ca749506ce77db0b452e90c5554ba54a3d",
       "result": "accepted_bounded_map_presentation_card_partial"
+    },
+    {
+      "callbackId": "ulpin-FND-06-attempt-1",
+      "assignmentId": "FND-06",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "bc115d2bc4815a2d91b7a44a286a0ed48c75cfd3",
+      "result": "delivered_pending_review"
     }
   ],
   "observations": [
@@ -2855,7 +2982,7 @@
       "card": "FND-03",
       "title": "CityJSON 2.0 plus sidecar, LADM mapping",
       "needs": "FND-02",
-      "status": "pending"
+      "status": "dispatched_independent_exchange"
     },
     {
       "card": "FND-04",
@@ -2873,7 +3000,7 @@
       "card": "FND-06",
       "title": "Redaction module, egress guard and Host allowlist",
       "needs": "none",
-      "status": "dispatched"
+      "status": "delivered_review_and_manual_check"
     },
     {
       "card": "INGEST-01",
