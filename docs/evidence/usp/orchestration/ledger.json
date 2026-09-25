@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T17:48:40.695281+00:00",
+  "updatedAt": "2026-09-25T17:49:15.374997+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -1461,6 +1461,15 @@
           "scope": "Exact-name display fix in displayName only, plus focused assertion in owned UI regression tests. Preserve safe rendering and existing absent-value behavior; no source normalization, records, geometry or renderer changes.",
           "reason": "Saved-map displayName strips recorded label suffixes according to provenance-like words, altering source names. No conflicting active writer assigned.",
           "confirmedAt": "2026-09-25T17:48:40.695281+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-import/source-normalizer.ts",
+            "apps/web/features/spatial/reference-runtime/map.js"
+          ],
+          "scope": "Wording only for the two surfaced resident/right validation errors and unqualified overlap inspector badge. Use Test fixture terminology tied to existing explicit synthetic classification, preserve all validation/status/normalization behavior. Geometry finding wording must not imply current analytical qualification.",
+          "reason": "Import errors surface banned fictional copy; local-overlap badge currently says Conflict detected despite absent analytical qualification.",
+          "confirmedAt": "2026-09-25T17:49:15.374997+00:00"
         }
       ]
     }
