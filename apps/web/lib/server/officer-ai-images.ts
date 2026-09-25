@@ -4,8 +4,11 @@ import { settings } from './config';
 import { AppError } from './errors';
 import { type AiPart } from './officer-ai-validation';
 import { createHash } from 'node:crypto';
+import { assertNoImageEgress } from './usp/ingest/redact';
 
 export async function selectedImageCrops(parts:AiPart[],regions:{partId:string;region:{x:number;y:number;width:number;height:number}}[]) {
+  // Fail before reading an original or calling even the crop processor.
+  assertNoImageEgress(regions);
   const results=[];
   for(const selected of regions) {
     const part=parts.find(p=>p.id===selected.partId);

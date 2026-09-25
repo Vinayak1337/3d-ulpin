@@ -52,6 +52,9 @@ def crop_image(data):
                 ratio = min(1, math.sqrt(MAX_OUTPUT_PIXELS / (cropped.width * cropped.height)))
                 if ratio < 1:
                     cropped = cropped.resize((max(1, int(cropped.width * ratio)), max(1, int(cropped.height * ratio))), Image.Resampling.LANCZOS)
+                # Pillow transformations can retain info/EXIF. Encode pixels in a fresh image.
+                # This strips metadata only; visible personal fields are NOT qualified/redacted.
+                cropped = Image.frombytes("RGB", cropped.size, cropped.tobytes())
                 for _ in range(12):
                     output = io.BytesIO()
                     cropped.save(output, format="PNG", optimize=True)
@@ -68,4 +71,5 @@ def crop_image(data):
     return {"format": "png", "base64": base64.b64encode(derivative).decode(), "width": cropped.width, "height": cropped.height,
             "sourceSha256": hashlib.sha256(raw).hexdigest(), "sha256": hashlib.sha256(derivative).hexdigest(),
             "region": region, "sourcePixels": original_size, "pixelRegion": pixels, "orientation": "exif-normalized",
-            "method": "native-image-crop-v1", "bytes": len(derivative)}
+            "method": "native-image-crop-v1", "metadataPolicy": "pixel-only-png-v1",
+            "visualRedaction": "unqualified", "bytes": len(derivative)}

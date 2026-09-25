@@ -1,0 +1,36 @@
+{
+  "runs": [
+    {
+      "scope": "local-f241696bc6e812f7",
+      "status": "PASSED",
+      "cleanupExit": 0,
+      "containers": 0,
+      "volumes": 0
+    },
+    {
+      "scope": "local-d155087ea07d6420",
+      "status": "FAILED",
+      "cleanupExit": 0,
+      "containers": 0,
+      "volumes": 0
+    },
+    {
+      "scope": "local-8fb5578451e8c624",
+      "status": "FAILED",
+      "cleanupExit": 0,
+      "containers": 0,
+      "volumes": 0
+    },
+    {
+      "scope": "local-e9f9fa92f32f85b9",
+      "status": "FAILED",
+      "cleanupExit": 0,
+      "containers": 0,
+      "volumes": 0
+    }
+  ],
+  "port3108Closed": true,
+  "ownedMetadataContainers": 0,
+  "nextEnvRestored": true,
+  "otherServicesStopped": false
+}

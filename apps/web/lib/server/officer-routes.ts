@@ -1,3 +1,4 @@
+import { redactDocumentViews } from './usp/ingest/redact';
 import { readWorkQueue } from "./work-queue";
 import { preparationContinuation } from "./preparation-continuation";
 import { exportBlock } from "./block-export";
@@ -63,7 +64,7 @@ const evidence = z.array(locatorSchema).min(1).max(30),
     "CLOSED",
   ]);
 const json = (v: unknown, s = 200) =>
-  Response.json(v, { status: s, headers: { "Cache-Control": "no-store" } });
+  Response.json(redactDocumentViews(v), { status: s, headers: { "Cache-Control": "no-store" } });
 async function body(r: Request) {
   if (Number(r.headers.get("content-length") ?? 0) > 1024 * 1024)
     throw new AppError(

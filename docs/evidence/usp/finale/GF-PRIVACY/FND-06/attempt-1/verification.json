@@ -1,0 +1,59 @@
+{
+  "assignmentId": "FND-06",
+  "attempt": 1,
+  "worker": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+  "host": "local",
+  "agent": {
+    "product": "Codex desktop",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "verification": "latest local turn_context metadata"
+  },
+  "baseSha": "4eef5a535b9d7e8940401d20a67c578188a31ea0",
+  "codeSha": "66e3dffb9c653d52a13b8ee2046f3c72b550f587",
+  "status": "bounded-verification-passed; real-PII qualification pending",
+  "commands": [
+    {
+      "command": "pnpm exec tsx --test scripts/usp/gf/FND-06-controls.test.ts",
+      "exitCode": 0,
+      "result": "6 passed; configuration/transport/arithmetic only"
+    },
+    {
+      "command": "pnpm exec tsx scripts/usp/gf/FND-06-official-source.ts /Users/vinayak/.codex/task-data/ulpin-fnd-06/data-gov-connect-with-us.html",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/web typecheck",
+      "exitCode": 0,
+      "note": "Repeated after restoring generated next-env.d.ts"
+    },
+    {
+      "command": "python3 -m py_compile services/geo/geo/image_derivative.py",
+      "exitCode": 0
+    },
+    {
+      "command": "node /tmp/ulpin-fnd06-design-scan.mjs 4eef5a535b9d7e8940401d20a67c578188a31ea0",
+      "exitCode": 0,
+      "note": "Original skill scanner copied to /tmp with repository-root resolution changed to process.cwd(); no rules changed"
+    },
+    {
+      "command": "node scripts/check-build-server.mjs",
+      "exitCode": 0,
+      "note": "Port 3000 was already absent at this check; no service was stopped and no production build was run"
+    },
+    {
+      "command": "node scripts/usp/local-isolation.mjs --privacy-run",
+      "exitCode": 0,
+      "receipt": "local-f241696bc6e812f7/runner-receipt.json"
+    },
+    {
+      "command": "docker --context colima-ulpin run --rm --name ulpin-fnd06-metadata-66e3dff --network none --read-only --tmpfs /tmp:rw,size=64m --env PYTHONPATH=/app --mount type=bind,source=<worktree>/services/geo,target=/app,readonly --mount type=bind,source=<worktree>/scripts/usp/gf/FND-06-image.py,target=/check.py,readonly --mount type=bind,source=/Users/vinayak/.codex/task-data/ulpin-fnd-06/official-nic-logo.png,target=/source.png,readonly --entrypoint python ulpin-geo:local /check.py /source.png",
+      "exitCode": 0,
+      "imageId": "sha256:4002c01977c8c035597d81b9a2a89c157a86629fffe2b769587de822f9247f26"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ]
+}

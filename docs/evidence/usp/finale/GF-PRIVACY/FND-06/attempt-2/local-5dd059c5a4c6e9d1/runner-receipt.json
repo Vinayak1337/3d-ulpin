@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "fnd06-isolated-privacy/1",
+  "scopeId": "local-5dd059c5a4c6e9d1",
+  "codeSha": "ec0a0459d515dca241a9a294c3cf8db3194f864c",
+  "status": "STOPPED_INTEGRITY_PASSED",
+  "source": "hash-pinned repo-data snapshot, retained historical regression only",
+  "commands": [
+    {
+      "label": "code-sha",
+      "exitCode": 0
+    },
+    {
+      "label": "code-clean",
+      "exitCode": 0
+    },
+    {
+      "label": "docker-context",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-containers",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-volumes",
+      "exitCode": 0
+    },
+    {
+      "label": "owned-services-start",
+      "exitCode": 0
+    },
+    {
+      "label": "private-bucket-init",
+      "exitCode": 0
+    },
+    {
+      "label": "spatial-extension",
+      "exitCode": 0
+    },
+    {
+      "label": "exact-database-restore",
+      "exitCode": 0
+    },
+    {
+      "label": "additive-schema-migration",
+      "exitCode": 0
+    },
+    {
+      "label": "additive-schema-migration-replay",
+      "exitCode": 0
+    },
+    {
+      "label": "owned-services-cleanup",
+      "exitCode": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "pinned-originals",
+      "databaseSha256": "92cbdeb930c7b20f9a90f7857f92787ebe2562c65892ad835a758bdf1b6cfda8",
+      "objectCount": 497
+    },
+    {
+      "name": "new-project-and-loopback-ports"
+    },
+    {
+      "name": "snapshot-exact",
+      "tables": 44,
+      "objects": 497
+    },
+    {
+      "name": "migrated-schema-baseline",
+      "tables": 44,
+      "migrationChanges": [
+        {
+          "table": "jobs",
+          "beforeRows": 566,
+          "afterRows": 566,
+          "beforeSha256": "1f1a21036f99bed6c2e4b34a397caf67b4134ee86a89bff966a1290a22895b75",
+          "afterSha256": "7612ec3fbfb94c5457f151911a3f8a76b8b85195cdc64b6255b7209be5abfb88"
+        }
+      ]
+    },
+    {
+      "name": "manual-preview-held-until-stop"
+    },
+    {
+      "name": "provider-fetch-tripwire",
+      "installedProcesses": 5,
+      "deniedDevelopmentVersionLookups": 1,
+      "providerAttempts": 0,
+      "nonLoopbackFetchesDispatched": 0
+    },
+    {
+      "name": "protected-data-unchanged-after-manual-preview"
+    }
+  ],
+  "screenshots": [],
+  "limitation": "Historical snapshot only. No official PII accuracy, live provider or production build qualification.",
+  "target": {
+    "area_id": "9e77c608-bac7-4d56-9ac7-3032cc49074d",
+    "building_id": "05a784ee-358c-4835-860d-4c47d0876aa4"
+  }
+}

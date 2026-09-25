@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "fnd06-http-browser/1",
+  "checks": [
+    {
+      "name": "forged-host-before-content",
+      "path": "/studio/workspaces",
+      "denied": 5
+    },
+    {
+      "name": "forged-host-before-content",
+      "path": "/api/v1/workspace-capabilities",
+      "denied": 5
+    },
+    {
+      "name": "forged-host-before-content",
+      "path": "/api/v1/health",
+      "denied": 5
+    },
+    {
+      "name": "forged-host-before-content",
+      "path": "/cesium/Widgets/widgets.css",
+      "denied": 5
+    },
+    {
+      "name": "forged-host-before-content",
+      "path": "/_next/image?url=%2Ffavicon.ico&w=64&q=75",
+      "denied": 5
+    },
+    {
+      "name": "canonical-loopback-authorities",
+      "accepted": 3
+    },
+    {
+      "name": "no-key-provider-status-blocked"
+    },
+    {
+      "name": "active-shell-truthful-status-light-only-and-keyboard-close",
+      "screenshot": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-PRIVACY/FND-06/attempt-1/local-e9f9fa92f32f85b9/screenshots/workspace-processing-status.png"
+    },
+    {
+      "name": "compiled-next-static-host-protection"
+    }
+  ],
+  "browserExternalDenied": 0
+}
