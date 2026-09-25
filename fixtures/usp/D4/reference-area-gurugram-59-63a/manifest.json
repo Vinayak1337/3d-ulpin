@@ -1,0 +1,597 @@
+{
+  "assets": [
+    {
+      "attribution": "Gurugram Metropolitan Development Authority",
+      "classification": "observed",
+      "content": {
+        "reason": "Original hash-pinned outside Git pending reuse qualification",
+        "state": "unavailable"
+      },
+      "dependencies": [],
+      "id": "gmda-sector-boundaries",
+      "mediaType": "application/json",
+      "origin": {
+        "kind": "external",
+        "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/18/query?where=Name+IN+%28%2759%27%2C%2763+A%27%29&outFields=FID%2CName%2CArea&returnGeometry=true&outSR=32643&f=json"
+      },
+      "permission": {
+        "reason": "Authority endpoint is public; redistribution and scene reuse terms unverified",
+        "state": "unconfirmed"
+      },
+      "provenance": {
+        "acquiredAt": "2026-09-25T15:47:11.790714+00:00",
+        "benchmark": null,
+        "coverage": "Official sector 59 and 63 A source polygons; 1 km² analysis window uses their shared vertex",
+        "heightType": null,
+        "licenceFamily": null,
+        "missingCapabilities": [
+          "redistribution_permission",
+          "survey_accuracy",
+          "site_polygon"
+        ],
+        "nativeIds": [
+          "FID:165",
+          "FID:166"
+        ],
+        "original": {
+          "bytes": 1728,
+          "sha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8"
+        },
+        "parser": {
+          "name": "Python json/HTML source-byte check",
+          "version": null
+        },
+        "privacy": null,
+        "purpose": "test_only",
+        "qualificationScope": null,
+        "resourceId": null,
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Gurugram Metropolitan Development Authority",
+        "sourceRelease": null,
+        "stages": {
+          "acquired": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+            "status": "passed"
+          },
+          "discovered": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+            "status": "passed"
+          },
+          "inspected": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+            "status": "passed"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "subsetLineage": [],
+        "trainingPermission": {
+          "reason": "No source-specific ML training permission observed",
+          "state": "unconfirmed"
+        }
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:32643",
+        "horizontalUnit": "metre",
+        "sourceDate": null,
+        "verticalReference": null,
+        "verticalUnit": null
+      },
+      "sourceVersion": null,
+      "verification": {
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "catalogue_checked": {
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+          "status": "passed"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "attribution": "Gurugram Metropolitan Development Authority",
+      "classification": "observed",
+      "content": {
+        "reason": "Original hash-pinned outside Git pending reuse qualification",
+        "state": "unavailable"
+      },
+      "dependencies": [],
+      "id": "gmda-road-centrelines",
+      "mediaType": "application/json",
+      "origin": {
+        "kind": "external",
+        "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/7/query?where=1%3D1&geometry=705564.1052549062%2C3142356.2916905787%2C706564.1052549062%2C3143356.2916905787&geometryType=esriGeometryEnvelope&inSR=32643&spatialRel=esriSpatialRelIntersects&outFields=FID%2CRoad_ID%2CRd_Name%2CType&returnGeometry=true&outSR=32643&f=json"
+      },
+      "permission": {
+        "reason": "Authority endpoint is public; redistribution and scene reuse terms unverified",
+        "state": "unconfirmed"
+      },
+      "provenance": {
+        "acquiredAt": "2026-09-25T15:47:11.941964+00:00",
+        "benchmark": null,
+        "coverage": "Two official road features intersect the analysis window",
+        "heightType": null,
+        "licenceFamily": null,
+        "missingCapabilities": [
+          "redistribution_permission",
+          "legal_road_width"
+        ],
+        "nativeIds": [
+          "FID:175",
+          "FID:176"
+        ],
+        "original": {
+          "bytes": 1773,
+          "sha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0"
+        },
+        "parser": {
+          "name": "Python json/HTML source-byte check",
+          "version": null
+        },
+        "privacy": null,
+        "purpose": "test_only",
+        "qualificationScope": null,
+        "resourceId": null,
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Gurugram Metropolitan Development Authority",
+        "sourceRelease": null,
+        "stages": {
+          "acquired": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+            "status": "passed"
+          },
+          "discovered": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+            "status": "passed"
+          },
+          "inspected": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+            "status": "passed"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "subsetLineage": [],
+        "trainingPermission": {
+          "reason": "No source-specific ML training permission observed",
+          "state": "unconfirmed"
+        }
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:32643",
+        "horizontalUnit": "metre",
+        "sourceDate": null,
+        "verticalReference": null,
+        "verticalUnit": null
+      },
+      "sourceVersion": null,
+      "verification": {
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "catalogue_checked": {
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+          "status": "passed"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "attribution": "Gurugram Metropolitan Development Authority",
+      "classification": "unknown",
+      "content": {
+        "reason": "Original hash-pinned outside Git pending reuse qualification",
+        "state": "unavailable"
+      },
+      "dependencies": [],
+      "id": "gmda-parks-query",
+      "mediaType": "application/json",
+      "origin": {
+        "kind": "external",
+        "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/8/query?where=1%3D1&geometry=705564.1052549062%2C3142356.2916905787%2C706564.1052549062%2C3143356.2916905787&geometryType=esriGeometryEnvelope&inSR=32643&spatialRel=esriSpatialRelIntersects&outFields=FID%2CPark_Code%2CArea&returnGeometry=true&outSR=32643&f=json"
+      },
+      "permission": {
+        "reason": "Authority endpoint is public; redistribution and scene reuse terms unverified",
+        "state": "unconfirmed"
+      },
+      "provenance": {
+        "acquiredAt": "2026-09-25T15:47:12.130393+00:00",
+        "benchmark": null,
+        "coverage": "Zero park features intersect the window",
+        "heightType": null,
+        "licenceFamily": null,
+        "missingCapabilities": [
+          "park_coverage",
+          "redistribution_permission"
+        ],
+        "nativeIds": [],
+        "original": {
+          "bytes": 410,
+          "sha256": "86d35a9b3635c9d61e1d25fca2a8bbdd27ff40be51914c701270105bdf2da31a"
+        },
+        "parser": {
+          "name": "Python json/HTML source-byte check",
+          "version": null
+        },
+        "privacy": null,
+        "purpose": "test_only",
+        "qualificationScope": null,
+        "resourceId": null,
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Gurugram Metropolitan Development Authority",
+        "sourceRelease": null,
+        "stages": {
+          "acquired": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+            "status": "passed"
+          },
+          "discovered": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+            "status": "passed"
+          },
+          "inspected": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+            "status": "passed"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "subsetLineage": [],
+        "trainingPermission": {
+          "reason": "No source-specific ML training permission observed",
+          "state": "unconfirmed"
+        }
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:32643",
+        "horizontalUnit": "metre",
+        "sourceDate": null,
+        "verticalReference": null,
+        "verticalUnit": null
+      },
+      "sourceVersion": null,
+      "verification": {
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "catalogue_checked": {
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+          "status": "passed"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "attribution": "Haryana Real Estate Regulatory Authority",
+      "classification": "planned",
+      "content": {
+        "reason": "Original hash-pinned outside Git pending reuse qualification",
+        "state": "unavailable"
+      },
+      "dependencies": [],
+      "id": "haryana-rera-2831-location",
+      "mediaType": "text/html",
+      "origin": {
+        "kind": "external",
+        "url": "https://haryanarera.gov.in/view_project/project_preview_open/2831"
+      },
+      "permission": {
+        "reason": "Authority endpoint is public; redistribution and scene reuse terms unverified",
+        "state": "unconfirmed"
+      },
+      "provenance": {
+        "acquiredAt": "2026-09-25T15:47:11.646187+00:00",
+        "benchmark": null,
+        "coverage": "Official address states Ullahwas and Behrampur, sectors 59 and 63A; no tower coordinate",
+        "heightType": null,
+        "licenceFamily": null,
+        "missingCapabilities": [
+          "tower_3_position",
+          "site_polygon",
+          "redistribution_permission"
+        ],
+        "nativeIds": [
+          "project:2831"
+        ],
+        "original": {
+          "bytes": 108086,
+          "sha256": "e2cbe2b5324067f47055761bf223e7b562c6b30e163c0f3d0b76e9ad7b24b05e"
+        },
+        "parser": {
+          "name": "Python json/HTML source-byte check",
+          "version": null
+        },
+        "privacy": "Source original remains outside Git; RERA HTML may contain personal details",
+        "purpose": "test_only",
+        "qualificationScope": null,
+        "resourceId": null,
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Haryana Real Estate Regulatory Authority",
+        "sourceRelease": null,
+        "stages": {
+          "acquired": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+            "status": "passed"
+          },
+          "discovered": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+            "status": "passed"
+          },
+          "inspected": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+            "status": "passed"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "subsetLineage": [],
+        "trainingPermission": {
+          "reason": "No source-specific ML training permission observed",
+          "state": "unconfirmed"
+        }
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "horizontalUnit": null,
+        "sourceDate": null,
+        "verticalReference": null,
+        "verticalUnit": null
+      },
+      "sourceVersion": null,
+      "verification": {
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "catalogue_checked": {
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+          "status": "passed"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "attribution": "Ministry of Panchayati Raj LGD via data.gov.in",
+      "classification": "observed",
+      "content": {
+        "bytes": 239,
+        "path": "lgd-gurugram.csv",
+        "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce",
+        "state": "available"
+      },
+      "dependencies": [],
+      "id": "lgd-gurugram.csv",
+      "mediaType": "text/csv",
+      "origin": {
+        "kind": "external",
+        "url": "https://www.data.gov.in/resource/local-government-directory-lgd-districts"
+      },
+      "permission": {
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ],
+        "reference": "https://data.gov.in/; GODL-India portal published-content notice",
+        "state": "documented"
+      },
+      "provenance": {
+        "acquiredAt": "2026-09-25T00:17:42.756870Z",
+        "benchmark": null,
+        "coverage": "One exact Gurugram district row derived from previously acquired LGD CSV; administrative label only",
+        "heightType": null,
+        "licenceFamily": "GODL-India portal-wide notice; resource-specific licence field unverified",
+        "missingCapabilities": [
+          "district_polygon",
+          "parcel_geometry",
+          "site_location"
+        ],
+        "nativeIds": [
+          "district_code:62"
+        ],
+        "original": {
+          "bytes": 89622,
+          "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59"
+        },
+        "parser": {
+          "name": "Python csv.DictReader",
+          "version": null
+        },
+        "privacy": null,
+        "purpose": "test_only",
+        "qualificationScope": "Literal official district code/name parser check only",
+        "resourceId": "37231365-78ba-44d5-ac22-3deec40b9197",
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Ministry of Panchayati Raj LGD districts",
+        "sourceRelease": null,
+        "stages": {
+          "acquired": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/acquisition.json",
+            "status": "passed"
+          },
+          "discovered": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/acquisition.json",
+            "status": "passed"
+          },
+          "inspected": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+            "status": "passed"
+          },
+          "qualified": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+            "status": "passed"
+          },
+          "tested": {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+            "status": "passed"
+          }
+        },
+        "subsetLineage": [
+          {
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+            "operation": "Exact one-row Gurugram CSV extraction preserving source literal fields",
+            "sourceSha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59"
+          }
+        ],
+        "trainingPermission": {
+          "reason": "No source-specific ML training permission observed",
+          "state": "unconfirmed"
+        }
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "horizontalUnit": null,
+        "sourceDate": null,
+        "verticalReference": null,
+        "verticalUnit": null
+      },
+      "sourceVersion": null,
+      "verification": {
+        "bytes_preserved": {
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+          "status": "passed"
+        },
+        "catalogue_checked": {
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+          "status": "passed"
+        },
+        "parsed": {
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+          "status": "passed"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "attribution": "DATA-09 source-byte inspection",
+      "classification": "unknown",
+      "content": {
+        "bytes": 944,
+        "path": "source-observations.json",
+        "sha256": "1aea2d4bdb4c83c9ad70933ddda658c0c345c91a71e66323f2b22fc2f21bb94c",
+        "state": "available"
+      },
+      "dependencies": [
+        "gmda-sector-boundaries",
+        "gmda-road-centrelines",
+        "lgd-gurugram.csv"
+      ],
+      "id": "source-observations.json",
+      "mediaType": "application/json",
+      "origin": {
+        "generatorRef": "DATA-09 deterministic observations from official source bytes",
+        "kind": "authored"
+      },
+      "permission": {
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ],
+        "reference": "Project-authored inspection metadata",
+        "state": "documented"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "horizontalUnit": null,
+        "sourceDate": null,
+        "verticalReference": null,
+        "verticalUnit": null
+      },
+      "sourceVersion": "1",
+      "verification": {
+        "bytes_preserved": {
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+          "status": "passed"
+        },
+        "catalogue_checked": {
+          "reason": "Derived check metadata",
+          "status": "not_applicable"
+        },
+        "parsed": {
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+          "status": "passed"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    }
+  ],
+  "description": "Official Gurugram source checks for a 1 km² context window; GMDA scene reuse unqualified",
+  "expectedCapabilities": [
+    "official_administrative_label",
+    "official_source_window_inspection"
+  ],
+  "expectedPath": "source-observations.json",
+  "missingCapabilities": [
+    "permitted_context_geometry",
+    "terrain",
+    "landuse",
+    "water",
+    "trees",
+    "context_buildings",
+    "hero_building_placement",
+    "underground_depth"
+  ],
+  "packId": "D4",
+  "profile": "reference-area-gurugram-59-63a",
+  "schemaVersion": "usp-data-pack/1",
+  "version": 1
+}
