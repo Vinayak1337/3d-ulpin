@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T16:06:13.658141+00:00",
+  "updatedAt": "2026-09-25T16:07:20.820556+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "a49073f6f8bdeb3454d1271bf90cba587b447a6d",
+    "acceptedStagingBase": "bcf2c81106b38191edbedb72d01f641edd77ad03",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -184,7 +184,7 @@
       "title": "3D ULPIN worker \u2014 bootstrap and contracts",
       "requestedAgent": {
         "product": "Codex",
-        "model": "gpt-6-sol",
+        "model": "gpt-6-astra",
         "effort": "high"
       },
       "observedAgent": {
@@ -192,7 +192,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "ready_for_next_assignment",
+      "status": "assigned_LEAD-01B",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1215,6 +1215,46 @@
       "testedCommit": "04c69335342942fdb89709c447ff5fef79dd0203",
       "acceptedAt": "2026-09-25T16:06:13.658141+00:00",
       "reviewRef": "docs/evidence/usp/orchestration/DATA-09-attempt-2-review.json"
+    },
+    {
+      "assignmentId": "LEAD-01B",
+      "attempt": 1,
+      "callbackId": "ulpin-LEAD-01B-attempt-1",
+      "objective": "Complete truthful plan machinery: approved waivers, human dependency blockers, schedule fields, release-candidate freshness, retained attempts and gate approval enforcement",
+      "baseCommit": "bcf2c81106b38191edbedb72d01f641edd77ad03",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/LEAD-01B-plan-governance",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "ownership": [
+        "docs/usp-agent-handoffs/tools/ validator and unit tests",
+        "docs/usp-agent-handoffs/release-plan.json governance fields only",
+        "docs/evidence/usp/orchestration/LEAD-01B/ new receipts/reports only; historical receipts immutable"
+      ],
+      "exclusions": [
+        "orchestration ledger and AGENTS",
+        "product source/data fixtures, originals and credentials",
+        "runtime gate promotion, invented approval/waiver/reviewer identity",
+        "user-staged changes, staging/main merges, remote push or deployment"
+      ],
+      "acceptance": [
+        "Preserve LEAD-01A checks and all 40 tests; extend validation with failing/passing governance-metadata cases",
+        "Owner-approved scoped waivers remove named claims without converting missing evidence to a test pass; no actual waiver authorized",
+        "Blocked gate names open relevant H90 human dependency, seeded only from actual short list",
+        "Validate per-gate ISO target/fallback ordering and distinguish planning proposals from actual commitments",
+        "GF5 actual release-candidate receipts pin exact commit and occur after evidenced GF4 completion; retain failed attempts",
+        "Completed GF0-GF4 require cross-family or human approval; GF5 and waivers require actual owner approval",
+        "No fabricated official source records, altered source inputs or new synthetic domain datasets; metadata unit cases only",
+        "Refresh planValidation with a new immutable hash-pinned receipt after final code commit, preserve old receipt and all pending runtime gates"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/orchestration/LEAD-01B/attempt-1/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -1962,8 +2002,8 @@
     }
   ],
   "nextSteps": [
-    "Review DATA-09 attempt-2 policy, immutable lineage and permission evidence corrections.",
-    "Continue dependency-ready implementation without fabricated data; official scene coverage remains unqualified."
+    "Complete and review LEAD-01B plan-governance validator without approving claims or gates.",
+    "Continue implementation while official scene permissions and missing source coverage remain explicit."
   ],
   "processedCallbacks": [
     {
@@ -2169,7 +2209,7 @@
       "card": "LEAD-01",
       "title": "Plan machinery that can tell the truth",
       "needs": "none",
-      "status": "partial_LEAD-01A_remaining_LEAD-01B"
+      "status": "partial_LEAD-01A_LEAD-01B_dispatched"
     },
     {
       "card": "LEAD-02",
