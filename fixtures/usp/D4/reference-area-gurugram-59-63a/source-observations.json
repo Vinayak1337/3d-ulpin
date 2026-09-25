@@ -1,0 +1,25 @@
+{
+  "lgdGurugramRow": {
+    "district_census2011_code": "086",
+    "district_code": "62",
+    "district_name_english": "Gurugram",
+    "district_name_local": "GURUGRAM",
+    "state_census2011_code": "06",
+    "state_code": "6",
+    "state_name_english": "Haryana",
+    "state_name_local": "HARYANA                                           "
+  },
+  "originalHashes": {
+    "parks": "86d35a9b3635c9d61e1d25fca2a8bbdd27ff40be51914c701270105bdf2da31a",
+    "rera": "e2cbe2b5324067f47055761bf223e7b562c6b30e163c0f3d0b76e9ad7b24b05e",
+    "roads": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+    "sectors": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8"
+  },
+  "schemaVersion": "data-09-source-observations/1",
+  "sourceCounts": {
+    "parks": 0,
+    "roads": 2,
+    "sectors": 2
+  },
+  "status": "literal and count observations from official bytes; no source geometry, site location or runtime oracle"
+}

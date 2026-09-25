@@ -1,0 +1,80 @@
+{
+  "codeCommit": "212cbc0116c49ccdfb809074ace277fca0195ce1",
+  "codeSha256": "60b4e26b748b0206e1d48e214258cb6863cf9ac54333bd2aa0f67a9adc4da85c",
+  "commands": [
+    {
+      "command": "python3 -m py_compile scripts/usp/data/DATA-09-official-reference.py",
+      "exitCode": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "python3 scripts/usp/data/DATA-09-official-reference.py check",
+      "exitCode": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "31e88a201bd873d788d61e39982ae314525adc68baf6e72e0d0091aa079e8e2b"
+    },
+    {
+      "command": "python3 scripts/usp/data/DATA-09-official-reference.py self-test",
+      "exitCode": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "16ea54d72c8b5b2d361410fd5ed28785f41c8879e411b7fbcfb2d35d07bdc432"
+    },
+    {
+      "command": "pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json",
+      "exitCode": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "9b8f96497f6139321306dd3332891b83eea6321d23559eb0bdd09b39b7353b05"
+    }
+  ],
+  "manifestSha256": "e8b2a76ecbe11c72389dfb7a8e6bb6545956f2bfe794369aca1fb591e1ac13f8",
+  "negativeMutationChecks": [
+    "changed official response byte rejected by SHA-256",
+    "empty official road path rejected even with matching temporary hash"
+  ],
+  "noProductionIngestionOrSceneExecution": true,
+  "officialLGDRow": {
+    "district_census2011_code": "086",
+    "district_code": "62",
+    "district_name_english": "Gurugram",
+    "district_name_local": "GURUGRAM",
+    "state_census2011_code": "06",
+    "state_code": "6",
+    "state_name_english": "Haryana",
+    "state_name_local": "HARYANA                                           "
+  },
+  "officialNames": [
+    "59",
+    "63 A"
+  ],
+  "packCheck": "passed: canonical manifest, original pins, available byte pins and exact LGD row",
+  "reusedD5OriginalHashesPassed": true,
+  "runAtUtc": "2026-09-25T15:54:33.897785+00:00",
+  "schemaVersion": "data-09-source-check/1",
+  "sourceCounts": {
+    "parkFeatures": 0,
+    "roadFeatures": 2,
+    "sectorPolygons": 2
+  },
+  "sourceIds": {
+    "roads": [
+      175,
+      176
+    ],
+    "sectors": [
+      165,
+      166
+    ]
+  },
+  "sourceOriginalSha256": {
+    "parks": "86d35a9b3635c9d61e1d25fca2a8bbdd27ff40be51914c701270105bdf2da31a",
+    "rera": "e2cbe2b5324067f47055761bf223e7b562c6b30e163c0f3d0b76e9ad7b24b05e",
+    "roads": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+    "sectors": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8"
+  },
+  "window": {
+    "areaKm2": 1,
+    "derivation": "1 km square analysis clip centred on the identical source vertex in GMDA sector 59/63 A polygons; exact source coordinates remain in private acquisition receipt",
+    "isOfficialSiteBoundary": false
+  }
+}
