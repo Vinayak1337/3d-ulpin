@@ -4,12 +4,16 @@ import { CoreContractError, parseUsp, UspPacket0RequestSchema, UspReadEvidenceRe
   UspReadScopeRequestSchema, UspResolveTargetRequestSchema, UspSnapshotScopeSchema,
   UspPrepareProposalSchema, UspCommitProposalSchema, UspCaptureSnapshotRequestSchema,
   UspVerticalSelectionSchema } from '@ulpin/contracts/usp';
+import { AssignProjectCodeSchema, ProjectIdentityMutationSchema, ProjectIdentityReviewSchema,
+  ResolveProjectIdentitySchema } from '@ulpin/contracts/usp';
 import { AppError } from '@/lib/server/errors';
 import { assertLocalRequest, localRequestContext } from '@/lib/server/usp/principal';
 import { captureRegistrySnapshot, readManifest, readRegistryScope, resolveRegistryTarget,
   readRegistryEvidenceBytes, resolveRegistryVerticalContext } from '@/lib/server/usp/snapshots';
 import { prepareProposal, commitProposal } from '@/lib/server/usp/commands';
 import { createPacket0, readExactPart, readPacket0, readPacket0Receipt } from '@/lib/server/usp/packet0';
+import { assignProjectCode, mutateProjectIdentity, prepareProjectIdentityReview,
+  resolveProjectIdentity } from '@/lib/server/usp/project-identity';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -95,6 +99,22 @@ async function handle(request: Request, context: Context) {
       const input = parseUsp(UspCommitProposalSchema, body);
       data = await commitProposal(ctx, input);
       scope = (data as { snapshot: unknown }).snapshot;
+    } else if (path.join('/') === 'identity/reviews') {
+      const input = parseUsp(ProjectIdentityReviewSchema, body);
+      scope = input.scope;
+      data = await prepareProjectIdentityReview(ctx, input);
+    } else if (path.join('/') === 'identity/assign') {
+      const input = parseUsp(AssignProjectCodeSchema, body);
+      data = await assignProjectCode(ctx, input);
+      scope = (data as { snapshot: unknown }).snapshot;
+    } else if (path.join('/') === 'identity/mutate') {
+      const input = parseUsp(ProjectIdentityMutationSchema, body);
+      data = await mutateProjectIdentity(ctx, input);
+      scope = (data as { snapshot: unknown }).snapshot;
+    } else if (path.join('/') === 'identity/resolve') {
+      const input = parseUsp(ResolveProjectIdentitySchema, body);
+      scope = input.scope;
+      data = await resolveProjectIdentity(ctx, input);
     } else if (path.join('/') === 'packets') {
       const input = parseUsp(UspPacket0RequestSchema, body);
       data = await createPacket0(ctx, input);

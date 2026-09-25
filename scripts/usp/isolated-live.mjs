@@ -233,6 +233,11 @@ try {
   report.checks.push({ name: 'd1-local-source-display', import: d1Import,
     browser: 'tests/e2e/usp-d1-journey.spec.ts passed against production server',
     limitations: ['Local engineering display only; no qualified global NAP transform', 'No supplied interiors or analytical volume'] });
+  await command('gf-t15-project-identity', 'pnpm', ['exec', 'tsx', 'scripts/usp/gf/GF-T15-live.ts'],
+    { env: d0Env, timeout: 180000 });
+  const identityReceipt = JSON.parse(await readFile(resolve(root, '.runtime/engineering/usp-gf-t15.json'), 'utf8'));
+  assert.equal(identityReceipt.status, 'passed');
+  report.checks.push({ name: 'gf-t15-project-identity', receipt: identityReceipt });
   report.result = 'PASS';
 } catch (error) {
   report.result = 'FAIL';

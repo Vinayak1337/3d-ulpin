@@ -5,3 +5,4 @@ export * from './data-pack';
 export * from './domain';
 export * from './ports';
 export * from './packet0';
+export * from './project-identity';
