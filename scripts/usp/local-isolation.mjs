@@ -26,6 +26,8 @@ const endpoint = (value, protocol, port, path) => {
 export function assertUspIsolation(env) {
   if (!['local-colima', 'local-docker', 'local-preview'].includes(env.ULPIN_ISOLATION_PROFILE)) return assertHostedIsolation(env);
   const preview = env.ULPIN_ISOLATION_PROFILE === 'local-preview';
+  const persistent = preview && env.ULPIN_PERSISTENT_PREVIEW === '1';
+  assert(!env.ULPIN_PERSISTENT_PREVIEW || (persistent && env.ULPIN_FND06_MANUAL_HOLD === '1'));
   const colima = env.ULPIN_ISOLATION_PROFILE === 'local-colima' || (preview && process.platform === 'darwin');
   assert.equal(process.platform, colima ? 'darwin' : 'linux');
   assert.equal(env.DOCKER_CONTEXT, colima ? 'colima-ulpin' : 'default');
@@ -46,7 +48,7 @@ export function assertUspIsolation(env) {
   assert.equal(db.password, env.POSTGRES_PASSWORD);
   for (const [key, protocol, port, path] of [
     ['S3_ENDPOINT', 'http:', 29000, '/'], ['GEO_URL', 'http:', 28000, '/'],
-    ['REDIS_URL', 'redis:', 26379, '/0'], ['ULPIN_TEST_URL', 'http:', preview ? 3108 : colima ? 3000 : 23000, '/'],
+    ['REDIS_URL', 'redis:', 26379, '/0'], ['ULPIN_TEST_URL', 'http:', preview ? persistent ? 3187 : 3108 : colima ? 3000 : 23000, '/'],
   ]) {
     const url = endpoint(env[key], protocol, port, path);
     assert.equal(url.username + url.password, '');
@@ -54,6 +56,7 @@ export function assertUspIsolation(env) {
   for (const [key, value] of Object.entries(ports)) assert.equal(env[key], value);
   for (const key of ['DOCKER_HOST', 'DOCKER_CERT_PATH', 'NOUS_API_KEY', 'OPENROUTER_API_KEY'])
     assert(!env[key], `${key} must not point at private or remote resources`);
+  if (persistent) assert.equal(env.ULPIN_LOOPBACK_PORTS, '3187');
   if (preview) for (const key of previewProviderKeys)
     assert(!env[key], `${key} is forbidden in the read-only UI preview`);
   return scope;
@@ -65,9 +68,10 @@ export function uspProcessEnvironment(env, repositoryRoot) {
 }
 
 async function run() {
-  assert.equal(process.argv.length, 3, 'Usage: local-isolation.mjs --run|--preview-run|--privacy-run|--privacy-hold');
-  assert(['--run', '--preview-run', '--privacy-run', '--privacy-hold'].includes(process.argv[2]));
-  const manualHold = process.argv[2] === '--privacy-hold';
+  assert.equal(process.argv.length, 3, 'Usage: local-isolation.mjs --run|--preview-run|--privacy-run|--privacy-hold|--privacy-persistent');
+  assert(['--run', '--preview-run', '--privacy-run', '--privacy-hold', '--privacy-persistent'].includes(process.argv[2]));
+  const persistent = process.argv[2] === '--privacy-persistent';
+  const manualHold = process.argv[2] === '--privacy-hold' || persistent;
   const privacy = process.argv[2] === '--privacy-run' || manualHold;
   const preview = privacy || process.argv[2] === '--preview-run';
   await assert.rejects(lstat(resolve(root, '.env')), { code: 'ENOENT' });
@@ -88,11 +92,12 @@ async function run() {
     S3_PORT: '29000', S3_CONSOLE_PORT: '29001', REDIS_URL: 'redis://127.0.0.1:26379/0',
     REDIS_PORT: '26379', GEO_URL: 'http://127.0.0.1:28000', GEO_PORT: '28000',
     GEO_SERVICE_TOKEN: randomBytes(32).toString('hex'),
-    ULPIN_TEST_URL: `http://127.0.0.1:${preview ? 3108 : colima ? 3000 : 23000}`, NEXT_TELEMETRY_DISABLED: '1',
-    ...(preview ? { ULPIN_LOOPBACK_PORTS: '3108', ULPIN_ALLOW_NON_INDIA_PROVIDER: '0', ULPIN_RELEASE_PROFILE: 'finale_v1' } : {}),
+    ULPIN_TEST_URL: `http://127.0.0.1:${preview ? persistent ? 3187 : 3108 : colima ? 3000 : 23000}`, NEXT_TELEMETRY_DISABLED: '1',
+    ...(preview ? { ULPIN_LOOPBACK_PORTS: persistent ? '3187' : '3108', ULPIN_ALLOW_NON_INDIA_PROVIDER: '0', ULPIN_RELEASE_PROFILE: 'finale_v1' } : {}),
   };
   const env = { ...process.env, ...values };
   if (manualHold) env.ULPIN_FND06_MANUAL_HOLD = '1';
+  if (persistent) env.ULPIN_PERSISTENT_PREVIEW = '1';
   for (const key of ['DOCKER_HOST', 'DOCKER_CERT_PATH', 'NOUS_API_KEY', 'OPENROUTER_API_KEY']) delete env[key];
   if (preview) for (const key of previewProviderKeys) delete env[key];
   assertUspIsolation(env);
