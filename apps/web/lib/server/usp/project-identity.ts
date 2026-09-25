@@ -280,7 +280,8 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
       for (const prior of command.predecessors) for (const next of command.successors) await client.query(
         `INSERT INTO usp_project_lineage(id,scope_id,kind,predecessor_id,successor_id,review_id,evidence)
          VALUES($1,$2,$3,$4,$5,$6,$7)`,
-        [randomUUID(), command.scope.scopeId, command.operation, prior, next, command.reviewId, review.evidence]);
+        [randomUUID(), command.scope.scopeId, command.operation, prior, next, command.reviewId,
+          JSON.stringify(review.evidence)]);
     } else {
       if (!review.transferredGeometry) unsupported();
       const [prior, next] = [command.predecessors[0], command.successors[0]];
@@ -293,7 +294,7 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
         (id,scope_id,kind,predecessor_id,successor_id,review_id,evidence,transferred_geometry)
         VALUES($1,$2,'boundary_adjustment',$3,$4,$5,$6,$7)`,
       [randomUUID(), command.scope.scopeId, prior, next, command.reviewId,
-        review.evidence, review.transferredGeometry]);
+        JSON.stringify(review.evidence), review.transferredGeometry]);
     }
     await bumpRevisions(client, command.scope.scopeId, rows);
     return finish(client, ctx, command.scope, command.operation, command.requestKey, hash,
