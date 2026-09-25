@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "fnd-02-artifacts/1",
+  "codeCommit": "87568510183d4be50a85fcc8dc1e2e17cc71ad8d",
+  "files": {
+    "report.md": "4c7bbb4d5927282d8141bd61d0b937e2040a4bd460a2f0b55dca7cc40ff23c33",
+    "run-summary.json": "c8017ec830d1d4906741ba59fa0c141fe3b3740605bf701d2b7af180f70f9601",
+    "d0-unit-desktop.png": "3d453b3f8f8cf396966d0dbeabb1ef2a7d80c6a49711f4784f9e78297b63ac73",
+    "d1-roof-desktop.png": "2172e22b009b0aee60e651b8834a75db6840e9d40aeb36b87dd05fea0c17f40c"
+  },
+  "sources": {
+    "packages/contracts/src/usp/project-identity.ts": "fecc4b85aa510ba1b3440d8685466c2b02cbb58f7c999de314ffbf80898fe60f",
+    "apps/web/lib/server/usp/project-identity.ts": "6eff541e08c9b2893aa1b0969cc2f587dca21b856fa8d2bb4d4e02b101d5447e",
+    "apps/web/lib/server/usp/project-code-generator.ts": "006dcc796a4de1b14688e5adb75031f71a0c45ffdf74d29d0beba43adbaf3206",
+    "scripts/usp/gf/GF-T15-live.ts": "9f4b45194f62fbda3f26ece61ded6e1683fe08d6b21d3ee96e9ed81f8a64a576",
+    "tests/usp-project-identity-code.test.ts": "abbd60dd7e141d88308081ff27894056d7ebf3c2d7ba7a8ebc7618a58126857d"
+  }
+}

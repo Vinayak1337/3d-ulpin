@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "fnd-02-attempt-3-artifacts/1",
+  "codeCommit": "f138320d3f8070d93e5730ce035935b7a2718482",
+  "files": {
+    "report.md": "b3090f84a797e81fd5c2ec55742ea60c91bfb3e02eed13b3eed41c94ae12a672",
+    "run-summary.json": "6acecd8443add089608595d6062f66167573c5e83559b072644a2652aea35876",
+    "d0-unit-desktop.png": "9660f07937ed51a26286de8f212835766d13114833b37d81355f1529de1c09a3",
+    "d1-roof-desktop.png": "2172e22b009b0aee60e651b8834a75db6840e9d40aeb36b87dd05fea0c17f40c"
+  },
+  "sources": {
+    "apps/web/lib/server/usp/project-identity.ts": "e656af95d64f97cf89ecb5f11b41182f80517a05e6fff80216d3258c25b64f92",
+    "scripts/usp/gf/GF-T15-live.ts": "060ed2a80f6a6d306abf999b6c2e594e01d937e7f06ad32953b2b9303398dc12"
+  }
+}

@@ -39,9 +39,22 @@ export function storedRevision(value: unknown): number {
 async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow[]> {
   const site = (await client.query('SELECT * FROM registry_sites WHERE id=$1', [siteId])).rows[0] ?? notFound();
   const records = (await client.query(
-    'SELECT * FROM registry_records WHERE site_id=$1 AND revision>0 ORDER BY id LIMIT 1001', [siteId],
+    `SELECT r.*,c.code AS project_code,c.status AS project_status,s.location AS project_location
+     FROM registry_records r LEFT JOIN usp_project_codes c ON c.record_id=r.id
+     LEFT JOIN usp_project_identity_state s ON s.record_id=r.id
+     WHERE r.site_id=$1 AND r.revision>0 ORDER BY r.id LIMIT 1001`, [siteId],
   )).rows;
   if (records.length > 1000) throw new AppError(413, 'USP_SCOPE_LIMIT', 'Select a smaller property scope.');
+  const successorRows = (await client.query(`SELECT predecessor_id,successor_id FROM usp_project_lineage
+    WHERE scope_id=$1 AND kind IN ('split','merge') ORDER BY predecessor_id,successor_id`, [siteId])).rows;
+  const successors = new Map<string, string[]>();
+  for (const edge of successorRows) successors.set(edge.predecessor_id,
+    [...(successors.get(edge.predecessor_id) ?? []), edge.successor_id]);
+  const aliasRows = (await client.query('SELECT record_id,alias FROM registry_aliases WHERE site_id=$1 ORDER BY record_id,alias',
+    [siteId])).rows;
+  const aliases = new Map<string, string[]>();
+  for (const row of aliasRows) if (row.record_id) aliases.set(row.record_id,
+    [...(aliases.get(row.record_id) ?? []), row.alias]);
   const features = (await client.query(
     `SELECT f.id,f.area_id,f.record_id,f.identifier,f.revision,f.body,
       ST_AsGeoJSON(f.geometry)::jsonb AS geometry,
@@ -73,7 +86,10 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
   }
   return ([
     { namespace: 'registry_site', object_id: site.id, revision: Number(site.revision), body: site },
-    ...records.map(row => ({ namespace: 'registry_record', object_id: row.id, revision: Number(row.revision), body: row })),
+    ...records.map(row => ({ namespace: 'registry_record', object_id: row.id, revision: Number(row.revision),
+      body: { ...row, projectIdentity: row.project_code ? { code: row.project_code,
+        status: row.project_status, location: row.project_location,
+        successors: successors.get(row.id) ?? [] } : null, historicalAliases: aliases.get(row.id) ?? [] } })),
     ...features.map(row => ({ namespace: 'area_feature', object_id: row.id, revision: Number(row.revision), body: row })),
     ...sources.map(row => ({ namespace: 'source_revision', object_id: row.id, revision: Number(row.revision),
       body: { ...row, inspection: { ...(row.inspection ?? {}),
@@ -214,8 +230,13 @@ export async function resolveRegistryTarget(ctx: RequestContext, scope: Snapshot
       ...(kind === 'parcel' && row.body?.officialUlpin
         ? [{ scheme: 'supplied-parcel-ulpin', value: row.body.officialUlpin,
           issuer: null, source: null, state: 'supplied' }] : []),
+      ...(kind === 'space' && row.projectIdentity?.code
+        ? [{ scheme: 'project-p3-1', value: row.projectIdentity.code,
+          issuer: null, source: null,
+          state: row.projectIdentity.status === 'assigned' ? 'reviewed' : 'retired' }] : []),
     ],
-    relations, representations: [], evidence, recordState: 'recorded',
+    relations, representations: [], evidence,
+    recordState: row.projectIdentity?.status && row.projectIdentity.status !== 'assigned' ? 'retained' : 'recorded',
     capabilities: ['source-evidence', ...(row.body?.geometry ? ['local-geometry'] : [])],
   });
   return { state: 'available' as const, data: result };

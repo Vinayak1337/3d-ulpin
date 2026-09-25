@@ -1,0 +1,143 @@
+{
+  "schemaVersion": "fnd-02-evidence/1",
+  "baseCommit": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
+  "codeCommit": "87568510183d4be50a85fcc8dc1e2e17cc71ad8d",
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-sol",
+    "effort": "xhigh"
+  },
+  "runner": {
+    "result": "PASS",
+    "scopeId": "local-5dbc133456f1c728",
+    "commands": [
+      {
+        "label": "source-sha",
+        "exitCode": 0
+      },
+      {
+        "label": "docker-context",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-project",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-volumes",
+        "exitCode": 0
+      },
+      {
+        "label": "services-start",
+        "exitCode": 0
+      },
+      {
+        "label": "database-restore",
+        "exitCode": 0
+      },
+      {
+        "label": "migration",
+        "exitCode": 0
+      },
+      {
+        "label": "repeat-migration",
+        "exitCode": 0
+      },
+      {
+        "label": "usp-verify-live",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-authored-pack",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-live-verify",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-d1-studio-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "gf-t15-project-identity",
+        "exitCode": 0
+      },
+      {
+        "label": "owned-services-cleanup",
+        "exitCode": 0
+      }
+    ],
+    "rawReceiptSha256": "882839034cfe1aa91cf8674e9583455350a69c20689a492a50ab7d986c54142f"
+  },
+  "gfT15": {
+    "status": "passed",
+    "scopeId": "8012962f-73a1-47ff-9557-e9287daab239",
+    "sourceSha256": "783719ada119a459da27816e97ae23db2741462575b664109b65b23bf17db4de",
+    "checks": [
+      "authored synthetic site, source and eight independent space UUIDs inserted in disposable database",
+      "two-writer same-record race, exact replay and changed-payload 409",
+      "stale manifest 409 before code reservation",
+      "stale version 409 and namespace unique-index savepoint retry",
+      "injected fault rolls back code and receipt; exact request subsequently succeeds",
+      "status-aware project-code resolver and locator string 422",
+      "reviewed two-parcel duplex locator correction preserves code",
+      "unreviewed parcel stays NO-ANCHOR; reviewed primary appears without changing identity",
+      "unsupported 1-to-1 split returns 422 before mutation",
+      "atomic split and merge with fresh successor UUID/code, retirement and retained old resolver",
+      "error cancellation and terminal retirement retain nonreusable tombstones",
+      "boundary adjustment preserves both codes, advances both revisions and records geometry/evidence"
+    ],
+    "rows": [
+      {
+        "status": "assigned",
+        "n": 3
+      },
+      {
+        "status": "cancelled_error",
+        "n": 1
+      },
+      {
+        "status": "retired",
+        "n": 4
+      }
+    ],
+    "auditCount": 13,
+    "receiptCount": 13,
+    "representativeReceipts": [
+      "cdfd7e19-9ad1-48c6-ac43-21caafebf4b8",
+      "703aba5d-17db-4571-adf1-ccd63b387d3a",
+      "865c57c4-ff70-411e-b427-18ab0ba3a2db"
+    ],
+    "rawReceiptSha256": "e47b31229376c6245ca59b6fe1cb8f08fb31e2e2d8caf024663edcd37c7e9152"
+  },
+  "screenshots": {
+    "d0-unit-desktop.png": "3d453b3f8f8cf396966d0dbeabb1ef2a7d80c6a49711f4784f9e78297b63ac73",
+    "d1-roof-desktop.png": "2172e22b009b0aee60e651b8834a75db6840e9d40aeb36b87dd05fea0c17f40c"
+  },
+  "qualification": "authored identity transactions only; UI identity mount, history, official issuance, real-source accuracy and deployment unqualified"
+}
