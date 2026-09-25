@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D4",
+  "version": 1,
+  "profile": "gf0-structured-codes-v1",
+  "description": "Public LGD district CSV for literal-code parser testing; no geometry or property rights.",
+  "assets": [
+    {
+      "id": "lgd-districts.csv",
+      "mediaType": "text/csv",
+      "classification": "unknown",
+      "origin": {
+        "kind": "external",
+        "url": "https://www.data.gov.in/resource/local-government-directory-lgd-districts"
+      },
+      "sourceVersion": null,
+      "attribution": "Ministry of Panchayati Raj, LGD via data.gov.in; GODL-India",
+      "permission": {
+        "state": "documented",
+        "reference": "https://www.data.gov.in/resource/local-government-directory-lgd-districts; GODL-India platform footer",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "lgd-districts.csv",
+        "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+        "bytes": 89622
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "provenance.json"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "provenance.json"
+        },
+        "parsed": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "expected.json",
+      "mediaType": "application/json",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "DATA-01 pre-implementation CSV inspection, 2026-09-25"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN DATA-01 bounded CSV oracle",
+      "permission": {
+        "state": "documented",
+        "reference": "Authored project test oracle",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "expected.json",
+        "sha256": "65ceb3f4b26487c9431823091b741f77e5657dec25f017765b5422676dce609a",
+        "bytes": 676
+      },
+      "dependencies": [
+        "lgd-districts.csv"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Authored expected values"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "provenance.json"
+        },
+        "parsed": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    }
+  ],
+  "expectedPath": "expected.json",
+  "expectedCapabilities": [
+    "literal_lgd_district_codes",
+    "empty_local_names_preserved",
+    "leading_zero_census_codes_preserved"
+  ],
+  "missingCapabilities": [
+    "spatial_geometry",
+    "parcel_identifiers",
+    "current_registration",
+    "ownership",
+    "height_or_floor_data"
+  ]
+}
