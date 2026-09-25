@@ -1,6 +1,19 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
+
+async function hitTest(locator: Locator, scroll = true) {
+  if (scroll) await locator.scrollIntoViewIfNeeded();
+  return locator.evaluate(element => {
+    const box = element.getBoundingClientRect();
+    const x = box.left + box.width / 2, y = box.top + box.height / 2;
+    const hit = document.elementFromPoint(x, y);
+    return { left: box.left, top: box.top, right: box.right, bottom: box.bottom,
+      insideViewport: box.left >= 0 && box.top >= 0 && box.right <= innerWidth && box.bottom <= innerHeight,
+      unobscured: !!hit && (element === hit || element.contains(hit)),
+      hit: hit?.tagName ?? null };
+  });
+}
 
 test('UI-03 area map reads one unchanged saved snapshot', async ({ page }) => {
   const base = process.env.DEMO_BASE_URL;
@@ -79,6 +92,43 @@ test('UI-03 area map reads one unchanged saved snapshot', async ({ page }) => {
     expect(layout['.ui-map-column'].width).toBeGreaterThan(650);
     await page.getByRole('button', { name: '2D Map' }).click();
     await expect(page.locator('.ui-renderer[aria-hidden="false"] svg').first()).toBeVisible();
+    const controls: [string, Locator][] = [
+      ['3D', page.getByRole('button', { name: '3D', exact: true })],
+      ['2D', page.getByRole('button', { name: '2D Map' })],
+      ['Layers', page.getByRole('button', { name: 'Layers', exact: true })],
+      ['Colour by', page.getByLabel('Colour by')],
+      ['Underground', page.getByLabel('Underground')],
+      ['Fit block', page.getByRole('button', { name: 'Fit block' })],
+      ['Focus selected', page.getByRole('button', { name: 'Focus selected property' })],
+      ['Source world', page.getByLabel('Source world')],
+      ['Levels', page.getByText('Levels not supplied')],
+      ['Legend', page.getByRole('complementary', { name: 'Map legend' })],
+      ['North', page.getByRole('button', { name: 'Orient north' })],
+      ['Zoom in', page.getByRole('button', { name: 'Zoom in' })],
+      ['Zoom out', page.getByRole('button', { name: 'Zoom out' })],
+      ['Return', page.getByRole('button', { name: 'Return to block view' })],
+      ['Inspector', page.getByRole('button', { name: 'Inspector' })],
+      ['Checks', page.locator('.area-map-actions').getByRole('button', { name: /Checks/ })],
+    ];
+    const hitResults: Record<string, Awaited<ReturnType<typeof hitTest>>> = {};
+    for (const [name, control] of controls) {
+      hitResults[name] = await hitTest(control);
+      expect(hitResults[name].insideViewport, `${name} outside the viewport`).toBe(true);
+      expect(hitResults[name].unobscured, `${name} covered by ${hitResults[name].hit}`).toBe(true);
+    }
+    await writeFile(join(directory, 'control-occlusion-equivalent-200-percent-zoom.json'), JSON.stringify(hitResults, null, 2) + '\n');
+    const legend = page.getByRole('complementary', { name: 'Map legend' });
+    expect(await legend.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+    await legend.focus();
+    await legend.press('End');
+    await expect.poll(() => legend.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+    await legend.evaluate(element => { element.scrollTop = 0; });
+    await page.locator('.area-map-toolbar').evaluate(element => { element.scrollLeft = 0; });
+    const fit = page.getByRole('button', { name: 'Fit block' });
+    await fit.focus();
+    await expect(fit).toBeFocused();
+    expect((await hitTest(fit, false)).unobscured, 'keyboard focus should reveal Fit block in the scrollable toolbar').toBe(true);
+    await page.locator('.area-map-toolbar').evaluate(element => { element.scrollLeft = 0; });
     await page.getByRole('button', { name: 'Layers', exact: true }).click();
     await expect(page.getByRole('complementary', { name: 'Layers panel' })).toBeVisible();
     await page.keyboard.press('Escape');
@@ -86,7 +136,7 @@ test('UI-03 area map reads one unchanged saved snapshot', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'Layers', exact: true })).toBeFocused();
     const zoomFile = join(directory, 'selected-equivalent-200-percent-zoom.png');
     await page.screenshot({ path: zoomFile, animations: 'disabled' });
-    captures.push({ screen: 'selected-equivalent-200-percent-zoom', route: `/studio/areas/${area}?feature=${building}`, width: 720, height: 450, ready: '2D geometry; 720 CSS pixels represent 1440 at 200% browser zoom; Escape restores panel focus', file: zoomFile });
+    captures.push({ screen: 'selected-equivalent-200-percent-zoom', route: `/studio/areas/${area}?feature=${building}`, width: 720, height: 450, ready: '2D geometry; 720 CSS-pixel responsive equivalent; browser chrome zoom not instrumented; Escape restores panel focus', file: zoomFile });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/studio/areas/${area}?feature=${building}`, { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: '3D', exact: true }).click();
