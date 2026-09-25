@@ -168,16 +168,18 @@ export default function BlockPage({ areaId }: { areaId: string }) {
               />
             </div>
             {!block.features.length ? (
-              <EmptyState
-                title="This block has no recorded geometry"
-                description="Import a source, review its mapping and record the observations."
-                icon="map"
-                action={
-                  <Button onClick={() => setTools("import")}>
-                    Import sources
-                  </Button>
-                }
-              />
+              <div inert={sheetOpen} aria-hidden={sheetOpen}>
+                <EmptyState
+                  title="This block has no recorded geometry"
+                  description="Import a source, review its mapping and record the observations."
+                  icon="map"
+                  action={
+                    <Button onClick={() => setTools("import")}>
+                      Import sources
+                    </Button>
+                  }
+                />
+              </div>
             ) : (
               <>
                 <div
