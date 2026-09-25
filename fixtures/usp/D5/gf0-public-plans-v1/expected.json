@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "gf0-public-plans-observed/1",
+  "classification": "planned_drawings_not_as_built",
+  "externalSources": [
+    {
+      "assetId": "bihar-magnolia-sanctioned-layout.pdf",
+      "privateFile": "bihar-magnolia-sanctioned-layout-original.pdf",
+      "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "bytes": 2455183,
+      "pageCount": 6
+    },
+    {
+      "assetId": "haryana-2831-basement-01.pdf",
+      "privateFile": "haryana-2831-basement-01.pdf",
+      "sha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49",
+      "bytes": 1711314,
+      "pageCount": 1
+    },
+    {
+      "assetId": "haryana-2831-tower3-plan1.pdf",
+      "privateFile": "haryana-2831-tower3-plan1.pdf",
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "bytes": 1655334,
+      "pageCount": 1
+    },
+    {
+      "assetId": "haryana-2831-tower3-section.pdf",
+      "privateFile": "haryana-2831-tower3-section.pdf",
+      "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "bytes": 2448909,
+      "pageCount": 1
+    },
+    {
+      "assetId": "haryana-2079-last-approved.pdf",
+      "privateFile": "haryana-2079-last-approved.pdf",
+      "sha256": "a2ccde8e1d914c19e054b367c52ef5636cfd6e1410bd77617d9e1570f6895a18",
+      "bytes": 1517504,
+      "pageCount": 12
+    }
+  ],
+  "biharDrawingNumbers": [
+    "V5-01",
+    "V5-02"
+  ],
+  "biharLevelStrings": [
+    "FFL \u00b100",
+    "FFL +1'6\"",
+    "FFL +11'6\"",
+    "FFL +22'1\"",
+    "FFL +32'6\""
+  ],
+  "unitAssociation": "unresolved",
+  "sourcePermission": "unconfirmed",
+  "note": "Observed source strings, not independent numerical or rights oracle."
+}

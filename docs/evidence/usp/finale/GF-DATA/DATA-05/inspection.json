@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "gf0-plan-inspection/1",
+  "method": "Original PDFs rendered with Poppler and visually reviewed; pypdf text used only for literal cross-checks. Swiss CSV parsed as text and each selected WKT ring checked without coordinate transformation.",
+  "bihar": {
+    "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+    "pageCount": 6,
+    "visuallyInspectedPages": [1, 2],
+    "page1": {
+      "title": "LAYOUT PLAN",
+      "drawingNumber": "V5-01",
+      "drawingDateLiteral": "08.06.21",
+      "observed": "Magnolia Residency layout with twelve numbered villa positions; drawing title leaves Villa Type 5 unit number blank.",
+      "literalDimensions": ["23'", "50'", "30 FT WIDE ROAD"]
+    },
+    "page2": {
+      "title": "ARCHITECTURE SET",
+      "drawingNumber": "V5-02",
+      "drawingDateLiteral": "08.06.21",
+      "planLabels": ["GROUND FLOOR PLAN", "FIRST FLOOR PLAN", "SECOND FLOOR PLAN", "TERRACE FLOOR PLAN"],
+      "sections": ["SECTION AA'", "SECTION BB'"],
+      "levelScheduleLiteral": ["FFL ±00", "FFL +1'6\"", "FFL +11'6\"", "FFL +22'1\"", "FFL +32'6\""],
+      "sampleRoomDimensionLiteral": "BEDROOM (12'11\" X 10'2\")",
+      "note": "Dimensions and levels are drawn in feet and inches; unfinished unless otherwise specified; written dimensions control and site verification is required.",
+      "unitNumber": "blank in sheet title"
+    },
+    "pages3to6": "Scanned administrative material; excluded from repository extracts and not used as property geometry or rights evidence.",
+    "associationStatus": "unresolved: V5-02 type drawing is not pinned to a specific numbered villa, surveyed parcel, registered unit or current as-built revision",
+    "conflictingPublicIdentifiers": "Drawing title block lists Khata 35/Jamabandi 333, while linked RERA project page lists Khata 40/Jamabandi 330; no reconciliation or title inference attempted."
+  },
+  "haryana2831": {
+    "portalProjectId": "2831",
+    "documentsVisuallyInspected": [
+      "BUILDING PLAN-BASEMENT-01, one sheet",
+      "BUILDING PLAN-TOWER-3 PLAN-1, one sheet",
+      "BUILDING PLAN-TOWER-3 SECTION ELEVATION, one sheet"
+    ],
+    "sectionObserved": "Tower-3 section visually labels three basement levels and a tall floor stack; drawing-relative elevations are not a surveyed vertical datum.",
+    "qualification": "separate candidate project; no merge with Bihar or Swiss samples and no unit-rights claim"
+  },
+  "haryana2079": {
+    "portalProjectId": "2079",
+    "downloadedLabel": "A COMPLETE SET OF THE LAST APPROVED BUILDING PLANS",
+    "pageCount": 12,
+    "visualScope": "page 1 only",
+    "observation": "First page is a scanned administrative/revenue sheet, so the upload label alone does not qualify twelve pages as inspected building drawings."
+  },
+  "swiss": {
+    "sourceRecord": "Zenodo 7070952, version 1.0.0",
+    "publishedFile": "geometries.csv (792527191 bytes; advertised MD5 2c78951982ba87f0a28ef6ca0724e48a)",
+    "acquiredRange": "bytes 0-2097151/792527191, HTTP 206; full source not downloaded or SHA-256-pinned",
+    "selectedKey": {"site_id": "127", "building_id": "164", "floor_id": "717"},
+    "observedUnitIds": ["23024", "23025"],
+    "sampleRows": 81,
+    "entityTypeCounts": {"separator": 51, "feature": 12, "opening": 12, "area": 6},
+    "geometry": "81 WKT POLYGON strings in site-local coordinates; polygon ring syntax/closure checked, source completeness and cadastral validity unqualified",
+    "classBoundary": "ROOM and other room subtypes are descriptive dataset labels; they are not legal unit polygons, rights, Indian labels or independent ML evaluation truth"
+  }
+}
