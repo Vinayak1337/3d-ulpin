@@ -23,6 +23,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 | DATA-02 adversarial fixtures | Synthetic files with oracles |
 | LEAD-01 plan machinery | Validator code and tests only |
 | UI-01 tokens, fonts, icons | Styling layer; no producer needed |
+| UI-08 no demo content or "fictional" labels | Display cleanup over existing records; no producer needed |
 | INGEST-01 hostile-input guards | Reader hardening with negative fixtures |
 | DATA-05 to DATA-08 public data, labels, drone set, oracles | Open downloads and synthetic oracles; no person needed |
 | READY-02, UI-07, LEAD-05, DEPLOY-04 | Replace former human tasks with agent work |
@@ -236,6 +237,14 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 - **Read:** [reference screens](../design-system/mockups/officer-studio/screens.md) S1–S5 and S9–S11 (design reference, not production spec); [reference mockups](../design-system/mockups/officer-studio/README.md) "Any format in, the same screens out"; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Batch`, `IntakeSession`, `IntakeFile`, `FieldMapping`, `Candidate`, `Building`, `Level`, `Space`.
 - **Build:** S1 Batches, S2 Add files with inline mapping questions and "Reused mapping", S3 live import, S4 area map, S5 building and floors, S9 review details, S10 check and record, S11 assign dialog. Screens bind to records; an unknown profile or unmapped field is listed, never dropped.
 - **Done when:** the officer completes the D0 flow without retyping data; provider-down shows manual mapping.
+
+### UI-08 · No hard-coded demo content or "fictional" labels
+**Owner** UI, with DATA for stored names · **Tier** T-work · **Test** GF-VIEW · **Needs** none
+- **Read:** [AGENTS.md](../../AGENTS.md) data invariants; [H99](99-ui-ux-and-integration.md) Z6; [reference mockups](../design-system/mockups/officer-studio/README.md) rules 3–4; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Scope.classification` and `ProvenanceFlags`.
+- **Find:** `grep -rIli "fictional\|demonstration data\|specimen" apps/web --exclude-dir=node_modules --exclude-dir=.next` (35 source files outside `public/` on 25 September 2026: officer block, register, workspace, scene and work screens; `features/studio/data`; the reference import, runtime and workbench; `lib/server`; plus three protected files under `public/`).
+- **Build:** remove "Fictional demonstration" and similar disclaimers from screens and generated documents. Show each dataset's recorded classification in the scope strip, and *Test fixture* or a seeded-case badge only where the record's provenance says so. Finale screens read records through the ports; hard-coded sample arrays (for example the Lake View district and document generators) are not reachable from finale routes. Keep legacy URLs working (AGENTS.md).
+- **Do not:** delete, re-seed or rewrite protected datasets, originals or files under `apps/web/public/datasets/`. A stored dataset or area name containing "FICTIONAL" is data. DATA may add a display label through a recorded, reversible revision; code must stop matching records by that text.
+- **Done when:** the grep above finds no user-visible string in finale screens (code comments and protected data files excepted, listed in the receipt); each finale screen shows provenance from the record; before and after screenshots of S1, S4, S5 and S12 are attached.
 
 ## GF3 — govern
 

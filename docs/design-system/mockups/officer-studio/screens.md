@@ -104,7 +104,7 @@ Built by [UI-05](../../../usp-agent-handoffs/29-agent-task-cards.md#ui-05--regis
 
 - Identity header once (surface, bottom divider): title `building.label` with status and provenance badges; muted line with address, Parcel ULPIN (mono) and tenure regime. Actions: **Back to map**, **Deviation check** (toggles S13), **Export** menu from `building.exports` (planned items disabled with a *Planned* badge), **Property Card** (primary; disabled with "Blocked: assign a proposed code first" or "Blocked: read-only role").
 - Stale or error banner under the header when present.
-- Body `minmax(0,55fr) minmax(0,45fr)`: left the model with the level rail (clicking a level isolates it); right tabs **Units · Shares · Documents · Checks · History**:
+- Body `minmax(0,55fr) minmax(0,45fr)`: left the model with the level rail (clicking a level isolates it); right tabs **Units · Shares · Documents · Checks · History** (Documents is H99's `tab=evidence`):
   - Units: DataTable of spaces — Level, Unit (600), Code (mono or "After review"), computed area m², share %, Status; unknown numbers as *Unknown*; a "<n> more units" footer when paged.
   - Shares: `ShareLedger` with regime, basis, population declared of total, rows and a footer flag when `total` differs from `expected`.
   - Documents: `building.documents` as chips with their locators.

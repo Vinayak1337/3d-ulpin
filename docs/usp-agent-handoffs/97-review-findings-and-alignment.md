@@ -23,6 +23,13 @@ No application code, data, service or deployment was changed. No runtime gate pa
 
 **Follow-up, 25 September 2026.** The human task list was cut to three always-needed items plus two conditional ones ([H90](90-required-human-tasks.md)); everything else became agent cards DATA-05 to DATA-08, READY-02, UI-07, LEAD-05 and DEPLOY-04 in [H29](29-agent-task-cards.md). Any permitted geography is fine, labelled by geography; nothing needs Delhi data. CLEANUP-01 removed the 105 hash-checked obsolete or duplicate files listed in `docs/cleanup-review/2026-09-25-removals.json` and all nine GitHub workflows; the heavier retirement of the old engineering plan and prototypes remains CLEANUP-02.
 
+**UI follow-up, 25 September 2026.** The plan, design system and new UI reference were re-checked against the hardened plan review by Claude. Every hardening item is covered, deliberately changed (table below) or recorded as full_product. Changes:
+- Added the [Officer Studio reference mockups](../design-system/mockups/officer-studio/README.md): reference UIs, not production UI, with a data-free [view model schema](../design-system/mockups/officer-studio/view-model.schema.json).
+- Synced the [design system](../design-system/README.md) with the team copy.
+- Removed sample data and "fictional" labelling from the UI brief.
+- Put the no-sample-data, no-"fictional" rule in `AGENTS.md`, with card UI-08 for the existing code.
+- Recorded findings C53–C57.
+
 ## Findings
 
 Status **Applied** means the handoff text now contains the fix; the code work is still open under the named card. **Open** means only a card exists.
@@ -91,6 +98,14 @@ Status **Applied** means the handoff text now contains the fix; the code work is
 - **C51 · process** — `planValidation`. "passed" never expires after edits. **Applied here:** receipt regenerated with this change's hashes. **Open:** LEAD-01 to enforce.
 - **C52 · process** — H23, H28. No convention for GF test script names. **Open:** FND-05.
 
+### UI follow-up (25 September 2026)
+
+- **C53 · contradiction** — UI brief, app code. The brief told mockups to show one worked example and label it "Fictional demonstration"; 35 source files still carry "fictional" labels or hard-coded demo content. **Applied:** no-sample-data, no-"fictional" rule in `AGENTS.md`, H99 Z6 and the design system; the brief is data-free. **Open:** UI-08.
+- **C54 · gap** — H99, H29 UI cards. The agreed interactive mockups were not in the repository, so agents had only prose. **Applied:** [reference mockups](../design-system/mockups/officer-studio/README.md) linked from H99 Z6, H00 and the UI and PACK cards, marked reference-only with acceptance left to GF tests and V-shots.
+- **C55 · gap** — `docs/design-system`. The repository copy lacked nine components used by the mockups, the type-style table, the icon meanings and several rules. **Applied:** synced; the sync record is in the design-system README.
+- **C56 · contradiction** — UI reference vs H22 and the design system. The view model used its own geometry and level-kind names, and the register tabs differed between documents. **Applied:** H22 `representation`, `geometryClass`, `analyticEligible` and `levelKind`; register tabs **Units · Shares · Documents · Checks · History** everywhere.
+- **C57 · gap** — hardened plan items with no recorded decision: the air-rights envelope and LGD codes on each record. **Applied:** the two rows added to the table below.
+
 ## Alignment with the hardened plan
 
 | Topic | Hardened plan said | Handoffs said | Now |
@@ -107,5 +122,9 @@ Status **Applied** means the handoff text now contains the fix; the code work is
 | Offline | Cached tiles, offline mode, backup video | Air-gap optional | Offline rehearsal profile and a network-off run |
 | Injection fixture | Kept for the finale | Tested at GF4 only | GF-AGENT at GF2 |
 | Development agents | Model-agnostic | GPT-6 only | Role tiers, any vendor |
+| Air-rights envelope | Thin slice in the finale: remaining FSI and height cap as a `T` volume | Not specified | The finale shows elevated (`A`) extents and the airspace in StrataSection; the envelope needs a sourced development-control rule and stays full_product (S17) |
+| LGD codes | On every 3D ULPIN record | LGD list acquired as context (DATA-01) | Not part of the code; an LGD association is a sourced assertion added in full_product |
+| Demonstration labelling | "Fictional demonstration" in the scope strip; one specimen dataset on every screen | Not specified | No sample data and no "fictional" labels; the recorded dataset classification and fixture or seeded badges from provenance (`AGENTS.md`, UI-08) |
+| Mockups | Mock up 15 finale screens | Not in the repository | [Reference mockups](../design-system/mockups/officer-studio/README.md) guide design; acceptance stays with GF tests and V-shots |
 
 The design system, UI brief and plan review documents outside the repository were updated to match these rows.
