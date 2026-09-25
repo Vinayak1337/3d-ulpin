@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T20:17:42.516993+00:00",
+  "updatedAt": "2026-09-25T20:50:36.807250+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -112,7 +112,11 @@
     "workerLimit": 2,
     "defaultWorkers": 1,
     "nativeSubagents": false,
-    "callbackMode": "dispatch then end turn; resume on tool-based worker callback; no polling loops or automation"
+    "callbackMode": "dispatch then end turn; resume on tool-based worker callback; no polling loops or automation",
+    "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
+    "leadRole": "orchestrate_only_delegate_execution",
+    "coordination": "Fixed-model lanes; one coder plus bounded independent manual testing/review; callbacks, no polling loops",
+    "testing": "Lean feature-first manual checks plus targeted existing/high-risk tests; no blanket suite expansion"
   },
   "inputs": [
     {
@@ -201,6 +205,13 @@
       "recordedAt": "2026-09-25T19:01:20.510098+00:00",
       "authority": "Direct user instruction and sequencing clarification, 26 September 2026",
       "decision": "Replace legacy UI from scratch within existing plan execution; no separate redesign or legacy polishing detour. Retain backend/runtime/source data and compatible URLs. Apply UI-08 checks to each replacement."
+    },
+    {
+      "id": "D016",
+      "recordedAt": "2026-09-25T20:50:36.807250+00:00",
+      "authority": "Direct user direction",
+      "decision": "Orchestration-only lead, task-level hardening without rewriting product plans, stable GPT-6 Astra/Sol/Luna lanes, pipelined manual review and independent next feature, focused fixes, lean risk-based verification.",
+      "guide": "docs/orchestration/OPERATING_GUIDE.md"
     }
   ],
   "workers": [
@@ -2534,9 +2545,9 @@
     }
   ],
   "nextSteps": [
-    "Review FND-06 privacy, provider egress and Host checks on callback.",
-    "Continue UI replacement with dependent screen cards; retain UI-03 remaining obligations.",
-    "All runtime and independent milestone qualification remain pending."
+    "Create fixed-model coding, manual-test/research and risk-review chats.",
+    "Review/test FND-06 while Sol implements independent FND-03.",
+    "Delegate AGENTS input-hash receipt refresh only; product requirements unchanged."
   ],
   "processedCallbacks": [
     {

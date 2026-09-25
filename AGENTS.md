@@ -1,5 +1,7 @@
 # 3D ULPIN — current agent entry point
 
+**Before orchestrating:** read [the orchestration operating guide](docs/orchestration/OPERATING_GUIDE.md). The user's 26 September direction makes the lead orchestration-only, uses fixed Astra/Sol/Luna tasks, and requires lean, risk-based verification. This overrides older lead-codes, Sol/Astra-only and exhaustive-testing instructions; product plans and release requirements stay intact.
+
 <!-- plan-next-gate: GF0 -->
 
 ## Adopted direction, 24 September 2026
