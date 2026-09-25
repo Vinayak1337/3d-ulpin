@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:17:21.253656+00:00",
+  "updatedAt": "2026-09-25T21:20:53.144938+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -121,12 +121,28 @@
     "activeLaneLimit": 3,
     "fixedModelLanes": true,
     "persistentPreview": {
-      "url": "http://127.0.0.1:3187",
-      "status": "setup_requested_not_yet_verified",
+      "url": "http://127.0.0.1:3187/studio/work",
+      "status": "http_serving_visual_check_dispatched",
       "ownerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "temporaryTestPort": 3108,
       "policy": "dedicated pinned worktree, loopback only, owned isolated snapshot, no provider calls, stays running after handoff",
-      "servedCommit": null
+      "servedCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
+      "reviewStatus": "FND06_candidate_pending_review",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-persistent-preview/3D Ulpin",
+      "lifecycleRecord": "/Users/vinayak/.codex/preview/ulpin-3187.json",
+      "runnerPid": 38560,
+      "sessionId": 28654,
+      "composeProject": "ulpin-usptest-1ac33df1f895c45c",
+      "reservedPorts": [
+        3187,
+        25432,
+        29000,
+        29001,
+        26379,
+        28000
+      ],
+      "stopCommand": "kill -TERM 38560",
+      "retention": "Intentionally running by user request; do not clean up after manual check"
     }
   },
   "inputs": [
@@ -262,7 +278,7 @@
         "effort": "high"
       },
       "observedAgent": null,
-      "status": "assigned_PREVIEW-01_priority"
+      "status": "assigned_FND-03_attempt_2"
     },
     {
       "threadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
@@ -291,10 +307,10 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-luna",
-        "effort": "medium"
+        "effort": "xhigh"
       },
       "observedAgent": null,
-      "status": "idle_waiting_corrected_manual_preview"
+      "status": "assigned_MANUAL-FND-06_attempt_2"
     }
   ],
   "assignments": [
@@ -2033,7 +2049,7 @@
       "assignmentId": "FND-03",
       "attempt": 2,
       "callbackId": "ulpin-FND-03-attempt-2",
-      "status": "queued_after_user_persistent_preview_setup",
+      "status": "resuming_after_preview_ready",
       "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "workerHostId": "local",
       "baseCommit": "e356919be7a7994eaf9ae047697ebd28485fcd69",
@@ -2089,7 +2105,7 @@
       "assignmentId": "PREVIEW-01",
       "attempt": 1,
       "callbackId": "preview-ready",
-      "status": "dispatched_priority_user_request",
+      "status": "serving_http_manual_visual_pending",
       "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "workerHostId": "local",
       "baseCommit": "55d6c8642f4803e344f863e8e1952ea01c481975",
@@ -2102,6 +2118,13 @@
         "product": "Codex",
         "model": "gpt-6-sol",
         "effort": "high"
+      },
+      "codeCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-persistent-preview/3D Ulpin",
+      "httpChecks": {
+        "workPage": 200,
+        "health": 200,
+        "forgedHost": 403
       }
     },
     {
@@ -2122,6 +2145,30 @@
         "model": "gpt-6-astra",
         "effort": "high"
       }
+    },
+    {
+      "assignmentId": "MANUAL-FND-06",
+      "attempt": 2,
+      "callbackId": "manual-FND-06-attempt-2",
+      "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-luna",
+        "effort": "xhigh"
+      },
+      "status": "dispatched_existing_persistent_preview",
+      "codeCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
+      "appUrl": "http://127.0.0.1:3187/studio/work",
+      "ownership": [
+        "read-only live UI interaction and report only"
+      ],
+      "exclusions": [
+        "server stop/restart",
+        "serving worktree edits",
+        "imports/data mutation/provider calls"
+      ],
+      "reportPath": "docs/evidence/usp/orchestration/manual/FND-06-attempt-2-luna.md"
     }
   ],
   "capabilityChecklist": [
@@ -2869,9 +2916,9 @@
     }
   ],
   "nextSteps": [
-    "Deliver persistent preview3187 first; Luna verifies real page before announcing ready.",
-    "Astra reviews FND06 fixes in parallel; Sol resumes exchange fixes after preview handoff.",
-    "Persistent preview remains running and is named in subsequent manual handoffs."
+    "Luna verifies and manually checks existing3187 preview; keep running.",
+    "Astra completes focused privacy review while Sol fixes exchange.",
+    "Subsequent manual handoffs reuse3187 and disclose exact served revision."
   ],
   "processedCallbacks": [
     {
@@ -3112,6 +3159,14 @@
       "sourceThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "resultCommit": "55d6c8642f4803e344f863e8e1952ea01c481975",
       "result": "delivered_followup_review_pending"
+    },
+    {
+      "callbackId": "preview-ready",
+      "assignmentId": "PREVIEW-01",
+      "attempt": 1,
+      "sourceThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
+      "codeCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
+      "result": "http_serving_kept_running"
     }
   ],
   "observations": [
