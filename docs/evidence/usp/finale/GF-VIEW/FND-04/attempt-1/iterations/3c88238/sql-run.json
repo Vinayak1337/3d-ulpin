@@ -1,0 +1,264 @@
+{
+  "results": [
+    {
+      "mode": "fresh",
+      "status": "passed",
+      "commands": [
+        {
+          "label": "docker-context",
+          "command": [
+            "docker",
+            "context",
+            "inspect",
+            "colima-ulpin",
+            "--format",
+            "{{.Endpoints.docker.Host}}"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:01.696Z",
+          "finishedAt": "2026-09-25T17:01:01.764Z"
+        },
+        {
+          "label": "empty-ps",
+          "command": [
+            "docker",
+            "--context",
+            "colima-ulpin",
+            "ps",
+            "-a",
+            "--filter",
+            "label=com.docker.compose.project=ulpin-usptest-9c1a8a6b81676469",
+            "--format",
+            "{{.ID}}"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:01.764Z",
+          "finishedAt": "2026-09-25T17:01:01.785Z"
+        },
+        {
+          "label": "empty-volume",
+          "command": [
+            "docker",
+            "--context",
+            "colima-ulpin",
+            "volume",
+            "ls",
+            "--filter",
+            "label=com.docker.compose.project=ulpin-usptest-9c1a8a6b81676469",
+            "--format",
+            "{{.Name}}"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:01.785Z",
+          "finishedAt": "2026-09-25T17:01:01.801Z"
+        },
+        {
+          "label": "owned-postgres-start",
+          "command": [
+            "docker-compose",
+            "--project-directory",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+            "--env-file",
+            "/var/folders/dz/0rb0t__151dgff19hqmghmth0000gn/T/ulpin-fnd04-fRCGy4/ulpin-local.env",
+            "-p",
+            "ulpin-usptest-9c1a8a6b81676469",
+            "-f",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/compose.yaml",
+            "up",
+            "-d",
+            "--wait",
+            "postgres"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:01.805Z",
+          "finishedAt": "2026-09-25T17:01:07.566Z"
+        },
+        {
+          "label": "sql-verification",
+          "command": [
+            "pnpm",
+            "exec",
+            "tsx",
+            "--tsconfig",
+            "apps/web/tsconfig.json",
+            "scripts/usp/gf/FND-04-sql.ts"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:07.566Z",
+          "finishedAt": "2026-09-25T17:01:08.329Z"
+        },
+        {
+          "label": "owned-postgres-cleanup",
+          "command": [
+            "docker-compose",
+            "--project-directory",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+            "--env-file",
+            "/var/folders/dz/0rb0t__151dgff19hqmghmth0000gn/T/ulpin-fnd04-fRCGy4/ulpin-local.env",
+            "-p",
+            "ulpin-usptest-9c1a8a6b81676469",
+            "-f",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/compose.yaml",
+            "down",
+            "--volumes",
+            "--remove-orphans"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:08.329Z",
+          "finishedAt": "2026-09-25T17:01:08.602Z"
+        }
+      ]
+    },
+    {
+      "mode": "retained",
+      "status": "passed",
+      "commands": [
+        {
+          "label": "docker-context",
+          "command": [
+            "docker",
+            "context",
+            "inspect",
+            "colima-ulpin",
+            "--format",
+            "{{.Endpoints.docker.Host}}"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:08.610Z",
+          "finishedAt": "2026-09-25T17:01:08.633Z"
+        },
+        {
+          "label": "empty-ps",
+          "command": [
+            "docker",
+            "--context",
+            "colima-ulpin",
+            "ps",
+            "-a",
+            "--filter",
+            "label=com.docker.compose.project=ulpin-usptest-b9c6984d9915a139",
+            "--format",
+            "{{.ID}}"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:08.633Z",
+          "finishedAt": "2026-09-25T17:01:08.650Z"
+        },
+        {
+          "label": "empty-volume",
+          "command": [
+            "docker",
+            "--context",
+            "colima-ulpin",
+            "volume",
+            "ls",
+            "--filter",
+            "label=com.docker.compose.project=ulpin-usptest-b9c6984d9915a139",
+            "--format",
+            "{{.Name}}"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:08.650Z",
+          "finishedAt": "2026-09-25T17:01:08.664Z"
+        },
+        {
+          "label": "owned-postgres-start",
+          "command": [
+            "docker-compose",
+            "--project-directory",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+            "--env-file",
+            "/var/folders/dz/0rb0t__151dgff19hqmghmth0000gn/T/ulpin-fnd04-mAA4Bb/ulpin-local.env",
+            "-p",
+            "ulpin-usptest-b9c6984d9915a139",
+            "-f",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/compose.yaml",
+            "up",
+            "-d",
+            "--wait",
+            "postgres"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:08.665Z",
+          "finishedAt": "2026-09-25T17:01:14.323Z"
+        },
+        {
+          "label": "restore-unchanged-retained-regression",
+          "command": [
+            "docker-compose",
+            "--project-directory",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+            "--env-file",
+            "/var/folders/dz/0rb0t__151dgff19hqmghmth0000gn/T/ulpin-fnd04-mAA4Bb/ulpin-local.env",
+            "-p",
+            "ulpin-usptest-b9c6984d9915a139",
+            "-f",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/compose.yaml",
+            "exec",
+            "-T",
+            "postgres",
+            "pg_restore",
+            "-U",
+            "ulpin_usptest",
+            "-d",
+            "ulpin_usptest_b9c6984d9915a139",
+            "--no-owner",
+            "--no-acl",
+            "--schema=public",
+            "--exit-on-error",
+            "--single-transaction"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:14.337Z",
+          "finishedAt": "2026-09-25T17:01:15.215Z"
+        },
+        {
+          "label": "read-pinned-baseline-migration",
+          "command": [
+            "git",
+            "show",
+            "1a6baf0d832117932c291fa6bfc08a536d8bd26e:apps/web/lib/server/usp/migrations.ts"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:15.215Z",
+          "finishedAt": "2026-09-25T17:01:15.234Z"
+        },
+        {
+          "label": "sql-verification",
+          "command": [
+            "pnpm",
+            "exec",
+            "tsx",
+            "--tsconfig",
+            "apps/web/tsconfig.json",
+            "scripts/usp/gf/FND-04-sql.ts"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:15.234Z",
+          "finishedAt": "2026-09-25T17:01:17.050Z"
+        },
+        {
+          "label": "owned-postgres-cleanup",
+          "command": [
+            "docker-compose",
+            "--project-directory",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+            "--env-file",
+            "/var/folders/dz/0rb0t__151dgff19hqmghmth0000gn/T/ulpin-fnd04-mAA4Bb/ulpin-local.env",
+            "-p",
+            "ulpin-usptest-b9c6984d9915a139",
+            "-f",
+            "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/compose.yaml",
+            "down",
+            "--volumes",
+            "--remove-orphans"
+          ],
+          "exitCode": 0,
+          "startedAt": "2026-09-25T17:01:17.050Z",
+          "finishedAt": "2026-09-25T17:01:17.326Z"
+        }
+      ]
+    }
+  ],
+  "limitation": "Only nonce-owned SQL services; no web server, model provider, reseed or official-source qualification."
+}
