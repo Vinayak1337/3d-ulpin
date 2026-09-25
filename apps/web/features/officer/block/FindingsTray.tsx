@@ -28,7 +28,7 @@ export default function FindingsTray({ block, onClose }: { block: BlockControlle
           <Icon name="warning" />
           <h2>Checks</h2>
           <Badge tone={findings.length ? "warning" : "neutral"}>
-            {findings.length}
+            {check ? findings.length : "Not assessed"}
           </Badge>
           {check?.stale && <Badge tone="warning">Out of date</Badge>}
         </div>
