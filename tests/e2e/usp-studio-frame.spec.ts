@@ -205,6 +205,7 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   await page.reload();
   await expect(page.locator(".ulpin-app")).toHaveAttribute("data-theme", "dark");
   await expect(page).toHaveURL(new RegExp(`feature=${buildingId}`));
+  if (screenshots) await writeFile(join(screenshots, "measurements.json"), JSON.stringify({ areaId: receipt.areaId, selectedFeatureId: buildingId, runtimeId, camera, measurements, pageErrors: errors }, null, 2) + "\n");
   let releaseDossier!: () => void;
   const dossierGate = new Promise<void>(resolve => { releaseDossier = resolve; });
   await page.route(`**/api/v1/buildings/${buildingId}/dossier`, async route => {
@@ -212,6 +213,7 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
     await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "Source dossier temporarily unavailable" }) });
   });
   await page.reload({ waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: "Back to map" }).click();
   await page.getByRole("button", { name: "Sources", exact: true }).click();
   const sourcesPanel = page.getByRole("complementary", { name: "Sources panel" });
   await expect(sourcesPanel).toContainText("Loading source evidence");
