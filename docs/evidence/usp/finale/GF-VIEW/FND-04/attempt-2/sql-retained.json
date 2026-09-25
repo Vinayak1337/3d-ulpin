@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "usp-fnd04-sql/1",
+  "status": "passed",
+  "mode": "retained",
+  "checks": [
+    {
+      "name": "fresh-or-already-identity-migrated-install-and-replay",
+      "mode": "retained",
+      "protectedTables": 44
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "FIND",
+      "role": "ulpin_usp_find",
+      "sql": "SELECT body FROM usp_display.derivatives LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "FIND",
+      "role": "ulpin_usp_find",
+      "sql": "SELECT body FROM registry_records LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "FIND",
+      "role": "ulpin_usp_find",
+      "sql": "SELECT body FROM usp_geometry_qualifications LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "READY",
+      "role": "ulpin_usp_ready",
+      "sql": "SELECT body FROM usp_display.derivatives LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "READY",
+      "role": "ulpin_usp_ready",
+      "sql": "SELECT body FROM registry_records LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "READY",
+      "role": "ulpin_usp_ready",
+      "sql": "SELECT body FROM usp_geometry_qualifications LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "PACK",
+      "role": "ulpin_usp_pack",
+      "sql": "SELECT body FROM usp_display.derivatives LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "PACK",
+      "role": "ulpin_usp_pack",
+      "sql": "SELECT body FROM registry_records LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "PACK",
+      "role": "ulpin_usp_pack",
+      "sql": "SELECT body FROM usp_geometry_qualifications LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "export",
+      "role": "ulpin_usp_export",
+      "sql": "SELECT body FROM usp_display.derivatives LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "export",
+      "role": "ulpin_usp_export",
+      "sql": "SELECT body FROM registry_records LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "export",
+      "role": "ulpin_usp_export",
+      "sql": "SELECT body FROM usp_geometry_qualifications LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "compiler-store-read-and-pooled-role-restoration",
+      "rows": 0
+    },
+    {
+      "name": "canonical-illustrative-write-rejected",
+      "table": "registry_records",
+      "sqlState": "23514",
+      "originalsChanged": false
+    },
+    {
+      "name": "canonical-illustrative-write-rejected",
+      "table": "registry_revisions",
+      "sqlState": "23514",
+      "originalsChanged": false
+    },
+    {
+      "name": "canonical-illustrative-write-rejected",
+      "table": "physical_features",
+      "sqlState": "23514",
+      "originalsChanged": false
+    },
+    {
+      "name": "canonical-illustrative-write-rejected",
+      "table": "physical_feature_revisions",
+      "sqlState": "23514",
+      "originalsChanged": false
+    },
+    {
+      "name": "canonical-illustrative-write-rejected",
+      "table": "units",
+      "sqlState": "23514",
+      "originalsChanged": false
+    },
+    {
+      "name": "canonical-illustrative-write-rejected",
+      "table": "unit_revisions",
+      "sqlState": "23514",
+      "originalsChanged": false
+    },
+    {
+      "name": "sql-absent-metadata-label-only-context-mesh-fail-closed"
+    },
+    {
+      "name": "real-retained-snapshot-source-inspection-with-no-analytic-upgrade",
+      "declarations": "not_assessed",
+      "displayDerivativeRows": 0
+    },
+    {
+      "name": "retained-saved-investigation-projection-and-export-abstain",
+      "investigationId": "26cd8466-7140-4971-a3aa-0032fd58cf4f",
+      "savedFindings": 4,
+      "missingParticipantChecks": 7,
+      "historyPreserved": true,
+      "printableExport": "rejected_422"
+    },
+    {
+      "name": "retained-block-withholds-current-check-and-preserves-explicit-history",
+      "areaId": "8c61a45e-3ae9-4c7c-95f2-78918f23582a"
+    }
+  ],
+  "limitations": [
+    "Schema/permission SQL proof and retained regression only; no official-source geometry accuracy qualification.",
+    "Display store remains empty; no derived scene data was generated.",
+    "Accepted real qualification-receipt/source case unavailable; positive real analytical eligibility remains unqualified."
+  ]
+}

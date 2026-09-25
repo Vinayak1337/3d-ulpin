@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "usp-fnd04-sql/1",
+  "status": "passed",
+  "mode": "fresh",
+  "checks": [
+    {
+      "name": "fresh-or-already-identity-migrated-install-and-replay",
+      "mode": "fresh",
+      "protectedTables": 0
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "FIND",
+      "role": "ulpin_usp_find",
+      "sql": "SELECT body FROM usp_display.derivatives LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "FIND",
+      "role": "ulpin_usp_find",
+      "sql": "SELECT body FROM registry_records LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "FIND",
+      "role": "ulpin_usp_find",
+      "sql": "SELECT body FROM usp_geometry_qualifications LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "READY",
+      "role": "ulpin_usp_ready",
+      "sql": "SELECT body FROM usp_display.derivatives LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "READY",
+      "role": "ulpin_usp_ready",
+      "sql": "SELECT body FROM registry_records LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "READY",
+      "role": "ulpin_usp_ready",
+      "sql": "SELECT body FROM usp_geometry_qualifications LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "PACK",
+      "role": "ulpin_usp_pack",
+      "sql": "SELECT body FROM usp_display.derivatives LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "PACK",
+      "role": "ulpin_usp_pack",
+      "sql": "SELECT body FROM registry_records LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "PACK",
+      "role": "ulpin_usp_pack",
+      "sql": "SELECT body FROM usp_geometry_qualifications LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "export",
+      "role": "ulpin_usp_export",
+      "sql": "SELECT body FROM usp_display.derivatives LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "export",
+      "role": "ulpin_usp_export",
+      "sql": "SELECT body FROM registry_records LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "sql-permission-denied",
+      "purpose": "export",
+      "role": "ulpin_usp_export",
+      "sql": "SELECT body FROM usp_geometry_qualifications LIMIT 0",
+      "sqlState": "42501"
+    },
+    {
+      "name": "compiler-store-read-and-pooled-role-restoration",
+      "rows": 0
+    },
+    {
+      "name": "canonical-constraint-present-empty-table",
+      "table": "registry_records"
+    },
+    {
+      "name": "canonical-constraint-present-empty-table",
+      "table": "registry_revisions"
+    },
+    {
+      "name": "canonical-constraint-present-empty-table",
+      "table": "physical_features"
+    },
+    {
+      "name": "canonical-constraint-present-empty-table",
+      "table": "physical_feature_revisions"
+    },
+    {
+      "name": "canonical-constraint-present-empty-table",
+      "table": "units"
+    },
+    {
+      "name": "canonical-constraint-present-empty-table",
+      "table": "unit_revisions"
+    },
+    {
+      "name": "sql-absent-metadata-label-only-context-mesh-fail-closed"
+    }
+  ],
+  "limitations": [
+    "Schema/permission SQL proof and retained regression only; no official-source geometry accuracy qualification.",
+    "Display store remains empty; no derived scene data was generated.",
+    "Accepted real qualification-receipt/source case unavailable; positive real analytical eligibility remains unqualified."
+  ]
+}

@@ -49,6 +49,8 @@ export async function appendUspOutboxTx(client: PoolClient, streamId: string, bo
 export async function prepareProposalTx(client: PoolClient, ctx: RequestContext, raw: PrepareProposal) {
   assertLocalUsp(ctx);
   const command = UspPrepareProposalSchema.parse(raw);
+  if (command.kind === 'declaration') throw new AppError(422, 'USP_DECLARATION_NOT_ASSESSED',
+    'Declaration revisions are understood, but declaration acceptance is not implemented. No rights were recorded.');
   if (command.kind !== 'registry' || command.changes.length !== 1
     || command.changes[0].kind !== 'registry_draft' || command.guard.mode !== 'create') {
     throw new AppError(422, 'USP_PROPOSAL_UNSUPPORTED', 'This preparation operation is not supported by the registry bridge.');

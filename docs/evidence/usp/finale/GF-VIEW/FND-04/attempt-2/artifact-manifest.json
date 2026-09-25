@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "ulpin-fnd04-artifacts/2",
+  "codeCommit": "051584595fabbd1a42480233c7c2f7ea05984ca6",
+  "filesSha256": {
+    "checks.json": "c08197c0251070b8cd68abf6a4dac2ecaabcd5692764427507bb0367a2f4145a",
+    "lead-review.json": "b413d844934627bc505e06fce091eb71b29efe9f8915dde9cd197f807813f9ee",
+    "report.md": "f729f537c4ee596434106223e2be78a48cb04a5f8b8697448f15706e9a706002",
+    "sql-fresh.json": "e71f17464ba4de0ecdcb47e2afe99b76fcecb24858e0255b47172b58136141a1",
+    "sql-retained.json": "255535c58b90fe5f61db457aad7d02fb9d0704c91df26feb47e693bea531b99d",
+    "sql-run.json": "29fe226fb968fd312345ee8ec3a684829984f245fca4e1dcb36220e1f98e0f6f",
+    "verification.json": "899d96698e07f8e5de56ee9f8f20e4c3ec5a15ff5619c719d014c4be546aff3e"
+  }
+}
