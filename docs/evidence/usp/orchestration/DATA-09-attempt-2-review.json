@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "ulpin-bounded-review/1",
+  "assignmentId": "DATA-09",
+  "attempt": 2,
+  "reviewedAt": "2026-09-25T16:06:13.658141+00:00",
+  "reviewer": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "independence": "same_family"
+  },
+  "producerReported": {
+    "product": "Codex",
+    "model": "gpt-6-sol",
+    "effort": "high"
+  },
+  "codeCommit": "04c69335342942fdb89709c447ff5fef79dd0203",
+  "resultCommit": "9b564a87d41157f6a5b7d14768b040263804c7ce",
+  "integrationCommit": "c2e3570c8639398f49a597fea27503fabdee25e1",
+  "verdict": "accepted_bounded_acquisition_only",
+  "resolvedFindings": [
+    "DATA09-R1",
+    "DATA09-R2",
+    "DATA09-R3"
+  ],
+  "checks": [
+    {
+      "command": "python3 scripts/usp/data/DATA-09-official-reference.py check",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+      "exitCode": 0
+    },
+    {
+      "command": "Lead static review, SHA-256 report pins, base/code/result ancestry and git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "limits": [
+    "Same-family engineering review; independent milestone review remains required",
+    "No current source-alteration test code; attempt-1 negative checks preserved as superseded historical evidence",
+    "LGD/derived metadata and GMDA scene permissions unconfirmed",
+    "Hero tower unlocated; required terrain/water/landuse/trees/buildings/imagery/underground data missing",
+    "No production ingestion, scene accuracy or release gate pass"
+  ]
+}
