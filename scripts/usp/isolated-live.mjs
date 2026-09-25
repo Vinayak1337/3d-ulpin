@@ -225,14 +225,14 @@ try {
   assert.deepEqual(JSON.parse(await readFile(d1ReceiptFile, 'utf8')), d1Import);
   assert.deepEqual(await savedTableDigests(), beforeD1Replay, 'D1 replay mutated saved data');
   report.checks.push({ name: 'd1-replay-preservation', tables: beforeD1Replay });
-  await command('d0-d1-studio-browser', 'pnpm', ['exec', 'playwright', 'test',
-    'tests/e2e/usp-product-journey.spec.ts', 'tests/e2e/usp-d1-journey.spec.ts'],
-    { env: { ...d0Env, ULPIN_D1_RECEIPT_FILE: d1ReceiptFile }, timeout: 300000 });
   await command('ui-01-foundations-browser', 'pnpm', ['exec', 'playwright', 'test',
     'tests/e2e/usp-ui-foundations.spec.ts'],
     { env: { ...d0Env, ULPIN_UI01_SCREENSHOT_DIR: resolve(root, 'docs/evidence/usp/finale/GF-VIEW/UI-01/screenshots') }, timeout: 180000 });
   report.checks.push({ name: 'ui-01-fonts-contrast-and-hindi',
     browser: 'tests/e2e/usp-ui-foundations.spec.ts passed against production server' });
+  await command('d0-d1-studio-browser', 'pnpm', ['exec', 'playwright', 'test',
+    'tests/e2e/usp-product-journey.spec.ts', 'tests/e2e/usp-d1-journey.spec.ts'],
+    { env: { ...d0Env, ULPIN_D1_RECEIPT_FILE: d1ReceiptFile }, timeout: 300000 });
   report.checks.push({ name: 'd0-v0-live-receipts', import: d0Import, live: d0Live,
     browser: 'tests/e2e/usp-product-journey.spec.ts passed against production server' });
   report.checks.push({ name: 'd1-local-source-display', import: d1Import,
