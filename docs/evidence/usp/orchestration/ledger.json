@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T15:38:31.420201+00:00",
+  "updatedAt": "2026-09-25T15:40:19.798573+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -154,6 +154,12 @@
       "recordedAt": "2026-09-25T15:14:41.791239+00:00",
       "decision": "User requires desktop-first/light-only product now; remove theme control and release its header space. Mobile optimization and theme delivery deferred; preserve modular components/tokens/layout seams for later. Root AGENTS.md overrides old delivery requirements.",
       "authority": "Direct user instruction on25September2026; clarification explicitly UI space, not disk cleanup."
+    },
+    {
+      "id": "D013",
+      "recordedAt": "2026-09-25T15:40:19.798573+00:00",
+      "authority": "Direct user instruction",
+      "decision": "Official-source data only; data.gov.in first or responsible official authority. No agent-authored synthetic datasets, dummy records or generated source fixtures. Preserve historical files but do not qualify new claims with them. Unavailable official coverage remains unqualified."
     }
   ],
   "workers": [
@@ -172,7 +178,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_DATA-02_attempt-2",
+      "status": "redirecting_to_official_sources",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1024,7 +1030,7 @@
         "Source/control truth explicitly authored, unknown/noncomparability retained; clean twins and numerical tolerances explicit",
         "DATA-08 cross-family oracle review pending; no runtime gate claim"
       ],
-      "status": "corrections_required",
+      "status": "superseded_by_user_official_source_only",
       "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-1/report.md",
       "resultCommit": "0871de2a85799791e1fea688a28ab6d85885ee5b",
       "testedCommit": "fc1e933b1eecb74681a38d4f779ca20734832496",
@@ -1055,7 +1061,8 @@
             "required": "Provide per-class positive,insufficient and Not sure response scenarios with exact expected dependent object/task transitions and unchanged source hashes. Tie parked IFC to the shared question dependency or separate it honestly; include decision reasons/policy version and maintain <=5 questions and never-fill restrictions."
           }
         ]
-      }
+      },
+      "supersededAt": "2026-09-25T15:40:19.798573+00:00"
     },
     {
       "assignmentId": "DATA-02",
@@ -1093,7 +1100,7 @@
         "Source/control truth explicitly authored, unknown/noncomparability retained; clean twins and numerical tolerances explicit",
         "DATA-08 cross-family oracle review pending; no runtime gate claim"
       ],
-      "status": "dispatched",
+      "status": "superseded_by_user_official_source_only",
       "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-2/report.md",
       "resultCommit": null,
       "continuationCommit": "0871de2a85799791e1fea688a28ab6d85885ee5b",
@@ -1101,7 +1108,8 @@
         "DATA02-R1",
         "DATA02-R2",
         "DATA02-R3"
-      ]
+      ],
+      "supersededAt": "2026-09-25T15:40:19.798573+00:00"
     }
   ],
   "capabilityChecklist": [
@@ -1849,9 +1857,9 @@
     }
   ],
   "nextSteps": [
-    "End turn after DATA-02 attempt2 dispatch; resume on callback.",
-    "Review fixture coverage, prior oracle commit and format/hash checks before bounded integration.",
-    "Complete LEAD-01B plan machinery and remaining GF0 acquisition/oracle cards; then dependency-ready FND-04/UI-03."
+    "Stop synthetic DATA-02 authoring; preserve unmerged branch and history.",
+    "Acquire official-source reference-area inputs under DATA-09, data.gov.in first.",
+    "Keep official-source coverage gaps explicit; continue dependency-ready implementation without fabricated data."
   ],
   "processedCallbacks": [
     {
@@ -1985,7 +1993,7 @@
       "card": "DATA-02",
       "title": "Adversarial and Indian-reality fixtures",
       "needs": "none",
-      "status": "dispatched"
+      "status": "superseded_official_source_replacement_required"
     },
     {
       "card": "DATA-03",

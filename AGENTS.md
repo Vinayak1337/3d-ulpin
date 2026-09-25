@@ -24,6 +24,14 @@ Ship the current product desktop-first and light-mode only. Do not add a theme s
 
 Keep semantic components, shared design tokens, flexible layout boundaries and isolated responsive styles so mobile responsiveness and additional themes can be added later without rewriting the product. Preserve useful existing responsive behavior and theme tokens; do not spend current work expanding mobile or dark-mode variants. This direction overrides older plan, design-system and task-card requirements for a theme switch, dark-mode product delivery or mobile optimization. Retain desktop accessibility, keyboard operation, readable contrast and browser zoom support.
 
+## Official-source data only — user direction, 25 September 2026
+
+Do not create or invent synthetic data, sample records, dummy identifiers, simulated source documents, generated test images or agent-authored fixture datasets. Acquire real data from data.gov.in first, or directly from the responsible official government/public authority or official issuing institution. A third-party mirror, community dataset or vendor prediction is not an official source merely because it is publicly available.
+
+Keep the issuing authority, original URL, acquisition date, licence/permission, original bytes and hashes, geography, reference system and source limitations. Deterministic extraction or conversion of official data is allowed when it is traceable to the unchanged original; never invent missing values, relationships, geometry, controls, rights or expected source facts. If an official source cannot support a required test case, record that coverage as unavailable and leave the claim unqualified instead of manufacturing data.
+
+This direct user direction supersedes older plan/task-card instructions to author synthetic fixtures, including the active DATA-02 assignment. Stop that authoring work and acquire official-source replacements. Preserve existing historical datasets, branches and evidence without silently deleting or rewriting them; they do not satisfy the new official-source requirement. Relay this restriction to every worker and include it in future assignments.
+
 ## Data and evidence invariants
 
 Preserve originals/hashes, source and geometry revisions, identifiers, locators, reference frames/units, attribution, permissions and review history. Unknown, absent, null, withheld and conflicting remain distinct. Official supplied parcel ULPINs differ from application building/floor/space IDs. A floor is not necessarily a unit; one building can span parcels and one unit can span floors. Source or display geometry does not grant ownership or official issuance.
