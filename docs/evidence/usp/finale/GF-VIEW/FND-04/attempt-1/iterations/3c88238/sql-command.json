@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "node",
+    "scripts/usp/gf/FND-04-isolated.mjs"
+  ],
+  "startedAt": "2026-09-25T17:01:01.661610+00:00",
+  "finishedAt": "2026-09-25T17:01:17.333635+00:00",
+  "exitCode": 0,
+  "stdout": "{\"status\":\"passed\",\"output\":\"/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/.runtime/usp-fnd04/2026-09-25T17-01-01.694Z\",\"modes\":[\"fresh\",\"retained\"]}\n",
+  "stderr": ""
+}

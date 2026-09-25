@@ -1,3 +1,4 @@
+import { requireQualifiedGeometryRecords } from './usp/geometry';
 import { documentProfileFormats, documentLimitMiB } from "../document-formats";
 import { areaSceneAssets } from "./scene-assets";
 import { usesGeographicNeighbours } from "./neighbour-scenario-policy";
@@ -1162,6 +1163,7 @@ export async function reviewPackage(id: string, expectedRevision: number) {
     area = await getArea(pkg.areaId);
   if (pkg.revision !== expectedRevision) conflict();
   const features = await effectiveFeatures(pkg, area);
+  await requireQualifiedGeometryRecords('FIND', 'area_feature', features);
   const associations = await checkAssociations(features.map((f) => f.id));
   const result = await areaGeo<{ findings: AreaFinding[]; coverage: string[] }>(
     "check",
@@ -1362,6 +1364,7 @@ export async function runAreaCheck(
   const context = await areaContext(areaId);
   if (context.area.revision !== expectedRevision) conflict();
   const checkFeatures = await withNeighbours(context.features, context.area);
+  await requireQualifiedGeometryRecords('FIND', 'area_feature', checkFeatures);
   const associations = await checkAssociations(checkFeatures.map((f) => f.id));
   const check: AreaCheck = {
     id: randomUUID(),
