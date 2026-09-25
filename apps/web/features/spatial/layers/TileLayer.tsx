@@ -35,6 +35,13 @@ export interface TileLayerProps {
     visibleKinds?: readonly string[];
     shadows?:boolean;
     opacityByKind?:Readonly<Record<string,number>>;
+    /** Presentation-only colours keyed by canonical scene entity; no analytical effect. */
+    entityColors?:Readonly<Record<string,string>>;
+    entityOpacity?:Readonly<Record<string,number>>;
+    kindColors?:Readonly<Record<string,string>>;
+    selectionColor?:string;
+    highlightColor?:string;
+    baseColor?:string;
     highlightedIds?:readonly string[];
     hiddenEntityIds?:readonly string[];
     overlays?:readonly TileOverlay[];
@@ -232,18 +239,21 @@ export default function TileLayer(props: TileLayerProps) {
         const hidden=[...(props.hiddenEntityIds??[]),...(props.inspection?.parentId?[props.inspection.parentId]:[])];
         const show = hidden.length?`(${kindVisibility}) && ${hidden.map(id=>`\${entityId} !== ${safeExpression(id)}`).join(' && ')}`:kindVisibility;
         const opacity=(kind:string)=>Math.max(.05,Math.min(1,props.opacityByKind?.[kind]??1));
+        const entityOpacity=(id:string)=>Math.max(.1,Math.min(1,props.entityOpacity?.[id]??.98));
         const colors:(readonly [string,string])[]=[];
-        if(selected)colors.push([`\${entityId} === ${safeExpression(selected)}`,"color('#b4d2b7', 0.98)"]);
-        for(const id of props.highlightedIds??[])colors.push([`\${entityId} === ${safeExpression(id)}`,"color('#eaa67e', 0.95)"]);
-        for(const kind of Object.keys(props.opacityByKind??{}))colors.push([`\${kind} === ${safeExpression(kind)}`,`color('white', ${opacity(kind)})`]);
-        colors.push(['true',"color('white')"]);
+        if(selected)colors.push([`\${entityId} === ${safeExpression(selected)}`,`color(${safeExpression(props.selectionColor??props.baseColor??'white')}, ${entityOpacity(selected)})`]);
+        for(const id of props.highlightedIds??[])colors.push([`\${entityId} === ${safeExpression(id)}`,`color(${safeExpression(props.highlightColor??props.baseColor??'white')}, ${entityOpacity(id)})`]);
+        for(const [id,color] of Object.entries(props.entityColors??{}))if(/^#[0-9a-fA-F]{6}$/.test(color))colors.push([`\${entityId} === ${safeExpression(id)}`,`color(${safeExpression(color)}, ${Math.max(.1,Math.min(1,props.entityOpacity?.[id]??.92))})`]);
+        for(const [kind,color] of Object.entries(props.kindColors??{}))if(/^#[0-9a-fA-F]{6}$/.test(color))colors.push([`\${kind} === ${safeExpression(kind)}`,`color(${safeExpression(color)}, ${opacity(kind)})`]);
+        for(const kind of Object.keys(props.opacityByKind??{}))if(!props.kindColors?.[kind])colors.push([`\${kind} === ${safeExpression(kind)}`,`color('white', ${opacity(kind)})`]);
+        colors.push(['true',`color(${safeExpression(props.baseColor??'white')})`]);
         tileset.style = new Cesium.Cesium3DTileStyle({
             show,
             color: {conditions:colors},
         });
-        tileset.colorBlendMode = Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT;
+        tileset.colorBlendMode = props.kindColors ? Cesium.Cesium3DTileColorBlendMode.REPLACE : Cesium.Cesium3DTileColorBlendMode.HIGHLIGHT;
         viewer.scene.requestRender();
-    }, [ready, props.selection?.entityId, props.visibleKinds, props.inspection?.parentId,props.hiddenEntityIds,props.highlightedIds,props.opacityByKind]);
+    }, [ready, props.selection?.entityId, props.visibleKinds, props.inspection?.parentId,props.hiddenEntityIds,props.highlightedIds,props.opacityByKind,props.entityColors,props.entityOpacity,props.kindColors,props.selectionColor,props.highlightColor,props.baseColor]);
     useEffect(()=>{
         const state=active.current;if(!state||!ready)return;
         const {viewer,tileset}=state;

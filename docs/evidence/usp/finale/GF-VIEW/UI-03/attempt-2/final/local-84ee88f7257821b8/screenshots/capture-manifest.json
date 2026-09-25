@@ -1,0 +1,58 @@
+[
+  {
+    "screen": "area",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d",
+    "width": 1440,
+    "height": 900,
+    "ready": "2D geometry visible",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/final/local-84ee88f7257821b8/screenshots/area-1440.png"
+  },
+  {
+    "screen": "selected",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=05a784ee-358c-4835-860d-4c47d0876aa4",
+    "width": 1440,
+    "height": 900,
+    "ready": "2D geometry visible",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/final/local-84ee88f7257821b8/screenshots/selected-1440.png"
+  },
+  {
+    "screen": "selected-findings",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=05a784ee-358c-4835-860d-4c47d0876aa4",
+    "width": 1440,
+    "height": 900,
+    "ready": "saved findings mode",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/final/local-84ee88f7257821b8/screenshots/selected-findings-1440.png"
+  },
+  {
+    "screen": "area",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d",
+    "width": 1024,
+    "height": 768,
+    "ready": "2D geometry visible",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/final/local-84ee88f7257821b8/screenshots/area-1024.png"
+  },
+  {
+    "screen": "selected",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=05a784ee-358c-4835-860d-4c47d0876aa4",
+    "width": 1024,
+    "height": 768,
+    "ready": "2D geometry visible",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/final/local-84ee88f7257821b8/screenshots/selected-1024.png"
+  },
+  {
+    "screen": "selected-equivalent-200-percent-zoom",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=05a784ee-358c-4835-860d-4c47d0876aa4",
+    "width": 720,
+    "height": 450,
+    "ready": "2D geometry; 720 CSS pixels represent 1440 at 200% browser zoom; Escape restores panel focus",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/final/local-84ee88f7257821b8/screenshots/selected-equivalent-200-percent-zoom.png"
+  },
+  {
+    "screen": "selected-3d",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=05a784ee-358c-4835-860d-4c47d0876aa4",
+    "width": 1440,
+    "height": 900,
+    "ready": "scene-ready",
+    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/final/local-84ee88f7257821b8/screenshots/selected-3d-1440.png"
+  }
+]

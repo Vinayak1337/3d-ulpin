@@ -1,0 +1,165 @@
+{
+  "config": {
+    "argv": [
+      "/Users/vinayak/.hermes/node/bin/node",
+      "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/usp-ui03-content.spec.ts"
+    ],
+    "configFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/playwright.config.ts",
+    "rootDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/final/local-0d17bcd140bf9cbc/browser-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "usp-ui03-content.spec.ts",
+      "file": "usp-ui03-content.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "UI-03 area map reads one unchanged saved snapshot",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 22586,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Test fixture', { exact: true }).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Test fixture', { exact: true }).first() with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Test fixture', { exact: true }).first()\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Test fixture', { exact: true }).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Test fixture', { exact: true }).first() with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Test fixture', { exact: true }).first()\u001b[22m\n\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts:31:79",
+                    "location": {
+                      "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts",
+                      "column": 79,
+                      "line": 31
+                    },
+                    "snippet": "  29 |         expect(response?.ok(), route).toBeTruthy();\n  30 |         await expect(page.locator('.ui-contextbar h1')).toBeVisible();\n> 31 |         await expect(page.getByText('Test fixture', { exact: true }).first()).toBeVisible();\n     |                                                                               ^\n  32 |         await page.getByRole('button', { name: '2D Map' }).click();\n  33 |         await expect(page.locator('.ui-renderer[aria-hidden=\"false\"] svg').first()).toBeVisible();\n  34 |         await page.evaluate(() => document.fonts.ready);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts",
+                        "column": 79,
+                        "line": 31
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Test fixture', { exact: true }).first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Test fixture', { exact: true }).first() with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Test fixture', { exact: true }).first()\u001b[22m\n\n\n  29 |         expect(response?.ok(), route).toBeTruthy();\n  30 |         await expect(page.locator('.ui-contextbar h1')).toBeVisible();\n> 31 |         await expect(page.getByText('Test fixture', { exact: true }).first()).toBeVisible();\n     |                                                                               ^\n  32 |         await page.getByRole('button', { name: '2D Map' }).click();\n  33 |         await expect(page.locator('.ui-renderer[aria-hidden=\"false\"] svg').first()).toBeVisible();\n  34 |         await page.evaluate(() => document.fonts.ready);\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts:31:79"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T19:47:00.323Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui03-content-UI-03-are-0c6aa-ne-unchanged-saved-snapshot/test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui03-content-UI-03-are-0c6aa-ne-unchanged-saved-snapshot/video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui03-content-UI-03-are-0c6aa-ne-unchanged-saved-snapshot/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui03-content-UI-03-are-0c6aa-ne-unchanged-saved-snapshot/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts",
+                    "column": 79,
+                    "line": 31
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "84274564f35635bb8cb9-981f8619ae9a49f820a1",
+          "file": "usp-ui03-content.spec.ts",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-25T19:47:00.089Z",
+    "duration": 23225.79,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

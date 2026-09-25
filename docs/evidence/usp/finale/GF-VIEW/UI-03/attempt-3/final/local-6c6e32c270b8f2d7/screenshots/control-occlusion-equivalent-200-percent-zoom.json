@@ -1,0 +1,146 @@
+{
+  "3D": {
+    "left": 22,
+    "top": 136,
+    "right": 83.625,
+    "bottom": 180,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "BUTTON"
+  },
+  "2D": {
+    "left": 83.625,
+    "top": 136,
+    "right": 151.375,
+    "bottom": 180,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "BUTTON"
+  },
+  "Layers": {
+    "left": 166.375,
+    "top": 136,
+    "right": 210.375,
+    "bottom": 180,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "svg"
+  },
+  "Colour by": {
+    "left": 435.828125,
+    "top": 138,
+    "right": 535.828125,
+    "bottom": 178,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "SELECT"
+  },
+  "Underground": {
+    "left": 555.828125,
+    "top": 139,
+    "right": 573.828125,
+    "bottom": 177,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "INPUT"
+  },
+  "Fit block": {
+    "left": 540.796875,
+    "top": 136,
+    "right": 647.421875,
+    "bottom": 180,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "BUTTON"
+  },
+  "Focus selected": {
+    "left": 655.421875,
+    "top": 136,
+    "right": 701.421875,
+    "bottom": 180,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "path"
+  },
+  "Source world": {
+    "left": 108.90625,
+    "top": 207,
+    "right": 206.90625,
+    "bottom": 251,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "SELECT"
+  },
+  "Levels": {
+    "left": 547,
+    "top": 265,
+    "right": 705,
+    "bottom": 307.84375,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "P"
+  },
+  "Legend": {
+    "left": 14,
+    "top": 341.609375,
+    "right": 264,
+    "bottom": 401.609375,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "SECTION"
+  },
+  "North": {
+    "left": 358,
+    "top": 291.609375,
+    "right": 402,
+    "bottom": 335.609375,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "SPAN"
+  },
+  "Zoom in": {
+    "left": 408,
+    "top": 291.609375,
+    "right": 452,
+    "bottom": 335.609375,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "path"
+  },
+  "Zoom out": {
+    "left": 452,
+    "top": 291.609375,
+    "right": 496,
+    "bottom": 335.609375,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "path"
+  },
+  "Return": {
+    "left": 496,
+    "top": 291.609375,
+    "right": 540,
+    "bottom": 335.609375,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "path"
+  },
+  "Inspector": {
+    "left": 471.921875,
+    "top": 363.609375,
+    "right": 581.359375,
+    "bottom": 401.609375,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "BUTTON"
+  },
+  "Checks": {
+    "left": 581.359375,
+    "top": 361.609375,
+    "right": 706,
+    "bottom": 401.609375,
+    "insideViewport": true,
+    "unobscured": true,
+    "hit": "BUTTON"
+  }
+}
