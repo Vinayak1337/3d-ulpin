@@ -1,4 +1,17 @@
 /* Foundation contrast for the retained Studio chrome. Map geometry keeps its source colors. */
+.ulpin-app.studio-operations .ui-button {
+  /* A palette switch changes text immediately; animating only the surface causes unreadable controls. */
+  transition: none;
+}
+
+.ulpin-app.studio-operations:not([data-theme="dark"]) :is(
+  .ui-map-compass .ui-button,
+  .ui-map-zoom .ui-button,
+  .ui-map-bottom > .ui-button
+) {
+  border-color: var(--ui-muted);
+}
+
 .ulpin-app.studio-operations .city-nav a,
 .ulpin-app.studio-operations .ui-map-mode button {
   color: var(--ui-ink-soft);

@@ -45,8 +45,8 @@ async function sampleControl(locator: Locator, name: string): Promise<ContrastSa
     const style = getComputedStyle(element);
     const bg = background(element);
     const text = over(parse(style.color), bg);
-    const svg = element.querySelector('svg');
-    const icon = svg ? over(parse(getComputedStyle(svg).color), background(svg)) : null;
+    const glyph = element.querySelector('svg, .ui-north-arrow');
+    const icon = glyph ? over(parse(getComputedStyle(glyph).color), background(glyph)) : null;
     const border = parse(style.borderTopColor);
     const boundary = parseFloat(style.borderTopWidth) > 0 && border[3] > 0
       ? ratio(over(border, background(element.parentElement ?? element)), background(element.parentElement ?? element))
@@ -59,7 +59,7 @@ async function sampleControl(locator: Locator, name: string): Promise<ContrastSa
       name: label,
       enabled: !(element instanceof HTMLButtonElement && element.disabled) && element.getAttribute('aria-disabled') !== 'true',
       text: ratio(text, bg),
-      icon: icon ? ratio(icon, background(svg!)) : null,
+      icon: icon ? ratio(icon, background(glyph!)) : null,
       boundary,
       foreground: style.color,
       background: style.backgroundColor,
@@ -82,6 +82,7 @@ async function visibleControls(page: Page) {
     ['Zoom out', page.getByRole('button', { name: 'Zoom out' })],
     ['Return to block view', page.getByRole('button', { name: 'Return to block view' })],
     ['Checks', page.getByRole('button', { name: /Checks/ })],
+    ['Checks status', page.locator('.ui-map-bottom .ui-badge')],
   ];
   return Promise.all(targets.map(async ([name, locator]) => {
     await expect(locator, `${name} visible`).toBeVisible();
@@ -125,6 +126,9 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
       else element.removeAttribute('data-theme');
     }, theme);
     const immediate = await sampleControl(page.getByRole('link', { name: 'Add files' }), 'Add files immediate');
+    expect.soft(immediate.text, `${theme} immediate Add files text`).toBeGreaterThanOrEqual(4.5);
+    expect.soft(immediate.icon, `${theme} immediate Add files icon`).toBeGreaterThanOrEqual(3);
+    expect.soft(immediate.runningAnimations, `${theme} immediate Add files motion`).toBe(0);
     await page.waitForTimeout(250); // Allow ordinary UI transitions to finish before contrast and screenshots.
     const result = await page.locator('.ulpin-app').evaluate(element => {
       const style = getComputedStyle(element);
@@ -186,6 +190,9 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
   }
 
   const addFiles = page.getByRole('link', { name: 'Add files' });
+  const focusSelected = page.getByRole('button', { name: 'Focus selected property' });
+  await expect(focusSelected).toBeDisabled();
+  diagnostics.disabledControl = { name: 'Focus selected property', disabled: true };
   await addFiles.hover();
   await page.waitForTimeout(250);
   const hovered = await sampleControl(addFiles, 'Add files hover');
@@ -221,6 +228,7 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
   expect(fonts.width).toBeGreaterThan(40);
   expect(fonts.family).toContain('Noto Sans Devanagari');
   if (screenshots) await page.locator('[lang="hi"]').last().screenshot({ path: join(screenshots, 'hindi-label.png') });
+  await page.locator('[lang="hi"]').last().evaluate(element => element.remove());
   expect(requests.filter(url => !url.startsWith(new URL(page.url()).origin))).toEqual([]);
   for (const name of ['NotoSans-Variable', 'NotoSansDevanagari-Variable', 'NotoSansMono-Variable']) {
     expect(requests.some(url => url.endsWith(`/fonts/${name}.woff2`)), `${name} requested locally`).toBeTruthy();
