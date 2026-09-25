@@ -2,8 +2,8 @@
   "schemaVersion": "ulpin-plan-alignment-receipt/1",
   "kind": "documentation_and_validator_only",
   "status": "passed",
-  "codeCommit": "2f0977ba9462186403fa9bdf2e3021b45ca55275",
-  "checkedAt": "2026-09-25T11:36:31.344332+00:00",
+  "codeCommit": "d2585fa5a3ddb11db29c757c38a03c40e12a8ae2",
+  "checkedAt": "2026-09-25T11:48:48.817960+00:00",
   "agent": {
     "id": "f06d415e-175e-4fb9-84b2-4fafdd96b0a7",
     "product": "Claude Code",
@@ -34,10 +34,10 @@
     "docs/usp-agent-handoffs/24-product-method-and-ppt.md": "6bafa08012f02d56bdeb6ac284845bd3364a19a81aa5be20ff0fe0484517e7d1",
     "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md": "4c096e2f88612ea54556c499f2f4ff361caa9f0e8e866f7d226b1bb641fbbd0d",
     "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md": "de4aa60a7aa76e8d71d18f6b5dcb6a8ae170be18c429f5060ff1a61fb0f9865a",
-    "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md": "20be81665b3abc0f544565d3890d66ed52d76d53aa0f5579c3c8e9be1008b2c2",
+    "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md": "5e6bf188ea15a7155e4d8ac239ae828bc6271f4182178e39425bcc65bc657c27",
     "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md": "fa72423469f8e13fc1288fe1a6cf827fc2c93e28fa06ce330426f764ba1e24a8",
-    "docs/usp-agent-handoffs/29-agent-task-cards.md": "4d17a2d063442a3b5b5ce8afb82eb7d8aa6ceec4fe2ce23ee6ecfcfb57da6d0a",
-    "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md": "ebbe2f3a633c73cceb6393aa6139a2f634beae112e98922e993bf319cb46506c",
+    "docs/usp-agent-handoffs/29-agent-task-cards.md": "a05fa90ab21d1555923457cc323c40de57966577f93ec332f122670130f0adbd",
+    "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md": "72e3419471a911b148ffd736ec4a6bb3eae49ea3c230e0f6c8cab782cf14b417",
     "docs/usp-agent-handoffs/90-required-human-tasks.md": "97b94945d0f4f63b95f5ca36c1048acf0bf1a58a210233b2e6f6da66af5700eb",
     "docs/usp-agent-handoffs/97-review-findings-and-alignment.md": "281430eec0d88a1d4cbf108912b0926bc3a3d59749124a31538b1e5df891edc4",
     "docs/usp-agent-handoffs/98-engineering-readiness-audit.md": "8704aab3dd6cd6096b0e84696e874dae2518129e4f9fcdf08777e5cbc30203de",
@@ -59,7 +59,7 @@
         "-q"
       ],
       "exitCode": 0,
-      "output": "----------------------------------------------------------------------\nRan 40 tests in 2.200s\n\nOK\n"
+      "output": "----------------------------------------------------------------------\nRan 40 tests in 2.235s\n\nOK\n"
     },
     {
       "command": [
