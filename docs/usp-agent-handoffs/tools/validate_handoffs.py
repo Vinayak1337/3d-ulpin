@@ -5,11 +5,16 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
 import subprocess
 from urllib.parse import unquote, urlsplit
+
+_spec = importlib.util.spec_from_file_location('plan_governance', Path(__file__).with_name('plan_governance.py'))
+governance = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(governance)
 
 PLAN = 'docs/usp-agent-handoffs/release-plan.json'
 RETIRED = (
@@ -80,7 +85,13 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
             return None
         return path
 
-    def runtime_receipt(relative: str, test_id: str) -> None:
+    receipt_cache = {}
+
+    def runtime_receipt(relative: str, test_id: str, status: str = 'passed') -> dict | None:
+        key = (relative, test_id, status)
+        if key in receipt_cache:
+            return receipt_cache[key]
+        receipt_cache[key] = None
         prefix = 'docs/evidence/usp/finale' if test_id.startswith('GF-') else 'docs/evidence/usp/full-product'
         path = exists(relative, test_id + ' runtime receipt')
         if not path:
@@ -103,8 +114,11 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
                 fail(f'{test_id}: missing required receipt field {field}')
         if receipt.get('schemaVersion') != 'ulpin-test-receipt/1' or receipt.get('testId') != test_id:
             fail(f'{test_id}: wrong runtime receipt schema/test ID')
-        if receipt.get('status') != 'passed' or type(receipt.get('exitCode')) is not int or receipt.get('exitCode') != 0:
-            fail(f'{test_id}: receipt does not record a passing command')
+        if status == 'passed':
+            if receipt.get('status') != status or type(receipt.get('exitCode')) is not int or receipt.get('exitCode') != 0:
+                fail(f'{test_id}: receipt does not record a passing command')
+        elif receipt.get('status') != 'failed' or type(receipt.get('exitCode')) is not int or receipt.get('exitCode') < 0:
+            fail(f'{test_id}: receipt does not record a failed attempt')
         if not re.fullmatch(r'[0-9a-f]{40}', str(receipt.get('codeCommit', ''))):
             fail(f'{test_id}: missing pinned code commit')
         else:
@@ -163,12 +177,15 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
                 if not isinstance(case, dict) or not all(k in case for k in ('caseId','expected','actual','result')):
                     fail(f'{test_id}: malformed expected/actual case')
                     continue
-                valid_result = case['result'] == 'passed' or (
+                valid_result = case['result'] in (('passed', 'failed') if status == 'failed' else ('passed',)) or (
                     case['result'] == 'not_applicable' and isinstance(case.get('reason'), str) and case['reason'].strip())
                 if not valid_result or not case['caseId'] or case['caseId'] in case_ids:
                     fail(f'{test_id}: failed or duplicate expected/actual case')
                 case_ids.add(case['caseId'])
-            if not any(isinstance(case, dict) and case.get('result') == 'passed' for case in cases):
+            if status == 'failed' and receipt.get('exitCode') == 0 and not any(
+                    isinstance(case, dict) and case.get('result') == 'failed' for case in cases):
+                fail(f'{test_id}: failed attempt has no command or case failure')
+            if status == 'passed' and not any(isinstance(case, dict) and case.get('result') == 'passed' for case in cases):
                 fail(f'{test_id}: receipt has no executed passing case')
         artifacts = receipt.get('artifacts')
         if not isinstance(artifacts, list) or not artifacts:
@@ -190,6 +207,9 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
                     digest = hasher.hexdigest()
                     if digest != artifact.get('sha256'):
                         fail(f'{test_id}: artifact hash mismatch')
+
+        receipt_cache[key] = receipt
+        return receipt
 
     try:
         plan = json.loads((root / relative_plan).read_text())
@@ -238,13 +258,6 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
         for evidence in gate.get('evidence', []):
             exists(evidence, id + ' evidence')
         if gate.get('status') == 'complete':
-            if not gate.get('evidence'):
-                fail(f'{id}: complete without evidence')
-            expected_receipts = {r for t in gate.get('tests', []) for r in tests.get(t, {}).get('receipts', [])}
-            if set(gate.get('evidence', [])) != expected_receipts:
-                fail(f'{id}: gate evidence must equal its exact test receipts')
-            if any(tests.get(t, {}).get('status') != 'passed' for t in gate.get('tests', [])):
-                fail(f'{id}: complete without passed tests')
             if any(gates.get(d, {}).get('status') != 'complete' for d in gate.get('dependsOn', [])):
                 fail(f'{id}: complete before dependencies')
     visiting: set[str] = set()
@@ -333,6 +346,7 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
                 runtime_receipt(receipt, id)
             else:
                 exists(receipt, id + ' receipt')
+    governance.validate_governance(root, relative_plan, plan, fail, exists, utc_timestamp, runtime_receipt)
     baseline = plan.get('baseline', {})
     if not re.fullmatch(r'[0-9a-f]{40}', baseline.get('commit', '')):
         fail('baseline must pin full commit SHA')
@@ -392,18 +406,38 @@ def validate(root: Path, relative_plan: str = PLAN) -> list[str]:
         if receipt_path:
             try:
                 receipt = json.loads(receipt_path.read_text(encoding='utf-8'))
+                if isinstance(receipt, dict):
+                    code_commit = receipt.get('codeCommit')
+                    if not re.fullmatch(r'[0-9a-f]{40}', str(code_commit or '')):
+                        fail('planValidation: missing pinned codeCommit')
+                    else:
+                        result = subprocess.run(['git', '-C', str(root), 'merge-base', '--is-ancestor',
+                                                 code_commit, 'HEAD'], capture_output=True, timeout=10, check=False)
+                        if result.returncode:
+                            fail('planValidation: codeCommit is not a verified ancestor of HEAD')
+                    utc_timestamp(receipt.get('checkedAt'), 'planValidation checkedAt')
                 hashes = receipt.get('filesSha256') if isinstance(receipt, dict) else None
                 if not isinstance(hashes, dict) or not hashes:
                     fail('planValidation: missing filesSha256')
                 else:
                     needed = {str(p.relative_to(root)) for p in docs} | {relative_plan, check.get('validator'), check.get('tests')}
+                    tools_dir = root / 'docs/usp-agent-handoffs/tools'
+                    code_inputs = {check.get('validator'), check.get('tests')} | {
+                        str(p.relative_to(root)) for p in tools_dir.rglob('*.py')}
+                    needed.update(code_inputs)
+                    if isinstance(receipt, dict) and re.fullmatch(r'[0-9a-f]{40}', str(receipt.get('codeCommit', ''))):
+                        for source in code_inputs:
+                            committed = subprocess.run(['git', '-C', str(root), 'show',
+                                f"{receipt['codeCommit']}:{source}"], capture_output=True, timeout=10, check=False)
+                            if committed.returncode or hashlib.sha256(committed.stdout).hexdigest() != hashes.get(source):
+                                fail(f'planValidation: codeCommit does not contain checked source {source}')
                     if not needed.issubset(hashes):
                         fail('planValidation: filesSha256 omits active plan inputs')
                     for filename, expected_hash in hashes.items():
                         file_path = exists(filename, 'planValidation hash')
                         if file_path and hashlib.sha256(file_path.read_bytes()).hexdigest() != expected_hash:
                             fail(f'planValidation: stale filesSha256 for {filename}')
-            except (OSError, ValueError) as exc:
+            except (OSError, ValueError, subprocess.SubprocessError) as exc:
                 fail(f'planValidation: unreadable hash receipt: {exc}')
     elif check.get('status') != 'pending':
         fail('invalid planValidation status')
