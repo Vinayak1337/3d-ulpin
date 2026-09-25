@@ -283,7 +283,7 @@ export function BlockInspector({
       ? [{ feature: selected, status: "selected" }]
       : dossier.data?.parcels || [];
   return (
-    <aside className="ui-block-inspector" aria-label="Context inspector">
+    <aside className="ui-block-inspector" aria-label="Context inspector" data-evidence-open={sourceDialog ? "true" : undefined}>
       <header className="ui-inspector-heading">
         <h2>
           {mode === "property"
