@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:09:34.870127+00:00",
+  "updatedAt": "2026-09-25T21:14:58.978848+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -280,7 +280,7 @@
         "effort": "medium"
       },
       "observedAgent": null,
-      "status": "assigned_DATA-EXCHANGE-SCOPE-01"
+      "status": "idle_waiting_corrected_manual_preview"
     }
   ],
   "assignments": [
@@ -2031,13 +2031,14 @@
         "filter excluded content across all artifacts",
         "compare sidecar independently of CityObject support",
         "compare and validate parent/children hierarchy"
-      ]
+      ],
+      "sourceScopeSearch": "DATA-EXCHANGE-SCOPE-01 found no eligible captured scope in inventories; real route roundtrip unqualified. No further acquisition/search assigned."
     },
     {
       "assignmentId": "DATA-EXCHANGE-SCOPE-01",
       "attempt": 1,
       "callbackId": "data-exchange-scope-01",
-      "status": "dispatched",
+      "status": "completed_inventory_no_eligible_scope_established",
       "workerThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
       "workerHostId": "local",
       "requestedAgent": {
@@ -2054,6 +2055,14 @@
         "service startup/restores",
         "newsourcefacts",
         "secret/private data output"
+      ],
+      "resultCommit": "7fe51ae3a6d228b1761a075d6796146573a5c671",
+      "worktree": "/Users/vinayak/.codex/worktrees/data-exchange-scope-01-luna",
+      "reportPath": "docs/evidence/usp/orchestration/manual/DATA-EXCHANGE-SCOPE-01-luna.md",
+      "observedAgent": null,
+      "limitations": [
+        "No database query; not a full database absence claim",
+        "Historical D1 lacks captured registry/source pin; other bundles lack required source/permission/placement coverage"
       ]
     }
   ],
@@ -2802,9 +2811,9 @@
     }
   ],
   "nextSteps": [
-    "Sol completes FND06 focused fixes/previewhold then FND03 three exchange fixes.",
-    "Luna checks existing eligible exchange source scope, then resumes corrected privacy UI manual test.",
-    "Astra verifies corrected risk boundaries before delegated integration."
+    "Sol completes privacy fixes/manual hold, then queued exchange fixes; no repeated data-search detour.",
+    "Luna performs live manual check on corrected pinned preview when ready.",
+    "Astra reviews corrected risk boundaries; exchange real-data roundtrip stays unqualified pending a verified eligible scope."
   ],
   "processedCallbacks": [
     {
@@ -3029,6 +3038,14 @@
       "sourceThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
       "resultCommit": "e356919be7a7994eaf9ae047697ebd28485fcd69",
       "result": "corrections_required"
+    },
+    {
+      "callbackId": "data-exchange-scope-01",
+      "assignmentId": "DATA-EXCHANGE-SCOPE-01",
+      "attempt": 1,
+      "sourceThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "resultCommit": "7fe51ae3a6d228b1761a075d6796146573a5c671",
+      "result": "inventory_only_no_eligible_scope_established"
     }
   ],
   "observations": [
