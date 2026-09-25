@@ -1,0 +1,77 @@
+{
+  "agent": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "verification": "latest worker turn context"
+  },
+  "attempt1AcquisitionLedgerSha256": "693e1b046d97a5fbc0fa846d740c399174b1d3f829a82eebd0948cd6e338fe96",
+  "attempt1HistoricalSelfTest": "superseded_nonqualifying; not run in attempt 2",
+  "codeCommit": "04c69335342942fdb89709c447ff5fef79dd0203",
+  "codeSha256": "d36de9e8e8f9bbdd6d11a5dc51283fe5cb9eef62dec382722d19a0e3a0c045c9",
+  "commands": [
+    {
+      "command": "python3 -m py_compile scripts/usp/data/DATA-09-official-reference.py",
+      "exitCode": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "python3 scripts/usp/data/DATA-09-official-reference.py check",
+      "exitCode": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "91a07fdecd441109c71a009eb1b14c01dcb13c10c2034e4d04f89803783e3cbf"
+    },
+    {
+      "command": "pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json",
+      "exitCode": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSha256": "9b8f96497f6139321306dd3332891b83eea6321d23559eb0bdd09b39b7353b05"
+    }
+  ],
+  "manifestSha256": "dcdc217f00c531d222ca80630fcb03de6516f69f3f7b82b7d371b5f64467b68d",
+  "negativeCoverage": "unavailable_under_current_official_source_policy; no altered-source adverse cases authored or executed",
+  "permission": {
+    "derivedObservations": {
+      "reason": "Derived observations retain LGD and GMDA source permission limits",
+      "state": "unconfirmed"
+    },
+    "lgdExtract": {
+      "reason": "Portal-wide GODL notice observed; applicability and exemptions for this resource not independently pinned",
+      "state": "unconfirmed"
+    },
+    "lgdQualifiedStage": {
+      "status": "not_run"
+    },
+    "lgdTestedStage": {
+      "status": "not_run"
+    }
+  },
+  "runAtUtc": "2026-09-25T16:02:08.561770+00:00",
+  "schemaVersion": "data-09-attempt-2-source-check/1",
+  "scope": "unchanged-source integrity/format checks and canonical pack validation only; no runtime or gate pass",
+  "sourceCounts": {
+    "parks": 0,
+    "roads": 2,
+    "sectors": 2
+  },
+  "staticPolicyCheck": "no self_test function or source-copy mutation imports",
+  "unchangedOriginals": {
+    "lgdMatchesData01Acquisition": true,
+    "lgdMatchesData01Check": true,
+    "lgdMatchesData01Provenance": true,
+    "lgdMatchesPackOriginal": true,
+    "lgdMatchesSubsetLineage": true,
+    "lgdOriginal": {
+      "bytes": 89622,
+      "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59"
+    },
+    "privateSourceSha256": {
+      "parks": "86d35a9b3635c9d61e1d25fca2a8bbdd27ff40be51914c701270105bdf2da31a",
+      "rera": "e2cbe2b5324067f47055761bf223e7b562c6b30e163c0f3d0b76e9ad7b24b05e",
+      "roads": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+      "sectors": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8"
+    },
+    "sourceObservationHashesMatchPrivateOriginals": true
+  }
+}
