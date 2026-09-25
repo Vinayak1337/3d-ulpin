@@ -1,0 +1,152 @@
+{
+  "schemaVersion": "fnd-02-attempt-2-evidence/1",
+  "originalBaseCommit": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
+  "planRefreshCommit": "604ab6521e75618fe57dd284bfaa84b97a133dbf",
+  "planMergeCommit": "6c8fc8d83203c666ed106be7ed59fc2230e1ea63",
+  "codeCommit": "d68a9f6416c09c2afd65c4febb1f0115592b4fbd",
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-sol",
+    "effort": "xhigh"
+  },
+  "runner": {
+    "result": "PASS",
+    "scopeId": "local-bda2fe4db6e103b7",
+    "commands": [
+      {
+        "label": "source-sha",
+        "exitCode": 0
+      },
+      {
+        "label": "docker-context",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-project",
+        "exitCode": 0
+      },
+      {
+        "label": "existing-volumes",
+        "exitCode": 0
+      },
+      {
+        "label": "services-start",
+        "exitCode": 0
+      },
+      {
+        "label": "database-restore",
+        "exitCode": 0
+      },
+      {
+        "label": "migration",
+        "exitCode": 0
+      },
+      {
+        "label": "repeat-migration",
+        "exitCode": 0
+      },
+      {
+        "label": "usp-verify-live",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-authored-pack",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-live-verify",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-plan",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-apply",
+        "exitCode": 0
+      },
+      {
+        "label": "d1-import-replay",
+        "exitCode": 0
+      },
+      {
+        "label": "d0-d1-studio-browser",
+        "exitCode": 0
+      },
+      {
+        "label": "gf-t15-project-identity",
+        "exitCode": 0
+      },
+      {
+        "label": "owned-services-cleanup",
+        "exitCode": 0
+      }
+    ],
+    "rawReceiptSha256": "05dd22dc07d9d63a7b01e9827fc02ffd002c7e2f67f9e44f418b75641718809f"
+  },
+  "gfT15": {
+    "status": "passed",
+    "scopeId": "c34c47cf-7ab1-4cd1-92ac-4664e4cb6d75",
+    "sourceSha256": "783719ada119a459da27816e97ae23db2741462575b664109b65b23bf17db4de",
+    "checks": [
+      "authored synthetic site, source and eight independent space UUIDs inserted in disposable database",
+      "two-writer same-record race, exact replay and changed-payload 409",
+      "canonical stored/HTTP/replayed receipts and changed access, policy or role rejection",
+      "stale manifest 409 before code reservation",
+      "stale version 409 and namespace unique-index savepoint retry",
+      "injected fault rolls back code and receipt; exact request subsequently succeeds",
+      "status-aware project-code resolver and locator string 422",
+      "pre-assignment and selected-target snapshots do not expose later or unrelated identities",
+      "reviewed two-parcel duplex locator correction preserves code",
+      "unreviewed parcel stays NO-ANCHOR; reviewed primary appears without changing identity",
+      "identity mutation post-state snapshot retains exact target selection and persisted pin",
+      "literal assertion metadata, mixed-complete rejection and stale source/revision pins",
+      "unsupported 1-to-1 split returns 422 before mutation",
+      "atomic split and merge with fresh successor UUID/code, retirement and retained old resolver",
+      "error cancellation and terminal retirement retain nonreusable tombstones",
+      "boundary adjustment rejects unassigned, retired and cancelled recipients without writes",
+      "boundary adjustment preserves both codes, advances both revisions and records geometry/evidence",
+      "reverse temporal boundary adjustment succeeds and never appears as identity successor",
+      "old receipt replays after later data revisions; altered captured identity fails hash check"
+    ],
+    "rows": [
+      {
+        "status": "assigned",
+        "n": 3
+      },
+      {
+        "status": "cancelled_error",
+        "n": 1
+      },
+      {
+        "status": "retired",
+        "n": 4
+      }
+    ],
+    "auditCount": 14,
+    "receiptCount": 14,
+    "representativeReceipts": [
+      "bf33b95f-42cc-4889-838b-2363e9993f26",
+      "54068362-3ffe-4bf7-8272-e66e1c5b3673",
+      "a838ed6f-d267-459a-b126-3318ee4749a0"
+    ],
+    "rawReceiptSha256": "b5eba5f511694078130134397597e94aa50306d43977d638e36f5af44af632e4"
+  },
+  "screenshots": {
+    "d0-unit-desktop.png": "3d453b3f8f8cf396966d0dbeabb1ef2a7d80c6a49711f4784f9e78297b63ac73",
+    "d1-roof-desktop.png": "2172e22b009b0aee60e651b8834a75db6840e9d40aeb36b87dd05fea0c17f40c"
+  },
+  "qualification": "authored local identity integration only; full GF0/GF1/GF-T15 and UI/history/exchange/QR remain pending independent review"
+}

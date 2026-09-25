@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "fnd-02-attempt-2-artifacts/1",
+  "codeCommit": "d68a9f6416c09c2afd65c4febb1f0115592b4fbd",
+  "files": {
+    "report.md": "e19cd8f9e6319d18f36aa1202926d2db99d58098d6561f782e723f3627336ac7",
+    "run-summary.json": "f62a4a4f6bee4f81db8768d272862e3bfce0e007174251e0543018cd7e0d93db",
+    "d0-unit-desktop.png": "3d453b3f8f8cf396966d0dbeabb1ef2a7d80c6a49711f4784f9e78297b63ac73",
+    "d1-roof-desktop.png": "2172e22b009b0aee60e651b8834a75db6840e9d40aeb36b87dd05fea0c17f40c"
+  },
+  "sources": {
+    "packages/contracts/src/usp/domain.ts": "e0f36543307fe1178aad6256f8cfd4ae535817affa115597b4c600478ae71ef2",
+    "packages/contracts/src/usp/project-identity.ts": "4d63f10923e31ced9a4c558667983ac00eeae9060597ef096d69a189aed2d4b4",
+    "apps/web/lib/server/usp/project-identity.ts": "d0cdd39a28ff04550ba8728d4737fde756b2402ec0356848fa847a4b79134248",
+    "apps/web/lib/server/usp/snapshots.ts": "22e72f9ca862959d5075af11a1c6f72776e438920989a0eab52f3df8774503dc",
+    "scripts/usp/gf/GF-T15-live.ts": "db77b93a7e217436b335b58cfc7968a41ccbfe21ab16227aecaed3cfbbd39596",
+    "tests/usp-project-identity-code.test.ts": "fc3a209c4455f240eb4689aa4d6b564d180e9bc3ef7c00b0b76296ef13544fda"
+  }
+}
