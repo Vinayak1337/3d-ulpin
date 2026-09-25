@@ -236,8 +236,8 @@ try {
   await command('ui-02-studio-frame-browser', 'pnpm', ['exec', 'playwright', 'test',
     'tests/e2e/usp-studio-frame.spec.ts'],
     { env: { ...d0Env,
-      ULPIN_UI02_SCREENSHOT_DIR: resolve(root, `docs/evidence/usp/finale/GF-VIEW/UI-02/attempt-1/runs/${scope.id}/screenshots`),
-      ULPIN_BROWSER_REPORT: resolve(root, `docs/evidence/usp/finale/GF-VIEW/UI-02/attempt-1/runs/${scope.id}/browser-report.json`),
+      ULPIN_UI02_SCREENSHOT_DIR: resolve(root, `docs/evidence/usp/finale/GF-VIEW/UI-02/attempt-2/runs/${scope.id}/screenshots`),
+      ULPIN_BROWSER_REPORT: resolve(root, `docs/evidence/usp/finale/GF-VIEW/UI-02/attempt-2/runs/${scope.id}/browser-report.json`),
     }, timeout: 180000 });
   report.checks.push({ name: 'ui-02-studio-frame',
     browser: 'tests/e2e/usp-studio-frame.spec.ts passed against production server' });

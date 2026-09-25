@@ -30,6 +30,7 @@ export default function ProductHeader({ actions, theme, onThemeToggle }: Props) 
   const search = useRef<HTMLInputElement>(null);
   const container = useRef<HTMLDivElement>(null);
   const chooser = useRef<HTMLDivElement>(null);
+  const searchReturn = useRef<HTMLElement | null>(null);
   const settled = useDebouncedValue(query.trim());
   const remote = useResource<{ matches: ResolveMatch[] }>(settled ? `/resolve?identifier=${encodeURIComponent(settled)}` : null);
   const spatialSearch = useResource<{ matches: DatasetIdentityMatch[] }>(settled ? `/spatial-datasets/search?q=${encodeURIComponent(settled)}` : null);
@@ -61,14 +62,21 @@ export default function ProductHeader({ actions, theme, onThemeToggle }: Props) 
       const editable = event.target instanceof HTMLElement && (event.target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName));
       if ((event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && !editable) || ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k")) {
         event.preventDefault();
+        searchReturn.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         search.current?.focus();
         setOpen(true);
       }
       if (event.key === "Escape") {
-        setOpen(false);
-        setDatasets(false);
-        setMobile(false);
-        if (document.activeElement === search.current) search.current?.blur();
+        if (document.querySelector("dialog[open]")) return;
+        if (open || document.activeElement === search.current) {
+          event.preventDefault();
+          setOpen(false);
+          if (document.activeElement === search.current) {
+            search.current?.blur();
+            searchReturn.current?.focus();
+          }
+        } else if (datasets) { event.preventDefault(); setDatasets(false); chooser.current?.querySelector("button")?.focus(); }
+        else if (mobile) { event.preventDefault(); setMobile(false); document.querySelector<HTMLButtonElement>(".city-mobile-menu")?.focus(); }
       }
     };
     const outside = (event: PointerEvent) => {
@@ -78,7 +86,7 @@ export default function ProductHeader({ actions, theme, onThemeToggle }: Props) 
     window.addEventListener("keydown", key);
     document.addEventListener("pointerdown", outside);
     return () => { window.removeEventListener("keydown", key); document.removeEventListener("pointerdown", outside); };
-  }, []);
+  }, [open, datasets, mobile]);
   const choose = (result: Result) => {
     if (!confirmStudioNavigation(result.href)) return;
     setOpen(false);
@@ -119,7 +127,7 @@ export default function ProductHeader({ actions, theme, onThemeToggle }: Props) 
         <Link href="/studio/datasets" onClick={() => setDatasets(false)}>Browse all datasets →</Link>
       </div>}
     </div>
-    <span className="city-snapshot-status" aria-label={areaContext.data ? "Saved area snapshot" : "Workspace status unavailable"}><span className="ui-dot" />{areaContext.data ? "Snapshot" : "Status unavailable"}</span>
+    <span className="city-snapshot-status" aria-label="Workspace snapshot status unavailable"><Icon name="info" size={14} />Status unavailable</span>
     <button className="city-theme-toggle" aria-label={`Use ${theme === "dark" ? "light" : "dark"} theme`} onClick={onThemeToggle}><Icon name="settings" size={18} /><span>{theme === "dark" ? "Light" : "Dark"}</span></button>
     {actions && <div className="city-header-actions">{actions}</div>}
     <span className="city-user-status" title="No user profile is available">User unavailable</span>
