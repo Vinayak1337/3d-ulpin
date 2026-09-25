@@ -1,0 +1,126 @@
+{
+  "config": {
+    "argv": [
+      "/Users/vinayak/.hermes/node/bin/node",
+      "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/usp-ui-foundations.spec.ts"
+    ],
+    "configFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/playwright.config.ts",
+    "rootDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-01/attempt-2/runs/local-85a703d1db6f2e2e/browser-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "usp-ui-foundations.spec.ts",
+      "file": "usp-ui-foundations.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "UI-01 local fonts, Hindi glyphs, token contrast and controls in both themes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7995,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T13:57:15.589Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui-foundations-UI-01-l-ab1cb-and-controls-in-both-themes/video.webm"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7a411bb586a0bac500a6-e620c2e8f4d4a9c67754",
+          "file": "usp-ui-foundations.spec.ts",
+          "line": 106,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-25T13:57:15.375Z",
+    "duration": 8548.471,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

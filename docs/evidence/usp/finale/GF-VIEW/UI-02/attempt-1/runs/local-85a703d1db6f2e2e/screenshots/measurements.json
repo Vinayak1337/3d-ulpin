@@ -1,0 +1,14 @@
+{
+  "areaId": "7478dab9-88a3-418b-92b7-a1697d2b46f9",
+  "selectedFeatureId": "388ddfa8-b775-465a-ab8b-44be5a547ba6",
+  "runtimeId": "1",
+  "camera": {
+    "longitude": 1.3125762538550492,
+    "latitude": 0.4969984439408631,
+    "height": 90.46409301285222,
+    "heading": 5.846855753948256,
+    "pitch": -0.8377701364268857,
+    "roll": 1.2071669885926894e-8
+  },
+  "pageErrors": []
+}
