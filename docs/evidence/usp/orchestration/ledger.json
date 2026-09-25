@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:27:15.423956+00:00",
+  "updatedAt": "2026-09-25T21:29:08.825660+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -275,10 +275,10 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "medium"
+        "effort": "high"
       },
       "observedAgent": null,
-      "status": "assigned_FND-06_attempt_3"
+      "status": "assigned_UI-08-priority"
     },
     {
       "threadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
@@ -289,14 +289,14 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-astra",
-        "effort": "high"
+        "effort": "medium"
       },
       "observedAgent": {
         "product": "Codex desktop",
         "model": "gpt-6-astra",
-        "effort": "high"
+        "effort": "medium"
       },
-      "status": "assigned_REVIEW-FND-03_attempt_2"
+      "status": "idle_review_complete"
     },
     {
       "threadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
@@ -2177,7 +2177,7 @@
       "assignmentId": "FND-06",
       "attempt": 3,
       "callbackId": "ulpin-FND-06-attempt-3",
-      "status": "dispatched",
+      "status": "accepted_bounded_review_pending_integration",
       "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "baseCommit": "b09e1b4c870480cb9b21ced568159a68552a67f4",
       "requestedAgent": {
@@ -2193,7 +2193,10 @@
         "persistent preview changes",
         "new synthetic data",
         "expanded suite"
-      ]
+      ],
+      "codeCommit": "727e506064321dff76ba72c7374fd68d22cf2b5a",
+      "resultCommit": "027471bda3d2a35eb70b82e1372b138e80b64cf0",
+      "reviewCommit": "41290b2a5e7680d9d2280bd77f0ab73b44eb7e09"
     },
     {
       "assignmentId": "REVIEW-FND-03",
@@ -2217,7 +2220,7 @@
       "assignmentId": "UI-08-priority",
       "attempt": 1,
       "callbackId": "ulpin-UI-08-priority",
-      "status": "queued_after_scalar_privacy_fix",
+      "status": "in_progress",
       "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "requestedAgent": {
         "product": "Codex",
@@ -2988,7 +2991,7 @@
     }
   ],
   "nextSteps": [
-    "Finish scalar privacy correction, then priority UI08 existing-record Batches replacement and remove reachable sample content.",
+    "Sol completes priority UI08 existing-record Batches replacement and removal of reachable sample content.",
     "Luna finishes current read-only check and returns exact visible violations; keep3187 running.",
     "Coordinate manual check and safe preview refresh for UI replacement; do not present current legacy preview as completed design.",
     "Delegate accepted exchange integration at a non-conflicting checkpoint; retain runtime qualification gaps."
@@ -3259,6 +3262,17 @@
       "callbackId": "review-FND-03-attempt-2",
       "resultCommit": "4c95a783741563adde999958c4c9d184d7dca755",
       "result": "three prior issues resolved; same-family source-review acceptance only; official route roundtrip and standards qualification open"
+    },
+    {
+      "callbackId": "ulpin-FND-06-attempt-3",
+      "codeCommit": "727e506064321dff76ba72c7374fd68d22cf2b5a",
+      "resultCommit": "027471bda3d2a35eb70b82e1372b138e80b64cf0",
+      "result": "focused22/22 and typecheck reported; UI priority started"
+    },
+    {
+      "callbackId": "review-FND-06-attempt-3",
+      "resultCommit": "41290b2a5e7680d9d2280bd77f0ab73b44eb7e09",
+      "result": "bounded scalar correction accepted; same-family review only, full privacy qualification open"
     }
   ],
   "observations": [
