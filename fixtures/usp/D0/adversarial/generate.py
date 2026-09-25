@@ -77,8 +77,12 @@ def pdf(lines: list[tuple[str, bool]]) -> bytes:
 def jpeg(gps: tuple[float, float], label: str) -> bytes:
     image = Image.new("RGB", (320, 220), (241, 244, 236))
     pen = ImageDraw.Draw(image)
-    pen.rectangle((50, 50, 260, 170), outline=(35, 75, 72), width=4)
-    pen.line((50, 50, 260, 170), fill=(128, 155, 149), width=3)
+    if label == "FRAME B":
+        pen.ellipse((105, 25, 225, 175), outline=(110, 65, 42), width=5)
+        pen.line((12, 195, 306, 195), fill=(110, 65, 42), width=5)
+    else:
+        pen.rectangle((50, 50, 260, 170), outline=(35, 75, 72), width=4)
+        pen.line((50, 50, 260, 170), fill=(128, 155, 149), width=3)
     pen.text((58, 78), label, fill=(35, 75, 72))
     lat, lon = gps
 
@@ -223,6 +227,8 @@ def make_crs_cases() -> None:
                   "declared_crs": "EPSG:32644", "geometry": "synthetic three-point control set"},
            {"crs_status": "crs_unverified", "publication": "blocked", "analytic_eligible": False,
             "known_control_residual": "fails for 44N declaration; zone central meridian differs by 6 degrees",
+            "synthetic_control_residual_lower_bound_m": 500000,
+            "numeric_derivation": "6 degrees * 111320 m/degree * cos(28.4 degrees) is about 587 km; lower bound 500 km",
             "synthetic_control_count": 3, "no_zone_inference_from_ranges": True},
            ["H28-Z3-GF-DATA-CRS", "H23-Z-INDIA-REFERENCE"], ["GF-DATA"],
            ["Coordinates are authored in WGS84 UTM 43N; controls are synthetic and share that authored frame.",
