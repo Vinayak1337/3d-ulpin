@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:31:14.430403+00:00",
+  "updatedAt": "2026-09-25T21:32:19.992520+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -310,7 +310,7 @@
         "effort": "xhigh"
       },
       "observedAgent": null,
-      "status": "assigned_MANUAL-FND-06_attempt_2"
+      "status": "idle_manual_report_complete"
     }
   ],
   "assignments": [
@@ -2186,7 +2186,8 @@
         "enlarged layout unverified",
         "no design-fidelity comparison",
         "no data mutation or provider calls"
-      ]
+      ],
+      "correctedReportCommit": "6887f9c8e8d4b0ade4a490152f3d27a30ef6b614"
     },
     {
       "assignmentId": "FND-06",
@@ -3007,7 +3008,7 @@
   ],
   "nextSteps": [
     "Sol completes priority UI08 existing-record Batches replacement and removal of reachable sample content.",
-    "Luna corrects report reference wording only; Sol handles recorded UI violations and scopes native-preparation404 without changing protected data.",
+    "Sol handles recorded UI violations and scopes native-preparation404 without changing protected data; Luna available for replacement UI check.",
     "Coordinate manual check and safe preview refresh for UI replacement; do not present current legacy preview as completed design.",
     "Delegate accepted exchange integration at a non-conflicting checkpoint; retain runtime qualification gaps."
   ],
@@ -3293,6 +3294,11 @@
       "callbackId": "manual-FND-06-attempt-2",
       "resultCommit": "9099c05af1aef6bb89c9becc1a7123dde6390eb9",
       "result": "P1 UI08 and P2 native preparation404 sent to Sol; persistent3187 left running"
+    },
+    {
+      "callbackId": "manual-FND-06-attempt-2-report-correction",
+      "resultCommit": "6887f9c8e8d4b0ade4a490152f3d27a30ef6b614",
+      "result": "report now states design fidelity not checked; no claim references absent; no preview operations"
     }
   ],
   "observations": [
