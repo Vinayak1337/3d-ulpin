@@ -1,0 +1,42 @@
+[
+  {
+    "screen": "area",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d",
+    "width": 1440,
+    "height": 900,
+    "ready": "2D geometry visible",
+    "file": "/private/tmp/ulpin-ui03-baseline-62a2802/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/baseline/local-d140959589cab08b/screenshots/area-1440.png"
+  },
+  {
+    "screen": "selected",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=05a784ee-358c-4835-860d-4c47d0876aa4",
+    "width": 1440,
+    "height": 900,
+    "ready": "2D geometry visible",
+    "file": "/private/tmp/ulpin-ui03-baseline-62a2802/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/baseline/local-d140959589cab08b/screenshots/selected-1440.png"
+  },
+  {
+    "screen": "area",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d",
+    "width": 1024,
+    "height": 768,
+    "ready": "2D geometry visible",
+    "file": "/private/tmp/ulpin-ui03-baseline-62a2802/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/baseline/local-d140959589cab08b/screenshots/area-1024.png"
+  },
+  {
+    "screen": "selected",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=05a784ee-358c-4835-860d-4c47d0876aa4",
+    "width": 1024,
+    "height": 768,
+    "ready": "2D geometry visible",
+    "file": "/private/tmp/ulpin-ui03-baseline-62a2802/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/baseline/local-d140959589cab08b/screenshots/selected-1024.png"
+  },
+  {
+    "screen": "selected-3d",
+    "route": "/studio/areas/9e77c608-bac7-4d56-9ac7-3032cc49074d?feature=05a784ee-358c-4835-860d-4c47d0876aa4",
+    "width": 1440,
+    "height": 900,
+    "ready": "scene not ready in software browser",
+    "file": "/private/tmp/ulpin-ui03-baseline-62a2802/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/baseline/local-d140959589cab08b/screenshots/selected-3d-unavailable-1440.png"
+  }
+]

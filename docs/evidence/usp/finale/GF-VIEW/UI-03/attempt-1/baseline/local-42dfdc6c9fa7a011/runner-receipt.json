@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "ui03-isolated-preview/1",
+  "scopeId": "local-42dfdc6c9fa7a011",
+  "phase": "baseline",
+  "codeSha": "62a2802cb24c9760038a8c941c17b0b8677a6ab1",
+  "status": "FAILED",
+  "source": "hash-pinned repo-data snapshot, retained historical regression only",
+  "commands": [
+    {
+      "label": "code-sha",
+      "exitCode": 0
+    },
+    {
+      "label": "docker-context",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-containers",
+      "exitCode": 0
+    },
+    {
+      "label": "empty-volumes",
+      "exitCode": 0
+    },
+    {
+      "label": "owned-services-start",
+      "exitCode": 0
+    },
+    {
+      "label": "private-bucket-init",
+      "exitCode": 0
+    },
+    {
+      "label": "exact-database-restore",
+      "exitCode": 1
+    },
+    {
+      "label": "owned-services-cleanup",
+      "exitCode": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "pinned-originals",
+      "databaseSha256": "92cbdeb930c7b20f9a90f7857f92787ebe2562c65892ad835a758bdf1b6cfda8",
+      "objectCount": 497
+    },
+    {
+      "name": "new-project-and-loopback-ports"
+    }
+  ],
+  "screenshots": [],
+  "limitation": "No DATA-09 reference scene qualification or production build.",
+  "error": "Error: exact-database-restore failed (1): pg_restore: error: could not execute query: ERROR:  type \"public.geometry\" does not exist\nLINE 8:     geometry public.geometry,\n                     ^\nCommand was: CREATE TABLE public.physical_features (\n    id uuid NOT NULL,\n    area_id uuid NOT NULL,\n    record_id uuid,\n    identifier text NOT NULL,\n    revision integer DEFAULT 0 NOT NULL,\n    body jsonb NOT NULL,\n    geometry public.geometry,\n    geographic_geometry public.geometry(Geometry,4326)\n);\n\n\n\n    at command (file:///private/tmp/ulpin-ui03-baseline-62a2802/scripts/usp/ui/UI-03-isolated-preview.mjs:56:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///private/tmp/ulpin-ui03-baseline-62a2802/scripts/usp/ui/UI-03-isolated-preview.mjs:123:3"
+}
