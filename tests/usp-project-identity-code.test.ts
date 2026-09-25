@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { P3_ALPHABET, normalizeProjectCode, projectCodeForPayload,
+import { P3_ALPHABET, ProjectLocationSchema, normalizeProjectCode, projectCodeForPayload,
   verticalLocator } from '../packages/contracts/src/usp/project-identity';
 import { newProjectCode } from '../apps/web/lib/server/usp/project-code-generator';
 
@@ -56,12 +56,25 @@ test('location line is derived from reviewed associations and supports duplex le
   const location = {
     anchorState: 'reviewed_partial' as const,
     parcels: [
-      { ulpin: 'PARCEL-A', role: 'associated' as const, sourceId: 'a', reviewed: true },
-      { ulpin: 'PARCEL-B', role: 'associated' as const, sourceId: 'b', reviewed: true },
+      { literalValue: 'PARCEL-A', role: 'associated' as const,
+        source: { sourceId: '00000000-0000-4000-8000-000000000001', revision: 1, locator: 'line 1' },
+        issuer: { state: 'unknown' as const }, validity: { state: 'absent' as const }, reviewState: 'reviewed' as const },
+      { literalValue: 'PARCEL-B', role: 'associated' as const,
+        source: { sourceId: '00000000-0000-4000-8000-000000000002', revision: 2, locator: 'line 2' },
+        issuer: { state: 'withheld' as const }, validity: { state: 'unknown' as const }, reviewState: 'reviewed' as const },
     ],
     locator: { structureKind: 'U' as const, structureNumber: 2, levels: ['F07', 'F08'],
       spaceKind: 'R' as const, spaceNumber: 3 },
   };
   assert.equal(verticalLocator(location), 'MULTI(2) / U02 / F07-F08 / R003');
-  assert.equal(verticalLocator({ ...location, anchorState: 'not_supplied' }), 'NO-ANCHOR / U02 / F07-F08 / R003');
+  assert.equal(ProjectLocationSchema.safeParse({ ...location, anchorState: 'not_supplied' }).success, false);
+  assert.equal(verticalLocator(ProjectLocationSchema.parse({ ...location, anchorState: 'supplied_unreviewed',
+    parcels: location.parcels.map(parcel => ({ ...parcel, reviewState: 'supplied_unreviewed' })) })),
+    'NO-ANCHOR / U02 / F07-F08 / R003');
+  assert.equal(ProjectLocationSchema.safeParse({ ...location, anchorState: 'reviewed_complete',
+    parcels: [location.parcels[0], { ...location.parcels[1], reviewState: 'supplied_unreviewed' }] }).success, false);
+  assert.equal(ProjectLocationSchema.parse(location).parcels[0].literalValue, 'PARCEL-A');
+  assert.equal(ProjectLocationSchema.safeParse({ ...location, parcels: [{
+    literalValue: 'PARCEL-A', role: 'primary', source: location.parcels[0].source, reviewState: 'reviewed',
+  }] }).success, false, 'issuer and validity must be explicit unknown/absent facts');
 });

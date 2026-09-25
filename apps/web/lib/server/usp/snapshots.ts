@@ -45,6 +45,16 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
      WHERE r.site_id=$1 AND r.revision>0 ORDER BY r.id LIMIT 1001`, [siteId],
   )).rows;
   if (records.length > 1000) throw new AppError(413, 'USP_SCOPE_LIMIT', 'Select a smaller property scope.');
+  const successorRows = (await client.query(`SELECT predecessor_id,successor_id FROM usp_project_lineage
+    WHERE scope_id=$1 AND kind IN ('split','merge') ORDER BY predecessor_id,successor_id`, [siteId])).rows;
+  const successors = new Map<string, string[]>();
+  for (const edge of successorRows) successors.set(edge.predecessor_id,
+    [...(successors.get(edge.predecessor_id) ?? []), edge.successor_id]);
+  const aliasRows = (await client.query('SELECT record_id,alias FROM registry_aliases WHERE site_id=$1 ORDER BY record_id,alias',
+    [siteId])).rows;
+  const aliases = new Map<string, string[]>();
+  for (const row of aliasRows) if (row.record_id) aliases.set(row.record_id,
+    [...(aliases.get(row.record_id) ?? []), row.alias]);
   const features = (await client.query(
     `SELECT f.id,f.area_id,f.record_id,f.identifier,f.revision,f.body,
       ST_AsGeoJSON(f.geometry)::jsonb AS geometry,
@@ -78,7 +88,8 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
     { namespace: 'registry_site', object_id: site.id, revision: Number(site.revision), body: site },
     ...records.map(row => ({ namespace: 'registry_record', object_id: row.id, revision: Number(row.revision),
       body: { ...row, projectIdentity: row.project_code ? { code: row.project_code,
-        status: row.project_status, location: row.project_location } : null } })),
+        status: row.project_status, location: row.project_location,
+        successors: successors.get(row.id) ?? [] } : null, historicalAliases: aliases.get(row.id) ?? [] } })),
     ...features.map(row => ({ namespace: 'area_feature', object_id: row.id, revision: Number(row.revision), body: row })),
     ...sources.map(row => ({ namespace: 'source_revision', object_id: row.id, revision: Number(row.revision),
       body: { ...row, inspection: { ...(row.inspection ?? {}),

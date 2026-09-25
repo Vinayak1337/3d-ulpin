@@ -100,13 +100,22 @@ export const UspCommitProposalSchema = z.strictObject({
   scope: UspSnapshotScopeSchema, guard: UspMutationGuardSchema,
   acknowledgement: z.string().trim().max(2048),
 }).readonly();
-export const UspCommitReceiptSchema = z.strictObject({
+const receiptFields = {
   receiptId: CoreIdSchema, operation: CoreIdSchema, requestKey: coreText(128),
-  commandSha256: CoreSha256Schema, proposalId: CoreIdSchema, reviewId: CoreIdSchema,
+  commandSha256: CoreSha256Schema, reviewId: CoreIdSchema,
   before: orderedPins, after: orderedPins, snapshot: UspSnapshotScopeSchema,
   event: z.strictObject({ streamId: CoreIdSchema, sequence: z.string().regex(/^[1-9][0-9]*$/) }).readonly(),
   committedAt: timestamp,
+};
+export const UspRegistryCommitReceiptSchema = z.strictObject({
+  ...receiptFields, proposalId: CoreIdSchema,
 }).readonly();
+export const UspIdentityCommitReceiptSchema = z.strictObject({
+  ...receiptFields, kind: z.literal('project_identity'),
+  outcome: z.strictObject({ codes: z.record(CoreIdSchema, z.string().regex(/^P3-[0-9A-HJKMNP-TV-Z]{20}-[0-9A-HJKMNP-TV-Z]{2}$/)) }).readonly(),
+}).readonly();
+/** One registered receipt boundary; registry proposals and reviewed identity commands are variants. */
+export const UspCommitReceiptSchema = z.union([UspRegistryCommitReceiptSchema, UspIdentityCommitReceiptSchema]);
 
 export const UspJobProjectionSchema = z.strictObject({
   jobId: CoreIdSchema, version: CorePositiveRevisionSchema, operation: CoreIdSchema,
