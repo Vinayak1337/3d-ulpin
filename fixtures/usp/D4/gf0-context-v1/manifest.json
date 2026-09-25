@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D4",
+  "version": 1,
+  "profile": "gf0-context-v1",
+  "description": "Retained nine-segment Uttam Nagar OpenStreetMap road context; no parcel or road-width claim.",
+  "assets": [
+    {
+      "id": "osm-road-centrelines.geojson",
+      "mediaType": "application/geo+json",
+      "classification": "observed",
+      "origin": {
+        "kind": "supplied",
+        "reference": "fixtures/uttam-nagar/uttam-nagar-road-centrelines.geojson"
+      },
+      "sourceVersion": "OSM snapshot 2026-09-16T20:48:53Z",
+      "attribution": "© OpenStreetMap contributors; ODbL 1.0",
+      "permission": {
+        "state": "documented",
+        "reference": "https://www.openstreetmap.org/copyright",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:4326",
+        "verticalReference": null,
+        "horizontalUnit": "degrees",
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "osm-road-centrelines.geojson",
+        "sha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+        "bytes": 8838
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "provenance.json"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "provenance.json"
+        },
+        "parsed": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    },
+    {
+      "id": "expected.json",
+      "mediaType": "application/json",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "DATA-01 pre-implementation source inspection, 2026-09-25"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN DATA-01 bounded source check",
+      "permission": {
+        "state": "documented",
+        "reference": "Authored project test oracle",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "expected.json",
+        "sha256": "5065c2d2fb8ad0c034dabdb72576bf902b1635ac55505ca29622bfe9b2ef9c31",
+        "bytes": 540
+      },
+      "dependencies": [
+        "osm-road-centrelines.geojson"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Authored expected values"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "provenance.json"
+        },
+        "parsed": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      }
+    }
+  ],
+  "expectedPath": "expected.json",
+  "expectedCapabilities": [
+    "indian_road_centreline_context",
+    "literal_osm_way_ids",
+    "source_byte_lineage"
+  ],
+  "missingCapabilities": [
+    "cadastral_parcel_geometry",
+    "legal_road_width",
+    "recorded_heights",
+    "ownership",
+    "survey_accuracy"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "gf0-d7-access-status/1",
+  "packId": "D7",
+  "state": "failed",
+  "reason": "permission_required",
+  "evidencePath": "demo-data/real-block/SOURCE_ACCESS.md",
+  "evidenceSha256": "b1ca574e2009a4dc4387e229f58bd429eb502aa9b005148b883cc90694264143",
+  "scope": "No authorized coherent Indian building/parcel/utility and matched plan/section source; do not infer usable utility depth.",
+  "acquiredSourceBytes": 0,
+  "retryCondition": "Data-holder permission and matched source package with rights, stable IDs, CRS, vertical reference, dates and personal-data exclusions."
+}

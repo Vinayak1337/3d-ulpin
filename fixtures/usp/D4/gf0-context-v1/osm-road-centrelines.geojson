@@ -1,0 +1,344 @@
+{
+  "type": "FeatureCollection",
+  "name": "Observed road/path centrelines; no inferred legal road widths",
+  "attribution": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.06252495044697,
+            28.619906178885127
+          ],
+          [
+            77.0626358,
+            28.620035999999995
+          ],
+          [
+            77.0626771,
+            28.6200844
+          ],
+          [
+            77.0626996,
+            28.620111300000005
+          ],
+          [
+            77.0627506,
+            28.620176199999992
+          ],
+          [
+            77.062894,
+            28.620328199999992
+          ],
+          [
+            77.06300475796402,
+            28.620458040214583
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-235103510",
+        "name": "Gurudwara Kalgidhar Marg",
+        "osm_id": "235103510",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "GPS_Trail": "2",
+          "highway": "residential",
+          "name": "Gurudwara Kalgidhar Marg"
+        },
+        "geometry_meaning": "Road/path centreline clipped to analytical extent. Width and public-land boundary are unknown."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0626996,
+            28.620111300000005
+          ],
+          [
+            77.06270819532612,
+            28.620385080706253
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-235115525",
+        "name": "OSM residential 235115525",
+        "osm_id": "235115525",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "highway": "residential"
+        },
+        "geometry_meaning": "Road/path centreline clipped to analytical extent. Width and public-land boundary are unknown."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0626771,
+            28.6200844
+          ],
+          [
+            77.06239432592996,
+            28.620022996808
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-423590906",
+        "name": "School Road",
+        "osm_id": "423590906",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "highway": "residential",
+          "name": "School Road"
+        },
+        "geometry_meaning": "Road/path centreline clipped to analytical extent. Width and public-land boundary are unknown."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0652281,
+            28.619624899999994
+          ],
+          [
+            77.0642998,
+            28.619637900000004
+          ],
+          [
+            77.0638022,
+            28.619663799999998
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-423591067",
+        "name": "OSM residential 423591067",
+        "osm_id": "423591067",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "highway": "residential"
+        },
+        "geometry_meaning": "Road/path centreline clipped to analytical extent. Width and public-land boundary are unknown."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0627506,
+            28.620176199999992
+          ],
+          [
+            77.0635535,
+            28.619675599999997
+          ],
+          [
+            77.0637781,
+            28.6195531
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-423591085",
+        "name": "OSM residential 423591085",
+        "osm_id": "423591085",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "highway": "residential"
+        },
+        "geometry_meaning": "Road/path centreline clipped to analytical extent. Width and public-land boundary are unknown."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0652302,
+            28.619794400000004
+          ],
+          [
+            77.0637481,
+            28.619826900000003
+          ],
+          [
+            77.0637192,
+            28.6198335
+          ],
+          [
+            77.0636978,
+            28.619843
+          ],
+          [
+            77.0632785,
+            28.6200923
+          ],
+          [
+            77.062894,
+            28.620328199999992
+          ],
+          [
+            77.06271289664343,
+            28.620390063973694
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-423591232",
+        "name": "OSM residential 423591232",
+        "osm_id": "423591232",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "highway": "residential"
+        },
+        "geometry_meaning": "Road/path centreline clipped to analytical extent. Width and public-land boundary are unknown."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.0626358,
+            28.620035999999995
+          ],
+          [
+            77.0635702,
+            28.6194684
+          ],
+          [
+            77.0639565,
+            28.619456599999996
+          ],
+          [
+            77.0646538,
+            28.6194448
+          ],
+          [
+            77.0652259,
+            28.619455399999996
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-423591239",
+        "name": "OSM residential 423591239",
+        "osm_id": "423591239",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "highway": "residential"
+        },
+        "geometry_meaning": "Road/path centreline clipped to analytical extent. Width and public-land boundary are unknown."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.06367846620032,
+            28.61930260072581
+          ],
+          [
+            77.0639393,
+            28.619298899999997
+          ],
+          [
+            77.0652238,
+            28.619293499999998
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-423591301",
+        "name": "OSM residential 423591301",
+        "osm_id": "423591301",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "highway": "residential"
+        },
+        "geometry_meaning": "Road/path centreline clipped to analytical extent. Width and public-land boundary are unknown."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.06522399517826,
+            28.619956981115692
+          ],
+          [
+            77.0652302,
+            28.619794400000004
+          ],
+          [
+            77.0652281,
+            28.619624899999994
+          ],
+          [
+            77.0652259,
+            28.619455399999996
+          ],
+          [
+            77.0652238,
+            28.619293499999998
+          ],
+          [
+            77.06522377170783,
+            28.619292929914288
+          ]
+        ]
+      },
+      "properties": {
+        "source_id": "osm-way-1081317173",
+        "name": "OSM residential 1081317173",
+        "osm_id": "1081317173",
+        "source_provider": "OpenStreetMap",
+        "attribution": "© OpenStreetMap contributors",
+        "license": "ODbL-1.0",
+        "source_tags": {
+          "highway": "residential"
+        },
+        "geometry_meaning": "Road/path centreline clipped to analytical extent. Width and public-land boundary are unknown."
+      }
+    }
+  ]
+}
