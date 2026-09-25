@@ -164,7 +164,7 @@ function InteractivePropertyScene({
           ) : (
             <span>
               {dossier.building.worldStatus === "synthetic"
-                ? "Fictional demonstration"
+                ? "Synthetic"
                 : "Source-supported exterior"}
             </span>
           )}
