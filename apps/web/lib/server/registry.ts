@@ -1,3 +1,4 @@
+import { requireQualifiedGeometryRecords } from './usp/geometry';
 import { readPreparationBuild } from "./preparation-continuation";
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
@@ -619,6 +620,7 @@ export async function prepareRegistryReview(
     draftRevision: expectedRevision,
     siteRevision: expectedSiteRevision,
   });
+  await requireQualifiedGeometryRecords('FIND', 'registry_record', snapshot.combined.filter(record => record.geometry));
   const result = await registryGeo<BuildResult>("check", {
     frame: snapshot.site.frame,
     validatorVersion: "registry-relationships-v2",
@@ -701,6 +703,7 @@ export async function commitRegistryReviewTx(
       );
     if ((await linkedPreparationFingerprint(client,d.case_id,true)) !== review.preparationFingerprint)
       conflict("Related property preparation changed after this review. Rebuild and review the current evidence.");
+    await requireQualifiedGeometryRecords('READY', 'registry_record', review.records.filter(record => record.geometry), client);
     if (review.findings.some((f) => f.severity === "error"))
       throw new AppError(
         422,
@@ -792,6 +795,8 @@ export async function registryQuery(
       "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY",
     );
     const site = siteFrom(await siteRow(client, siteId));
+    await requireQualifiedGeometryRecords('FIND','registry_record',
+      (await currentRecords(client,siteId)).filter(record=>record.kind==='space'),client);
     if (fingerprint(site.frame) !== fingerprint(input.frame))
       throw new AppError(
         422,
@@ -834,6 +839,7 @@ export async function registryQuery(
     }
     return { site, records: rows.map(recordFrom) };
   });
+  await requireQualifiedGeometryRecords('FIND', 'registry_record', snapshot.records);
   const result = await registryGeo<{ results: RegistryQuery["results"] }>(
     "query",
     {

@@ -1,3 +1,4 @@
+import { geometryPin, qualifiedGeometryRecordPins, isQualifiedPin } from './usp/geometry';
 import { randomUUID } from "node:crypto";
 import { legacyUrl } from "../legacy-url";
 import type { PoolClient } from "pg";
@@ -504,6 +505,21 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
       [id, building.revision],
     )
   ).rows.map((r) => r.body);
+  const findingParticipantIds = [...new Set((staleCheck ? [] : (latest?.findings ?? []))
+    .filter((finding: AreaFinding)=>finding.featureIds.includes(id))
+    .flatMap((finding: AreaFinding)=>finding.featureIds))];
+  const findingParticipants = findingParticipantIds.length ? (await query(
+    'SELECT body FROM physical_features WHERE id=ANY($1::uuid[]) AND revision>0',[findingParticipantIds])).rows.map(row=>row.body as PhysicalFeature) : [];
+  const geometryPins = [geometryPin('area_feature', building),
+    ...parcels.map(parcel => geometryPin('area_feature', parcel.feature)),
+    ...findingParticipants.map(feature=>geometryPin('area_feature',feature)),
+    ...records.filter(record => record.geometry).map(record => geometryPin('registry_record', record))];
+  const qualified = new Set([
+    ...await qualifiedGeometryRecordPins('READY','area_feature',[building,...parcels.map(parcel=>parcel.feature),...findingParticipants]),
+    ...await qualifiedGeometryRecordPins('READY','registry_record',records.filter(record=>record.geometry)),
+  ]);
+  const geometryAvailable = geometryPins.every(pin => isQualifiedPin(qualified, pin))
+    && findingParticipantIds.every(participant=>findingParticipants.some(feature=>feature.id===participant));
   return {
     building,
     canonicalBuildingId: id,
@@ -521,7 +537,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
     check: latest
       ? { id: latest.id, areaRevision: latest.areaRevision, stale: staleCheck }
       : undefined,
-    issues: (staleCheck ? [] : (latest?.findings ?? [])).filter(
+    issues: (staleCheck || !geometryAvailable ? [] : (latest?.findings ?? [])).filter(
       (f: AreaFinding) => f.featureIds.includes(id),
     ),
     investigations: (
@@ -531,6 +547,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier> {
       )
     ).rows.map((r) => r.body),
     missing: [
+      ...(!geometryAvailable ? ['Spatial analysis not assessed: canonical geometry qualification is unavailable. Retained geometry is available for source inspection only.'] : []),
       ...staleDetailLinks.map(
         () =>
           "A linked detailed representation changed. Review its source association before using it for this property.",

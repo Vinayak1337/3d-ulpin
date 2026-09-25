@@ -1,4 +1,5 @@
 import { transaction } from '../db';
+import { migrateUspGeometryTx } from './geometry-migration';
 
 /** Additive metadata beside the existing registry/source/job authorities. */
 export async function migrateUsp() {
@@ -63,7 +64,7 @@ export async function migrateUsp() {
     await client.query('INSERT INTO usp_migration_ledger(name) VALUES($1)', [name]);
     }
     const identityName = 'usp_identity_001';
-    if ((await client.query('SELECT 1 FROM usp_migration_ledger WHERE name=$1', [identityName])).rowCount) return;
+    if (!(await client.query('SELECT 1 FROM usp_migration_ledger WHERE name=$1', [identityName])).rowCount) {
     await client.query(`
       CREATE TABLE IF NOT EXISTS usp_project_identity_reviews (
         id uuid PRIMARY KEY, scope_id uuid NOT NULL REFERENCES registry_sites(id),
@@ -119,5 +120,7 @@ export async function migrateUsp() {
       );
     `);
     await client.query('INSERT INTO usp_migration_ledger(name) VALUES($1)', [identityName]);
+    }
+    await migrateUspGeometryTx(client);
   });
 }

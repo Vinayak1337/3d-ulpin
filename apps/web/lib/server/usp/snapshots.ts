@@ -11,6 +11,7 @@ import { canonical, fingerprint } from '../domain';
 import { AppError, notFound } from '../errors';
 import { settings } from '../config';
 import { readObject, sha256 } from '../storage';
+import { geometryProjection, withUspAnalyticalReader } from './geometry';
 
 type BodyRow = { namespace: string; object_id: string; revision: number; body: Record<string, any> };
 
@@ -84,7 +85,14 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
       packageParts.set(part.sourceRevisionId, parts);
     }
   }
+  const qualifications = (await client.query(`SELECT DISTINCT ON(q.namespace,q.record_id,q.record_revision) q.*
+    FROM usp_geometry_qualifications q WHERE
+      (q.namespace='registry_record' AND EXISTS(SELECT 1 FROM registry_records r WHERE r.id=q.record_id AND r.site_id=$1 AND r.revision=q.record_revision))
+      OR (q.namespace='area_feature' AND EXISTS(SELECT 1 FROM physical_features f JOIN map_areas a ON a.id=f.area_id WHERE f.id=q.record_id AND a.site_id=$1 AND f.revision=q.record_revision))
+    ORDER BY q.namespace,q.record_id,q.record_revision,q.revision DESC`, [siteId])).rows;
   return ([
+    ...qualifications.map(row => ({ namespace: 'geometry_qualification',
+      object_id: `${row.namespace}:${row.record_id}@${row.record_revision}`, revision: Number(row.revision), body: row })),
     { namespace: 'registry_site', object_id: site.id, revision: Number(site.revision), body: site },
     ...records.map(row => ({ namespace: 'registry_record', object_id: row.id, revision: Number(row.revision),
       body: { ...row, projectIdentity: row.project_code ? { code: row.project_code,
@@ -121,7 +129,8 @@ export async function captureRegistrySnapshotTx(client: PoolClient, ctx: Request
     const site = rows.find(row => row.namespace === 'registry_site')!.body;
     const members = rows.map(row => ({ pin: recordPin(row), bodySha256: fingerprint(row.body),
       bodyRef: fingerprint([row.namespace, row.object_id, row.revision, row.body]),
-      authority: row.namespace === 'registry_record' ? 'registry' as const
+      authority: row.namespace === 'geometry_qualification' ? 'geometry' as const
+        : row.namespace === 'registry_record' ? 'registry' as const
         : row.namespace === 'area_feature' ? 'area_feature' as const
         : row.namespace === 'source_revision' ? 'source' as const : 'registry' as const }));
     const normalizedSelection = selection.kind === 'site' ? { kind: 'site' as const, pins: [] }
@@ -136,6 +145,7 @@ export async function captureRegistrySnapshotTx(client: PoolClient, ctx: Request
     const manifest = UspSnapshotManifestSchema.parse({
       schemaVersion: 'usp/1', id, digest, scope, capturedAt: new Date().toISOString(),
       selection: normalizedSelection, members,
+      declarations: { state: 'not_assessed', declarationRevisions: [], entryRevisions: [], applicabilityRevisions: [] },
       frame: { horizontal: site.frame?.id ?? null, vertical: site.frame?.benchmark ?? null,
         unit: site.frame?.horizontalUnit ?? null, transform: null },
       policyVersion: ctx.policyVersion, accessViewId: ctx.accessViewId,
@@ -221,7 +231,15 @@ export async function resolveRegistryTarget(ctx: RequestContext, scope: Snapshot
     return member && ['within', 'floor', 'serves', 'crosses'].includes(link.type)
       ? [{ kind: link.type, target: member.pin }] : [];
   });
-  const result = UspResolvedTargetSchema.parse({ pin, scope,
+  const qualificationPin = manifest.members.find(member => member.pin.ref.namespace === 'geometry_qualification'
+    && member.pin.ref.id === `${pin.ref.namespace}:${pin.ref.id}@${pin.revision}`)?.pin;
+  const annotation = qualificationPin ? await readSnapshotBody(ctx, scope, qualificationPin) : null;
+  const qualified = annotation ? await withUspAnalyticalReader('READY', async client => Boolean((await client.query(
+    'SELECT 1 FROM usp_analytic_geometry WHERE namespace=$1 AND id=$2 AND revision=$3 AND qualification_revision=$4',
+    [pin.ref.namespace,pin.ref.id,pin.revision,qualificationPin!.revision],
+  )).rowCount)) : false;
+  const geometryQualification = geometryProjection(pin, annotation?.body, qualificationPin?.revision ?? null, qualified);
+  const result = UspResolvedTargetSchema.parse({ pin, scope, geometryQualification,
     backing: { kind: 'registry', siteId: row.site_id, recordId: row.id },
     kind, label: row.body?.name ?? row.identifier,
     identifiers: [
@@ -237,7 +255,8 @@ export async function resolveRegistryTarget(ctx: RequestContext, scope: Snapshot
     ],
     relations, representations: [], evidence,
     recordState: row.projectIdentity?.status && row.projectIdentity.status !== 'assigned' ? 'retained' : 'recorded',
-    capabilities: ['source-evidence', ...(row.body?.geometry ? ['local-geometry'] : [])],
+    capabilities: ['source-evidence', ...(row.body?.geometry ? ['local-geometry'] : []),
+      ...(qualified ? ['analytic-geometry'] : ['geometry-not-assessed'])],
   });
   return { state: 'available' as const, data: result };
 }
