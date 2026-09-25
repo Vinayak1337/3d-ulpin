@@ -46,17 +46,17 @@ export function LevelRail({ block }: { block: BlockController }) {
   </aside>;
 }
 
-export function MapColourControl({ block, undergroundAvailable, undergroundActive }: { block: BlockController; undergroundAvailable: boolean; undergroundActive: boolean }) {
+export function MapColourControl({ block }: { block: BlockController }) {
   const mode = block.preferences.colourBy;
   return <div className="ui-map-presentation" role="group" aria-label="Map presentation">
     <label>Colour by <select aria-label="Colour by" value={mode} onChange={event => block.setPreferences({ colourBy: event.target.value as ColourBy })}>
       {modes.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
     </select></label>
-    <label className="ui-underground-switch" title={undergroundAvailable ? "Show source-qualified below-grade geometry" : "No source-qualified below-grade geometry in the active scene"}><input type="checkbox" checked={undergroundActive} disabled={!undergroundAvailable} onChange={event => block.setPreferences({ underground: event.target.checked })}/>Underground</label>
+    <label className="ui-underground-switch" title="The saved source does not link ground level to this scene's vertical frame"><input type="checkbox" checked={false} disabled aria-describedby="ui-underground-reason"/><span>Underground<small id="ui-underground-reason">No scene ground tie</small></span></label>
   </div>;
 }
 
-export function MapLegend({ block, undergroundActive }: { block: BlockController; undergroundActive: boolean }) {
+export function MapLegend({ block }: { block: BlockController }) {
   const mode = block.preferences.colourBy;
   const features = block.visibleFeatures;
   const records = block.dossier.data?.records.filter(record => record.kind === "space") ?? [];
@@ -78,7 +78,7 @@ export function MapLegend({ block, undergroundActive }: { block: BlockController
   const evidenceLinked = features.filter(feature => displayClass(feature) === "evidence_linked").length;
   const evidenceUnknown = features.filter(feature => displayClass(feature) === "unknown").length;
   const statuses = [...new Set(features.map(recordOutline))];
-  return <aside className="ui-presentation-legend" aria-label="Map legend">
+  return <aside className="ui-presentation-legend" aria-label="Map legend" tabIndex={0}>
       {mode !== "none" && <section><h2>{modes.find(item => item.value === mode)?.label}</h2>
         {mode === "readiness" ? <p>Not assessed for a named task in this area.</p> :
           mode === "findings" && (!findings || findings.stale) ? <p>{findings?.stale ? "Saved check out of date" : "Not assessed"}</p> :
@@ -98,7 +98,6 @@ export function MapLegend({ block, undergroundActive }: { block: BlockController
         {statuses.includes("unknown") && <li><i className="ui-legend-outline ui-legend-unknown-outline"/>Record status unknown</li>}
         {unknownHeight > 0 && <li>{unknownHeight} building{unknownHeight === 1 ? "" : "s"} · height unknown</li>}
         {mode === "utilities" && features.some(feature => feature.kind === "utility" && !feature.verticalExtent) && <li>Depth not supplied for some utilities</li>}
-        {undergroundActive && <li>Source-qualified below-grade geometry only</li>}
       </ul></section>
     </aside>;
 }

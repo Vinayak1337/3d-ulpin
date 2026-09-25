@@ -1,13 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SavedSceneViewport from "../../studio/product/SavedSceneViewport";
 import { useBlock } from "./useBlock";
 import { BlockLeftRail, BlockInspector } from "./BlockRails";
 import MapPlan from "./MapPlan";
 import FindingsTray from "./FindingsTray";
 import { LevelRail, MapColourControl, MapLegend } from "./MapPresentation";
-import { eligibleUndergroundRecordIds } from "./undergroundEligibility";
 import { rightsClass } from "./mapStyleModel";
 import DataTools from "./DataTools";
 import {
@@ -32,7 +31,6 @@ export default function BlockPage({ areaId }: { areaId: string }) {
     [inspectorOpen, setInspectorOpen] = useState(true),
     [compact, setCompact] = useState(false),
     [sourceDialogOpen, setSourceDialogOpen] = useState(false),
-    [sceneFrame, setSceneFrame] = useState<{ scope: string; reference: string | null }>({ scope: "", reference: null }),
     [explode,setExplode]=useState(0);
   const checksButton = useRef<HTMLButtonElement>(null);
   const inspectorButton = useRef<HTMLButtonElement>(null);
@@ -81,26 +79,11 @@ export default function BlockPage({ areaId }: { areaId: string }) {
   }, [panel, compact, inspectorOpen, block.selected]);
   const check = useMutation();
   const context = block.context.data;
-  const sceneScope = `${areaId}:${block.world}:${block.selectedId ?? ""}`;
-  const sceneReference = sceneFrame.scope === sceneScope ? sceneFrame.reference : null;
-  const onSceneFrame = useCallback((reference: string | null) => {
-    setSceneFrame(previous => previous.scope === sceneScope && previous.reference === reference
-      ? previous : { scope: sceneScope, reference });
-  }, [sceneScope]);
-  const eligibleUndergroundIds = useMemo(
-    () => eligibleUndergroundRecordIds(block.dossier.data, sceneReference),
-    [block.dossier.data, sceneReference],
-  );
-  const undergroundAvailable = eligibleUndergroundIds.size > 0;
-  const undergroundActive = undergroundAvailable && block.preferences.underground;
   useEffect(() => {
     if (block.preferences.underground) block.setPreferences({ underground: false });
-    // The scene scope is the authority for a stored view preference.
+    // No dossier field currently ties a saved grade to this scene's display frame.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [areaId, block.world, block.selectedId]);
-  useEffect(() => {
-    if (sceneReference && !undergroundAvailable && block.preferences.underground) block.setPreferences({ underground: false });
-  }, [sceneReference, undergroundAvailable, block.preferences.underground, block.setPreferences]);
+  }, [areaId, block.world, block.selectedId, block.preferences.underground]);
   const runCheck = () => {
     void check.run(async () => {
       if (!context) return;
@@ -157,7 +140,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
             </div>
           </div>
           <div className="area-map-surface" aria-label="Area map canvas">
-            <div className="area-map-toolbar" inert={sheetOpen} aria-hidden={sheetOpen}>
+            <div className="area-map-toolbar" role="group" aria-label="Map controls" tabIndex={0} inert={sheetOpen} aria-hidden={sheetOpen}>
               <div className="ui-map-mode">
                 <button
                   aria-pressed={block.preferences.mode === "3d"}
@@ -181,7 +164,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                   </button>
                 ))}
               </div>
-              <MapColourControl block={block} undergroundAvailable={undergroundAvailable} undergroundActive={undergroundActive}/>
+              <MapColourControl block={block}/>
               <span className="ui-toolbar-spacer" />
               <Button icon="expand" onClick={() => block.navigate("fit")}>
                 Fit block
@@ -218,7 +201,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                   }}
                   aria-hidden={block.preferences.mode !== "3d"}
                 >
-                  <SavedSceneViewport block={block} world={block.world} recordId={block.recordId} onRecord={block.selectRecord} explode={explode} opacityByKind={block.preferences.opacity} undergroundActive={undergroundActive} eligibleUndergroundIds={eligibleUndergroundIds} onSceneFrame={onSceneFrame}/>
+                  <SavedSceneViewport block={block} world={block.world} recordId={block.recordId} onRecord={block.selectRecord} explode={explode} opacityByKind={block.preferences.opacity}/>
 
                 </div>
                 <div
@@ -242,7 +225,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                     issueGeometry={block.issueGeometry}
                     highlightedIds={block.highlightedIds}
                     featureLabels={block.featureLabels}
-                    details={block.recordId?block.details.filter(d=>(d.lower>=0||eligibleUndergroundIds.has(d.id))&&(d.id===block.recordId||block.dossier.data?.records.find(r=>r.id===d.id)?.links.some(l=>l.type==='floor'&&l.targetId===block.recordId))):undergroundActive?block.details.filter(d=>eligibleUndergroundIds.has(d.id)):[]}
+                    details={block.recordId?block.details.filter(d=>d.id===block.recordId||block.dossier.data?.records.find(r=>r.id===d.id)?.links.some(l=>l.type==='floor'&&l.targetId===block.recordId)):[]}
                     selectedDetailId={block.recordId}
                     onSelectDetail={block.selectRecord}
                     opacityByKind={block.preferences.opacity}
@@ -276,7 +259,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
             </aside>}
             <div className="area-map-world" inert={sheetOpen} aria-hidden={sheetOpen}><label>Source world <select aria-label="Source world" value={block.world} onChange={e=>block.setWorld(e.target.value)}>{block.worlds.map(w=><option key={w} value={w}>{w==='synthetic'?'Synthetic · test fixture':w==='observed'?'Observed':w==='planned'?'Planned':'Hypothetical'}</option>)}</select></label>{block.selected?.kind==='building'&&block.details.length>0&&<button className="ui-button" aria-pressed={explode>0} onClick={()=>setExplode(v=>v?0:1.8)}>{explode?'Stack floors':'Separate floors'}</button>}{explode > 0 && <span role="status">Display only. Measurements unchanged.</span>}</div>
             <div className="area-map-level" inert={sheetOpen} aria-hidden={sheetOpen}><LevelRail block={block}/></div>
-            <div className="area-map-legend" inert={sheetOpen} aria-hidden={sheetOpen}><MapLegend block={block} undergroundActive={undergroundActive}/></div>
+            <div className="area-map-legend" inert={sheetOpen} aria-hidden={sheetOpen}><MapLegend block={block}/></div>
             <div className="area-map-nav" inert={sheetOpen} aria-hidden={sheetOpen}>
             <div className="ui-map-compass">
               <Button
