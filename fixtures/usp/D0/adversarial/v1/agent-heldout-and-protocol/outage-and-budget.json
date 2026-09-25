@@ -1,0 +1,5 @@
+{
+  "budget_exhausted": "remaining layouts go to needs_input",
+  "mid_batch_failure": "pending layouts go to needs_input",
+  "no_key": "manual_mapping available"
+}

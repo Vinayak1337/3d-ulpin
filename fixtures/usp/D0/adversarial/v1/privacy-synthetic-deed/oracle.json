@@ -1,0 +1,63 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "privacy-synthetic-deed",
+  "classification": "test_only",
+  "expected": {
+    "aadhaar_literal": "234500000008",
+    "aadhaar_verhoeff_valid": true,
+    "fake_provider_request": "masked identifiers only; no unmasked 12 digits, PAN or mobile",
+    "gps_as_control": false,
+    "jpeg_egress": "GPS IFD removed, remaining useful image retained",
+    "mobile_literal": "+91 9999999999",
+    "pan_pattern": "AAAAA0000A",
+    "recorded_title": "not_assessed"
+  },
+  "files": [
+    {
+      "bytes": 5068,
+      "path": "gps-synthetic.jpeg",
+      "sha256": "a56aae76daae7d0853589440ce4fcb2c9e420aeee91ecbf2f3dae14936a7ea08"
+    },
+    {
+      "bytes": 149,
+      "path": "source-metadata.json",
+      "sha256": "28a8db07a22a80a1537eba7af233312dd5209cc1b99eab410ce6ac6c24e73eaa"
+    },
+    {
+      "bytes": 1062,
+      "path": "synthetic-deed.pdf",
+      "sha256": "d3d77d807b42dd0b530904b81494da5d14d23853d8e4bf8897194e41f0f654b0"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "The EXIF coordinate is a synthetic leakage probe, not positioning evidence."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H28-Z2-GF-AGENT-PII-EGRESS",
+      "H19-Z4-REDACTION"
+    ],
+    "tests": [
+      "GF-AGENT",
+      "GF-PRIVACY"
+    ]
+  },
+  "preconditions": [
+    "No real person, parcel or title is represented; all identifiers are purposefully synthetic."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "families": [
+      "PDF",
+      "JPEG EXIF"
+    ],
+    "privacy": "synthetic test identifiers only"
+  }
+}

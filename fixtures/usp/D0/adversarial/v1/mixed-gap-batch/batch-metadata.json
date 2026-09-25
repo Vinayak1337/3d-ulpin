@@ -1,0 +1,9 @@
+{
+  "drone_control": null,
+  "drone_overlap": false,
+  "horizontal_reference": "per-source; never copied across members",
+  "local_frame_hint": "LOCAL-SYN-COMMON for LAS and IFC, unverified",
+  "purpose": "synthetic mixed-gap test; no operational control",
+  "raster_geokey": "EPSG:32643 horizontal",
+  "vertical_reference": "BM-SYN-RASTER only for raster context"
+}

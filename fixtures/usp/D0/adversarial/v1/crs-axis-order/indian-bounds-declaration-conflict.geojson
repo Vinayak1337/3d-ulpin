@@ -1,0 +1,19 @@
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          77.11,
+          28.55
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "declared_axis_order": "latitude,longitude",
+        "id": "AXIS-SYN-1"
+      },
+      "type": "Feature"
+    }
+  ],
+  "type": "FeatureCollection"
+}

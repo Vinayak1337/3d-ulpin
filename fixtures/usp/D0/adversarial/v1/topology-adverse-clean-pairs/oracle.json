@@ -1,0 +1,91 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "topology-adverse-clean-pairs",
+  "classification": "test_only",
+  "expected": {
+    "clean_twin_positive_findings": 0,
+    "pairs": [
+      {
+        "adverse": "review_possible_incompatible_overlap",
+        "clean_twin": "zero_positive_volume_findings",
+        "derivation": "(10-9)*10*(3-1)=20 m3; area=10 m2; boundary contact volume=0",
+        "id": "exclusive_positive_overlap",
+        "overlap_area_m2": 10,
+        "overlap_volume_m3": 20
+      },
+      {
+        "adverse": "review_plinth_intrusion_if_envelope_qualified",
+        "clean_twin": "zero_findings",
+        "derivation": "1 m strip x 10 m = 10 m2",
+        "id": "setback_intrusion",
+        "intrusion_area_m2": 10
+      },
+      {
+        "adverse": "invalid_filled_void_or_review",
+        "clean_twin": "zero_findings",
+        "derivation": "10*10 - 2*2 = 96 m2 shell area",
+        "id": "atrium_filled",
+        "shell_area_m2": 96
+      },
+      {
+        "adverse": "unsupported_analytical_geometry",
+        "clean_twin": "zero_findings",
+        "id": "nonclosed_solid"
+      },
+      {
+        "adverse": "not_comparable; no numeric volume",
+        "clean_twin": "zero_findings",
+        "id": "incompatible_vertical_frames"
+      },
+      {
+        "adverse": "reject_filled_envelope",
+        "clean_twin": "zero_findings; one identity and two exact components with 1 m vertical void",
+        "id": "duplex_filled_envelope"
+      },
+      {
+        "adverse": "unresolved_extent; no legal inference",
+        "clean_twin": "zero_findings",
+        "id": "text_only_basement_extent"
+      }
+    ],
+    "parent_unit_containment": "not exclusive overlap",
+    "physical_intersection_grants_right": false,
+    "tolerance_absolute": 1e-06
+  },
+  "files": [
+    {
+      "bytes": 5033,
+      "path": "pairs.json",
+      "sha256": "55c596a1b0f39920d7b97997b820ebe82bdefa9047e0a955f1e75927c4f581fe"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "Some adverse outcomes are unsupported or not comparable, never fabricated zero findings."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H28-GF-T18-TOPOLOGY",
+      "H28-Z3-CLEAN-TWINS",
+      "H16-J-COMPONENTS"
+    ],
+    "tests": [
+      "GF-T18"
+    ]
+  },
+  "preconditions": [
+    "All geometry is synthetic local metres; no survey, title, complete source inventory or solid qualification is implied."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "family": "authored solid component vectors",
+    "horizontal_frame": "LOCAL-SYN-M",
+    "vertical_reference": "synthetic local metre frame"
+  }
+}

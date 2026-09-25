@@ -1,0 +1,20 @@
+{
+  "burdened_parcels": [
+    {
+      "extent": "per_parcel_geometry_pending",
+      "parcel": "PARCEL-SYN-A",
+      "site": "SITE-SYN-A"
+    },
+    {
+      "extent": "per_parcel_geometry_pending",
+      "parcel": "PARCEL-SYN-B",
+      "site": "SITE-SYN-B"
+    }
+  ],
+  "corridor_id": "METRO-SYN-1",
+  "depth_quality": null,
+  "kind": "right_of_user",
+  "source_clause": "CLAUSE-SYN-METRO-1",
+  "status": "proposed",
+  "vertical_limits": null
+}

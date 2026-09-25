@@ -1,0 +1,55 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "lift-core-480",
+  "classification": "test_only",
+  "expected": {
+    "distinct_geometry_ids": 1,
+    "distinct_space_ids": 1,
+    "multi_hop_200_node_bound_applies": false,
+    "one_hop_total": 480,
+    "page_count": 5,
+    "page_lengths": [
+      100,
+      100,
+      100,
+      100,
+      80
+    ],
+    "page_size_max": 100,
+    "review_state": "proposed; no accepted right or card disclosure inferred"
+  },
+  "files": [
+    {
+      "bytes": 10304,
+      "path": "one-core.json",
+      "sha256": "c3b6cf4bf291df31a9e0c85ea9a8182265e3d10082db53f3404dcd31b152362e"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "Pagination correctness is a fixture expectation, not a runtime endpoint pass."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H16-Z2-LARGE-BENEFICIARIES"
+    ],
+    "tests": [
+      "GF-T16"
+    ]
+  },
+  "preconditions": [
+    "All 480 unit IDs are invented and scoped to one synthetic site."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "family": "synthetic shared-use relation",
+    "site": "SITE-SYN-LIFT",
+    "source_revision": "LIFT-SYN-R1"
+  }
+}

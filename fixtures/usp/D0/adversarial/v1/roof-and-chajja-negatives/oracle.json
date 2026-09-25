@@ -1,0 +1,47 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "roof-and-chajja-negatives",
+  "classification": "test_only",
+  "expected": {
+    "chajja_setback": "not_comparable_without_sourced_plinth_footprint",
+    "extra_level_flag": false,
+    "legal_compliance": "not_assessed",
+    "mumty": "rooftop_structure, not independent storey",
+    "parapet_height_m": 1.0,
+    "roofprint_is_ground_footprint": false,
+    "water_tank": "equipment, not independent storey"
+  },
+  "files": [
+    {
+      "bytes": 720,
+      "path": "roof-source.json",
+      "sha256": "78abdecbbfca5ebc07d59f1456653e56c603dffe09aab70eddb3e8a62ca7d3b6"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "The source asserts no actual sanction or legal compliance."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H28-Z3-GF-T19-ROOF-NEGATIVES"
+    ],
+    "tests": [
+      "GF-T19"
+    ]
+  },
+  "preconditions": [
+    "Heights are authored synthetic observations under one named local benchmark, not real surveyed measurements."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "family": "synthetic plan and observed rooftop feature list",
+    "z_reference": "BM-SYN-ROOF"
+  }
+}

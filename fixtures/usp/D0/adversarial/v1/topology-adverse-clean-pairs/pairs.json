@@ -1,0 +1,298 @@
+{
+  "frame": "synthetic local metre frame, not georeferenced",
+  "pairs": [
+    {
+      "adverse": {
+        "a": {
+          "xy": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "z": [
+            0,
+            3
+          ]
+        },
+        "b": {
+          "xy": [
+            9,
+            0,
+            19,
+            10
+          ],
+          "z": [
+            1,
+            3
+          ]
+        },
+        "frame": "LOCAL-SYN-M",
+        "relation": "mutually_exclusive_units"
+      },
+      "clean_twin": {
+        "a": {
+          "xy": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "z": [
+            0,
+            3
+          ]
+        },
+        "b": {
+          "xy": [
+            10,
+            0,
+            20,
+            10
+          ],
+          "z": [
+            1,
+            3
+          ]
+        },
+        "frame": "LOCAL-SYN-M",
+        "relation": "mutually_exclusive_units"
+      },
+      "pair": "exclusive_positive_overlap"
+    },
+    {
+      "adverse": {
+        "permitted_xy": [
+          0,
+          0,
+          9,
+          10
+        ],
+        "plinth_xy": [
+          0,
+          0,
+          10,
+          10
+        ],
+        "source_role": "plinth_footprint"
+      },
+      "clean_twin": {
+        "permitted_xy": [
+          0,
+          0,
+          9,
+          10
+        ],
+        "plinth_xy": [
+          0,
+          0,
+          9,
+          10
+        ],
+        "source_role": "plinth_footprint"
+      },
+      "pair": "setback_intrusion"
+    },
+    {
+      "adverse": {
+        "atrium_xy": [
+          4,
+          4,
+          6,
+          6
+        ],
+        "outer_xy": [
+          0,
+          0,
+          10,
+          10
+        ],
+        "unit_xy": [
+          4,
+          4,
+          6,
+          6
+        ],
+        "void_respected": false
+      },
+      "clean_twin": {
+        "atrium_xy": [
+          4,
+          4,
+          6,
+          6
+        ],
+        "outer_xy": [
+          0,
+          0,
+          10,
+          10
+        ],
+        "unit_xy": [
+          4,
+          4,
+          6,
+          6
+        ],
+        "void_respected": true
+      },
+      "pair": "atrium_filled"
+    },
+    {
+      "adverse": {
+        "expected_cube_faces": 6,
+        "shell_faces": 5
+      },
+      "clean_twin": {
+        "expected_cube_faces": 6,
+        "shell_faces": 6
+      },
+      "pair": "nonclosed_solid"
+    },
+    {
+      "adverse": {
+        "a_datum": "LOCAL-SYN-A",
+        "a_z": [
+          0,
+          3
+        ],
+        "b_datum": "LOCAL-SYN-B",
+        "b_z": [
+          1,
+          2
+        ],
+        "operation": null
+      },
+      "clean_twin": {
+        "a_datum": "LOCAL-SYN-A",
+        "a_z": [
+          0,
+          3
+        ],
+        "b_datum": "LOCAL-SYN-A",
+        "b_z": [
+          4,
+          5
+        ],
+        "operation": "identity"
+      },
+      "pair": "incompatible_vertical_frames"
+    },
+    {
+      "adverse": {
+        "analytical_shape": "union_footprint_times_full_height",
+        "components": [
+          {
+            "level": "L0",
+            "xy": [
+              0,
+              0,
+              8,
+              8
+            ],
+            "z": [
+              0,
+              3
+            ]
+          },
+          {
+            "level": "L1",
+            "xy": [
+              2,
+              0,
+              10,
+              8
+            ],
+            "z": [
+              4,
+              7
+            ]
+          }
+        ],
+        "identity": "DUPLEX-SYN-1"
+      },
+      "clean_twin": {
+        "analytical_shape": "two_disjoint_components",
+        "components": [
+          {
+            "level": "L0",
+            "xy": [
+              0,
+              0,
+              8,
+              8
+            ],
+            "z": [
+              0,
+              3
+            ]
+          },
+          {
+            "level": "L1",
+            "xy": [
+              2,
+              0,
+              10,
+              8
+            ],
+            "z": [
+              4,
+              7
+            ]
+          }
+        ],
+        "identity": "DUPLEX-SYN-1"
+      },
+      "pair": "duplex_filled_envelope"
+    },
+    {
+      "adverse": {
+        "extent": null,
+        "physical_crossing": true,
+        "source": "text clause"
+      },
+      "clean_twin": {
+        "extent": {
+          "xy": [
+            20,
+            0,
+            30,
+            10
+          ],
+          "z": [
+            -5,
+            -2
+          ]
+        },
+        "other_extent": {
+          "xy": [
+            0,
+            0,
+            10,
+            10
+          ],
+          "z": [
+            -5,
+            -2
+          ]
+        },
+        "source": "synthetic profile"
+      },
+      "pair": "text_only_basement_extent"
+    }
+  ],
+  "shell_with_hole": {
+    "hole_xy": [
+      4,
+      4,
+      6,
+      6
+    ],
+    "outer_xy": [
+      0,
+      0,
+      10,
+      10
+    ]
+  }
+}

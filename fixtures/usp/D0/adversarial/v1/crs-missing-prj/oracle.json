@@ -1,0 +1,64 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "crs-missing-prj",
+  "classification": "test_only",
+  "expected": {
+    "analytic_eligible": false,
+    "crs_status": "crs_unverified",
+    "local_preview": "permitted as named unknown local frame",
+    "must_not_infer_utm_zone_from_numeric_range": true,
+    "next_action": "ask source CRS",
+    "publication": "blocked"
+  },
+  "files": [
+    {
+      "bytes": 88,
+      "path": "points.dbf",
+      "sha256": "5fa74ce7d6dfcef9cbe334f067a470181d72b47b1feaf0d9cbaca1d725a5ec84"
+    },
+    {
+      "bytes": 156,
+      "path": "points.shp",
+      "sha256": "49fbdcb037deb4803e2437d12fdf27fb53a80c5ff341f60fbb737b28df0b468f"
+    },
+    {
+      "bytes": 116,
+      "path": "points.shx",
+      "sha256": "5886d076ef75399a5477438c5df3d636853d89077644a7f34191047e745022ff"
+    },
+    {
+      "bytes": 108,
+      "path": "source-metadata.json",
+      "sha256": "3035c3fa91c01d81831c33068e4737f4c5a8f63bed81323f02e5b405929166b7"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "The point numbers resemble a projected grid but do not authorize EPSG:32643 or any other CRS."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H28-Z3-GF-DATA-CRS",
+      "H30-I-GF-SUFFICIENCY"
+    ],
+    "tests": [
+      "GF-DATA",
+      "GF-SUFFICIENCY"
+    ]
+  },
+  "preconditions": [
+    "The .shp/.shx/.dbf companions are complete and deliberately have no .prj."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "family": "ESRI Shapefile",
+    "has_prj": false,
+    "horizontal_crs": null
+  }
+}

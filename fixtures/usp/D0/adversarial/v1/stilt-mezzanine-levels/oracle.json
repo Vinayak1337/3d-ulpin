@@ -1,0 +1,66 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "stilt-mezzanine-levels",
+  "classification": "test_only",
+  "expected": {
+    "address_point": "marker/list only; no fabricated polygon",
+    "building_enhanced": "illustrative massing only; excluded from analytic/evidence/training",
+    "building_evidence_view": "2D footprint, height unknown",
+    "elevations": null,
+    "integer_levels": "not_assessed_without_reviewed_schedule",
+    "level_kinds": [
+      "basement",
+      "lower_ground",
+      "stilt",
+      "ground",
+      "mezzanine",
+      "terrace"
+    ],
+    "mezzanine_as_full_storey": false,
+    "source_order_preserved": true,
+    "stilt_as_unit": false
+  },
+  "files": [
+    {
+      "bytes": 166,
+      "path": "level-schedule.csv",
+      "sha256": "951020dbf9f2ab340e1d7f1aa66ad4134c32be48a60db4f1d1c07ff49040d834"
+    },
+    {
+      "bytes": 270,
+      "path": "sparse-objects.json",
+      "sha256": "674b5cf2311cdb15722048b8d54b47f819e7d1a89dc9bb782fbad9baba72db93"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "Four storeys is a source count only, never a recorded height."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H22-Z3-STILT-MEZZ",
+      "H30-E-SPARSE-VIEW"
+    ],
+    "tests": [
+      "GF-VIEW",
+      "GF-SUFFICIENCY"
+    ]
+  },
+  "preconditions": [
+    "The table has no source elevations or vertical datum; labels do not establish numbers or units."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "families": [
+      "CSV",
+      "synthetic geometry"
+    ],
+    "height_reference": null
+  }
+}

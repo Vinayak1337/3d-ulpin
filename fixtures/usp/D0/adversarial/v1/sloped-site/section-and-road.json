@@ -1,0 +1,31 @@
+{
+  "datum": "BM-SYN-SLOPE",
+  "road_entry": {
+    "label": "Ground",
+    "x": 20,
+    "z_local_m": 100.0
+  },
+  "site": "SITE-SYN-SLOPE",
+  "source_elevations_local_m": {
+    "Ground": 100.0,
+    "LGF": 97.0,
+    "Mezz": 102.0,
+    "Terrace": 106.0
+  },
+  "source_level_order": [
+    "LGF",
+    "Ground",
+    "Mezz",
+    "Terrace"
+  ],
+  "terrain_points_local_m": [
+    {
+      "x": 0,
+      "z": 94.0
+    },
+    {
+      "x": 20,
+      "z": 100.0
+    }
+  ]
+}

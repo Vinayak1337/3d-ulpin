@@ -1,0 +1,53 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "crs-kalianpur-as-wgs84",
+  "classification": "test_only",
+  "expected": {
+    "analytic_eligible": false,
+    "crs_status": "crs_unverified",
+    "datum_shift_estimate": "not_assessed",
+    "publication": "blocked",
+    "review_action": "request documented datum operation and real controls",
+    "synthetic_control_residual_lower_bound_m": 25
+  },
+  "files": [
+    {
+      "bytes": 245,
+      "path": "native-geodetic-and-synthetic-controls.csv",
+      "sha256": "0c3a2f9225659c1181a3daccfb819028d229e8b00bf8b621763f204e50627d7d"
+    },
+    {
+      "bytes": 153,
+      "path": "source-metadata.json",
+      "sha256": "cb4c84567d6f6c64b6dc615ac27a02e3542f03fa4f0e9b0429511c43da5785bb"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "No actual Kalianpur-to-WGS84 transform or operational control is supplied or implied."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H28-Z3-GF-DATA-CRS"
+    ],
+    "tests": [
+      "GF-DATA"
+    ]
+  },
+  "preconditions": [
+    "The offset control pairs are deliberately authored synthetic; they demonstrate a failed identity transform only."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "datum_operation": null,
+    "declared_datum": "WGS84",
+    "family": "geodetic_table",
+    "native_datum": "Kalianpur/Everest"
+  }
+}

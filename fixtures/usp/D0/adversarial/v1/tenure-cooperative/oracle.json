@@ -1,0 +1,49 @@
+{
+  "author": {
+    "effort": "high",
+    "model": "gpt-6-sol",
+    "product": "Codex",
+    "worker_thread_id": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7"
+  },
+  "authored_at": "2026-09-25",
+  "case_id": "tenure-cooperative",
+  "classification": "test_only",
+  "expected": {
+    "card_copy": "not applicable: co-operative society tenure",
+    "conveyance": "unknown",
+    "infer_equal_uds": false,
+    "land_title": "not_assessed",
+    "member_share_vs_land_uds": "distinct",
+    "tenure_regime": "cooperative_society",
+    "unit_uds": "not_applicable"
+  },
+  "files": [
+    {
+      "bytes": 460,
+      "path": "society-record.json",
+      "sha256": "f79cd2ef560268472b33c979ec78d9e3efde3b4941fa23a15f72b08c7f79cb67"
+    }
+  ],
+  "fixture_version": "v1",
+  "limitations": [
+    "A society share certificate cannot be converted into a unit's land UDS."
+  ],
+  "maps_to": {
+    "requirements": [
+      "H16-Z1-COOPERATIVE",
+      "H28-Z3-GF-T16-TENURE"
+    ],
+    "tests": [
+      "GF-T16"
+    ]
+  },
+  "preconditions": [
+    "Source statements are invented test claims, not proof of title or jurisdictional legal applicability."
+  ],
+  "schema_version": "usp-adversarial-oracle/1",
+  "source_metadata": {
+    "family": "synthetic tenure record",
+    "jurisdiction": "India; exact statute unqualified",
+    "source_revision": "COOP-SYN-R1"
+  }
+}
