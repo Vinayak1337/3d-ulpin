@@ -14,6 +14,8 @@
 }
 .ulpin-app.studio-operations .area-map-toolbar .ui-button { min-height: 44px; font-size: var(--ui-text-sm); }
 .ulpin-app.studio-operations .area-map-toolbar .ui-map-mode { box-shadow: none; border: 0; }
+.ulpin-app.studio-operations .area-map-toolbar .ui-map-mode button { color: var(--ui-ink-soft); }
+.ulpin-app.studio-operations .area-map-toolbar .ui-map-mode button[aria-pressed="true"] { background: var(--ui-primary); color: var(--ui-on-primary); }
 .ulpin-app.studio-operations .area-map-toolbar .ui-panel-switches { box-shadow: none; }
 .ulpin-app.studio-operations .area-map-world { grid-area: 3 / 2; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; justify-self: start; align-self: start; padding: 6px 8px; background: var(--ui-surface); border: 1px solid var(--ui-border-strong); border-radius: 12px; box-shadow: var(--ui-shadow-floating); font-size: var(--ui-text-sm); }
 .ulpin-app.studio-operations .area-map-world label { display: flex; align-items: center; gap: 6px; }
@@ -23,6 +25,8 @@
 .ulpin-app.studio-operations .area-map-nav { grid-area: 4 / 3; z-index: 5; align-self: end; justify-self: end; display: flex; align-items: end; gap: 6px; }
 .ulpin-app.studio-operations .area-map-nav .ui-map-compass, .ulpin-app.studio-operations .area-map-nav .ui-map-zoom { position: static; inset: auto; }
 .ulpin-app.studio-operations .area-map-nav .ui-map-compass button, .ulpin-app.studio-operations .area-map-nav .ui-map-zoom button { min-width: 44px; min-height: 44px; background: var(--ui-surface); color: var(--ui-ink); }
+.ulpin-app.studio-operations .area-map-nav .ui-map-compass span:first-child { color: var(--ui-ink-soft); }
+.ulpin-app.studio-operations .area-map-nav .ui-north-arrow { color: var(--ui-primary); }
 .ulpin-app.studio-operations .area-map-actions { grid-area: 5 / 3; z-index: 5; display: flex; align-items: end; justify-content: end; }
 .ulpin-app.studio-operations .area-map-finding { grid-area: 4 / 2; z-index: 5; align-self: start; display: flex; align-items: center; gap: 6px; width: fit-content; max-width: 100%; padding: 6px 8px; background: var(--ui-surface); border: 1px solid var(--ui-border-strong); border-radius: 8px; }
 .ulpin-app.studio-operations .area-map-surface .ui-on-demand-panel { top: 74px; bottom: 12px; left: 12px; }
