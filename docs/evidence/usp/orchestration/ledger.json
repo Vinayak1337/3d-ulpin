@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T19:35:34.840292+00:00",
+  "updatedAt": "2026-09-25T20:01:56.130048+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -212,7 +212,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_UI-03_attempt_2",
+      "status": "assigned_UI-03_attempt_3",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1648,7 +1648,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "dispatched",
+      "status": "focused_corrections_required_not_integrated",
       "ownership": [
         "Affected area-map presentation in apps/web/features/officer/block/ (BlockPage, rails, MapPlan, FindingsTray and map-specific CSS) and new replacement map components; migrate consumers before deleting old files.",
         "apps/web/features/studio/product/SavedSceneViewport.tsx and shared map presentation/state adapters only as needed by UI-03; preserve shared Cesium lifecycle, selection/cache contracts.",
@@ -1670,7 +1670,7 @@
         "Inventory replaced/retained/pending UI surfaces; ui-design-check report, relevant tests/typecheck and real route before/after captures; do not claim unexecuted production build, official source accuracy or full runtime gate pass."
       ],
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/report.md",
-      "resultCommit": null,
+      "resultCommit": "65cc57fd5b8d42015c1e8d9a81b46166809510dc",
       "continuationCommit": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
       "correctionFindings": [
         "UI03-R1",
@@ -1679,6 +1679,52 @@
         "UI03-R4",
         "UI03-R5",
         "UI03-R6"
+      ],
+      "codeCommit": "657e23fe16783270d58e96a214a15b08d046ba22",
+      "reviewPath": "docs/evidence/usp/orchestration/UI-03-attempt-2-review.json"
+    },
+    {
+      "assignmentId": "UI-03",
+      "attempt": 3,
+      "callbackId": "ulpin-UI-03-attempt-3",
+      "objective": "Implement planned map styling and honest geometry while rebuilding affected map presentation from design references; apply UI-08 content checks within the card.",
+      "baseCommit": "62a2802cb24c9760038a8c941c17b0b8677a6ab1",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-03-map-replacement",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "status": "dispatched",
+      "ownership": [
+        "Affected area-map presentation in apps/web/features/officer/block/ (BlockPage, rails, MapPlan, FindingsTray and map-specific CSS) and new replacement map components; migrate consumers before deleting old files.",
+        "apps/web/features/studio/product/SavedSceneViewport.tsx and shared map presentation/state adapters only as needed by UI-03; preserve shared Cesium lifecycle, selection/cache contracts.",
+        "Area route mounts and compatibility redirects; narrow shared token/primitives composition as needed; no unrelated Batches/Register/workspace rewrite.",
+        "Current shared spatial runtime visual encodings and source-derived presentation adapters; no new renderer, invented geometry or qualification relaxation.",
+        "Focused frontend tests and docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/ evidence.",
+        "Guarded preview infrastructure may be selectively ported from c2e8529, with separate UI-03 outputs and all existing isolation checks retained."
+      ],
+      "exclusions": [
+        "Backend schema, migrations, registry/job/provider authority, FND-04 guards, protected sources/data, seeding/import/reset, generated fixtures.",
+        "Lead ledger/plans/AGENTS, user-staged skills, credentials, deploy/push/main, unrelated local processes."
+      ],
+      "acceptance": [
+        "H29 UI-03 with current delivery policy and supplied design references; rebuild presentation as part of this card, not a separate detour.",
+        "One Colour by mode/legend, record-derived evidence/outline encoding, source-backed level rail/reference and honest unavailable heights/underground states; no fabricated source facts.",
+        "Exact URL/selection/camera continuity and unique inspection preserved; legacy components removed only after consumers migrate.",
+        "Light-only desktop with useful reclaimed space; reusable tokens/theme/responsive seams and desktop keyboard/zoom access retained.",
+        "Record-derived provenance; no sample defaults, names-based provenance or mockup code/data; unavailable DATA-09 scene remains unavailable.",
+        "Inventory replaced/retained/pending UI surfaces; ui-design-check report, relevant tests/typecheck and real route before/after captures; do not claim unexecuted production build, official source accuracy or full runtime gate pass."
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-3/report.md",
+      "resultCommit": null,
+      "continuationCommit": "65cc57fd5b8d42015c1e8d9a81b46166809510dc",
+      "correctionFindings": [
+        "UI03-R2b",
+        "UI03-R1b"
       ]
     }
   ],
@@ -2427,7 +2473,7 @@
     }
   ],
   "nextSteps": [
-    "Review UI-03 attempt2 map replacement, reference semantics, provenance and source-only tests.",
+    "Review focused UI-03 attempt3 source visibility/underground boundary and desktop zoom occlusion.",
     "Apply UI-08 checks to subsequent UI-bearing cards; no separate legacy polishing pass.",
     "Keep source/scene/independent runtime gate qualification pending."
   ],
@@ -2598,6 +2644,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
       "result": "corrections_required_not_integrated"
+    },
+    {
+      "callbackId": "ulpin-UI-03-attempt-2",
+      "assignmentId": "UI-03",
+      "attempt": 2,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "65cc57fd5b8d42015c1e8d9a81b46166809510dc",
+      "result": "focused_corrections_required_not_integrated"
     }
   ],
   "observations": [
