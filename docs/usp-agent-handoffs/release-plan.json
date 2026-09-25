@@ -67,7 +67,13 @@
         "GF-CONTRACT"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "GF1",
@@ -81,7 +87,13 @@
         "GF-EXCHANGE"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "GF2",
@@ -102,7 +114,13 @@
         "GF-SUFFICIENCY"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "GF3",
@@ -117,7 +135,13 @@
         "GF-READY"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "GF4",
@@ -131,7 +155,13 @@
         "GF-PRIVACY"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "GF5",
@@ -162,7 +192,13 @@
         "GF-SUFFICIENCY"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "FP-LEARN",
@@ -175,7 +211,13 @@
         "FP-LEARN-TEST"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "FP-PUBLIC",
@@ -189,7 +231,13 @@
         "FP-PUBLIC-TEST"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "FP-ASSIST",
@@ -202,7 +250,13 @@
         "FP-ASSIST-TEST"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "FP-FORMATS",
@@ -215,7 +269,13 @@
         "FP-FORMATS-TEST"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "FP-ENRICH",
@@ -228,7 +288,13 @@
         "FP-ENRICH-TEST"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "FP-RENDER",
@@ -241,7 +307,13 @@
         "FP-RENDER-TEST"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "FP-SCALE",
@@ -254,7 +326,13 @@
         "FP-SCALE-TEST"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     },
     {
       "id": "FP-DEPLOY",
@@ -267,7 +345,13 @@
         "FP-DEPLOY-TEST"
       ],
       "status": "pending",
-      "evidence": []
+      "evidence": [],
+      "scheduleStatus": "unscheduled",
+      "targetDate": null,
+      "fallbackDecisionDate": null,
+      "blockedBy": [],
+      "completedAt": null,
+      "approvedBy": null
     }
   ],
   "requirements": [
@@ -776,7 +860,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-T16": {
       "kind": "runtime",
@@ -786,7 +871,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-T17": {
       "kind": "runtime",
@@ -796,7 +882,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-T18": {
       "kind": "runtime",
@@ -807,7 +894,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-T19": {
       "kind": "runtime",
@@ -818,7 +906,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-T20": {
       "kind": "runtime",
@@ -828,7 +917,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-T21": {
       "kind": "runtime",
@@ -838,7 +928,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-AI": {
       "kind": "runtime",
@@ -848,7 +939,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-EXCHANGE": {
       "kind": "runtime",
@@ -858,7 +950,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-RECOVERY": {
       "kind": "runtime",
@@ -868,7 +961,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-VIEW": {
       "kind": "runtime",
@@ -879,7 +973,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-DATA": {
       "kind": "runtime",
@@ -888,7 +983,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-PRIVACY": {
       "kind": "runtime",
@@ -899,7 +995,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "FP-LEARN-TEST": {
       "kind": "runtime",
@@ -908,7 +1005,8 @@
         "docs/usp-agent-handoffs/21-concurrent-schema-learning.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "FP-PUBLIC-TEST": {
       "kind": "runtime",
@@ -917,7 +1015,8 @@
         "docs/usp-agent-handoffs/13-citizen-evidence-and-corrections.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "FP-ASSIST-TEST": {
       "kind": "runtime",
@@ -926,7 +1025,8 @@
         "docs/usp-agent-handoffs/18-grounded-assistance-and-mcp.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "FP-ENRICH-TEST": {
       "kind": "runtime",
@@ -935,7 +1035,8 @@
         "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "FP-FORMATS-TEST": {
       "kind": "runtime",
@@ -944,7 +1045,8 @@
         "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "FP-RENDER-TEST": {
       "kind": "runtime",
@@ -953,7 +1055,8 @@
         "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "FP-SCALE-TEST": {
       "kind": "runtime",
@@ -962,7 +1065,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "FP-DEPLOY-TEST": {
       "kind": "runtime",
@@ -972,7 +1076,8 @@
         "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-CONTRACT": {
       "kind": "runtime",
@@ -982,7 +1087,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-READY": {
       "kind": "runtime",
@@ -992,7 +1098,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-REHEARSAL": {
       "kind": "runtime",
@@ -1003,7 +1110,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-AGENT": {
       "kind": "runtime",
@@ -1014,7 +1122,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-SCENE": {
       "kind": "runtime",
@@ -1025,7 +1134,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     },
     "GF-SUFFICIENCY": {
       "kind": "runtime",
@@ -1036,7 +1146,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",
-      "receipts": []
+      "receipts": [],
+      "attempts": []
     }
   },
   "entryPoints": [
@@ -1059,7 +1170,7 @@
       "C24"
     ],
     "status": "passed",
-    "receipt": "docs/evidence/usp/orchestration/official-source-plan-alignment.json"
+    "receipt": "docs/evidence/usp/orchestration/LEAD-01B/attempt-1/plan-validation.json"
   },
   "receiptContract": {
     "schemaVersion": "ulpin-test-receipt/1",
@@ -1106,5 +1217,54 @@
       "preserveFutureThemeAndResponsiveSeams": true,
       "desktopAccessibilityRequired": true
     }
-  }
+  },
+  "waivers": [],
+  "projectOwner": null,
+  "releaseCandidate": {
+    "status": "pending",
+    "commit": null
+  },
+  "humanDependencies": [
+    {
+      "id": "H90-1",
+      "neededFor": [
+        "GF5"
+      ],
+      "status": "open",
+      "owner": null,
+      "fallback": "Prepare a runnable demo and presentation; physical presentation remains a human task."
+    },
+    {
+      "id": "H90-2",
+      "neededFor": [
+        "GF5"
+      ],
+      "status": "open",
+      "owner": null,
+      "fallback": "Agents prepare PPT and registration material; submission remains with the team leader."
+    },
+    {
+      "id": "H90-3",
+      "neededFor": [
+        "GF5"
+      ],
+      "status": "open",
+      "owner": null,
+      "fallback": "Keep public claims, waivers and the GF5 freeze unapproved until the project owner decides."
+    },
+    {
+      "id": "H90-4",
+      "neededFor": [],
+      "status": "not_required",
+      "owner": null,
+      "fallback": "Use labelled replayed model responses unless a live model call is requested."
+    },
+    {
+      "id": "H90-5",
+      "neededFor": [],
+      "status": "not_required",
+      "owner": null,
+      "fallback": "Use documented open-download sources; unavailable authenticated coverage remains unqualified."
+    }
+  ]
 }
