@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T12:14:56.985421+00:00",
+  "updatedAt": "2026-09-25T12:23:17.630227+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -50,6 +50,12 @@
         "assignmentId": "USER-PLAN-UPDATE",
         "integrationMethod": "merge preserving user staging changes",
         "scope": "Updated design system, mockup references, H30, release requirements; plan validation only"
+      },
+      {
+        "sourceCommit": "67aef157d7461f1467c1343306db9bacbd35d855",
+        "assignmentId": "FND-02",
+        "integrationMethod": "merge preserving all attempts and tested-commit ancestry",
+        "scope": "Local reviewed identity transactions, exact resolver and authored isolated integration"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -142,7 +148,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_FND-02_attempt_3",
+      "status": "available",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -604,9 +610,9 @@
         "Locator corrections preserve code; MULTI(2), missing anchors and resolver 422",
         "Actual executed source commit and receipts with remaining unqualified cases explicit"
       ],
-      "status": "dispatched",
+      "status": "accepted_bounded_local_identity",
       "reportPath": "docs/evidence/usp/finale/GF-T15/FND-02/attempt-3/report.md",
-      "resultCommit": null,
+      "resultCommit": "67aef157d7461f1467c1343306db9bacbd35d855",
       "ownershipClarifications": [
         {
           "path": "scripts/usp/isolated-live.mjs",
@@ -620,7 +626,25 @@
         "FND02-R7"
       ],
       "planRefreshBase": "604ab6521e75618fe57dd284bfaa84b97a133dbf",
-      "resumeReason": "Worker acknowledged corrections without executing; user requested continuing full implementation on updated UI/H30 plans."
+      "resumeReason": "Worker acknowledged corrections without executing; user requested continuing full implementation on updated UI/H30 plans.",
+      "testedCommit": "f138320d3f8070d93e5730ce035935b7a2718482",
+      "acceptedAt": "2026-09-25T12:23:17.630227+00:00",
+      "review": {
+        "reviewer": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+        "independence": "same_family",
+        "verdict": "R1-R7 resolved; accepted local authored identity implementation, not GF1/GF-T15 gate qualification",
+        "checks": [
+          "R7 shared validation and negative/positive DB cases inspected",
+          "Artifact/source/raw runner/GF-T15 hashes match and 20 internal exits are zero",
+          "Fresh D0 screenshot inspected; D0/D1 source capture hashes verified",
+          "Merged integration branch: 111 USP tests passed and pnpm typecheck exit 0"
+        ],
+        "limits": [
+          "Local operator adapter only; public authorization not qualified",
+          "Authored synthetic transaction fixtures, not real-source identity accuracy or official issuance",
+          "UI/history/exchange/QR/scale/deployment and independent milestone review remain pending"
+        ]
+      }
     }
   ],
   "capabilityChecklist": [
@@ -679,8 +703,10 @@
         "GF-T15"
       ],
       "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
-      "status": "pending_current_evidence",
-      "evidence": []
+      "status": "partial_local_identity_implemented",
+      "evidence": [
+        "docs/evidence/usp/finale/GF-T15/FND-02/attempt-3/report.md"
+      ]
     },
     {
       "id": "R-EXCHANGE",
@@ -1416,6 +1442,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "7e3a2166f7372199b4b309ffbc0470964459e48a",
       "result": "six_findings_resolved_command_selection_correction_required"
+    },
+    {
+      "callbackId": "ulpin-FND-02-attempt-3",
+      "assignmentId": "FND-02",
+      "attempt": 3,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "67aef157d7461f1467c1343306db9bacbd35d855",
+      "result": "accepted_bounded_local_identity"
     }
   ],
   "observations": [
@@ -1527,7 +1561,7 @@
       "card": "FND-02",
       "title": "Proposed IDs, lifecycle and location line",
       "needs": "FND-01",
-      "status": "corrections_in_progress"
+      "status": "accepted_bounded_scope"
     },
     {
       "card": "HISTORY-01",
