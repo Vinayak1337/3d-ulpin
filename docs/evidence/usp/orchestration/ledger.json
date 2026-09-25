@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:29:08.825660+00:00",
+  "updatedAt": "2026-09-25T21:31:14.430403+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -2160,7 +2160,7 @@
         "model": "gpt-6-luna",
         "effort": "xhigh"
       },
-      "status": "dispatched_existing_persistent_preview",
+      "status": "completed_issues_sent_to_UI_worker",
       "codeCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
       "appUrl": "http://127.0.0.1:3187/studio/work",
       "ownership": [
@@ -2171,7 +2171,22 @@
         "serving worktree edits",
         "imports/data mutation/provider calls"
       ],
-      "reportPath": "docs/evidence/usp/orchestration/manual/FND-06-attempt-2-luna.md"
+      "reportPath": "docs/evidence/usp/orchestration/manual/FND-06-attempt-2-luna.md",
+      "resultCommit": "9099c05af1aef6bb89c9becc1a7123dde6390eb9",
+      "findings": [
+        "P1 page-level sample import/download panel and legacy saved names; distinguish static content from protected records",
+        "P2 saved native-preparation route shows Next runtime404; exact request undiagnosed"
+      ],
+      "passes": [
+        "saved list and history filter load",
+        "recorded map shows source reference and unknowns",
+        "light workspace status and Escape focus return"
+      ],
+      "limitations": [
+        "enlarged layout unverified",
+        "no design-fidelity comparison",
+        "no data mutation or provider calls"
+      ]
     },
     {
       "assignmentId": "FND-06",
@@ -2992,7 +3007,7 @@
   ],
   "nextSteps": [
     "Sol completes priority UI08 existing-record Batches replacement and removal of reachable sample content.",
-    "Luna finishes current read-only check and returns exact visible violations; keep3187 running.",
+    "Luna corrects report reference wording only; Sol handles recorded UI violations and scopes native-preparation404 without changing protected data.",
     "Coordinate manual check and safe preview refresh for UI replacement; do not present current legacy preview as completed design.",
     "Delegate accepted exchange integration at a non-conflicting checkpoint; retain runtime qualification gaps."
   ],
@@ -3273,6 +3288,11 @@
       "callbackId": "review-FND-06-attempt-3",
       "resultCommit": "41290b2a5e7680d9d2280bd77f0ab73b44eb7e09",
       "result": "bounded scalar correction accepted; same-family review only, full privacy qualification open"
+    },
+    {
+      "callbackId": "manual-FND-06-attempt-2",
+      "resultCommit": "9099c05af1aef6bb89c9becc1a7123dde6390eb9",
+      "result": "P1 UI08 and P2 native preparation404 sent to Sol; persistent3187 left running"
     }
   ],
   "observations": [
