@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T00:59:27.902962+00:00",
+  "updatedAt": "2026-09-25T01:00:22.611739+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "584428eb2006db5d2a91973ea5569dc59d59644c",
+    "acceptedStagingBase": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -113,14 +113,14 @@
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "high"
+        "effort": "xhigh"
       },
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "available",
+      "status": "assigned_FND-02",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -400,6 +400,50 @@
           "No ML, real rights, Indian multi-unit, runtime or independent gate qualification"
         ]
       }
+    },
+    {
+      "assignmentId": "FND-02",
+      "attempt": 1,
+      "callbackId": "ulpin-FND-02-attempt-1",
+      "objective": "P3/1 immutable project identity, reviewed allocation/lifecycle and derived vertical locator through existing registry transactions",
+      "baseCommit": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-02-project-identity",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "packages/contracts/src/usp identity schema/exports and minimal registry type extensions",
+        "apps/web/lib/server/usp identity services, additive migration, command/snapshot integration",
+        "apps/web/lib/server/registry identity transaction/projection hooks only",
+        "apps/web/app/api/v1/usp/[...path]/route.ts identity command/resolver routes only",
+        "tests/usp-project-identity* and authored identity fixtures",
+        "scripts/usp/gf/GF-T15* and minimal isolated runner registration",
+        "docs/evidence/usp/finale/GF-T15/FND-02/"
+      ],
+      "exclusions": [
+        "formal UI or redesign",
+        "unrelated registry/ingestion/job/model behavior",
+        "existing data, originals, credentials and historical receipts",
+        "DATA packs and LEAD validator work",
+        "orchestration ledger and release-plan gate promotion",
+        "deployment, remote push and staging/main merges"
+      ],
+      "acceptance": [
+        "H26 A-C/Z1-Z2 and H28 GF-T15 identity cases",
+        "Independent fixed vectors plus exhaustive substitutions and adjacent transpositions",
+        "Real isolated DB two-writer, rollback, stale manifest 409, authorization and idempotency checks",
+        "Cancel/retire/split/merge/boundary_adjustment preserve identity history and exact receipts",
+        "Locator corrections preserve code; MULTI(2), missing anchors and resolver 422",
+        "Actual executed source commit and receipts with remaining unqualified cases explicit"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-T15/FND-02/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -1078,9 +1122,9 @@
     }
   ],
   "nextSteps": [
-    "Assign FND-02 after accepted local integration; H29 permits implementation with ready contracts while qualification remains at GF0.",
-    "Remaining GF0: adversarial data, holdouts/oracles, AI preregistration, drone/source suitability and site decision; finish LEAD-01B.",
-    "No formal UI, deployment or gate promotion."
+    "End turn after FND-02 dispatch; resume on callback.",
+    "Review complete identity transaction/route behavior before local integration; do not qualify GF1 while GF0 open.",
+    "Then finish remaining LEAD-01B and GF0 data/preregistration/site-decision work."
   ],
   "processedCallbacks": [
     {
