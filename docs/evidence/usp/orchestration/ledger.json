@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T12:24:38.603809+00:00",
+  "updatedAt": "2026-09-25T12:54:15.381829+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -146,9 +146,9 @@
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "xhigh"
+        "effort": "high"
       },
-      "status": "assigned_UI-01",
+      "status": "assigned_UI-01_attempt_2",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -691,9 +691,91 @@
         "Warn on newly introduced lucide imports without removing untouched legacy screens",
         "Actual contrast checks for used text/control pairs in both themes, focused tests/typecheck/build and fresh live browser evidence"
       ],
-      "status": "dispatched",
+      "status": "corrections_required",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-01/report.md",
-      "resultCommit": null
+      "resultCommit": "fea3055813c050a694cc6ed76e97c3b8d470c144",
+      "testedCommit": "693b224dbb5fa1a43c77e10d8b2c69c4309722f1",
+      "review": {
+        "independence": "same_family",
+        "verdict": "Dark active controls unreadable in submitted capture; bounded correction required",
+        "checks": [
+          "All artifact/source/font/licence/raw receipt hashes verified",
+          "21 runner commands report zero exits",
+          "Actual worker Sol/high confirmed",
+          "Light/dark/Hindi screenshots visually inspected",
+          "Source confirms Add files link, Layers and Fit block controls are enabled"
+        ],
+        "findings": [
+          {
+            "id": "UI01-R1",
+            "issue": "Dark capture has pale foreground on pale background for active Add files/Export/Layers/Fit block/map controls. Existing test measures only seven other actual selectors and tokens, then calls washed-out controls disabled in report without basis. Transition timing may also affect capture.",
+            "required": "Measure all visible enabled controls against effective composited backgrounds after theme styles settle, including hover/focus; fix actual cascade or timing cause and recapture."
+          },
+          {
+            "id": "UI01-R2",
+            "issue": "Assigned phone, keyboard/200%/reduced-motion checks absent from evidence.",
+            "required": "Add bounded foundation smoke checks at 390x844, keyboard focus and 200%/reduced motion on existing route; report existing UI-02 layout limits without silently marking them passed."
+          }
+        ]
+      }
+    },
+    {
+      "assignmentId": "UI-01",
+      "attempt": 2,
+      "callbackId": "ulpin-UI-01-attempt-2",
+      "objective": "Adopt shared design tokens, offline Noto fonts and canonical Phosphor Icon foundation with verified contrast and live renders",
+      "baseCommit": "7d056675c766d81280ac81c69572d2d01d3cde0b",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-01-design-foundations",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "apps/web/features/officer/shared/tokens.css",
+        "apps/web/features/officer/shared/ui.tsx Icon only",
+        "apps/web/features/officer/shared/ui.css token-driven foundation rules only",
+        "apps/web/app/base.css font registration only; separate local font CSS if useful",
+        "apps/web/public/fonts/ new licensed font assets and licence",
+        "scripts/usp/ui/UI-01* and icon-import warning checker",
+        "tests/usp-ui-foundations*",
+        "package.json one lint:icons script if needed; no dependency changes",
+        "scripts/usp/isolated-live.mjs minimal UI-01 verification hook",
+        "docs/evidence/usp/finale/GF-VIEW/UI-01/",
+        "apps/web/features/studio/product/theme.css foundation compatibility",
+        "apps/web/features/studio/product/operations.css foundation font/color overrides only",
+        "apps/web/features/officer/shared/Shell.tsx theme import only",
+        "tests/e2e/usp-ui-foundations.spec.ts"
+      ],
+      "exclusions": [
+        "UI-02 frame/navigation behavior",
+        "UI-03 map materials/selection",
+        "UI-08 content cleanup or protected dataset edits",
+        "backend/contracts/migrations",
+        "dependency version changes",
+        "historical receipts",
+        "release plan/ledger edits",
+        "remote publication/deployment"
+      ],
+      "acceptance": [
+        "H29 UI-01 and H99 Z1/Z6",
+        "Runtime --ui-* values include map/rights/marks/ramps/utilities/dark; scoped styles preserved",
+        "Self-hosted Noto Sans/Devanagari/Mono load without external font requests; Hindi glyph shaping checked",
+        "Reuse existing Phosphor wrapper, regular weight, appropriate sizes/currentColor and accessibility",
+        "Warn on newly introduced lucide imports without removing untouched legacy screens",
+        "Actual contrast checks for used text/control pairs in both themes, focused tests/typecheck/build and fresh live browser evidence"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-01/attempt-2/report.md",
+      "resultCommit": null,
+      "continuationCommit": "fea3055813c050a694cc6ed76e97c3b8d470c144",
+      "correctionFindings": [
+        "UI01-R1",
+        "UI01-R2"
+      ]
     }
   ],
   "capabilityChecklist": [
@@ -1438,9 +1520,9 @@
     }
   ],
   "nextSteps": [
-    "End turn after UI-01 dispatch; resume on callback.",
-    "Review offline font/contrast/live-render evidence, integrate accepted UI-01, then UI-02 Studio frame.",
-    "Retain pending GF0 data/LEAD-01B and all runtime qualification limits; follow H29 remaining dependencies."
+    "Complete UI-01 active-control contrast and focused accessibility corrections, then review/integrate.",
+    "UI-02 Studio frame follows accepted UI-01.",
+    "No whole GF-VIEW or independent milestone pass from foundation-only evidence."
   ],
   "processedCallbacks": [
     {
@@ -1499,6 +1581,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "67aef157d7461f1467c1343306db9bacbd35d855",
       "result": "accepted_bounded_local_identity"
+    },
+    {
+      "callbackId": "ulpin-UI-01-attempt-1",
+      "assignmentId": "UI-01",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "fea3055813c050a694cc6ed76e97c3b8d470c144",
+      "result": "corrections_required_not_integrated"
     }
   ],
   "observations": [
