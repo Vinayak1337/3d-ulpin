@@ -118,3 +118,81 @@ test('unavailable originals remain an explicit result, not silently fetched', as
   const result = await verifyUspPack(path.join(directory, 'manifest.json'));
   assert.equal(result.checked.length, 2); assert.equal(result.unavailable.length, 1);
 }));
+
+function acquisitionFor(asset: any) {
+  return {
+    schemaVersion: 'usp-pack-provenance/1', sourceFamily: 'authored-contract-smoke', sourceRelease: null,
+    resourceId: null, nativeIds: ['000127'], acquiredAt: '2026-09-25T00:00:00Z',
+    original: { sha256: asset.content.sha256, bytes: asset.content.bytes },
+    parser: { name: 'literal CSV', version: null }, heightType: null, benchmark: null, coverage: null,
+    licenceFamily: null, trainingPermission: { state: 'unconfirmed', reason: 'Not assessed' },
+    purpose: 'authored_demo', privacy: 'authored non-personal fixture', subsetLineage: [], missingCapabilities: ['survey_accuracy'],
+    stages: { discovered: pass, acquired: pass, inspected: { status: 'not_run' },
+      qualified: { status: 'not_run' }, tested: { status: 'not_run' } }, qualificationScope: null,
+  };
+}
+
+test('version-one manifests preserve optional provenance without upgrading unknowns or permission', async () => inCopy(async directory => {
+  const input = await fresh(); input.assets[0].provenance = acquisitionFor(input.assets[0]);
+  const parsed = parseUsp(UspDataPackSchema, input);
+  assert.deepEqual(JSON.parse(JSON.stringify(parsed)), input);
+  assert.equal(parsed.assets[0].provenance?.licenceFamily, null);
+  assert.equal(parsed.assets[0].provenance?.benchmark, null);
+  assert.equal(parsed.assets[0].provenance?.nativeIds[0], '000127');
+  assert.equal(parsed.assets[0].provenance?.trainingPermission.state, 'unconfirmed');
+  assert.equal(parsed.assets[1].provenance, undefined, 'legacy provenance stays absent');
+  const file = path.join(directory, 'manifest.json'); await writeFile(file, JSON.stringify(input));
+  const before = await readFile(file, 'utf8'); const result = await verifyUspPack(file);
+  assert.equal(result.checked.length, 3);
+  assert.equal(await readFile(file, 'utf8'), before, 'byte verification never promotes acquisition/permission');
+}));
+
+test('data discovery cannot qualify unacquired bytes or skip acquisition prerequisites', async () => {
+  for (const change of [
+    (p: any) => { p.original = null; },
+    (p: any) => { p.acquiredAt = null; },
+    (p: any) => { p.stages.acquired = { status: 'not_run' }; },
+    (p: any) => { p.stages.discovered = { status: 'not_run' }; },
+    (p: any) => { p.stages.tested = pass; p.qualificationScope = 'CSV parsing'; },
+    (p: any) => { p.stages.inspected = pass; p.stages.qualified = pass; },
+  ]) {
+    const input = await fresh(); input.assets[0].provenance = acquisitionFor(input.assets[0]);
+    change(input.assets[0].provenance); invalid(input);
+  }
+});
+
+test('bounded source testing does not grant ML permission or assert measured heights', async () => {
+  const input = await fresh(); const p = acquisitionFor(input.assets[0]);
+  p.stages = { discovered: pass, acquired: pass, inspected: pass, qualified: pass, tested: pass };
+  input.assets[0].provenance = { ...p, qualificationScope: 'Literal-code parsing only' };
+  const parsed = parseUsp(UspDataPackSchema, input);
+  assert.equal(parsed.assets[0].provenance?.trainingPermission.state, 'unconfirmed');
+  assert.equal(parsed.assets[0].reference.verticalReference, null);
+  input.assets[0].provenance.trainingPermission = { state: 'documented' }; invalid(input);
+});
+
+test('subset lineage must identify the pinned original rather than a different source', async () => {
+  const input = await fresh(); input.assets[0].provenance = acquisitionFor(input.assets[0]);
+  const p = input.assets[0].provenance; p.original = { sha256: 'a'.repeat(64), bytes: 100000 };
+  invalid(input);
+  p.subsetLineage = [{ sourceSha256: 'b'.repeat(64), operation: 'clip', evidenceRef: 'clip-receipt' }]; invalid(input);
+  p.subsetLineage[0].sourceSha256 = 'a'.repeat(64);
+  assert.ok(parseUsp(UspDataPackSchema, input));
+});
+
+test('authored assets cannot be relabelled as operational Indian observations', async () => {
+  const input = await fresh(); input.assets[0].provenance = acquisitionFor(input.assets[0]);
+  input.assets[0].provenance.purpose = 'operational_india'; invalid(input);
+});
+
+test('acquisition outside Git can retain pins while local source bytes remain unavailable', async () => {
+  const input = await fresh(); input.packId = 'D5'; const asset = input.assets[0];
+  asset.provenance = acquisitionFor(asset); asset.provenance.purpose = 'test_only';
+  asset.origin = { kind: 'external', url: 'https://example.invalid/retained-plan' };
+  asset.content = { state: 'unavailable', reason: 'Restricted original retained outside Git' };
+  asset.permission = { state: 'unconfirmed', reason: 'Download does not establish redistribution or training permission' };
+  const parsed = parseUsp(UspDataPackSchema, input);
+  assert.equal(parsed.assets[0].content.state, 'unavailable');
+  assert.equal(parsed.assets[0].provenance?.stages.acquired.status, 'passed');
+  assert.equal(parsed.assets[0].verification.parsed.status, 'not_run');
+});

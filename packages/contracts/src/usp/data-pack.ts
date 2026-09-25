@@ -41,6 +41,50 @@ const permission = z.discriminatedUnion('state', [
     permittedUses: z.array(z.enum(['research', 'demo', 'redistribution'])).min(1).max(3).readonly() }).readonly(),
   z.strictObject({ state: z.literal('unconfirmed'), reason: coreText(1024) }).readonly(),
 ]);
+
+/** Optional on v1 assets for compatibility. Omission means legacy/unassessed,
+ * never inferred permission or completed acquisition. Reference frames/units,
+ * attribution and permitted non-training uses remain in the existing fields. */
+export const UspPackProvenanceSchema = z.strictObject({
+  schemaVersion: z.literal('usp-pack-provenance/1'),
+  sourceFamily: coreText(512), sourceRelease: coreText(512).nullable(),
+  resourceId: coreText(512).nullable(), nativeIds: z.array(coreText(512)).max(1000).readonly(),
+  acquiredAt: z.string().datetime({ offset: true }).nullable(),
+  original: z.strictObject({ sha256: CoreSha256Schema, bytes: CoreSafeIntegerSchema }).readonly().nullable(),
+  parser: z.strictObject({ name: coreText(256), version: coreText(128).nullable() }).readonly().nullable(),
+  heightType: coreText(256).nullable(), benchmark: coreText(512).nullable(), coverage: coreText(2048).nullable(),
+  licenceFamily: coreText(256).nullable(),
+  trainingPermission: z.discriminatedUnion('state', [
+    z.strictObject({ state: z.literal('unconfirmed'), reason: coreText(1024) }).readonly(),
+    z.strictObject({ state: z.literal('prohibited'), reference: coreText(1024) }).readonly(),
+    z.strictObject({ state: z.literal('documented'), reference: coreText(1024), scope: coreText(1024) }).readonly(),
+    z.strictObject({ state: z.literal('not_applicable'), reason: coreText(1024) }).readonly(),
+  ]),
+  purpose: z.enum(['operational_india', 'test_only', 'authored_demo']),
+  privacy: coreText(512).nullable(),
+  subsetLineage: z.array(z.strictObject({ sourceSha256: CoreSha256Schema,
+    operation: coreText(1024), evidenceRef: coreText(512) }).readonly()).max(100).readonly(),
+  missingCapabilities: z.array(coreText(128)).max(64).readonly(),
+  // These acquisition observations are separate from rendering/workflow passes.
+  stages: z.strictObject({ discovered: UspVerificationStageSchema, acquired: UspVerificationStageSchema,
+    inspected: UspVerificationStageSchema, qualified: UspVerificationStageSchema, tested: UspVerificationStageSchema,
+  }).readonly(),
+  qualificationScope: coreText(1024).nullable(),
+}).superRefine((value, ctx) => {
+  const sequence = ['discovered', 'acquired', 'inspected', 'qualified', 'tested'] as const;
+  for (const [index, stage] of sequence.entries()) {
+    if (value.stages[stage].status === 'passed' && sequence.slice(0, index).some(prior => value.stages[prior].status !== 'passed')) {
+      ctx.addIssue({ code: 'custom', path: ['stages', stage], message: 'Acquisition stage needs evidence for its prerequisites' });
+    }
+  }
+  if (value.stages.acquired.status === 'passed' && (!value.original || !value.acquiredAt)) {
+    ctx.addIssue({ code: 'custom', path: ['original'], message: 'Acquisition needs original byte pins and timestamp' });
+  }
+  if ((value.stages.qualified.status === 'passed' || value.stages.tested.status === 'passed') && !value.qualificationScope) {
+    ctx.addIssue({ code: 'custom', path: ['qualificationScope'], message: 'Qualification must name its bounded scope' });
+  }
+}).readonly();
+
 export const UspPackAssetSchema = z.strictObject({
   id: CoreIdSchema, mediaType: CoreAssetSchema.unwrap().shape.mediaType,
   classification: CoreDatasetSchema.unwrap().shape.classification,
@@ -50,6 +94,7 @@ export const UspPackAssetSchema = z.strictObject({
     horizontalUnit: coreText(64).nullable(), verticalUnit: coreText(64).nullable(), sourceDate: coreText(128).nullable(),
   }).readonly(),
   content: bytes, dependencies: z.array(CoreIdSchema).max(100).readonly(), verification: stages,
+  provenance: UspPackProvenanceSchema.optional(),
 }).superRefine((asset, ctx) => {
   const checks = asset.verification;
   const passed = (key: keyof typeof checks) => checks[key].status === 'passed';
@@ -65,6 +110,20 @@ export const UspPackAssetSchema = z.strictObject({
   }
   if (new Set(asset.dependencies).size !== asset.dependencies.length || asset.dependencies.includes(asset.id)) {
     ctx.addIssue({ code: 'custom', path: ['dependencies'], message: 'Duplicate or self dependency' });
+  }
+  const provenance = asset.provenance;
+  if (provenance && asset.content.state === 'available') {
+    if (provenance.stages.acquired.status !== 'passed') {
+      ctx.addIssue({ code: 'custom', path: ['provenance', 'stages', 'acquired'], message: 'Available bytes need acquisition evidence when provenance is supplied' });
+    }
+    if (provenance.original && (provenance.original.sha256 !== asset.content.sha256
+        || provenance.original.bytes !== asset.content.bytes)
+        && !provenance.subsetLineage.some(link => link.sourceSha256 === provenance.original?.sha256)) {
+      ctx.addIssue({ code: 'custom', path: ['provenance', 'subsetLineage'], message: 'Derived bytes need explicit original-to-subset lineage' });
+    }
+  }
+  if (provenance && asset.origin.kind === 'authored' && provenance.purpose !== 'authored_demo') {
+    ctx.addIssue({ code: 'custom', path: ['provenance', 'purpose'], message: 'Authored truth cannot be labelled operational or real-source test data' });
   }
 }).readonly();
 
@@ -102,3 +161,4 @@ export const UspDataPackSchema = z.strictObject({
   }
 }).readonly();
 export type UspDataPack = z.infer<typeof UspDataPackSchema>;
+export type UspPackProvenance = z.infer<typeof UspPackProvenanceSchema>;
