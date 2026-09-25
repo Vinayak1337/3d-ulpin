@@ -1,6 +1,6 @@
 # 3D ULPIN UI and UX brief
 
-Which screens exist, what goes on each, how the map looks and where every feature lives. Repository copy of the team's UI brief, reconciled on 24 September 2026 with the finale handoffs ([H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) Z, [H97](../usp-agent-handoffs/97-review-findings-and-alignment.md)). Use it with the [design system](README.md) and the [Officer Studio mockup reference](mockups/officer-studio/README.md), which shows every screen assembled, to build and check screens.
+Which screens exist, what goes on each, how the map looks and where every feature lives. Repository copy of the team's UI brief, reconciled on 24 September 2026 with the finale handoffs ([H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) Z, [H97](../usp-agent-handoffs/97-review-findings-and-alignment.md)). Use it with the [design system](README.md) and the [Officer Studio reference mockups](mockups/officer-studio/README.md) (reference UIs, not production UI), which show every screen assembled.
 
 ## Rules for every screen
 
@@ -162,11 +162,11 @@ Each arrow is one click or one confirmed decision; the officer never retypes dat
 
 ## Screen specs
 
-Each screen's layout, components and data bindings are in the [mockup reference screens](mockups/officer-studio/screens.md), grouped by the gate that builds them. They describe fields, not values: build every screen against the records the gate's qualified data provides ([H28](../usp-agent-handoffs/28-data-acquisition-and-finale-tests.md)).
+Each screen's reference layout, components and data bindings are in the [reference mockup screens](mockups/officer-studio/screens.md), grouped by the gate that builds them. They guide design; they are not a production specification. They describe fields, not values: build every screen against the records the gate's qualified data provides ([H28](../usp-agent-handoffs/28-data-acquisition-and-finale-tests.md)).
 
 ## States every screen needs
 
-Build the default state of each finale screen, then these variants for S4, S5, S12 and P4L at least. Each variant is triggered by the data, as listed in the [mockup reference](mockups/officer-studio/README.md#states).
+Build the default state of each finale screen, then these variants for S4, S5, S12 and P4L at least. Each variant is triggered by the data, as listed in the [reference mockups](mockups/officer-studio/README.md#states).
 
 | State | When | Treatment | Example copy |
 | --- | --- | --- | --- |
@@ -189,7 +189,7 @@ Build the default state of each finale screen, then these variants for S4, S5, S
 
 ## Sources
 
-- [Officer Studio mockup reference](mockups/officer-studio/README.md): the assembled screens, imported from the team's Claude Design project on 25 September 2026.
+- [Officer Studio reference mockups](mockups/officer-studio/README.md): the assembled screens from the team's Claude Design project, imported 25 September 2026. Reference only, not production UI.
 - Finale handoffs: [H99](../usp-agent-handoffs/99-ui-ux-and-integration.md), [H26](../usp-agent-handoffs/26-identifiers-and-standard-exchange.md), [H17](../usp-agent-handoffs/17-infrastructure-impact-screening.md), [H10](../usp-agent-handoffs/10-scoped-evidence-packets.md), [H27](../usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md), [H97](../usp-agent-handoffs/97-review-findings-and-alignment.md).
 - Retired v2 design pack, kept in [Git history](https://github.com/Vinayak1337/3d-ulpin/blob/7472730980fd3d79e7364b5cac3e6c7ebff7dd3d/docs/v2-design/README.md) (forest green, rail and tray sizes).
 - [UX4G web design system](https://github.com/ux4g-negd/web_design_system) (MIT) and [Phosphor Icons](https://github.com/phosphor-icons/core) (MIT).

@@ -1,8 +1,19 @@
-# Officer Studio mockup reference
+# Officer Studio reference mockups
 
-The layout, interaction and state reference for every Studio, Verify, Portal and Admin screen. It records the interactive mockup made in Claude Design (project "Officer Studio mockups transfer", `OfficerStudio.dc.html`, imported 25 September 2026) so coding agents can build the same UI without access to the private project.
+A description of the team's interactive mockup of every Studio, Verify, Portal and Admin screen, made in Claude Design (project "Officer Studio mockups transfer", `OfficerStudio.dc.html`, imported 25 September 2026). Coding agents cannot open the private project, so this folder records what it shows.
 
-**Replicate the UI, not the data.** The mockup was drawn around one worked example. None of its names, codes, numbers, file names, dates or people belong in the product, its fixtures or its tests. Every value on screen comes from the loaded records through the [view model schema](view-model.schema.json), and every source format reaches the screens through the same intake path. Nothing in the product labels data as invented; the scope strip shows the dataset's own recorded classification.
+## Reference only, not production UI
+
+These mockups are **reference UIs**. They show the intended layout, screen flow, visual hierarchy, interactions and states, so the product has a shared picture to aim at. They are not the production UI, not a pixel specification and not acceptance criteria.
+
+- **Production requirements come from the plan.** Routes, selection, caches and V-shots come from [H99](../../../usp-agent-handoffs/99-ui-ux-and-integration.md). Tokens, components, map styling and copy come from the [design system](../../README.md). Behaviour, data and checks come from the feature handoffs and their GF tests. Where the mockup disagrees with any of them, the plan wins.
+- **Production quality is the builder's job.** Accessibility (GIGW 3.0, WCAG 2.1 AA, keyboard, screen readers), responsive breakpoints, performance, loading and error handling, authorisation, privacy and real service calls are all required even where the mockup skips them.
+- **Improve on it.** A production screen may change a size, arrangement or interaction when the plan, real data, accessibility or usability needs it. Note any notable departure in the card's receipt.
+- **A mockup element is not a requirement.** Something that appears only in the mockup creates no feature, no scope and no pass. A screen marked *Planned* or full product stays in its later gate.
+- **Its code is prototype code.** It uses React and Babel from a CDN compiled in the browser, inline styles, `localStorage`, simulated timers and progress, and hard-coded values. None of it is copied or ported into `apps/web`.
+- **Acceptance is the plan's.** A card passes on its GF tests and H99's V-shot contract. Comparing a screen with the mockup is a design review aid, never a pass or fail.
+
+**Replicate the look, not the data.** The mockup was drawn around one worked example. None of its names, codes, numbers, file names, dates or people belong in the product, its fixtures or its tests. Every value on screen comes from the loaded records through the [view model schema](view-model.schema.json), and every source format reaches the screens through the same intake path. Nothing in the product labels data as invented; the scope strip shows the dataset's own recorded classification.
 
 | File | Use it for |
 | --- | --- |
@@ -10,11 +21,11 @@ The layout, interaction and state reference for every Studio, Verify, Portal and
 | [screens.md](screens.md) | Each screen's layout, components and bindings, grouped by the gate that builds it |
 | [view-model.schema.json](view-model.schema.json) | What each screen reads, as a projection of the existing contracts in `packages/contracts` |
 
-Authority is unchanged: [H99](../../../usp-agent-handoffs/99-ui-ux-and-integration.md) owns routes, selection, caches and V-shots; the [design system](../../README.md) owns tokens, components, map styling and copy. This reference shows how those rules look assembled. Where it disagrees with either, they win and this file is corrected.
+Where this folder disagrees with H99 or the design system, they win and this folder is corrected.
 
-## Rules for building from the mockup
+## Rules for using the mockup
 
-1. **Bind, never paste.** A label, count, level list, legend entry, code, file name or date on screen is a binding to a field in the schema. Fixed UI copy (button labels, status words, the notes such as "Screening only. Not a clearance or dig permission.") is interface text and is kept verbatim.
+1. **Bind, never paste.** A label, count, level list, legend entry, code, file name or date on screen is a binding to a field in the schema. Interface copy (button labels, status words, notes such as "Screening only. Not a clearance or dig permission.") comes from the design system and [H99](../../../usp-agent-handoffs/99-ui-ux-and-integration.md) Z4; the mockup's copy follows them.
 2. **Nothing is shaped by the example.** No code assumes a ground-plus-N building, a fixed storey height, a floor naming pattern, a unit count, one parcel per building, one level per space, a basement count or a particular utility. Levels, spaces, rights categories, utility kinds and legend rows are whatever the data holds, in its order and with its labels.
 3. **Empty is a state, not a gap.** With no data a screen shows its Empty state; with partial data it shows *Unknown*, *Not assessed* or *Estimated* exactly where the gap is. Never fill a gap with a sample, a zero or a plausible value.
 4. **Badges come from the record.** *Test fixture*, *Seeded test case*, *Replayed from rehearsal* and *Illustrative* appear only when the record's provenance flags say so. The scope strip shows `scope.classification` (observed, planned, hypothetical, synthetic, unknown or mixed). No screen hard-codes a disclaimer.
@@ -126,7 +137,7 @@ The Studio never branches its layout on file type. Intake turns any upload into 
 
 ## How agents use this with the plan
 
-Pick work from [H29](../../../usp-agent-handoffs/29-agent-task-cards.md) as usual. Each UI card names the screens it builds in [screens.md](screens.md); read that section, the schema definitions it binds and the design-system pages it cites, then build on the existing routes and shared map path. A screen is finished when its bindings read real records through the ports, its states render from data, and its V-shot matches this reference in layout and state (values will differ and should).
+Pick work from [H29](../../../usp-agent-handoffs/29-agent-task-cards.md) as usual. Each UI card links the screens it builds in [screens.md](screens.md) as a design reference. Build from the card, H99 and the design system; use the mockup for layout and behaviour ideas. A screen is done when its card's tests and V-shots pass with real records through the ports. Its likeness to the mockup is reviewed, not tested.
 
 | Gate | Cards | Screens |
 | --- | --- | --- |
