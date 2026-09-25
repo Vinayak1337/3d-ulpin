@@ -7,6 +7,7 @@
   grid-template-columns: minmax(0, 1fr) 360px;
 }
 .ulpin-app.studio-operations .ui-block-grid.ui-focused-map.ui-inspector-closed { grid-template-columns: minmax(0, 1fr); }
+.ulpin-app.studio-operations .ui-block-grid.ui-focused-map:has(.ui-block-inspector[data-evidence-open="true"]) { grid-template-columns: minmax(0, 1fr) 400px; }
 .ulpin-app.studio-operations .ui-map-column { position: relative; }
 .ulpin-app.studio-operations .ui-contextbar {
   min-height: 36px;
@@ -36,6 +37,7 @@
   white-space: nowrap;
 }
 .ulpin-app.studio-operations .ui-scope-revision { color: var(--ui-ink-soft); font-size: 11px; white-space: nowrap; }
+.ulpin-app.studio-operations .ui-scope-selection { color: var(--ui-ink-soft); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
 .ulpin-app.studio-operations .ui-context-actions { gap: 4px; flex: none; }
 .ulpin-app.studio-operations .ui-context-actions .ui-button { min-height: 30px; padding: 4px 7px; font-size: 11px; }
 .ulpin-app.studio-operations .ui-map-stage { min-height: 0; }
@@ -102,7 +104,9 @@
   .ulpin-app.studio-operations .ui-panel-switches button span { display: none; }
   .ulpin-app.studio-operations .ui-panel-switches button { padding: 5px 7px; }
   .ulpin-app.studio-operations .ui-block-grid.ui-focused-map { grid-template-columns: minmax(0, 1fr); position: relative; }
+  .ulpin-app.studio-operations .ui-block-grid.ui-focused-map:has(.ui-block-inspector[data-evidence-open="true"]) { grid-template-columns: minmax(0, 1fr); }
   .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector { position: absolute; z-index: 30; right: 0; top: 0; bottom: 0; width: min(360px, 90vw); box-shadow: -8px 0 28px #10291e26; }
+  .ulpin-app.studio-operations .ui-focused-map .ui-block-inspector[data-evidence-open="true"] { width: min(400px, 90vw); }
 }
 @media (max-width: 620px) {
   .ulpin-app.studio-operations .ui-contextbar { min-height: 42px; height: 42px; padding: 0 7px; flex-wrap: nowrap; }
@@ -110,6 +114,7 @@
   .ulpin-app.studio-operations .ui-block-title h1 { max-width: 100px; font-size: 12px; }
   .ulpin-app.studio-operations .ui-scope-classification { font-size: 10px; padding: 2px 4px; }
   .ulpin-app.studio-operations .ui-scope-revision { font-size: 10px; }
+  .ulpin-app.studio-operations .ui-scope-selection { display: none; }
   .ulpin-app.studio-operations .ui-context-actions { width: auto; padding: 0; }
   .ulpin-app.studio-operations .ui-context-actions .ui-button { width: 30px; min-width: 30px; height: 30px; min-height: 30px; padding: 5px; font-size: 0; }
   .ulpin-app.studio-operations .ui-context-actions .ui-button span { display: none; }

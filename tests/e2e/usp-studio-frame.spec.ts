@@ -24,6 +24,7 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   const scope = page.getByLabel("Area scope");
   await expect(scope).toContainText(area.area.name);
   await expect(scope).toContainText(`Revision ${area.area.revision}`);
+  await expect(scope).toContainText(area.features.find((feature: { id: string }) => feature.id === buildingId).name);
   await expect(page.locator("[data-product-header]")).toHaveCSS("height", "56px");
   await expect(page.getByRole("navigation", { name: "Product sections" })).toContainText("Batches");
   await expect(page.getByRole("navigation", { name: "Product sections" })).toContainText("Map");
@@ -42,6 +43,20 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
     await page.getByRole("button", { name: `Close ${name.toLowerCase()} panel` }).click();
     await expect(page.getByRole("button", { name, exact: true }).first()).toBeFocused();
   }
+  await page.getByRole("button", { name: "2D Map", exact: true }).click();
+  await expect(page.getByRole("button", { name: "2D Map", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(runtime).toHaveAttribute("data-map-runtime-id", runtimeId!);
+  await page.getByRole("button", { name: "3D", exact: true }).click();
+  await expect(scene).toHaveAttribute("data-scene-ready", "true");
+  await expect.poll(async () => cameraDelta(camera, await readCamera(scene))).toBeLessThan(1);
+  await page.getByRole("button", { name: /Open documents \(/ }).click();
+  await page.locator(".quick-evidence .quick-source").first().click();
+  await expect(page.getByRole("dialog", { name: "Original property evidence" })).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "Context inspector" })).toHaveAttribute("data-evidence-open", "true");
+  await expect.poll(async () => (await page.getByRole("complementary", { name: "Context inspector" }).boundingBox())?.width).toBe(400);
+  await page.getByRole("button", { name: "Close dialog" }).click();
+  await expect.poll(async () => (await page.getByRole("complementary", { name: "Context inspector" }).boundingBox())?.width).toBe(360);
+  await page.getByRole("button", { name: "Overview", exact: true }).click();
   await expect(page.getByRole("region", { name: "Block findings" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Block findings" })).toHaveCSS("height", "172px");
   await page.getByRole("button", { name: "Close findings" }).click();
@@ -89,6 +104,9 @@ test("UI-02 frame keeps one scene and selection across panels, tray, theme and p
   const motion = await sheet.evaluate(element => getComputedStyle(element).transitionDuration);
   expect(motion).toBe("0s");
   await page.getByRole("button", { name: "Close layers panel" }).click();
+  await page.reload();
+  await expect(page.locator(".ulpin-app")).toHaveAttribute("data-theme", "dark");
+  await expect(page).toHaveURL(new RegExp(`feature=${buildingId}`));
   expect(errors).toEqual([]);
   if (screenshots) await writeFile(join(screenshots, "measurements.json"), JSON.stringify({ areaId: receipt.areaId, selectedFeatureId: buildingId, runtimeId, camera, pageErrors: errors }, null, 2) + "\n");
 });

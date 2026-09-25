@@ -101,6 +101,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
               <h1 title={context.area.name}>{context.area.name}</h1>
               <span className="ui-scope-classification">{context.area.dataKind === "real" ? "Real source" : context.area.dataKind === "demonstration" ? "Test fixture" : context.area.dataKind === "mixed" ? "Mixed sources" : context.area.dataKind === "empty" ? "No source" : "Unclassified"}</span>
               <span className="ui-scope-revision">Revision {context.area.revision}</span>
+              {block.selected && <span className="ui-scope-selection" title={block.selectedRecord ? `${block.selected.name} / ${block.selectedRecord.name}` : block.selected.name}>/ {block.selected.name}{block.selectedRecord ? ` / ${block.selectedRecord.name}` : ""}</span>}
             </div>
             <div className="ui-context-actions">
               <Link className="ui-button" href={routes.addFiles(areaId)} aria-label="Add files"><Icon name="upload" size={16} /><span>Add files</span></Link>
