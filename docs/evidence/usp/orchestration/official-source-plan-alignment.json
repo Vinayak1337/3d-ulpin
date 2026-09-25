@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "ulpin-plan-alignment-receipt/1",
+  "kind": "documentation_only",
+  "status": "passed",
+  "codeCommit": "28d78fd038767bfb09f989d7874eb6b20dfd678b",
+  "checkedAt": "2026-09-25T15:50:41.646557+00:00",
+  "agent": {
+    "id": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high"
+  },
+  "filesSha256": {
+    "AGENTS.md": "b96eca9122a77404a7000ae124549b1e781b343b6855d9ebfb04b8031d37724c",
+    "README.md": "e21576f851cb92b4713bb62819476d2632e4d537e8ebbe5bca3eda0e2ea76f48",
+    "docs/design-system/README.md": "0ee7c100cc8eaa7758feb78d736cfeb74610012b57fd42e270d3439fc4a548fe",
+    "docs/design-system/components.md": "fbdc743f05c28eee6fe9bdedba34665591380a279ad58632529f4059bb618f6c",
+    "docs/design-system/map-and-3d.md": "479ca7f01fae09fa03b74fdc04f7ca53138a8d5b45191665ad9350ed76eb1124",
+    "docs/design-system/mockups/officer-studio/README.md": "9976b57df1e996674a056eccbc2774bcacd21f469b75a33a972cfb1f02922e47",
+    "docs/design-system/mockups/officer-studio/screens.md": "c357f3623de8641915382a04a6bc5300685462e9526f8439f33d64985d74d279",
+    "docs/design-system/surfaces-and-layout.md": "8e8aef0a07a8e1c4b7784314302e51085a77dca2005d0a3288c831c8e147161f",
+    "docs/design-system/ui-brief.md": "62de2e1358513382a1c854395908f7b41d45c8cee8287882895d460db9cf1ba5",
+    "docs/design-system/ux4g-alignment.md": "6c011b6a096cc02edba2ccb80c7d5e3c9c6f7fdd3163f08fdacd608e5676cf1b",
+    "docs/engineering-plan/CURRENT_WORK.md": "56a8eb23582c93039ca5d3992a287c9f7244507cab7f1e12f758420cefa4c014",
+    "docs/usp-agent-handoffs/00-README.md": "be9bb5cb3d96870f27945b21860d0c7d0d9784b6ffd0a6f9c48cde04a292400a",
+    "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md": "8d86645b78070b281d10b158e8f19ad718b60552425012f8a6d7d289499dc9e0",
+    "docs/usp-agent-handoffs/02-lead-agent-execution.md": "b9aea141c616d90e6efd5d5b2c6a826873cd0c199dae74b315f067475ec12b19",
+    "docs/usp-agent-handoffs/10-scoped-evidence-packets.md": "db8e6911a35d69132f9fc8dc6d84a3e8fd28d9c795e35b21565013bb43577132",
+    "docs/usp-agent-handoffs/11-evidence-readiness-and-review-queue.md": "fb621f513e607eec2b823cfa50615afe801635893af59548ea5a49266413d95e",
+    "docs/usp-agent-handoffs/12-rights-aware-spatial-findings.md": "b103d7c719d192c4dfd5de155ba07e6d9b8332622706ff6d1698e3482132a580",
+    "docs/usp-agent-handoffs/13-citizen-evidence-and-corrections.md": "b05df0d6cb385165e5e6fdf8a2d2dccafa425cde4d8f7ca91100298bd6181516",
+    "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md": "8a15f71defc2028637773030e933cf6dc1a1c6673ea6e1d342edc8fe6825def2",
+    "docs/usp-agent-handoffs/15-property-history-and-comparison.md": "47fa4a8e97c890810ca4c2b78520dd4bb45413fae830b0d60044bdbb05b24244",
+    "docs/usp-agent-handoffs/16-shared-spaces-and-vertical-rights.md": "ddb773d0a183f59b33c05b20916e1c8948734cfb85609e0d20779d2dea53a088",
+    "docs/usp-agent-handoffs/17-infrastructure-impact-screening.md": "61f93797cee3f5328656c2e80ac6654d114340023877ed1de8c968f91d5aa13e",
+    "docs/usp-agent-handoffs/18-grounded-assistance-and-mcp.md": "5ea270e3d712d5cd8a2ec130ea003725455c93e89287edfc6890f93a7299f277",
+    "docs/usp-agent-handoffs/19-india-contained-deployment.md": "8371f8ddd8586fa8ff74eb8e9207b403b91fdee1e743818f60dfbfefcccb5a90",
+    "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md": "031cecedf36e6556ab514e735210150b3483d6d1c91b61e9eeced85a3dfc1ac4",
+    "docs/usp-agent-handoffs/21-concurrent-schema-learning.md": "85b33451b8993686545db939ac1efd1d52b34a5b2d235d86b12dba9e33fc6f2b",
+    "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md": "8dfe5c8eb0de987bb697470a12a3b6e6fd419582c8bd287ad42dc60a3679d70a",
+    "docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md": "7da45d7cfe708ca7e4be84e0d0ca26c061b76065cee3c995c65ba2a726f053a1",
+    "docs/usp-agent-handoffs/24-product-method-and-ppt.md": "8fb292415c6ddaee9ab31631004bfc751072a74a7d431db61d32d4a7534f5879",
+    "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md": "dbcdc2c90559cb9730682878ffe28854f6994630351732c9f6f209d4af4aaf5e",
+    "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md": "cbe85ecef3c88c557f071e13af8c534a1b9143777ad3dbf2ccad02706914b801",
+    "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md": "bcb864bb727d4b6749b065226de2f325ed17d4c9c4ba3f7c375395ffbcded6cc",
+    "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md": "2e6e8648586a261cda6e33c69e2dcaf78733acdefc32640f48e49d12b75a726b",
+    "docs/usp-agent-handoffs/29-agent-task-cards.md": "9ec7d6f5316f92f815acefa38073a360841abbc7d8b666c9a3a31f29990a4abf",
+    "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md": "1749ab6c26a6af65822350b51069512b3c0b59780c7f1425627832cebe23d605",
+    "docs/usp-agent-handoffs/90-required-human-tasks.md": "d6c314a598b2d9cbe68168f0684aaecc26238985af456987f79bc60bfe6c7cca",
+    "docs/usp-agent-handoffs/97-review-findings-and-alignment.md": "c32394dff7181ff7cb9c9fe7458dcaf765b48927c126ede285a785c6b99b1d66",
+    "docs/usp-agent-handoffs/98-engineering-readiness-audit.md": "1eab01ad8dafd9babb99045b74af63683ea7230be51821ec2162bff0a9401d9f",
+    "docs/usp-agent-handoffs/99-ui-ux-and-integration.md": "342e19cd03d13b6bfa238d5b8546f038f0c0463c0f20e40704b20108194ac53c",
+    "docs/usp-agent-handoffs/current-delivery-policy.md": "362da8809ccd31f5c6fe0d1f16f9fcd56809237338d36e9d06fec4d20b997272",
+    "docs/usp-agent-handoffs/release-plan.json": "0f16571340444d5e9ab08b103d64e85f7616b2e608995dfa86b7d0fef31cdc74",
+    "docs/usp-agent-handoffs/tools/tests/test_validate_handoffs.py": "fee3ebeda316aa6c471a3d37ed65b2df840dfc286ecf1a678cb7b496e79e982c",
+    "docs/usp-agent-handoffs/tools/validate_handoffs.py": "aefb32722b9ae566a8b5557ae75b0a15008a0659eec481835f2ece6d92cab10b"
+  },
+  "checks": [
+    {
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s docs/usp-agent-handoffs/tools/tests",
+      "exitCode": 0,
+      "tests": 40
+    },
+    {
+      "command": "python3 docs/engineering-plan/tools/validate_plan.py",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "limits": [
+    "Document consistency only; no runtime gate promotion",
+    "Historical evidence and original datasets preserved",
+    "Official-source gaps are unqualified rather than synthetic substitutes",
+    "Cross-family or human milestone review still required"
+  ]
+}
