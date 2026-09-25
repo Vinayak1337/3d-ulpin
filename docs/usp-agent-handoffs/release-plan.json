@@ -97,7 +97,9 @@
         "GF-AI",
         "GF-AGENT",
         "GF-RECOVERY",
-        "GF-VIEW"
+        "GF-VIEW",
+        "GF-SCENE",
+        "GF-SUFFICIENCY"
       ],
       "status": "pending",
       "evidence": []
@@ -155,7 +157,9 @@
         "GF-PRIVACY",
         "GF-CONTRACT",
         "GF-READY",
-        "GF-REHEARSAL"
+        "GF-REHEARSAL",
+        "GF-SCENE",
+        "GF-SUFFICIENCY"
       ],
       "status": "pending",
       "evidence": []
@@ -371,6 +375,25 @@
       ]
     },
     {
+      "id": "R-SUFFICIENCY",
+      "title": "Every input family accepted; incomplete data filled for display, asked, parked or rejected for 3D within a question budget",
+      "owner": "INGEST",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md",
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+      ],
+      "tests": [
+        "GF-SUFFICIENCY"
+      ],
+      "auditFindings": [
+        "C60",
+        "C61"
+      ]
+    },
+    {
       "id": "R-VIEW",
       "title": "Retain Cesium and qualify actual source-shaped Studio path",
       "owner": "UI",
@@ -380,6 +403,7 @@
         "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
         "docs/design-system/README.md",
         "docs/design-system/ui-brief.md",
+        "docs/design-system/mockups/officer-studio/README.md",
         "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
       ],
       "tests": [
@@ -387,6 +411,26 @@
       ],
       "auditFindings": [
         "F08"
+      ]
+    },
+    {
+      "id": "R-SCENE",
+      "title": "Real reference area and deterministic Enhanced view kept in sync with records",
+      "owner": "UI",
+      "gate": "GF2",
+      "docs": [
+        "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md",
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
+        "docs/design-system/map-and-3d.md",
+        "docs/design-system/mockups/officer-studio/README.md"
+      ],
+      "tests": [
+        "GF-SCENE"
+      ],
+      "auditFindings": [
+        "C58",
+        "C59"
       ]
     },
     {
@@ -711,7 +755,8 @@
         "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
         "docs/design-system/README.md",
-        "docs/design-system/ui-brief.md"
+        "docs/design-system/ui-brief.md",
+        "docs/design-system/mockups/officer-studio/README.md"
       ],
       "tests": [
         "GF-REHEARSAL"
@@ -966,6 +1011,28 @@
       "specs": [
         "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
         "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-SCENE": {
+      "kind": "runtime",
+      "owner": "UI",
+      "specs": [
+        "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md",
+        "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
+        "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
+      ],
+      "status": "planned",
+      "receipts": []
+    },
+    "GF-SUFFICIENCY": {
+      "kind": "runtime",
+      "owner": "INGEST",
+      "specs": [
+        "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md",
+        "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md",
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md"
       ],
       "status": "planned",

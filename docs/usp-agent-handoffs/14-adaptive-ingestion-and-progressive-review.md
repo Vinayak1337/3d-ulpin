@@ -139,7 +139,7 @@ Each rule gets a GF-RECOVERY negative fixture.
 
 ### Z3. A no-model route that works in the finale
 
-Add `manual_mapping` to GF2: the officer maps columns to concepts in Batch review using the same constrained plan schema and conversion registry. "Provider unavailable" produces `needs_input`, never a stalled batch. The learner events (`learning.status_changed`, `converter.promoted`) and section G stay full_product.
+Add `manual_mapping` to GF2: the officer maps columns to concepts in Batch review using the same constrained plan schema and conversion registry. The screens for this path (Add files, live import, mapping questions, provider-down) and the profile/mapping fields they read are sketched in the [reference mockups](../design-system/mockups/officer-studio/screens.md#s2-add-files--dialog-studioadd-files) (design reference, not production UI). "Provider unavailable" produces `needs_input`, never a stalled batch. The learner events (`learning.status_changed`, `converter.promoted`) and section G stay full_product.
 
 ### Z4. Size, duplicates and revisions
 
@@ -157,3 +157,8 @@ Add `manual_mapping` to GF2: the officer maps columns to concepts in Batch revie
 | `tests/usp-ingestion-hostile.test.ts`, `tests/usp-ingestion-agent.test.ts` | GF-RECOVERY negatives and GF-AGENT cases |
 
 Section I acceptance bullets that mention learner training are FP-LEARN, not GF2.
+
+### Z6. Incomplete input and every family (25 September 2026)
+
+The finale input families, their minimum evidence and the precedence for mixed inputs are in [H30](30-reference-scene-and-incomplete-data.md) F–G. Every object gets a `SufficiencyDecision` (H30 E): fill for display, ask one class-level question (at most five per batch), park under "Needs input", or reject for 3D while keeping the original as evidence. The fixed order is read the file, reuse a recipe, propose an inference, ask, park. Cards INGEST-04 and INGEST-05; test GF-SUFFICIENCY.
+

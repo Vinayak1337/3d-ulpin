@@ -23,6 +23,8 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 | DATA-02 adversarial fixtures | Synthetic files with oracles |
 | LEAD-01 plan machinery | Validator code and tests only |
 | UI-01 tokens, fonts, icons | Styling layer; no producer needed |
+| UI-08 no demo content or "fictional" labels | Display cleanup over existing records; no producer needed |
+| DATA-09 real reference area | Open downloads (data.gov.in, OpenStreetMap, open DEMs); no person needed |
 | INGEST-01 hostile-input guards | Reader hardening with negative fixtures |
 | DATA-05 to DATA-08 public data, labels, drone set, oracles | Open downloads and synthetic oracles; no person needed |
 | READY-02, UI-07, LEAD-05, DEPLOY-04 | Replace former human tasks with agent work |
@@ -46,9 +48,9 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 - **Don't:** harvest WMS tiles, bypass logins or treat third-party ML footprints as truth.
 
 ### DATA-02 · Adversarial and Indian-reality fixtures
-**Owner** DATA · **Tier** T-work · **Tests** GF-DATA, GF-RECOVERY, GF-AGENT, GF-T16, GF-T18, GF-T19 · **Needs** none
-- **Read:** [H28](28-data-acquisition-and-finale-tests.md) Z2–Z3; [H16](16-shared-spaces-and-vertical-rights.md) Z1–Z2; [H22](22-rendering-and-sparse-data.md) Z3.
-- **Build:** CRS mistakes (43N as 44N, Kalianpur as WGS84, swapped axes, missing `.prj`); the Indian messy CSV; injection fixtures; the synthetic deed with dummy Aadhaar/PAN/mobile and a GPS-tagged JPEG; a metro segment crossing two sites; co-op and per-deed UDS cases; clean twins for every adverse topology case; rooftop mumty/tank/parapet and chajja negatives; a sloped-site fixture; a 480-beneficiary lift core; stilt and mezzanine levels.
+**Owner** DATA · **Tier** T-work · **Tests** GF-DATA, GF-RECOVERY, GF-AGENT, GF-SUFFICIENCY, GF-T16, GF-T18, GF-T19 · **Needs** none
+- **Read:** [H28](28-data-acquisition-and-finale-tests.md) Z2–Z3; [H16](16-shared-spaces-and-vertical-rights.md) Z1–Z2; [H22](22-rendering-and-sparse-data.md) Z3; [H30](30-reference-scene-and-incomplete-data.md) I.
+- **Build:** CRS mistakes (43N as 44N, Kalianpur as WGS84, swapped axes, missing `.prj`); the Indian messy CSV; injection fixtures; the synthetic deed with dummy Aadhaar/PAN/mobile and a GPS-tagged JPEG; a metro segment crossing two sites; co-op and per-deed UDS cases; clean twins for every adverse topology case; rooftop mumty/tank/parapet and chajja negatives; a sloped-site fixture; a 480-beneficiary lift core; stilt and mezzanine levels; the GF-SUFFICIENCY mixed-gap batch (H30 I) with an expected `SufficiencyDecision` per object.
 - **Owns:** `fixtures/usp/D0/adversarial/` and each fixture's `oracle.json`.
 - **Done when:** each fixture has an oracle written before any implementation runs on it, with author and date.
 
@@ -87,6 +89,12 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 - **Build:** stdlib-only scripts with exact `fractions` for carpet components, UDS totals, prism volumes and `groundZ`, committed and hashed before the implementing commit (Git history proves the order).
 - **Done when:** each oracle receipt records `review.kind: agent` and `independence: cross_family`.
 
+### DATA-09 · Real reference area
+**Owner** DATA · **Tier** T-work · **Tests** GF-DATA, GF-SCENE · **Needs** DATA-01, DATA-05
+- **Read:** [H30](30-reference-scene-and-incomplete-data.md) B and G; [H28](28-data-acquisition-and-finale-tests.md) sections 3–5 and Z4.
+- **Build:** choose one Indian area of about 0.5–2 km² by H30 B's criteria (open context layers; a D5 planned building whose location its source record states; small enough to stream). Acquire the layers in H30 B's table as `usp-data-pack/1` assets under `fixtures/usp/D4/reference-area-<name>/` (D4 already holds DATA-01's real context layers; no new pack ID): LGD and boundary context (data.gov.in first), a 30 m open DEM, OpenStreetMap roads, water, land use, trees and buildings, and Open Buildings footprints where licensed. Record licence, attribution, CRS, vertical reference and stage per layer. Large bytes stay outside Git.
+- **Done when:** every layer is `tested` or `failed(<reason>)`; the attribution list is complete; ODbL layers are marked so they never enter record exports; the area and its geography are named in LEAD-05's decision.
+
 ### LEAD-01 · Plan machinery that can tell the truth
 **Owner** LEAD · **Tier** T-risk · **Test** planValidation · **Needs** none
 - **Read:** [H97](97-review-findings-and-alignment.md) C01, C14–C16, C50, C51; `tools/validate_handoffs.py` and its tests.
@@ -107,9 +115,9 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 - **Build:** point `docs/engineering-plan/00_START_HERE.md` at `release-plan.json` `nextGate` instead of the old F0/F1-min/V0 order; set legacy `next_task` fields to `"superseded: release-plan.json"` and adjust the legacy validator; add "Historical base X; current base = release-plan.json baseline" to handoff headers that still carry an older baseline; (the retired v2 design pack is removed by CLEANUP-01; [the design system](../design-system/README.md) replaces it).
 - **Done when:** both validators pass and no entry point names a different next step.
 
-### LEAD-05 · Demo dataset decision
-**Owner** LEAD · **Tier** T-read · **Needs** DATA-01, DATA-05, DATA-06 · replaces H90 H5
-- **Build:** `docs/evidence/usp/finale/GF-DATA/site-decision.md` naming the chosen public bundles with licence and geography: the drone set (DATA-06), the D1 3DBAG building, the D5 plans, D0 for rights, and synthetic co-op and per-deed tenure cases (DATA-02). Any permitted geography is fine; no consent step.
+### LEAD-05 · Finale dataset decision
+**Owner** LEAD · **Tier** T-read · **Needs** DATA-01, DATA-05, DATA-06, DATA-09 · replaces H90 H5
+- **Build:** `docs/evidence/usp/finale/GF-DATA/site-decision.md` naming the chosen public bundles with licence and geography: the DATA-09 reference area the Studio opens on, the drone set (DATA-06), the D1 3DBAG building, the D5 plans, D0 for rights, and synthetic co-op and per-deed tenure cases (DATA-02). Any permitted geography is fine; no consent step.
 - **Done when:** GF0 checklist row 6 in H28 Z1 points at this file.
 
 ### CLEANUP-01 · Remove obsolete and duplicate files
@@ -179,6 +187,18 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 - **Build:** `manual_mapping` in Batch review, same-hash dedupe, source revision reconciliation, 413 with split guidance, and the existing SSE recovery cases.
 - **Done when:** the provider-down-mid-batch case completes by manual mapping and GF-RECOVERY passes.
 
+### INGEST-04 · Sufficiency decisions and question budget
+**Owner** INGEST with FND · **Tier** T-work · **Test** GF-SUFFICIENCY · **Needs** INGEST-02, DATA-02
+- **Read:** [H30](30-reference-scene-and-incomplete-data.md) E and G; [H22](22-rendering-and-sparse-data.md) D; [H14](14-adaptive-ingestion-and-progressive-review.md) Z2–Z4.
+- **Build:** `SufficiencyDecision` per object and task (FND adds the type); the fixed order read → reuse → propose → ask → park; at most five class-level questions per batch with evidence and a "Not sure" choice; the "Needs input" checklist on the batch; `reject_for_3d` keeps the original as evidence. Nothing in H30 E's "never filled" list is ever filled.
+- **Done when:** GF-SUFFICIENCY passes on DATA-02's mixed-gap batch.
+
+### INGEST-05 · One real sample per finale input family
+**Owner** INGEST with DATA · **Tier** T-work · **Tests** GF-SUFFICIENCY, GF-VIEW · **Needs** INGEST-01
+- **Read:** [H30](30-reference-scene-and-incomplete-data.md) F; [H25](25-all-format-agent-and-ux4g.md) F.
+- **Build:** the capability matrix (received, reader qualified, interpreted, converted, rendered, blocked reason) for every family in H30 F. Qualify one permitted real sample per family marked finale, including KML/KMZ, one DXF, one IFC, one glTF context model, LAS/LAZ, an elevation raster, an orthophoto and a control-point file. Register the rest as *Planned*, never dropped.
+- **Done when:** the matrix is saved as a receipt and each finale family has a tested sample or `failed(<reason>)`.
+
 ### DOMAIN-01 · Building extraction and the site model pipeline
 **Owner** DOMAIN · **Tier** T-risk · **Test** GF-AI · **Needs** DATA-04, DATA-06
 - **Read:** [H27](27-domain-ai-and-cadastral-checks.md) sections A–B and Z1.
@@ -215,26 +235,41 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-01 · Tokens, fonts and icons
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW (visual) · **Needs** none
-- **Read:** [H99](99-ui-ux-and-integration.md) Z1; [design system README](../design-system/README.md); [`tokens.css`](../design-system/tokens.css).
+- **Read:** [H99](99-ui-ux-and-integration.md) Z1 and Z6; [design system README](../design-system/README.md); [`tokens.css`](../design-system/tokens.css); [reference mockups](../design-system/mockups/officer-studio/README.md) (reference only, not production UI) and their rules.
 - **Build:** extend `--ui-*` tokens with map, rights, marks, ramps, utility and dark values; self-host Noto Sans, Noto Sans Devanagari and Noto Sans Mono; an `Icon` wrapper on Phosphor; a lint warning for new `lucide-react` imports.
 - **Done when:** no external font request offline; contrast checks pass in both themes; a Hindi label renders.
 
 ### UI-02 · Studio frame
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01
-- **Read:** [H99](99-ui-ux-and-integration.md) sections 3–4 and Z2; [UI brief](../design-system/ui-brief.md) "How the map should look".
+- **Read:** [H99](99-ui-ux-and-integration.md) sections 3–4 and Z2; [UI brief](../design-system/ui-brief.md) "How the map should look"; [reference mockups](../design-system/mockups/officer-studio/README.md) "The Studio frame" and "Interaction model" and [screens](../design-system/mockups/officer-studio/screens.md) "Frame", as design reference.
 - **Build:** 56 px top bar with Batches · Map · Register; scope strip; on-demand left panel; single tray; inspector widths; breakpoints.
 - **Done when:** selection and camera survive every panel change; 390 × 844 shows the scope header and action.
 
 ### UI-03 · Map styling and honest geometry
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01, FND-04
-- **Read:** [map and 3D rules](../design-system/map-and-3d.md); [H22](22-rendering-and-sparse-data.md) Z1–Z3.
+- **Read:** [map and 3D rules](../design-system/map-and-3d.md); [H22](22-rendering-and-sparse-data.md) Z1–Z3; [reference mockups](../design-system/mockups/officer-studio/README.md) "What the scene shows per mode", as design reference.
 - **Build:** Colour by (one at a time), evidence fill and record outline encodings, level rail with the named vertical reference, underground mode, "height unknown" and "illustrative" treatments, Indian level kinds.
-- **Done when:** each GF-VIEW fixture in H22 Z3 renders as specified and V1–V4 captures match the specimen.
+- **Done when:** each GF-VIEW fixture in H22 Z3 renders as specified and V1–V4 captures pass H99's V-shot contract with values from the loaded records.
 
 ### UI-04 · Batches, intake and workspace
 **Owner** UI · **Tier** T-work · **Tests** GF-VIEW, GF-AGENT (UI path) · **Needs** INGEST-02, DOMAIN-02
-- **Build:** S1 Batches, S2 Add files with inline mapping questions and "Reused mapping", S3 live import, S9 review details, S10 check and record, S11 assign dialog.
+- **Read:** [reference screens](../design-system/mockups/officer-studio/screens.md) S1–S5 and S9–S11 (design reference, not production spec); [reference mockups](../design-system/mockups/officer-studio/README.md) "Any format in, the same screens out"; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Batch`, `IntakeSession`, `IntakeFile`, `FieldMapping`, `Candidate`, `Building`, `Level`, `Space`.
+- **Build:** S1 Batches, S2 Add files with inline mapping questions and "Reused mapping", S3 live import, S4 area map, S5 building and floors, S9 review details, S10 check and record, S11 assign dialog. Screens bind to records; an unknown profile or unmapped field is listed, never dropped.
 - **Done when:** the officer completes the D0 flow without retyping data; provider-down shows manual mapping.
+
+### UI-08 · No hard-coded demo content or "fictional" labels
+**Owner** UI, with DATA for stored names · **Tier** T-work · **Tests** GF-VIEW, GF-SCENE · **Needs** none to start; DATA-09 to finish
+- **Read:** [AGENTS.md](../../AGENTS.md) data invariants; [H99](99-ui-ux-and-integration.md) Z6; [reference mockups](../design-system/mockups/officer-studio/README.md) rules 3–4; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Scope.classification` and `ProvenanceFlags`.
+- **Find:** `grep -rIli "fictional\|demonstration data\|specimen" apps/web --exclude-dir=node_modules --exclude-dir=.next` (35 source files outside `public/` on 25 September 2026: officer block, register, workspace, scene and work screens; `features/studio/data`; the reference import, runtime and workbench; `lib/server`; plus three protected files under `public/`).
+- **Build:** remove "Fictional demonstration" and similar disclaimers from screens and generated documents. Show each dataset's recorded classification in the scope strip, and *Test fixture* or a seeded-case badge only where the record's provenance says so. Finale screens read records through the ports; hard-coded sample arrays (for example the Lake View district and document generators) are not reachable from finale routes, and the Studio opens on the DATA-09 real reference area instead (H30 B). Keep legacy URLs working (AGENTS.md).
+- **Do not:** delete, re-seed or rewrite protected datasets, originals or files under `apps/web/public/datasets/`. A stored dataset or area name containing "FICTIONAL" is data. DATA may add a display label through a recorded, reversible revision; code must stop matching records by that text.
+- **Done when:** the grep above finds no user-visible string in finale screens (code comments and protected data files excepted, listed in the receipt); each finale screen shows provenance from the record; before and after screenshots of S1, S4, S5 and S12 are attached.
+
+### UI-09 · Enhanced view and scene sync
+**Owner** UI · **Tier** T-work · **Test** GF-SCENE · **Needs** UI-03, FND-04, DATA-09; DOMAIN-01 for tier 1
+- **Read:** [H30](30-reference-scene-and-incomplete-data.md) C, D and I; [H22](22-rendering-and-sparse-data.md) C, Z1 and Z5; [map and 3D rules](../design-system/map-and-3d.md) "Enhanced view"; [reference mockups](../design-system/mockups/officer-studio/README.md) (design reference, not production UI).
+- **Build:** the Enhanced view on the shared Cesium path. Tier 1: load a capture's OpenDroneMap mesh (DOMAIN-01, H27 Z1) as a clipped, non-pickable `context_mesh` whose picks pass through to `recordId`; qualify it on the DATA-06 scene. Tier 2, where no capture exists, is the deterministic dressing: DEM terrain, road ribbons, water and green fills, seeded tree instances, context massing by H30 G, storey slab lines and window bands, sun and shadows. Derivatives go to the display-derivative store with input pins, generator version, seed and hash; they go stale and regenerate on record change. Add the attribution line and the "Context building · no record" selection.
+- **Done when:** GF-SCENE passes, including the no-change check across the view switch and byte-identical rebuilds.
 
 ## GF3 — govern
 
@@ -262,7 +297,8 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-05 · Register, evidence, deviation and underground screens
 **Owner** UI · **Tier** T-work · **Tests** GF-VIEW, GF-REHEARSAL · **Needs** HISTORY-02, IMPACT-01
-- **Build:** S5–S8, S12, S13 per the [UI brief](../design-system/ui-brief.md) with the fixed wording in [H99](99-ui-ux-and-integration.md) Z4.
+- **Read:** [reference screens](../design-system/mockups/officer-studio/screens.md) GF3 section (design reference, not production spec); [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Underground`, `Finding`, `Check`, `Deviation`, `ShareLedger`, `Revision`, `EvidenceRef`.
+- **Build:** S6–S8, S12, S13 per the [UI brief](../design-system/ui-brief.md), using the reference mockups as a design guide, with the fixed wording in [H99](99-ui-ux-and-integration.md) Z4; S5 inspector refinements.
 - **Done when:** V4–V6 captures pass.
 
 ## GF4 — share scoped proof
@@ -270,7 +306,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 ### PACK-01 · Property Card and local QR
 **Owner** PACK · **Tier** T-risk · **Test** GF-T21 · **Needs** FND-02, RIGHTS-01, DOMAIN-03
 - **Read:** [H10](10-scoped-evidence-packets.md) GF4 sections.
-- **Build:** card subtype with P3 code, location line, vertical reference, chain state; `local_operator` resolver labelled "local demonstration link".
+- **Build:** card subtype with P3 code, location line, vertical reference, chain state; `local_operator` resolver labelled "local demonstration link". The UI takes [reference screens](../design-system/mockups/officer-studio/screens.md) S14 and P4L as a design guide and binds `PropertyCard` and `VerifyResult`.
 - **Done when:** GF-T21 passes, including sibling-leak pixel and metadata checks.
 
 ### FND-07 · Release isolation
@@ -289,7 +325,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-06 · Captures and rehearsal UI
 **Owner** UI · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** all GF4 cards
-- **Done when:** V1–V8 captures use the specimen data; the rehearsal pass rule in [H28](28-data-acquisition-and-finale-tests.md) Z5 holds.
+- **Done when:** V1–V8 captures use the H28 qualified data and pass H99's V-shot contract; any comparison with the [reference mockups](../design-system/mockups/officer-studio/README.md) is a design review, not a pass condition; the rehearsal pass rule in [H28](28-data-acquisition-and-finale-tests.md) Z5 holds.
 
 ### UI-07 · Automated task-completion and timing checks
 **Owner** UI · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** UI-04, UI-05 · replaces H90 H4 and the H9 study
