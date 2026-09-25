@@ -72,8 +72,3 @@
   align-items: center;
   gap: 6px;
 }
-@media (max-width: 700px) {
-  .ulpin-app {
-    --ui-header-height: 106px !important;
-  }
-}

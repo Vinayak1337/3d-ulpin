@@ -5,7 +5,7 @@ import {sourceKind} from "../register/model";
 import {SourcePreview} from "../register/Evidence";
 import {Dialog} from "../shared/ui";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FeatureKind, PhysicalFeature } from "@ulpin/contracts";
 import AreaSection from "@/components/AreaSection";
 import { utilityScene } from "@/lib/officer-scene";
@@ -31,13 +31,16 @@ const kinds: { kind: FeatureKind; label: string; icon: IconName }[] = [
 export function BlockLeftRail({
   block,
   onClose,
+  mode,
 }: {
   block: BlockController;
   onClose?: () => void;
+  mode?: "layers" | "properties";
 }) {
   const [filter, setFilter] = useState(""),
     [listing, setListing] = useState<"building" | "parcel" | "utility">("building");
   const { preferences, features } = block;
+  const rail = mode ?? preferences.rail;
   const properties = features.filter(
     (f) =>
       f.worldStatus===block.world && (f.kind === listing || !!filter.trim()) &&
@@ -46,8 +49,8 @@ export function BlockLeftRail({
         .includes(filter.toLowerCase()),
   );
   return (
-    <aside className="ui-block-left" aria-label="Map layers and properties">
-      <div className="ui-rail-tabs">
+    <div className="ui-block-left" aria-label={rail === "layers" ? "Map layers" : "Properties in this area"}>
+      {!mode && <div className="ui-rail-tabs">
         {(["layers", "properties"] as const).map((mode) => (
           <button
             key={mode}
@@ -66,8 +69,8 @@ export function BlockLeftRail({
             onClick={onClose}
           />
         )}
-      </div>
-      {preferences.rail === "layers" && (
+      </div>}
+      {rail === "layers" && (
         <div className="ui-layers">
           <div className="ui-rail-caption">
             <h3>Map layers</h3>
@@ -127,7 +130,7 @@ export function BlockLeftRail({
           </div>
         </div>
       )}
-      {preferences.rail === "properties" && <>
+      {rail === "properties" && <>
       <div className="ui-property-list-heading">
         <div className="ui-rail-caption">
           <h3>In this block</h3>
@@ -213,7 +216,7 @@ export function BlockLeftRail({
         <Icon name="layers" size={14} />
       </footer>
       </>}
-    </aside>
+    </div>
   );
 }
 function Metadata({ feature }: { feature: PhysicalFeature }) {
@@ -261,14 +264,19 @@ export function BlockInspector({
   block,
   onClose,
   onImport,
+  hiddenBySheet = false,
+  onSourceDialogChange,
 }: {
   block: BlockController;
   onClose?: () => void;
   onImport: (packageId: string) => void;
+  hiddenBySheet?: boolean;
+  onSourceDialogChange?: (open: boolean) => void;
 }) {
   const { selected, preferences, dossier } = block;
   const mode = preferences.inspector;
   const [sourceDialog,setSourceDialog]=useState<string|null>(null);
+  useEffect(() => onSourceDialogChange?.(!!sourceDialog), [sourceDialog, onSourceDialogChange]);
   const properties = block.features.filter((f) => f.kind === "building");
   const utils = block.features.filter((f) => f.kind === "utility");
   const utility = selected?.kind === "utility" ? selected : null;
@@ -280,7 +288,7 @@ export function BlockInspector({
       ? [{ feature: selected, status: "selected" }]
       : dossier.data?.parcels || [];
   return (
-    <aside className="ui-block-inspector" aria-label="Context inspector">
+    <aside className="ui-block-inspector" aria-label="Context inspector" data-evidence-open={sourceDialog ? "true" : undefined} data-sheet-hidden={hiddenBySheet ? "true" : undefined} inert={hiddenBySheet} aria-hidden={hiddenBySheet}>
       <header className="ui-inspector-heading">
         <h2>
           {mode === "property"
@@ -346,7 +354,7 @@ export function BlockInspector({
                   }
                 >
                   {selected.worldStatus === "synthetic"
-                    ? "Fictional demo"
+                    ? "Test fixture"
                     : selected.worldStatus}
                 </Badge>
                 <h2>{selected.name}</h2>
@@ -437,7 +445,7 @@ export function BlockInspector({
                     <dt>Source status</dt>
                     <dd>
                       {feature.worldStatus === "synthetic"
-                        ? "Fictional training record"
+                        ? "Test fixture"
                         : feature.worldStatus}
                     </dd>
                     <dt>Land use / zoning</dt>
