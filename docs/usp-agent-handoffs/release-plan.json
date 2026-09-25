@@ -1174,7 +1174,7 @@
       "C24"
     ],
     "status": "passed",
-    "receipt": "docs/evidence/usp/orchestration/LEAD-01B/attempt-1/plan-validation.json"
+    "receipt": "docs/evidence/usp/orchestration/plan-validation/2026-09-26-design-mockup/plan-validation.json"
   },
   "receiptContract": {
     "schemaVersion": "ulpin-test-receipt/1",
