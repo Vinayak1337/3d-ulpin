@@ -244,7 +244,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
                 <Button icon="eye" aria-pressed={block.showConflicts} disabled={!block.conflictCount} onClick={block.toggleConflicts}>{block.showConflicts ? "Hide conflicts" : "Show conflicts"}</Button>
               </div>}
             </aside>}
-            <div className="ui-map-world" inert={sheetOpen} aria-hidden={sheetOpen}><label>Source world <select aria-label="Source world" value={block.world} onChange={e=>block.setWorld(e.target.value)}>{block.worlds.map(w=><option key={w} value={w}>{w==='synthetic'?'Test fixture':w==='observed'?'Observed sources':w==='planned'?'Planned sources':'Hypothetical sources'}</option>)}</select></label>{block.selected?.kind==='building'&&block.details.length>0&&<button className="ui-button" aria-pressed={explode>0} onClick={()=>setExplode(v=>v?0:1.8)}>{explode?'Stack floors':'Separate floors'}</button>}</div>
+            <div className="ui-map-world" inert={sheetOpen} aria-hidden={sheetOpen}><label>Source world <select aria-label="Source world" value={block.world} onChange={e=>block.setWorld(e.target.value)}>{block.worlds.map(w=><option key={w} value={w}>{w==='synthetic'?'Synthetic sources':w==='observed'?'Observed sources':w==='planned'?'Planned sources':'Hypothetical sources'}</option>)}</select></label>{block.selected?.kind==='building'&&block.details.length>0&&<button className="ui-button" aria-pressed={explode>0} onClick={()=>setExplode(v=>v?0:1.8)}>{explode?'Stack floors':'Separate floors'}</button>}</div>
             <div className="ui-map-compass" inert={sheetOpen} aria-hidden={sheetOpen}>
               <Button
                 aria-label="Orient north"
