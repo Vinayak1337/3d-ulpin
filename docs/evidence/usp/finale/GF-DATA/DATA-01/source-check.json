@@ -1,0 +1,234 @@
+{
+  "schemaVersion": "gf0-data01-source-check/1",
+  "status": "candidate_for_review",
+  "testId": "GF-DATA/DATA-01",
+  "runAt": "2026-09-25T00:29:46.326065+00:00",
+  "codeCommit": "0b5229a0f43981858da4f6cd16fa9584a61dd00d",
+  "baseCommit": "546ff4edea76906b4f5640ff6fd2a9c226326ded",
+  "environment": {
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.9.6",
+    "node": "v26.7.0",
+    "pnpm": "9.12.0"
+  },
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-sol",
+    "effort": "high"
+  },
+  "review": {
+    "status": "pending",
+    "reviewer": null,
+    "independentAcceptance": false
+  },
+  "manifestHashes": {
+    "gf0-context-v1": "fb86e101742fed4c9ab9ce6db6b61ba497a904ad27f1cbe90aeb93d11621e3e2",
+    "gf0-structured-codes-v1": "3f1a9968adb5a6df4de48f1f7ca266efbe2c9ec37a49d80d0f270236104ff06d"
+  },
+  "sourceHashes": {
+    "osm-road-centrelines.geojson": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+    "lgd-districts.csv": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59"
+  },
+  "modelHashes": [],
+  "codeHashes": {
+    "checker": "4d1a78946e8a92aca85b1a1882666b3c8a53d653d8c9a2c51ad8bf17e6ec1b55",
+    "tests": "632972addff5d42127cc9c1d68aaf0def10dc218bce4a7d06e82de6924bad239"
+  },
+  "expectedActual": [
+    {
+      "caseId": "retained_indian_context",
+      "expected": {
+        "featureCount": 9,
+        "sourceSha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93"
+      },
+      "actual": {
+        "featureCount": 9,
+        "sourceSha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93"
+      },
+      "result": "passed"
+    },
+    {
+      "caseId": "literal_lgd_codes",
+      "expected": {
+        "rowCount": 785,
+        "stateCount": 36,
+        "exactEmptyLocalNames": 32,
+        "whitespaceOnlyLocalNames": 5,
+        "leadingZeroSample": "09"
+      },
+      "actual": {
+        "rowCount": 785,
+        "stateCount": 36,
+        "exactEmptyLocalNames": 32,
+        "whitespaceOnlyLocalNames": 5,
+        "leadingZeroSample": "09"
+      },
+      "result": "passed"
+    },
+    {
+      "caseId": "d7_access",
+      "expected": {
+        "state": "failed",
+        "reason": "permission_required"
+      },
+      "actual": {
+        "state": "failed",
+        "reason": "permission_required"
+      },
+      "result": "passed"
+    }
+  ],
+  "commands": [
+    {
+      "command": [
+        "python3",
+        "tests/usp-gf0-source-bundle.test.py"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.005s\n\nOK"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/usp/data/gf0-source-bundle.py",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "schemaVersion": "gf0-source-check/1",
+        "status": "candidate_for_review",
+        "context": {
+          "pack": "gf0-context-v1",
+          "featureCount": 9,
+          "sourceSha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+          "bundleSha256": "76b1067c4941f89a850f4f45b566204f6084ed7de67a2e970161a18e59d5a796",
+          "boundsLonLat": [
+            77.06239432592996,
+            28.619292929914288,
+            77.0652302,
+            28.620458040214583
+          ],
+          "checkedAssets": {
+            "osm-road-centrelines.geojson": {
+              "sha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+              "bytes": 8838
+            },
+            "expected.json": {
+              "sha256": "5065c2d2fb8ad0c034dabdb72576bf902b1635ac55505ca29622bfe9b2ef9c31",
+              "bytes": 540
+            }
+          }
+        },
+        "structuredCodes": {
+          "pack": "gf0-structured-codes-v1",
+          "rowCount": 785,
+          "stateCount": 36,
+          "exactEmptyLocalNames": 32,
+          "whitespaceOnlyLocalNames": 5,
+          "leadingZeroSample": "09",
+          "sourceSha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+          "checkedAssets": {
+            "lgd-districts.csv": {
+              "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+              "bytes": 89622
+            },
+            "expected.json": {
+              "sha256": "65ceb3f4b26487c9431823091b741f77e5657dec25f017765b5422676dce609a",
+              "bytes": 676
+            }
+          }
+        },
+        "d7": {
+          "state": "failed",
+          "reason": "permission_required",
+          "evidenceSha256": "b1ca574e2009a4dc4387e229f58bd429eb502aa9b005148b883cc90694264143"
+        },
+        "limitations": [
+          "Parser/source suitability only; no cadastral, ownership, spatial-code or model-training qualification.",
+          "Independent review remains pending."
+        ]
+      },
+      "stderr": ""
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "scripts/usp/data/verify-pack.ts",
+        "fixtures/usp/D4/gf0-context-v1/manifest.json"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "schemaVersion": "usp-pack-byte-check/1",
+        "packId": "D4",
+        "profile": "gf0-context-v1",
+        "checked": [
+          {
+            "id": "osm-road-centrelines.geojson",
+            "sha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+            "bytes": 8838
+          },
+          {
+            "id": "expected.json",
+            "sha256": "5065c2d2fb8ad0c034dabdb72576bf902b1635ac55505ca29622bfe9b2ef9c31",
+            "bytes": 540
+          }
+        ],
+        "unavailable": [],
+        "totalBytes": 9378,
+        "qualification": "Declared available bytes verified only; no parsing, rendering, permission or workflow qualification."
+      },
+      "stderr": ""
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "scripts/usp/data/verify-pack.ts",
+        "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "schemaVersion": "usp-pack-byte-check/1",
+        "packId": "D4",
+        "profile": "gf0-structured-codes-v1",
+        "checked": [
+          {
+            "id": "lgd-districts.csv",
+            "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+            "bytes": 89622
+          },
+          {
+            "id": "expected.json",
+            "sha256": "65ceb3f4b26487c9431823091b741f77e5657dec25f017765b5422676dce609a",
+            "bytes": 676
+          }
+        ],
+        "unavailable": [],
+        "totalBytes": 90298,
+        "qualification": "Declared available bytes verified only; no parsing, rendering, permission or workflow qualification."
+      },
+      "stderr": ""
+    }
+  ],
+  "artifactHashes": {
+    "acquisition.json": "53064497bf860b5a02bb2ad4ce07a22a9c52a6949caa76a5923b8c39c0e0e94a",
+    "report.md": "16f0c3d15bb710b3ae977660db8be39f2fce91d08a054848d0134d4305661709"
+  },
+  "limitations": [
+    "Parser/source suitability only; no cadastral, ownership, spatial-code or model-training qualification.",
+    "Independent review remains pending.",
+    "The test verifies only DATA-01 source bytes and bounded parsing; full GF-DATA and GF0 remain pending.",
+    "LGD resource-specific licence field and official currentness were not independently confirmed."
+  ],
+  "unqualifiedClaims": [
+    "operational ingestion",
+    "cadastral accuracy",
+    "property rights",
+    "training permission",
+    "finale gate pass"
+  ]
+}
