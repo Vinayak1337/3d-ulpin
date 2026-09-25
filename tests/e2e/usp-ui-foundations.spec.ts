@@ -14,6 +14,7 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
   await page.route(/https?:\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com)\//, route => route.abort());
   await page.goto(`/studio/areas/${encodeURIComponent(receipt.areaId)}`);
   await expect(page.locator('.ulpin-app')).toBeVisible();
+  await expect(page.locator('[data-tile-canvas]')).toHaveAttribute('data-scene-ready', 'true');
   const screenshots = process.env.ULPIN_UI01_SCREENSHOT_DIR;
   if (screenshots) await mkdir(screenshots, { recursive: true });
 
