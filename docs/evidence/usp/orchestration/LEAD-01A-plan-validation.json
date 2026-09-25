@@ -2,8 +2,8 @@
   "schemaVersion": "ulpin-plan-alignment-receipt/1",
   "kind": "documentation_and_validator_only",
   "status": "passed",
-  "codeCommit": "3b34868b3372c9c3748b4b093029afdc4bf6d5d3",
-  "checkedAt": "2026-09-25T11:12:40.673040+00:00",
+  "codeCommit": "83658011e82356c6bb8cc7351fb565ce6011b9ea",
+  "checkedAt": "2026-09-25T11:26:03.576363+00:00",
   "agent": {
     "id": "f06d415e-175e-4fb9-84b2-4fafdd96b0a7",
     "product": "Claude Code",
@@ -11,7 +11,7 @@
     "effort": "not reported by the session"
   },
   "filesSha256": {
-    "AGENTS.md": "5ef07a3373f9294df9248945f4559918a02b4ba739bffac79055eca98c0ec4ba",
+    "AGENTS.md": "07b3a83dea87dbf3e2e0e6c973c33ea0b6856c0644b4cbafe2fb3d35697cb65e",
     "README.md": "d67c24e7a3799136cfef602ad1f86bc35b073d6f4c6d63897f7025037494e7e6",
     "docs/engineering-plan/CURRENT_WORK.md": "f077e73fb5497cb000935e2dff410da41f642302ca90296d313d0f8ae5c11429",
     "docs/usp-agent-handoffs/00-README.md": "34da9b6fd56d059e758dd39e894aa588b47afac7f8058ba34901c9026062699f",
@@ -36,11 +36,11 @@
     "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md": "de4aa60a7aa76e8d71d18f6b5dcb6a8ae170be18c429f5060ff1a61fb0f9865a",
     "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md": "20be81665b3abc0f544565d3890d66ed52d76d53aa0f5579c3c8e9be1008b2c2",
     "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md": "cceb0d7665e684815684d5d0153ebfe4c17719722a581473eae134476a47a7b1",
-    "docs/usp-agent-handoffs/29-agent-task-cards.md": "dc92f8a3c38007c0c456a6512bc38d5124aec4ebbf53246aed66cf813863a2ce",
+    "docs/usp-agent-handoffs/29-agent-task-cards.md": "b92b7b1ac0b1606b05ce00c08ea74fd595bfca095a40b6134c7693894f10c2d3",
     "docs/usp-agent-handoffs/90-required-human-tasks.md": "97b94945d0f4f63b95f5ca36c1048acf0bf1a58a210233b2e6f6da66af5700eb",
-    "docs/usp-agent-handoffs/97-review-findings-and-alignment.md": "d1fec2549e195a2466a1d361bdae451b9f6973fce62da398feb8ecfe64c2dfcc",
+    "docs/usp-agent-handoffs/97-review-findings-and-alignment.md": "b682b680320e92d955ad64feb9f791345de3e39c1e6575e016e5c77ab3e19630",
     "docs/usp-agent-handoffs/98-engineering-readiness-audit.md": "8704aab3dd6cd6096b0e84696e874dae2518129e4f9fcdf08777e5cbc30203de",
-    "docs/usp-agent-handoffs/99-ui-ux-and-integration.md": "b1341eb004189bcfb9d2e49758f5bbd551f85f7a64ce91cea2cb0c3b237b68a5",
+    "docs/usp-agent-handoffs/99-ui-ux-and-integration.md": "d0bd41631bf35e1e82fd059652eb016becd6b38e6df7b423b9e869c0f5786e9a",
     "docs/usp-agent-handoffs/release-plan.json": "4547762ec27fa72781094b70ff07dacda8b64cdfa1b0c67079efb4a00f479580",
     "docs/usp-agent-handoffs/tools/tests/test_validate_handoffs.py": "fee3ebeda316aa6c471a3d37ed65b2df840dfc286ecf1a678cb7b496e79e982c",
     "docs/usp-agent-handoffs/tools/validate_handoffs.py": "aefb32722b9ae566a8b5557ae75b0a15008a0659eec481835f2ece6d92cab10b"
@@ -58,7 +58,7 @@
         "-q"
       ],
       "exitCode": 0,
-      "output": "----------------------------------------------------------------------\nRan 40 tests in 2.080s\n\nOK\n"
+      "output": "----------------------------------------------------------------------\nRan 40 tests in 2.132s\n\nOK\n"
     },
     {
       "command": [
