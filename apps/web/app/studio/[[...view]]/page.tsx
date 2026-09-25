@@ -14,7 +14,6 @@ import WorkspaceStart from '@/features/officer/workspace/WorkspaceStart';
 import WorkspacePage from '@/features/officer/workspace/WorkspacePage';
 import GeometryWorkspace from '@/features/officer/workspace/GeometryWorkspace';
 import RetainedRegister from '@/features/officer/register/RetainedRegister';
-import DelhiStudy from '@/features/officer/delhi/DelhiStudy';
 import {query} from '@/lib/server/db';
 import {resolveRecord} from '@/lib/server/registry';
 import {resolveAreaIdentifier} from '@/lib/server/area-resolver';
@@ -30,7 +29,7 @@ export default async function StudioPage({params,searchParams}:{params:Promise<{
  else if(p.length===1&&p[0]==='registry')page=<RegisterStart/>;
  else if(p.length===1&&p[0]==='add-files')page=<AddFiles/>;
  else if(p.length===1&&p[0]==='workspaces')page=<WorkspaceStart/>;
- else if(p.length===1&&p[0]==='source-study')page=<DelhiStudy/>;
+ else if(p.length===1&&p[0]==='source-study')redirect('/studio/datasets');
  else if(p.length===2&&p[0]==='areas'&&uuid(p[1]))page=<BlockPage key={p[1]} areaId={p[1]}/>;
  else if(p.length===3&&p[0]==='properties'&&uuid(p[1])&&p[2]==='register')page=<RegisterPage key={p[1]} buildingId={p[1]}/>;
  else if(p.length===3&&p[0]==='properties'&&uuid(p[1])&&['workspace','prepare'].includes(p[2]))page=<WorkspacePage key={p[1]} buildingId={p[1]}/>;

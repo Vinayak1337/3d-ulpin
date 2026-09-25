@@ -89,7 +89,7 @@ export default function BlockHome() {
           {[
             ["all", "All datasets"],
             ["saved", "Mapped sources"],
-            ["demonstration", "Fictional demonstrations"],
+            ["demonstration", "Synthetic sources"],
           ].map(([value, label]) => (
             <button
               key={value}
@@ -116,12 +116,12 @@ export default function BlockHome() {
       {areas.loading && !areas.data && <LoadingState label="Loading saved blocks" />}
       {!!(demos.length || ordered.length) && <div className="block-directory-grid">
         {demos.map(dataset => <Link className="block-card block-demo-card" href={savedDatasetUrl(dataset.id)} key={dataset.id}>
-          <div className="block-card-body"><Badge tone="warning">Fictional demonstration</Badge><h2>{dataset.name}</h2><p>{dataset.buildingCount} buildings <span>·</span> {dataset.floorCount} supplied floors</p><p>Saved dataset · revision {dataset.revision} · needs review</p><span className="block-card-action">Open map <Icon name="arrow" size={15}/></span></div>
+          <div className="block-card-body"><h2>{dataset.name}</h2><p>{dataset.buildingCount} buildings <span>·</span> {dataset.floorCount} supplied floors</p><p>Saved dataset · revision {dataset.revision} · needs review</p><span className="block-card-action">Open map <Icon name="arrow" size={15}/></span></div>
         </Link>)}
         {ordered.map(area => <BlockCard key={area.id} area={area}/>)}
       </div>}
       {!datasets.loading && !datasets.error && !areas.loading && !areas.error && !demos.length && !ordered.length && <EmptyState title="No matching datasets" description="Change the filter or import a source." icon="map"/>}
-      <footer className="directory-footer"><span>Saved datasets retain original files and spatial records. Fictional records remain separate from surveyed sources.</span><Link href="/studio/source-study">Delhi source study & downloads</Link></footer>
+      <footer className="directory-footer"><span>Saved datasets retain original files and spatial records.</span></footer>
       <DataTools
         open={importOpen}
         onClose={() => {setImportOpen(false);updateFilter('import', '');}}
