@@ -1,6 +1,6 @@
 # 25 — All-format agent, generative enrichment and UX4G-guided design
 
-**Release: `full_product` (FP-ENRICH / FP-FORMATS).** Broad all-format adaptation and generative enrich-first previews remain the product ambition; no universal support claim. The finale uses qualified direct conversion and evidence-supported reconstruction under H14/H27. Enrichment/learner/renderer experiments do not block it. Shared accessibility practices apply to every delivered surface.
+**Release: `full_product` (FP-ENRICH / FP-FORMATS).** Broad all-format adaptation and generative enrich-first previews remain the product ambition; no universal support claim. The finale uses qualified direct conversion and evidence-supported reconstruction under H14/H27. Enrichment/learner/renderer experiments do not block it. **25 September 2026:** the finale now includes a bounded part of this file through [H30](30-reference-scene-and-incomplete-data.md): one real sample per core input family (H30 F), fill/ask/park/reject handling of incomplete input (H30 E) and a deterministic Enhanced view over real layers (H30 C). Route 2 with learned or generative enrichment stays full_product. Shared accessibility practices apply to every delivered surface.
 
 **Product clarification: 24 September 2026. Owners: INGEST/FND for adaptation, DOMAIN/UI for enrichment, LEARN for learning, UI for government-design alignment, DEPLOY for residency.** This is planned scope, not evidence that every format or new capability already works. Read H14/H21/H22/H23 and H24's presentation copy.
 

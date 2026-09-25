@@ -106,6 +106,15 @@ Status **Applied** means the handoff text now contains the fix; the code work is
 - **C56 · contradiction** — UI reference vs H22 and the design system. The view model used its own geometry and level-kind names, and the register tabs differed between documents. **Applied:** H22 `representation`, `geometryClass`, `analyticEligible` and `levelKind`; register tabs **Units · Shares · Documents · Checks · History** everywhere.
 - **C57 · gap** — hardened plan items with no recorded decision: the air-rights envelope and LGD codes on each record. **Applied:** the two rows added to the table below.
 
+### Data and scene follow-up (25 September 2026)
+
+Added [H30](30-reference-scene-and-incomplete-data.md), requirements R-SCENE and R-SUFFICIENCY, tests GF-SCENE and GF-SUFFICIENCY (GF2), and cards DATA-09, UI-09, INGEST-04 and INGEST-05.
+
+- **C58 · gap** — UI-08, H28. Removing the hard-coded demo left nothing real for the Studio to open on. **Applied:** a real Indian reference area from open, licensed layers (data.gov.in first), with attribution and ODbL kept out of record exports (H30 B). **Open:** DATA-09, UI-08.
+- **C59 · weak approach** — H22 C, H25 B. Every visual enrichment was full_product, so the finale map could look good only by breaking the honesty rules. **Applied:** a deterministic Enhanced view over real layers, with one-way sync, staleness and a no-change check (H30 C–D, H22 Z5). Generative enrichment stays FP-ENRICH. **Open:** UI-09.
+- **C60 · gap** — H14, H22 D. Incomplete input had principles but no single decision, no limit on questions and no list of facts that must never be filled. **Applied:** `SufficiencyDecision` with fill, ask, park and reject for 3D; at most five class-level questions per batch; per-task minimums (H30 E). **Open:** INGEST-04.
+- **C61 · gap** — H14 C, H25 A. There was no finale list of input families with their minimum evidence, and no precedence when LiDAR, DEM, plans and GIS disagree. **Applied:** H30 F–G. **Open:** INGEST-05.
+
 ## Alignment with the hardened plan
 
 | Topic | Hardened plan said | Handoffs said | Now |

@@ -157,3 +157,8 @@ Add `manual_mapping` to GF2: the officer maps columns to concepts in Batch revie
 | `tests/usp-ingestion-hostile.test.ts`, `tests/usp-ingestion-agent.test.ts` | GF-RECOVERY negatives and GF-AGENT cases |
 
 Section I acceptance bullets that mention learner training are FP-LEARN, not GF2.
+
+### Z6. Incomplete input and every family (25 September 2026)
+
+The finale input families, their minimum evidence and the precedence for mixed inputs are in [H30](30-reference-scene-and-incomplete-data.md) F–G. Every object gets a `SufficiencyDecision` (H30 E): fill for display, ask one class-level question (at most five per batch), park under "Needs input", or reject for 3D while keeping the original as evidence. The fixed order is read the file, reuse a recipe, propose an inference, ask, park. Cards INGEST-04 and INGEST-05; test GF-SUFFICIENCY.
+
