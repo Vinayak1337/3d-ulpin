@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "ulpin-bounded-review/1",
+  "assignmentId": "LEAD-01B",
+  "attempt": 1,
+  "reviewedAt": "2026-09-25T16:28:53.676872+00:00",
+  "reviewer": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "independence": "same_family"
+  },
+  "producerReported": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high"
+  },
+  "codeCommit": "3f434995a5b75062337f108740ee11455c0511b9",
+  "resultCommit": "ab93a303e20dab6a14fbb3a5e7ec35b8df4b5fce",
+  "integrationCommit": "752fea950e0925618db3b7c83f24433961bb8d74",
+  "verdict": "accepted_bounded_plan_validation",
+  "checks": [
+    {
+      "command": "python3 -m unittest discover -s docs/usp-agent-handoffs/tools/tests -q",
+      "exitCode": 0,
+      "tests": 69
+    },
+    {
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 docs/engineering-plan/tools/validate_plan.py",
+      "exitCode": 0,
+      "checks": 26
+    },
+    {
+      "command": "Lead code/contract review, git ancestry and git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "limits": [
+    "Same-family engineering review only; no independent milestone approval",
+    "Approval source authenticity requires actual human/lead verification; hashes bind records but do not authenticate them",
+    "No real owner designation, waiver, schedule or release candidate; runtime gates remain pending",
+    "Attempt retention depends on complete reachable Git history; no recovery of unrecorded executions"
+  ],
+  "adjustments": [
+    "Unprovided schedule dates remain explicit null/unscheduled; no invented commitment"
+  ]
+}

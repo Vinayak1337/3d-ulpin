@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T16:07:20.820556+00:00",
+  "updatedAt": "2026-09-25T16:28:53.676872+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -75,6 +75,13 @@
         "assignmentId": "DATA-09",
         "integrationMethod": "merge preserving both attempts and tested ancestry",
         "scope": "Bounded official source inspection and unchanged-original integrity only; scene and reuse qualifications open"
+      },
+      {
+        "sourceCommit": "ab93a303e20dab6a14fbb3a5e7ec35b8df4b5fce",
+        "integrationCommit": "752fea950e0925618db3b7c83f24433961bb8d74",
+        "assignmentId": "LEAD-01B",
+        "integrationMethod": "merge preserving tested code ancestry",
+        "scope": "Governance metadata validation; no real approvals or gate promotion"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -192,7 +199,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_LEAD-01B",
+      "status": "ready_for_next_assignment",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1252,9 +1259,12 @@
         "No fabricated official source records, altered source inputs or new synthetic domain datasets; metadata unit cases only",
         "Refresh planValidation with a new immutable hash-pinned receipt after final code commit, preserve old receipt and all pending runtime gates"
       ],
-      "status": "dispatched",
+      "status": "accepted_bounded_plan_validation",
       "reportPath": "docs/evidence/usp/orchestration/LEAD-01B/attempt-1/report.md",
-      "resultCommit": null
+      "resultCommit": "ab93a303e20dab6a14fbb3a5e7ec35b8df4b5fce",
+      "testedCommit": "3f434995a5b75062337f108740ee11455c0511b9",
+      "acceptedAt": "2026-09-25T16:28:53.676872+00:00",
+      "reviewRef": "docs/evidence/usp/orchestration/LEAD-01B-attempt-1-review.json"
     }
   ],
   "capabilityChecklist": [
@@ -2128,6 +2138,15 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "9b564a87d41157f6a5b7d14768b040263804c7ce",
       "result": "accepted_bounded_acquisition_only"
+    },
+    {
+      "callbackId": "ulpin-LEAD-01B-attempt-1",
+      "assignmentId": "LEAD-01B",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "ab93a303e20dab6a14fbb3a5e7ec35b8df4b5fce",
+      "result": "accepted_bounded_plan_validation",
+      "normalization": "completed callback interpreted as ready for review; host alias normalized"
     }
   ],
   "observations": [
@@ -2209,7 +2228,7 @@
       "card": "LEAD-01",
       "title": "Plan machinery that can tell the truth",
       "needs": "none",
-      "status": "partial_LEAD-01A_LEAD-01B_dispatched"
+      "status": "accepted_bounded_plan_validation"
     },
     {
       "card": "LEAD-02",
