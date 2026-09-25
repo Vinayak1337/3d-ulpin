@@ -11,6 +11,8 @@ import { assertIsolation as assertHostedIsolation, redact } from '../engineering
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const ports = { POSTGRES_PORT: '25432', S3_PORT: '29000', S3_CONSOLE_PORT: '29001',
   REDIS_PORT: '26379', GEO_PORT: '28000' };
+const previewProviderKeys = ['OPENAI_API_KEY', 'SARVAM_API_KEY', 'ANTHROPIC_API_KEY',
+  'GOOGLE_API_KEY', 'GEMINI_API_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'];
 const endpoint = (value, protocol, port, path) => {
   const url = new URL(value);
   assert.equal(url.protocol, protocol);
@@ -52,6 +54,8 @@ export function assertUspIsolation(env) {
   for (const [key, value] of Object.entries(ports)) assert.equal(env[key], value);
   for (const key of ['DOCKER_HOST', 'DOCKER_CERT_PATH', 'NOUS_API_KEY', 'OPENROUTER_API_KEY'])
     assert(!env[key], `${key} must not point at private or remote resources`);
+  if (preview) for (const key of previewProviderKeys)
+    assert(!env[key], `${key} is forbidden in the read-only UI preview`);
   return scope;
 }
 
@@ -86,6 +90,7 @@ async function run() {
   };
   const env = { ...process.env, ...values };
   for (const key of ['DOCKER_HOST', 'DOCKER_CERT_PATH', 'NOUS_API_KEY', 'OPENROUTER_API_KEY']) delete env[key];
+  if (preview) for (const key of previewProviderKeys) delete env[key];
   assertUspIsolation(env);
   const file = join(temporary, 'ulpin-local.env');
   await writeFile(file, Object.entries(values).filter(([key]) => key !== 'ULPIN_ISOLATION_PROFILE' && key !== 'ULPIN_LOCAL_NONCE' && key !== 'DOCKER_CONTEXT')

@@ -32,5 +32,8 @@ test('UI preview accepts only the explicit nonce-owned loopback profile', () => 
     ['DOCKER_CONTEXT', 'remote'],
     ['REPO_DATA', 'true'],
     ['NOUS_API_KEY', 'remote-key'],
+    ['OPENAI_API_KEY', 'remote-key'],
+    ['SARVAM_API_KEY', 'remote-key'],
+    ['AWS_SECRET_ACCESS_KEY', 'remote-key'],
   ]) assert.throws(() => assertUspIsolation({ ...preview, [key]: value }), key);
 });
