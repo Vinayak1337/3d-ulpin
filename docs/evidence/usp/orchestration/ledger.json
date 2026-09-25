@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T00:15:54.661005+00:00",
+  "updatedAt": "2026-09-25T00:16:04.291490+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -108,7 +108,7 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "dispatching_DATA-01",
+      "status": "assigned_DATA-01",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -280,7 +280,7 @@
         "D7 permission-required status cited, not invented data",
         "No gate pass without independent review"
       ],
-      "status": "dispatching",
+      "status": "dispatched",
       "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-01/report.md",
       "resultCommit": null
     }
