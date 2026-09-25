@@ -3,6 +3,7 @@ import { query } from './db';
 import {ensureSpatialDatasets} from './spatial-dataset-db';
 import { fingerprint } from './domain';
 import type {WorkItem, WorkQueueResult} from '../work-queue';
+import {sourceProvenance} from '../spatial-datasets';
 
 /** Only metadata is read here. Exact build/record eligibility is checked in the opened workspace. */
 export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
@@ -34,7 +35,7 @@ export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
     WHERE a.archived_at IS NULL AND NOT (p.body ? 'sourceWorkspace')
       AND NOT EXISTS(SELECT 1 FROM building_preparations b WHERE b.package_id=p.id)
     UNION ALL
-    SELECT d.id,'dataset',d.name,NULL::uuid,d.name,'demonstration',NULL::uuid,
+    SELECT d.id,'dataset',d.name,NULL::uuid,d.name,NULL::text,NULL::uuid,
       d.source_count,greatest(d.created_at,j.created_at,j.completed_at),'SAVED',j.status,false,NULL::jsonb,NULL::int,NULL::int,NULL::uuid,NULL::int,NULL::jsonb
     FROM spatial_datasets d
     LEFT JOIN LATERAL (SELECT status,created_at,completed_at FROM jobs WHERE case_id=d.case_id AND operation='dataset-spatial-inference' ORDER BY CASE WHEN status IN ('queued','running') THEN 0 ELSE 1 END,created_at DESC LIMIT 1) j ON true
@@ -46,9 +47,9 @@ export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
     coalesce((SELECT jsonb_agg(row_to_json(paged)) FROM (SELECT * FROM filtered ORDER BY "updatedAt" DESC,id LIMIT $3 OFFSET $4) paged),'[]'::jsonb) items`,
     [search,filter,pageSize,(page-1)*pageSize]);
   const {total,items} = result.rows[0];
-  return {total,page,pageSize,items: items.map((row: WorkItem & {preparation: unknown; packageRevision: number; caseRevision: number; snapshotId?: string; featureRevision: number; receipts?: string[]}) => {
+  return {total,page,pageSize,items: items.map((row: Omit<WorkItem,'provenance'> & {preparation: unknown; packageRevision: number; caseRevision: number; snapshotId?: string; featureRevision: number; receipts?: string[]}) => {
     const {preparation,packageRevision,caseRevision,snapshotId,featureRevision,receipts,...item} = row;
     const currentRecorded = !!preparation && !!receipts?.includes(fingerprint({preparation,packageRevision,caseRevision,snapshotId:snapshotId || undefined,featureRevision}));
-    return {...item,currentRecorded};
+    return {...item,currentRecorded,provenance:sourceProvenance(item.dataKind,item.kind==='dataset')};
   })};
 }

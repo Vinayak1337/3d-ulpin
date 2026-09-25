@@ -1,16 +1,16 @@
 import type { MapArea } from "@ulpin/contracts";
 
 export function datasetLabel(kind?: MapArea["dataKind"]): string {
-  if (kind === "demonstration") return "Fictional demonstration";
-  if (kind === "real") return "Real sources";
-  if (kind === "mixed") return "Mixed real and fictional sources";
+  if (kind === "demonstration") return "Synthetic";
+  if (kind === "real") return "Observed";
+  if (kind === "mixed") return "Mixed";
   if (kind === "empty") return "No mapped sources yet";
   return "Source status unclassified";
 }
 export function filterAreas(areas: MapArea[], query: string, kind: string): MapArea[] {
   const needle = query.trim().toLocaleLowerCase();
   return areas.filter(area =>
-    (kind === "all" || (kind === "saved" ? area.dataKind !== "demonstration" && (area.featureCount ?? 0) > 0 : area.dataKind === kind)) &&
+    (kind === "all" || (kind === "saved" ? area.dataKind !== "demonstration" && (area.featureCount ?? 0) > 0 : kind === "unknown" ? !["real","demonstration","mixed"].includes(area.dataKind ?? "") : area.dataKind === kind)) &&
     `${area.name} ${area.id}`.toLocaleLowerCase().includes(needle),
   ).sort((a,b) => a.name.localeCompare(b.name));
 }
