@@ -266,9 +266,9 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 - **Done when:** the grep above finds no user-visible string in finale screens (code comments and protected data files excepted, listed in the receipt); each finale screen shows provenance from the record; before and after screenshots of S1, S4, S5 and S12 are attached.
 
 ### UI-09 · Enhanced view and scene sync
-**Owner** UI · **Tier** T-work · **Test** GF-SCENE · **Needs** UI-03, FND-04, DATA-09
+**Owner** UI · **Tier** T-work · **Test** GF-SCENE · **Needs** UI-03, FND-04, DATA-09; DOMAIN-01 for tier 1
 - **Read:** [H30](30-reference-scene-and-incomplete-data.md) C, D and I; [H22](22-rendering-and-sparse-data.md) C, Z1 and Z5; [map and 3D rules](../design-system/map-and-3d.md) "Enhanced view"; [reference mockups](../design-system/mockups/officer-studio/README.md) (design reference, not production UI).
-- **Build:** the deterministic Enhanced view on the shared Cesium path: DEM terrain, road ribbons, water and green fills, seeded tree instances, context massing by H30 G, storey slab lines and window bands, sun and shadows. Derivatives go to the display-derivative store with input pins, generator version, seed and hash; they go stale and regenerate on record change. Add the attribution line and the "Context building · no record" selection.
+- **Build:** the Enhanced view on the shared Cesium path. Tier 1: load a capture's OpenDroneMap mesh (DOMAIN-01, H27 Z1) as a clipped, non-pickable `context_mesh` whose picks pass through to `recordId`; qualify it on the DATA-06 scene. Tier 2, where no capture exists, is the deterministic dressing: DEM terrain, road ribbons, water and green fills, seeded tree instances, context massing by H30 G, storey slab lines and window bands, sun and shadows. Derivatives go to the display-derivative store with input pins, generator version, seed and hash; they go stale and regenerate on record change. Add the attribution line and the "Context building · no record" selection.
 - **Done when:** GF-SCENE passes, including the no-change check across the view switch and byte-identical rebuilds.
 
 ## GF3 — govern
