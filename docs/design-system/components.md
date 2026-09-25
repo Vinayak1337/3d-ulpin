@@ -6,8 +6,8 @@ Twenty-three components, each with its reference CSS class in [reference/compone
 
 ### UlpinCode
 Shows identity in mono, copyable, never broken across lines.
-- **Line 1, the code:** `P3-7Q4M2R8T6V0W3X5Y9ZAB-R4` labelled **3D ULPIN (proposed)**. It carries no meaning, so show no segment tooltips on it.
-- **Line 2, the location:** `MH2507A1B3C4D5 / S01 / F07 / R003` labelled **Location**, muted, display only. Segment tooltips live here (parcel anchor, structure, level, space). `MULTI(2)` or `NO-ANCHOR` when the anchor is not a single reviewed parcel.
+- **Line 1, the code:** the `P3` project code labelled **3D ULPIN (proposed)**. It carries no meaning, so show no segment tooltips on it.
+- **Line 2, the location:** the parcel / structure / level / space segments labelled **Location**, muted, display only. Segment tooltips live here (parcel anchor, structure, level, space). `MULTI(2)` or `NO-ANCHOR` when the anchor is not a single reviewed parcel.
 - **States:** *Assigned* (solid), *Draft* (no code yet: "Code assigned after review"), *Retired* (struck through, with successor links), *Cancelled* (struck through, with the reason).
 - Always show the **Parcel ULPIN** separately with its anchor state. Never call anything official.
 - **Data from:** H26 (FND).
@@ -52,7 +52,7 @@ Link from a value to its exact source: document or dataset, locator (page, row, 
 
 ### FindingCard
 One reproducible finding: severity, participants, the measured relationship with its arithmetic, sources, next actions.
-- Title states the result with its number ("Flat 101 / Flat 201: 6.4 m³ overlap"). Severity is a badge with icon.
+- Title states the result with its number ("<space> / <space>: <volume> m³ overlap"). Severity is a badge with icon.
 - Arithmetic in the calculation block so an officer can check it by hand. *Not assessed* shows the reason and never reads as "no conflict".
 - Actions: **Open in 3D**, **Request evidence**, **Mark resolved** only when new evidence is applied.
 - **Data from:** H12 (FIND), H27.
@@ -87,7 +87,7 @@ Bottom-left legend for the active Colour by mode plus the always-on evidence (fi
 
 ### LevelRail
 Vertical level picker on the right edge of the canvas: rooftop structures, terrace, floors, mezzanines, ground, stilt, lower ground, basements, in source order.
-- Vertical reference named once at the top ("m · site datum SD-1"); each level shows its lower elevation; estimated limits end in "est."; unknown shows "?" with the hatch.
+- Vertical reference named once at the top ("m · <named reference>"); each level shows its lower elevation; estimated limits end in "est."; unknown shows "?" with the hatch.
 - Ground line shows the benchmark height. Click isolates; shift-click keeps upper levels as ghosts; arrow keys move.
 - **Data from:** H22 level kinds, H27 level register.
 
@@ -100,7 +100,7 @@ Pill of 2–4 exclusive view options (2D/3D, Model/Volumes, Plan/Oblique/Section
 ## Frame and controls
 
 ### StudioHeader
-56 px top bar: wordmark, **Batches · Map · Register**, search (`/`), area switcher, Live or "Snapshot 24 Sep, 14:10", theme, user. Active section uses `aria-current="page"`. One navigation row; the scope strip under it is context.
+56 px top bar: wordmark, **Batches · Map · Register**, search (`/`), area switcher, Live or "Snapshot <date>, <time>", theme, user. Active section uses `aria-current="page"`. One navigation row; the scope strip under it is context.
 
 ### Inspector
 Single right-hand panel for the selection (360 px, 400 px with evidence preview): identity header (name, UlpinCode, status, Parcel ULPIN), tabs **Overview · Rights · Evidence · Checks · History**, footer with at most one primary and one secondary action. Every sourced value carries an EvidenceChip; unknown values say *Unknown* with a request action.
@@ -112,7 +112,7 @@ Primary (one per view), secondary, soft, ghost, danger (always confirmed). 40 px
 Icon plus fixed status word; colour never carries meaning alone. Success: reviewed, recorded, assigned, passed. Warning: needs review, needs evidence, stale. Danger: blocking and failures only. Info: counts. Neutral: draft, unknown, not assessed, test fixture.
 
 ### Field
-Label above, helper below, error below that; no placeholder as label. Units in the label ("Lower limit (m, site datum SD-1)"). Errors name the problem and the fix.
+Label above, helper below, error below that; no placeholder as label. Units in the label ("Lower limit (m, <named reference>)"). Errors name the problem and the fix.
 
 ### PortalHeader (FP-PUBLIC)
 UX4G accessibility bar, then header with an empty department-mark slot, wordmark, **English / हिन्दी** and **Sign in**. Never a seal or emblem.

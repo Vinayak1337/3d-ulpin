@@ -139,7 +139,7 @@ Each rule gets a GF-RECOVERY negative fixture.
 
 ### Z3. A no-model route that works in the finale
 
-Add `manual_mapping` to GF2: the officer maps columns to concepts in Batch review using the same constrained plan schema and conversion registry. "Provider unavailable" produces `needs_input`, never a stalled batch. The learner events (`learning.status_changed`, `converter.promoted`) and section G stay full_product.
+Add `manual_mapping` to GF2: the officer maps columns to concepts in Batch review using the same constrained plan schema and conversion registry. The screens for this path (Add files, live import, mapping questions, provider-down) and the profile/mapping fields they read are in the [mockup reference](../design-system/mockups/officer-studio/screens.md#s2-add-files--dialog-studioadd-files). "Provider unavailable" produces `needs_input`, never a stalled batch. The learner events (`learning.status_changed`, `converter.promoted`) and section G stay full_product.
 
 ### Z4. Size, duplicates and revisions
 

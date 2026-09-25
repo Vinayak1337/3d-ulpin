@@ -215,25 +215,26 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-01 · Tokens, fonts and icons
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW (visual) · **Needs** none
-- **Read:** [H99](99-ui-ux-and-integration.md) Z1; [design system README](../design-system/README.md); [`tokens.css`](../design-system/tokens.css).
+- **Read:** [H99](99-ui-ux-and-integration.md) Z1 and Z6; [design system README](../design-system/README.md); [`tokens.css`](../design-system/tokens.css); [mockup reference](../design-system/mockups/officer-studio/README.md) rules 1–7.
 - **Build:** extend `--ui-*` tokens with map, rights, marks, ramps, utility and dark values; self-host Noto Sans, Noto Sans Devanagari and Noto Sans Mono; an `Icon` wrapper on Phosphor; a lint warning for new `lucide-react` imports.
 - **Done when:** no external font request offline; contrast checks pass in both themes; a Hindi label renders.
 
 ### UI-02 · Studio frame
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01
-- **Read:** [H99](99-ui-ux-and-integration.md) sections 3–4 and Z2; [UI brief](../design-system/ui-brief.md) "How the map should look".
+- **Read:** [H99](99-ui-ux-and-integration.md) sections 3–4 and Z2; [UI brief](../design-system/ui-brief.md) "How the map should look"; [mockup reference](../design-system/mockups/officer-studio/README.md) "The Studio frame" and "Interaction model"; [screens](../design-system/mockups/officer-studio/screens.md) "Frame".
 - **Build:** 56 px top bar with Batches · Map · Register; scope strip; on-demand left panel; single tray; inspector widths; breakpoints.
 - **Done when:** selection and camera survive every panel change; 390 × 844 shows the scope header and action.
 
 ### UI-03 · Map styling and honest geometry
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01, FND-04
-- **Read:** [map and 3D rules](../design-system/map-and-3d.md); [H22](22-rendering-and-sparse-data.md) Z1–Z3.
+- **Read:** [map and 3D rules](../design-system/map-and-3d.md); [H22](22-rendering-and-sparse-data.md) Z1–Z3; [mockup reference](../design-system/mockups/officer-studio/README.md) "What the scene shows per mode".
 - **Build:** Colour by (one at a time), evidence fill and record outline encodings, level rail with the named vertical reference, underground mode, "height unknown" and "illustrative" treatments, Indian level kinds.
-- **Done when:** each GF-VIEW fixture in H22 Z3 renders as specified and V1–V4 captures match the specimen.
+- **Done when:** each GF-VIEW fixture in H22 Z3 renders as specified and V1–V4 captures match the mockup reference in layout and state, with values from the loaded records.
 
 ### UI-04 · Batches, intake and workspace
 **Owner** UI · **Tier** T-work · **Tests** GF-VIEW, GF-AGENT (UI path) · **Needs** INGEST-02, DOMAIN-02
-- **Build:** S1 Batches, S2 Add files with inline mapping questions and "Reused mapping", S3 live import, S9 review details, S10 check and record, S11 assign dialog.
+- **Read:** [screens](../design-system/mockups/officer-studio/screens.md) S1–S5 and S9–S11; [mockup reference](../design-system/mockups/officer-studio/README.md) "Any format in, the same screens out"; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Batch`, `IntakeSession`, `IntakeFile`, `FieldMapping`, `Candidate`, `Building`, `Level`, `Space`.
+- **Build:** S1 Batches, S2 Add files with inline mapping questions and "Reused mapping", S3 live import, S4 area map, S5 building and floors, S9 review details, S10 check and record, S11 assign dialog. Screens bind to records; an unknown profile or unmapped field is listed, never dropped.
 - **Done when:** the officer completes the D0 flow without retyping data; provider-down shows manual mapping.
 
 ## GF3 — govern
@@ -262,7 +263,8 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-05 · Register, evidence, deviation and underground screens
 **Owner** UI · **Tier** T-work · **Tests** GF-VIEW, GF-REHEARSAL · **Needs** HISTORY-02, IMPACT-01
-- **Build:** S5–S8, S12, S13 per the [UI brief](../design-system/ui-brief.md) with the fixed wording in [H99](99-ui-ux-and-integration.md) Z4.
+- **Read:** [screens](../design-system/mockups/officer-studio/screens.md) GF3 section; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Underground`, `Finding`, `Check`, `Deviation`, `ShareLedger`, `Revision`, `EvidenceRef`.
+- **Build:** S6–S8, S12, S13 per the [UI brief](../design-system/ui-brief.md) and the mockup reference, with the fixed wording in [H99](99-ui-ux-and-integration.md) Z4; S5 inspector refinements.
 - **Done when:** V4–V6 captures pass.
 
 ## GF4 — share scoped proof
@@ -270,7 +272,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 ### PACK-01 · Property Card and local QR
 **Owner** PACK · **Tier** T-risk · **Test** GF-T21 · **Needs** FND-02, RIGHTS-01, DOMAIN-03
 - **Read:** [H10](10-scoped-evidence-packets.md) GF4 sections.
-- **Build:** card subtype with P3 code, location line, vertical reference, chain state; `local_operator` resolver labelled "local demonstration link".
+- **Build:** card subtype with P3 code, location line, vertical reference, chain state; `local_operator` resolver labelled "local demonstration link". UI follows [screens](../design-system/mockups/officer-studio/screens.md) S14 and P4L and binds `PropertyCard` and `VerifyResult`.
 - **Done when:** GF-T21 passes, including sibling-leak pixel and metadata checks.
 
 ### FND-07 · Release isolation
@@ -289,7 +291,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-06 · Captures and rehearsal UI
 **Owner** UI · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** all GF4 cards
-- **Done when:** V1–V8 captures use the specimen data; the rehearsal pass rule in [H28](28-data-acquisition-and-finale-tests.md) Z5 holds.
+- **Done when:** V1–V8 captures use the H28 qualified data and match the [mockup reference](../design-system/mockups/officer-studio/README.md) in layout and state (never in values); the rehearsal pass rule in [H28](28-data-acquisition-and-finale-tests.md) Z5 holds.
 
 ### UI-07 · Automated task-completion and timing checks
 **Owner** UI · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** UI-04, UI-05 · replaces H90 H4 and the H9 study

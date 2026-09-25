@@ -14,7 +14,8 @@ The visual and content rules for every 3D ULPIN screen. It is the repository cop
 | [ux4g-alignment.md](ux4g-alignment.md) | How UX4G 3.1 and GIGW 3.0 apply, and what not to install |
 | [components.md](components.md) | The 23 components: anatomy, states, content and who supplies the data |
 | [reference/components.css](reference/components.css) | Reference CSS for those components (read, then port) |
-| [ui-brief.md](ui-brief.md) | Screens, specimen data, flows and states, and mockup prompts |
+| [ui-brief.md](ui-brief.md) | Screens, where each feature lives, flows and states |
+| [mockups/officer-studio/](mockups/officer-studio/README.md) | The assembled screens from the team's interactive mockup: frame, interaction model, per-screen layout and the [view model schema](mockups/officer-studio/view-model.schema.json) every screen binds to. Replicate the UI, never its data |
 
 ## Principles
 
@@ -31,12 +32,12 @@ The visual and content rules for every 3D ULPIN screen. It is the repository cop
 - Plain words, active voice, specific numbers: "U03 begins at 2.8 m; the plan says 3.0 m." Not "An inconsistency was detected."
 - Sentence case everywhere. No all-caps labels, exclamation marks or emoji.
 - A button says exactly what happens: **Record reviewed details**, **Assign proposed 3D ULPIN**, **Request evidence**, **Export screening report**. One label per intent across the product.
-- **Units always shown:** `m`, `m²`, `m³`. Heights always name their vertical reference: "233.8 m · site datum SD-1". Write "m above mean sea level" only when the source states that datum; never relabel a GNSS or local height.
+- **Units always shown:** `m`, `m²`, `m³`. Heights always name their vertical reference: "<elevation> m · <named reference>". Write "m above mean sea level" only when the source states that datum; never relabel a GNSS or local height.
 - Areas and volumes to 2 decimals in tables, 1 in labels. Indian digit grouping for rupees and large counts: ₹12,40,000; 1,23,456 parcels. Area in m² first; sq ft in brackets only when the source used it.
 - Dates as 24 Sep 2026; times 24-hour in IST, 14:10. Relative time only in activity feeds, with the exact time on hover.
 - **Identifiers** are mono, never broken across lines, always copyable:
-  - the proposed project code `P3-7Q4M2R8T6V0W3X5Y9ZAB-R4`, labelled **3D ULPIN (proposed)**;
-  - the separate **Location** line `MH2507A1B3C4D5 / S01 / F07 / R003`, display only (H26 Z1);
+  - the proposed project code (format in [H26](../usp-agent-handoffs/26-identifiers-and-standard-exchange.md)), labelled **3D ULPIN (proposed)**;
+  - the separate **Location** line (parcel / structure / level / space segments), display only (H26 Z1);
   - the state's parcel code, labelled **Parcel ULPIN**, with its anchor state.
 - Fixed status words: *Draft*, *Needs evidence*, *Needs review*, *Reviewed*, *Recorded*, *Assigned*, *Retired*, *Cancelled*, *Unknown*, *Not assessed*, *Not comparable*, *Test fixture*. No synonyms.
 - Errors say what happened and what to do: "parcels.shp has no CRS. Choose the coordinate system to continue." No "Oops", no apologies.
