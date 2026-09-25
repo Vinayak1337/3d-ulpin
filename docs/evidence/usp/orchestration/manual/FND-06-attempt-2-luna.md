@@ -33,7 +33,7 @@ From the saved Bronx map's selected property, **Prepare an update** opened `/stu
 | Enlarged desktop layout | Check status copy and close control after enlargement | Tried `super+plus` and `super+shift+equal` four times each; screenshots showed no zoom change. CUA exposed only the Codex in-app browser and no viewport override. Enlarged/200% layout remains unverified; no clipping claim is made for it. |
 | AI-unavailable/native-preparation path | Native route is available without provider call or data mutation | Status copy says native preparation remains available. The saved property's preparation page exposed Create workspace, but the 404 dev runtime error above prevented a clean route result. Button was not activated; zero provider calls were initiated. |
 
-The Batches, status-dialog and 404-overlay screenshots were viewed through CUA during this check; no screenshot files were written to the repository. Repository Officer Studio mockups are reference UIs only; no user-provided mock design was attached to this task.
+The Batches, status-dialog and 404-overlay screenshots were viewed through CUA during this check; no screenshot files were written to the repository. Design-fidelity comparison against the user visual pack or repository Officer Studio reference mockups was not performed in this bounded privacy/UI check.
 
 ## Scope and cleanup
 
