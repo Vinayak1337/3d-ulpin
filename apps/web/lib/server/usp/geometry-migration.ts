@@ -21,6 +21,10 @@ export async function migrateUspGeometryTx(client: PoolClient) {
       SELECT jsonb_path_exists(value, '$.**.geometryClass ? (@ == "illustrative")')
         OR jsonb_path_exists(value, '$.**.geometry_class ? (@ == "illustrative")')
     $$;
+    CREATE FUNCTION usp_has_display_only_geometry(value jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE AS $$
+      SELECT jsonb_path_exists(value, '$.**.geometryClass ? (@ == "illustrative" || @ == "estimated")')
+        OR jsonb_path_exists(value, '$.**.representation ? (@ == "context_mesh")')
+    $$;
     -- NOT VALID preserves any incompatible historical bytes while rejecting new writes.
     ALTER TABLE registry_records ADD CONSTRAINT usp_registry_no_illustrative CHECK (NOT usp_has_illustrative_geometry(body)) NOT VALID;
     ALTER TABLE registry_revisions ADD CONSTRAINT usp_registry_history_no_illustrative CHECK (NOT usp_has_illustrative_geometry(body)) NOT VALID;
@@ -75,6 +79,8 @@ export async function migrateUspGeometryTx(client: PoolClient) {
         encode(sha256(convert_to(target_body::text,'UTF8')),'hex')<>NEW.target_body_sha256 THEN
         RAISE EXCEPTION 'Geometry qualification must pin the current canonical bytes and revision';
       END IF;
+      IF NEW.body->>'analyticEligible'='true' AND usp_has_display_only_geometry(target_body)
+        THEN RAISE EXCEPTION 'Display-only or estimated source geometry cannot be promoted by an annotation'; END IF;
       IF NEW.body->>'analyticEligible'='true' AND NOT
         usp_geometry_receipt_eligible(NEW.namespace,NEW.record_id,NEW.record_revision,NEW.target_body_sha256,NEW.body)
         THEN RAISE EXCEPTION 'Analytical qualification requires its accepted canonical command receipt'; END IF;
@@ -94,7 +100,7 @@ export async function migrateUspGeometryTx(client: PoolClient) {
           WHERE NOT EXISTS(SELECT 1 FROM usp_project_codes i WHERE i.record_id=f.record_id AND i.status IN ('retired','cancelled_error')))
       SELECT c.namespace,c.id,c.revision,c.scope_id,c.body,q.body AS metadata,q.revision AS qualification_revision
       FROM canonical c JOIN latest q ON q.namespace=c.namespace AND q.record_id=c.id AND q.record_revision=c.revision
-      WHERE NOT usp_has_illustrative_geometry(c.body)
+      WHERE NOT usp_has_display_only_geometry(c.body)
         AND q.target_body_sha256=encode(sha256(convert_to(c.body::text,'UTF8')),'hex')
         AND usp_geometry_receipt_eligible(q.namespace,q.record_id,q.record_revision,q.target_body_sha256,q.body);
     REVOKE ALL ON FUNCTION usp_geometry_receipt_eligible(text,uuid,integer,text,jsonb) FROM PUBLIC;
