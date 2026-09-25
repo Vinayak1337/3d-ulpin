@@ -2,7 +2,7 @@
 
 **Added 25 September 2026. Release: `finale_v1` for requirements R-SCENE and R-SUFFICIENCY (GF2); the parts marked full_product stay in FP-ENRICH and FP-FORMATS. Owners: DATA for the reference area, INGEST for intake and sufficiency decisions, UI for the scene, DOMAIN for reconstruction routes, FND for shared fields.** Everything here is planned; nothing in it has passed a runtime gate.
 
-The finale map must look good and stay honest. It looks good because it is built from real, permitted layers of a real Indian area, dressed by deterministic rules. It stays honest because every generated visual is a labelled display derivative of the formal records, never a record. Incomplete input is handled one way everywhere: fill for display, ask one bounded question, park the object, or reject it for 3D. The ingestion agent accepts every data family (GIS, tables, plans, CAD/BIM, 3D models, LiDAR, elevation, imagery, survey, services) and mixes of them.
+The finale map must look good and stay honest. It looks good because it is built from a real Indian area: its photoreal drone mesh where a permitted capture exists, and real open layers dressed by deterministic rules everywhere else. It stays honest because every generated visual is a labelled display derivative of the formal records, never a record. Incomplete input is handled one way everywhere: fill for display, ask one bounded question, park the object, or reject it for 3D. The ingestion agent accepts every data family (GIS, tables, plans, CAD/BIM, 3D models, LiDAR, elevation, imagery, survey, services) and mixes of them.
 
 ## A. What already exists, and what this file adds
 
@@ -14,7 +14,7 @@ Keep using these; this file does not restate them.
 | `representation`, `geometryClass`, `analyticEligible`, display-derivative store, `levelKind` | H22 Z1–Z3 |
 | Partition rules per source family; hostile-input rules; model proposes mappings; `manual_mapping` | [H14](14-adaptive-ingestion-and-progressive-review.md) C, Z1–Z3 |
 | All-format ambition; generative enrichment ("Route 2") | [H25](25-all-format-agent-and-ux4g.md) A–B (full_product) |
-| Drone, extraction, plan, storey and delineation routes; the site pipeline | [H27](27-domain-ai-and-cadastral-checks.md) B and Z1 |
+| Drone, extraction, plan, storey and delineation routes; the site pipeline, including the photogrammetry context mesh (Helsinki's two models from one capture) | [H27](27-domain-ai-and-cadastral-checks.md) B and Z1 |
 | Packs D0–D7, data.gov.in shortlist, acquisition contract, licences | [H28](28-data-acquisition-and-finale-tests.md) sections 2–5 and Z4 |
 
 This file adds five things the plan lacked:
@@ -32,6 +32,7 @@ The Studio's area map, the 3D view and every capture use one real Indian referen
 1. Permitted open context layers of useful resolution cover it.
 2. It contains or adjoins a real planned multi-unit building whose sanctioned drawings DATA already holds (D5). Use its location only when the source record states it (address, coordinates, khasra with a published map); never place a building by name or proximity.
 3. It is small: roughly 0.5–2 km², so the scene streams within the H22 budgets.
+4. Preferably, a permitted drone capture covers it (C, tier 1). Without one, the open layers alone carry the scene (tier 2); this is not a reason to reject an area.
 
 Candidates from sources already acquired: the Haryana RERA project 2831 site (tower plan, basement plan and section acquired by DATA-05), if the RERA record gives its location, and the Uttam Nagar area (D4 OpenStreetMap context from DATA-01). Any permitted Indian geography qualifies; none is a prerequisite.
 
@@ -55,7 +56,20 @@ Rules:
 
 ## C. Evidence view and Enhanced view
 
-H22's two views stay. The **Evidence view** is the default for recording, checks and measurement. The **Enhanced view** is a toggle, remembered per viewer. The finale Enhanced view uses only deterministic rules over real layers and records. Learned or generative content (predicted heights, AI façades, textures) remains FP-ENRICH.
+H22's two views stay. The **Evidence view** is the default for recording, checks and measurement. The **Enhanced view** is a toggle, remembered per viewer. The finale Enhanced view uses only real capture and deterministic rules over real layers and records. Learned or generative content (predicted heights, AI façades, textures) remains FP-ENRICH.
+
+**Two tiers of context, following the hardened plan review's Helsinki lesson (two models from one capture):**
+
+**Tier 1: a permitted drone capture exists.** Its OpenDroneMap textured mesh (H27 Z1 step 2) is the Enhanced view's context layer. The semantic models from the same capture (LoD1.2 prisms, LoD2.2 roofs, reviewed interiors) carry the records.
+- The mesh stays `representation: context_mesh`: display-only, never measured, never a property.
+- A pick passes through the mesh to the semantic model's `recordId` (3D Tiles feature metadata). Floor isolation, sections and underground mode clip or hide the mesh so it never hides evidence.
+- The mesh shows its capture date. A newer capture is a new revision; a record change does not regenerate the mesh.
+- Where the mesh and a record disagree, the record and its evidence win. The mesh is never evidence for a deviation; H15 uses the semantic model and nDSM.
+- Outside the mesh's coverage, tier 2 continues seamlessly, with no gap and no stretched texture.
+
+**Tier 2: no capture of the area.** The deterministic dressing in the table below, from open layers.
+
+DATA-06's open drone set is foreign and `test_only`. It qualifies tier 1 as a separate labelled scene; it is never moved onto an Indian area.
 
 | Element | Rule (finale) |
 | --- | --- |
@@ -191,6 +205,7 @@ UI adds proposed Enhanced-view tokens (terrain, vegetation, façade and window t
 - the same inputs give byte-identical derivatives;
 - a new record revision marks the derivative stale and regenerates it;
 - a context building never opens a property inspector;
+- where a tier 1 mesh is loaded (DATA-06 scene at least), picks pass through it to `recordId`, floor isolation and underground mode clip it, and no measurement reads it;
 - screenshots keep the legend;
 - the H22 G frame and first-scene targets are met on declared hardware.
 

@@ -66,13 +66,15 @@ Floating toolbar (top-left of the canvas): Select, Measure distance, Measure are
 The map has two views, switched in the toolbar and remembered per viewer. Rules and data are in [H30](../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C–D.
 
 - **Evidence view** (default for recording, checks and measurement) is the quiet scene above: neutral massing, one green selection, unknown shown as *Unknown*.
-- **Enhanced view** dresses the same real area with deterministic context built from real layers:
-  - terrain from the DEM with a soft hillshade;
-  - road ribbons, water and green areas;
-  - seeded tree instances;
-  - context buildings massed by the height precedence;
-  - a slab line per storey and window bands;
-  - sun from date, time and place, with soft shadows and ambient occlusion.
+- **Enhanced view** has two tiers of context:
+  - Where a permitted drone capture covers the area, its photoreal mesh is the context layer, labelled with its capture date. Picks pass through it to the recorded building, and floor isolation, sections and underground mode clip it away.
+  - Elsewhere, the view dresses the same real area with deterministic context built from real layers:
+    - terrain from the DEM with a soft hillshade;
+    - road ribbons, water and green areas;
+    - seeded tree instances;
+    - context buildings massed by the height precedence;
+    - a slab line per storey and window bands.
+  - Both tiers share one sun from date, time and place, with soft shadows and ambient occlusion.
 - Colour stays calm in the Enhanced view:
   - terrain, vegetation, water and roads use muted natural tones derived from the `--ui-map-*` tokens;
   - buildings are light concrete and plaster greys with slightly darker window bands;
