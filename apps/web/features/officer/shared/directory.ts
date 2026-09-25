@@ -1,11 +1,8 @@
 import type { MapArea } from "@ulpin/contracts";
+import { areaClassification } from '@/lib/ui/provenance';
 
 export function datasetLabel(kind?: MapArea["dataKind"]): string {
-  if (kind === "demonstration") return "Fictional demonstration";
-  if (kind === "real") return "Real sources";
-  if (kind === "mixed") return "Mixed real and fictional sources";
-  if (kind === "empty") return "No mapped sources yet";
-  return "Source status unclassified";
+  return kind ? areaClassification({ dataKind: kind }) : 'Source status unclassified';
 }
 export function filterAreas(areas: MapArea[], query: string, kind: string): MapArea[] {
   const needle = query.trim().toLocaleLowerCase();

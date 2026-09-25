@@ -3,6 +3,7 @@ import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {normalizeReferencePackage} from '@/features/spatial/reference-import/browser';
 import {savedDatasetUrl,type SavedSpatialDataset} from '@/lib/spatial-datasets';
+import { classificationLabel } from '@/lib/ui/provenance';
 import {useMutation} from '../shared/hooks';
 import {Button,ErrorState} from '../shared/ui';
 type Imported=Awaited<ReturnType<typeof normalizeReferencePackage>>;
@@ -15,7 +16,7 @@ export default function DatasetIntake({file}:{file:File}){
   <h2>{saved?'Dataset saved':'Review dataset'}</h2>
   {error&&<ErrorState message={error}/>}
   {!value&&!error&&<p role="status">Checking source files and dataset structure…</p>}
-  {scene&&<><p><strong>{scene.metadata.title}</strong> · Fictional demonstration</p>
+  {scene&&<><p><strong>{scene.metadata.title}</strong> · Classification: {classificationLabel(scene.metadata.classification)}</p>
    <dl className="dataset-intake-counts">{[['Buildings',scene.objects.filter(o=>o.type==='building').length],['Floors',scene.objects.filter(o=>o.type==='floor').length],['Spaces',scene.objects.filter(o=>o.type==='space').length],['Source files',scene.sources.length]].map(([label,count])=><div key={label}><dt>{label}</dt><dd>{count}</dd></div>)}</dl>
    <p>Original files and supplied records will be retained. Saving creates a dataset for review.</p>
    {mutation.error&&<ErrorState message={mutation.error}/>}

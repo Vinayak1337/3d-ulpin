@@ -136,7 +136,7 @@ export async function normalizeSourceFiles(files:ReadonlyMap<string,Uint8Array>)
  for(const {row,record} of sourceRows.get('residents')??[]){
   const residentId=str(value(row,'resident_id','residentId')),name=str(value(row,'name','resident_name')),unitId=str(value(row,'unit_id','unitId')),floorId=str(value(row,'floor_id','floorId')),buildingId=str(value(row,'building_id','buildingId'));
   if(!residentId||!name||residentIds.has(residentId))throw new Error('Residents need unique stable IDs and supplied names');residentIds.add(residentId);
-  if(str(row.classification)!=='synthetic'||str(row.role)!=='resident')throw new Error('This source profile requires explicitly fictional resident records, not ownership assertions');
+  if(str(row.classification)!=='synthetic'||str(row.role)!=='resident')throw new Error('This profile accepts resident records with synthetic classification; they do not establish ownership');
   const target=objects.get(unitId||floorId);if(!target||!['floor','space'].includes(target.type))throw new Error(`Unknown resident floor/unit: ${residentId}`);
   const actualFloor=target.type==='floor'?target.id:relations.find(r=>r.toId===target.id)?.fromId;
   const actualBuilding=relations.find(r=>r.toId===actualFloor)?.fromId;
@@ -157,7 +157,7 @@ export async function normalizeSourceFiles(files:ReadonlyMap<string,Uint8Array>)
  const rights:RecordData[]=[],rightIds=new Set<string>();
  for(const {row,record} of sourceRows.get('rights')??[]){
   const id=str(row.right_id),target=objects.get(str(row.object_id)),party=parties.get(str(row.party_id)),document=str(row.document_path);
-  if(!id||rightIds.has(id)||!target||!party||row.classification!=='synthetic'||!['ownership','lease','common_use','utility_easement'].includes(str(row.right_type)))throw new Error(`Invalid fictional right or reference: ${id}`);
+  if(!id||rightIds.has(id)||!target||!party||row.classification!=='synthetic'||!['ownership','lease','common_use','utility_easement'].includes(str(row.right_type)))throw new Error(`Invalid synthetic rights record or reference: ${id}`);
   const evidence=manifest.files.find(f=>f.path===document&&f.role==='evidence');
   if(!evidence||!evidence.objectIds?.includes(target.id))throw new Error(`Right ${id} requires a document linked to its target`);
   rightIds.add(id);const right={id,objectId:target.id,partyId:party.id,partyName:party.name,type:str(row.right_type),documentPath:document,status:'unreviewed',classification:'synthetic',sourceRecordId:record,partySourceRecordId:party.sourceRecordId};

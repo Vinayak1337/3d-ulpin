@@ -21,6 +21,7 @@ import {
 } from "../shared/ui";
 import { studioResolutionUrl } from "../../studio/product/urls";
 import { datasetLabel } from "../shared/directory";
+import { classificationLabel } from '@/lib/ui/provenance';
 import BuildingPreview from "../scene/BuildingPreview";
 import { useRegisterDirectory } from "./data";
 import "./directory.css";
@@ -162,10 +163,10 @@ export default function RegisterStart({ identifier }: { identifier?: string } = 
             >
               <option value="">Choose a saved block</option>
               {[
-                ["real", "Real sources"],
-                ["demonstration", "Fictional demonstrations"],
-                ["mixed", "Mixed real and fictional sources"],
-                ["other", "Source status unclassified"],
+                ["real", "Observed"],
+                ["demonstration", "Synthetic"],
+                ["mixed", "Mixed"],
+                ["other", "Unknown"],
               ].map(([kind,label]) => <optgroup label={label} key={kind}>{(areas.data || []).filter(a => a.featureCount && (kind === 'other' ? a.dataKind !== 'real' && a.dataKind !== 'demonstration' && a.dataKind !== 'mixed' : a.dataKind === kind)).map(a => <option value={a.id} key={a.id}>{a.name}</option>)}</optgroup>)}
             </select>
           </div>
@@ -191,10 +192,8 @@ export default function RegisterStart({ identifier }: { identifier?: string } = 
                     <div>
                       <h3>{feature.name}</h3>
                       <p>
-                        {feature.worldStatus === "synthetic"
-                          ? "Fictional demonstration"
-                          : feature.height.state.replaceAll("_", " ")}{" "}
-                        <span>·</span> {feature.areaM2?.toFixed(1) || "—"} m²
+                        {classificationLabel(feature.worldStatus)} · {feature.height.state.replaceAll("_", " ")}{" "}
+                        <span>·</span> {feature.areaM2 == null ? 'Area not supplied' : `${feature.areaM2.toFixed(1)} m²`}
                       </p>
                       <footer>
                         <span>
@@ -228,8 +227,8 @@ export default function RegisterStart({ identifier }: { identifier?: string } = 
               >
                 <Icon name="history" />
                 <span>
-                  <strong>{item.name.replace(/v2/gi, "")}</strong>
-                  <small>{item.areaName?.replace(/v2/gi, "")}</small>
+                  <strong>{item.name}</strong>
+                  <small>{item.areaName}</small>
                 </span>
                 <Icon name="chevron" />
               </Link>

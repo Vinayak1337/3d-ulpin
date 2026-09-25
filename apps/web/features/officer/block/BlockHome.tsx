@@ -14,6 +14,7 @@ import {
   LoadingState,
 } from "../shared/ui";
 import { datasetLabel, filterAreas } from "../shared/directory";
+import { classificationLabel } from '@/lib/ui/provenance';
 import MapPlan from "./MapPlan";
 import {savedDatasetUrl,type SavedSpatialDataset} from "@/lib/spatial-datasets";
 import DataTools from "./DataTools";
@@ -65,7 +66,7 @@ export default function BlockHome() {
     window.history.replaceState(null, '', '/studio/datasets'+(next.size?'?'+next:''));
   };
   const ordered = filterAreas(areas.data || [], query, kind);
-  const demos = kind === "all" || kind === "demonstration" ? (datasets.data??[]).filter(d => `${d.name} ${d.id}`.toLowerCase().includes(query.trim().toLowerCase())) : [];
+  const savedMaps = kind === "all" || kind === "demonstration" ? (datasets.data??[]).filter(d => `${d.name} ${d.id}`.toLowerCase().includes(query.trim().toLowerCase())) : [];
 
   return (
     <main className="block-directory">
@@ -89,7 +90,7 @@ export default function BlockHome() {
           {[
             ["all", "All datasets"],
             ["saved", "Mapped sources"],
-            ["demonstration", "Fictional demonstrations"],
+            ["demonstration", "Synthetic"],
           ].map(([value, label]) => (
             <button
               key={value}
@@ -114,14 +115,14 @@ export default function BlockHome() {
       {datasets.loading && !datasets.data && <LoadingState label="Loading saved datasets"/>}
       {areas.error && <ErrorState message={areas.error} retry={areas.reload} />}
       {areas.loading && !areas.data && <LoadingState label="Loading saved blocks" />}
-      {!!(demos.length || ordered.length) && <div className="block-directory-grid">
-        {demos.map(dataset => <Link className="block-card block-demo-card" href={savedDatasetUrl(dataset.id)} key={dataset.id}>
-          <div className="block-card-body"><Badge tone="warning">Fictional demonstration</Badge><h2>{dataset.name}</h2><p>{dataset.buildingCount} buildings <span>·</span> {dataset.floorCount} supplied floors</p><p>Saved dataset · revision {dataset.revision} · needs review</p><span className="block-card-action">Open map <Icon name="arrow" size={15}/></span></div>
+      {!!(savedMaps.length || ordered.length) && <div className="block-directory-grid">
+        {savedMaps.map(dataset => <Link className="block-card block-demo-card" href={savedDatasetUrl(dataset.id)} key={dataset.id}>
+          <div className="block-card-body"><span>Classification: {classificationLabel(dataset.classification)}</span><h2>{dataset.name}</h2><p>{dataset.buildingCount} buildings <span>·</span> {dataset.floorCount} supplied floors</p><p>Saved dataset · revision {dataset.revision} · needs review</p><span className="block-card-action">Open map <Icon name="arrow" size={15}/></span></div>
         </Link>)}
         {ordered.map(area => <BlockCard key={area.id} area={area}/>)}
       </div>}
-      {!datasets.loading && !datasets.error && !areas.loading && !areas.error && !demos.length && !ordered.length && <EmptyState title="No matching datasets" description="Change the filter or import a source." icon="map"/>}
-      <footer className="directory-footer"><span>Saved datasets retain original files and spatial records. Fictional records remain separate from surveyed sources.</span><Link href="/studio/source-study">Delhi source study & downloads</Link></footer>
+      {!datasets.loading && !datasets.error && !areas.loading && !areas.error && !savedMaps.length && !ordered.length && <EmptyState title="No matching datasets" description="Change the filter or import a source." icon="map"/>}
+      <footer className="directory-footer"><span>Saved datasets retain original files, source classifications and spatial records.</span><Link href="/studio/source-study">Inspect saved area sources</Link></footer>
       <DataTools
         open={importOpen}
         onClose={() => {setImportOpen(false);updateFilter('import', '');}}

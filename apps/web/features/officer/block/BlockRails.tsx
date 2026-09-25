@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { FeatureKind, PhysicalFeature } from "@ulpin/contracts";
 import AreaSection from "@/components/AreaSection";
+import { classificationLabel } from '@/lib/ui/provenance';
 import { utilityScene } from "@/lib/officer-scene";
 import {
   Badge,
@@ -353,9 +354,7 @@ export function BlockInspector({
                     selected.worldStatus === "synthetic" ? "warning" : "info"
                   }
                 >
-                  {selected.worldStatus === "synthetic"
-                    ? "Test fixture"
-                    : selected.worldStatus}
+                  {classificationLabel(selected.worldStatus)}
                 </Badge>
                 <h2>{selected.name}</h2>
                 <p>{selected.kind.replaceAll("_", " ")}</p>
@@ -444,9 +443,7 @@ export function BlockInspector({
                     <dd>{formatNumber(feature.areaM2)} m²</dd>
                     <dt>Source status</dt>
                     <dd>
-                      {feature.worldStatus === "synthetic"
-                        ? "Test fixture"
-                        : feature.worldStatus}
+                      {classificationLabel(feature.worldStatus)}
                     </dd>
                     <dt>Land use / zoning</dt>
                     <dd>Not supplied</dd>

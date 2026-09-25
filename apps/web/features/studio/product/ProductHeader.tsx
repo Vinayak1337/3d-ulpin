@@ -9,6 +9,7 @@ import { searchTargets, searchTargetRoute, type ResolveMatch } from "../../offic
 import { useDebouncedValue, useResource } from "../../officer/shared/hooks";
 import { productFamily, productNavigation } from "./urls";
 import { savedDatasetUrl, type SavedSpatialDataset, type DatasetIdentityMatch } from "@/lib/spatial-datasets";
+import { areaClassification, classificationLabel } from '@/lib/ui/provenance';
 import { confirmStudioNavigation } from "../data/navigation-guard";
 import "./product.css";
 import "./header.css";
@@ -120,8 +121,8 @@ export default function ProductHeader({ actions }: Props) {
     <div className="city-dataset" ref={chooser}>
       <button aria-label="Choose an area" aria-expanded={datasets} onClick={() => setDatasets(value => !value)}><Icon name="layers" size={17} /><span>{areaContext.data?.area.name ?? "Areas"}</span><Icon name="down" size={13} /></button>
       {datasets && <div className="city-dataset-menu"><header><strong>Saved areas and datasets</strong><button onClick={() => setDatasets(false)} aria-label="Close area chooser"><Icon name="close" size={16} /></button></header>
-        {areas.data?.map(area => <Link key={area.id} aria-current={area.id === areaId ? "page" : undefined} href={`/studio/areas/${area.id}`} onClick={() => setDatasets(false)}><Icon name="map" size={16} /><span>{area.name}<small>{area.featureCount ?? "Unknown"} features · {area.dataKind ?? "Unclassified"}</small></span></Link>)}
-        {savedDatasets.data?.map(dataset => <Link key={dataset.id} href={savedDatasetUrl(dataset.id)} onClick={() => setDatasets(false)}><Icon name="layers" size={16} /><span>{dataset.name}<small>{dataset.buildingCount} buildings · saved</small></span></Link>)}
+        {areas.data?.map(area => <Link key={area.id} aria-current={area.id === areaId ? "page" : undefined} href={`/studio/areas/${area.id}`} onClick={() => setDatasets(false)}><Icon name="map" size={16} /><span>{area.name}<small>{area.featureCount ?? "Unknown"} features · {areaClassification(area)}</small></span></Link>)}
+        {savedDatasets.data?.map(dataset => <Link key={dataset.id} href={savedDatasetUrl(dataset.id)} onClick={() => setDatasets(false)}><Icon name="layers" size={16} /><span>{dataset.name}<small>{dataset.buildingCount} buildings · {classificationLabel(dataset.classification)}</small></span></Link>)}
         {(areas.loading || savedDatasets.loading) && <p>Loading saved areas…</p>}
         {(areas.error || savedDatasets.error) && <button onClick={() => void Promise.all([areas.reload(), savedDatasets.reload()])}>Retry saved areas</button>}
         <Link href="/studio/datasets" onClick={() => setDatasets(false)}>Browse all datasets →</Link>

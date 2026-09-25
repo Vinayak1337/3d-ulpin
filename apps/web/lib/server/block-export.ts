@@ -133,7 +133,7 @@ export async function exportBlock(
     findingQualification,
     historicalCheck: (!allGeometryAvailable || context.latestCheck?.stale) && context.latestCheck
       ? { purpose: 'retained_history_inspection', currentAnalyticalEligibility: false, check: context.latestCheck } : undefined,
-    note: "3D ULPINs are application identifiers. Parcel 2D ULPINs retain their source assertion or fictional demo status. Originals may cover multiple floors.",
+    note: "3D ULPINs are application identifiers. Parcel identifiers retain their recorded scheme and source assertion. Originals may cover multiple floors.",
   };
   if (format === "json")
     return new Response(JSON.stringify(data, null, 2), {
@@ -161,7 +161,7 @@ export async function exportBlock(
             )
             .map(
               (p) =>
-                `${p.value} (${p.scheme === "demo_ulpin" ? "Demo" : "Source assertion"})`,
+                `${p.value} (${p.scheme === "demo_ulpin" ? "Application test identifier; not official issuance" : "Source assertion"})`,
             )
             .join("; ") || "Not supplied",
         )}</td><td>${esc(f.areaM2 ?? "Not supplied")}</td></tr>`,
