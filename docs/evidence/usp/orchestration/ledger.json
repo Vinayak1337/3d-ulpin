@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T17:34:02.781879+00:00",
+  "updatedAt": "2026-09-25T17:41:44.012532+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -1443,6 +1443,16 @@
           "scope": "Remove bundled default/sample imports from reachable saved inspection; direct saved-record loading, explicit no-selection/loading/error states. Client library changes only if necessary for preserving saved URL routing; retain explicit legacy URL resolution without implicit sample fallback.",
           "reason": "Showcase saved-record route currently selects demoDatasets[0] before record loading and exposes bundled sample imports. Preserve unique inspection while removing sample dependency.",
           "confirmedAt": "2026-09-25T17:34:02.781758+00:00"
+        },
+        {
+          "paths": [
+            "apps/web/features/spatial/dataset-processing/DatasetProcessing.tsx",
+            "apps/web/features/spatial/dataset-processing/Walkthrough.tsx",
+            "apps/web/features/spatial/reference-workbench/PropertyRegister.tsx"
+          ],
+          "scope": "Replace name-derived provenance and hard-coded evidence fallback with record-backed presentation and explicit missing/empty states; retain saved-source inspection. No storage, protected public evidence, renderer or analytical qualification changes.",
+          "reason": "Worker traced saved map links to processing and register views which still infer provenance from names or substitute public ML evidence.",
+          "confirmedAt": "2026-09-25T17:41:44.012532+00:00"
         }
       ]
     }
