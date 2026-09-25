@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T15:14:41.791239+00:00",
+  "updatedAt": "2026-09-25T15:38:31.420201+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "55ee5b82f1587b31f4a97aa1723d83a33cf4dc1f",
+    "acceptedStagingBase": "d43b96b92ce554924b14f88b22694eaa07387c42",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -172,7 +172,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_DATA-02",
+      "status": "assigned_DATA-02_attempt-2",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1024,9 +1024,84 @@
         "Source/control truth explicitly authored, unknown/noncomparability retained; clean twins and numerical tolerances explicit",
         "DATA-08 cross-family oracle review pending; no runtime gate claim"
       ],
-      "status": "dispatched",
+      "status": "corrections_required",
       "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-1/report.md",
-      "resultCommit": null
+      "resultCommit": "0871de2a85799791e1fea688a28ab6d85885ee5b",
+      "testedCommit": "fc1e933b1eecb74681a38d4f779ca20734832496",
+      "oracleCommit": "89bdcb534f297a404796a628d1c067dbfb1e9a48",
+      "review": {
+        "independence": "same_family",
+        "verdict": "Packaging checks pass; geometric fixture and answer-transition corrections required",
+        "checks": [
+          "Eight receipt artifact hashes and base/oracle/code/result ancestry verified",
+          "Oracle-to-validator diff changes only validate.py",
+          "Parent rerun:17cases,50sources,4negative mutations,68byte-identical generated files",
+          "Plan and white-text PDF renders inspected"
+        ],
+        "findings": [
+          {
+            "id": "DATA02-R1",
+            "issue": "Rendered plan-one-dimension.pdf has only prose claiming a drawn span, with no plan or dimension line. It cannot exercise calibration from drawn endpoints.",
+            "required": "Supply a real authored synthetic plan drawing with identifiable dimension endpoints and one dimension string; preserve unknown scale/georeference/elevation and qualify only what a reviewed answer unlocks."
+          },
+          {
+            "id": "DATA02-R2",
+            "issue": "Topology nonclosed_solid has face counts only, and atrium adverse/clean have identical coordinates plus void_respected boolean. These describe expected behavior without usable distinct geometry. Z-boundary-only contact and parent-unit containment are claimed but not explicit numerical source cases.",
+            "required": "Provide actual closed and missing-face vertex/face geometry, real hole-respecting clean geometry distinct from filled-void adverse geometry, explicit Z-only contact and parent-unit containment controls with independently derived oracles. Keep semantic source roles separate from geometry."
+          },
+          {
+            "id": "DATA02-R3",
+            "issue": "Mixed-gap oracle asserts answers_unlock_without_reimport but contains no concrete answer-to-object transitions; shared LAS/IFC question says both unlock while IFC has no question link and remains parked.",
+            "required": "Provide per-class positive,insufficient and Not sure response scenarios with exact expected dependent object/task transitions and unchanged source hashes. Tie parked IFC to the shared question dependency or separate it honestly; include decision reasons/policy version and maintain <=5 questions and never-fill restrictions."
+          }
+        ]
+      }
+    },
+    {
+      "assignmentId": "DATA-02",
+      "attempt": 2,
+      "callbackId": "ulpin-DATA-02-attempt-2",
+      "objective": "Author versioned adversarial and Indian-reality fixtures with preimplementation oracles for H28/H30",
+      "baseCommit": "55ee5b82f1587b31f4a97aa1723d83a33cf4dc1f",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/DATA-02-adversarial-fixtures",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "fixtures/usp/D0/adversarial/ versioned fixture bytes, oracle.json files, authored generators and self-contained integrity/format checks",
+        "docs/evidence/usp/finale/GF-DATA/DATA-02/ new evidence only"
+      ],
+      "exclusions": [
+        "production processor/domain/provider/runtime implementation",
+        "existing golden-v1 or historic oracle modifications",
+        "protected data/credentials/services",
+        "shared schema or dependencies",
+        "UI/mockup/sample content",
+        "ledger/release gate edits",
+        "remote push/deploy or staging/main merges"
+      ],
+      "acceptance": [
+        "Every H29 DATA-02/H28Z2-Z3/H16Z1-Z2/H22Z3/H30I case mapped to authored fixture and oracle",
+        "Oracles committed before any production implementation runs on new fixtures; author/date/agent and immutable hash pins",
+        "Format-aware fixture validation, mathematical/schematic expected outcomes independent of production outputs",
+        "GF-SUFFICIENCY outcomes per object/task and five class-level question maximum; never-filled values preserved",
+        "Source/control truth explicitly authored, unknown/noncomparability retained; clean twins and numerical tolerances explicit",
+        "DATA-08 cross-family oracle review pending; no runtime gate claim"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-02/attempt-2/report.md",
+      "resultCommit": null,
+      "continuationCommit": "0871de2a85799791e1fea688a28ab6d85885ee5b",
+      "correctionFindings": [
+        "DATA02-R1",
+        "DATA02-R2",
+        "DATA02-R3"
+      ]
     }
   ],
   "capabilityChecklist": [
@@ -1774,7 +1849,7 @@
     }
   ],
   "nextSteps": [
-    "End turn after DATA-02 dispatch; resume on callback.",
+    "End turn after DATA-02 attempt2 dispatch; resume on callback.",
     "Review fixture coverage, prior oracle commit and format/hash checks before bounded integration.",
     "Complete LEAD-01B plan machinery and remaining GF0 acquisition/oracle cards; then dependency-ready FND-04/UI-03."
   ],
@@ -1869,6 +1944,14 @@
       "resultCommit": "f14210357d2ccf7f513ebbb00e4ce38c3ad58367",
       "result": "accepted_bounded_studio_frame",
       "normalization": "callback/assignment/worker_id/host aliases normalized from unique source task and callback. complete means ready for review; supplied base is attempt1 continuation, original accepted integration base remains c597d525."
+    },
+    {
+      "callbackId": "ulpin-DATA-02-attempt-1",
+      "assignmentId": "DATA-02",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "0871de2a85799791e1fea688a28ab6d85885ee5b",
+      "result": "corrections_required_not_integrated"
     }
   ],
   "observations": [
