@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T16:29:55.257367+00:00",
+  "updatedAt": "2026-09-25T16:32:54.740502+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -1304,7 +1304,21 @@
       ],
       "status": "dispatched",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/FND-04/attempt-1/report.md",
-      "resultCommit": null
+      "resultCommit": null,
+      "ownershipClarifications": [
+        {
+          "paths": [
+            "apps/web/lib/server/registry.ts",
+            "apps/web/lib/server/areas.ts",
+            "apps/web/lib/server/officer.ts",
+            "apps/web/lib/server/officer-investigations.ts",
+            "apps/web/lib/server/block-export.ts"
+          ],
+          "scope": "Narrow qualification projection/measurement/review/export guards and required canonical write validation only. Preserve source inspection, identifiers, record history and permissions; no broad refactor or invented qualification.",
+          "reason": "Existing consumers read raw registry_records/physical_features geometry, so contract-only changes would not enforce analytical separation.",
+          "confirmedAt": "2026-09-25T16:32:54.740113+00:00"
+        }
+      ]
     }
   ],
   "capabilityChecklist": [
