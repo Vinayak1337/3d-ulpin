@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T17:32:08.413427+00:00",
+  "updatedAt": "2026-09-25T17:34:02.781879+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -1430,7 +1430,21 @@
       ],
       "status": "dispatched",
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-08/attempt-1/report.md",
-      "resultCommit": null
+      "resultCommit": null,
+      "ownershipClarifications": [
+        {
+          "paths": [
+            "apps/web/features/spatial/reference-workbench/ReferenceWorkbench.tsx",
+            "apps/web/features/spatial/reference-workbench/ImportReceipt.tsx",
+            "apps/web/app/studio/showcase/page.tsx",
+            "apps/web/lib/spatial-datasets.ts",
+            "apps/web/lib/work-queue.ts"
+          ],
+          "scope": "Remove bundled default/sample imports from reachable saved inspection; direct saved-record loading, explicit no-selection/loading/error states. Client library changes only if necessary for preserving saved URL routing; retain explicit legacy URL resolution without implicit sample fallback.",
+          "reason": "Showcase saved-record route currently selects demoDatasets[0] before record loading and exposes bundled sample imports. Preserve unique inspection while removing sample dependency.",
+          "confirmedAt": "2026-09-25T17:34:02.781758+00:00"
+        }
+      ]
     }
   ],
   "capabilityChecklist": [
