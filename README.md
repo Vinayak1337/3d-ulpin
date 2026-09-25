@@ -35,4 +35,4 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Run only applicable configured checks, such as `pnpm typecheck` and `pnpm test:studio`; service/browser tests need their documented isolation. The documentation revision itself is not a runtime test pass. Preserve [fixtures](fixtures/README.md), [source upload packages](data-source/README.md), snapshots and retained originals. No implicit deployment or merge to main.
+Run only applicable configured checks, such as `pnpm typecheck` and `pnpm test:studio`; service/browser tests need their documented isolation. The documentation revision itself is not a runtime test pass. Preserve real gathered originals, hashes and lineage. Retire synthetic [fixtures](fixtures/README.md), [source upload packages](data-source/README.md) or saved-state material only after exact-path/record and dependency review; never reset mixed snapshots. No implicit deployment or merge to main.
