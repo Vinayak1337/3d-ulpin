@@ -71,6 +71,8 @@ H22's two views stay. The **Evidence view** is the default for recording, checks
 
 **Tier 2: no capture of the area.** The deterministic dressing in the table below, from open layers.
 
+The [design mockup](../../design-mockup/README.md) draws only the Evidence view. Keep its frame, chrome and selection behaviour in the Enhanced view; the Enhanced scene itself follows this section and the map rules until a mockup of it exists.
+
 If DATA-06 acquires a foreign official capture, it is `test_only`. It qualifies tier 1 as a separate labelled scene; it is never moved onto an Indian area.
 
 | Element | Rule (finale) |
