@@ -65,9 +65,10 @@ export function uspProcessEnvironment(env, repositoryRoot) {
 }
 
 async function run() {
-  assert.equal(process.argv.length, 3, 'Usage: local-isolation.mjs --run|--preview-run');
-  assert(['--run', '--preview-run'].includes(process.argv[2]));
-  const preview = process.argv[2] === '--preview-run';
+  assert.equal(process.argv.length, 3, 'Usage: local-isolation.mjs --run|--preview-run|--privacy-run');
+  assert(['--run', '--preview-run', '--privacy-run'].includes(process.argv[2]));
+  const privacy = process.argv[2] === '--privacy-run';
+  const preview = privacy || process.argv[2] === '--preview-run';
   await assert.rejects(lstat(resolve(root, '.env')), { code: 'ENOENT' });
   const temporary = await mkdtemp(join(tmpdir(), 'ulpin-usptest-'));
   const nonce = randomBytes(8).toString('hex');
@@ -87,6 +88,7 @@ async function run() {
     REDIS_PORT: '26379', GEO_URL: 'http://127.0.0.1:28000', GEO_PORT: '28000',
     GEO_SERVICE_TOKEN: randomBytes(32).toString('hex'),
     ULPIN_TEST_URL: `http://127.0.0.1:${preview ? 3108 : colima ? 3000 : 23000}`, NEXT_TELEMETRY_DISABLED: '1',
+    ...(preview ? { ULPIN_LOOPBACK_PORTS: '3108', ULPIN_ALLOW_NON_INDIA_PROVIDER: '0', ULPIN_RELEASE_PROFILE: 'finale_v1' } : {}),
   };
   const env = { ...process.env, ...values };
   for (const key of ['DOCKER_HOST', 'DOCKER_CERT_PATH', 'NOUS_API_KEY', 'OPENROUTER_API_KEY']) delete env[key];
@@ -97,7 +99,7 @@ async function run() {
     .map(([key, value]) => `${key}=${value}`).join('\n') + '\n', { flag: 'wx', mode: 0o600 });
   env.ULPIN_LOCAL_ENV_FILE = await realpath(file);
   try {
-    const child = spawn(process.execPath, [preview ? 'scripts/usp/ui/UI-03-isolated-preview.mjs' : 'scripts/usp/isolated-live.mjs'], { cwd: root, env, stdio: 'inherit' });
+    const child = spawn(process.execPath, [privacy ? 'scripts/usp/gf/FND-06-isolated.mjs' : preview ? 'scripts/usp/ui/UI-03-isolated-preview.mjs' : 'scripts/usp/isolated-live.mjs'], { cwd: root, env, stdio: 'inherit' });
     const code = await new Promise((done, reject) => { child.once('error', reject); child.once('close', done); });
     process.exitCode = code ?? 1;
   } finally {

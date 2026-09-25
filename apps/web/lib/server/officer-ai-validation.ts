@@ -2,18 +2,13 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { AreaGeometry, CanonicalFactProperty, WorldStatus } from '@ulpin/contracts';
 import type { OfficerAiCandidate, OfficerAiSuggestion } from '../officer-ai-types';
 
-export const PROMPT_VERSION = 'officer-grounded-extraction/3';
+export const PROMPT_VERSION = 'officer-grounded-extraction/4-minimized';
 export const SCHEMA_VERSION = 'officer-ai-grounded-suggestions/3';
 const SOURCE_ROLES = ['floor_plan','section','level_schedule','survey','reference','unknown'] as const;
 export const AI_PROPERTIES: CanonicalFactProperty[] = ['building.floorCount', 'building.exteriorHeight', 'space.lower', 'space.upper', 'space.label', 'space.levelLabel', 'source.date', 'source.status', 'outline.role','space.geometry','outline.geometry'];
 export interface AiPart { id: string; sourceRevisionId: string; locator: string; text: string; entityIds: string[]; imageRegion?: {x:number;y:number;width:number;height:number}; derivativeSha256?: string }
 export const digest = (value: unknown) => createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value)).digest('hex');
-export function redactPrivateText(text: string) {
-  return text.replace(/\b\d{4}[ -]?\d{4}[ -]?\d{4}\b/g, '[redacted identifier]')
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted email]')
-    .replace(/(?:\+91[ -]?)?\b[6-9]\d{9}\b/g, '[redacted phone]')
-    .replace(/^(.*\b(?:owner(?:'s)?\s*name|father(?:'s)?\s*name|aadh?aar|mobile|phone|email)\s*[:=]).*$/gim, '$1 [redacted personal field]');
-}
+export { redactPrivateText } from './usp/ingest/redact';
 export function isFreeModel(model: any): boolean {
   const pricing = model?.pricing;
   const zero=(v:unknown)=>(typeof v==='number'||typeof v==='string') && String(v).trim()!=='' && Number.isFinite(Number(v)) && Number(v)===0;
