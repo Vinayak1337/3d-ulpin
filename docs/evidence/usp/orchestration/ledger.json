@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T00:14:36.408140+00:00",
+  "updatedAt": "2026-09-25T00:15:54.661005+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -15,11 +15,11 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "10503934234055faf5dc23f26007b717062b68bf",
+    "acceptedStagingBase": "546ff4edea76906b4f5640ff6fd2a9c226326ded",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
-    "existingCheckout": "194 pre-existing deletions preserved; no stash/reset/reseed",
+    "existingCheckout": "Pre-existing deletions committed externally in 364bd56 and preserved; current primary worktree clean.",
     "acceptedCommits": [
       {
         "sourceCommit": "ab179811aef412a6735b171928a63d8c9d3091c6",
@@ -108,7 +108,7 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "accepted_idle",
+      "status": "dispatching_DATA-01",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -241,6 +241,48 @@
         "release-candidate freshness and failed attempts",
         "milestone approval enforcement"
       ]
+    },
+    {
+      "assignmentId": "DATA-01",
+      "attempt": 1,
+      "callbackId": "ulpin-DATA-01-attempt-1",
+      "objective": "Indian context and structured-code source acquisition/provenance; named D7 permission boundary",
+      "baseCommit": "546ff4edea76906b4f5640ff6fd2a9c226326ded",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/DATA-01-source-bundle",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "high"
+      },
+      "ownership": [
+        "fixtures/usp/D4/gf0-context-v1/",
+        "fixtures/usp/D4/gf0-structured-codes-v1/",
+        "fixtures/usp/D7/gf0-access-status/",
+        "scripts/usp/data/gf0-source-bundle.*",
+        "tests/usp-gf0-source-bundle.test.*",
+        "docs/evidence/usp/finale/GF-DATA/DATA-01/"
+      ],
+      "exclusions": [
+        "historical fixtures and receipts",
+        "shared data-pack schema",
+        "application/schema/migrations/configuration/dependencies",
+        "release-plan and handoffs",
+        "orchestration ledger",
+        "D5/D6 labels and AI preregistration"
+      ],
+      "acceptance": [
+        "H29 DATA-01 and H28 provenance/suitability contract",
+        "one existing or acquired Indian context plus structured-code resource tested against permitted bytes",
+        "licenceFamily/permission/source/hash/units/CRS/date/purpose/unknowns explicit",
+        "D7 permission-required status cited, not invented data",
+        "No gate pass without independent review"
+      ],
+      "status": "dispatching",
+      "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-01/report.md",
+      "resultCommit": null
     }
   ],
   "capabilityChecklist": [
@@ -271,7 +313,7 @@
         "GF-DATA"
       ],
       "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
-      "status": "pending_current_evidence",
+      "status": "assigned_source_bundle_pending_evidence",
       "evidence": []
     },
     {
