@@ -83,9 +83,9 @@ export default function ProductHeader({ actions, theme, onThemeToggle }: Props) 
       if (!container.current?.contains(event.target as Node)) setOpen(false);
       if (!chooser.current?.contains(event.target as Node)) setDatasets(false);
     };
-    window.addEventListener("keydown", key);
+    window.addEventListener("keydown", key, true);
     document.addEventListener("pointerdown", outside);
-    return () => { window.removeEventListener("keydown", key); document.removeEventListener("pointerdown", outside); };
+    return () => { window.removeEventListener("keydown", key, true); document.removeEventListener("pointerdown", outside); };
   }, [open, datasets, mobile]);
   const choose = (result: Result) => {
     if (!confirmStudioNavigation(result.href)) return;
