@@ -1,10 +1,57 @@
 import type { OfficerAiStatus, OfficerAiRun } from '../officer-ai-types';
-import { chooseFreeModel, extractionSchema, digest, PROMPT_VERSION, SCHEMA_VERSION, type AiPart } from './officer-ai-validation';
+import { AI_PROPERTIES, boundedPolygon, chooseFreeModel, extractionSchema, digest, PROMPT_VERSION, SCHEMA_VERSION, type AiPart } from './officer-ai-validation';
 import { assertNonIndiaProviderAllowed, nonIndiaProviderAllowed } from './provider-policy';
 import { assertNoImageEgress, redactDerivative, redactPrivateText, redactMessageText } from './usp/ingest/redact';
 
 const ENDPOINT = 'https://inference-api.nousresearch.com/v1';
 const MAX_RESPONSE = 3 * 1024 * 1024;
+const fields = (value: unknown, allowed: readonly string[]) => value && typeof value === 'object'
+  && !Array.isArray(value) && Object.keys(value).every(key => allowed.includes(key));
+const safeText = (value: unknown, limit: number) => typeof value === 'string'
+  ? redactMessageText(value).slice(0, limit) : '';
+
+/** Keep only schema fields in retained provider output; numeric payloads need typed bounds. */
+export function minimizeExtractionOutput(raw: unknown): unknown {
+  if (!fields(raw, ['candidates','questions','suggestions'])) return {invalidResponse:true};
+  const value = raw as Record<string, any>;
+  if (!Array.isArray(value.candidates) || value.candidates.length > 40
+    || !Array.isArray(value.questions) || value.questions.length > 20
+    || (value.suggestions !== undefined && (!Array.isArray(value.suggestions) || value.suggestions.length > 20)))
+    return {invalidResponse:true};
+  const candidates = value.candidates.map((candidate: unknown) => {
+    if (!fields(candidate, ['entityId','subject','property','value','unit','referenceFrameId','citations','rationale']))
+      return {invalidCandidate:true};
+    const item = candidate as Record<string, any>;
+    const property = safeText(item.property, 100);
+    const numeric = property === 'building.floorCount' || ['building.exteriorHeight','space.lower','space.upper'].includes(property);
+    const geometry = ['space.geometry','outline.geometry'].includes(property);
+    const measured = typeof item.value === 'number' && Number.isFinite(item.value)
+      && (property === 'building.floorCount' ? Number.isInteger(item.value) && item.value >= 0 && item.value <= 250
+        : Math.abs(item.value) <= 1e7);
+    const candidateValue = numeric && measured ? item.value
+      : geometry && boundedPolygon(item.value) ? item.value
+        : typeof item.value === 'string' ? safeText(item.value, 200) : '[redacted unsupported value]';
+    return {entityId:safeText(item.entityId, 120),subject:safeText(item.subject, 120),property,
+      value:AI_PROPERTIES.includes(property as any) ? candidateValue : '[redacted unsupported property]',
+      ...(item.unit === undefined ? {} : {unit:safeText(item.unit, 20)}),
+      ...(item.referenceFrameId === undefined ? {} : {referenceFrameId:safeText(item.referenceFrameId, 200)}),
+      citations:Array.isArray(item.citations) ? item.citations.slice(0,8).map((citation: unknown) =>
+        fields(citation,['partId','quote']) ? {partId:safeText((citation as any).partId,120),quote:safeText((citation as any).quote,1000)}
+          : {partId:'',quote:''}) : [], rationale:safeText(item.rationale,500)};
+  });
+  const questions = value.questions.map((question: unknown) => safeText(question, 500));
+  const suggestions = Array.isArray(value.suggestions) ? value.suggestions.map((suggestion: unknown) => {
+    if (!fields(suggestion,['kind','partId','role','entityId','matchedIdentifier','quote','rationale']))
+      return {invalidSuggestion:true};
+    const item = suggestion as Record<string,any>;
+    return {kind:safeText(item.kind,40),partId:safeText(item.partId,120),
+      ...(item.role === undefined ? {} : {role:safeText(item.role,40)}),
+      ...(item.entityId === undefined ? {} : {entityId:safeText(item.entityId,120)}),
+      ...(item.matchedIdentifier === undefined ? {} : {matchedIdentifier:safeText(item.matchedIdentifier,200)}),
+      quote:safeText(item.quote,1000),rationale:safeText(item.rationale,500)};
+  }) : undefined;
+  return {candidates,questions,...(suggestions === undefined ? {} : {suggestions})};
+}
 export const aiBudget = () => ({
   maxCalls: Math.max(1, Math.min(2, Number(process.env.NOUS_MAX_CALLS) || 2)),
   maxOutputTokens: Math.max(512, Math.min(6000, Number(process.env.NOUS_MAX_OUTPUT_TOKENS) || 3000)),
@@ -85,7 +132,7 @@ export async function callNous(model:string,messages:unknown[],fetcher:typeof fe
   const message=upstream.choices?.[0]?.message;
   if(message?.tool_calls?.length) throw new Error('Nous attempted an unavailable tool; extraction stopped.');
   let output:unknown;
-  try{output=redactDerivative(JSON.parse(message?.content??''));}catch{output={invalidResponse:true};}
+  try{output=minimizeExtractionOutput(JSON.parse(message?.content??''));}catch{output={invalidResponse:true};}
   const count=(value:unknown)=>typeof value==='number'&&Number.isSafeInteger(value)&&value>=0?value:undefined;
   // Retain a hash receipt, not the upstream envelope (which may echo private prompts or headers).
   const raw={output,outputHash:digest(upstream)};
