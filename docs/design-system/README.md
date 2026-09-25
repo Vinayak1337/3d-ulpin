@@ -17,7 +17,7 @@ The visual and content rules for every 3D ULPIN screen: the design language agen
 | [components.md](components.md) | The 32 components: anatomy, classes, states, content and who supplies the data |
 | [reference/components.css](reference/components.css) | Reference CSS for those components and the type styles (read, then port) |
 | [ui-brief.md](ui-brief.md) | Screens, where each feature lives, flows and states |
-| [../design-mockup/](../design-mockup/README.md) | **The interactive design mockup agents follow** for look and behaviour: the Studio, Verify, Portal, Admin and phone boards. Open `OfficerStudio.dc.html`. Never copy its data or code |
+| [design-mockup/](../../design-mockup/README.md) | **The interactive design mockup agents follow** for look and behaviour: the Studio, Verify, Portal, Admin and phone boards. Open `OfficerStudio.dc.html`. Never copy its data or code |
 | [mockups/officer-studio/](mockups/officer-studio/README.md) | **Reference only, not production UI.** A description of the team's interactive mockup: frame, interactions, per-screen layout and the [view model schema](mockups/officer-studio/view-model.schema.json). Take ideas for look and behaviour from it; production requirements come from the plan. Never copy its data or code |
 
 ## Principles

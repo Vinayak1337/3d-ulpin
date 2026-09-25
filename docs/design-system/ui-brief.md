@@ -164,7 +164,7 @@ Each arrow is one click or one confirmed decision; the officer never retypes dat
 
 ## Screen specs
 
-Each screen's reference layout, components and data bindings are in the [reference mockup screens](mockups/officer-studio/screens.md), grouped by the gate that builds them. They guide design; they are not a production specification. They describe fields, not values: build every screen against the records the gate's qualified data provides ([H28](../usp-agent-handoffs/28-data-acquisition-and-finale-tests.md)).
+Each screen is drawn in the interactive [design mockup](../../design-mockup/README.md), which agents follow for look and behaviour. Its layout, components and data bindings are written out in the [reference mockup screens](mockups/officer-studio/screens.md), grouped by the gate that builds them. They guide design; they are not a production specification. They describe fields, not values: build every screen against the records the gate's qualified data provides ([H28](../usp-agent-handoffs/28-data-acquisition-and-finale-tests.md)).
 
 ## States every screen needs
 

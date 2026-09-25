@@ -488,7 +488,8 @@
         "docs/design-system/README.md",
         "docs/design-system/ui-brief.md",
         "docs/design-system/mockups/officer-studio/README.md",
-        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
+        "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md",
+        "design-mockup/README.md"
       ],
       "tests": [
         "GF-VIEW"
@@ -507,7 +508,8 @@
         "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
         "docs/design-system/map-and-3d.md",
-        "docs/design-system/mockups/officer-studio/README.md"
+        "docs/design-system/mockups/officer-studio/README.md",
+        "design-mockup/README.md"
       ],
       "tests": [
         "GF-SCENE"
@@ -608,7 +610,8 @@
       "gate": "GF4",
       "docs": [
         "docs/usp-agent-handoffs/10-scoped-evidence-packets.md",
-        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md"
+        "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md",
+        "design-mockup/README.md"
       ],
       "tests": [
         "GF-T21"
@@ -840,7 +843,8 @@
         "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md",
         "docs/design-system/README.md",
         "docs/design-system/ui-brief.md",
-        "docs/design-system/mockups/officer-studio/README.md"
+        "docs/design-system/mockups/officer-studio/README.md",
+        "design-mockup/README.md"
       ],
       "tests": [
         "GF-REHEARSAL"

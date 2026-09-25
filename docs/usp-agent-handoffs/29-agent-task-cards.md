@@ -14,6 +14,8 @@ Written 24 September 2026 with the review in [H97](97-review-findings-and-alignm
 6. Finish when **Done when** is true. Runtime tests write receipts under `docs/evidence/usp/finale/<test-id>/` per [H28](28-data-acquisition-and-finale-tests.md). Ask for review from a different model family or a human.
 7. Stop and report instead of guessing when a card needs one of the few human inputs in [H90](90-required-human-tasks.md), a secret, a paid service or data you cannot obtain legally. Everything else (acquisition, labels, oracles, timing) is agent work: use documented open sources and record `failed(<reason>)` when one is unavailable.
 
+UI and PACK cards: open the [design mockup](../../design-mockup/README.md) and follow it for how the screen looks and behaves; its [screen map](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) shows where each screen is. Bind values to records (never the mockup's data) and build on the shared routes and map path (never its prototype code).
+
 Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execution.md) section 2.
 
 ## Start here: cards that can run in parallel on day one
@@ -237,31 +239,31 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-01 · Tokens, fonts and icons
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW (visual) · **Needs** none
-- **Read:** [H99](99-ui-ux-and-integration.md) Z1 and Z6; [design system README](../design-system/README.md); [`tokens.css`](../design-system/tokens.css); [reference mockups](../design-system/mockups/officer-studio/README.md) (reference only, not production UI) and their rules.
+- **Read:** the whole [design mockup](../../design-mockup/README.md) for type, colour, spacing, icons and components (light theme only); [H99](99-ui-ux-and-integration.md) Z1 and Z6; [design system README](../design-system/README.md); [`tokens.css`](../design-system/tokens.css); [reference mockups](../design-system/mockups/officer-studio/README.md) (reference only, not production UI) and their rules.
 - **Build:** extend `--ui-*` tokens with map, rights, marks, ramps and utility values; retain reusable theme tokens without adding a switch; self-host Noto Sans, Noto Sans Devanagari and Noto Sans Mono; an `Icon` wrapper on Phosphor; a lint warning for new `lucide-react` imports.
 - **Done when:** no external font request offline; contrast checks pass in the delivered light theme; additional themes remain future work; a Hindi label renders.
 
 ### UI-02 · Studio frame
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01
-- **Read:** [H99](99-ui-ux-and-integration.md) sections 3–4 and Z2; [UI brief](../design-system/ui-brief.md) "How the map should look"; [reference mockups](../design-system/mockups/officer-studio/README.md) "The Studio frame" and "Interaction model" and [screens](../design-system/mockups/officer-studio/screens.md) "Frame", as design reference.
+- **Read:** [design mockup](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) frame row: the Map page chrome, left panels, menus and tray; [H99](99-ui-ux-and-integration.md) sections 3–4 and Z2; [UI brief](../design-system/ui-brief.md) "How the map should look"; [reference mockups](../design-system/mockups/officer-studio/README.md) "The Studio frame" and "Interaction model" and [screens](../design-system/mockups/officer-studio/screens.md) "Frame", as design reference.
 - **Build:** 56 px top bar with Batches · Map · Register; scope strip; on-demand left panel; single tray; inspector widths and flexible layout seams; desktop-first/light-only, no theme control or reserved gap.
 - **Done when:** selection and camera survive every panel change; desktop scope/actions, keyboard access and zoom remain usable; mobile optimization is deferred.
 
 ### UI-03 · Map styling and honest geometry
 **Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01, FND-04
-- **Read:** [map and 3D rules](../design-system/map-and-3d.md); [H22](22-rendering-and-sparse-data.md) Z1–Z3; [reference mockups](../design-system/mockups/officer-studio/README.md) "What the scene shows per mode", as design reference.
+- **Read:** [design mockup](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) S4–S6 and S8 for the look of each map mode (port the behaviour to Cesium, not `scene.js`); [map and 3D rules](../design-system/map-and-3d.md); [H22](22-rendering-and-sparse-data.md) Z1–Z3; [reference mockups](../design-system/mockups/officer-studio/README.md) "What the scene shows per mode", as design reference.
 - **Build:** Colour by (one at a time), evidence fill and record outline encodings, level rail with the named vertical reference, underground mode, "height unknown" and "illustrative" treatments, Indian level kinds.
 - **Done when:** each GF-VIEW fixture in H22 Z3 renders as specified and V1–V4 captures pass H99's V-shot contract with values from the loaded records.
 
 ### UI-04 · Batches, intake and workspace
 **Owner** UI · **Tier** T-work · **Tests** GF-VIEW, GF-AGENT (UI path) · **Needs** INGEST-02, DOMAIN-02
-- **Read:** [reference screens](../design-system/mockups/officer-studio/screens.md) S1–S5 and S9–S11 (design reference, not production spec); [reference mockups](../design-system/mockups/officer-studio/README.md) "Any format in, the same screens out"; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Batch`, `IntakeSession`, `IntakeFile`, `FieldMapping`, `Candidate`, `Building`, `Level`, `Space`.
+- **Read:** [design mockup](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) S1–S5 and S9–S11; [reference screens](../design-system/mockups/officer-studio/screens.md) S1–S5 and S9–S11 (design reference, not production spec); [reference mockups](../design-system/mockups/officer-studio/README.md) "Any format in, the same screens out"; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Batch`, `IntakeSession`, `IntakeFile`, `FieldMapping`, `Candidate`, `Building`, `Level`, `Space`.
 - **Build:** S1 Batches, S2 Add files with inline mapping questions and "Reused mapping", S3 live import, S4 area map, S5 building and floors, S9 review details, S10 check and record, S11 assign dialog. Screens bind to records; an unknown profile or unmapped field is listed, never dropped.
 - **Done when:** the officer completes the D0 flow without retyping data; provider-down shows manual mapping.
 
 ### UI-08 · No hard-coded demo content or "fictional" labels
 **Owner** UI, with DATA for stored names · **Tier** T-work · **Tests** GF-VIEW, GF-SCENE · **Needs** none to start; DATA-09 to finish
-- **Read:** [AGENTS.md](../../AGENTS.md) data invariants; [H99](99-ui-ux-and-integration.md) Z6; [reference mockups](../design-system/mockups/officer-studio/README.md) rules 3–4; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Scope.classification` and `ProvenanceFlags`.
+- **Read:** [design mockup](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) screen states; its "Design mockup" badge exists only in the mockup; [AGENTS.md](../../AGENTS.md) data invariants; [H99](99-ui-ux-and-integration.md) Z6; [reference mockups](../design-system/mockups/officer-studio/README.md) rules 3–4; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Scope.classification` and `ProvenanceFlags`.
 - **Find:** `grep -rIli "fictional\|demonstration data\|specimen" apps/web --exclude-dir=node_modules --exclude-dir=.next` (35 source files outside `public/` on 25 September 2026: officer block, register, workspace, scene and work screens; `features/studio/data`; the reference import, runtime and workbench; `lib/server`; plus three protected files under `public/`).
 - **Build:** remove "Fictional demonstration" and similar disclaimers from screens and generated documents. Show each dataset's recorded classification in the scope strip, and *Test fixture* or a seeded-case badge only where the record's provenance says so. Finale screens read records through the ports; hard-coded sample arrays (for example the Lake View district and document generators) are not reachable from finale routes, and the Studio opens on the DATA-09 real reference area instead (H30 B). Keep legacy URLs working (AGENTS.md).
 - **Do not:** delete, re-seed or rewrite protected datasets, originals or files under `apps/web/public/datasets/`. A stored dataset or area name containing "FICTIONAL" is data. DATA may add a display label through a recorded, reversible revision; code must stop matching records by that text.
@@ -269,7 +271,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-09 · Enhanced view and scene sync
 **Owner** UI · **Tier** T-work · **Test** GF-SCENE · **Needs** UI-03, FND-04, DATA-09; DOMAIN-01 for tier 1
-- **Read:** [H30](30-reference-scene-and-incomplete-data.md) C, D and I; [H22](22-rendering-and-sparse-data.md) C, Z1 and Z5; [map and 3D rules](../design-system/map-and-3d.md) "Enhanced view"; [reference mockups](../design-system/mockups/officer-studio/README.md) (design reference, not production UI).
+- **Read:** [design mockup](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) for the frame and selection it keeps (the Enhanced scene has no mockup yet); [H30](30-reference-scene-and-incomplete-data.md) C, D and I; [H22](22-rendering-and-sparse-data.md) C, Z1 and Z5; [map and 3D rules](../design-system/map-and-3d.md) "Enhanced view"; [reference mockups](../design-system/mockups/officer-studio/README.md) (design reference, not production UI).
 - **Build:** the Enhanced view on the shared Cesium path. Tier 1: load a capture's OpenDroneMap mesh (DOMAIN-01, H27 Z1) as a clipped, non-pickable `context_mesh` whose picks pass through to `recordId`; qualify it on the DATA-06 scene. Tier 2, where no capture exists, is the deterministic dressing: official DEM terrain, sourced road/water/green geometry and sourced building surfaces; no invented trees, widths, roofs, heights or storeys; display lighting and shadows. Derivatives go to the display-derivative store with input pins, generator version, seed and hash; they go stale and regenerate on record change. Add the attribution line and the "Context building · no record" selection.
 - **Done when:** GF-SCENE passes, including the no-change check across the view switch and byte-identical rebuilds.
 
@@ -299,7 +301,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-05 · Register, evidence, deviation and underground screens
 **Owner** UI · **Tier** T-work · **Tests** GF-VIEW, GF-REHEARSAL · **Needs** HISTORY-02, IMPACT-01
-- **Read:** [reference screens](../design-system/mockups/officer-studio/screens.md) GF3 section (design reference, not production spec); [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Underground`, `Finding`, `Check`, `Deviation`, `ShareLedger`, `Revision`, `EvidenceRef`.
+- **Read:** [design mockup](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) S6–S8, S12 and S13; [reference screens](../design-system/mockups/officer-studio/screens.md) GF3 section (design reference, not production spec); [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Underground`, `Finding`, `Check`, `Deviation`, `ShareLedger`, `Revision`, `EvidenceRef`.
 - **Build:** S6–S8, S12, S13 per the [UI brief](../design-system/ui-brief.md), using the reference mockups as a design guide, with the fixed wording in [H99](99-ui-ux-and-integration.md) Z4; S5 inspector refinements.
 - **Done when:** V4–V6 captures pass.
 
@@ -307,7 +309,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### PACK-01 · Property Card and local QR
 **Owner** PACK · **Tier** T-risk · **Test** GF-T21 · **Needs** FND-02, RIGHTS-01, DOMAIN-03
-- **Read:** [H10](10-scoped-evidence-packets.md) GF4 sections.
+- **Read:** [design mockup](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) S14 and P4L; [H10](10-scoped-evidence-packets.md) GF4 sections.
 - **Build:** card subtype with P3 code, location line, vertical reference, chain state; `local_operator` resolver labelled "local demonstration link". The UI takes [reference screens](../design-system/mockups/officer-studio/screens.md) S14 and P4L as a design guide and binds `PropertyCard` and `VerifyResult`.
 - **Done when:** GF-T21 passes, including sibling-leak pixel and metadata checks.
 
@@ -327,10 +329,12 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### UI-06 · Captures and rehearsal UI
 **Owner** UI · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** all GF4 cards
+- **Read:** [design mockup](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) as the design review reference for V1–V8.
 - **Done when:** V1–V8 captures use the H28 qualified data and pass H99's V-shot contract; any comparison with the [reference mockups](../design-system/mockups/officer-studio/README.md) is a design review, not a pass condition; the rehearsal pass rule in [H28](28-data-acquisition-and-finale-tests.md) Z5 holds.
 
 ### UI-07 · Automated task-completion and timing checks
 **Owner** UI · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** UI-04, UI-05 · replaces H90 H4 and the H9 study
+- **Read:** [design mockup](../../design-mockup/README.md#where-each-screen-is-and-what-builds-it) demo path (S1 → S2 → S3 → S9 → S10 → S8 → S5 → S11 → S13 → S6 → S14 → P4L) for the scripted journeys.
 - **Build:** Playwright journeys (select building and unit, open evidence, make the card), wrong-unit guard, keyboard, focus, axe accessibility checks, desktop 1440 × 900 and browser zoom; mobile optimization deferred. Timing receipts: first selectable scene, time to card, and officer input count on the assisted path versus `manual_mapping`.
 - **Done when:** receipts exist and are labelled "scripted, not a human study"; the status reads "intended-user usability: untested" unless a person volunteers.
 
