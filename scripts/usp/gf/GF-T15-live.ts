@@ -181,12 +181,37 @@ try {
   assert.equal(revised.location, 'MULTI(2) / S01 / F07-F08 / R003');
   checks.push('reviewed two-parcel duplex locator correction preserves code');
 
+  const hCode = await assertStatus(ids.H, 'assigned');
+  const unreviewedLocation = { ...location, anchorState: 'supplied_unreviewed' as const,
+    parcels: [{ ulpin: 'AUTHORED-UNREVIEWED', role: 'primary' as const, sourceId, reviewed: false }] };
+  await mutation('correct', [ids.H], [], { location: unreviewedLocation });
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
+    identifier: hCode })).location, 'NO-ANCHOR / S01 / F07 / R003');
+  const completeLocation = { ...location, anchorState: 'reviewed_complete' as const,
+    parcels: [{ ulpin: 'AUTHORED-PRIMARY', role: 'primary' as const, sourceId, reviewed: true }] };
+  await mutation('correct', [ids.H], [], { location: completeLocation });
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
+    identifier: hCode })).location, 'AUTHORED-PRIMARY / S01 / F07 / R003');
+  assert.equal(await assertStatus(ids.H, 'assigned'), hCode);
+  checks.push('unreviewed parcel stays NO-ANCHOR; reviewed primary appears without changing identity');
+
+  const invalidScope = (await capture()).scope;
+  await assert.rejects(mutateProjectIdentity(ctx(), { operation: 'split',
+    predecessors: [ids.A], successors: [ids.C], scope: invalidScope,
+    expectedVersions: { [ids.A]: await version(ids.A), [ids.C]: await version(ids.C) },
+    expectedManifestId: invalidScope.manifestId, reviewId: randomUUID(), requestKey: randomUUID() }),
+  (error: { status?: number; code?: string }) => error.status === 422 && error.code === 'unsupported_lineage_kind');
+  checks.push('unsupported 1-to-1 split returns 422 before mutation');
+
   await mutation('split', [ids.A], [ids.C, ids.D], { location });
   assert.equal(await assertStatus(ids.A, 'retired'), aCode);
   const cCode = await assertStatus(ids.C, 'assigned'), dCode = await assertStatus(ids.D, 'assigned');
   assert.notEqual(cCode, dCode);
   const old = await resolveProjectIdentity(ctx(), { scope: (await capture()).scope, identifier: aCode });
   assert.deepEqual(old.successors, [ids.C, ids.D].sort());
+  const legacy = (await pool.query('SELECT identifier FROM registry_records WHERE id=$1', [ids.A])).rows[0].identifier;
+  assert.equal((await resolveProjectIdentity(ctx(), { scope: (await capture()).scope,
+    identifier: legacy })).status, 'retired');
   await mutation('merge', [ids.C, ids.D], [ids.E], { location });
   assert.equal(await assertStatus(ids.C, 'retired'), cCode);
   assert.equal(await assertStatus(ids.D, 'retired'), dCode);
@@ -202,6 +227,10 @@ try {
   const nonreuseReview = await review('assign', nonreuseScope, [ids.B], { location });
   await assert.rejects(assignProjectCode(ctx(), assignInput(nonreuseScope, ids.B, nonreuseReview, randomUUID(), await version(ids.B))),
     (error: { status?: number }) => error.status === 409);
+  await assert.rejects(pool.query('DELETE FROM usp_project_codes WHERE record_id=$1', [ids.B]),
+    (error: { code?: string }) => error.code === 'P0001');
+  await assert.rejects(pool.query("UPDATE usp_project_codes SET status='assigned' WHERE record_id=$1", [ids.B]),
+    (error: { code?: string }) => error.code === 'P0001');
   checks.push('error cancellation and terminal retirement retain nonreusable tombstones');
 
   for (const id of [ids.F, ids.G]) {

@@ -80,6 +80,22 @@ export async function migrateUsp() {
         review_id uuid NOT NULL REFERENCES usp_project_identity_reviews(id),
         assigned_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
       );
+      CREATE FUNCTION usp_project_code_guard() RETURNS trigger LANGUAGE plpgsql AS $$
+      BEGIN
+        IF TG_OP = 'DELETE' THEN
+          RAISE EXCEPTION 'A P3 reservation cannot be deleted';
+        END IF;
+        IF NEW.code IS DISTINCT FROM OLD.code OR NEW.record_id IS DISTINCT FROM OLD.record_id
+          OR NEW.scope_id IS DISTINCT FROM OLD.scope_id OR NEW.review_id IS DISTINCT FROM OLD.review_id
+          OR NEW.assigned_at IS DISTINCT FROM OLD.assigned_at
+          OR NEW.status IS DISTINCT FROM OLD.status AND NOT
+            (OLD.status = 'assigned' AND NEW.status IN ('retired','cancelled_error')) THEN
+          RAISE EXCEPTION 'A P3 reservation is immutable except for terminal status';
+        END IF;
+        RETURN NEW;
+      END $$;
+      CREATE TRIGGER usp_project_code_guard_trigger BEFORE UPDATE OR DELETE ON usp_project_codes
+        FOR EACH ROW EXECUTE FUNCTION usp_project_code_guard();
       CREATE TABLE IF NOT EXISTS usp_project_identity_state (
         record_id uuid PRIMARY KEY REFERENCES registry_records(id),
         location jsonb NOT NULL, review_id uuid NOT NULL REFERENCES usp_project_identity_reviews(id),
