@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-24T23:56:46.242341+00:00",
+  "updatedAt": "2026-09-25T00:14:36.408140+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -26,6 +26,12 @@
         "integrationCommit": "8b8a9f3",
         "assignmentId": "BOOT-001",
         "scope": "report only"
+      },
+      {
+        "sourceCommit": "5177deb40080544c6e5a21c73483faf431aa4e80",
+        "integrationMethod": "merge preserving tested-commit ancestry",
+        "assignmentId": "FND-01",
+        "scope": "inventory and retained local regression only"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -80,6 +86,10 @@
     {
       "id": "D006",
       "decision": "Source/credential/training permissions, public deployment, purchases and unrelated sensitive account scopes remain separately gated; user authorized routine public data acquisition and basic Google sign-in."
+    },
+    {
+      "id": "D007",
+      "decision": "Reconciled external staging commit 364bd561bfa1edf879ebc170a6f5035c4cd9dd22, which committed the pre-existing 194 design-package deletions. This orchestration did not originate those removals."
     }
   ],
   "workers": [
@@ -98,7 +108,7 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "assigned_FND-01",
+      "status": "accepted_idle",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -178,8 +188,59 @@
         "Job consumer absence and other unqualified seams explicit; no gate completion without independent review"
       ],
       "reportPath": "docs/evidence/usp/finale/GF-CONTRACT/FND-01-report.md",
-      "status": "dispatched",
-      "resultCommit": null
+      "status": "accepted_bounded_inventory",
+      "resultCommit": "5177deb40080544c6e5a21c73483faf431aa4e80",
+      "testedCommit": "dfe0d36e078f696918c21a73cbc596347c480abb",
+      "acceptedAt": "2026-09-25T00:14:36.408140+00:00",
+      "review": {
+        "reviewer": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+        "independence": "same_family",
+        "verdict": "accepted bounded inventory; not GF-CONTRACT/GF0 qualification",
+        "checks": [
+          "3 inventory tests rerun",
+          "inventory --check",
+          "artifact and raw runner receipt hashes",
+          "19 actual runner exit codes",
+          "3 fresh screenshots inspected"
+        ],
+        "leadCorrectionCommit": "4b98ade"
+      }
+    },
+    {
+      "assignmentId": "LEAD-01A",
+      "attempt": 1,
+      "objective": "First LEAD-01 slice: receipt provenance and active-plan freshness guards",
+      "workerThreadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+      "workerHostId": "local",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-astra",
+        "effort": "high"
+      },
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
+      "branch": "agent/LEAD-01-receipt-guards",
+      "baseCommit": "80a6a8abfad9785d8543425b54a82c387ee7026f",
+      "resultCommit": "c07f2c983beb4cddb516afe129f74659c8b44f61",
+      "ownership": [
+        "docs/usp-agent-handoffs/tools/",
+        "docs/usp-agent-handoffs/release-plan.json schema fields",
+        "docs/evidence/usp/orchestration/"
+      ],
+      "status": "implemented_tested_partial_card",
+      "checks": [
+        "40 Python mutation tests passed",
+        "active-plan validator passed",
+        "3 inventory tests passed"
+      ],
+      "evidence": [
+        "docs/evidence/usp/orchestration/LEAD-01A-plan-validation.json"
+      ],
+      "remaining": [
+        "waivers with owner approval",
+        "human dependency and date rules",
+        "release-candidate freshness and failed attempts",
+        "milestone approval enforcement"
+      ]
     }
   ],
   "capabilityChecklist": [
@@ -743,8 +804,12 @@
         "GF-CONTRACT"
       ],
       "acceptanceCriteria": "H28 named test cases plus governing feature handoff and H29 Done when",
-      "status": "assigned_inventory_pending_evidence",
-      "evidence": []
+      "status": "partial_inventory_and_baseline_regression",
+      "evidence": [
+        "docs/evidence/usp/finale/GF-CONTRACT/FND-01-report.md",
+        "docs/evidence/usp/finale/GF-CONTRACT/run-summary.json",
+        "docs/evidence/usp/orchestration/LEAD-01A-plan-validation.json"
+      ]
     },
     {
       "id": "R-READY",
@@ -850,10 +915,9 @@
     }
   ],
   "nextSteps": [
-    "End turn after dispatch and one bounded wait_threads snapshot; worker callback resumes review.",
-    "Review FND-01 commit/test artifacts against assignment and actual current code; do not equate inventory with GF0 completion.",
-    "Implement LEAD-01 as lead-owned plan machinery; acquire GF0 sources with the next bounded DATA assignment.",
-    "Continue finale then full_product; formal UI requires later linked mockup authorization."
+    "Integrate accepted FND-01 and LEAD-01A partial code; no runtime gate completion.",
+    "Dispatch DATA-01 to same Sol High worker for context/structured-code provenance and bounded acquisition.",
+    "On callback inspect actual data/schema evidence, then continue LEAD-01B and dependency-ready FND/DATA work."
   ],
   "processedCallbacks": [
     {
@@ -863,12 +927,28 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "ab179811aef412a6735b171928a63d8c9d3091c6",
       "result": "accepted"
+    },
+    {
+      "callbackId": "ulpin-FND-01-attempt-1",
+      "assignmentId": "FND-01",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "5177deb40080544c6e5a21c73483faf431aa4e80",
+      "result": "accepted_bounded_inventory"
     }
   ],
   "observations": [
     {
       "id": "OBS-001",
       "finding": "USP job attempt functions have a verification runner consumer; production dispatcher linkage unproven. FND-01 must classify honestly, not count test-only caller as integrated runtime."
+    },
+    {
+      "id": "OBS-002",
+      "finding": "USP ordered outbox writer has no delivery/SSE consumer; producer-consumer, pagination/mutation and transaction-fault matrices remain open."
+    },
+    {
+      "id": "OBS-003",
+      "finding": "D0/PACK0 and retained D1 locally passed at dfe0d36: 101 USP unit tests, typecheck/build, 19 isolated commands, 3 browser journeys, 3 register-scope tests. Does not qualify real rights/interiors, global placement, solids, GPU/scale or deployment."
     }
   ]
 }
