@@ -1,0 +1,32 @@
+{
+  "baseSha": "4eef5a535b9d7e8940401d20a67c578188a31ea0",
+  "codeSha": "66e3dffb9c653d52a13b8ee2046f3c72b550f587",
+  "files": {
+    ".env.example": "5e953f508ac5655c75011d0de11722912276cd0e9f31f89e2cd25d23f8b040c3",
+    "apps/web/app/api/v1/[...path]/route.ts": "3bf296b573aba8b8e58ab1d796ef3bd48aa452a5f5ffefb33b941de37d142608",
+    "apps/web/features/officer/shared/Shell.tsx": "c112ab36cef9dcd177350d5e909e2135240aa9f8ab21fae95953145140a066a1",
+    "apps/web/lib/server/area-routes.ts": "735c4b4b701389d9a21cd627be65edc4339057dce15e23f8941a2078d3ca179b",
+    "apps/web/lib/server/areas.ts": "c768d719b72df5ef6941124b9d0dc1805fd2f721d39d325a64974c8accfe69a0",
+    "apps/web/lib/server/domain.ts": "ef71bc8db81a2857a03610a08528473b262a9c7f04eb7b253dfec6e1163e40c2",
+    "apps/web/lib/server/loopback-host.ts": "b19f356cf5c87192c4fe2f16c12960b16bea5ee490d82fcabe59e146fb4ff552",
+    "apps/web/lib/server/officer-ai-images.ts": "befeb0ad324223c775c1acc05311df9f277b8fb544e9ac40a6d3ec0640e9941b",
+    "apps/web/lib/server/officer-ai-provider.ts": "9238ea23ae35e519ee16a7aa4ddc7db795e41492ae4cf7c59106c41529b15bc5",
+    "apps/web/lib/server/officer-ai-validation.ts": "b87a7cb96eb62cf4dfb683000876caae61e834a03e2d6baa0d68ecce0563e9c3",
+    "apps/web/lib/server/officer-ai.ts": "470b4c76cd4c0607bb7e139b9d523281b3ab563bd94ab40d1fa60fe69e2f5e25",
+    "apps/web/lib/server/officer-routes.ts": "157a3de1cacbcccbcb942c44d4d7777178ce5a0d6d4f44cb2889e14be0dccacb",
+    "apps/web/lib/server/provider-policy.ts": "abcf959bcfb9189609c24c44c563624995a1aa72ea0b0f7c2a3a3afe2abda43f",
+    "apps/web/lib/server/usp/ingest/redact.ts": "a6a15dc027654777532c8aec470f788cb7934e804b891f0b6bb50ed3a743b771",
+    "apps/web/lib/server/usp/principal.ts": "13f03d9e672b5ab418b14c3f2e848fc8d6887b5dea6966be2fb8c1686dee4f7a",
+    "apps/web/lib/server/workspace-capabilities.ts": "a5c63ab84c17b05f75343280606d29319f092e1a02fd5c91a10ec94ca7dbc3d2",
+    "apps/web/lib/workspace-capabilities.ts": "791e4b3eac411d4aae0f3c28e6fafcd7b5934b44f15ae77c6b3a9437af8af4cb",
+    "apps/web/proxy.ts": "946d87d7edde86dfa255c03fbd558de0072a28edadded28089c43805e3ba4ee1",
+    "scripts/usp/gf/FND-06-browser.mjs": "222c9841521fb6299e015b50d23be04c837597594593e842e173eaf2d1dc095e",
+    "scripts/usp/gf/FND-06-controls.test.ts": "078ab7b7d05009c9436fb25b22211c52b93185e0b5f42e2aa0c8920df1fbefd9",
+    "scripts/usp/gf/FND-06-image.py": "041ea5a2cc1ccc1689f39d35a321eaf7ceebcb422573eafb0b50c775134da09f",
+    "scripts/usp/gf/FND-06-isolated.mjs": "b0475dceae86ecb0d3d286dc42c467363ffbcda155616528ff323e2f1811aaed",
+    "scripts/usp/gf/FND-06-no-egress.cjs": "f506da2dc8db1df8eac053c50ce61ca58f0c59e5e0e32a571e4b9dd84eb7a802",
+    "scripts/usp/gf/FND-06-official-source.ts": "52243685935938e9264d6cf1cf2ea0ce02348c79dc03ceb26e4bfe6381d5d7be",
+    "scripts/usp/local-isolation.mjs": "cd659a0f685514a61a3ee9fef761a2a0d57bed24f9dc3f9ca814a8cc27b4bd80",
+    "services/geo/geo/image_derivative.py": "d99c955eb472251dd3cacbe5511243149696a5dfb38dbc638d598473d8e9dd8a"
+  }
+}
