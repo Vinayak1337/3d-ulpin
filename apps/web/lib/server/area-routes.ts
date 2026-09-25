@@ -1,3 +1,4 @@
+import { redactDocumentViews } from './usp/ingest/redact';
 import { createSourceCase, receiveCaseDocument } from "./source-cases";
 import { createSourceWorkspace, sourceWorkspaceForCase } from "./source-workspaces";
 import { z } from "zod";
@@ -112,7 +113,7 @@ const mapping = z
   })
   .strict();
 const json = (value: unknown, status = 200) =>
-  Response.json(value, { status, headers: { "Cache-Control": "no-store" } });
+  Response.json(redactDocumentViews(value), { status, headers: { "Cache-Control": "no-store" } });
 async function body(request: Request) {
   try {
     return await request.json();

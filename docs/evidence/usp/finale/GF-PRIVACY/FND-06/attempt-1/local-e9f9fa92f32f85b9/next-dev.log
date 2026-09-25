@@ -1,0 +1,18 @@
+▲ Next.js 16.3.5 (webpack)
+- Local:         http://127.0.0.1:3108
+- Network:       http://127.0.0.1:3108
+✓ Ready in 195ms
+✓ Running next.config.ts took 17ms
+
+ GET /api/v1/health 200 in 1096ms (next.js: 745ms, proxy.ts: 70ms, application-code: 281ms)
+ GET /api/v1/workspace-capabilities 200 in 5ms (next.js: 3ms, proxy.ts: 0.9ms, application-code: 1.6ms)
+ GET /api/v1/workspace-capabilities 200 in 467ms (next.js: 464ms, proxy.ts: 1.0ms, application-code: 2ms)
+ GET /api/v1/workspace-capabilities 200 in 29ms (next.js: 8ms, proxy.ts: 19ms, application-code: 1.6ms)
+ GET /api/v1/ai/status 200 in 17ms (next.js: 6ms, proxy.ts: 6ms, application-code: 6ms)
+○ Compiling /studio/[[...view]] ...
+ GET /studio/workspaces 200 in 4.0s (next.js: 3.9s, proxy.ts: 1.5ms, application-code: 131ms)
+ GET /api/v1/areas 200 in 82ms (next.js: 6ms, proxy.ts: 1.7ms, application-code: 74ms)
+ GET /api/v1/workspace-directory 200 in 109ms (next.js: 26ms, proxy.ts: 1.7ms, application-code: 82ms)
+ GET /api/v1/workspace-capabilities 200 in 20ms (next.js: 16ms, proxy.ts: 1.8ms, application-code: 1.9ms)
+ GET /api/v1/health 200 in 52ms (next.js: 3ms, proxy.ts: 1.8ms, application-code: 47ms)
+[?25h

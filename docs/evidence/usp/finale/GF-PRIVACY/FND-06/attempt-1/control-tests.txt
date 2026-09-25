@@ -1,0 +1,14 @@
+✔ only canonical loopback authorities and explicitly configured ports pass (0.507083ms)
+✔ exact opt-in and finale veto are independent configuration controls (0.067833ms)
+✔ capabilities do not imply physical location, residency, entitlement or image clearance (0.168375ms)
+✔ Verhoeff arithmetic on short non-identity control inputs and unavailable values (1.610416ms)
+✔ image denial precedes original storage/processor access and message construction (0.38375ms)
+✔ provider denial/no-key paths make zero requests; opted-in fake transport remains bounded (6.9155ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 202.848292

@@ -1,0 +1,23 @@
+node:internal/modules/cjs/loader:1573
+  throw err;
+  ^
+
+Error: Cannot find module '/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/scripts/usp/gf/FND-06-no-egress.cjs /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/scripts/usp/gf/FND-06-no-egress.cjs'
+Require stack:
+- internal/preload
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1569:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1123:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1147:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1174:12)
+    at Module._load (node:internal/modules/cjs/loader:1346:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.require (node:internal/modules/cjs/loader:1679:12)
+    at node:internal/modules/cjs/loader:2235:12
+    at loadPreloadModules (node:internal/process/pre_execution:782:5)
+    at initializeModuleLoaders (node:internal/process/pre_execution:246:5) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ 'internal/preload' ]
+}
+
+Node.js v26.7.0
+[?25h

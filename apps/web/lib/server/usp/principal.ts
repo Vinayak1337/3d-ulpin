@@ -1,9 +1,13 @@
 import type { RequestContext } from '@ulpin/contracts/usp';
 import { AppError } from '../errors';
+import { allowedLoopbackHost } from '../loopback-host';
 
 const local = (hostname: string) => ['localhost', '127.0.0.1', '[::1]'].includes(hostname);
 
 export function assertLocalRequest(request: Request) {
+  if (!allowedLoopbackHost(request.headers.get('host'))) {
+    throw new AppError(403, 'HOST_DENIED', 'Forbidden host.');
+  }
   if (!local(new URL(request.url).hostname)) {
     throw new AppError(403, 'LOCAL_DEMO_ONLY', 'This single-operator demonstration is available only on localhost.');
   }

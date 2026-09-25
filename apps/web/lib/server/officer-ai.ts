@@ -9,6 +9,7 @@ import { appendPreparationFacts } from './officer-preparation';
 import { aiBudget, callNous, extractionMessages, inspectNous } from './officer-ai-provider';
 import { AI_PROPERTIES, digest, PROMPT_VERSION, redactPrivateText, SCHEMA_VERSION, validateExtraction } from './officer-ai-validation';
 import { selectedImageCrops } from './officer-ai-images';
+import { assertNoImageEgress, redactDerivative, redactDocumentViews } from './usp/ingest/redact';
 
 export async function migrateOfficerAi() {
   await query(`CREATE TABLE IF NOT EXISTS officer_ai_runs (
@@ -31,7 +32,7 @@ async function snapshot(pkg:ImportPackage,input:Input) {
   const entityIds=[...new Set(input.entityIds??selected.flatMap(p=>p.entityIds))].sort();
   const entities=pkg.features.filter(f=>entityIds.includes(f.id)).map(f=>({id:f.id,kind:f.kind,worldStatus:f.worldStatus,revision:f.revision,identifiers:[f.identifier,f.sourceKey].filter(Boolean).map(id=>redactPrivateText(id).slice(0,200))}));
   if(!entityIds.length || entityIds.length>5 || entities.length!==entityIds.length || selected.some(p=>!p.entityIds.some(id=>entityIds.includes(id)))) throw new AppError(422,'AI_ASSOCIATION','Select up to five preparation entities with explicitly associated document parts.');
-  const parts=selected.map(p=>({...p,entityIds:p.entityIds.filter(id=>entityIds.includes(id)),text:redactPrivateText(p.text)}));
+  const parts=selected.map(p=>({id:p.id,sourceRevisionId:p.sourceRevisionId,locator:redactPrivateText(p.locator),entityIds:p.entityIds.filter(id=>entityIds.includes(id)),text:redactPrivateText(p.text)}));
   if(input.imageRegions?.length && (!input.imageContentApproved || input.imageRegions.some(r=>!ids.includes(r.partId)) || new Set(input.imageRegions.map(r=>r.partId)).size!==input.imageRegions.length)) throw new AppError(422,'AI_IMAGE_SELECTION','Explicitly select each relevant image crop and confirm that it contains no personal fields to send.');
   if(parts.reduce((n,p)=>n+p.text.length,0)>40000) throw new AppError(413,'AI_TEXT_BUDGET','Select relevant source sections totaling at most 40,000 characters.');
   const sourceIds=[...new Set(parts.map(p=>p.sourceRevisionId))].sort();
@@ -51,7 +52,7 @@ async function snapshot(pkg:ImportPackage,input:Input) {
   return {parts,entityIds,sourceHashes,partHashes,context,entities,frames,geometryFrames,fingerprint};
 }
 async function saveRun(run:OfficerAiRun,rawOutputs:unknown[]) {
-  await query('UPDATE officer_ai_runs SET body=$2,raw_outputs=$3 WHERE id=$1',[run.id,run,JSON.stringify(rawOutputs)]);
+  await query('UPDATE officer_ai_runs SET body=$2,raw_outputs=$3 WHERE id=$1',[run.id,redactDerivative(run),JSON.stringify(redactDerivative(rawOutputs))]);
 }
 async function recoverInterruptedRun(run:OfficerAiRun) {
   const deadline=Date.parse(run.startedAt)+run.budget.maxCalls*run.budget.timeoutMs+75000+(run.imageRegions?.length??0)*30000;
@@ -59,9 +60,10 @@ async function recoverInterruptedRun(run:OfficerAiRun) {
     run.state='failed';run.completedAt=new Date().toISOString();run.message='This attempt was interrupted before completion. Stored receipts remain available; start a new request to resume from the current evidence.';
     await query("UPDATE officer_ai_runs SET body=$2 WHERE id=$1 AND body->>'state'='running'",[run.id,run]);
   }
-  return run;
+  return redactDerivative(run);
 }
 async function extract(packageId:string,input:Input):Promise<OfficerAiRun> {
+  assertNoImageEgress(input.imageRegions ?? []);
   const existing=(await query('SELECT body,private_input FROM officer_ai_runs WHERE package_id=$1 AND request_key=$2',[packageId,input.requestKey])).rows[0];
   const requestDigest=digest({...input,partIds:[...new Set(input.partIds)].sort(),entityIds:input.entityIds?[...new Set(input.entityIds)].sort():undefined});
   if(existing) {
@@ -119,7 +121,7 @@ async function extract(packageId:string,input:Input):Promise<OfficerAiRun> {
     if(latest.revision!==run.packageRevision || (await snapshot(latest,input)).fingerprint!==run.inputFingerprint) {run.state='stale';run.message='Evidence or preparation changed during extraction. Start a fresh extraction before applying suggestions.';}
   } catch(error) {
     run.state=error instanceof AppError && error.code==='STALE_REVISION'?'stale':'failed';
-    run.message=error instanceof Error && /^(Nous returned HTTP|Nous attempted|NOUS_API_KEY)/.test(error.message)?error.message:'The bounded extraction could not finish. No facts were applied; check provider connectivity or retry the selected source parts.';
+    run.message='The bounded extraction could not finish. No facts were applied; check provider availability and the selected source parts.';
   }
   run.completedAt=new Date().toISOString();await saveRun(run,rawOutputs);return run;
 }
@@ -155,24 +157,30 @@ async function applyRun(packageId:string,runId:string,expectedRevision:number,ca
     await client.query('UPDATE officer_ai_runs SET body=$2 WHERE id=$1',[run.id,run]);return updated;
   });
 }
-const json=(data:unknown)=>Response.json(data,{headers:{'Cache-Control':'no-store'}});
+const json=(data:unknown)=>Response.json(redactDerivative(data),{headers:{'Cache-Control':'no-store'}});
+/** Match the canonical package read boundary while preserving typed technical names and geometry. */
+const packageJson=(pkg:ImportPackage)=>{
+  const visible=redactDocumentViews(pkg);
+  return Response.json({...visible,
+    questions:visible.questions.map(question=>({...question,message:redactPrivateText(question.message),
+      ...(question.answer?{answer:{...question.answer,reason:redactPrivateText(question.answer.reason)}}:{})})),
+    warnings:visible.warnings.map(redactPrivateText),
+  },{headers:{'Cache-Control':'no-store'}});
+};
 export async function officerAiRoutes(request:Request,p:string[]):Promise<Response|null> {
   if(p.length===2&&p[0]==='ai'&&p[1]==='status'&&request.method==='GET') return json((await inspectNous()).status);
   if(p[0]!=='import-packages'||p[2]!=='ai-extractions') return null;
   const packageId=uuid.parse(p[1]);
   if(request.method==='GET'&&p.length===6&&p[4]==='derivatives') {
-    const run=(await query('SELECT body FROM officer_ai_runs WHERE id=$1 AND package_id=$2',[uuid.parse(p[3]),packageId])).rows[0]?.body as OfficerAiRun|undefined;
-    if(!run)notFound('Extraction run not found.');
-    const image=(await query('SELECT d.bytes,d.sha256 FROM officer_ai_derivatives d JOIN officer_ai_runs r ON r.id=d.run_id WHERE d.run_id=$1 AND d.part_id=$2 AND r.package_id=$3',[run.cachedFromRunId??run.id,uuid.parse(p[5]),packageId])).rows[0];
-    if(!image)notFound('Selected crop derivative is unavailable.');
-    return new Response(new Uint8Array(image.bytes),{headers:{'Content-Type':'image/png','Cache-Control':'private, max-age=31536000, immutable','X-Content-SHA256':image.sha256}});
+    // Historic crops have no visual-redaction qualification; never treat their hashes as clearance.
+    return Response.json({error:{code:'AI_IMAGE_PRIVACY',message:'Crop previews are unavailable pending visual redaction qualification. Inspect the retained original locally.'}}, {status:403,headers:{'Cache-Control':'no-store'}});
   }
   if(request.method==='GET'&&p.length===3) {await getPackage(packageId);return json(await Promise.all((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 ORDER BY created_at DESC LIMIT 30',[packageId])).rows.map(r=>recoverInterruptedRun(r.body))));}
   if(request.method==='GET'&&p.length===4) return json(await recoverInterruptedRun((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 AND id=$2',[packageId,uuid.parse(p[3])])).rows[0]?.body??notFound('Extraction run not found.')));
   if(request.method==='POST'&&p.length===3) return json(await extract(packageId,inputSchema.parse(await request.json())));
   if(request.method==='POST'&&p.length===5&&p[4]==='apply') {
     const input=z.object({expectedRevision:revision,candidateIds:z.array(uuid).min(1).max(40)}).strict().parse(await request.json());
-    return json(await applyRun(packageId,uuid.parse(p[3]),input.expectedRevision,input.candidateIds));
+    return packageJson(await applyRun(packageId,uuid.parse(p[3]),input.expectedRevision,input.candidateIds));
   }
   return null;
 }

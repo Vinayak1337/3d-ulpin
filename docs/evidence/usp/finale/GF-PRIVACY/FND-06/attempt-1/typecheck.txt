@@ -1,0 +1,3 @@
+
+> @ulpin/web@0.1.0 typecheck /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/apps/web
+> tsc --noEmit

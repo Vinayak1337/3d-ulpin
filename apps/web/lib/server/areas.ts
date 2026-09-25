@@ -3,6 +3,7 @@ import { documentProfileFormats, documentLimitMiB } from "../document-formats";
 import { areaSceneAssets } from "./scene-assets";
 import { usesGeographicNeighbours } from "./neighbour-scenario-policy";
 import { randomUUID } from "node:crypto";
+import { redactDerivative } from './usp/ingest/redact';
 import type { PoolClient } from "pg";
 import type {
   ParcelIdentifier,
@@ -1705,7 +1706,7 @@ export const documentMime = {
   jpeg: "image/jpeg",
 };
 export async function extractDocument(file: DocumentFile) {
-  return file.format === "png" || file.format === "jpeg"
+  const extracted = file.format === "png" || file.format === "jpeg"
     ? {
         parts: [
           {
@@ -1736,6 +1737,8 @@ export async function extractDocument(file: DocumentFile) {
         format: file.format === "csv" && file.referenceOnly ? "csv_reference" : file.format,
         base64: Buffer.from(file.bytes).toString("base64"),
       });
+  // Derived text and warnings are minimized independently of retained original bytes.
+  return redactDerivative(extracted);
 }
 
 export async function attachDocument(
