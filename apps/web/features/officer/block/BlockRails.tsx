@@ -5,7 +5,7 @@ import {sourceKind} from "../register/model";
 import {SourcePreview} from "../register/Evidence";
 import {Dialog} from "../shared/ui";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FeatureKind, PhysicalFeature } from "@ulpin/contracts";
 import AreaSection from "@/components/AreaSection";
 import { utilityScene } from "@/lib/officer-scene";
@@ -264,14 +264,19 @@ export function BlockInspector({
   block,
   onClose,
   onImport,
+  hiddenBySheet = false,
+  onSourceDialogChange,
 }: {
   block: BlockController;
   onClose?: () => void;
   onImport: (packageId: string) => void;
+  hiddenBySheet?: boolean;
+  onSourceDialogChange?: (open: boolean) => void;
 }) {
   const { selected, preferences, dossier } = block;
   const mode = preferences.inspector;
   const [sourceDialog,setSourceDialog]=useState<string|null>(null);
+  useEffect(() => onSourceDialogChange?.(!!sourceDialog), [sourceDialog, onSourceDialogChange]);
   const properties = block.features.filter((f) => f.kind === "building");
   const utils = block.features.filter((f) => f.kind === "utility");
   const utility = selected?.kind === "utility" ? selected : null;
@@ -283,7 +288,7 @@ export function BlockInspector({
       ? [{ feature: selected, status: "selected" }]
       : dossier.data?.parcels || [];
   return (
-    <aside className="ui-block-inspector" aria-label="Context inspector" data-evidence-open={sourceDialog ? "true" : undefined}>
+    <aside className="ui-block-inspector" aria-label="Context inspector" data-evidence-open={sourceDialog ? "true" : undefined} data-sheet-hidden={hiddenBySheet ? "true" : undefined} inert={hiddenBySheet} aria-hidden={hiddenBySheet}>
       <header className="ui-inspector-heading">
         <h2>
           {mode === "property"

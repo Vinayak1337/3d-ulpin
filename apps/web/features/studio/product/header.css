@@ -70,3 +70,33 @@
   .ulpin-app .city-search-results { position: fixed; top: 56px; left: 10px; right: 10px; width: auto; }
   .ulpin-app .city-dataset-menu { position: fixed; top: 56px; right: 10px; }
 }
+
+/* Review fixes: usable controls and a full-width phone search while focused. */
+.ulpin-app .city-brand { min-height: 44px; display: flex; align-items: center; }
+.ulpin-app .city-nav a,
+.ulpin-app .city-search,
+.ulpin-app .city-dataset > button,
+.ulpin-app .city-theme-toggle,
+.ulpin-app .city-header-actions button,
+.ulpin-app .city-mobile-menu { min-height: 44px; height: 44px; border-radius: 8px; }
+.ulpin-app .city-header-actions button[aria-label="Local workspace status"] { width: 44px; min-width: 44px; }
+.ulpin-app .city-mobile-menu { width: 44px; min-width: 44px; }
+.ulpin-app .city-search input,
+.ulpin-app .city-search-results small,
+.ulpin-app .city-search-results p,
+.ulpin-app .city-search-results footer,
+.ulpin-app .city-dataset-menu small { font-size: 12px !important; }
+.ulpin-app .city-dataset-menu header button { min-width: 44px; min-height: 44px; }
+.ulpin-app .city-snapshot-status svg { color: var(--ui-ink-soft); }
+@media (max-width: 760px) {
+  .ulpin-app .city-header { gap: 4px; padding: 0 6px; }
+  .ulpin-app .city-brand { flex: 0 0 auto; }
+  .ulpin-app .city-brand > span { font-size: 16px; }
+  .ulpin-app .city-search { min-width: 44px; flex: 1 1 44px; padding: 0 9px; }
+  .ulpin-app .city-dataset { max-width: 44px; flex: 0 0 44px; }
+  .ulpin-app .city-dataset > button { width: 44px; padding: 8px; }
+  .ulpin-app .city-theme-toggle { width: 44px; justify-content: center; padding: 8px; }
+  .ulpin-app .city-search:focus-within { position: absolute; z-index: 90; top: 6px; left: 6px; right: 6px; width: auto; max-width: none; background: var(--ui-surface); }
+  .ulpin-app .city-search:focus-within input::placeholder { display: initial; color: var(--ui-muted); }
+  .ulpin-app .city-search-results { left: 6px; right: 6px; }
+}
