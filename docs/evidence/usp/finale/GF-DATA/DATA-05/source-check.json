@@ -1,0 +1,403 @@
+{
+  "schemaVersion": "gf0-data05-source-check/1",
+  "status": "candidate_for_review",
+  "testId": "GF-DATA/DATA-05",
+  "runAt": "2026-09-25T00:53:10.039259+00:00",
+  "codeCommit": "d26701a3d6b9637e422701464f8d02579ff14b7c",
+  "baseCommit": "584428eb2006db5d2a91973ea5569dc59d59644c",
+  "environment": {
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.9.6",
+    "pypdf": "6.16.2",
+    "poppler": "26.05.0",
+    "node": "v26.7.0",
+    "pnpm": "9.12.0"
+  },
+  "agent": {
+    "product": "Codex",
+    "model": "gpt-6-sol",
+    "effort": "high"
+  },
+  "review": {
+    "status": "pending",
+    "reviewer": null,
+    "independentAcceptance": false
+  },
+  "manifestHashes": {
+    "gf0-public-plans-v1": "c07caedbbfabb05677bf32ace164b7fab9c0d817fd4f599f6e85c9107530cd28",
+    "gf0-multiunit-v1": "77cc33f5c5ecaed58e643c205e1cbb185dfa544be33883d5770d610f4364fd23"
+  },
+  "sourceHashes": {
+    "bihar-magnolia-sanctioned-layout.pdf": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+    "haryana-2831-basement-01.pdf": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49",
+    "haryana-2831-tower3-plan1.pdf": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+    "haryana-2831-tower3-section.pdf": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+    "haryana-2079-last-approved.pdf": "a2ccde8e1d914c19e054b367c52ef5636cfd6e1410bd77617d9e1570f6895a18",
+    "swiss-source-range": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+    "swiss-derived-sample": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd"
+  },
+  "publishedFullSwissFile": {
+    "bytes": 792527191,
+    "advertisedMd5": "2c78951982ba87f0a28ef6ca0724e48a",
+    "fullSha256": null
+  },
+  "modelHashes": [],
+  "codeHashes": {
+    "checker": "ec141f61a55bb9e1757fec64144b02e820cee5b7f24e047c2428c3f9f9b7219d",
+    "tests": "2f5df6477828dcb4ed9bd5e7652babe72ac21d2b1c36f0e6df8e5654b5931ec6"
+  },
+  "expectedActual": [
+    {
+      "caseId": "private_pdf_original_pins",
+      "expected": {
+        "bihar-magnolia-sanctioned-layout.pdf": {
+          "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+          "bytes": 2455183,
+          "pageCount": 6
+        },
+        "haryana-2831-basement-01.pdf": {
+          "sha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49",
+          "bytes": 1711314,
+          "pageCount": 1
+        },
+        "haryana-2831-tower3-plan1.pdf": {
+          "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+          "bytes": 1655334,
+          "pageCount": 1
+        },
+        "haryana-2831-tower3-section.pdf": {
+          "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+          "bytes": 2448909,
+          "pageCount": 1
+        },
+        "haryana-2079-last-approved.pdf": {
+          "sha256": "a2ccde8e1d914c19e054b367c52ef5636cfd6e1410bd77617d9e1570f6895a18",
+          "bytes": 1517504,
+          "pageCount": 12
+        }
+      },
+      "actual": {
+        "bihar-magnolia-sanctioned-layout.pdf": {
+          "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+          "bytes": 2455183,
+          "pageCount": 6
+        },
+        "haryana-2831-basement-01.pdf": {
+          "sha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49",
+          "bytes": 1711314,
+          "pageCount": 1
+        },
+        "haryana-2831-tower3-plan1.pdf": {
+          "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+          "bytes": 1655334,
+          "pageCount": 1
+        },
+        "haryana-2831-tower3-section.pdf": {
+          "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+          "bytes": 2448909,
+          "pageCount": 1
+        },
+        "haryana-2079-last-approved.pdf": {
+          "sha256": "a2ccde8e1d914c19e054b367c52ef5636cfd6e1410bd77617d9e1570f6895a18",
+          "bytes": 1517504,
+          "pageCount": 12
+        }
+      },
+      "result": "passed"
+    },
+    {
+      "caseId": "bihar_literal_drawing_schedule",
+      "expected": {
+        "drawingNumbers": [
+          "V5-01",
+          "V5-02"
+        ],
+        "levelStrings": [
+          "FFL +1'6\"",
+          "FFL +11'6\"",
+          "FFL +22'1\"",
+          "FFL +32'6\""
+        ]
+      },
+      "actual": {
+        "drawingNumbers": [
+          "V5-01",
+          "V5-02"
+        ],
+        "levelStrings": [
+          "FFL +1'6\"",
+          "FFL +11'6\"",
+          "FFL +22'1\"",
+          "FFL +32'6\""
+        ]
+      },
+      "result": "passed"
+    },
+    {
+      "caseId": "swiss_two_unit_vector_subset",
+      "expected": {
+        "rows": 81,
+        "unitIds": [
+          "23024",
+          "23025"
+        ],
+        "sourceRangeSha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581"
+      },
+      "actual": {
+        "rows": 81,
+        "unitIds": [
+          "23024",
+          "23025"
+        ],
+        "sourceRangeSha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+        "rangeLineageVerified": true,
+        "sourceRangeBytes": 2097152
+      },
+      "result": "passed"
+    },
+    {
+      "caseId": "unconfirmed_pdf_permission",
+      "expected": "unconfirmed",
+      "actual": "unconfirmed",
+      "result": "passed"
+    }
+  ],
+  "commands": [
+    {
+      "command": [
+        "python3",
+        "tests/usp-gf0-plan-bundle.test.py"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.003s\n\nOK"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/usp/data/gf0-plan-bundle.py",
+        "--check",
+        "--private-root",
+        "/Users/vinayak/.codex/task-data/ulpin-data-05"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "schemaVersion": "gf0-plan-source-check/1",
+        "status": "candidate_for_review",
+        "publicPlans": {
+          "profile": "gf0-public-plans-v1",
+          "externalSources": [
+            {
+              "assetId": "bihar-magnolia-sanctioned-layout.pdf",
+              "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+              "bytes": 2455183,
+              "pageCount": 6,
+              "privateOriginalVerified": true,
+              "drawingNumbers": [
+                "V5-01",
+                "V5-02"
+              ],
+              "levelStrings": [
+                "FFL +1'6\"",
+                "FFL +11'6\"",
+                "FFL +22'1\"",
+                "FFL +32'6\""
+              ]
+            },
+            {
+              "assetId": "haryana-2831-basement-01.pdf",
+              "sourceSha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49",
+              "bytes": 1711314,
+              "pageCount": 1,
+              "privateOriginalVerified": true
+            },
+            {
+              "assetId": "haryana-2831-tower3-plan1.pdf",
+              "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+              "bytes": 1655334,
+              "pageCount": 1,
+              "privateOriginalVerified": true
+            },
+            {
+              "assetId": "haryana-2831-tower3-section.pdf",
+              "sourceSha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+              "bytes": 2448909,
+              "pageCount": 1,
+              "privateOriginalVerified": true
+            },
+            {
+              "assetId": "haryana-2079-last-approved.pdf",
+              "sourceSha256": "a2ccde8e1d914c19e054b367c52ef5636cfd6e1410bd77617d9e1570f6895a18",
+              "bytes": 1517504,
+              "pageCount": 12,
+              "privateOriginalVerified": true
+            }
+          ],
+          "checkedAssets": {
+            "expected.json": {
+              "bytes": 1726,
+              "sha256": "2312534f3cb81e85868eb56420b83475ce61380c8e49da016bea9a7c39227318"
+            },
+            "sample-manifest.csv": {
+              "bytes": 1070,
+              "sha256": "33292ac8bb855f5aa1984e6a9286782f6a3caa275d64af9b0680dd26abe27be2"
+            }
+          },
+          "sourcePermission": "unconfirmed",
+          "qualification": "acquired_and_bounded_inspection_only"
+        },
+        "foreignVector": {
+          "profile": "gf0-multiunit-v1",
+          "sampleRows": 81,
+          "unitIds": [
+            "23024",
+            "23025"
+          ],
+          "entityTypeCounts": {
+            "separator": 51,
+            "feature": 12,
+            "opening": 12,
+            "area": 6
+          },
+          "geometryType": "POLYGON",
+          "sampleSha256": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd",
+          "rangeLineageVerified": true,
+          "checkedAssets": {
+            "swiss-floor-127-164-717.csv": {
+              "bytes": 27052,
+              "sha256": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd"
+            },
+            "expected.json": {
+              "bytes": 785,
+              "sha256": "c4a4586e2c6c3223999605f9c58916ee621c25c909519815bbc937124c2e1115"
+            },
+            "sample-manifest.csv": {
+              "bytes": 484,
+              "sha256": "2a2ffcec1f18fb5713399541a7d6fcd2a47166cd2939f1141cf3b431d8a5fa10"
+            }
+          }
+        },
+        "limitations": [
+          "RERA reuse permission and source-to-parcel/unit matching are unconfirmed.",
+          "Swiss byte range is only a bounded subset of the published CSV, not the full release.",
+          "No source proves as-built interiors, Indian multi-unit rights or ML accuracy."
+        ]
+      },
+      "stderr": ""
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "scripts/usp/data/verify-pack.ts",
+        "fixtures/usp/D5/gf0-public-plans-v1/manifest.json"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "schemaVersion": "usp-pack-byte-check/1",
+        "packId": "D5",
+        "profile": "gf0-public-plans-v1",
+        "checked": [
+          {
+            "id": "expected.json",
+            "sha256": "2312534f3cb81e85868eb56420b83475ce61380c8e49da016bea9a7c39227318",
+            "bytes": 1726
+          },
+          {
+            "id": "sample-manifest.csv",
+            "sha256": "33292ac8bb855f5aa1984e6a9286782f6a3caa275d64af9b0680dd26abe27be2",
+            "bytes": 1070
+          }
+        ],
+        "unavailable": [
+          {
+            "id": "bihar-magnolia-sanctioned-layout.pdf",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+          },
+          {
+            "id": "haryana-2831-basement-01.pdf",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+          },
+          {
+            "id": "haryana-2831-tower3-plan1.pdf",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+          },
+          {
+            "id": "haryana-2831-tower3-section.pdf",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+          },
+          {
+            "id": "haryana-2079-last-approved.pdf",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed"
+          }
+        ],
+        "totalBytes": 2796,
+        "qualification": "Declared available bytes verified only; no parsing, rendering, permission or workflow qualification."
+      },
+      "stderr": ""
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "tsx",
+        "scripts/usp/data/verify-pack.ts",
+        "fixtures/usp/D5/gf0-multiunit-v1/manifest.json"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "schemaVersion": "usp-pack-byte-check/1",
+        "packId": "D5",
+        "profile": "gf0-multiunit-v1",
+        "checked": [
+          {
+            "id": "swiss-floor-127-164-717.csv",
+            "sha256": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd",
+            "bytes": 27052
+          },
+          {
+            "id": "expected.json",
+            "sha256": "c4a4586e2c6c3223999605f9c58916ee621c25c909519815bbc937124c2e1115",
+            "bytes": 785
+          },
+          {
+            "id": "sample-manifest.csv",
+            "sha256": "2a2ffcec1f18fb5713399541a7d6fcd2a47166cd2939f1141cf3b431d8a5fa10",
+            "bytes": 484
+          }
+        ],
+        "unavailable": [
+          {
+            "id": "swiss-dwellings-geometries-range-0-2097151",
+            "reason": "Raw 2 MiB HTTP byte range retained outside Git; full 792527191-byte published file not acquired"
+          }
+        ],
+        "totalBytes": 28321,
+        "qualification": "Declared available bytes verified only; no parsing, rendering, permission or workflow qualification."
+      },
+      "stderr": ""
+    }
+  ],
+  "artifactHashes": {
+    "acquisition.json": "c9f8c7b1a43b8e0b3ddda0b23a8eb8010592e933a86d2cf1d0353c9ce1858f95",
+    "inspection.json": "e9baf1cb44fbcab9eb3a330e752a5b519381755e0dc82f83e7fac1729893d02e",
+    "report.md": "35427b86b90eacd049381665d3187aeffbabf2e96c161a6df64084d341d1422d"
+  },
+  "limitations": [
+    "RERA reuse permission and source-to-parcel/unit matching are unconfirmed.",
+    "Swiss byte range is only a bounded subset of the published CSV, not the full release.",
+    "No source proves as-built interiors, Indian multi-unit rights or ML accuracy.",
+    "PDF inspection is bounded to named pages; original PDFs and renders remain outside Git.",
+    "Independent reviewer has not accepted this source candidate."
+  ],
+  "unqualifiedClaims": [
+    "as-built plans",
+    "Indian multi-unit rights",
+    "official unit or parcel match",
+    "RERA source reuse/training",
+    "full Swiss source completeness",
+    "GF-DATA pass",
+    "GF0 pass"
+  ]
+}

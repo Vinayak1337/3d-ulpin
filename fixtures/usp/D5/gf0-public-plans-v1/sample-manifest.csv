@@ -1,0 +1,6 @@
+asset_id,source_role,geography,source_revision,local_fixture_bytes,acquisition_stage,inspection_scope,permission,purpose
+bihar-magnolia-sanctioned-layout.pdf,planned villa layout and type architecture,"Begusarai, Bihar, India",drawings V5-01/V5-02 dated 08.06.21,unavailable,acquired,pages 1-2 of 6 rendered; no specific unit match,unconfirmed,test_only
+haryana-2831-basement-01.pdf,planned basement sheet,"Gurugram, Haryana, India",portal upload 29-08-2024,unavailable,acquired,one page rendered,unconfirmed,test_only
+haryana-2831-tower3-plan1.pdf,planned tower floor sheet,"Gurugram, Haryana, India",portal upload 29-08-2024,unavailable,acquired,one page rendered,unconfirmed,test_only
+haryana-2831-tower3-section.pdf,planned tower section,"Gurugram, Haryana, India",sheet Jan-2024; portal upload 29-08-2024,unavailable,acquired,one page rendered,unconfirmed,test_only
+haryana-2079-last-approved.pdf,portal-labelled last approved plan set,"Haryana, India",portal upload 28-06-2023,unavailable,acquired,first page only; full content not inspected,unconfirmed,test_only

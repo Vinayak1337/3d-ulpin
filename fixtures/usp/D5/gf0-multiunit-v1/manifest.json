@@ -1,0 +1,469 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D5",
+  "version": 1,
+  "profile": "gf0-multiunit-v1",
+  "description": "CC BY 4.0 Swiss Dwellings 81-row multi-unit vector test sample from a pinned 2 MiB published-file range; foreign test-only.",
+  "assets": [
+    {
+      "id": "swiss-dwellings-geometries-range-0-2097151",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://zenodo.org/records/7070952/files/geometries.csv"
+      },
+      "sourceVersion": "Zenodo 7070952 v1.0.0, HTTP bytes 0-2097151",
+      "attribution": "Swiss Dwellings authors; Zenodo 10.5281/zenodo.7070952; CC BY 4.0",
+      "permission": {
+        "state": "documented",
+        "reference": "https://zenodo.org/records/7070952, CC BY 4.0",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "unavailable",
+        "reason": "Raw 2 MiB HTTP byte range retained outside Git; full 792527191-byte published file not acquired"
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Swiss Dwellings",
+        "sourceRelease": "Zenodo 7070952 v1.0.0, 2022-09-20",
+        "resourceId": "geometries.csv bytes 0-2097151",
+        "nativeIds": [],
+        "acquiredAt": "2026-09-25T00:42:07.717811Z",
+        "original": {
+          "sha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+          "bytes": 2097152
+        },
+        "parser": {
+          "name": "Python standard csv",
+          "version": null
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "First 2 MiB byte range of a 792527191-byte published CSV; final record truncated and ignored",
+        "licenceFamily": "CC-BY-4.0",
+        "trainingPermission": {
+          "state": "unconfirmed",
+          "reason": "Downstream training eligibility not separately assessed"
+        },
+        "purpose": "test_only",
+        "privacy": "Public de-identified vector geometry; individual privacy review not performed",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "indian_operational_evidence",
+          "legal_unit_boundary",
+          "surveyed_georeference",
+          "vertical_benchmark",
+          "full_source_completeness",
+          "independent_ml_truth"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    },
+    {
+      "id": "swiss-floor-127-164-717.csv",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://zenodo.org/records/7070952/files/geometries.csv"
+      },
+      "sourceVersion": "Zenodo 7070952 v1.0.0; 81-row derived subset",
+      "attribution": "Swiss Dwellings authors; Zenodo 10.5281/zenodo.7070952; CC BY 4.0; filtered by DATA-05",
+      "permission": {
+        "state": "documented",
+        "reference": "https://zenodo.org/records/7070952, CC BY 4.0",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "swiss-floor-127-164-717.csv",
+        "sha256": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd",
+        "bytes": 27052
+      },
+      "dependencies": [
+        "swiss-dwellings-geometries-range-0-2097151"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+        },
+        "parsed": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "Swiss Dwellings",
+        "sourceRelease": "Zenodo 7070952 v1.0.0, 2022-09-20",
+        "resourceId": "geometries.csv bytes 0-2097151",
+        "nativeIds": [
+          "site_id=127",
+          "building_id=164",
+          "floor_id=717",
+          "unit_id=23024",
+          "unit_id=23025"
+        ],
+        "acquiredAt": "2026-09-25T00:42:07.717811Z",
+        "original": {
+          "sha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+          "bytes": 2097152
+        },
+        "parser": {
+          "name": "Python standard csv + bounded WKT POLYGON ring checker",
+          "version": null
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "81 observed rows; two units on one floor of one Swiss building, without full-release completeness claim",
+        "licenceFamily": "CC-BY-4.0",
+        "trainingPermission": {
+          "state": "unconfirmed",
+          "reason": "Downstream training eligibility not separately assessed"
+        },
+        "purpose": "test_only",
+        "privacy": "Public de-identified vector geometry; individual privacy review not performed",
+        "subsetLineage": [
+          {
+            "sourceSha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+            "operation": "From complete CSV records in first 2 MiB range, filter site_id=127, building_id=164, floor_id=717; preserve literal cells and WKT; no coordinate transform",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          }
+        ],
+        "missingCapabilities": [
+          "indian_operational_evidence",
+          "legal_unit_boundary",
+          "surveyed_georeference",
+          "vertical_benchmark",
+          "full_source_completeness",
+          "independent_ml_truth"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "tested": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+          }
+        },
+        "qualificationScope": "Bounded foreign multi-unit vector class/identifier/WKT fixture only; no georeference, legal boundary or ML truth"
+      }
+    },
+    {
+      "id": "expected.json",
+      "mediaType": "application/json",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "DATA-05 source inspection, 2026-09-25"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN DATA-05 bounded source record",
+      "permission": {
+        "state": "documented",
+        "reference": "Project-authored test metadata",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "expected.json",
+        "sha256": "c4a4586e2c6c3223999605f9c58916ee621c25c909519815bbc937124c2e1115",
+        "bytes": 785
+      },
+      "dependencies": [
+        "swiss-floor-127-164-717.csv"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Project-authored evidence"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+        },
+        "parsed": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "project-authored DATA-05 source observation",
+        "sourceRelease": "2026-09-25",
+        "resourceId": null,
+        "nativeIds": [],
+        "acquiredAt": "2026-09-25T00:47:29.577760Z",
+        "original": {
+          "sha256": "c4a4586e2c6c3223999605f9c58916ee621c25c909519815bbc937124c2e1115",
+          "bytes": 785
+        },
+        "parser": {
+          "name": "Python standard json",
+          "version": null
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "Only source observations named by the D5 pack",
+        "licenceFamily": "project-authored",
+        "trainingPermission": {
+          "state": "not_applicable",
+          "reason": "Authored source observation, not a training label"
+        },
+        "purpose": "authored_demo",
+        "privacy": "sanitized source metadata only",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "independent_ml_truth",
+          "cadastral_rights"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    },
+    {
+      "id": "sample-manifest.csv",
+      "mediaType": "text/csv",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "DATA-05 source inspection, 2026-09-25"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN DATA-05 bounded source record",
+      "permission": {
+        "state": "documented",
+        "reference": "Project-authored test metadata",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": null
+      },
+      "content": {
+        "state": "available",
+        "path": "sample-manifest.csv",
+        "sha256": "2a2ffcec1f18fb5713399541a7d6fcd2a47166cd2939f1141cf3b431d8a5fa10",
+        "bytes": 484
+      },
+      "dependencies": [
+        "swiss-floor-127-164-717.csv"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Project-authored evidence"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "project-authored DATA-05 source observation",
+        "sourceRelease": "2026-09-25",
+        "resourceId": null,
+        "nativeIds": [],
+        "acquiredAt": "2026-09-25T00:47:29.548355Z",
+        "original": {
+          "sha256": "2a2ffcec1f18fb5713399541a7d6fcd2a47166cd2939f1141cf3b431d8a5fa10",
+          "bytes": 484
+        },
+        "parser": {
+          "name": "Python standard csv",
+          "version": null
+        },
+        "heightType": null,
+        "benchmark": null,
+        "coverage": "Only source observations named by the D5 pack",
+        "licenceFamily": "project-authored",
+        "trainingPermission": {
+          "state": "not_applicable",
+          "reason": "Authored source observation, not a training label"
+        },
+        "purpose": "authored_demo",
+        "privacy": "sanitized source metadata only",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "independent_ml_truth",
+          "cadastral_rights"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": null
+      }
+    }
+  ],
+  "expectedPath": "expected.json",
+  "expectedCapabilities": [
+    "two_unit_vector_test_sample",
+    "literal_source_class_labels",
+    "source_range_subset_lineage"
+  ],
+  "missingCapabilities": [
+    "indian_operational_evidence",
+    "full_source_completeness",
+    "georeferenced_parcel",
+    "legal_unit_boundary",
+    "independent_ml_truth"
+  ]
+}
