@@ -12,6 +12,8 @@ import hashlib
 import io
 import json
 import math
+import shutil
+import tempfile
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -312,13 +314,54 @@ def build_pack(private: Path) -> dict:
             "manifestSha256": digest((PACK / "manifest.json").read_bytes())}
 
 
+def self_test(private: Path) -> dict:
+    outcomes = []
+    with tempfile.TemporaryDirectory(prefix="data09-hash-mutation-") as temporary:
+        copy = Path(temporary) / "private"
+        shutil.copytree(private, copy)
+        path = copy / "gmda-roads.json"
+        raw = bytearray(path.read_bytes())
+        raw[-2] ^= 1
+        path.write_bytes(raw)
+        try:
+            check(copy)
+        except AssertionError as exc:
+            if "Original byte pin mismatch: gmda-roads.json" not in str(exc):
+                raise
+            outcomes.append("changed official response byte rejected by SHA-256")
+        else:
+            raise AssertionError("Mutated official response was accepted")
+    with tempfile.TemporaryDirectory(prefix="data09-shape-mutation-") as temporary:
+        copy = Path(temporary) / "private"
+        shutil.copytree(private, copy)
+        path = copy / "gmda-roads.json"
+        altered = json.loads(path.read_bytes())
+        altered["features"][0]["geometry"]["paths"] = []
+        new_bytes = canonical(altered)
+        path.write_bytes(new_bytes)
+        receipt_path = copy / "acquisition-receipt.json"
+        receipt = json.loads(receipt_path.read_bytes())
+        receipt["records"]["roads"].update({"sha256": digest(new_bytes), "bytes": len(new_bytes)})
+        receipt_path.write_bytes(canonical(receipt))
+        try:
+            check(copy)
+        except AssertionError as exc:
+            if "Official roads feature missing ID or geometry" not in str(exc):
+                raise
+            outcomes.append("empty official road path rejected even with matching temporary hash")
+        else:
+            raise AssertionError("Empty road geometry was accepted")
+    return {"mutationChecks": outcomes, "sourceOriginalsChanged": False}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=["acquire", "check", "build-pack"])
+    parser.add_argument("mode", choices=["acquire", "check", "build-pack", "self-test"])
     parser.add_argument("--private-root", type=Path, default=PRIVATE)
     args = parser.parse_args()
     value = (acquire(args.private_root) if args.mode == "acquire" else
-             build_pack(args.private_root) if args.mode == "build-pack" else check(args.private_root))
+             build_pack(args.private_root) if args.mode == "build-pack" else
+             self_test(args.private_root) if args.mode == "self-test" else check(args.private_root))
     print(json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2))
 
 
