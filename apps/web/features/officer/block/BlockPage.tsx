@@ -347,7 +347,7 @@ export default function BlockPage({ areaId }: { areaId: string }) {
             )}
           </div>
           {block.preferences.findingsOpen && <FindingsTray block={block} onClose={closeChecks} obscured={sheetOpen} />}
-          <footer className="ui-map-status area-map-readout" aria-label="Map readout" inert={sheetOpen} aria-hidden={sheetOpen}>
+          <footer className="ui-map-status area-map-readout" role="group" aria-label="Map readout" inert={sheetOpen} aria-hidden={sheetOpen}>
             {context.features.some((feature) =>
               String(feature.properties.source_provider || "").includes("OpenStreetMap"),
             ) && (
