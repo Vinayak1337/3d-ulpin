@@ -125,6 +125,7 @@ test('real D1 roof keeps source identity and absent interiors in the shared Stud
   await page.route(sourcePath, route => route.abort('connectionfailed'));
   await page.reload();
   await expect(page.getByRole('button', { name: 'Retry source', exact: true })).toBeVisible();
+  await expect(page.locator('.spatial-loading[role="alert"]')).toHaveCSS('position', 'absolute');
   await expect(page.locator('[data-map-runtime-id]')).toHaveCount(0);
   await expect(page).toHaveURL(new RegExp(`feature=${receipt.featureId}`));
   await page.getByRole('button', { name: 'Close inspector', exact: true }).click();
