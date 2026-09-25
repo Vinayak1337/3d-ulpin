@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T01:10:53.430285+00:00",
+  "updatedAt": "2026-09-25T01:30:35.122828+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -118,9 +118,9 @@
       "observedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
-        "effort": "high"
+        "effort": "xhigh"
       },
-      "status": "assigned_FND-02",
+      "status": "assigned_FND-02_attempt_2",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -441,8 +441,67 @@
         "Locator corrections preserve code; MULTI(2), missing anchors and resolver 422",
         "Actual executed source commit and receipts with remaining unqualified cases explicit"
       ],
-      "status": "dispatched",
+      "status": "corrections_required",
       "reportPath": "docs/evidence/usp/finale/GF-T15/FND-02/report.md",
+      "resultCommit": "716fde1577231f210002a6ad4458bb75e57ee197",
+      "ownershipClarifications": [
+        {
+          "path": "scripts/usp/isolated-live.mjs",
+          "scope": "One GF-T15 command invocation after migration and before disposable runner cleanup; existing lifecycle, isolation and historical checks preserved.",
+          "reason": "Worker requested explicit confirmation for real isolated DB concurrency/rollback execution; already covered by minimal isolated runner registration.",
+          "confirmedAt": "2026-09-25T01:10:53.430186+00:00"
+        }
+      ],
+      "testedCommit": "87568510183d4be50a85fcc8dc1e2e17cc71ad8d",
+      "review": {
+        "verdict": "corrections_required",
+        "independence": "same_family",
+        "report": "docs/evidence/usp/orchestration/FND-02-attempt-1-review.json"
+      }
+    },
+    {
+      "assignmentId": "FND-02",
+      "attempt": 2,
+      "callbackId": "ulpin-FND-02-attempt-2",
+      "objective": "P3/1 immutable project identity, reviewed allocation/lifecycle and derived vertical locator through existing registry transactions",
+      "baseCommit": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/FND-02-project-identity",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "ownership": [
+        "packages/contracts/src/usp identity schema/exports and minimal registry type extensions",
+        "apps/web/lib/server/usp identity services, additive migration, command/snapshot integration",
+        "apps/web/lib/server/registry identity transaction/projection hooks only",
+        "apps/web/app/api/v1/usp/[...path]/route.ts identity command/resolver routes only",
+        "tests/usp-project-identity* and authored identity fixtures",
+        "scripts/usp/gf/GF-T15* and minimal isolated runner registration",
+        "docs/evidence/usp/finale/GF-T15/FND-02/",
+        "packages/contracts/src/usp/domain.ts canonical receipt extension only, preserving existing receipt consumers"
+      ],
+      "exclusions": [
+        "formal UI or redesign",
+        "unrelated registry/ingestion/job/model behavior",
+        "existing data, originals, credentials and historical receipts",
+        "DATA packs and LEAD validator work",
+        "orchestration ledger and release-plan gate promotion",
+        "deployment, remote push and staging/main merges"
+      ],
+      "acceptance": [
+        "H26 A-C/Z1-Z2 and H28 GF-T15 identity cases",
+        "Independent fixed vectors plus exhaustive substitutions and adjacent transpositions",
+        "Real isolated DB two-writer, rollback, stale manifest 409, authorization and idempotency checks",
+        "Cancel/retire/split/merge/boundary_adjustment preserve identity history and exact receipts",
+        "Locator corrections preserve code; MULTI(2), missing anchors and resolver 422",
+        "Actual executed source commit and receipts with remaining unqualified cases explicit"
+      ],
+      "status": "dispatched",
+      "reportPath": "docs/evidence/usp/finale/GF-T15/FND-02/attempt-2/report.md",
       "resultCommit": null,
       "ownershipClarifications": [
         {
@@ -451,6 +510,15 @@
           "reason": "Worker requested explicit confirmation for real isolated DB concurrency/rollback execution; already covered by minimal isolated runner registration.",
           "confirmedAt": "2026-09-25T01:10:53.430186+00:00"
         }
+      ],
+      "continuationCommit": "716fde1577231f210002a6ad4458bb75e57ee197",
+      "correctionFindings": [
+        "FND02-R1",
+        "FND02-R2",
+        "FND02-R3",
+        "FND02-R4",
+        "FND02-R5",
+        "FND02-R6"
       ]
     }
   ],
@@ -1130,9 +1198,9 @@
     }
   ],
   "nextSteps": [
-    "End turn after FND-02 dispatch; resume on callback.",
-    "Review complete identity transaction/route behavior before local integration; do not qualify GF1 while GF0 open.",
-    "Then finish remaining LEAD-01B and GF0 data/preregistration/site-decision work."
+    "End turn after FND-02 attempt-2 correction dispatch; resume on callback.",
+    "Do not integrate attempt 1; verify six review findings and negative-path regression evidence.",
+    "GF0 and independent milestone review remain open."
   ],
   "processedCallbacks": [
     {
@@ -1167,6 +1235,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "90616d7c603e6dc5d530e4503e81cd252c0eabc4",
       "result": "accepted_bounded_source_tests"
+    },
+    {
+      "callbackId": "ulpin-FND-02-attempt-1",
+      "assignmentId": "FND-02",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "716fde1577231f210002a6ad4458bb75e57ee197",
+      "result": "corrections_required_not_integrated"
     }
   ],
   "observations": [
