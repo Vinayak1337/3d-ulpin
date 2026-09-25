@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T20:01:56.130048+00:00",
+  "updatedAt": "2026-09-25T20:16:57.051844+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -89,6 +89,13 @@
         "assignmentId": "FND-04",
         "integrationMethod": "merge preserving both attempts and exact tested ancestry",
         "scope": "Geometry contract/SQL separation, current analytical qualification and participant-complete finding guards; no source accuracy pass"
+      },
+      {
+        "sourceCommit": "363499ca749506ce77db0b452e90c5554ba54a3d",
+        "integrationCommit": "5141475ca3bd7581a1f85a983f0c235481e394bf",
+        "assignmentId": "UI-03",
+        "integrationMethod": "merge preserving all attempts and exact tested ancestry",
+        "scope": "Map composition/record encodings, honest unplaced/underground states, historical regression; full card qualification remains open"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -212,7 +219,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_UI-03_attempt_3",
+      "status": "available",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1698,7 +1705,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "dispatched",
+      "status": "accepted_bounded_map_presentation_card_partial",
       "ownership": [
         "Affected area-map presentation in apps/web/features/officer/block/ (BlockPage, rails, MapPlan, FindingsTray and map-specific CSS) and new replacement map components; migrate consumers before deleting old files.",
         "apps/web/features/studio/product/SavedSceneViewport.tsx and shared map presentation/state adapters only as needed by UI-03; preserve shared Cesium lifecycle, selection/cache contracts.",
@@ -1720,11 +1727,22 @@
         "Inventory replaced/retained/pending UI surfaces; ui-design-check report, relevant tests/typecheck and real route before/after captures; do not claim unexecuted production build, official source accuracy or full runtime gate pass."
       ],
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-3/report.md",
-      "resultCommit": null,
+      "resultCommit": "363499ca749506ce77db0b452e90c5554ba54a3d",
       "continuationCommit": "65cc57fd5b8d42015c1e8d9a81b46166809510dc",
       "correctionFindings": [
         "UI03-R2b",
         "UI03-R1b"
+      ],
+      "codeCommit": "3c882b0dec484d5fb9e8c23f98d49ee19faf297f",
+      "reviewPath": "docs/evidence/usp/orchestration/UI-03-attempt-3-review.json",
+      "remaining": [
+        "Qualified official DATA09 reference scene",
+        "Backend sourced ground relation and positive underground behavior",
+        "Mixed-datum, real signed-elevation and Indian level examples",
+        "3D uncertainty hatch and full H22 encodings",
+        "Numeric camera V-shot and actual browser zoom",
+        "Production build (guard blocked unrelated port3000)",
+        "Independent cross-family/human milestone review"
       ]
     }
   ],
@@ -2473,9 +2491,9 @@
     }
   ],
   "nextSteps": [
-    "Review focused UI-03 attempt3 source visibility/underground boundary and desktop zoom occlusion.",
-    "Apply UI-08 checks to subsequent UI-bearing cards; no separate legacy polishing pass.",
-    "Keep source/scene/independent runtime gate qualification pending."
+    "Dispatch FND-06 shared redaction, provider egress and loopback Host validation.",
+    "Continue UI replacement with dependent screen cards; retain UI-03 remaining obligations.",
+    "All runtime and independent milestone qualification remain pending."
   ],
   "processedCallbacks": [
     {
@@ -2652,6 +2670,14 @@
       "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "resultCommit": "65cc57fd5b8d42015c1e8d9a81b46166809510dc",
       "result": "focused_corrections_required_not_integrated"
+    },
+    {
+      "callbackId": "ulpin-UI-03-attempt-3",
+      "assignmentId": "UI-03",
+      "attempt": 3,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "363499ca749506ce77db0b452e90c5554ba54a3d",
+      "result": "accepted_bounded_map_presentation_card_partial"
     }
   ],
   "observations": [
@@ -2877,7 +2903,7 @@
       "card": "UI-03",
       "title": "Map styling and honest geometry",
       "needs": "UI-01, FND-04",
-      "status": "dispatched_map_replacement_within_card"
+      "status": "partial_map_implementation_accepted_qualification_open"
     },
     {
       "card": "UI-04",
