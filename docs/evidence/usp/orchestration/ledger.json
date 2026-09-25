@@ -15,7 +15,7 @@
   "integration": {
     "branch": "feat/ulpin-finale-full-product",
     "worktree": "/Users/vinayak/.codex/worktrees/ulpin-finale-orchestration/3D Ulpin",
-    "acceptedStagingBase": "b2d2cc657c96f994e8b367762e1fd8f3f10c68c8",
+    "acceptedStagingBase": "604ab6521e75618fe57dd284bfaa84b97a133dbf",
     "recordedHistoricalBaseline": "45d033baae7ec4e5a572d82459b0062c70a12c95",
     "target": "staging",
     "mainPolicy": "unchanged",
@@ -44,6 +44,12 @@
         "assignmentId": "DATA-05",
         "integrationMethod": "merge preserving tested-commit ancestry",
         "scope": "5 hash-pinned external RERA PDFs and 81-row foreign two-unit vector parser subset"
+      },
+      {
+        "sourceCommit": "545c0301dadd11393c9a0b97dfe1ee76c472ff4b",
+        "assignmentId": "USER-PLAN-UPDATE",
+        "integrationMethod": "merge preserving user staging changes",
+        "scope": "Updated design system, mockup references, H30, release requirements; plan validation only"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -535,7 +541,9 @@
         "FND02-R4",
         "FND02-R5",
         "FND02-R6"
-      ]
+      ],
+      "planRefreshBase": "604ab6521e75618fe57dd284bfaa84b97a133dbf",
+      "resumeReason": "Worker acknowledged corrections without executing; user requested continuing full implementation on updated UI/H30 plans."
     }
   ],
   "capabilityChecklist": [
