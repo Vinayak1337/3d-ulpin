@@ -14,6 +14,7 @@ import { prepareProposal, commitProposal } from '@/lib/server/usp/commands';
 import { createPacket0, readExactPart, readPacket0, readPacket0Receipt } from '@/lib/server/usp/packet0';
 import { assignProjectCode, mutateProjectIdentity, prepareProjectIdentityReview,
   resolveProjectIdentity } from '@/lib/server/usp/project-identity';
+import { compareCityJson, exportCityJson } from '@/lib/server/usp/exchange';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -115,6 +116,12 @@ async function handle(request: Request, context: Context) {
       const input = parseUsp(ResolveProjectIdentitySchema, body);
       scope = input.scope;
       data = await resolveProjectIdentity(ctx, input);
+    } else if (path.join('/') === 'exchange/cityjson/export') {
+      data = await exportCityJson(ctx, body);
+      scope = (body as { scope?: unknown }).scope;
+    } else if (path.join('/') === 'exchange/cityjson/compare') {
+      data = await compareCityJson(ctx, body);
+      scope = (body as { scope?: unknown }).scope;
     } else if (path.join('/') === 'packets') {
       const input = parseUsp(UspPacket0RequestSchema, body);
       data = await createPacket0(ctx, input);

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "ulpin-plan-alignment-receipt/1",
+  "kind": "documentation_and_validator_only",
+  "status": "passed",
+  "assignmentId": "FND-03",
+  "attempt": 1,
+  "baseCommit": "8c52896cd2c5d47327e79fc12d7018c4133428a9",
+  "codeCommit": "297510c493c58478cc04e98c3ff70afcb71e7298",
+  "checkedAt": "2026-09-25T21:02:20Z",
+  "agent": {
+    "product": "Codex",
+    "requestedModel": "gpt-6-sol",
+    "requestedEffort": "high",
+    "observedModel": null,
+    "observedEffort": null
+  },
+  "filesSha256": {
+    "AGENTS.md": "cf2922684913b816f5b5ac3d5cf4a21e8e66853e92ab85e41d7ef990dac65e09",
+    "README.md": "e21576f851cb92b4713bb62819476d2632e4d537e8ebbe5bca3eda0e2ea76f48",
+    "docs/engineering-plan/CURRENT_WORK.md": "753d576248178433868dc33cd0d3f64dafef2bb84429b3c3ebfcafa6b45a643d",
+    "docs/usp-agent-handoffs/00-README.md": "be9bb5cb3d96870f27945b21860d0c7d0d9784b6ffd0a6f9c48cde04a292400a",
+    "docs/usp-agent-handoffs/01-shared-contracts-and-ownership.md": "8d86645b78070b281d10b158e8f19ad718b60552425012f8a6d7d289499dc9e0",
+    "docs/usp-agent-handoffs/02-lead-agent-execution.md": "b9aea141c616d90e6efd5d5b2c6a826873cd0c199dae74b315f067475ec12b19",
+    "docs/usp-agent-handoffs/10-scoped-evidence-packets.md": "db8e6911a35d69132f9fc8dc6d84a3e8fd28d9c795e35b21565013bb43577132",
+    "docs/usp-agent-handoffs/11-evidence-readiness-and-review-queue.md": "fb621f513e607eec2b823cfa50615afe801635893af59548ea5a49266413d95e",
+    "docs/usp-agent-handoffs/12-rights-aware-spatial-findings.md": "b103d7c719d192c4dfd5de155ba07e6d9b8332622706ff6d1698e3482132a580",
+    "docs/usp-agent-handoffs/13-citizen-evidence-and-corrections.md": "b05df0d6cb385165e5e6fdf8a2d2dccafa425cde4d8f7ca91100298bd6181516",
+    "docs/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md": "8a15f71defc2028637773030e933cf6dc1a1c6673ea6e1d342edc8fe6825def2",
+    "docs/usp-agent-handoffs/15-property-history-and-comparison.md": "47fa4a8e97c890810ca4c2b78520dd4bb45413fae830b0d60044bdbb05b24244",
+    "docs/usp-agent-handoffs/16-shared-spaces-and-vertical-rights.md": "ddb773d0a183f59b33c05b20916e1c8948734cfb85609e0d20779d2dea53a088",
+    "docs/usp-agent-handoffs/17-infrastructure-impact-screening.md": "61f93797cee3f5328656c2e80ac6654d114340023877ed1de8c968f91d5aa13e",
+    "docs/usp-agent-handoffs/18-grounded-assistance-and-mcp.md": "5ea270e3d712d5cd8a2ec130ea003725455c93e89287edfc6890f93a7299f277",
+    "docs/usp-agent-handoffs/19-india-contained-deployment.md": "8371f8ddd8586fa8ff74eb8e9207b403b91fdee1e743818f60dfbfefcccb5a90",
+    "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md": "031cecedf36e6556ab514e735210150b3483d6d1c91b61e9eeced85a3dfc1ac4",
+    "docs/usp-agent-handoffs/21-concurrent-schema-learning.md": "85b33451b8993686545db939ac1efd1d52b34a5b2d235d86b12dba9e33fc6f2b",
+    "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md": "8dfe5c8eb0de987bb697470a12a3b6e6fd419582c8bd287ad42dc60a3679d70a",
+    "docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md": "7da45d7cfe708ca7e4be84e0d0ca26c061b76065cee3c995c65ba2a726f053a1",
+    "docs/usp-agent-handoffs/24-product-method-and-ppt.md": "8fb292415c6ddaee9ab31631004bfc751072a74a7d431db61d32d4a7534f5879",
+    "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md": "dbcdc2c90559cb9730682878ffe28854f6994630351732c9f6f209d4af4aaf5e",
+    "docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md": "cbe85ecef3c88c557f071e13af8c534a1b9143777ad3dbf2ccad02706914b801",
+    "docs/usp-agent-handoffs/27-domain-ai-and-cadastral-checks.md": "bcb864bb727d4b6749b065226de2f325ed17d4c9c4ba3f7c375395ffbcded6cc",
+    "docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md": "2e6e8648586a261cda6e33c69e2dcaf78733acdefc32640f48e49d12b75a726b",
+    "docs/usp-agent-handoffs/29-agent-task-cards.md": "287c9ae97d7880ea9f003936ac915df787148ba49fa0739c5dd14fe59592d6d6",
+    "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md": "1749ab6c26a6af65822350b51069512b3c0b59780c7f1425627832cebe23d605",
+    "docs/usp-agent-handoffs/90-required-human-tasks.md": "d6c314a598b2d9cbe68168f0684aaecc26238985af456987f79bc60bfe6c7cca",
+    "docs/usp-agent-handoffs/97-review-findings-and-alignment.md": "c32394dff7181ff7cb9c9fe7458dcaf765b48927c126ede285a785c6b99b1d66",
+    "docs/usp-agent-handoffs/98-engineering-readiness-audit.md": "1eab01ad8dafd9babb99045b74af63683ea7230be51821ec2162bff0a9401d9f",
+    "docs/usp-agent-handoffs/99-ui-ux-and-integration.md": "d484f08719393ab78e2fdc646a32b5a0ea16a98be010c7b6446f4fe9cf5e40e9",
+    "docs/usp-agent-handoffs/current-delivery-policy.md": "d968f38062e2eaffa4ff62a7cc4fff2a0093c5d981c0f73438c4d69120f5f6bf",
+    "docs/usp-agent-handoffs/release-plan.json": "586c06d1e43efca6020d55e4490e2571f60c9519d56e755c184380abe40c63c0",
+    "docs/usp-agent-handoffs/tools/GOVERNANCE.md": "e1f6ef58a96d3a27d7653865c12741c2ab015fa9bb394e60bc3f66621718277b",
+    "docs/usp-agent-handoffs/tools/plan_governance.py": "73d08750e6c0515d79919748bc3a2ab99a979d0c7b056bd55bd3aa5351c3289a",
+    "docs/usp-agent-handoffs/tools/tests/test_validate_handoffs.py": "e1581b517b6152376f34a9a4b34dd5d41e50a58b36d0e4430844e3f3fda70999",
+    "docs/usp-agent-handoffs/tools/validate_handoffs.py": "ae97f841a443b330b714dd8719bdf3f9051e2e94ea3b2c669cd85970beef3112"
+  },
+  "checks": [
+    {
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+      "exitCode": 0,
+      "stdout": "PASS: active document links/anchors, owners/tests, release DAG, baseline and next gate\nDocument consistency only; no application/runtime gate is passed by this validator.\n",
+      "stderr": "",
+      "note": "Executed against identical plan and validator input bytes immediately before the final feature-only commit amend."
+    }
+  ],
+  "runtimeGatesPassed": [],
+  "limitations": [
+    "Document consistency only; no FND-03 runtime, source or standards validation is implied."
+  ]
+}
