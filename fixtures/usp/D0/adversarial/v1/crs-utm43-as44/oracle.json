@@ -13,8 +13,10 @@
     "crs_status": "crs_unverified",
     "known_control_residual": "fails for 44N declaration; zone central meridian differs by 6 degrees",
     "no_zone_inference_from_ranges": true,
+    "numeric_derivation": "6 degrees * 111320 m/degree * cos(28.4 degrees) is about 587 km; lower bound 500 km",
     "publication": "blocked",
-    "synthetic_control_count": 3
+    "synthetic_control_count": 3,
+    "synthetic_control_residual_lower_bound_m": 500000
   },
   "files": [
     {
