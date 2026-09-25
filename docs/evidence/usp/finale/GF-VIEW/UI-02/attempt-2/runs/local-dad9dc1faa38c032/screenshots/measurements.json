@@ -1,0 +1,707 @@
+{
+  "areaId": "5b8391ac-056e-4512-ab20-70b2cf937441",
+  "selectedFeatureId": "674b69e2-5cbe-49af-9580-6ed78cdeaffb",
+  "runtimeId": "1",
+  "camera": {
+    "longitude": 1.3125762538550492,
+    "latitude": 0.4969984439408631,
+    "height": 90.46409301285222,
+    "heading": 5.846855753948256,
+    "pitch": -0.8377701364268857,
+    "roll": 1.2071669885926894e-8
+  },
+  "measurements": [
+    {
+      "label": "1440-light",
+      "viewport": 1440,
+      "overflow": 0,
+      "targets": [
+        {
+          "name": "/",
+          "width": 330,
+          "height": 44,
+          "x": 544.203125,
+          "right": 874.203125,
+          "hit": true
+        },
+        {
+          "name": "Choose an area",
+          "width": 165,
+          "height": 44,
+          "x": 886.203125,
+          "right": 1051.203125,
+          "hit": true
+        },
+        {
+          "name": "Use dark theme",
+          "width": 67.859375,
+          "height": 44,
+          "x": 1198.03125,
+          "right": 1265.890625,
+          "hit": true
+        },
+        {
+          "name": "Local workspace status",
+          "width": 44,
+          "height": 44,
+          "x": 1277.890625,
+          "right": 1321.890625,
+          "hit": true
+        },
+        {
+          "name": "Back to all areas",
+          "width": 44,
+          "height": 44,
+          "x": 12,
+          "right": 56,
+          "hit": true
+        },
+        {
+          "name": "Add files",
+          "width": 91.859375,
+          "height": 44,
+          "x": 888.09375,
+          "right": 979.953125,
+          "hit": true
+        },
+        {
+          "name": "Export",
+          "width": 84.046875,
+          "height": 44,
+          "x": 983.953125,
+          "right": 1068,
+          "hit": true
+        },
+        {
+          "name": "3D",
+          "width": 61.625,
+          "height": 44,
+          "x": 16,
+          "right": 77.625,
+          "hit": true
+        },
+        {
+          "name": "2D Map",
+          "width": 67.75,
+          "height": 44,
+          "x": 77.625,
+          "right": 145.375,
+          "hit": true
+        },
+        {
+          "name": "Layers",
+          "width": 73.625,
+          "height": 44,
+          "x": 158.375,
+          "right": 232,
+          "hit": true
+        },
+        {
+          "name": "Spaces",
+          "width": 75.984375,
+          "height": 44,
+          "x": 234,
+          "right": 309.984375,
+          "hit": true
+        },
+        {
+          "name": "Sources",
+          "width": 81.265625,
+          "height": 44,
+          "x": 311.984375,
+          "right": 393.25,
+          "hit": true
+        },
+        {
+          "name": "Checks",
+          "width": 76.6875,
+          "height": 44,
+          "x": 395.25,
+          "right": 471.9375,
+          "hit": true
+        },
+        {
+          "name": "Fit block",
+          "width": 98.578125,
+          "height": 44,
+          "x": 920.421875,
+          "right": 1019,
+          "hit": true
+        },
+        {
+          "name": "Focus selected property",
+          "width": 44,
+          "height": 44,
+          "x": 1024,
+          "right": 1068,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "label": "light-evidence-coverage",
+      "text": "rgb(49, 69, 77)",
+      "background": [
+        255,
+        255,
+        255
+      ],
+      "ratio": 10.052624502308138
+    },
+    {
+      "label": "light-layer-appearance",
+      "text": "rgb(49, 69, 77)",
+      "background": [
+        255,
+        255,
+        255
+      ],
+      "ratio": 10.052624502308138
+    },
+    {
+      "label": "dark-layer-appearance",
+      "text": "rgb(195, 208, 212)",
+      "background": [
+        20,
+        32,
+        36
+      ],
+      "ratio": 10.535115485542693
+    },
+    {
+      "label": "dark-evidence-coverage",
+      "text": "rgb(195, 208, 212)",
+      "background": [
+        20,
+        32,
+        36
+      ],
+      "ratio": 10.535115485542693
+    },
+    {
+      "label": "390-dark",
+      "viewport": 390,
+      "overflow": 0,
+      "targets": [
+        {
+          "name": "/",
+          "width": 111.328125,
+          "height": 44,
+          "x": 80.671875,
+          "right": 192,
+          "hit": true
+        },
+        {
+          "name": "Choose an area",
+          "width": 44,
+          "height": 44,
+          "x": 196,
+          "right": 240,
+          "hit": true
+        },
+        {
+          "name": "Use light theme",
+          "width": 44,
+          "height": 44,
+          "x": 244,
+          "right": 288,
+          "hit": true
+        },
+        {
+          "name": "Local workspace status",
+          "width": 44,
+          "height": 44,
+          "x": 292,
+          "right": 336,
+          "hit": true
+        },
+        {
+          "name": "Main navigation",
+          "width": 44,
+          "height": 44,
+          "x": 340,
+          "right": 384,
+          "hit": true
+        },
+        {
+          "name": "Back to all areas",
+          "width": 44,
+          "height": 44,
+          "x": 8,
+          "right": 52,
+          "hit": true
+        },
+        {
+          "name": "Add files",
+          "width": 92.859375,
+          "height": 44,
+          "x": 202.09375,
+          "right": 294.953125,
+          "hit": true
+        },
+        {
+          "name": "Export",
+          "width": 81.046875,
+          "height": 44,
+          "x": 300.953125,
+          "right": 382,
+          "hit": true
+        },
+        {
+          "name": "3D",
+          "width": 47.625,
+          "height": 44,
+          "x": 9,
+          "right": 56.625,
+          "hit": true
+        },
+        {
+          "name": "2D Map",
+          "width": 53.75,
+          "height": 44,
+          "x": 56.625,
+          "right": 110.375,
+          "hit": true
+        },
+        {
+          "name": "Layers",
+          "width": 91.5,
+          "height": 44,
+          "x": 9,
+          "right": 100.5,
+          "hit": true
+        },
+        {
+          "name": "Spaces",
+          "width": 91.5,
+          "height": 44,
+          "x": 102.5,
+          "right": 194,
+          "hit": true
+        },
+        {
+          "name": "Sources",
+          "width": 91.5,
+          "height": 44,
+          "x": 196,
+          "right": 287.5,
+          "hit": true
+        },
+        {
+          "name": "Checks",
+          "width": 91.5,
+          "height": 44,
+          "x": 289.5,
+          "right": 381,
+          "hit": true
+        },
+        {
+          "name": "Fit block",
+          "width": 80.578125,
+          "height": 44,
+          "x": 255.421875,
+          "right": 336,
+          "hit": true
+        },
+        {
+          "name": "Focus selected property",
+          "width": 44,
+          "height": 44,
+          "x": 340,
+          "right": 384,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "label": "620-dark",
+      "viewport": 620,
+      "overflow": 0,
+      "targets": [
+        {
+          "name": "/",
+          "width": 330,
+          "height": 44,
+          "x": 86.34375,
+          "right": 416.34375,
+          "hit": true
+        },
+        {
+          "name": "Choose an area",
+          "width": 44,
+          "height": 44,
+          "x": 420.34375,
+          "right": 464.34375,
+          "hit": true
+        },
+        {
+          "name": "Use light theme",
+          "width": 44,
+          "height": 44,
+          "x": 468.34375,
+          "right": 512.34375,
+          "hit": true
+        },
+        {
+          "name": "Local workspace status",
+          "width": 44,
+          "height": 44,
+          "x": 522,
+          "right": 566,
+          "hit": true
+        },
+        {
+          "name": "Main navigation",
+          "width": 44,
+          "height": 44,
+          "x": 570,
+          "right": 614,
+          "hit": true
+        },
+        {
+          "name": "Back to all areas",
+          "width": 44,
+          "height": 44,
+          "x": 8,
+          "right": 52,
+          "hit": true
+        },
+        {
+          "name": "Add files",
+          "width": 92.859375,
+          "height": 44,
+          "x": 432.09375,
+          "right": 524.953125,
+          "hit": true
+        },
+        {
+          "name": "Export",
+          "width": 81.046875,
+          "height": 44,
+          "x": 530.953125,
+          "right": 612,
+          "hit": true
+        },
+        {
+          "name": "3D",
+          "width": 47.625,
+          "height": 44,
+          "x": 9,
+          "right": 56.625,
+          "hit": true
+        },
+        {
+          "name": "2D Map",
+          "width": 53.75,
+          "height": 44,
+          "x": 56.625,
+          "right": 110.375,
+          "hit": true
+        },
+        {
+          "name": "Layers",
+          "width": 149,
+          "height": 44,
+          "x": 9,
+          "right": 158,
+          "hit": true
+        },
+        {
+          "name": "Spaces",
+          "width": 149,
+          "height": 44,
+          "x": 160,
+          "right": 309,
+          "hit": true
+        },
+        {
+          "name": "Sources",
+          "width": 149,
+          "height": 44,
+          "x": 311,
+          "right": 460,
+          "hit": true
+        },
+        {
+          "name": "Checks",
+          "width": 149,
+          "height": 44,
+          "x": 462,
+          "right": 611,
+          "hit": true
+        },
+        {
+          "name": "Fit block",
+          "width": 80.578125,
+          "height": 44,
+          "x": 485.421875,
+          "right": 566,
+          "hit": true
+        },
+        {
+          "name": "Focus selected property",
+          "width": 44,
+          "height": 44,
+          "x": 570,
+          "right": 614,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "label": "900-dark",
+      "viewport": 900,
+      "overflow": 0,
+      "targets": [
+        {
+          "name": "/",
+          "width": 330,
+          "height": 44,
+          "x": 362.8125,
+          "right": 692.8125,
+          "hit": true
+        },
+        {
+          "name": "Choose an area",
+          "width": 44,
+          "height": 44,
+          "x": 700.8125,
+          "right": 744.8125,
+          "hit": true
+        },
+        {
+          "name": "Use light theme",
+          "width": 36,
+          "height": 44,
+          "x": 752.8125,
+          "right": 788.8125,
+          "hit": true
+        },
+        {
+          "name": "Local workspace status",
+          "width": 44,
+          "height": 44,
+          "x": 842,
+          "right": 886,
+          "hit": true
+        },
+        {
+          "name": "Back to all areas",
+          "width": 44,
+          "height": 44,
+          "x": 12,
+          "right": 56,
+          "hit": true
+        },
+        {
+          "name": "Add files",
+          "width": 91.859375,
+          "height": 44,
+          "x": 708.09375,
+          "right": 799.953125,
+          "hit": true
+        },
+        {
+          "name": "Export",
+          "width": 84.046875,
+          "height": 44,
+          "x": 803.953125,
+          "right": 888,
+          "hit": true
+        },
+        {
+          "name": "3D",
+          "width": 61.625,
+          "height": 44,
+          "x": 16,
+          "right": 77.625,
+          "hit": true
+        },
+        {
+          "name": "2D Map",
+          "width": 67.75,
+          "height": 44,
+          "x": 77.625,
+          "right": 145.375,
+          "hit": true
+        },
+        {
+          "name": "Layers",
+          "width": 44,
+          "height": 44,
+          "x": 158.375,
+          "right": 202.375,
+          "hit": true
+        },
+        {
+          "name": "Spaces",
+          "width": 44,
+          "height": 44,
+          "x": 204.375,
+          "right": 248.375,
+          "hit": true
+        },
+        {
+          "name": "Sources",
+          "width": 44,
+          "height": 44,
+          "x": 250.375,
+          "right": 294.375,
+          "hit": true
+        },
+        {
+          "name": "Checks",
+          "width": 44,
+          "height": 44,
+          "x": 296.375,
+          "right": 340.375,
+          "hit": true
+        },
+        {
+          "name": "Fit block",
+          "width": 90.578125,
+          "height": 44,
+          "x": 748.421875,
+          "right": 839,
+          "hit": true
+        },
+        {
+          "name": "Focus selected property",
+          "width": 44,
+          "height": 44,
+          "x": 844,
+          "right": 888,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "label": "1440-zoom-200-dark",
+      "viewport": 1440,
+      "overflow": 0,
+      "targets": [
+        {
+          "name": "/",
+          "width": 260,
+          "height": 88,
+          "x": 782.203125,
+          "right": 1042.203125,
+          "hit": true
+        },
+        {
+          "name": "Choose an area",
+          "width": 330,
+          "height": 88,
+          "x": 1066.203125,
+          "right": 1396.203125,
+          "hit": true
+        },
+        {
+          "name": "Use light theme",
+          "width": 139.03125,
+          "height": 88,
+          "x": 1689.859375,
+          "right": 1828.890625,
+          "hit": false
+        },
+        {
+          "name": "Local workspace status",
+          "width": 88,
+          "height": 88,
+          "x": 1852.890625,
+          "right": 1940.890625,
+          "hit": false
+        },
+        {
+          "name": "Back to all areas",
+          "width": 88,
+          "height": 88,
+          "x": 24,
+          "right": 112,
+          "hit": true
+        },
+        {
+          "name": "Add files",
+          "width": 183.703125,
+          "height": 88,
+          "x": 1056.21875,
+          "right": 1239.921875,
+          "hit": true
+        },
+        {
+          "name": "Export",
+          "width": 168.078125,
+          "height": 88,
+          "x": 1247.921875,
+          "right": 1416,
+          "hit": true
+        },
+        {
+          "name": "3D",
+          "width": 123.25,
+          "height": 88,
+          "x": 32,
+          "right": 155.25,
+          "hit": true
+        },
+        {
+          "name": "2D Map",
+          "width": 135.484375,
+          "height": 88,
+          "x": 155.25,
+          "right": 290.734375,
+          "hit": true
+        },
+        {
+          "name": "Layers",
+          "width": 147.234375,
+          "height": 88,
+          "x": 316.734375,
+          "right": 463.96875,
+          "hit": true
+        },
+        {
+          "name": "Spaces",
+          "width": 151.953125,
+          "height": 88,
+          "x": 467.96875,
+          "right": 619.921875,
+          "hit": true
+        },
+        {
+          "name": "Sources",
+          "width": 162.515625,
+          "height": 88,
+          "x": 623.921875,
+          "right": 786.4375,
+          "hit": true
+        },
+        {
+          "name": "Checks",
+          "width": 153.375,
+          "height": 88,
+          "x": 790.4375,
+          "right": 943.8125,
+          "hit": true
+        },
+        {
+          "name": "Fit block",
+          "width": 197.140625,
+          "height": 88,
+          "x": 1120.859375,
+          "right": 1318,
+          "hit": true
+        },
+        {
+          "name": "Focus selected property",
+          "width": 88,
+          "height": 88,
+          "x": 1328,
+          "right": 1416,
+          "hit": true
+        }
+      ]
+    }
+  ],
+  "pageErrors": []
+}
