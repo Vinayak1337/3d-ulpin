@@ -227,7 +227,10 @@ try {
   report.checks.push({ name: 'd1-replay-preservation', tables: beforeD1Replay });
   await command('ui-01-foundations-browser', 'pnpm', ['exec', 'playwright', 'test',
     'tests/e2e/usp-ui-foundations.spec.ts'],
-    { env: { ...d0Env, ULPIN_UI01_SCREENSHOT_DIR: resolve(root, 'docs/evidence/usp/finale/GF-VIEW/UI-01/screenshots') }, timeout: 180000 });
+    { env: { ...d0Env,
+      ULPIN_UI01_SCREENSHOT_DIR: resolve(root, `docs/evidence/usp/finale/GF-VIEW/UI-01/attempt-2/runs/${scope.id}/screenshots`),
+      ULPIN_BROWSER_REPORT: resolve(root, `docs/evidence/usp/finale/GF-VIEW/UI-01/attempt-2/runs/${scope.id}/browser-report.json`),
+    }, timeout: 180000 });
   report.checks.push({ name: 'ui-01-fonts-contrast-and-hindi',
     browser: 'tests/e2e/usp-ui-foundations.spec.ts passed against production server' });
   await command('d0-d1-studio-browser', 'pnpm', ['exec', 'playwright', 'test',
