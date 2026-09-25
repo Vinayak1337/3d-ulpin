@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "ulpin-bounded-review/1",
+  "assignmentId": "FND-04",
+  "attempt": 2,
+  "reviewedAt": "2026-09-25T17:30:51.851946+00:00",
+  "reviewer": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "independence": "same_family"
+  },
+  "producerReported": {
+    "product": "Codex",
+    "model": "gpt-6-astra",
+    "effort": "high"
+  },
+  "codeCommit": "051584595fabbd1a42480233c7c2f7ea05984ca6",
+  "resultCommit": "57bbc72a4f9f148c6f94017219cb09bd9b6ab42a",
+  "integrationCommit": "e369b02ded4ea21e3415ffa62ed5d143b079e908",
+  "verdict": "accepted_bounded_geometry_boundary",
+  "resolvedFindings": [
+    "FND04-R1",
+    "FND04-R2"
+  ],
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-*.test.ts tests/registry*.test.ts",
+      "exitCode": 0,
+      "tests": 136
+    },
+    {
+      "command": "pnpm test:register-scope",
+      "exitCode": 0,
+      "tests": 3
+    },
+    {
+      "command": "node scripts/usp/gf/FND-04-isolated.mjs",
+      "exitCode": 0,
+      "freshChecks": 21,
+      "retainedChecks": 24,
+      "preservedTables": 44
+    },
+    {
+      "command": "python3 docs/usp-agent-handoffs/tools/validate_handoffs.py",
+      "exitCode": 0
+    },
+    {
+      "command": "Lead code review, ancestry, whitespace and hash verification",
+      "exitCode": 0,
+      "sourceHashes": 20,
+      "artifactHashes": 7
+    }
+  ],
+  "filesSha256": {
+    "docs/evidence/usp/orchestration/FND-04-attempt-2-lead/fresh.json": "e71f17464ba4de0ecdcb47e2afe99b76fcecb24858e0255b47172b58136141a1",
+    "docs/evidence/usp/orchestration/FND-04-attempt-2-lead/retained.json": "255535c58b90fe5f61db457aad7d02fb9d0704c91df26feb47e693bea531b99d",
+    "docs/evidence/usp/orchestration/FND-04-attempt-2-lead/run.json": "99d67232f192e70e866ef6ee55e9eb67fd3b3532b529449f2f87b67214f8b7a5"
+  },
+  "limits": [
+    "Same-family engineering review only; independent milestone review required",
+    "No real enabled qualifier or positive official-source analytical accuracy pass",
+    "Legacy unqualified analytical checks/printable exports now abstain; source/history inspection preserved",
+    "Display store empty; no compiler/rendering/asset round trip qualification",
+    "SQL ACLs proven for purpose roles, not against privileged administrator",
+    "No UI/browser, GPU, provider or deployment qualification; no release gate promoted"
+  ]
+}
