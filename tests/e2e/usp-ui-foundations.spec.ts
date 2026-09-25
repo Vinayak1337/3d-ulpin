@@ -91,11 +91,11 @@ async function visibleControls(page: Page) {
 
 function assertControls(samples: ContrastSample[], theme: string) {
   for (const sample of samples) {
-    expect(sample.enabled, `${theme} ${sample.name} must be enabled`).toBe(true);
-    expect(sample.opacity, `${theme} ${sample.name} opacity`).toBe(1);
-    expect(sample.text, `${theme} ${sample.name} text`).toBeGreaterThanOrEqual(4.5);
-    if (sample.icon !== null) expect(sample.icon, `${theme} ${sample.name} icon`).toBeGreaterThanOrEqual(3);
-    if (sample.boundary !== null) expect(sample.boundary, `${theme} ${sample.name} border`).toBeGreaterThanOrEqual(3);
+    expect.soft(sample.enabled, `${theme} ${sample.name} must be enabled`).toBe(true);
+    expect.soft(sample.opacity, `${theme} ${sample.name} opacity`).toBe(1);
+    expect.soft(sample.text, `${theme} ${sample.name} text`).toBeGreaterThanOrEqual(4.5);
+    if (sample.icon !== null) expect.soft(sample.icon, `${theme} ${sample.name} icon`).toBeGreaterThanOrEqual(3);
+    if (sample.boundary !== null) expect.soft(sample.boundary, `${theme} ${sample.name} border`).toBeGreaterThanOrEqual(3);
   }
 }
 
@@ -115,6 +115,9 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
   const screenshots = process.env.ULPIN_UI01_SCREENSHOT_DIR;
   if (screenshots) await mkdir(screenshots, { recursive: true });
   const diagnostics: Record<string, unknown> = { themes: [] };
+  const saveMeasurements = async () => {
+    if (screenshots) await writeFile(join(screenshots, 'measurements.json'), JSON.stringify(diagnostics, null, 2) + '\n');
+  };
 
   for (const theme of ['light', 'dark'] as const) {
     await page.locator('.ulpin-app').evaluate((element, selected) => {
@@ -179,6 +182,7 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
     expect(controls.every(sample => sample.runningAnimations === 0), `${theme} controls settled`).toBe(true);
     (diagnostics.themes as unknown[]).push({ theme, immediate, tokens: result, controls });
     if (screenshots) await page.screenshot({ path: join(screenshots, `studio-${theme}-desktop.png`) });
+    await saveMeasurements();
   }
 
   const addFiles = page.getByRole('link', { name: 'Add files' });
@@ -189,12 +193,13 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
   await addFiles.focus();
   await page.keyboard.press('Tab');
   const exportButton = page.getByRole('button', { name: 'Export', exact: true });
-  await expect(exportButton).toBeFocused();
+  await expect.soft(exportButton).toBeFocused();
   const focused = await sampleControl(exportButton, 'Export keyboard focus');
-  expect(await exportButton.evaluate(element => element.matches(':focus-visible'))).toBe(true);
-  expect(focused.outlineWidth).toBeGreaterThanOrEqual(2);
-  expect(focused.outline, 'dark keyboard focus outline').toBeGreaterThanOrEqual(3);
+  expect.soft(await exportButton.evaluate(element => element.matches(':focus-visible'))).toBe(true);
+  expect.soft(focused.outlineWidth).toBeGreaterThanOrEqual(2);
+  expect.soft(focused.outline, 'dark keyboard focus outline').toBeGreaterThanOrEqual(3);
   diagnostics.interaction = { hovered, focused };
+  await saveMeasurements();
 
   const fonts = await page.evaluate(async () => {
     const hindi = 'भूमि अभिलेख';
@@ -237,14 +242,15 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
       appWidth: document.querySelector('.ulpin-app')!.getBoundingClientRect().width,
       font: getComputedStyle(document.querySelector('.ulpin-app')!).fontFamily,
     }));
-    expect(phone.font).toContain('Noto Sans');
-    expect(phone.appWidth).toBeLessThanOrEqual(390);
+    expect.soft(phone.font).toContain('Noto Sans');
+    expect.soft(phone.appWidth).toBeLessThanOrEqual(390);
     const mobileFit = page.getByRole('button', { name: 'Fit block', exact: true });
-    await expect(mobileFit).toBeVisible();
+    await expect.soft(mobileFit).toBeVisible();
     phoneResults.push({ theme, ...phone });
     if (screenshots) await page.screenshot({ path: join(screenshots, `studio-${theme}-phone.png`) });
   }
   diagnostics.phone = phoneResults;
+  await saveMeasurements();
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.locator('.ulpin-app').evaluate(element => element.removeAttribute('data-theme'));
@@ -253,8 +259,8 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
   const normalHeight = (await brand.boundingBox())!.height;
   await page.evaluate(() => { document.documentElement.style.zoom = '2'; });
   const zoomHeight = (await brand.boundingBox())!.height;
-  expect(zoomHeight / normalHeight, '200% visible font scaling').toBeGreaterThanOrEqual(1.9);
-  await expect(page.getByRole('button', { name: 'Fit block', exact: true })).toBeVisible();
+  expect.soft(zoomHeight / normalHeight, '200% visible font scaling').toBeGreaterThanOrEqual(1.9);
+  await expect.soft(page.getByRole('button', { name: 'Fit block', exact: true })).toBeVisible();
   diagnostics.zoom200 = { normalHeight, zoomHeight, ratio: zoomHeight / normalHeight };
   if (screenshots) await page.screenshot({ path: join(screenshots, 'studio-light-200-percent.png') });
   await page.evaluate(() => { document.documentElement.style.zoom = ''; });
@@ -269,8 +275,8 @@ test('UI-01 local fonts, Hindi glyphs, token contrast and controls in both theme
     spinner.remove();
     return result;
   });
-  expect(motion.transition).toBe('0s');
-  expect(motion.animation).toBe('none');
+  expect.soft(motion.transition).toBe('0s');
+  expect.soft(motion.animation).toBe('none');
   diagnostics.reducedMotion = motion;
-  if (screenshots) await writeFile(join(screenshots, 'measurements.json'), JSON.stringify(diagnostics, null, 2) + '\n');
+  await saveMeasurements();
 });
