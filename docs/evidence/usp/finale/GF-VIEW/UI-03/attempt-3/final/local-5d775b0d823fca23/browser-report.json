@@ -1,0 +1,165 @@
+{
+  "config": {
+    "argv": [
+      "/Users/vinayak/.hermes/node/bin/node",
+      "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/usp-ui03-content.spec.ts"
+    ],
+    "configFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/playwright.config.ts",
+    "rootDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-3/final/local-5d775b0d823fca23/browser-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "usp-ui03-content.spec.ts",
+      "file": "usp-ui03-content.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "UI-03 area map reads one unchanged saved snapshot",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19514,
+                  "error": {
+                    "message": "Error: locator.scrollIntoViewIfNeeded: Error: strict mode violation: getByRole('button', { name: /Checks/ }) resolved to 2 elements:\n    1) <button aria-label=\"Checks\" aria-pressed=\"false\" aria-expanded=\"false\">…</button> aka getByRole('button', { name: 'Checks', exact: true })\n    2) <button class=\"ui-button\" aria-expanded=\"false\">…</button> aka getByRole('button', { name: 'Checks 6' })\n\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Checks/ })\u001b[22m\n",
+                    "stack": "Error: locator.scrollIntoViewIfNeeded: Error: strict mode violation: getByRole('button', { name: /Checks/ }) resolved to 2 elements:\n    1) <button aria-label=\"Checks\" aria-pressed=\"false\" aria-expanded=\"false\">…</button> aka getByRole('button', { name: 'Checks', exact: true })\n    2) <button class=\"ui-button\" aria-expanded=\"false\">…</button> aka getByRole('button', { name: 'Checks 6' })\n\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Checks/ })\u001b[22m\n\n    at hitTest (/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts:6:17)\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts:115:32",
+                    "location": {
+                      "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts",
+                      "column": 17,
+                      "line": 6
+                    },
+                    "snippet": "  4 |\n  5 | async function hitTest(locator: Locator) {\n> 6 |   await locator.scrollIntoViewIfNeeded();\n    |                 ^\n  7 |   return locator.evaluate(element => {\n  8 |     const box = element.getBoundingClientRect();\n  9 |     const x = box.left + box.width / 2, y = box.top + box.height / 2;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts",
+                        "column": 17,
+                        "line": 6
+                      },
+                      "message": "Error: locator.scrollIntoViewIfNeeded: Error: strict mode violation: getByRole('button', { name: /Checks/ }) resolved to 2 elements:\n    1) <button aria-label=\"Checks\" aria-pressed=\"false\" aria-expanded=\"false\">…</button> aka getByRole('button', { name: 'Checks', exact: true })\n    2) <button class=\"ui-button\" aria-expanded=\"false\">…</button> aka getByRole('button', { name: 'Checks 6' })\n\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Checks/ })\u001b[22m\n\n\n  4 |\n  5 | async function hitTest(locator: Locator) {\n> 6 |   await locator.scrollIntoViewIfNeeded();\n    |                 ^\n  7 |   return locator.evaluate(element => {\n  8 |     const box = element.getBoundingClientRect();\n  9 |     const x = box.left + box.width / 2, y = box.top + box.height / 2;\n    at hitTest (/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts:6:17)\n    at /Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts:115:32"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T20:09:01.357Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui03-content-UI-03-are-0c6aa-ne-unchanged-saved-snapshot/test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui03-content-UI-03-are-0c6aa-ne-unchanged-saved-snapshot/video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui03-content-UI-03-are-0c6aa-ne-unchanged-saved-snapshot/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/test-results/browser/usp-ui03-content-UI-03-are-0c6aa-ne-unchanged-saved-snapshot/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin/tests/e2e/usp-ui03-content.spec.ts",
+                    "column": 17,
+                    "line": 6
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "84274564f35635bb8cb9-981f8619ae9a49f820a1",
+          "file": "usp-ui03-content.spec.ts",
+          "line": 18,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-25T20:09:01.094Z",
+    "duration": 20265.102000000003,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
