@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T19:03:00.963025+00:00",
+  "updatedAt": "2026-09-25T19:35:34.840292+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -212,7 +212,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "assigned_UI-03_attempt_1",
+      "status": "assigned_UI-03_attempt_2",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -1607,7 +1607,7 @@
         "model": "gpt-6-sol",
         "effort": "xhigh"
       },
-      "status": "dispatched",
+      "status": "corrections_required_not_integrated",
       "ownership": [
         "Affected area-map presentation in apps/web/features/officer/block/ (BlockPage, rails, MapPlan, FindingsTray and map-specific CSS) and new replacement map components; migrate consumers before deleting old files.",
         "apps/web/features/studio/product/SavedSceneViewport.tsx and shared map presentation/state adapters only as needed by UI-03; preserve shared Cesium lifecycle, selection/cache contracts.",
@@ -1629,7 +1629,57 @@
         "Inventory replaced/retained/pending UI surfaces; ui-design-check report, relevant tests/typecheck and real route before/after captures; do not claim unexecuted production build, official source accuracy or full runtime gate pass."
       ],
       "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/report.md",
-      "resultCommit": null
+      "resultCommit": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
+      "codeCommit": "dec00dc1b00a78c1172a1e6ed67622fc79cc7539",
+      "reviewPath": "docs/evidence/usp/orchestration/UI-03-attempt-1-review.json"
+    },
+    {
+      "assignmentId": "UI-03",
+      "attempt": 2,
+      "callbackId": "ulpin-UI-03-attempt-2",
+      "objective": "Implement planned map styling and honest geometry while rebuilding affected map presentation from design references; apply UI-08 content checks within the card.",
+      "baseCommit": "62a2802cb24c9760038a8c941c17b0b8677a6ab1",
+      "workerThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "workerHostId": "local",
+      "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin",
+      "branch": "agent/UI-03-map-replacement",
+      "requestedAgent": {
+        "product": "Codex",
+        "model": "gpt-6-sol",
+        "effort": "xhigh"
+      },
+      "status": "dispatched",
+      "ownership": [
+        "Affected area-map presentation in apps/web/features/officer/block/ (BlockPage, rails, MapPlan, FindingsTray and map-specific CSS) and new replacement map components; migrate consumers before deleting old files.",
+        "apps/web/features/studio/product/SavedSceneViewport.tsx and shared map presentation/state adapters only as needed by UI-03; preserve shared Cesium lifecycle, selection/cache contracts.",
+        "Area route mounts and compatibility redirects; narrow shared token/primitives composition as needed; no unrelated Batches/Register/workspace rewrite.",
+        "Current shared spatial runtime visual encodings and source-derived presentation adapters; no new renderer, invented geometry or qualification relaxation.",
+        "Focused frontend tests and docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-1/ evidence.",
+        "Guarded preview infrastructure may be selectively ported from c2e8529, with separate UI-03 outputs and all existing isolation checks retained."
+      ],
+      "exclusions": [
+        "Backend schema, migrations, registry/job/provider authority, FND-04 guards, protected sources/data, seeding/import/reset, generated fixtures.",
+        "Lead ledger/plans/AGENTS, user-staged skills, credentials, deploy/push/main, unrelated local processes."
+      ],
+      "acceptance": [
+        "H29 UI-03 with current delivery policy and supplied design references; rebuild presentation as part of this card, not a separate detour.",
+        "One Colour by mode/legend, record-derived evidence/outline encoding, source-backed level rail/reference and honest unavailable heights/underground states; no fabricated source facts.",
+        "Exact URL/selection/camera continuity and unique inspection preserved; legacy components removed only after consumers migrate.",
+        "Light-only desktop with useful reclaimed space; reusable tokens/theme/responsive seams and desktop keyboard/zoom access retained.",
+        "Record-derived provenance; no sample defaults, names-based provenance or mockup code/data; unavailable DATA-09 scene remains unavailable.",
+        "Inventory replaced/retained/pending UI surfaces; ui-design-check report, relevant tests/typecheck and real route before/after captures; do not claim unexecuted production build, official source accuracy or full runtime gate pass."
+      ],
+      "reportPath": "docs/evidence/usp/finale/GF-VIEW/UI-03/attempt-2/report.md",
+      "resultCommit": null,
+      "continuationCommit": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
+      "correctionFindings": [
+        "UI03-R1",
+        "UI03-R2",
+        "UI03-R3",
+        "UI03-R4",
+        "UI03-R5",
+        "UI03-R6"
+      ]
     }
   ],
   "capabilityChecklist": [
@@ -2377,7 +2427,7 @@
     }
   ],
   "nextSteps": [
-    "Review UI-03 map replacement and honest geometry when the worker callback arrives.",
+    "Review UI-03 attempt2 map replacement, reference semantics, provenance and source-only tests.",
     "Apply UI-08 checks to subsequent UI-bearing cards; no separate legacy polishing pass.",
     "Keep source/scene/independent runtime gate qualification pending."
   ],
@@ -2540,6 +2590,14 @@
       "resultCommit": "c2e8529481d6c48b4e290d4888234c0a4d847dc3",
       "result": "corrections_required_not_integrated",
       "normalization": "Pipe-delimited callback uniquely matches worker/assignment; interpreted as ready for review"
+    },
+    {
+      "callbackId": "ulpin-UI-03-attempt-1",
+      "assignmentId": "UI-03",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "ccffcf6eedf58e44e7be7f7e94cbc344840985c9",
+      "result": "corrections_required_not_integrated"
     }
   ],
   "observations": [
