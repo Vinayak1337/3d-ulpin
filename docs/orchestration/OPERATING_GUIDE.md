@@ -39,7 +39,7 @@ Astra, Sol and Luna are the same model family. Their reviews are engineering che
 
 Keep one implementation lane, one optional manual-test/research lane and one optional bounded review lane. Do not launch all three without useful independent work. Only the lead dispatches; workers do not spawn other workers.
 
-Worker finishes -> returns exact commit and concise evidence -> lead reviews the outcome -> optional manual tester checks that pinned commit. While review/testing runs, assign the next dependency-ready, non-conflicting feature to the implementation worker on its own branch. Do not build dependent work on an unaccepted change merely to keep a worker busy.
+Worker finishes -> returns exact commit and concise evidence -> lead reviews the outcome -> optional manual tester checks that pinned commit. While review/testing runs, scope the next dependency-ready, non-conflicting feature. In the single checkout, coordinate any branch switch at a safe checkpoint; do not switch the checkout beneath another worker or a running preview. Do not build dependent work on an unaccepted change merely to keep a worker busy.
 
 Testers/reviewers own reports, not production code. They return reproducible issues with route/action, expected versus actual behavior, severity and a screenshot only when useful. Send fixes to the implementation lane. If it is already coding, choose a safe checkpoint or queue the fix; never let two owners edit the same seam. Blocking defects prevent integration of that result, not unrelated work.
 
@@ -53,7 +53,7 @@ Workers run typecheck and directly relevant existing checks once. Prefer fixing/
 
 Do not add mirrored implementation tests, broad speculative matrices, screenshots for every trivial edit, repeated full regressions, benchmark work or elaborate harnesses for low-impact changes. Reuse the established guarded preview and evidence tools. Repeat a check only after a relevant change, failure or unresolved concern. Broader checks belong at meaningful integration/release boundaries. Retain release requirements; defer their comprehensive verification honestly rather than weakening them.
 
-Use real unchanged official sources, data.gov.in first or the responsible issuer. Never invent operational records, dummy PII, geometry, documents/images or adverse source fixtures. Existing historic corpora are retained regression only. Missing official coverage stays unqualified; do not manufacture it or halt unrelated implementation.
+Use real unchanged official sources, data.gov.in first or the responsible issuer. Never invent operational records, dummy PII, geometry, documents/images or adverse source fixtures. Preserve real gathered originals and lineage; selectively retire obsolete synthetic assets only after exact-path or exact-record review. Missing official coverage stays unqualified; do not manufacture it or halt unrelated implementation.
 
 ## On-demand local preview
 
@@ -65,7 +65,7 @@ When a preview is running, record its URL and served revision for manual testing
 
 ## Compact assignment and return
 
-Assignment: task ID/attempt; outcome and relevant plan sections; exact base/worktree; owned paths/exclusions; model/effort; a few acceptance checks; callback destination. Include only changes from standing rules.
+Assignment: task ID/attempt; outcome and relevant plan sections; exact base/checkout; owned paths/exclusions; model/effort; a few acceptance checks; callback destination. Include only changes from standing rules.
 
 Worker return: exact code/result commits, what works, commands/check results, short manual-test instructions, known limitations, dirty paths and owned-resource cleanup. Preserve actual failure evidence but do not send raw logs or repeat the entire task history. All agents are sharing a codebase: never revert others' changes.
 
