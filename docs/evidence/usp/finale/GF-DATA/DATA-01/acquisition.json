@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "gf0-acquisition-log/1",
+  "task": "DATA-01",
+  "observedAtUtc": "2026-09-25T00:17:42.756870Z",
+  "indianContext": {
+    "profile": "gf0-context-v1",
+    "mode": "re-receipt of existing retained fixture; no new OSM request",
+    "sourceUrl": "https://www.openstreetmap.org/",
+    "originalAcquisitionUrl": "https://overpass-api.de/api/interpreter",
+    "retainedReceipt": "fixtures/uttam-nagar/sources/uttam-nagar-osm-raw.json.receipt.json",
+    "originalSourceSha256": "85f86fdf5683a6026c23b12520947dea352dc65a85946bdbf7596180bf629857",
+    "originalSourceBytes": 2517406,
+    "retainedAssetSha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+    "retainedAssetBytes": 8838,
+    "licenceEvidence": "https://www.openstreetmap.org/copyright",
+    "licenceFamily": "ODbL-1.0",
+    "useBoundary": "Indian road-centreline context and source-lineage test only; public derived exports require ODbL share-alike handling."
+  },
+  "structuredCodes": {
+    "profile": "gf0-structured-codes-v1",
+    "sourceUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts",
+    "resourceId": "37231365-78ba-44d5-ac22-3deec40b9197",
+    "publisher": "Ministry of Panchayati Raj, Local Government Directory",
+    "resourcePageSnapshotSha256": "5a523c2ccb7c4d8f16c4abf65350244b994e246349025764528eeb09df27cb67",
+    "resourcePageSnapshotBytes": 1010951,
+    "directCsvUrl": "https://www.data.gov.in/files/ogdpv2dms/s3fs-public/datafile/lgd_districts.csv",
+    "directCsvHeadHttpStatus": 500,
+    "publishedEndpointHttpStatus": 200,
+    "publishedEndpointMediaType": "text/csv",
+    "publishedEndpointReference": "resource-page-linked endpoint; access query token omitted",
+    "requestBoundBytes": 5000000,
+    "sourceSha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+    "sourceBytes": 89622,
+    "alternative": {
+      "url": "https://lgdirectory.gov.in/demo/downloadDirectory.do",
+      "observation": "official directory download page displays CAPTCHA; no bypass attempted"
+    },
+    "licenceEvidence": [
+      "https://www.data.gov.in/resource/local-government-directory-lgd-districts",
+      "https://www.meity.gov.in/static/uploads/2024/02/Gazette-Notification_OpenDataLicense_13.02.2017.pdf"
+    ],
+    "licenceFamily": "GODL-India (portal-wide published-content notice; resource-specific field not independently observed)",
+    "limitations": [
+      "The resource page displays a sandbox warning; independently verified official-currentness is pending.",
+      "The CSV has no geometry, parcel IDs, ownership or per-row effective date.",
+      "Training permission was not assessed."
+    ]
+  },
+  "d7": {
+    "state": "failed",
+    "reason": "permission_required",
+    "evidencePath": "demo-data/real-block/SOURCE_ACCESS.md",
+    "evidenceSha256": "b1ca574e2009a4dc4387e229f58bd429eb502aa9b005148b883cc90694264143"
+  }
+}

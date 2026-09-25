@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "gf0-source-provenance/1",
+  "packId": "D4",
+  "profile": "gf0-context-v1",
+  "assetId": "osm-road-centrelines.geojson",
+  "sourceFamily": "OpenStreetMap volunteered road network",
+  "sourceRelease": "snapshot 2026-09-16T20:48:53Z",
+  "sourceUrl": "https://www.openstreetmap.org/",
+  "originalAcquisitionUrl": "https://overpass-api.de/api/interpreter",
+  "acquiredAt": "2026-09-17 (existing retained fixture)",
+  "reReceiptedAt": "2026-09-25",
+  "sourceResourceId": "OpenStreetMap way IDs in properties.osm_id",
+  "sourceOriginalSha256": "85f86fdf5683a6026c23b12520947dea352dc65a85946bdbf7596180bf629857",
+  "sourceOriginalBytes": 2517406,
+  "retainedSubsetSha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+  "retainedSubsetBytes": 8838,
+  "subsetLineage": [
+    "fixtures/uttam-nagar/sources/uttam-nagar-osm-raw.json.receipt.json",
+    "fixtures/uttam-nagar/uttam-nagar-road-centrelines.geojson",
+    "data-bundles/uttam-nagar/manifest.json object 317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93"
+  ],
+  "format": "GeoJSON FeatureCollection",
+  "parser": "Python 3 standard json",
+  "nativeIdentifiers": "properties.osm_id",
+  "horizontalCrs": "EPSG:4326 (documented in fixtures/uttam-nagar/SOURCE_NOTES.md)",
+  "horizontalUnit": "degrees",
+  "verticalReference": null,
+  "verticalUnit": null,
+  "heightType": null,
+  "benchmark": null,
+  "coverage": {
+    "description": "Analyst-selected Uttam Nagar, Delhi window; nine clipped road/path centreline segments",
+    "boundsLonLat": [
+      77.06239432592996,
+      28.619292929914288,
+      77.0652302,
+      28.620458040214583
+    ]
+  },
+  "sourceDate": "2026-09-16 snapshot; geometry survey epoch unknown",
+  "licenceFamily": "ODbL-1.0",
+  "attribution": "© OpenStreetMap contributors",
+  "licenceReference": "https://www.openstreetmap.org/copyright",
+  "redistributionPermission": "documented ODbL with attribution/share-alike",
+  "trainingPermission": "not assessed",
+  "purpose": "test_only",
+  "intendedRole": "indian_road_context_only",
+  "dependencies": [],
+  "missingCapabilities": [
+    "cadastral_parcels",
+    "legal_road_width",
+    "ownership",
+    "survey_accuracy",
+    "heights",
+    "interior_spaces"
+  ],
+  "stages": {
+    "discovered": "passed",
+    "acquired": "passed_existing_fixture",
+    "inspected": "passed",
+    "qualified": "context_only",
+    "tested": "passed_bounded_parser"
+  },
+  "sourceTermsEvidence": [
+    "https://www.openstreetmap.org/copyright",
+    "fixtures/uttam-nagar/SOURCE_NOTES.md"
+  ],
+  "licenceFamilyByAsset": {
+    "osm-road-centrelines.geojson": "ODbL-1.0",
+    "expected.json": "project_authored"
+  },
+  "privacy": "public_source_no_personal_records",
+  "exportRestriction": "ODbL share-alike public exports require separate licence handling; no non-share-alike export qualified",
+  "authoredExpectedAsset": {
+    "id": "expected.json",
+    "packVersion": 1,
+    "sourceFamily": "project_authored_test_oracle",
+    "sourceRelease": "DATA-01 2026-09-25",
+    "nativeIdentifiers": null,
+    "sourceUrl": null,
+    "sourceResourceId": null,
+    "acquiredAt": "2026-09-25",
+    "originalSha256": "5065c2d2fb8ad0c034dabdb72576bf902b1635ac55505ca29622bfe9b2ef9c31",
+    "originalBytes": 540,
+    "format": "JSON",
+    "parser": "Python 3 standard json",
+    "horizontalCrs": null,
+    "horizontalUnit": null,
+    "heightType": null,
+    "verticalReference": null,
+    "verticalUnit": null,
+    "benchmark": null,
+    "coverage": "only the named source asset in this pack",
+    "sourceDate": null,
+    "licenceFamily": "project_authored",
+    "attribution": "3D ULPIN DATA-01 bounded source check",
+    "redistributionPermission": "project authored",
+    "trainingPermission": "not applicable",
+    "privacy": "no personal records",
+    "purpose": "authored_demo",
+    "dependencies": [
+      "osm-road-centrelines.geojson"
+    ],
+    "subsetLineage": [],
+    "missingCapabilities": [
+      "cadastral_parcel_geometry",
+      "legal_road_width",
+      "recorded_heights",
+      "ownership",
+      "survey_accuracy"
+    ]
+  },
+  "testedEvidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+}
