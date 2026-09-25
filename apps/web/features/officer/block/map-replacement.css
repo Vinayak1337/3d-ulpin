@@ -1,0 +1,65 @@
+/* UI-03 map presentation. These controls read the saved area and scene state. */
+.ulpin-app.studio-operations .ui-map-stage { background: var(--ui-map-ground); }
+.ulpin-app.studio-operations .ui-map-presentation {
+  position: absolute; z-index: 12; top: 130px; left: 12px;
+  display: flex; align-items: center; gap: var(--ui-space-2);
+  padding: var(--ui-space-2); background: var(--ui-surface);
+  border: 1px solid var(--ui-border-strong); border-radius: 12px;
+  box-shadow: var(--ui-shadow-floating); color: var(--ui-ink);
+  font: var(--ui-text-sm)/1.4 var(--ui-font-sans);
+}
+.ulpin-app.studio-operations .ui-map-presentation label { display: flex; align-items: center; gap: var(--ui-space-2); white-space: nowrap; }
+.ulpin-app.studio-operations .ui-map-presentation select {
+  min-height: 40px; max-width: 142px; border: 1px solid var(--ui-line-control);
+  border-radius: 8px; padding: var(--ui-space-2); background: var(--ui-surface); color: var(--ui-ink);
+  font: inherit;
+}
+.ulpin-app.studio-operations .ui-underground-switch { padding: 0 var(--ui-space-2); }
+.ulpin-app.studio-operations .ui-underground-switch input { width: 18px; height: 18px; accent-color: var(--ui-primary); }
+.ulpin-app.studio-operations .ui-underground-switch:has(input:disabled) { color: var(--ui-muted); }
+.ulpin-app.studio-operations .ui-level-rail {
+  position: absolute; z-index: 8; top: 132px; right: 12px;
+  width: min(210px, 29%); max-height: min(50vh, 400px); display: flex; flex-direction: column;
+  overflow: hidden; background: var(--ui-surface); border: 1px solid var(--ui-border-strong);
+  border-radius: 12px; box-shadow: var(--ui-shadow-floating); color: var(--ui-ink);
+}
+.ulpin-app.studio-operations .ui-level-rail header { display: flex; gap: var(--ui-space-2); align-items: center; padding: 12px; border-bottom: 1px solid var(--ui-divider); font-weight: 600; }
+.ulpin-app.studio-operations .ui-level-rail header span { min-width: 0; }
+.ulpin-app.studio-operations .ui-level-rail small { display: block; color: var(--ui-muted); font-size: var(--ui-text-xs); font-weight: 400; overflow-wrap: anywhere; }
+.ulpin-app.studio-operations .ui-level-list { overflow: auto; }
+.ulpin-app.studio-operations .ui-level-list button { display: block; width: 100%; min-height: 54px; padding: 8px 12px; text-align: left; color: var(--ui-ink); background: var(--ui-surface); border: 0; border-bottom: 1px solid var(--ui-divider); font: inherit; }
+.ulpin-app.studio-operations .ui-level-list button[aria-pressed="true"] { color: var(--ui-primary); background: var(--ui-primary-soft); }
+.ulpin-app.studio-operations .ui-level-list button strong { display: block; font-size: var(--ui-text-sm); }
+.ulpin-app.studio-operations .ui-level-list button span { display: block; color: var(--ui-ink-soft); font: var(--ui-text-xs) var(--ui-font-mono); }
+.ulpin-app.studio-operations .ui-level-rail > p { padding: 12px; margin: 0; font-size: var(--ui-text-sm); }
+.ulpin-app.studio-operations .ui-presentation-legend {
+  position: absolute; z-index: 8; bottom: 76px; left: 12px;
+  width: min(250px, 34%); max-height: 230px; overflow: auto;
+  padding: 10px 12px; background: var(--ui-surface); color: var(--ui-ink);
+  border: 1px solid var(--ui-border-strong); border-radius: 12px;
+  box-shadow: var(--ui-shadow-floating); font-size: var(--ui-text-xs);
+}
+.ulpin-app.studio-operations .ui-presentation-legend section + section { border-top: 1px solid var(--ui-divider); margin-top: 8px; padding-top: 8px; }
+.ulpin-app.studio-operations .ui-presentation-legend h2 { margin: 0 0 5px; font-size: var(--ui-text-sm); }
+.ulpin-app.studio-operations .ui-presentation-legend p { margin: 0; color: var(--ui-ink-soft); }
+.ulpin-app.studio-operations .ui-presentation-legend ul { list-style: none; padding: 0; margin: 0; }
+.ulpin-app.studio-operations .ui-presentation-legend li { display: flex; align-items: center; gap: 7px; min-height: 22px; }
+.ulpin-app.studio-operations .ui-legend-swatch, .ulpin-app.studio-operations .ui-legend-outline { display: inline-block; flex: none; width: 15px; height: 12px; border: 1px solid var(--ui-map-building-edge); border-radius: 2px; }
+.ulpin-app.studio-operations .ui-legend-claim { background: var(--ui-rights-exclusive); }
+.ulpin-app.studio-operations .ui-legend-shared_use { background: var(--ui-rights-shared); }
+.ulpin-app.studio-operations .ui-legend-easement { background: var(--ui-rights-public); }
+.ulpin-app.studio-operations .ui-legend-critical { background: var(--ui-mark-critical); }
+.ulpin-app.studio-operations .ui-legend-finding { background: var(--ui-mark-warning); }
+.ulpin-app.studio-operations .ui-legend-electric { background: var(--ui-utility-electric); }
+.ulpin-app.studio-operations .ui-legend-gas { background: var(--ui-utility-gas); }
+.ulpin-app.studio-operations .ui-legend-telecom { background: var(--ui-utility-telecom); }
+.ulpin-app.studio-operations .ui-legend-water { background: var(--ui-utility-water); }
+.ulpin-app.studio-operations .ui-legend-reclaimed { background: var(--ui-utility-reclaimed); }
+.ulpin-app.studio-operations .ui-legend-sewer { background: var(--ui-utility-sewer); }
+.ulpin-app.studio-operations .ui-legend-unknown, .ulpin-app.studio-operations .ui-legend-estimated { background: repeating-linear-gradient(45deg, var(--ui-map-building) 0 4px, var(--ui-map-building-edge) 4px 5px); }
+.ulpin-app.studio-operations .ui-legend-evidence { background: var(--ui-map-building); }
+.ulpin-app.studio-operations .ui-legend-illustrative { background: var(--ui-map-building); opacity: var(--ui-opacity-ghost); }
+.ulpin-app.studio-operations .ui-legend-draft { border-style: dashed; }
+.ulpin-app.studio-operations .ui-legend-retired { border-style: dotted; }
+.ulpin-app.studio-operations .ui-legend-unknown-outline { border-style: dashed; opacity: var(--ui-opacity-context); }
+.ulpin-app.studio-operations :where(.ui-map-presentation select, .ui-map-presentation input, .ui-level-list button):focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 3px; }
