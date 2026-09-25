@@ -57,4 +57,4 @@ Routes are fixed by [H99](../usp-agent-handoffs/99-ui-ux-and-integration.md) sec
 
 ## Admin Console (full_product)
 
-Not built for the finale. When built: same top bar with **Overview · Imports · Coverage · Users · Audit · Settings**; summary first, and every number opens the filtered list behind it; charts with one axis each and status colours only for status. In the finale, Batches carries the counts and the workspace dialog carries capability state.
+Not built for the finale. When built: same top bar with **Overview · Imports · Coverage · Users · Audit · Settings**; summary first, and every number opens the filtered list behind it; charts with one axis each, thin marks, a legend for two or more series and status colours only for status. In the finale, Batches carries the counts and the workspace dialog carries capability state.
