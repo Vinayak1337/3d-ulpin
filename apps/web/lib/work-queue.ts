@@ -1,8 +1,10 @@
+import type {SourceProvenance} from './spatial-datasets';
 export type WorkItem = {
   id: string; kind: 'case' | 'import' | 'dataset'; name: string; areaId: string | null;
   areaName: string | null; dataKind: string | null; buildingId: string | null;
   sourceCount: number; updatedAt: string; state: string | null; jobStatus: string | null;
   recordedHistory: boolean; currentRecorded?: boolean;
+  provenance:SourceProvenance;
 };
 export type WorkQueueResult = {items: WorkItem[]; total: number; page: number; pageSize: number};
 export function workItemAction(item: WorkItem) {

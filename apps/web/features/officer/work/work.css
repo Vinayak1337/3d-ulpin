@@ -19,6 +19,7 @@
 .work-row{min-height:88px;border-top:1px solid var(--ui-divider)}
 .work-row:hover{background:var(--ui-surface-tint)}
 .work-name{min-width:0}.work-name h2{margin:0 0 var(--ui-space-1);font-size:var(--ui-text-sm);line-height:1.45}.work-name h2 a{color:var(--ui-ink);text-decoration:none}.work-name h2 a:hover{text-decoration:underline}.work-name p{margin:0;color:var(--ui-muted);font-size:var(--ui-text-xs);overflow-wrap:anywhere}
+.work-provenance{display:block;margin-top:var(--ui-space-1);color:var(--ui-muted);font-size:var(--ui-text-xs)}
 .work-status{width:max-content;max-width:100%;padding:var(--ui-space-1) var(--ui-space-2);border-radius:var(--ui-radius-4);background:var(--ui-surface-subtle);color:var(--ui-ink-soft);font-size:var(--ui-text-xs);font-weight:700}
 .work-status[data-status="Recorded"]{background:var(--ui-success-soft);color:var(--ui-success)}.work-status[data-status="Needs review"]{background:var(--ui-warning-soft);color:var(--ui-warning)}.work-status[data-status="Processing"]{background:var(--ui-info-soft);color:var(--ui-info)}
 .work-next{display:inline-flex;align-items:center;justify-content:space-between;gap:var(--ui-space-2);color:var(--ui-primary);font-size:var(--ui-text-sm);font-weight:700;text-decoration:none}.work-next:hover{text-decoration:underline}.work-row time{color:var(--ui-muted);font-size:var(--ui-text-xs);text-align:right}

@@ -10,7 +10,7 @@ export function datasetLabel(kind?: MapArea["dataKind"]): string {
 export function filterAreas(areas: MapArea[], query: string, kind: string): MapArea[] {
   const needle = query.trim().toLocaleLowerCase();
   return areas.filter(area =>
-    (kind === "all" || (kind === "saved" ? area.dataKind !== "demonstration" && (area.featureCount ?? 0) > 0 : area.dataKind === kind)) &&
+    (kind === "all" || (kind === "saved" ? area.dataKind !== "demonstration" && (area.featureCount ?? 0) > 0 : kind === "unknown" ? !["real","demonstration","mixed"].includes(area.dataKind ?? "") : area.dataKind === kind)) &&
     `${area.name} ${area.id}`.toLocaleLowerCase().includes(needle),
   ).sort((a,b) => a.name.localeCompare(b.name));
 }
