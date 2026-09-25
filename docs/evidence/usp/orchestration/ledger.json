@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T20:56:51.827422+00:00",
+  "updatedAt": "2026-09-25T20:57:42.503657+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -280,7 +280,7 @@
         "effort": "xhigh"
       },
       "observedAgent": null,
-      "status": "assigned_MANUAL-FND-06"
+      "status": "idle_waiting_corrected_manual_preview"
     }
   ],
   "assignments": [
@@ -1923,14 +1923,22 @@
         "effort": "xhigh"
       },
       "baseCommit": "bc115d2bc4815a2d91b7a44a286a0ed48c75cfd3",
-      "status": "dispatched",
+      "status": "blocked_preview_hold_missing_no_live_test",
       "operatingGuide": "docs/orchestration/OPERATING_GUIDE.md",
       "codeCommit": "66e3dffb9c653d52a13b8ee2046f3c72b550f587",
       "ownership": [
         "read-only manual UI checks; isolated preview; own report only"
       ],
       "previewPort": 3108,
-      "reportPath": "docs/evidence/usp/orchestration/manual/FND-06-attempt-1-luna.md"
+      "reportPath": "docs/evidence/usp/orchestration/manual/FND-06-attempt-1-luna.md",
+      "resultCommit": "612aee820bc6047cbe2486fbfe88a0681e89ec7c",
+      "worktree": "/Users/vinayak/.codex/worktrees/manual-fnd06-attempt-1-luna",
+      "observedAgent": null,
+      "limitations": [
+        "Actual model settings not exposed; requested Luna/xhigh only",
+        "No browser interaction or product verdict",
+        "Existing runner always terminates after automatic captures; no manual hold"
+      ]
     },
     {
       "assignmentId": "FND-06",
@@ -1948,7 +1956,8 @@
       "ownership": [
         "shared text redaction and typed AI boundaries",
         "affected existing grounding tests",
-        "focused FND06 verification and attempt2 evidence"
+        "focused FND06 verification and attempt2 evidence",
+        "scripts/usp/local-isolation.mjs + existing FND-06-isolated.mjs minimal explicit manual-hold option; defaults/guards unchanged"
       ],
       "exclusions": [
         "FND03 exchange",
@@ -1960,7 +1969,8 @@
       "findings": [
         "numeric JSON text/provider derivative masking",
         "typed apply response preserves nonpersonal package metadata",
-        "update3obsoletegrounding expectations"
+        "update3obsoletegrounding expectations",
+        "Manual preview hold setup missing; reuse existing runner and cleanup"
       ]
     }
   ],
@@ -2709,7 +2719,7 @@
     }
   ],
   "nextSteps": [
-    "Sol finishes independent FND03 then handles queued focused FND06 corrections; Luna manual check remains independent.",
+    "Sol finishes FND03 then fixes FND06 privacy defects and adds minimal manual-hold preview; dispatch Luna on corrected pin when ready.",
     "Sol implements FND03 exchange independently; no unaccepted FND06 dependency.",
     "Delegate integration of accepted commits and minimal relevant combined check; lead does not execute code/tests/integration.",
     "Refresh stale AGENTS plan-input hash receipt through Sol bookkeeping assignment; no product plan changes."
@@ -2913,6 +2923,14 @@
       "sourceThreadId": "01a0da57-0bf3-7783-bfdb-5bf063998b3b",
       "resultCommit": "31fcc015c07d0aeff2d98ef12a9b028956d71f3d",
       "result": "corrections_required"
+    },
+    {
+      "callbackId": "manual-FND-06-attempt-1",
+      "assignmentId": "MANUAL-FND-06",
+      "attempt": 1,
+      "sourceThreadId": "01a0da57-7dbd-7c02-abc5-4ba8af6308f6",
+      "resultCommit": "612aee820bc6047cbe2486fbfe88a0681e89ec7c",
+      "result": "setup_blocked_no_live_test"
     }
   ],
   "observations": [
