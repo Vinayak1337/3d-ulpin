@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T21:44:07.532160+00:00",
+  "updatedAt": "2026-09-25T21:45:10.653455+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -121,28 +121,24 @@
     "activeLaneLimit": 3,
     "fixedModelLanes": true,
     "persistentPreview": {
+      "status": "ui08_candidate_http_serving_provenance_correction_pending",
       "url": "http://127.0.0.1:3187/studio/work",
-      "status": "serving_visual_confirmed_manual_check_running",
-      "ownerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
-      "temporaryTestPort": 3108,
-      "policy": "dedicated pinned worktree, loopback only, owned isolated snapshot, no provider calls, stays running after handoff",
-      "servedCommit": "9c6c578b73bb71ca06342840943ff199ac4e84c2",
-      "reviewStatus": "FND06_candidate_pending_review",
-      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-persistent-preview/3D Ulpin",
+      "codeCommit": "8298d8afef62b0b7e753adddfd7315f61fbe6e97",
+      "worktree": "/Users/vinayak/.codex/worktrees/ulpin-preview-ui08-candidate/3D Ulpin",
+      "launcherPid": 45396,
+      "listenerPid": 45397,
+      "serviceProject": "ulpin-usptest-1ac33df1f895c45c",
+      "stopCommand": "kill -TERM 45396",
+      "stopSemantics": "App only. Preserve existing isolated service volumes; original guard runner no longer owns cleanup.",
       "lifecycleRecord": "/Users/vinayak/.codex/preview/ulpin-3187.json",
-      "runnerPid": 38560,
-      "sessionId": 28654,
-      "composeProject": "ulpin-usptest-1ac33df1f895c45c",
-      "reservedPorts": [
-        3187,
-        25432,
-        29000,
-        29001,
-        26379,
-        28000
-      ],
-      "stopCommand": "kill -TERM 38560",
-      "retention": "Intentionally running by user request; do not clean up after manual check"
+      "httpChecks": {
+        "workPage": 200,
+        "forgedHost": 403,
+        "database": true,
+        "storage": true,
+        "workQueueTotal": 38
+      },
+      "acceptance": "pending provenance correction and current-code manual design check"
     }
   },
   "inputs": [
@@ -2292,7 +2288,7 @@
       "assignmentId": "PREVIEW-UI08",
       "attempt": 1,
       "callbackId": "preview-UI08-ready",
-      "status": "dispatched",
+      "status": "candidate_serving_provenance_correction_pending",
       "workerThreadId": "01a0da56-544a-7131-b45d-46db5a50e6e3",
       "requestedAgent": {
         "product": "Codex",
@@ -2308,7 +2304,28 @@
         "data purge/reseed",
         "linked environment",
         "lead ledger edits"
-      ]
+      ],
+      "codeCommit": "8298d8afef62b0b7e753adddfd7315f61fbe6e97",
+      "preview": {
+        "status": "ui08_candidate_http_serving_provenance_correction_pending",
+        "url": "http://127.0.0.1:3187/studio/work",
+        "codeCommit": "8298d8afef62b0b7e753adddfd7315f61fbe6e97",
+        "worktree": "/Users/vinayak/.codex/worktrees/ulpin-preview-ui08-candidate/3D Ulpin",
+        "launcherPid": 45396,
+        "listenerPid": 45397,
+        "serviceProject": "ulpin-usptest-1ac33df1f895c45c",
+        "stopCommand": "kill -TERM 45396",
+        "stopSemantics": "App only. Preserve existing isolated service volumes; original guard runner no longer owns cleanup.",
+        "lifecycleRecord": "/Users/vinayak/.codex/preview/ulpin-3187.json",
+        "httpChecks": {
+          "workPage": 200,
+          "forgedHost": 403,
+          "database": true,
+          "storage": true,
+          "workQueueTotal": 38
+        },
+        "acceptance": "pending provenance correction and current-code manual design check"
+      }
     },
     {
       "assignmentId": "DATA-UI08-provenance",
@@ -3100,9 +3117,9 @@
     }
   ],
   "nextSteps": [
-    "Sol completes preview lifecycle at safe checkpoint and corrects shared read-time provenance projection; avoid redundant refresh if correction can be incorporated first.",
+    "Sol corrects provenance and safely app-only refreshes same3187; retain existing service volumes.",
     "Luna delivers bounded existing provenance metadata findings to Sol; no synthetic-to-official relabelling.",
-    "After ready callback, Luna visually checks changed Batches against supplied design and main navigation; resolve findings before acceptance.",
+    "Luna visually checks corrected pin when ready; avoid duplicate check of intermediate candidate.",
     "Delegate accepted integration at safe checkpoint; keep real-source/runtime qualifications open."
   ],
   "processedCallbacks": [
@@ -3402,6 +3419,11 @@
       "callbackId": "review-UI-08-priority",
       "resultCommit": "0d68c3730232232e83b7918ab65df9ee2841ca24",
       "result": "one P2 provenance correction sent to existing UI owner; affected surfaces not accepted"
+    },
+    {
+      "callbackId": "PREVIEW-UI08-checkpoint",
+      "codeCommit": "8298d8afef62b0b7e753adddfd7315f61fbe6e97",
+      "result": "same3187 new UI candidate serving; original service data preserved; app-only stop45396 supersedes runner38560"
     }
   ],
   "observations": [
