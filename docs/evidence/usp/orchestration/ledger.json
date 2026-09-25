@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-orchestration-ledger/1",
-  "updatedAt": "2026-09-25T00:37:59.792894+00:00",
+  "updatedAt": "2026-09-25T00:59:27.902962+00:00",
   "soleWriter": "orchestrator",
   "orchestrator": {
     "threadId": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
@@ -38,6 +38,12 @@
         "assignmentId": "DATA-01",
         "integrationMethod": "merge preserving tested-commit ancestry",
         "scope": "9 road segments, 785 LGD district code parser rows, D7 permission boundary"
+      },
+      {
+        "sourceCommit": "90616d7c603e6dc5d530e4503e81cd252c0eabc4",
+        "assignmentId": "DATA-05",
+        "integrationMethod": "merge preserving tested-commit ancestry",
+        "scope": "5 hash-pinned external RERA PDFs and 81-row foreign two-unit vector parser subset"
       }
     ],
     "protectedMainCommit": "0ab60522274b36be7d3abef55286a8bc5ff183bf",
@@ -63,7 +69,7 @@
       "role": "user-adopted execution instructions"
     },
     {
-      "path": "/Users/vinayak/Downloads/3D ULPIN Plan Review — Grand Finale Hardening.docx",
+      "path": "/Users/vinayak/Downloads/3D ULPIN Plan Review \u2014 Grand Finale Hardening.docx",
       "sha256": "605e47e2ab00d5232de06bb478b66310f66f2890a856a3b4cb7228ca3eeb42c1",
       "role": "advisory review; not independent action authorization"
     }
@@ -103,7 +109,7 @@
       "clientThreadId": "client-new-thread:6529019e-9c77-4207-8302-931b051ba244",
       "threadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
       "hostId": "local",
-      "title": "3D ULPIN worker — bootstrap and contracts",
+      "title": "3D ULPIN worker \u2014 bootstrap and contracts",
       "requestedAgent": {
         "product": "Codex",
         "model": "gpt-6-sol",
@@ -114,7 +120,7 @@
         "model": "gpt-6-sol",
         "effort": "high"
       },
-      "status": "assigned_DATA-05",
+      "status": "available",
       "worktree": "/Users/vinayak/.codex/worktrees/51a5/3D Ulpin"
     }
   ],
@@ -189,7 +195,7 @@
       ],
       "acceptance": [
         "H29 FND-01 and H28 Z1 inventory schema and seven seams",
-        "H01 section 10 items 1–6 honestly annotated done@sha or remaining with receipt link",
+        "H01 section 10 items 1\u20136 honestly annotated done@sha or remaining with receipt link",
         "Current-code D0/D1 unit and isolated integration checks with actual exit codes, hashes and sanitized artifacts; failures retained",
         "Job consumer absence and other unqualified seams explicit; no gate completion without independent review"
       ],
@@ -370,9 +376,30 @@
         "new optional canonical asset.provenance used without permission or stage promotion",
         "restricted/unconfirmed originals outside Git, source hashes and safe locators retained"
       ],
-      "status": "dispatched",
+      "status": "accepted_bounded_source_tests",
       "reportPath": "docs/evidence/usp/finale/GF-DATA/DATA-05/report.md",
-      "resultCommit": null
+      "resultCommit": "90616d7c603e6dc5d530e4503e81cd252c0eabc4",
+      "testedCommit": "d26701a3d6b9637e422701464f8d02579ff14b7c",
+      "acceptedAt": "2026-09-25T00:59:27.902962+00:00",
+      "review": {
+        "reviewer": "01a0d5ce-8d82-7961-9f09-b2735cd9b062",
+        "independence": "same_family",
+        "verdict": "accepted for retained-source provenance and bounded parser tests; not GF0 qualification",
+        "checks": [
+          "4 Python tests rerun",
+          "5 private PDF hashes/page counts and Bihar literal schedule rerun",
+          "Swiss raw range exact subset reconstruction rerun",
+          "2 canonical manifest/byte verifiers rerun",
+          "code, manifest and report artifact hashes verified",
+          "Bihar architecture page and Haryana contact sheet visually reviewed"
+        ],
+        "limits": [
+          "RERA reuse permission unconfirmed; originals remain outside Git",
+          "Bihar unit number blank and record-number conflict retained; no parcel/unit association",
+          "Swiss source-range only; complete floor, units, geometry topology and full-release hash unqualified",
+          "No ML, real rights, Indian multi-unit, runtime or independent gate qualification"
+        ]
+      }
     }
   ],
   "capabilityChecklist": [
@@ -1051,9 +1078,9 @@
     }
   ],
   "nextSteps": [
-    "End turn after dispatch; resume on DATA-05 callback.",
-    "Review and integrate source evidence then finish LEAD-01B or next ready FND work.",
-    "Keep GF0 data/independent truth gaps open; no formal UI or deployment."
+    "Assign FND-02 after accepted local integration; H29 permits implementation with ready contracts while qualification remains at GF0.",
+    "Remaining GF0: adversarial data, holdouts/oracles, AI preregistration, drone/source suitability and site decision; finish LEAD-01B.",
+    "No formal UI, deployment or gate promotion."
   ],
   "processedCallbacks": [
     {
@@ -1080,6 +1107,14 @@
       "resultCommit": "ef317c9b1e25c929be6ea332ef5e8d10b5e4991a",
       "result": "accepted_bounded_source_tests",
       "normalization": "Worker JSON used card/status/evidenceCommit aliases; source envelope and callbackId uniquely match the assigned worker and attempt. Future callbacks must use the requested fields."
+    },
+    {
+      "callbackId": "ulpin-DATA-05-attempt-1",
+      "assignmentId": "DATA-05",
+      "attempt": 1,
+      "sourceThreadId": "01a0d5d3-c8dd-7472-8ea4-4decef30f0c7",
+      "resultCommit": "90616d7c603e6dc5d530e4503e81cd252c0eabc4",
+      "result": "accepted_bounded_source_tests"
     }
   ],
   "observations": [
