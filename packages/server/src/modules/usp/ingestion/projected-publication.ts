@@ -8,7 +8,7 @@ import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
 import {mvtBoundsTx,mvtTransaction,assertMvtDeadline} from '../tiles/bounds';
-import {semanticPartitions,prepareSemanticTx,sealSemanticTx,releaseSemanticDisplaysTx} from './semantic-chunks';
+import {semanticPartitions,prepareSemanticTx,sealSemanticTx,releaseSemanticDisplaysTx,sealedPrefixTx} from './semantic-chunks';
 import {runSemanticDisplay,createSemanticDisplayTx} from './semantic-display';
 import {projectedContextTx,assertProjectedInput,readProjectedArtifact,projectedObservationBytesTx} from './projected-vector';
 
@@ -173,8 +173,14 @@ export async function ingestProjectedResult(id:string,value:unknown){
         throw new AppError(422,'PROJECTED_TOPOLOGY_TOTALS','Database topology/disposition totals differ from the preserved native source.');
       if(await projectedObservationBytesTx(client)>profile.retainedObservationBytes)
         throw new AppError(422,'PROJECTED_OBSERVATION_BUDGET','Accepted and staged observations exceed the retained value-byte capacity.');
+      let finalChunk;
+      if(input.semanticChunks){const seal=(await client.query('SELECT sequence,sha256 FROM usp_display.source_semantic_chunks WHERE job_id=$1 ORDER BY sequence DESC LIMIT 1',[id])).rows[0];
+        const prefix=await sealedPrefixTx(client,job.case_id,job.source_id,id,seal?{sequence:seal.sequence,sha256:seal.sha256}:null);
+        if(prefix.chunk.coverage.remainingRecords!==0||prefix.pin.sequence!==prefix.preparation.partitions.length)throw new AppError(422,'SEMANTIC_PREFIX_CLOSURE','All semantic seals must independently close before full source adoption.');
+        finalChunk=prefix.pin;
+      }
       const accepted={jobId:id,fence:attempt.fence,index:result.index,totals:index.totals,transform:index.transform,
-        numericalRoundTrip:index.numericalRoundTrip,execution:result.execution};
+        numericalRoundTrip:index.numericalRoundTrip,execution:result.execution,...(finalChunk?{finalChunk}:{})};
       await client.query('UPDATE sources SET inspection=$2 WHERE id=$1',[job.source_id,{...ctx.source.inspection,
         projectedVector:{...ctx.source.inspection.projectedVector,accepted}}]);
       await appendCaseIngestionTx(client,job.case_id,{kind:'projected-vector.changed',jobId:id,status:'succeeded'});

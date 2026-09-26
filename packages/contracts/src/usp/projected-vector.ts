@@ -58,7 +58,7 @@ export const ProjectedVectorResultSchema=z.strictObject({version:z.literal(PROJE
 export const ProjectedVectorStatusSchema=z.strictObject({version:z.literal(PROJECTED_VECTOR_PROFILE.version),caseId:id,sourceId:id,
   sourceRevision:z.number().int().positive(),sourceSha256:hash,currentCaseRevision:rev,
   jobId:id,status:z.enum(['queued','running','succeeded','failed','stale']),totals:ProjectedVectorTotalsSchema.nullable(),
-    transform:ProjectedVectorTransformSchema.nullable(),errorCode:z.string().max(80).nullable(),displayMilestones:z.array(z.strictObject({phase:z.enum(['early','middle','final']),jobId:id.nullable(),state:z.enum(['reserved','queued','running','succeeded','failed','stale','unavailable']),errorCode:z.string().max(80).nullable()})).length(3).optional(),coverage:ProjectedChunkCoverageSchema.optional(),chunk:ProjectedChunkPinSchema.optional()});
+    transform:ProjectedVectorTransformSchema.nullable(),errorCode:z.string().max(80).nullable(),currentSourceAccepted:z.boolean().optional(),displayMilestones:z.array(z.strictObject({phase:z.enum(['early','middle','final']),jobId:id.nullable(),state:z.enum(['reserved','queued','running','succeeded','failed','stale','unavailable']),errorCode:z.string().max(80).nullable()})).length(3).optional(),coverage:ProjectedChunkCoverageSchema.optional(),chunk:ProjectedChunkPinSchema.optional()});
 export const AdministrativeObservationSchema=z.strictObject({id,kind:z.literal('district'),namespace:z.literal(PROJECTED_VECTOR_PROFILE.namespace),
   nativeKey:AdministrativeNativeKeySchema,sourceId:id,sourceRevision:z.number().int().positive(),jobId:id,
   featureIndex:rev,locator:z.strictObject({member:z.literal(PROJECTED_VECTOR_PROFILE.member),start:rev,end:rev}),
