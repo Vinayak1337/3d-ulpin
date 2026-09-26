@@ -25,6 +25,23 @@ export async function mvtCompilerPinsTx(client:PoolClient,transform:unknown){
     sourceCrs:'EPSG:4326' as const,targetCrs:'EPSG:3857' as const,axisOrder:'always_xy' as const,verticalReference:null};
   return PrivateMvtCompilerSchema.parse({...base,sha256:fingerprint(base)});
 }
+/** Immutable reads may use this reviewed complete compiler profile, never an unknown code/runtime pair.
+ * Reconstructed from bed80b6e56964cc08e246f11abbe82c3251addc5 and matched read-only to the
+ * retained full-admission generation. This approval does not authorize compilation or publication.
+ */
+const retainedReadProfile={codeSha256:'7ba0d09183675baa615a63a4f72add4f683bb83f1027321b2d61d09bb63fbc82',
+  sha256:'c36c3ea4d51fd52914fa89c602e36867c3132715b06836b535c21a3f7072c6f5'};
+export function mvtReadCompilerCompatible(stored:PrivateMvtInput['compiler'],current:PrivateMvtInput['compiler'],hasSourceChunk=false){
+  const valid=(pin:PrivateMvtInput['compiler'])=>{const {sha256,...base}=pin;return fingerprint(base)===sha256;};
+  if(!valid(stored)||!valid(current))return false;
+  if(fingerprint(stored)===fingerprint(current))return true;
+  // The complete historical digest binds its original PostGIS runtime as well as code,
+  // policy and transform. Installed compiler runtime changes do not rewrite those bytes.
+  return !hasSourceChunk&&stored.codeSha256===retainedReadProfile.codeSha256&&stored.sha256===retainedReadProfile.sha256
+    &&stored.policySha256===current.policySha256&&stored.sourceTransformSha256===current.sourceTransformSha256
+    &&stored.sourceCrs===current.sourceCrs&&stored.targetCrs===current.targetCrs
+    &&stored.axisOrder===current.axisOrder&&stored.verticalReference===current.verticalReference;
+}
 /** Source authority/fence is checked by the caller before this trusted, role-limited query. */
 export async function compilePrivateMvtCellTx(client:PoolClient,input:PrivateMvtInput,cell:PrivateMvtCell,deadline?:number){
   await mvtBoundsTx(client,deadline);

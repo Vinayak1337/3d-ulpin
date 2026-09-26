@@ -11,7 +11,7 @@ import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
 import {acceptedProjectedTx,projectedContextTx,observation} from '../ingestion/projected-vector';
 import {appendCaseIngestionTx,ingestionBinding} from '../ingestion/events';
-import {mvtCompilerPinsTx} from './compiler';
+import {mvtCompilerPinsTx,mvtReadCompilerCompatible} from './compiler';
 import {cellKey,sortedCells,boundsCells,windowCells,extentOf,type Bounds} from './grid';
 import {privateMvtCapacityTx} from './capacity';
 import {readMvtArtifact} from './storage';
@@ -41,14 +41,26 @@ export async function mvtContextTx(client:PoolClient,caseId:string,sourceId:stri
     throw new AppError(409,'MVT_SOURCE_CLOSURE','The exact admitted/quarantined and unique native transport-ID source profile changed.');
   return {accepted,observations,source,compiler};
 }
-export async function assertMvtInputTx(client:PoolClient,job:any,lock=false){
+async function assertMvtSourceInputTx(client:PoolClient,job:any,lock=false){
   const input=PrivateMvtInputSchema.parse(job.payload),ctx=await mvtContextTx(client,input.source.caseId,input.source.sourceId,input.source.admissionJobId,lock,input.source.chunk?.pin),
     {inputFingerprint,...base}=input;
   if(input.jobId!==job.id||job.case_id!==input.source.caseId||job.source_id!==input.source.sourceId
     ||job.input_fingerprint!==inputFingerprint||fingerprint(base)!==inputFingerprint
-    ||fingerprint(ctx.source)!==fingerprint(input.source)||fingerprint(ctx.compiler)!==fingerprint(input.compiler))
-    throw new AppError(409,'MVT_CONTEXT_STALE','The tile source, admission, case, compiler or current private access context changed.');
+    ||fingerprint(ctx.source)!==fingerprint(input.source))
+    throw new AppError(409,'MVT_CONTEXT_STALE','The tile source, admission, case or current private access context changed.');
   return {input,ctx};
+}
+export async function assertMvtInputTx(client:PoolClient,job:any,lock=false){
+  const result=await assertMvtSourceInputTx(client,job,lock);
+  if(fingerprint(result.ctx.compiler)!==fingerprint(result.input.compiler))
+    throw new AppError(409,'MVT_CONTEXT_STALE','The current tile compiler changed.');
+  return result;
+}
+async function assertMvtReadInputTx(client:PoolClient,job:any){
+  const result=await assertMvtSourceInputTx(client,job);
+  if(!mvtReadCompilerCompatible(result.input.compiler,result.ctx.compiler,Boolean(result.input.source.chunk)))
+    throw new AppError(409,'MVT_CONTEXT_STALE','The immutable tile compiler profile is not approved for reads.');
+  return result;
 }
 export async function currentMvtJobTx(client:PoolClient,job:any){
   const result=await assertMvtInputTx(client,job,true);
@@ -69,7 +81,7 @@ export async function readableMvtGenerationTx(client:PoolClient,caseId:string,so
   // Resolve private source authority before looking up any generation/cache/object.
   await projectedContextTx(client,caseId,sourceId);
   const job=(await client.query("SELECT * FROM jobs WHERE case_id=$1 AND source_id=$2 AND id=$3 AND operation='private-mvt'",[caseId,sourceId,jobId])).rows[0]??notFound('Tile generation not found in this source context.');
-  const checked=await assertMvtInputTx(client,job),row=(await client.query('SELECT sha256 FROM usp_display.source_tile_generations WHERE source_id=$1 AND job_id=$2 AND version=$3',[sourceId,jobId,version])).rows[0]??notFound('This generation version is not committed.');
+  const checked=await assertMvtReadInputTx(client,job),row=(await client.query('SELECT sha256 FROM usp_display.source_tile_generations WHERE source_id=$1 AND job_id=$2 AND version=$3',[sourceId,jobId,version])).rows[0]??notFound('This generation version is not committed.');
   const pin=PrivateMvtGenerationPinSchema.parse({jobId,version,sha256:row.sha256}),generation=await generationRowTx(client,sourceId,pin);
   if(generation.row.input_fingerprint!==job.input_fingerprint||fingerprint(generation.manifest.source)!==fingerprint(checked.input.source)
     ||fingerprint(generation.manifest.compiler)!==fingerprint(checked.input.compiler))
@@ -78,10 +90,12 @@ export async function readableMvtGenerationTx(client:PoolClient,caseId:string,so
 }
 export async function mvtStatusTx(client:PoolClient,caseId:string,sourceId:string,jobId?:string){
   const ctx=await projectedContextTx(client,caseId,sourceId),job=(await client.query("SELECT * FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='private-mvt'",[jobId??ctx.source.inspection.privateMvt?.currentJobId,caseId,sourceId])).rows[0]??notFound('No private tile job exists for this source.');
-  let context:'current'|'stale'='current';try{await assertMvtInputTx(client,job);}catch(error){if(!(error instanceof AppError)||![403,404,409].includes(error.status))throw error;context='stale';}
-  const row=context==='current'?(await client.query('SELECT version,sha256,body FROM usp_display.source_tile_generations WHERE job_id=$1 AND source_id=$2 ORDER BY version DESC LIMIT 1',[job.id,sourceId])).rows[0]:null;
+  const latest=(await client.query('SELECT version FROM usp_display.source_tile_generations WHERE job_id=$1 AND source_id=$2 ORDER BY version DESC LIMIT 1',[job.id,sourceId])).rows[0];
+  let context:'current'|'stale'='current',generation:Awaited<ReturnType<typeof readableMvtGenerationTx>>|undefined;
+  try{if(latest)generation=await readableMvtGenerationTx(client,caseId,sourceId,job.id,latest.version);else await assertMvtInputTx(client,job);}
+  catch(error){if(!(error instanceof AppError)||![403,404,409].includes(error.status))throw error;context='stale';}
   return PrivateMvtStatusSchema.parse({version:p.version,caseId,sourceId,currentCaseRevision:ctx.current.revision,jobId:job.id,status:job.status,context,
-    generation:row?{jobId:job.id,version:row.version,sha256:row.sha256}:null,preparedCells:row?.body.cells.length??0,
+    generation:generation?.pin??null,preparedCells:generation?.manifest.cells.length??0,
     plannedCells:job.payload.catalog.length,errorCode:job.error?/^[A-Z][A-Z0-9_]{0,79}$/.test(job.error)?job.error:'MVT_PROCESSING_FAILED':null});
 }
 export async function enqueuePrivateMvtTx(client:PoolClient,caseId:string,sourceId:string,value:unknown,reservedSlot?:{parentJobId:string;phase:SemanticDisplayPhase;jobId:string;publicationMs:number}){
