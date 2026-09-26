@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "official-scale-source-check/2",
+  "status": "no_eligible_source_acquired",
+  "testId": "DATA-10/OFFICIAL-SCALE-V2",
+  "runAt": "2026-09-26T06:24:15Z",
+  "baseCommit": "0e401f418054566b684cd11e885e4610368f9492",
+  "agent": {
+    "product": "Codex",
+    "assignedModel": "gpt-6-luna",
+    "assignedEffort": "max",
+    "observedModelAndEffort": "not exposed in task telemetry",
+    "requestedTier": "Fast",
+    "configuredTier": "priority (repository operating guide)",
+    "observedPerTurnTier": "unobserved"
+  },
+  "scope": {
+    "candidateLimit": 3,
+    "attemptLimitPerCandidate": 2,
+    "candidatesScreened": 3,
+    "originalBytesAcquired": false,
+    "sourceBytesInspected": false,
+    "runtimeOrScaleQualification": false,
+    "providerCalls": false,
+    "permissionRequestsSent": false,
+    "servicesStarted": false,
+    "weeklyAllowanceCheckpoint": {
+      "observedAt": "2026-09-26T06:24:15Z",
+      "windowDurationMins": 10080,
+      "usedPercent": 64,
+      "remainingPercent": 36,
+      "ordinaryUsageAllowed": true
+    }
+  },
+  "candidates": [
+    {
+      "title": "Shapefile of Rivers",
+      "issuer": "National Water Informatics Centre, Department of Water Resources, River Development & Ganga Rejuvenation, Ministry of Jal Shakti",
+      "catalogUrl": "https://www.data.gov.in/catalog/boundaries-water-resources-projects",
+      "resourceUrl": "https://www.data.gov.in/resource/shapefile-rivers",
+      "originalUrl": "https://www.data.gov.in/files/ogdpv2dms/s3fs-public/dataurl15092022/Rivers.zip",
+      "discovery": {
+        "status": "passed",
+        "evidence": "Official OGD resource HTML was fetched successfully (1,010,899 bytes). Its publisher metadata identifies the resource title, catalog, original URL, application/zip format, advertised size 10,660,764 bytes and a nationwide line-layer description. The parent catalog says it is released under NDSAP.",
+        "metadataFetchCommand": "curl -fLsS --max-time 30 https://www.data.gov.in/resource/shapefile-rivers",
+        "metadataFetchExit": 0
+      },
+      "terms": {
+        "status": "not_admitted_resource_field_empty",
+        "resourceLicenseField": "empty",
+        "evidence": [
+          "The OGD parent catalog marks this collection Released Under: National Data Sharing and Accessibility Policy (NDSAP).",
+          "The OGD portal states that published data is licensed under Government Open Data License - India; that license describes copying, distribution, adaptation and publication subject to attribution and other terms.",
+          "OGD Terms of Use directs users to the license metadata element on individual dataset records. This resource's field_data_licence is empty, so the catalog-level NDSAP label and portal-wide GO-DL statement do not establish an unambiguous resource-level license attachment for strict admission."
+        ],
+        "termsUrls": [
+          "https://www.data.gov.in/terms-of-use",
+          "https://ap.data.gov.in/godl",
+          "https://www.meity.gov.in/static/uploads/2024/02/Gazette-Notification_OpenDataLicense_13.02.2017.pdf"
+        ]
+      },
+      "download": {
+        "status": "failed_redirect_loop",
+        "command": "curl -fL --retry 0 --connect-timeout 10 --max-time 120 --max-filesize 52428800 -D /tmp/DATA-10-rivers-download.headers -o <private-task-path>/Rivers.zip <originalUrl>",
+        "exit": 47,
+        "httpStatus": 301,
+        "reportedTransferBytes": 180,
+        "observation": "The official download request followed the response into a redirect loop (curl limit 50). No ZIP file was created; reported redirect-body bytes are not source data.",
+        "metadataSizeBytes": 10660764,
+        "privateOriginalPath": "/Users/vinayak/.codex/task-data/ulpin-data-10-official-scale-v2/Rivers.zip"
+      },
+      "byteInspection": {
+        "status": "not_run",
+        "sha256": null,
+        "actualSizeBytes": null,
+        "featureCount": null,
+        "partCount": null,
+        "positionCount": null,
+        "extent": null,
+        "nativeIdentifiers": null,
+        "literalCrsAndUnits": null,
+        "verticalReference": null
+      },
+      "permissionAndUse": "Unresolved for strict source admission; no source bytes were acquired or redistributed."
+    },
+    {
+      "title": "NWIC Admin Boundaries catalog (state, district and block boundaries)",
+      "issuer": "National Water Informatics Centre, Department of Water Resources, River Development & Ganga Rejuvenation, Ministry of Jal Shakti",
+      "catalogUrl": "https://www.data.gov.in/catalog/admin-boundaries",
+      "discovery": {
+        "status": "access_failed",
+        "evidence": "The official catalog is indexed with state, district and block boundaries and an NDSAP release label, but no resource-level downloadable file or license metadata was retrieved.",
+        "attempts": [
+          {"url": "https://www.data.gov.in/catalog/admin-boundaries", "exit": 47, "result": "curl exceeded 50 redirects"},
+          {"url": "https://data.gov.in/catalog/admin-boundaries", "exit": 47, "result": "curl exceeded 50 redirects"}
+        ]
+      },
+      "originalBytes": "not acquired",
+      "permission": "not established at resource level"
+    },
+    {
+      "title": "Boundaries of Agro-Ecological Regions",
+      "issuer": "National Water Informatics Centre, Department of Water Resources, River Development & Ganga Rejuvenation, Ministry of Jal Shakti",
+      "resourceUrl": "https://www.data.gov.in/resource/boundaries-agro-ecological-regions",
+      "discovery": {
+        "status": "access_failed",
+        "evidence": "The official OGD search record advertises a 3.3 MB ZIP of nationwide region boundaries; the resource page did not load through either official host form, so resource-specific terms and a direct original URL were unavailable.",
+        "attempts": [
+          {"url": "https://www.data.gov.in/resource/boundaries-agro-ecological-regions", "exit": 47, "result": "curl exceeded 50 redirects"},
+          {"url": "https://data.gov.in/resource/boundaries-agro-ecological-regions", "exit": 47, "result": "curl exceeded 50 redirects"}
+        ]
+      },
+      "originalBytes": "not acquired",
+      "permission": "not established at resource level"
+    }
+  ],
+  "outcome": {
+    "replacementAcquired": false,
+    "runtimeAdmission": false,
+    "gfScale1Status": "remains open",
+    "concreteGap": "No candidate produced inspectable original bytes within the two-attempt limit. The directly downloadable NWIC Rivers record advertises a 10,660,764-byte ZIP but its official file URL loops through redirects; its resource-level license field is empty, leaving strict use/redistribution admission unresolved. The two official alternatives also redirected repeatedly before resource bytes and resource-level terms could be established. A stable official download response and an unambiguous resource-linked use/redistribution license are needed before acquisition and format-aware inspection."
+  },
+  "limitations": [
+    "No original source hash, actual byte size, features, parts, positions, extent, identifiers, CRS or vertical reference could be verified from bytes.",
+    "No source-derived fixture, manifest, acquisition checker, runtime ingestion or benchmark was created.",
+    "No 3D city, parcel, ownership, legal-boundary, measurement, runtime or GF-SCALE-1 claim is qualified."
+  ]
+}
