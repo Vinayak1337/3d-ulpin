@@ -1,0 +1,185 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D5",
+  "version": 1,
+  "profile": "official-runtime-pdf-v1",
+  "description": "Metadata-only support pack for one permitted foreign official historical topographic PDF retained outside Git. It contains no geometry or analytical expected facts and is not Indian operational data or land-rights evidence.",
+  "assets": [
+    {
+      "id": "usgs-central-city-co-1910-map",
+      "mediaType": "application/pdf",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Maps/HistoricalTopo/PDF/CO/62500/CO_Central%20City_232520_1910_62500_geo.pdf"
+      },
+      "sourceVersion": "Central City quadrangle, 1910; archive object last modified 2024-09-25",
+      "attribution": "U.S. Geological Survey, U.S. Department of the Interior",
+      "permission": {
+        "state": "documented",
+        "reference": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted",
+        "permittedUses": [
+          "research",
+          "demo"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": "Map margin says mean sea level; exact vertical datum unknown",
+        "horizontalUnit": null,
+        "verticalUnit": "feet",
+        "sourceDate": "1910"
+      },
+      "content": {
+        "state": "unavailable",
+        "reason": "The unchanged original is retained outside Git. Its exact private path, hash and byte count are in docs/evidence/usp/nest-migration/official-runtime-source/source-check.json."
+      },
+      "dependencies": [],
+      "verification": {
+        "catalogue_checked": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/nest-migration/official-runtime-source/source-check.json"
+        },
+        "bytes_preserved": {
+          "status": "not_run"
+        },
+        "parsed": {
+          "status": "not_run"
+        },
+        "rendered": {
+          "status": "not_run"
+        },
+        "workflow_verified": {
+          "status": "not_run"
+        }
+      },
+      "provenance": {
+        "schemaVersion": "usp-pack-provenance/1",
+        "sourceFamily": "USGS Historical Topographic Map Collection",
+        "sourceRelease": "Central City quadrangle, Colorado, 1910",
+        "resourceId": "CO_Central City_232520_1910_62500_geo.pdf",
+        "nativeIds": [
+          "Central City quadrangle"
+        ],
+        "acquiredAt": "2026-09-26T01:59:53Z",
+        "original": {
+          "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+          "bytes": 9344939
+        },
+        "parser": {
+          "name": "Poppler pdfinfo",
+          "version": "26.05.0"
+        },
+        "heightType": "historical topographic contour representation",
+        "benchmark": "Map margin says mean sea level; exact vertical datum unknown",
+        "coverage": "One historical topographic quadrangle sheet; no parcel, building, or property-rights association",
+        "licenceFamily": "USGS public domain",
+        "trainingPermission": {
+          "state": "not_applicable",
+          "reason": "No model training, provider call, or LLM processing was performed or requested."
+        },
+        "purpose": "test_only",
+        "privacy": "Public historical map; original retained outside Git for local deterministic PDF inspection",
+        "subsetLineage": [],
+        "missingCapabilities": [
+          "indian_geography",
+          "current_map_data",
+          "formal_horizontal_crs",
+          "exact_vertical_datum",
+          "parcel_or_building_association",
+          "ownership_or_title_evidence",
+          "plan_pdf_v1_application_parser_receipt"
+        ],
+        "stages": {
+          "discovered": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/nest-migration/official-runtime-source/source-check.json"
+          },
+          "acquired": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/nest-migration/official-runtime-source/source-check.json"
+          },
+          "inspected": {
+            "status": "passed",
+            "evidenceRef": "docs/evidence/usp/nest-migration/official-runtime-source/source-check.json"
+          },
+          "qualified": {
+            "status": "not_run"
+          },
+          "tested": {
+            "status": "not_run"
+          }
+        },
+        "qualificationScope": "Local public-source permission and deterministic PDF format-readability candidate only; no runtime/API, content-accuracy, geometry, ownership, Indian-source, scale, or learning qualification."
+      }
+    },
+    {
+      "id": "official-runtime-pdf-scope",
+      "mediaType": "application/json",
+      "classification": "unknown",
+      "origin": {
+        "kind": "authored",
+        "generatorRef": "DATA source metadata, 2026-09-26"
+      },
+      "sourceVersion": "1",
+      "attribution": "3D ULPIN source-task metadata",
+      "permission": {
+        "state": "documented",
+        "reference": "Project-authored metadata",
+        "permittedUses": [
+          "research",
+          "demo",
+          "redistribution"
+        ]
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null,
+        "horizontalUnit": null,
+        "verticalUnit": null,
+        "sourceDate": "2026-09-26"
+      },
+      "content": {
+        "state": "available",
+        "path": "scope.json",
+        "sha256": "29b4def5ae469cbffb8c7b0d04d6463082b4847b099703c71b56055e8a5d857e",
+        "bytes": 470
+      },
+      "dependencies": [
+        "usgs-central-city-co-1910-map"
+      ],
+      "verification": {
+        "catalogue_checked": {
+          "status": "not_applicable",
+          "reason": "Project-authored metadata"
+        },
+        "bytes_preserved": {
+          "status": "passed",
+          "evidenceRef": "docs/evidence/usp/nest-migration/official-runtime-source/source-check.json"
+        },
+        "parsed": {
+          "status": "not_applicable",
+          "reason": "Metadata document is not a source data parser input"
+        },
+        "rendered": {
+          "status": "not_applicable",
+          "reason": "Metadata document has no visual output"
+        },
+        "workflow_verified": {
+          "status": "not_applicable",
+          "reason": "Metadata document is not an application workflow input"
+        }
+      }
+    }
+  ],
+  "expectedPath": "scope.json",
+  "expectedCapabilities": [
+    "documented_local_pdf_processing_permission",
+    "source_pdf_locally_readable_by_a_format_aware_tool"
+  ],
+  "missingCapabilities": [
+    "plan_pdf_v1_pdfjs_parser_receipt",
+    "plan_pdf_v1_live_job_receipt",
+    "indian_official_source_pdf_with_documented_local_processing_permission"
+  ]
+}
