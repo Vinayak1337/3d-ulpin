@@ -1,6 +1,7 @@
 import {GisQuarantineSchema,type ImportPackage} from "@ulpin/contracts";
 import type { PoolClient } from "pg";
 import { AppError } from "../../infrastructure/errors";
+import {localOperatorSubject} from '../usp/principal';
 
 /** Check the retained body, never a filtered projection that a writer could save.
  * Use the caller's client and existing lock order; this check takes no new locks. */
@@ -22,6 +23,11 @@ export async function assertPackageDocumentAuthority(client: PoolClient, pkg: Im
     const pin=parsed.data,source=sources.find(row=>row.id===pin.sourceId);
     if(!source||source.sha256!==pin.sourceSha256||Number(source.revision)!==pin.sourceRevision||pin.accepted!==pkg.features.length)
       throw new AppError(409,'GIS_SOURCE_CHANGED','The exact geometry quarantine source revision changed.');
+    const scope=(await client.query('SELECT c.archived,c.site_id,a.site_id area_site FROM cases c JOIN map_areas a ON a.id=$2 WHERE c.id=$1',[source.case_id,pkg.areaId])).rows[0];
+    const subject=localOperatorSubject();
+    if(!scope||scope.archived||scope.site_id!==scope.area_site||
+      [source.inspection?.actor,source.inspection?.largeOriginal?.operatorSubject,source.inspection?.documentOriginal?.subject].some(owner=>owner&&owner!==subject))
+      throw new AppError(403,'AREA_SOURCE_DENIED','The geometry quarantine source context is unavailable.');
   }
   const { documentAuthorityTx, assertDocumentPackageParts } = await import("../usp/ingestion/document-authority");
   const marked = new Set<string>();
