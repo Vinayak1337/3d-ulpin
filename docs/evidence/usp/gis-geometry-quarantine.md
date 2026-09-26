@@ -1,0 +1,34 @@
+# GIS-QUARANTINE-01 — per-feature geometry quarantine
+
+Production pin: `5d7c3401e2c89888ed3efedf746cf1d5fd9eb853` (owned commits `68e49c7`, `5d7c340`) from assigned base `07fba50bbc49b686018b8fb9767f857068ff1a33`. This is a candidate awaiting lead review/integration. Requested execution was Sol/max/default; per-turn model/effort/tier telemetry is unavailable. No subagents, priority request, provider call, public activation or serving3188 change occurred.
+
+Invalid topology, unclosed rings and incompatible feature geometry are explicit per-feature rejections, without repairs or coordinate changes. Parse/dimension/nonfinite-coordinate errors, collection/CRS ambiguity, missing or duplicate identity across **all** rows and resource limits remain fatal. Accepted features retain zero-based `sourceFeatureIndex`; rejected rows retain original index, source ID, code and reason. Native adapter output preserves the accepted rows' original-index alignment.
+
+Inspection and persisted source/package/API quarantine metadata carry total/accepted/rejected counts, immutable source hash, and (after import) exact source ID/revision. Partial packages carry `complete:false`, a warning and `NEEDS_INPUT`. All-rejected import returns `422 GIS_ALL_GEOMETRIES_REJECTED` before original storage or domain writes. Existing physical bodies are preserved by failed updates; no source omission implicitly deletes a record.
+
+Area context adds `displayFeatures`, containing current accepted, source-authorized unrecorded proposals alongside recorded features. Its proposal marker is `displayState: unrecorded_proposal` plus `proposalPackageId`. Existing `features` remains the recorded analytical input. Archived, unavailable, foreign-site/operator or changed exact source revisions cannot supply quarantined package/display reads. Combined display output keeps the existing 2,000-feature cap. There is no alternative datastore or record commit solely to render.
+
+Studio consumes that API projection with the existing renderer and defaults to live API traffic; fixture mode requires explicit `VITE_LOCAL_DATA=on`. The existing toast reports the skip count/reason once per package/source hash per session; existing import details retain all rejection rows. Height units and meaning require officer selection instead of a field-name guess. No frontend geometry filtering/repair, new design or generated OpenAPI edit is included. The lead owns final OpenAPI/API-client generation and serving integration.
+
+## Unchanged official NYC runtime proof
+
+The complete NYC OTI building-class-2100 selection intersecting Census ZCTA10013 was imported through the isolated native Nest multipart endpoint. The original remains at `/Users/vinayak/.codex/task-data/nyc-zcta-10013/buildings-original.geojson`: 1,103,282 bytes; SHA-256 `107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e`. The unchanged issuing-portal manifest/terms and Census boundary remain outside Git. No replacement source was created.
+
+- Total 1,662; accepted 1,661; rejected one: DOITT ID `751920`, original zero-based index `1322`, `INVALID_GEOMETRY`, `Ring Self-intersection[-74.003625525124 40.72574597286]`.
+- Every accepted index/ID/decoded original geometry was checked against the unchanged original. All 1,661 issuer heights were converted from feet using `0.3048`; maximum comparison error was zero. Geometry role is `observed_roof_projection`.
+- Private original download matched every byte and the exact SHA-256. Source inspection, package read and area context retained the same rejection metadata and source revision pin.
+- Context returned 1,661 display proposals and zero recorded analytical features. Browser inspection rendered the dense building group, 1,661-building list, skip toast and persistent ID/index/reason details. Reload did not repeat the toast. No browser errors or error overlay; one existing React Router hydration warning was observed.
+- A traceable derivative containing only the unchanged invalid original feature returned all-rejected422 with unchanged area/site/case/source/record/package counts. An all-rejected update preserved every existing physical body, ID and revision.
+- Duplicate references to the actual rejected feature, conflicting explicit CRS and 3,324 actual-feature references over the existing feature cap were fatal with no writes. Temporarily archived source context returned403; a changed exact source revision returned409. Each isolated control was restored and normal reads passed afterward.
+
+[Sanitized runtime receipt](gis-geometry-quarantine-runtime.json) contains exact IDs, code/script/source/log/image hashes, commands/exits and cleanup. Native API script and original-only derivative remain privately under `.runtime/gis-quarantine/`. The screenshot is `/Users/vinayak/.codex/worktrees/0bc6/3D Ulpin/output/playwright/nyc-gis-quarantine.png`.
+
+## Validation and lifecycle
+
+`pnpm install --frozen-lockfile`, backend build/typechecks, Studio typecheck/build and native API verification exited0. The focused geometry/GIS-inspection/native-adapter suite passed **91 tests** (one warning), with current code mounted read-only and additional test tools pinned. The MVT code digest remains `d581ad446fa799c1ca9123721df7bc95db0b80192f4188006bcfde717ad03b61`.
+
+Owned isolated API3191, dispatcher, all five nonce services and Studio5190 are stopped. All named volumes and original/private source objects remain. Existing previews5173/5188, serving3188, root environment, frontend-owned checkout, user index and `design-mockup/` were untouched. The guard verified nonce-specific loopback database/storage/process scope; the existing `REPO_DATA=false` health label says `linked` even for this explicit nonce override. No linked environment was selected by this run.
+
+Preserved nonce: `ulpin-usptest-dbb485caacda9454`; API package `307acbc6-bde5-4d65-9ae2-8dd8351c96d5`; area `a199b395-2d34-4ca6-af9c-4d8a2716d996`. The inspected route, now stopped, was `http://127.0.0.1:5190/studio/areas/a199b395-2d34-4ca6-af9c-4d8a2716d996?package=307acbc6-bde5-4d65-9ae2-8dd8351c96d5`. Resume only with a clean pinned checkout, existing isolation guard and current ownership receipt; do not reseed/reset/delete volumes.
+
+This qualifies deterministic quarantine and approximate foreign roof-envelope display. Census ZCTA is a postal-area approximation; it is not exact USPS coverage. It does not establish floors/units, residents, ownership, official ULPIN, Indian operational accuracy, recorded analytical geometry, learning or a streaming/scale gate. Any future repair must be a separate traceable proposal.

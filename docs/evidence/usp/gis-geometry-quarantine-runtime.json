@@ -1,0 +1,177 @@
+{
+  "task": "GIS-QUARANTINE-01",
+  "codeCommit": "5d7c3401e2c89888ed3efedf746cf1d5fd9eb853",
+  "scriptSha256": "eda9d282b3b31eb05b25339da8076eab0b02d831e2144242271ce1e95072067f",
+  "at": "2026-09-26T23:27:23.800Z",
+  "isolation": {
+    "nonce": "dbb485caacda9454",
+    "project": "ulpin-usptest-dbb485caacda9454",
+    "api": "http://127.0.0.1:3191",
+    "guard": "assertUspIsolation passed",
+    "providerCalls": false
+  },
+  "original": {
+    "path": "/Users/vinayak/.codex/task-data/nyc-zcta-10013/buildings-original.geojson",
+    "bytes": 1103282,
+    "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "total": 1662
+  },
+  "packageId": "307acbc6-bde5-4d65-9ae2-8dd8351c96d5",
+  "areaId": "a199b395-2d34-4ca6-af9c-4d8a2716d996",
+  "sourceId": "f740eaf5-c4e0-4f6f-9c10-c545ceff5f14",
+  "caseId": "ac90dfe6-864c-46c1-b66c-495e6ba73c33",
+  "sourceRevision": 1,
+  "quarantine": {
+    "total": 1662,
+    "accepted": 1661,
+    "rejected": 1,
+    "rejections": [
+      {
+        "featureIndex": 1322,
+        "sourceKey": "751920",
+        "code": "INVALID_GEOMETRY",
+        "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]"
+      }
+    ],
+    "version": "gis-quarantine/1",
+    "sourceSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "sourceId": "f740eaf5-c4e0-4f6f-9c10-c545ceff5f14",
+    "sourceRevision": 1,
+    "message": "1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection[-74.003625525124 40.72574597286]. Original retained unchanged; no geometry repaired.",
+    "complete": false
+  },
+  "display": {
+    "accepted": 1661,
+    "recorded": 0,
+    "mode": "unrecorded_proposal"
+  },
+  "height": {
+    "unit": "ft",
+    "conversion": 0.3048,
+    "maxAbsoluteErrorM": 0
+  },
+  "allRejectedDerivative": {
+    "path": "/Users/vinayak/.codex/worktrees/0bc6/3D Ulpin/.runtime/gis-quarantine/invalid-only-derived.geojson",
+    "parentSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "originalFeatureIndex": 1322,
+    "doittId": "751920",
+    "sha256": "3593b6a719aecdb8a45873e048ed6153e8ef9e77fac5f2604f736da69f25a8b8",
+    "replacementSource": false
+  },
+  "checks": [
+    "unchanged original native inspection: 1662 total / 1661 accepted / 1 rejected",
+    "actual invalid-feature-only derivative: 422, no area/site/case/source/record/package mutations",
+    "1661 original indexes / DOITT IDs / unchanged decoded geometries / feet-to-metres verified; all unrecorded",
+    "private stored original download matches all 1,103,282 unchanged bytes and SHA-256",
+    "context: 1661 accepted display proposals, 0 recorded analytical features, rejected ID excluded",
+    "all-rejected area update preserves every existing physical body, ID and revision",
+    "duplicate identity across actual rejected features remains fatal with no writes",
+    "conflicting explicit CRS remains fatal with no writes",
+    "3324 actual-feature references exceed the unchanged 2000 feature cap, no writes",
+    "archived source context denied for display and package reads",
+    "changed exact source revision denied for display and package reads"
+  ],
+  "previewUrl": "http://127.0.0.1:5190/studio/areas/a199b395-2d34-4ca6-af9c-4d8a2716d996?package=307acbc6-bde5-4d65-9ae2-8dd8351c96d5",
+  "limitations": [
+    "Foreign NYC building class 2100 intersecting Census ZCTA 10013; not an exact USPS delivery boundary.",
+    "Roof projection and issuer roof heights support approximate exterior display, not floors/units, ownership, Indian ULPIN, analytical recording or scale qualification.",
+    "No repairs, ML/provider calls, record commits, live serving3188 installation or OpenAPI regeneration."
+  ],
+  "browser": {
+    "url": "http://127.0.0.1:5190/studio/areas/a199b395-2d34-4ca6-af9c-4d8a2716d996?package=307acbc6-bde5-4d65-9ae2-8dd8351c96d5",
+    "engine": "Codex in-app browser",
+    "acceptedBuildingCount": 1661,
+    "canvasCount": 1,
+    "toastSeen": true,
+    "rejectionDetailsSeen": true,
+    "toastRepeatedAfterReload": false,
+    "errorOverlay": false,
+    "consoleErrors": [],
+    "warnings": [
+      "Existing React Router HydrateFallback warning on initial hydration"
+    ],
+    "screenshot": {
+      "path": "/Users/vinayak/.codex/worktrees/0bc6/3D Ulpin/output/playwright/nyc-gis-quarantine.png",
+      "sha256": "8634a487182f6a1e8ef8f1dc5720d599401ff50d4bd608d226bc13e4873dabb1"
+    }
+  },
+  "mvtCodeSha256": "d581ad446fa799c1ca9123721df7bc95db0b80192f4188006bcfde717ad03b61",
+  "verification": {
+    "dependencies": {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    "backend": {
+      "command": "pnpm build",
+      "exit": 0,
+      "logSha256": "ef50835e9590bdbc237bd76644e3a53924d44616c7c9804fe27b9364618dbeec"
+    },
+    "studioTypecheck": {
+      "command": "pnpm studio:typecheck",
+      "exit": 0,
+      "logSha256": "4dbb96a853355b647b3002d94a8de4534e34d862d4c7c064938246b826b01901"
+    },
+    "studioBuild": {
+      "command": "pnpm studio:build",
+      "exit": 0,
+      "logSha256": "6c5618a71d1d085d830459e76288bbcb738cd9cf4ed8ca4704df2fd8c33d488c"
+    },
+    "nativeApi": {
+      "command": "node .runtime/gis-quarantine/verify.mjs",
+      "exit": 0
+    },
+    "geometryTests": {
+      "command": "docker run owned geo image with read-only current geo and fixtures mounts; python -m pytest -q -o addopts= -p no:cacheprovider tests/test_area.py tests/test_gis_inspection.py tests/test_native_adapters.py --disable-warnings",
+      "exit": 0,
+      "passed": 91,
+      "warnings": 1,
+      "image": "ulpin-geo:run01-dbb485caacda9454",
+      "pinnedAdditionalTestDependencies": {
+        "pytest": "8.3.5",
+        "httpx": "0.28.1",
+        "httpcore": "1.0.9",
+        "h11": "0.16.0",
+        "iniconfig": "2.0.0",
+        "pluggy": "1.5.0",
+        "packaging": "25.0"
+      },
+      "logSha256": "4a9ac6b2e2ecdd0a285d9d815a1e1f148b2277ea6e58c3d8aaed28ead6b8f818"
+    }
+  },
+  "cleanup": {
+    "status": {
+      "project": "ulpin-usptest-dbb485caacda9454",
+      "containers": [],
+      "processes": {
+        "api": {
+          "pid": 17740,
+          "pgid": 17740,
+          "ownedLeaderAlive": false,
+          "memberPids": []
+        },
+        "dispatcher": {
+          "pid": 17594,
+          "pgid": 17594,
+          "ownedLeaderAlive": false,
+          "memberPids": []
+        }
+      }
+    },
+    "previewPort5190Stopped": true,
+    "ownedBrowserTabClosed": true,
+    "namedVolumesPreserved": true,
+    "originalsPreserved": true,
+    "foreignPreviews5173And5188AndServing3188Untouched": true
+  },
+  "model": {
+    "requested": "Sol / max / default tier",
+    "observed": "Model, reasoning effort and service tier are not exposed in per-turn tool telemetry; no priority request made."
+  },
+  "sourceMetadata": {
+    "manifest": "/Users/vinayak/.codex/task-data/nyc-zcta-10013/manifest.json",
+    "manifestSha256": "f744fba0f93cfa6cda35ecc56bdd4b5f686449ea2cd50541731b87eab9b470d3",
+    "issuingPortal": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson",
+    "terms": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+    "permissionScope": "Official public-data download for local inspection; no public publication or ML training."
+  }
+}
