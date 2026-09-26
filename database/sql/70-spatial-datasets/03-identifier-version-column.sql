@@ -1,0 +1,1 @@
+ALTER TABLE spatial_datasets ADD COLUMN IF NOT EXISTS identifiers_version integer
