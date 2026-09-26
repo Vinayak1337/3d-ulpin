@@ -1,0 +1,260 @@
+{
+  "schemaVersion": "official-scale-source-check/3",
+  "status": "source_acquired_and_inspected; conditional_reproduction_terms_documented; training_unconfirmed; no_runtime_or_scale_qualification",
+  "testId": "DATA-10/NWIC-DISTRICT-BOUNDARIES-V1",
+  "runAt": "2026-09-26T09:00:25Z",
+  "baseCommit": "dbe52ca715c0f0f06fb5a86084ebbf5b16803a22",
+  "branch": "task/data-10-nwic-boundaries-v1",
+  "agent": {
+    "product": "Codex",
+    "assignedModel": "gpt-6-luna",
+    "assignedEffort": "max",
+    "observedModelAndEffort": "gpt-6-luna/max (lead-confirmed task telemetry)",
+    "requestedTier": "Fast",
+    "configuredTier": "priority (repository operating guide)",
+    "observedPerTurnTier": "unobserved"
+  },
+  "scope": {
+    "candidateFamilies": 1,
+    "candidateSources": 1,
+    "downloadAttempts": 1,
+    "originalBytesAcquired": true,
+    "sourceBytesInspected": true,
+    "permissionRequestsSent": false,
+    "runtimeOrScaleQualification": false,
+    "providerCalls": false,
+    "servicesStarted": false,
+    "originalTransferCapBytes": 157286400,
+    "expandedArchiveCapBytes": 536870912
+  },
+  "source": {
+    "catalogUrl": "https://www.nwdp.nwic.gov.in/dataset/district-boundary",
+    "resourceUrl": "https://www.nwdp.nwic.gov.in/dataset/district-boundary/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d",
+    "directDownloadUrl": "https://nwdp.nwic.gov.in/dataset/6c1af675-1dec-4927-882c-c1ba9d73f76b/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d/download/district_nwic_geojson.zip",
+    "resourceId": "8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d",
+    "issuer": "National Water Informatics Centre; portal metadata lists Geological Survey of India as producer",
+    "datasetLastUpdated": "2025-05-05T07:23:00Z"
+  },
+  "termsDecision": {
+    "httpStatus": 200,
+    "contentType": "application/zip",
+    "contentLengthHeader": "71238839",
+    "redirectCount": 0,
+    "date": "2026-09-26T08:44:40+00:00",
+    "lastModified": "Tue, 23 Jun 2026 07:39:09 GMT",
+    "etag": "\"1782200349.3659043-71238839-3372226513\"",
+    "contentDisposition": "inline; filename=district_nwic_geojson.zip",
+    "resourceFormat": "GeoJSON",
+    "resourceLastUpdated": "2025-05-01",
+    "resourceLicenseLabel": "Other (Open)",
+    "termsUrl": "https://www.nwdp.nwic.gov.in/footer/copyrightPolicy",
+    "termsObservation": "NWIC copyright policy says site material may be reproduced free of charge in any format or media without specific permission if reproduced accurately and not in a derogatory or misleading context; material published or issued to others must prominently acknowledge the source. It excludes material explicitly identified on the site as third-party copyright.",
+    "thirdPartyObservation": "The resource page lists GSI as producer. The source property src_agency has the literal value \"Survey of India (SOI)\" on all 733 features; this identifies a source agency but does not itself identify a copyright holder or explicitly mark the material as third-party copyright. Reassess if a specific third-party copyright notice is later found; no rights-ownership conclusion is made here.",
+    "localDeterministicTesting": "documented_with_conditions_under_site_policy; test_only use, accurate and non-misleading context, source attribution retained.",
+    "publicRedistribution": "documented_with_conditions_under_site_policy; source attribution and accuracy/non-misleading conditions apply; no public redistribution was performed by this task.",
+    "trainingPermission": "unconfirmed; the reviewed policy/resource metadata do not explicitly address ML training. No training use occurred.",
+    "permissionRequestsSent": false,
+    "decision": "Read the resource Open designation and the applicable NWIC site copyright policy together. The policy provides conditional reproduction permission for site material; no separate resource licence checkbox was required for this bounded test-only source profile. This is an evidence-based project admission decision, not a legal guarantee."
+  },
+  "acquisition": {
+    "requestedUrl": "https://nwdp.nwic.gov.in/dataset/6c1af675-1dec-4927-882c-c1ba9d73f76b/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d/download/district_nwic_geojson.zip",
+    "finalUrl": "https://nwdp.nwic.gov.in/dataset/6c1af675-1dec-4927-882c-c1ba9d73f76b/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d/download/district_nwic_geojson.zip",
+    "httpStatus": 200,
+    "redirectCount": 0,
+    "contentType": "application/zip",
+    "contentLengthHeader": "71238839",
+    "bytes": 71238839,
+    "sha256": "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37",
+    "lastModified": "Tue, 23 Jun 2026 07:39:09 GMT",
+    "etag": "\"1782200349.3659043-71238839-3372226513\"",
+    "contentDisposition": "inline; filename=district_nwic_geojson.zip",
+    "acquiredAtUtc": "2026-09-26T08:44:40+00:00",
+    "privateOriginalPath": "/Users/vinayak/.codex/task-data/ulpin-nwic-boundaries-v1/district_nwic_geojson.zip",
+    "preservedOutsideGit": true
+  },
+  "archiveInspection": {
+    "memberCount": 1,
+    "archiveExpandedBytes": 168356689,
+    "originalTransferCapBytes": 157286400,
+    "expandedCapBytes": 536870912,
+    "unsafeMembers": [],
+    "members": [
+      {
+        "name": "district_nwic.GeoJSON",
+        "uncompressedBytes": 168356689,
+        "compressedBytes": 71238699,
+        "crc32": "c69462bc",
+        "memberTimestamp": [
+          2025,
+          1,
+          13,
+          16,
+          23,
+          36
+        ],
+        "safePath": true
+      }
+    ],
+    "safeExtraction": {
+      "status": "passed",
+      "path": "/Users/vinayak/.codex/task-data/ulpin-nwic-boundaries-v1/extracted",
+      "member": "district_nwic.GeoJSON",
+      "bytes": 168356689,
+      "sha256": "2b27a478e24d8c51b0655e74ce3f4f880e75c752e4597550d6fc925ed06ac201",
+      "zipCrc32Verified": true,
+      "fileMode": "0600"
+    }
+  },
+  "byteInspection": {
+    "status": "passed",
+    "sha256": "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37",
+    "actualSizeBytes": 71238839,
+    "archiveMemberCount": 1,
+    "expandedBytes": 168356689,
+    "expandedSha256": "2b27a478e24d8c51b0655e74ce3f4f880e75c752e4597550d6fc925ed06ac201",
+    "featureCount": 733,
+    "positionCount": 3125505,
+    "extentOrder": [
+      "xmin",
+      "ymin",
+      "xmax",
+      "ymax"
+    ],
+    "extent": [
+      2818369.546553203,
+      2177948.4534365367,
+      5679118.542969628,
+      5444563.235709688
+    ],
+    "literalCrs": {
+      "type": "name",
+      "properties": {
+        "name": "urn:ogc:def:crs:EPSG::7755"
+      }
+    },
+    "horizontalCrs": "EPSG:7755 (WGS 84 / India NSF LCC)",
+    "horizontalUnit": "metre",
+    "coordinateOrder": "easting,northing",
+    "verticalReference": null,
+    "geometryTypes": {
+      "MultiPolygon": 733
+    },
+    "nativeIdentifierCandidates": {
+      "properties.id": {
+        "uniqueCount": 733,
+        "samples": [
+          377,
+          378,
+          379,
+          380,
+          396
+        ]
+      },
+      "properties.objectid": {
+        "uniqueCount": 733,
+        "samples": [
+          377,
+          378,
+          379,
+          380,
+          396
+        ]
+      },
+      "properties.dtcode": {
+        "uniqueCount": 732,
+        "samples": [
+          "717",
+          "390",
+          "391",
+          "392",
+          "408"
+        ]
+      },
+      "properties.district": {
+        "uniqueCount": 728,
+        "samples": [
+          "Kamjong",
+          "Anuppur",
+          "Ashoknagar",
+          "Balaghat",
+          "Harda"
+        ]
+      },
+      "properties.state_name": {
+        "uniqueCount": 36,
+        "samples": [
+          "Manipur",
+          "Madhya Pradesh",
+          "Puducherry",
+          "Rajasthan",
+          "Uttar Pradesh"
+        ]
+      }
+    },
+    "stateCount": 36
+  },
+  "evidence": {
+    "packManifest": "fixtures/usp/D3/nwic-boundaries-v1/manifest.json",
+    "sourceObservations": "fixtures/usp/D3/nwic-boundaries-v1/source-observations.json",
+    "sourceObservationsSha256": "2bcc5dc1d66a29383a83510bcb29bed94ba17849cf28316823f341fb52b9ec67",
+    "sourceObservationsBytes": 18243,
+    "privateFullProfile": "/Users/vinayak/.codex/task-data/ulpin-nwic-boundaries-v1/source-profile.json",
+    "officialPages": [
+      "https://www.nwdp.nwic.gov.in/dataset/district-boundary",
+      "https://www.nwdp.nwic.gov.in/dataset/district-boundary/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d",
+      "https://www.nwdp.nwic.gov.in/footer/copyrightPolicy",
+      "https://opengeospatial.github.io/ontology-crs/data/def/crs/EPSG/0/7755/index.html"
+    ]
+  },
+  "outcome": {
+    "sourceAcquired": true,
+    "sourceInspected": true,
+    "testOnlySourceProfileCreated": true,
+    "localDeterministicUseDisposition": "documented_with_conditions",
+    "publicRedistributionPerformed": false,
+    "runtimeAdmission": false,
+    "gfScale1Status": "remains open; later measured run needs pinned hardware, concurrency, numerical budgets, isolation and runtime receipts."
+  },
+  "limitations": [
+    "Original ZIP and expanded GeoJSON remain private outside Git; the repository pack includes inspection metadata only.",
+    "The NWIC page names GSI as producer; source property src_agency names Survey of India. Neither field alone establishes copyright ownership. The NWIC third-party copyright exception remains a real condition if explicit third-party marking is later found.",
+    "GeoJSON source has an explicit EPSG:7755 CRS member; no conversion was made. Treat it as projected easting/northing in metres, not RFC 7946 longitude/latitude.",
+    "The advertised and observed feature counts match; no external controls, boundary legal status, date validity or positional/topology accuracy were checked.",
+    "No 3D, building, parcel, ownership, training, runtime or scale qualification follows from this profile."
+  ],
+  "metadataChecks": [
+    {
+      "operation": "JSON and source-pack reference/hash structural consistency",
+      "command": "Python 3 standard-library metadata consistency check",
+      "exit": 0
+    },
+    {
+      "operation": "UspDataPackSchema validation",
+      "command": "pnpm exec tsx -e UspDataPackSchema.safeParse(manifest.json)",
+      "exit": 254,
+      "reason": "tsx not found by pnpm in this worktree; no dependency installation attempted."
+    },
+    {
+      "operation": "Pack verification after sourceDate length correction",
+      "command": "pnpm exec tsx scripts/usp/data/verify-pack.ts '/Users/vinayak/.codex/worktrees/f017/3D Ulpin/fixtures/usp/D3/nwic-boundaries-v1/manifest.json'",
+      "workingDirectory": "/Users/vinayak/Desktop/3D Ulpin",
+      "exit": 0,
+      "resultSchema": "usp-pack-byte-check/1",
+      "result": "available source-observations.json hash/size verified; unchanged original correctly remains unavailable from the checked-in pack and is pinned in the receipt; no parsing, rendering, permission or workflow qualification."
+    }
+  ],
+  "correctionHistory": [
+    {
+      "recordedAtUtc": "2026-09-26T09:06:48Z",
+      "reviewFinding": "The initial assets[0].reference.sourceDate was 139 characters, exceeding coreText(128).",
+      "correction": "Shortened assets[0].reference.sourceDate to \"NWIC resource update 2025-05-01; dataset page updated 2025-05-05\" (64 characters). Full resource, dataset and HTTP Last-Modified dates and validity caveats remain in sourceVersion, provenance.sourceRelease and acquisition receipt.",
+      "originalsOrProfileChanged": false,
+      "priorSchemaAttemptPreserved": {
+        "exit": 254,
+        "reason": "Earlier worktree pnpm exec tsx attempt found no local tsx; retained unchanged in metadataChecks as historical failure."
+      },
+      "correctedManifestSha256": "c99b2a33c96707a608eb740543b3db9db7009c3ab71e53a7a890cbd6c2ee4e70",
+      "correctedManifestBytes": 8531
+    }
+  ]
+}
