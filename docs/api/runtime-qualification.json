@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "ulpin-api-runtime-qualification/1",
+  "recordedAt": "2026-09-26T02:24:19.948Z",
+  "receipt": "docs/evidence/usp/nest-migration/runtime-source/phase-2b-2026-09-26.json",
+  "receiptSha256": "beface9fe6c5b02404aa171dcc49b68911d8827368c88c50bc75a011eacdeabb",
+  "servedCodeCommit": "5d80dd869c62dfed1bf39c2594cd1e080c9045fb",
+  "environment": "Stopped isolated local run; volumes preserved. Returned IDs belong only to that run.",
+  "qualification": "Only the listed input/profile/behavior was observed at the served commit; not every branch or dataset accepted by an operation.",
+  "unqualified": [
+    "Indian operational evidence",
+    "geometry, ownership or rights accuracy",
+    "provider or model behavior",
+    "scale",
+    "frontend or release-gate completion",
+    "PDF.js page/rendering helper",
+    "Populated/linked environment migration or deployment"
+  ],
+  "operations": {
+    "POST /api/v1/cases": {
+      "scope": "Create a workspace using the actual USGS document title.",
+      "sourceManifests": [
+        "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+      ],
+      "evidencePointers": [
+        "/documentJourney/caseCreate"
+      ]
+    },
+    "POST /api/v1/cases/{caseId}/sources": {
+      "scope": "Retain plan-pdf-v1, queue inspection and replay the same idempotency key without duplicate source/jobs.",
+      "sourceManifests": [
+        "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+      ],
+      "evidencePointers": [
+        "/documentJourney/upload",
+        "/documentJourney/sameKeyReplay"
+      ]
+    },
+    "GET /api/v1/cases/{caseId}": {
+      "scope": "Read persisted source inspection and failed/succeeded canonical job history; PDF remains needs_input with no geometry.",
+      "sourceManifests": [
+        "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+      ],
+      "evidencePointers": [
+        "/documentJourney/recordRead",
+        "/documentJourney/persistedSource"
+      ]
+    },
+    "POST /api/v1/jobs/{jobId}/retry": {
+      "scope": "Recover after an owned processor outage with the same original and input fingerprint.",
+      "sourceManifests": [
+        "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+      ],
+      "evidencePointers": [
+        "/documentJourney/failedJob",
+        "/documentJourney/retry",
+        "/documentJourney/completedJob"
+      ]
+    },
+    "GET /api/v1/sources/{sourceId}/file": {
+      "scope": "Verify unchanged original hash/size, private headers and remote-origin denial for both inputs.",
+      "sourceManifests": [
+        "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json",
+        "fixtures/real-nyc/provenance.json"
+      ],
+      "evidencePointers": [
+        "/documentJourney/downloads",
+        "/documentJourney/remoteOrigin",
+        "/gisJourney/download",
+        "/gisJourney/remoteOrigin"
+      ]
+    },
+    "POST /api/v1/import-packages/inspect": {
+      "scope": "Inspect the unchanged single-feature official NYC GeoJSON.",
+      "sourceManifests": [
+        "fixtures/real-nyc/provenance.json"
+      ],
+      "evidencePointers": [
+        "/gisJourney/inspection"
+      ]
+    },
+    "POST /api/v1/import-packages": {
+      "scope": "Synchronously import the inspected multipart GeoJSON with its native key and unknown geometry role.",
+      "sourceManifests": [
+        "fixtures/real-nyc/provenance.json"
+      ],
+      "evidencePointers": [
+        "/gisJourney/rawImport"
+      ]
+    },
+    "GET /api/v1/import-packages/{packageId}": {
+      "scope": "Read the persisted package and candidate/source-evidence binding.",
+      "sourceManifests": [
+        "fixtures/real-nyc/provenance.json"
+      ],
+      "evidencePointers": [
+        "/gisJourney/persistedRead"
+      ]
+    },
+    "GET /api/v1/areas/{areaId}/context": {
+      "scope": "Read the same persisted package and candidate in its area context.",
+      "sourceManifests": [
+        "fixtures/real-nyc/provenance.json"
+      ],
+      "evidencePointers": [
+        "/gisJourney/persistedRead"
+      ]
+    }
+  }
+}
