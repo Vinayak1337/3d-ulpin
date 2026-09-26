@@ -16,7 +16,7 @@ import {consolidatedRegisterHtml} from './consolidated-register-html';
 type Field=ConsolidatedRegistryReport['building']['name'];
 type Row=Record<string,any>;
 const unknown=():Field=>({state:'unknown',value:null,sources:[]});
-const sourceIds=(evidence:Row[]=[])=>[...new Set(evidence.map(e=>e.sourceId??e.sourceRevisionId).filter((id):id is string=>typeof id==='string'))];
+const sourceIds=(evidence:Row[]=[])=>[...new Set(evidence.map(e=>e?.sourceId??e?.sourceRevisionId).filter((id):id is string=>typeof id==='string'))];
 function textField(value:unknown,sources:string[]=[]):Field {
   if(typeof value!=='string'||!value.trim())return unknown();
   if(value.length>250||!registryReportTextSafe(value))return {state:'withheld',value:null,sources};
@@ -72,6 +72,19 @@ async function captureTx(client:PoolClient,buildingId:string,recordId:string|und
   for(const pkg of packages)await assertPackageDocumentAuthority(client,pkg.body);
   const referenced=new Set<string>();
   const cite=(ids:string[])=>{for(const id of ids)referenced.add(id);return ids;};
+  const contextIds=new Set(selected);
+  let expanded=true;
+  while(expanded){
+    expanded=false;
+    for(const r of records)if(contextIds.has(r.id))for(const link of r.links)
+      if(['within','floor','serves'].includes(link.type)&&!contextIds.has(link.targetId)){
+        contextIds.add(link.targetId);expanded=true;
+      }
+  }
+  // Evidence authorizing the selected canonical graph must remain accessible too.
+  for(const association of associations)
+    if(['detailed_record','shared_space'].includes(association.relationship)&&contextIds.has(association.to_id))
+      cite(sourceIds(association.body.evidence));
   const rootSources=cite(sourceIds([...(root.body.evidence??[]),{sourceRevisionId:root.body.sourceRevisionId}]));
   const projectedRecords:ConsolidatedRegistryReport['records']=[];
   for(const row of selectedRows) {
