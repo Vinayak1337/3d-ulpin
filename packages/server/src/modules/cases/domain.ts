@@ -29,10 +29,10 @@ import { persistIdentity, readIdentity } from "../registry/identities";
 
 type Row = Record<string, any>;
 export const defaultFrame: CoordinateFrame = {
-  id: "LOCAL-C001",
+  id: "UNASSIGNED",
   horizontalUnit: "m",
   verticalUnit: "m",
-  benchmark: "BM-DEMO-A",
+  benchmark: "UNASSIGNED",
 };
 export function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
