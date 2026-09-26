@@ -272,7 +272,10 @@ const error = z.object({error: z.object({
 type SwaggerSchema = Extract<Parameters<typeof ApiResponse>[0], {schema: unknown}>['schema'];
 const schema = (value: z.ZodType): SwaggerSchema =>
   z.toJSONSchema(value, {target: 'openapi-3.0'}) as unknown as SwaggerSchema;
-export const jsonBody = (value: z.ZodType) => ApiBody({schema: schema(value)});
+const requestSchema = (value: z.ZodType): SwaggerSchema => z.toJSONSchema(value, {
+  target: 'openapi-3.0', io: 'input', override: ({jsonSchema}) => { delete jsonSchema.readOnly; },
+}) as unknown as SwaggerSchema;
+export const jsonBody = (value: z.ZodType) => ApiBody({schema: requestSchema(value)});
 export const retiredBranchResponse = () => ApiResponse({status: 410, schema: schema(error)});
 export function wireResponse(status: number, value: z.ZodType | typeof binary) {
   const success = value === binary ? binary : schema(value as z.ZodType);
@@ -300,7 +303,7 @@ export function gisImportBody(json: z.ZodType, required: string[], properties: R
     ApiConsumes('application/json', 'multipart/form-data'),
     ApiBody({
       description: 'application/json retains an acquisition; multipart/form-data retains an uploaded GIS original.',
-      schema: {oneOf: [schema(json), {type: 'object', required, properties: {file: binary, ...properties}}]},
+      schema: {oneOf: [requestSchema(json), {type: 'object', required, properties: {file: binary, ...properties}}]},
     }),
   );
 }

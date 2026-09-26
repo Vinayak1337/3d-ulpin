@@ -27231,8 +27231,7 @@
               "page",
               "imagePoints",
               "worldPoints"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "required": [
@@ -27658,8 +27657,7 @@
               "page",
               "imagePoints",
               "worldPoints"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "required": [
@@ -113203,11 +113201,36 @@
                                     ]
                                   },
                                   "coordinates": {
-                                    "type": "array",
                                     "description": "Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.",
-                                    "items": {
-                                      "type": "array"
-                                    }
+                                    "anyOf": [
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "number"
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "number"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
                                   }
                                 }
                               }
@@ -113346,11 +113369,36 @@
                                     ]
                                   },
                                   "coordinates": {
-                                    "type": "array",
                                     "description": "Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.",
-                                    "items": {
-                                      "type": "array"
-                                    }
+                                    "anyOf": [
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "number"
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "number"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
                                   }
                                 }
                               },
@@ -113857,11 +113905,36 @@
                                     ]
                                   },
                                   "coordinates": {
-                                    "type": "array",
                                     "description": "Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.",
-                                    "items": {
-                                      "type": "array"
-                                    }
+                                    "anyOf": [
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "number"
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "number"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
                                   }
                                 }
                               }
@@ -114000,11 +114073,36 @@
                                     ]
                                   },
                                   "coordinates": {
-                                    "type": "array",
                                     "description": "Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.",
-                                    "items": {
-                                      "type": "array"
-                                    }
+                                    "anyOf": [
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "number"
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "number"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
                                   }
                                 }
                               },
@@ -114171,11 +114269,36 @@
                           ]
                         },
                         "coordinates": {
-                          "type": "array",
                           "description": "Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.",
-                          "items": {
-                            "type": "array"
-                          }
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "number"
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
                         }
                       }
                     },
@@ -114547,11 +114670,36 @@
                                   ]
                                 },
                                 "coordinates": {
-                                  "type": "array",
                                   "description": "Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.",
-                                  "items": {
-                                    "type": "array"
-                                  }
+                                  "anyOf": [
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "number"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
                                 }
                               }
                             }
@@ -115126,11 +115274,36 @@
                                 ]
                               },
                               "coordinates": {
-                                "type": "array",
                                 "description": "Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.",
-                                "items": {
-                                  "type": "array"
-                                }
+                                "anyOf": [
+                                  {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
                               }
                             }
                           }
@@ -115571,11 +115744,36 @@
                           ]
                         },
                         "coordinates": {
-                          "type": "array",
                           "description": "Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.",
-                          "items": {
-                            "type": "array"
-                          }
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "number"
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "number"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          ]
                         }
                       }
                     }
@@ -117940,11 +118138,36 @@
                               ]
                             },
                             "coordinates": {
-                              "type": "array",
                               "description": "Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.",
-                              "items": {
-                                "type": "array"
-                              }
+                              "anyOf": [
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           }
                         }
@@ -129853,8 +130076,7 @@
         "required": [
           "expectedRevision",
           "partIds",
-          "requestKey",
-          "mode"
+          "requestKey"
         ],
         "additionalProperties": false
       },

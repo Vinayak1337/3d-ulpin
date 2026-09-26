@@ -8,7 +8,7 @@ import {
 } from '@ulpin/server/modules/ai/officer-ai';
 import { readMlJson } from '../spatial/ml-json';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
-import { ApiResult, packageProjection, sourceLocator, uuid, wire } from '../spatial/spatial.openapi';
+import { ApiResult, packageProjection, sourceLocator, uuid, requestWire as wire } from '../spatial/spatial.openapi';
 
 const region = { type:'object',required:['x','y','width','height'],properties:{
   x:{type:'number'},y:{type:'number'},width:{type:'number'},height:{type:'number'},

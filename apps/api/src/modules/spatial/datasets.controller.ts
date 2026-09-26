@@ -12,7 +12,7 @@ import { readMlJson } from './ml-json';
 import { PrivateSpatialGuard } from './private-spatial.guard';
 import { sendWebResponse, jsonResponse } from '../../common/response';
 import { ApiResult, binary, datasetMlOverview as datasetMlOverviewSchema, identifier, identifierMatch,
-  retired, review, savedDataset, uuid, wire } from './spatial.openapi';
+  retired, review, savedDataset, uuid, requestWire as wire } from './spatial.openapi';
 
 function url(request: Request): URL {
   return new URL(request.originalUrl, `http://${request.headers.host}`);

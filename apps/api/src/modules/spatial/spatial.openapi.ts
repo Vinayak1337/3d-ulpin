@@ -15,6 +15,12 @@ export function wire(schema: z.ZodType): Record<string, unknown> {
   return z.toJSONSchema(schema, { target: 'openapi-3.0' }) as Record<string, unknown>;
 }
 
+export function requestWire(schema: z.ZodType): Record<string, unknown> {
+  return z.toJSONSchema(schema, { target: 'openapi-3.0', io: 'input',
+    override: ({jsonSchema}) => { delete jsonSchema.readOnly; },
+  }) as Record<string, unknown>;
+}
+
 const error = {
   type: 'object', required: ['error'], properties: {
     error: { type: 'object', required: ['code', 'message', 'requestId'], properties: {
@@ -73,10 +79,14 @@ const calibration = {type:'object',required:['rasterSha256','imagePoints','world
 const image = {type:'object',required:['sha256','width','height','url'],properties:{
   sha256:{type:'string',pattern:'^[a-f0-9]{64}$'},width:{type:'integer'},height:{type:'integer'},url:{type:'string'},
 }};
+const coordinatePosition = {type:'array',items:{type:'number'}};
+const coordinateRing = {type:'array',items:coordinatePosition};
+const polygonCoordinates = {type:'array',items:coordinateRing};
 const component = {type:'object',required:['id','className','score','geometry'],properties:{
   id:{type:'string'},className:{type:'string'},score:{type:'number'},
   geometry:{type:'object',required:['type','coordinates'],properties:{type:{type:'string',enum:['Polygon','MultiPolygon']},
-    coordinates:{type:'array',description:'Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.',items:{type:'array'}}}},
+    coordinates:{description:'Retained raster pixel rings; Polygon or MultiPolygon nesting follows type.',
+      anyOf:[polygonCoordinates,{type:'array',items:polygonCoordinates}]}}},
 }};
 export const mlResult = {type:'object',required:['model','raster','mask','components','receipt'],properties:{
   model:{type:'object',required:['id','sha256'],properties:{id:{type:'string'},sha256:{type:'string',pattern:'^[a-f0-9]{64}$'}}},
