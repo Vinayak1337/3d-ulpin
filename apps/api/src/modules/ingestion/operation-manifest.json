@@ -323,7 +323,7 @@
       "responseSchema": "SemanticChunkResponseSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/semantic-chunks-handoff.md"
     }
   ]
 }
