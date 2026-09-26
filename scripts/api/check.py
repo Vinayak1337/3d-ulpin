@@ -35,7 +35,10 @@ def operation_inventory(ledger, pins):
                         f'invalid baseline disposition: {key}')
             else:
                 require(entry['disposition'] == 'added', f'undeclared additive operation: {key}')
-            inventory[key] = {**entry, 'batch': manifest['batch'], 'manifest': path}
+            batch = entry.get('batch', manifest['batch'])
+            require(isinstance(batch, str) and bool(batch) and batch.strip() == batch,
+                    f'invalid owner batch: {key}')
+            inventory[key] = {**entry, 'batch': batch, 'manifest': path}
     require(set(baseline) <= set(inventory), 'baseline operations missing from manifests')
     return inventory, set(baseline)
 
