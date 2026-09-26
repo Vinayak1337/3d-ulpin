@@ -56,7 +56,7 @@ export async function registerPdf(html: string): Promise<Response> {
     throw new AppError(
       503,
       "PDF_UNAVAILABLE",
-      "PDF rendering is unavailable. Install the local browser with pnpm --filter @ulpin/web exec playwright install chromium, or use Print / save PDF.",
+      "PDF rendering is unavailable. Install the local browser with pnpm --filter @ulpin/api exec playwright install chromium, or use Print / save PDF.",
     );
   } finally {
     if (timer) clearTimeout(timer);

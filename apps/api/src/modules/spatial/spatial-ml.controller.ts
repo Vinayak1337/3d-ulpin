@@ -12,7 +12,7 @@ import { readBoundedBytes } from '../../common/body';
 import { readMlJson } from './ml-json';
 import { PrivateSpatialGuard } from './private-spatial.guard';
 import { sendWebResponse } from '../../common/response';
-import { ApiResult, binary, mlBatch, mlItem, mlStatus, packageProjection, requestKey, uuid, wire } from './spatial.openapi';
+import { ApiResult, binary, mlBatch, mlItem, mlStatus, packageProjection, requestKey, uuid, requestWire as wire } from './spatial.openapi';
 
 const JSON_LIMIT = 100_000;
 const sha = z.string().regex(/^[a-f0-9]{64}$/);

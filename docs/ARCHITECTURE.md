@@ -1,14 +1,16 @@
 # Canonical backend architecture
 
-> **26 September scope:** Backend architecture and API compatibility only. [H00](usp-agent-handoffs/00-README.md) and H01 govern active planning; feature implementation needs a separate assignment. The user owns the UI.
+> **26 September scope:** Backend architecture and API compatibility only. [H00](usp-agent-handoffs/00-README.md) and H01 govern active planning; the [migration ledger](orchestration/NESTJS_MIGRATION.md) records current implementation and acceptance. The user owns the UI.
 
 The application owns the case and its history. A private processing service inspects stored originals and computes geometry. The viewer displays persisted results and edits explicit candidate geometry; it does not calculate authoritative model results in the browser.
 
 ```mermaid
 flowchart LR
-  UI[Browser: Next.js / Cesium / PDF.js] --> API[Next.js application API]
-  API --> DB[(PostgreSQL / PostGIS)]
-  API --> S3[(Private MinIO originals)]
+  UI[User-owned frontend] --> API[NestJS transport: apps/api]
+  API --> DOMAIN[Domain modules: packages/server]
+  DOMAIN --> DB
+  DB[(PostgreSQL / PostGIS)]
+  DOMAIN --> S3[(Private source objects)]
   DB --> D[Application dispatcher]
   D --> G[Private FastAPI job API]
   G --> R[(Redis jobs and queue)]
@@ -24,9 +26,9 @@ flowchart LR
 
 | Component | Owns |
 | --- | --- |
-| Next.js server | Source receipt/finalization, case/unit revisions, evidence bindings, job records, model snapshots, input fingerprints and history. Every domain database write stays here or in its application dispatcher. |
+| Nest transport and framework-independent server modules | Source receipt/finalization, case/unit revisions, evidence bindings, job records, model snapshots, input fingerprints and history. Controllers parse bounded HTTP input; domain/repository modules retain the canonical decisions, transactions and publication fences. Database writes stay here or in the application dispatcher. |
 | PostgreSQL/PostGIS | Durable application records and spatial footprint registry. Local polygons use SRID 0; this does not claim an official geographic CRS. |
-| MinIO | Original source objects in private bucket `ulpin`. The application verifies uploads; the worker independently verifies stored byte length and SHA-256 before inspection. |
+| MinIO | Original source objects in an explicitly configured private bucket. The application verifies uploads; the worker independently verifies stored byte length and SHA-256 before inspection. |
 | Application dispatcher | Reads durable application jobs, submits/polls private processing requests, validates result contracts and original fingerprints, then ingests results transactionally. |
 | FastAPI / Redis / Celery | Idempotent private jobs, durable queue and processing state. The Python worker has storage/broker access but **no application DB access**. |
 | Shapely | Valid polygon area, prism volume and actual intersection geometry. Building/parcel context does not become a competing ownership solid. |
@@ -42,7 +44,7 @@ Follow [the current startup boundary](OFFICER_STARTUP.md). Obsolete repository/U
 
 ## Interfaces, verification and recovery
 
-Public application operations live under `/api/v1`: cases, source uploads/originals, preparation, unit edits, applying levels, builds and retries. Shared TypeScript shapes and the exact endpoint contract live in `packages/contracts/src/index.ts` and `docs/IMPLEMENTATION_CONTRACT.md`.
+Private application operations live under `/api/v1`: cases, source uploads/originals, preparation, unit edits, applying levels, builds and retries. Shared wire shapes live in `packages/contracts`. The [generated API reference](api/README.md) documents all native operations and schemas; [the SQL guide](../database/README.md) documents the executed PostgreSQL/PostGIS migrations. `pg` and parameterized SQL remain the persistence implementation; no ORM rewrite was introduced.
 
 The private service accepts `POST /internal/jobs {jobId,operation,input}` and serves `GET /internal/jobs/:jobId`, both authenticated with `GEO_SERVICE_TOKEN`. The same ID/input returns the existing state; changed input returns 409. A failed processing retry gets a new ID. Temporary queue submission failures can safely resubmit the same ID. `/health` checks process liveness; authenticated `/internal/ready` checks Redis and an actual Celery worker ping and returns `{ok,redis,worker}`.
 
