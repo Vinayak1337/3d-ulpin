@@ -2,6 +2,7 @@ import { Controller, Get, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { query } from '@ulpin/server/infrastructure/db';
+import { databaseReadiness } from '@ulpin/server/infrastructure/database-readiness';
 import { checkStorage } from '@ulpin/server/infrastructure/storage';
 import { settings } from '@ulpin/server/infrastructure/config';
 import { workspaceCapabilities } from '@ulpin/server/infrastructure/workspace-capabilities';
@@ -43,6 +44,19 @@ export class FoundationController {
       database: { type: 'boolean' }, storage: { type: 'boolean' }, processor: { type: 'boolean' },
       redis: { type: 'boolean' }, worker: { type: 'boolean' },
     } },
+    databaseReadiness: { type: 'object', required: ['status','schema'], properties: {
+      status: { type: 'string', enum: ['structurally_ready','schema_missing','unavailable'] },
+      schema: { type: 'object', required: ['ready'], properties: {
+        ready: { type: 'boolean' }, manifestSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+        targetToken: { type: 'string', nullable: true, description: 'Opaque API/database binding for reviewed loopback tooling.' },
+        missingRelations: { type: 'array', items: {type:'string'} }, missingColumns: {type:'array',items:{type:'string'}},
+        missingMigrations: {type:'array',items:{type:'string'}}, invalidIndexes: {type:'integer'},
+        unvalidatedConstraints: {type:'array',items:{type:'object',properties:{name:{type:'string'},table:{type:'string'}}}},
+      } },
+      data: {type:'object',properties:{sourceCount:{type:'integer',nullable:true},importPackageCount:{type:'integer',nullable:true},
+        physicalFeatureCount:{type:'integer',nullable:true},activeLegacyDatasetCount:{type:'integer',nullable:true}}},
+      qualification: {type:'string'},
+    } },
   } } })
   async health(@Req() request: Request) {
     assertLocalRequest(await toWebRequest(request, 0));
@@ -57,6 +71,7 @@ export class FoundationController {
         if (!response.ok) throw new Error('Processor unavailable');
         return response.json() as Promise<{ ok: boolean; redis: boolean; worker: boolean }>;
       }),
+      databaseReadiness(),
     ]);
     const readiness = checks[2].status === 'fulfilled' ? checks[2].value : null;
     const services = {
@@ -66,6 +81,8 @@ export class FoundationController {
       redis: readiness?.redis === true,
       worker: readiness?.worker === true,
     };
-    return { ok: Object.values(services).every(Boolean), services, dataMode: settings.dataMode };
+    // Dependency liveness remains compatible; consumers must inspect schema admission separately.
+    return { ok: Object.values(services).every(Boolean), services, dataMode: settings.dataMode,
+      databaseReadiness: checks[3].status === 'fulfilled' ? checks[3].value : { status: 'unavailable', schema: { ready: false } } };
   }
 }
