@@ -1,0 +1,225 @@
+{
+  "version": "document-authority-correction/1",
+  "status": "candidate_for_review",
+  "recordedAt": "2026-09-26T18:34:35.986Z",
+  "blockedCandidate": "735465340d3e4bc64ce6c051a45874ba4229a7d4",
+  "codeCommit": "69ce92cf47ec253807d6a3907e7dcfab1174f997",
+  "integrationHeadObserved": "7d7082c182e49210ac73daf62fe855284e6a598c",
+  "agent": {
+    "assignedModel": "gpt-6-sol",
+    "assignedEffort": "max",
+    "requestedTier": "DEFAULT",
+    "observedModelEffortTier": "not exposed"
+  },
+  "runtime": {
+    "profile": "local-nest",
+    "port": 3191,
+    "project": "ulpin-usptest-d546a4764d77205d",
+    "nonce": "d546a4764d77205d",
+    "freshCorrectionNonces": 1,
+    "checks": [
+      "Final-code HTTP native/provider-disabled/original/generic projection and marked-source copy boundary",
+      "Actual scanned PDF needs_ocr and exact original; real additional-source case drift denies captured text evidence without altering bytes",
+      "Canonical retry under actual current case pins remains useful after revocation controls"
+    ],
+    "jobs": [
+      {
+        "jobId": "587fa7e3-c186-4925-965a-697b34b93830",
+        "sourceId": "5cba281b-02e2-4462-813e-fcaeade70c88",
+        "resultSha256": "b570cf030327e99ab04898c49122c2b50ccde036ad7b9e0b0366f00999eda87b",
+        "native": "extracted",
+        "model": "disabled"
+      },
+      {
+        "jobId": "f38d3f83-fd72-4cc4-b3e0-5e0eb021025b",
+        "sourceId": "790b09fa-cd93-4eb5-8761-235ad96b39ec",
+        "resultSha256": "d6773c931388a8d2f6723db34952735f807077bd6cac499cb4a36f45c2f7f70b",
+        "native": "needs_ocr",
+        "model": "unavailable"
+      },
+      {
+        "jobId": "2a953c27-0f95-4ef7-a609-8e95f7984592",
+        "sourceId": "5cba281b-02e2-4462-813e-fcaeade70c88",
+        "resultSha256": "05ed9f2eecff02c04414546be9cfabd8e8ffa1cd410f27b1a05f2a1002c0845b",
+        "native": "extracted",
+        "model": "disabled"
+      }
+    ],
+    "proofs": [
+      {
+        "status": "passed",
+        "phase": "current",
+        "archiveGates": 10,
+        "operatorGates": 10,
+        "invariants": {
+          "records": 0,
+          "features": 0,
+          "snapshots": 0,
+          "packets": 0,
+          "model_calls": 0
+        },
+        "checks": [
+          "canonical capture excludes actual historical native mirror",
+          "historical snapshot view suppresses parts/private markers",
+          "original I/O exact before/after canonical checks",
+          "generic source projection and mixed package gate",
+          "legacy unmarked view compatible; staged copy blocked"
+        ],
+        "limits": [
+          "Protocol metadata is memory-only and uses actual case/source/job IDs; no registered target, packet artifact, geometry or evidence association is claimed",
+          "Legitimate target-linked packet/export/copy success remains unqualified"
+        ]
+      },
+      {
+        "status": "passed",
+        "phase": "stale",
+        "gates": 10,
+        "scope": "Real case revision drift; memory-only snapshot/packet protocol metadata; no legitimate target association claimed"
+      }
+    ],
+    "sources": [
+      {
+        "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27",
+        "bytes": 12973,
+        "url": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+        "terms": "https://opendata.cityofnewyork.us/overview/#termsofuse"
+      },
+      {
+        "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+        "bytes": 9344939,
+        "url": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Maps/HistoricalTopo/PDF/CO/62500/CO_Central%20City_232520_1910_62500_geo.pdf",
+        "terms": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted"
+      }
+    ],
+    "provider": "disabled; no model configuration/key/call"
+  },
+  "findings": {
+    "P1_1": "Marked originals and copied-source lineage cannot enter legacy re-extraction/copy/placeholder publication. Authority checked before selection, after legacy object I/O and at publication. Historical unmarked flow remains.",
+    "P1_2": "Current case/archive/subject and accepted job/input authority applied to capture, manifest/source/evidence reads, packet publication/serving and exchange before/after original I/O. Staged native parts/private markers masked in old/new views; mixed staged packages denied without resaving projections. Originals, source history, stored snapshots and packages remain unchanged."
+  },
+  "limits": [
+    "Foreign test_only sources; no geometry, rights, training, field accuracy, OCR or release qualification",
+    "No legitimate marked-source property association is available: snapshot/evidence/packet/export gates use declared in-memory protocol metadata, not invented persisted targets or operational records",
+    "Marked staged documents are unavailable through legacy re-extraction/copy; canonical original/native APIs remain usable"
+  ],
+  "initialFailure": {
+    "status": "failed",
+    "reason": "Protocol query adapter intercepted its own invariant count query. No production or source change. Continued the same nonce/actual records with fixture corrected; failed receipt preserved."
+  },
+  "commands": [
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec tsx --test tests/usp-private-mvt-read.test.ts tests/ingestion-events.test.ts",
+      "exit": 0,
+      "tests": 9
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs prepare --api-port 3191",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs start <owned nonce>",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/document-authority-smoke-local.mjs <owned nonce>",
+      "exit": 1,
+      "scope": "Successful HTTP native/original/projection/copy checks; fixture failed at invariant count"
+    },
+    {
+      "command": "node scripts/usp/document-authority-smoke-local.mjs <owned nonce> resume",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs stop <owned nonce>",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "productionFileHashes": [
+    {
+      "path": "packages/server/src/modules/areas/areas.ts",
+      "sha256": "0457431caaf5cf00d79f3dd4c0a35d273854e6f2aa207e70afd6abbbd50021d8"
+    },
+    {
+      "path": "packages/server/src/modules/cases/case-intake-service.ts",
+      "sha256": "6e58fccb1c47757e6111c25025a98103d28161168be351d99285f9a052692d3a"
+    },
+    {
+      "path": "packages/server/src/modules/usp/snapshots.ts",
+      "sha256": "00275ad930f69243564e1fdae04eae084bda040069963b52dd56e3b49dc212ad"
+    },
+    {
+      "path": "packages/server/src/modules/usp/packet0.ts",
+      "sha256": "112502ba22fad32ada3ebfc65a5bd9428d2c722ccc8ab20ea7ba92df6edd668c"
+    },
+    {
+      "path": "packages/server/src/modules/usp/exchange.ts",
+      "sha256": "a45f97213e91894dbeca82942cdc09b9ebe67baaaed615456c08b37bdb899bcb"
+    },
+    {
+      "path": "packages/server/src/modules/usp/external-scene.ts",
+      "sha256": "90f93bd377f9ca52c6e7e47abad8a97470b87d3a163ec3df8a3620a030bbe6dd"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/document-authority.ts",
+      "sha256": "df6d98b2829fee053c8e8972bf6a22337a76aaab6c0232d1aeb3c9f187c3ede8"
+    }
+  ],
+  "mvtCodeSha256": "d581ad446fa799c1ca9123721df7bc95db0b80192f4188006bcfde717ad03b61",
+  "additionalMvtHashedFilesChanged": [],
+  "receipts": [
+    {
+      "file": "document-authority-proof.json",
+      "sha256": "fe16d2ae22d1cec6d08cfbc67169cbab24cb505dd37d3ec5a365051e2b3c70b7"
+    },
+    {
+      "file": "document-authority-completion.json",
+      "sha256": "bb1ce1f675e1a3a647bd2fbc613dc8b5c6f9a2f420b90f3b0d7b13f60c428c38"
+    }
+  ],
+  "harnesses": [
+    {
+      "file": "verification/document-authority-proof-local.ts",
+      "sha256": "b70565c7b12d0b965eb7c90b17650dd656be3caa411ee9aec95acbc00755f2c7"
+    },
+    {
+      "file": "verification/document-authority-smoke-local.mjs",
+      "sha256": "b5bf017477cbe69dfa02f17380b7863bebfa184ca613332ef2f199421cbc1892"
+    }
+  ],
+  "shutdown": {
+    "verified": true,
+    "status": {
+      "project": "ulpin-usptest-d546a4764d77205d",
+      "containers": [],
+      "processes": {
+        "api": {
+          "pid": 86836,
+          "pgid": 86836,
+          "ownedLeaderAlive": false,
+          "memberPids": []
+        },
+        "dispatcher": {
+          "pid": 86714,
+          "pgid": 86714,
+          "ownedLeaderAlive": false,
+          "memberPids": []
+        }
+      }
+    },
+    "namedVolumes": [
+      "ulpin-usptest-d546a4764d77205d_minio-data",
+      "ulpin-usptest-d546a4764d77205d_postgres-data",
+      "ulpin-usptest-d546a4764d77205d_redis-data"
+    ],
+    "preserved": true
+  },
+  "earlierNonce": "b59ef011e66e0f1b preserved; no prior receipt/volume/source was reset"
+}

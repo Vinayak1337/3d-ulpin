@@ -1,0 +1,9 @@
+/* Check list shared by the register and the check stage. */
+.checkGroups { display: grid; }
+.groupHead { display: flex; align-items: center; gap: var(--ui-space-2); padding: 12px 0 6px; }
+.groupHead > :first-child { flex: 1; }
+.groupRows { display: grid; }
+.hatched { background: repeating-linear-gradient(135deg, var(--ui-surface-subtle) 0 6px, transparent 6px 12px); border-radius: var(--ui-radius-8); padding: 0 8px; }
+.checkRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--ui-space-3); align-items: center; padding: 10px 0; border-top: 1px solid var(--ui-divider); }
+.checkText { display: grid; font-size: 13px; line-height: 19px; }
+.checkName { font-size: 14px; line-height: 20px; font-weight: 500; color: var(--ui-ink); }

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { UspGeometryMetadataSchema, type UspGeometryMetadata } from '@ulpin/contracts/usp';
-import { query } from '../../infrastructure/db';
+import { query,transaction } from '../../infrastructure/db';
+import {documentAuthorityTx} from './ingestion/document-authority';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { localRequest } from '../spatial/spatial-core-http';
 import { LegacySpatialReadError } from '../spatial/spatial-core-read';
@@ -27,7 +28,7 @@ export async function readExternalScene(input: z.infer<typeof selection>): Promi
     fail(422, 'EXTERNAL_PROFILE', 'This feature has no qualified source exterior binding.');
 
   const linkedSources = async () => (await query(
-    `SELECT DISTINCT s.id,s.revision,s.sha256,s.bytes,s.object_key FROM sources s
+    `SELECT DISTINCT s.* FROM sources s
       JOIN import_packages p ON p.area_id=$1 AND p.state='COMMITTED'
       JOIN LATERAL jsonb_array_elements(p.body->'parts') part ON part->>'sourceRevisionId'=s.id::text
       WHERE p.body->'features' @> $2::jsonb AND part->'entityIds' ? $3
@@ -36,6 +37,7 @@ export async function readExternalScene(input: z.infer<typeof selection>): Promi
   const sources = await linkedSources();
   if (sources.length !== 1) fail(422, 'EXTERNAL_SOURCE', 'An exact, unambiguous retained source is required.');
   const source = sources[0];
+  await transaction(client=>documentAuthorityTx(client,source));
   if (Number(source.bytes) < 1 || Number(source.bytes) > 1024 * 1024)
     fail(413, 'EXTERNAL_LIMIT', 'The source exceeds the bounded exterior display profile.');
   const bytes = await readObject(source.object_key);
@@ -48,6 +50,7 @@ export async function readExternalScene(input: z.infer<typeof selection>): Promi
   const current = (await query('SELECT revision,body FROM physical_features WHERE id=$1 AND area_id=$2',
     [input.featureId, input.areaId])).rows[0];
   const currentSources = await linkedSources();
+  await transaction(client=>documentAuthorityTx(client,source));
   if (!current || current.revision !== feature.revision || JSON.stringify(current.body) !== JSON.stringify(feature.body) ||
       currentSources.length !== 1 || currentSources[0].id !== source.id || currentSources[0].revision !== source.revision)
     fail(409, 'EXTERNAL_STALE', 'The source association changed. Reload its area.');

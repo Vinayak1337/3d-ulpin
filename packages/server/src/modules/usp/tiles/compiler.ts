@@ -31,10 +31,18 @@ export async function mvtCompilerPinsTx(client:PoolClient,transform:unknown){
  */
 const retainedReadProfile={codeSha256:'7ba0d09183675baa615a63a4f72add4f683bb83f1027321b2d61d09bb63fbc82',
   sha256:'c36c3ea4d51fd52914fa89c602e36867c3132715b06836b535c21a3f7072c6f5'};
+// DOC-INGEST-01 changes only unrelated job enrollment and this immutable-read
+// predicate. All remaining compiler fields, including PostGIS, must be exact.
+const preDocumentCodeSha='3d060fda17b9cd542c4c8c2ffb29ad5fafb6cd28e34053235885ce13b3275656';
 export function mvtReadCompilerCompatible(stored:PrivateMvtInput['compiler'],current:PrivateMvtInput['compiler'],hasSourceChunk=false){
   const valid=(pin:PrivateMvtInput['compiler'])=>{const {sha256,...base}=pin;return fingerprint(base)===sha256;};
   if(!valid(stored)||!valid(current))return false;
   if(fingerprint(stored)===fingerprint(current))return true;
+  if(stored.codeSha256===preDocumentCodeSha){
+    const {sha256:_storedHash,codeSha256:_storedCode,...storedProfile}=stored;
+    const {sha256:_currentHash,codeSha256:_currentCode,...currentProfile}=current;
+    if(fingerprint(storedProfile)===fingerprint(currentProfile))return true;
+  }
   // The complete historical digest binds its original PostGIS runtime as well as code,
   // policy and transform. Installed compiler runtime changes do not rewrite those bytes.
   return !hasSourceChunk&&stored.codeSha256===retainedReadProfile.codeSha256&&stored.sha256===retainedReadProfile.sha256

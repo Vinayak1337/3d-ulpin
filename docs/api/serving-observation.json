@@ -1,9 +1,9 @@
 {
   "schemaVersion": "ulpin-serving-observation/1",
-  "observedAt": "2026-09-26T15:25:31.461439+00:00",
+  "observedAt": "2026-09-26T19:17:02.695463+00:00",
   "environment": "linked-loopback-3188",
   "apiBase": "http://127.0.0.1:3188/api/v1",
-  "servedCodeCommit": "89cd51b20003f836e6cf1294822aaf4fbfdaad51",
+  "servedCodeCommit": "21f93c61d5811dd0eb8c1494d512faf9c3dc426a",
   "qualification": "Point-in-time local observation of administrative context, private post-admission tiles and one foreign footprint; not deployment, multiuser, Indian property-readiness, import-time GF-STREAM, scale or frontend qualification.",
   "database": {
     "status": "structurally_ready",
@@ -269,6 +269,26 @@
       {
         "file": "stream02-compat-verification.json",
         "sha256": "76d00f5dff4ef097c45103dc01fcc6e8fbc3c670d8c9cca08b56fa635d66b884"
+      },
+      {
+        "file": "preflight-doc-ingest-before.json",
+        "sha256": "b97a8cb798a00bf77de60fb3ae8c6f41804d435974132eb51b9a3fcd91986d5c"
+      },
+      {
+        "file": "preflight-doc-ingest-current.json",
+        "sha256": "2365a27f44198d2b89f48ca04c507a448ad88add74994a2bb06da28add35f3a3"
+      },
+      {
+        "file": "doc-ingest-serving-stop.json",
+        "sha256": "b96799032c13ac51fd33772771e4bad1fc4d309ead1dce4da7af5738ace72402"
+      },
+      {
+        "file": "launch-serving-doc-ingest.json",
+        "sha256": "ebdc721b4a67f3dd3e1d70b9a0b1f207c0661acc59268e4f014e809849d5a735"
+      },
+      {
+        "file": "serving-doc-ingest-http.json",
+        "sha256": "6de921e7738b556a87a0c00bf848c98e3b843295e58cbcb7b201a325fa9941ea"
       }
     ],
     "additionalGuides": [
@@ -288,5 +308,52 @@
     "httpServingCommit": "89cd51b20003f836e6cf1294822aaf4fbfdaad51",
     "scope": "Exact approved historical full-admission compiler only; existing generation16,62cells, sampled original tile hash and canonical lookup preserved. Unknown historical profiles remain denied; new compilation stays strict.",
     "privateDirectServiceReceiptSha256": "76d00f5dff4ef097c45103dc01fcc6e8fbc3c670d8c9cca08b56fa635d66b884"
+  },
+  "documentIngestionUpgrade": {
+    "status": "passed",
+    "servedCodeCommit": "21f93c61d5811dd0eb8c1494d512faf9c3dc426a",
+    "reviewedCandidate": "ec4dc9c92aa5f2aecec57217f27f756e4cad1911",
+    "operations": 160,
+    "namedSchemas": 185,
+    "schemaMutation": false,
+    "liveProvidersEnabled": false,
+    "newDocumentSourcesInstalled": false,
+    "scope": "Read-only serving health, exact OpenAPI/catalogue equality and retained generation/tile/pick reads. Pre/post code-switch audits preserve all records, originals and schema. Native document write/runtime evidence remains isolated at69ce92c; later package privacy checks are protocol evidence.",
+    "checks": {
+      "openapi": {
+        "matchesStaging": true,
+        "operations": 160,
+        "schemas": 185
+      },
+      "datasets": {
+        "matchesStaging": true
+      },
+      "manifest": {
+        "status": 200,
+        "bytes": 447,
+        "sha256": "9791a531c937d5a5ed45ab48adb2d4a8f863d8eb884ae24d67158787988e0777"
+      },
+      "generation": {
+        "status": 200,
+        "bytes": 184711,
+        "sha256": "0988f96c2bf1835e78d2c7fc123002c3eb47e84e639ac5226ac65d41b3511c92"
+      },
+      "tile": {
+        "status": 200,
+        "bytes": 31359,
+        "sha256": "a226adf94b2c872af6fc16c77602ff285d90abb915f3bafb015058cf83f6aa75"
+      },
+      "pick": {
+        "status": 200,
+        "bytes": 1168,
+        "sha256": "ea11f147f10496f9daf61b342cab80db08ee1bd5ad9366fbfa2610d79abb8221"
+      }
+    },
+    "unqualified": [
+      "Live provider inference and OCR",
+      "Legitimate property-linked staged document copy/packet/export",
+      "End-to-end document write proof on linked serving database",
+      "Release/accuracy/learning gates"
+    ]
   }
 }

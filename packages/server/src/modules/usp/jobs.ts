@@ -4,7 +4,7 @@ import { UspJobProjectionSchema, UspAssetRefSchema, UspScopeSchema,
 import { transaction } from '../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx } from './commands';
-import { ProjectedVectorInputSchema, PrivateMvtInputSchema } from '@ulpin/contracts/usp';
+import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema } from '@ulpin/contracts/usp';
 
 const LEASE_SECONDS = 180;
 const MAX_ATTEMPTS = 3;
@@ -28,6 +28,12 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.source.caseId!==job.case_id||input.source.sourceId!==job.source_id||input.source.caseRevision!==job.case_revision
       ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
       throw new AppError(422,'MVT_INPUT_SCOPE','Tile jobs must pin their existing accepted source and intake context.');
+  } else if(job.operation==='document-extraction'){
+    const input=DocumentInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
+      throw new AppError(422,'DOCUMENT_INPUT_SCOPE','Document jobs must pin their retained source and exact intake context.');
   } else if (job.operation !== 'usp:packet0') {
     throw new AppError(422, 'USP_JOB_OPERATION', 'Only registered USP jobs can use fenced attempts.');
   }

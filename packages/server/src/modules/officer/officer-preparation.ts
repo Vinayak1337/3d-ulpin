@@ -13,6 +13,7 @@ import type {
 import type { PoolClient } from "pg";
 import { query, transaction } from "../../infrastructure/db";
 import { getPackage } from "../areas/areas";
+import { assertPackageDocumentAuthority } from "../areas/package-authority";
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { validateLocators } from "./officer";
 import { fingerprint, getCase, requestBuild, persistUnit } from "../cases/domain";
@@ -46,11 +47,13 @@ async function locked(
         [id],
       )
     ).rows[0]?.body ?? notFound();
+  await assertPackageDocumentAuthority(client, pkg);
   if (pkg.revision !== revision || pkg.state === "COMMITTED")
     conflict("This preparation changed. Refresh the current draft.");
   return pkg;
 }
 async function save(client: PoolClient, pkg: ImportPackage) {
+  await assertPackageDocumentAuthority(client, pkg);
   pkg.revision++;
   delete pkg.review;
   pkg.state = "NEEDS_INPUT";
@@ -328,6 +331,7 @@ export async function setPreparationPlacement(
         [id],
       )
     ).rows[0];
+    if (packageRow) await assertPackageDocumentAuthority(client, packageRow.body);
     const pkg = await locked(client, id, packageRow.body.revision);
     await client.query("SELECT id FROM cases WHERE id=$1 FOR UPDATE", [
       initial.caseId,

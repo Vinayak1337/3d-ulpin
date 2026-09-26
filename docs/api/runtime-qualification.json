@@ -359,6 +359,65 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/document-authority-correction.json",
+      "receiptSha256": "31d17e9399ddd636c4b45ee79681c3234cbcf39739e7b1d130b31703197eea45",
+      "receiptCodeField": "codeCommit",
+      "servedCodeCommit": "69ce92cf47ec253807d6a3907e7dcfab1174f997",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-d546a4764d77205d",
+        "nonce": "d546a4764d77205d"
+      },
+      "qualification": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188.",
+      "unqualified": [
+        "Live model calls, extraction accuracy, OCR, all-format support and learning",
+        "Legitimate property-linked marked-source copy/packet/export success",
+        "Final d400c79 HTTP/PostgreSQL runtime qualification; package checks are memory-only protocol evidence",
+        "Indian operational data, geometry/rights, deployment and complete release gates"
+      ],
+      "operations": {
+        "POST /api/v1/ingestion/cases/{caseId}/documents": {
+          "scope": "Unchanged official NYC metadata retained before native extraction; actual scanned USGS PDF retained with needs_ocr; provider disabled.",
+          "sourceManifests": [
+            "fixtures/real-area/manifest.json",
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/runtime/checks",
+            "/runtime/jobs",
+            "/runtime/sources",
+            "/runtime/provider"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}": {
+          "scope": "Source-bound native parts/status and honest model-disabled/needs_ocr outcomes; generic projection and current-source denial checks.",
+          "sourceManifests": [
+            "fixtures/real-area/manifest.json",
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/runtime/checks",
+            "/runtime/jobs",
+            "/runtime/sources",
+            "/runtime/provider"
+          ]
+        },
+        "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/retry": {
+          "scope": "Native retry against actual current case/source pins after observed source-context drift.",
+          "sourceManifests": [
+            "fixtures/real-area/manifest.json",
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/runtime/checks",
+            "/runtime/jobs",
+            "/runtime/sources",
+            "/runtime/provider"
+          ]
+        }
+      }
     }
   ]
 }

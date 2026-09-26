@@ -9,6 +9,7 @@ import { failSpatialMlJob, ingestSpatialMlJob, markSpatialMlRunning } from "../s
 import {failDatasetMl,ingestDatasetMl,markDatasetMlRunning} from '../datasets/dataset-ml';
 import {failProjectedJob,ingestProjectedResult,markProjectedRunning} from '../usp/ingestion/projected-publication';
 import {runPrivateMvtJob,failPrivateMvtJob} from '../usp/tiles/publication';
+import {runDocumentJob} from '../usp/ingestion/document-worker';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 
 type WorkerReply = {
@@ -173,6 +174,9 @@ export async function dispatchTick(): Promise<number> {
   );
   await Promise.all(
     pending.rows.map(async (job) => {
+      if(job.operation==='document-extraction'){
+        await runDocumentJob(job.id);return;
+      }
       if(job.operation==='private-mvt'){
         // This allowlisted SQL runner owns fencing/recovery and never reaches geo
         // or the generic retry/error mutation below.
