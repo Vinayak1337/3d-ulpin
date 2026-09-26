@@ -2,6 +2,8 @@
 
 Read [the active NestJS migration ledger](docs/orchestration/NESTJS_MIGRATION.md), [the normalized backend decisions](docs/usp-agent-handoffs/backend-streaming-plan.md) and [the orchestration operating guide](docs/orchestration/OPERATING_GUIDE.md) before assignments, reviews and integration. It governs roles, model selection, ownership handoffs, preview lifecycle and lean verification while allowing the lead to execute assigned work directly. Read [handoff 00](docs/usp-agent-handoffs/00-README.md), [release-plan.json](docs/usp-agent-handoffs/release-plan.json), H01/H02, H26–H28, H30, the assigned feature and H99 as relevant. H00 and the release manifest identify the current gate. Read `apps/web/AGENTS.md` before web code changes.
 
+**MVP first:** follow [MVP delivery and verification](docs/orchestration/OPERATING_GUIDE.md#mvp-delivery-and-verification) for every task. Implement the smallest usable flow, review the changed code, and check a small representative set of real inputs—including relevant unstructured or incomplete data—through UI or API. Add only targeted tests for concrete regressions or critical data/access behavior. No exhaustive test matrices, repeated unrelated campaigns or expanding verification reports. Preserve originals, report unsupported capabilities honestly, fix observed failures, then integrate and move on.
+
 <!-- plan-next-gate: GF0 -->
 
 Usage monitoring was revoked by the user on 26 September 2026. Do not poll Codex usage, apply the former percentage/reset cutoff, or recreate the deleted usage guard schedule. Continue authorized backend work; ordinary platform limits still apply.

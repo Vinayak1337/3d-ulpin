@@ -51,17 +51,35 @@ Testers/reviewers own reports, not production code. They return reproducible iss
 
 Current checkout policy, updated by explicit user direction: the lead integrates in the original `staging` checkout; each ordinary worker model uses its own worktree and branch. Record a pinned base and exact file ownership. Reuse model tasks/worktrees; retire a worker worktree only after its commits and dirty files are reconciled. Preserve original checkout changes and its index state. Integrate one accepted change at a time, directly or through a delegated execution assignment. Keep main unchanged; no push/deploy/public activation without authorization. Do not reset populated services, rewrite originals, overwrite credentials or kill unrelated processes.
 
-## Lean verification
+## MVP delivery and verification
 
-User clarification,27 September: verification must not become the deliverable. Finish the smallest usable feature first. Default to one final typecheck, one real-input API journey and the specific failure/access boundary changed. Add small concurrency/integrity checks only when the new mutation requires them. Do not build expansive protocol matrices or new harness frameworks, repeat accepted unrelated campaigns, or keep growing reports. When a concrete defect is found, fix it and repeat only the affected check. This limits scope; it does not excuse an unresolved privacy/integrity defect or turn missing evidence into a pass.
+**User direction, 27 September 2026: we are building an MVP.** Deliver a usable feature with enough review and verification that the main flow works with real, imperfect and unstructured inputs. Do not turn implementation into a testing, hardening or reporting project. This section is the default for every assignment and review, including work already underway; it supersedes older requests for exhaustive per-feature verification.
 
-Default for backend work: inspect the actual producer/consumer contract, verify the affected operation and one relevant failure/recovery state, then fix concrete defects. Plan-only work uses document/link/schema checks. UI design and browser acceptance are a separately assigned user-owned integration dependency; do not turn backend validation into a redesign or screenshot project.
+### What we are trying to achieve
 
-Workers run typecheck and directly relevant existing checks once. Prefer fixing/updating a directly affected existing test to adding a new suite. Add an automated test only for a concrete high-impact failure that manual UI inspection cannot establish, such as authorization, privacy/egress, identifier uniqueness, transactions, geometry calculations or data integrity. State the reason in one sentence.
+A user can submit a supported file, follow its progress, get a useful result, and understand or recover from a failure without losing the original or breaking the rest of the application. Unstructured data means varying layouts, incomplete fields and imperfect readable content within the formats we support. It does not mean claiming every format or damaged file can be interpreted successfully.
 
-Do not add mirrored implementation tests, broad speculative matrices, screenshots for every trivial edit, repeated full regressions, benchmark work or elaborate harnesses for low-impact changes. Reuse the established guarded preview and evidence tools. Repeat a check only after a relevant change, failure or unresolved concern. Broader checks belong at meaningful integration/release boundaries. Retain release requirements; defer their comprehensive verification honestly rather than weakening them.
+For ingestion, preserve the unchanged original and produce separate traceable extraction results. When a supported file fails, fix the agent, reader or routing logic. Do not edit the document, hand-prepare a replacement, invent facts or build a one-file workaround to make a check pass. Distinguish extraction failure, unavailable OCR/provider, and genuinely missing information. An unsupported input should produce a clear recoverable status, not crash or stall the application, corrupt data, or pretend to have succeeded.
 
-Use real unchanged official sources, data.gov.in first or the responsible issuer. Never invent operational records, dummy PII, geometry, documents/images or adverse source fixtures. Preserve real gathered originals and lineage; selectively retire obsolete synthetic assets only after exact-path or exact-record review. Missing official coverage stays unqualified; do not manufacture it or halt unrelated implementation.
+### Default working loop
+
+1. Pick one useful feature and define its smallest end-to-end result. Reuse existing services and tools; avoid adjacent features and infrastructure that result does not need.
+2. Implement it. Review the changed flow for obvious defects, broken contracts and relevant data/access risks. The lead can review it; use a separate reviewer only when the change materially benefits from one.
+3. Run the relevant typecheck or build once after the code stabilizes. Use a small set of unchanged real inputs: normally one representative successful journey and one naturally difficult or incomplete input relevant to the feature. Reuse retained official sources before finding more.
+4. Check the flow manually through the UI when it is wired, or directly through the API for backend-only work. Confirm the result, readable status and a useful failure/retry path. Do not build UI merely to test an API.
+5. Fix observed defects and repeat only the affected check. Once the scoped checks pass and no known blocker remains, integrate, update the API handoff briefly and move to the next feature.
+
+### When an automated test is worth adding
+
+Prefer existing tests and verification tools. Add a small targeted test when it prevents a concrete regression or checks an important property that manual use cannot establish reliably—for example, unauthorized access, lost originals, duplicate writes or accepting stale results. Explain the reason in one sentence. A new shared write may need a focused concurrency check; it does not automatically need an exhaustive schedule matrix.
+
+Do not add tests merely to mirror implementation, raise coverage, enumerate hypothetical edge cases or justify code already working. Do not create large protocol matrices, new harness frameworks, repeated full regressions, benchmark campaigns or extensive evidence reports for an ordinary feature. Do not rerun accepted unrelated work. Broader checks require a concrete unresolved risk or a separately scoped milestone.
+
+### Definition of done
+
+The promised flow works on the checked real inputs; the relevant difficult case fails clearly or recovers; changed code passes the relevant build/typecheck; and review has no known blocker affecting that flow, source integrity or access. The handoff states what works, what was checked and any material limitation in a few lines, with the API/schema updated where needed. Unsupported capabilities stay explicit rather than expanding the current task indefinitely.
+
+Do not weaken an access check, discard originals or label missing evidence as a pass to save time. Equally, do not hold a usable MVP feature hostage to unrelated future requirements. Unrun release, scale, accuracy and full-product gates remain unqualified; they are not mandatory new campaigns for every feature. Missing source coverage should be recorded briefly and should not halt unrelated implementation. Never manufacture operational test records, geometry, source documents or expected facts.
 
 ## On-demand local preview
 
