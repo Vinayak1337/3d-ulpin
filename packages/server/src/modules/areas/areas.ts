@@ -248,11 +248,17 @@ export async function areaContext(id: string): Promise<AreaContext> {
   };
 }
 export async function getPackage(id: string, client?: PoolClient): Promise<ImportPackage> {
-  const run = client ? client.query.bind(client) : query;
-  return (
-    (await run("SELECT body FROM import_packages WHERE id=$1", [id])).rows[0]
-      ?.body || notFound("Import package not found.")
-  );
+  const read=async(current:PoolClient)=>{
+    const pkg:ImportPackage=(await current.query("SELECT body FROM import_packages WHERE id=$1",[id])).rows[0]?.body||notFound('Import package not found.');
+    const ids=[...new Set([...pkg.sourceRevisionIds,...pkg.parts.flatMap(part=>[part.sourceRevisionId,...(part.copiedFrom?[part.copiedFrom.sourceRevisionId]:[])])])];
+    const sources=ids.length?(await current.query('SELECT * FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id',[ids])).rows:[];
+    const {documentAuthorityTx,assertDocumentPackageParts}=await import('../usp/ingestion/document-authority');
+    const marked=new Set<string>();for(const source of sources)if(await documentAuthorityTx(current,source))marked.add(source.id);
+    // Fail closed rather than letting a projected package be persisted by an
+    // existing writer. Retained package/revision history is never filtered away.
+    assertDocumentPackageParts(pkg,marked);return pkg;
+  };
+  return client?read(client):transaction(read);
 }
 async function savePackage(client: PoolClient, pkg: ImportPackage) {
   await client.query(
@@ -1519,6 +1525,11 @@ async function copySources(
   packageId: string,
   copy: Pick<CopyBatch, "caseId" | "buildingId" | "sourceIds">,
 ): Promise<CopySourceRow[]> {
+  // Check the marked-source boundary before destination/association work. New
+  // staged documents cannot enter the historical parser/copy/placeholder path.
+  const {documentAuthorityTx}=await import('../usp/ingestion/document-authority');
+  const selected=(await client.query('SELECT * FROM sources WHERE case_id=$1 AND id=ANY($2::uuid[]) ORDER BY id',[copy.caseId,copy.sourceIds])).rows;
+  for(const source of selected)await documentAuthorityTx(client,source,'copy');
   const target = (
     await client.query(
       "SELECT case_id FROM building_preparations WHERE package_id=$1 AND building_id=$2",
@@ -1689,6 +1700,9 @@ export async function copyCaseDocuments(
       },
     });
   }
+  // Repeat the same authority after object I/O; copySources also runs again in
+  // the publication transaction. A newly marked/revoked source cannot publish.
+  await transaction(client=>copySources(client,id,copy));
   return attachDocumentBatch(id, input.expectedRevision, files, copy);
 }
 
