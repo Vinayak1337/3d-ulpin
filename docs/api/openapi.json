@@ -27964,6 +27964,46 @@
                             "kind": {
                               "type": "string",
                               "enum": [
+                                "projected-vector.chunk"
+                              ]
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sequence": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 128
+                            },
+                            "records": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 733
+                            },
+                            "sourceAccepted": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "jobId",
+                            "sequence",
+                            "records",
+                            "sourceAccepted"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
                                 "private-mvt.changed"
                               ]
                             },
@@ -28488,7 +28528,28 @@
             "project": "ulpin-usptest-e0c00ba88a5b1a20",
             "nonce": "e0c00ba88a5b1a20"
           },
-          "limitation": "Only this deterministic unchanged NWIC profile and the named private admission/read/recovery behaviors were observed. Installed records belong to the stopped isolated environment, not the linked serving database."
+          "limitation": "Only this deterministic unchanged NWIC profile and the named private admission/read/recovery behaviors were observed. Installed records belong to the stopped isolated environment, not the linked serving database.",
+          "additionalReceipts": [
+            {
+              "scope": "Opt-in NWIC semantic-chunk admission with unchanged original preparation; controlled forced-expiry fencing/reuse and separately atomic full-source acceptance.",
+              "sourceManifests": [
+                "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/firstUseful",
+                "/full",
+                "/recoveryQualification"
+              ],
+              "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+              "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-23efff47f982ef17",
+                "nonce": "23efff47f982ef17"
+              },
+              "limitation": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "json",
@@ -28715,7 +28776,275 @@
             "project": "ulpin-usptest-e0c00ba88a5b1a20",
             "nonce": "e0c00ba88a5b1a20"
           },
-          "limitation": "Only this deterministic unchanged NWIC profile and the named private admission/read/recovery behaviors were observed. Installed records belong to the stopped isolated environment, not the linked serving database."
+          "limitation": "Only this deterministic unchanged NWIC profile and the named private admission/read/recovery behaviors were observed. Installed records belong to the stopped isolated environment, not the linked serving database.",
+          "additionalReceipts": [
+            {
+              "scope": "Partial versus accepted source progress and explicit independent display milestone outcomes.",
+              "sourceManifests": [
+                "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/firstUseful/coverage",
+                "/full",
+                "/displayFailureIsolation"
+              ],
+              "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+              "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-23efff47f982ef17",
+                "nonce": "23efff47f982ef17"
+              },
+              "limitation": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database."
+            }
+          ]
+        },
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "private-bounded-read",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/jobs/{jobId}/chunks/{sequence}": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_jobs_jobId_chunks_sequence",
+        "parameters": [
+          {
+            "name": "sequence",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 128
+            }
+          },
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_sources_sourceId_projected_vector_jobs_jobId_chunks_sequence_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read one immutable committed semantic chunk and its exact source-prefix pin",
+        "tags": [
+          "projected administrative context"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/projected-vector.controller.ts",
+        "x-batch": "STREAM-02",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Private immutable chunk receipt and exact prefix pin while the source remains incomplete.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/firstUseful/pin",
+            "/checks/privateReads"
+          ],
+          "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+          "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-23efff47f982ef17",
+            "nonce": "23efff47f982ef17"
+          },
+          "limitation": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database."
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
@@ -28744,6 +29073,26 @@
               "format": "uuid"
             },
             "description": "Required for continuation pages; must remain the accepted generation."
+          },
+          {
+            "name": "chunkSha256",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "chunkSequence",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 128
+            },
+            "description": "Requires exact chunkSha256 and source jobId."
           },
           {
             "name": "limit",
@@ -28982,7 +29331,27 @@
             "project": "ulpin-usptest-e0c00ba88a5b1a20",
             "nonce": "e0c00ba88a5b1a20"
           },
-          "limitation": "Only this deterministic unchanged NWIC profile and the named private admission/read/recovery behaviors were observed. Installed records belong to the stopped isolated environment, not the linked serving database."
+          "limitation": "Only this deterministic unchanged NWIC profile and the named private admission/read/recovery behaviors were observed. Installed records belong to the stopped isolated environment, not the linked serving database.",
+          "additionalReceipts": [
+            {
+              "scope": "Bounded metadata reads pinned to the exact committed job/chunk prefix; unsealed/later rows excluded.",
+              "sourceManifests": [
+                "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/checks/privateReads",
+                "/firstUseful"
+              ],
+              "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+              "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-23efff47f982ef17",
+                "nonce": "23efff47f982ef17"
+              },
+              "limitation": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
@@ -29001,6 +29370,26 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "chunkSha256",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          {
+            "name": "chunkSequence",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 128
+            },
+            "description": "Requires exact chunkSha256 and source jobId."
           },
           {
             "name": "representation",
@@ -29241,7 +29630,27 @@
             "project": "ulpin-usptest-e0c00ba88a5b1a20",
             "nonce": "e0c00ba88a5b1a20"
           },
-          "limitation": "Only this deterministic unchanged NWIC profile and the named private admission/read/recovery behaviors were observed. Installed records belong to the stopped isolated environment, not the linked serving database."
+          "limitation": "Only this deterministic unchanged NWIC profile and the named private admission/read/recovery behaviors were observed. Installed records belong to the stopped isolated environment, not the linked serving database.",
+          "additionalReceipts": [
+            {
+              "scope": "Hash-verified geometry for the committed prefix; mismatch and stale-context denial.",
+              "sourceManifests": [
+                "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/checks/privateReads",
+                "/stale"
+              ],
+              "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+              "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-23efff47f982ef17",
+                "nonce": "23efff47f982ef17"
+              },
+              "limitation": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
@@ -29730,7 +30139,27 @@
             "project": "ulpin-usptest-6ec4ef2dfff134fc",
             "nonce": "6ec4ef2dfff134fc"
           },
-          "limitation": "Only unchanged NWIC administrative post-admission MVT generation/private reads/recovery were observed. Records belong to the stopped isolated run; this does not install tiles into the linked serving environment."
+          "limitation": "Only unchanged NWIC administrative post-admission MVT generation/private reads/recovery were observed. Records belong to the stopped isolated run; this does not install tiles into the linked serving environment.",
+          "additionalReceipts": [
+            {
+              "scope": "Existing canonical milestone jobs with distinct source coverage and cell readiness.",
+              "sourceManifests": [
+                "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/firstUseful/generation",
+                "/full/milestones"
+              ],
+              "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+              "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-23efff47f982ef17",
+                "nonce": "23efff47f982ef17"
+              },
+              "limitation": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
@@ -29979,7 +30408,27 @@
             "project": "ulpin-usptest-6ec4ef2dfff134fc",
             "nonce": "6ec4ef2dfff134fc"
           },
-          "limitation": "Only unchanged NWIC administrative post-admission MVT generation/private reads/recovery were observed. Records belong to the stopped isolated run; this does not install tiles into the linked serving environment."
+          "limitation": "Only unchanged NWIC administrative post-admission MVT generation/private reads/recovery were observed. Records belong to the stopped isolated run; this does not install tiles into the linked serving environment.",
+          "additionalReceipts": [
+            {
+              "scope": "Coherent first usable private generation before complete SQL semantic admission.",
+              "sourceManifests": [
+                "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/firstUseful",
+                "/full/finalGeneration"
+              ],
+              "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+              "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-23efff47f982ef17",
+                "nonce": "23efff47f982ef17"
+              },
+              "limitation": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
@@ -30253,7 +30702,27 @@
             "project": "ulpin-usptest-6ec4ef2dfff134fc",
             "nonce": "6ec4ef2dfff134fc"
           },
-          "limitation": "Only unchanged NWIC administrative post-admission MVT generation/private reads/recovery were observed. Records belong to the stopped isolated run; this does not install tiles into the linked serving environment."
+          "limitation": "Only unchanged NWIC administrative post-admission MVT generation/private reads/recovery were observed. Records belong to the stopped isolated run; this does not install tiles into the linked serving environment.",
+          "additionalReceipts": [
+            {
+              "scope": "Actual private MVT read during incomplete source admission; eight emitted features from first committed prefix.",
+              "sourceManifests": [
+                "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/firstUseful/tileBytes",
+                "/firstUseful/emitted"
+              ],
+              "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+              "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-23efff47f982ef17",
+                "nonce": "23efff47f982ef17"
+              },
+              "limitation": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
@@ -30535,7 +31004,26 @@
             "project": "ulpin-usptest-6ec4ef2dfff134fc",
             "nonce": "6ec4ef2dfff134fc"
           },
-          "limitation": "Only unchanged NWIC administrative post-admission MVT generation/private reads/recovery were observed. Records belong to the stopped isolated run; this does not install tiles into the linked serving environment."
+          "limitation": "Only unchanged NWIC administrative post-admission MVT generation/private reads/recovery were observed. Records belong to the stopped isolated run; this does not install tiles into the linked serving environment.",
+          "additionalReceipts": [
+            {
+              "scope": "Actual early tile feature resolves to its canonical source-backed unit before full-source acceptance.",
+              "sourceManifests": [
+                "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+              ],
+              "evidencePointers": [
+                "/firstUseful/canonicalPick"
+              ],
+              "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+              "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+              "environment": {
+                "kind": "stopped-isolated",
+                "project": "ulpin-usptest-23efff47f982ef17",
+                "nonce": "23efff47f982ef17"
+              },
+              "limitation": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database."
+            }
+          ]
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "private-bounded-read",
@@ -140647,6 +141135,12 @@
           "sourceSha256": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
+          },
+          "semanticChunks": {
+            "type": "string",
+            "enum": [
+              "nwic-semantic-chunks/1"
+            ]
           }
         },
         "required": [
@@ -140876,6 +141370,152 @@
             "nullable": true,
             "type": "string",
             "maxLength": 80
+          },
+          "currentSourceAccepted": {
+            "type": "boolean"
+          },
+          "displayMilestones": {
+            "minItems": 3,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "phase": {
+                  "type": "string",
+                  "enum": [
+                    "early",
+                    "middle",
+                    "final"
+                  ]
+                },
+                "jobId": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "reserved",
+                    "queued",
+                    "running",
+                    "succeeded",
+                    "failed",
+                    "stale",
+                    "unavailable"
+                  ]
+                },
+                "errorCode": {
+                  "nullable": true,
+                  "type": "string",
+                  "maxLength": 80
+                }
+              },
+              "required": [
+                "phase",
+                "jobId",
+                "state",
+                "errorCode"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "coverage": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "committed_partial"
+                ]
+              },
+              "sourceAccepted": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              },
+              "throughSequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "expectedChunks": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "records": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 733
+              },
+              "admitted": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 720
+              },
+              "quarantined": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 13
+              },
+              "positions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3125505
+              },
+              "expectedRecords": {
+                "type": "number",
+                "enum": [
+                  733
+                ]
+              },
+              "remainingRecords": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 732
+              },
+              "prefixDependencySha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "kind",
+              "sourceAccepted",
+              "throughSequence",
+              "expectedChunks",
+              "records",
+              "admitted",
+              "quarantined",
+              "positions",
+              "expectedRecords",
+              "remainingRecords",
+              "prefixDependencySha256"
+            ],
+            "additionalProperties": false
+          },
+          "chunk": {
+            "type": "object",
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "sequence",
+              "sha256"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -140890,6 +141530,508 @@
           "totals",
           "transform",
           "errorCode"
+        ],
+        "additionalProperties": false
+      },
+      "GET_ingestion_cases_caseId_sources_sourceId_projected_vector_jobs_jobId_chunks_sequence_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "pin": {
+            "type": "object",
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "sequence",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "chunk": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "enum": [
+                  "nwic-semantic-chunks/1"
+                ]
+              },
+              "jobId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "caseId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "caseRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "sourceFamilyId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceSha256": {
+                "type": "string",
+                "enum": [
+                  "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37"
+                ]
+              },
+              "inputFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "accessBinding": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "publisherSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "indexSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "transform": {
+                "type": "object",
+                "properties": {
+                  "sourceCrs": {
+                    "type": "string",
+                    "enum": [
+                      "EPSG:7755"
+                    ]
+                  },
+                  "targetCrs": {
+                    "type": "string",
+                    "enum": [
+                      "EPSG:4326"
+                    ]
+                  },
+                  "axisOrder": {
+                    "type": "string",
+                    "enum": [
+                      "always_xy"
+                    ]
+                  },
+                  "sourceUnit": {
+                    "type": "string",
+                    "enum": [
+                      "metre"
+                    ]
+                  },
+                  "targetUnit": {
+                    "type": "string",
+                    "enum": [
+                      "degree"
+                    ]
+                  },
+                  "verticalReference": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      null
+                    ]
+                  },
+                  "pyproj": {
+                    "type": "string",
+                    "enum": [
+                      "3.6.1"
+                    ]
+                  },
+                  "proj": {
+                    "type": "string",
+                    "enum": [
+                      "9.3.0"
+                    ]
+                  },
+                  "shapely": {
+                    "type": "string",
+                    "enum": [
+                      "2.0.7"
+                    ]
+                  },
+                  "projDatabaseSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "definition": {
+                    "type": "string",
+                    "maxLength": 1024
+                  },
+                  "network": {
+                    "type": "boolean",
+                    "enum": [
+                      false
+                    ]
+                  },
+                  "ballpark": {
+                    "type": "boolean",
+                    "enum": [
+                      false
+                    ]
+                  },
+                  "grids": {
+                    "maxItems": 0,
+                    "type": "array",
+                    "items": {
+                      "not": {}
+                    }
+                  },
+                  "accuracyQualification": {
+                    "type": "string",
+                    "enum": [
+                      "numerical_transform_only_not_survey_accuracy"
+                    ]
+                  },
+                  "parserSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "sourceCrs",
+                  "targetCrs",
+                  "axisOrder",
+                  "sourceUnit",
+                  "targetUnit",
+                  "verticalReference",
+                  "pyproj",
+                  "proj",
+                  "shapely",
+                  "projDatabaseSha256",
+                  "definition",
+                  "network",
+                  "ballpark",
+                  "grids",
+                  "accuracyQualification",
+                  "parserSha256"
+                ],
+                "additionalProperties": false
+              },
+              "partition": {
+                "type": "object",
+                "properties": {
+                  "sequence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 128
+                  },
+                  "first": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 732
+                  },
+                  "last": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 732
+                  },
+                  "records": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "positions": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50000
+                  },
+                  "referencedBytes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8388608
+                  }
+                },
+                "required": [
+                  "sequence",
+                  "first",
+                  "last",
+                  "records",
+                  "positions",
+                  "referencedBytes"
+                ],
+                "additionalProperties": false
+              },
+              "previous": {
+                "nullable": true,
+                "type": "object",
+                "properties": {
+                  "sequence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 128
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "sequence",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              },
+              "attempt": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3
+              },
+              "fence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "records": {
+                "minItems": 1,
+                "maxItems": 100,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "featureIndex": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 732
+                    },
+                    "unitId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "key": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "number"
+                              ]
+                            },
+                            "value": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "string"
+                              ]
+                            },
+                            "value": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 256
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "disposition": {
+                      "type": "string",
+                      "enum": [
+                        "admitted",
+                        "quarantined"
+                      ]
+                    },
+                    "rawSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "geographicSha256": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "nativeGeometrySha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "geographicGeometrySha256": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "recordSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "featureIndex",
+                    "unitId",
+                    "key",
+                    "disposition",
+                    "rawSha256",
+                    "geographicSha256",
+                    "nativeGeometrySha256",
+                    "geographicGeometrySha256",
+                    "recordSha256"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "coverage": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "committed_partial"
+                    ]
+                  },
+                  "sourceAccepted": {
+                    "type": "boolean",
+                    "enum": [
+                      false
+                    ]
+                  },
+                  "throughSequence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 128
+                  },
+                  "expectedChunks": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 128
+                  },
+                  "records": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 733
+                  },
+                  "admitted": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 720
+                  },
+                  "quarantined": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 13
+                  },
+                  "positions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3125505
+                  },
+                  "expectedRecords": {
+                    "type": "number",
+                    "enum": [
+                      733
+                    ]
+                  },
+                  "remainingRecords": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 732
+                  },
+                  "prefixDependencySha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceAccepted",
+                  "throughSequence",
+                  "expectedChunks",
+                  "records",
+                  "admitted",
+                  "quarantined",
+                  "positions",
+                  "expectedRecords",
+                  "remainingRecords",
+                  "prefixDependencySha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "version",
+              "jobId",
+              "caseId",
+              "caseRevision",
+              "sourceId",
+              "sourceRevision",
+              "sourceFamilyId",
+              "sourceSha256",
+              "inputFingerprint",
+              "accessBinding",
+              "publisherSha256",
+              "indexSha256",
+              "transform",
+              "partition",
+              "previous",
+              "attempt",
+              "fence",
+              "records",
+              "coverage"
+            ],
+            "additionalProperties": false
+          },
+          "currentSourceAccepted": {
+            "type": "boolean"
+          },
+          "sourceJobStatus": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "stale"
+            ]
+          }
+        },
+        "required": [
+          "pin",
+          "chunk",
+          "currentSourceAccepted",
+          "sourceJobStatus"
         ],
         "additionalProperties": false
       },
@@ -141155,6 +142297,101 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 9007199254740991
+          },
+          "coverage": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "committed_partial"
+                ]
+              },
+              "sourceAccepted": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              },
+              "throughSequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "expectedChunks": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "records": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 733
+              },
+              "admitted": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 720
+              },
+              "quarantined": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 13
+              },
+              "positions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 3125505
+              },
+              "expectedRecords": {
+                "type": "number",
+                "enum": [
+                  733
+                ]
+              },
+              "remainingRecords": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 732
+              },
+              "prefixDependencySha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "kind",
+              "sourceAccepted",
+              "throughSequence",
+              "expectedChunks",
+              "records",
+              "admitted",
+              "quarantined",
+              "positions",
+              "expectedRecords",
+              "remainingRecords",
+              "prefixDependencySha256"
+            ],
+            "additionalProperties": false
+          },
+          "chunk": {
+            "type": "object",
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "sequence",
+              "sha256"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -141261,6 +142498,25 @@
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             }
+          },
+          "chunk": {
+            "type": "object",
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "sequence",
+              "sha256"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -141509,6 +142765,111 @@
                     "enum": [
                       "nwic:district-boundary:8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d"
                     ]
+                  },
+                  "chunk": {
+                    "type": "object",
+                    "properties": {
+                      "pin": {
+                        "type": "object",
+                        "properties": {
+                          "sequence": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 128
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "sequence",
+                          "sha256"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "coverage": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "committed_partial"
+                            ]
+                          },
+                          "sourceAccepted": {
+                            "type": "boolean",
+                            "enum": [
+                              false
+                            ]
+                          },
+                          "throughSequence": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 128
+                          },
+                          "expectedChunks": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 128
+                          },
+                          "records": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 733
+                          },
+                          "admitted": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 720
+                          },
+                          "quarantined": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 13
+                          },
+                          "positions": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 3125505
+                          },
+                          "expectedRecords": {
+                            "type": "number",
+                            "enum": [
+                              733
+                            ]
+                          },
+                          "remainingRecords": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 732
+                          },
+                          "prefixDependencySha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "sourceAccepted",
+                          "throughSequence",
+                          "expectedChunks",
+                          "records",
+                          "admitted",
+                          "quarantined",
+                          "positions",
+                          "expectedRecords",
+                          "remainingRecords",
+                          "prefixDependencySha256"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "pin",
+                      "coverage"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -141857,7 +143218,8 @@
                 }
               },
               "complete": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Requested display-cell catalog readiness, not complete source admission."
               },
               "invalidation": {
                 "type": "object",
@@ -141994,6 +143356,45 @@
                 ],
                 "additionalProperties": false
               },
+              "sourceCoverage": {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "partial",
+                      "complete"
+                    ]
+                  },
+                  "sourceAccepted": {
+                    "type": "boolean"
+                  },
+                  "committedRecords": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 733
+                  },
+                  "remainingRecords": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 733
+                  },
+                  "expectedRecords": {
+                    "type": "number",
+                    "enum": [
+                      733
+                    ]
+                  }
+                },
+                "required": [
+                  "state",
+                  "sourceAccepted",
+                  "committedRecords",
+                  "remainingRecords",
+                  "expectedRecords"
+                ],
+                "additionalProperties": false
+              },
               "excludedQuarantined": {
                 "type": "integer",
                 "minimum": 13,
@@ -142039,7 +143440,8 @@
                     "display_quantization_clipping_may_omit_collapse_or_repair_geometry",
                     "administrative_context_not_property_geometry",
                     "source_accuracy_currentness_unqualified",
-                    "post_admission_only_multi_chunk_import_stream_gate_pending"
+                    "post_admission_only_multi_chunk_import_stream_gate_pending",
+                    "committed_partial_source_coverage_not_complete_admission"
                   ]
                 }
               }
@@ -142353,6 +143755,111 @@
               "verticalReference",
               "purpose",
               "accuracyQualification"
+            ],
+            "additionalProperties": false
+          },
+          "sourceChunk": {
+            "type": "object",
+            "properties": {
+              "pin": {
+                "type": "object",
+                "properties": {
+                  "sequence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 128
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "sequence",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              },
+              "coverage": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "committed_partial"
+                    ]
+                  },
+                  "sourceAccepted": {
+                    "type": "boolean",
+                    "enum": [
+                      false
+                    ]
+                  },
+                  "throughSequence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 128
+                  },
+                  "expectedChunks": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 128
+                  },
+                  "records": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 733
+                  },
+                  "admitted": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 720
+                  },
+                  "quarantined": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 13
+                  },
+                  "positions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3125505
+                  },
+                  "expectedRecords": {
+                    "type": "number",
+                    "enum": [
+                      733
+                    ]
+                  },
+                  "remainingRecords": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 732
+                  },
+                  "prefixDependencySha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceAccepted",
+                  "throughSequence",
+                  "expectedChunks",
+                  "records",
+                  "admitted",
+                  "quarantined",
+                  "positions",
+                  "expectedRecords",
+                  "remainingRecords",
+                  "prefixDependencySha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "pin",
+              "coverage"
             ],
             "additionalProperties": false
           }
