@@ -1,0 +1,17 @@
+{
+ "id": "a6e6d9a3-a351-5dfe-9b13-d5aaa5cfa7a0",
+ "siteId": "f62073c2-a2e8-51c2-9a40-ed9defd70f92",
+ "name": "Swiss Dwellings site 127 · local source frame, not placed",
+ "revision": 1,
+ "reference": null,
+ "extent": [
+  -6.051,
+  -6.908,
+  6.451,
+  6.712
+ ],
+ "geographicExtent": null,
+ "administrativeUnits": [],
+ "dataKind": "real",
+ "featureCount": 1
+}

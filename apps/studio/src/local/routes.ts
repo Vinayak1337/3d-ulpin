@@ -24,11 +24,19 @@ export const ROUTES: RouteEntry[] = [
   { method: 'GET', path: '/api/v1/work-queue', mode: 'live' },
   {
     method: 'GET', path: '/api/v1/areas', mode: 'local',
-    reason: 'No official-source area is installed in the running API. Answers with the area derived from the retained NYC OTI Bronx crop.',
+    reason: 'No official-source area is installed in the running API. Answers with the area derived from retained official sources (NYC OTI Bronx crop; Swiss Dwellings site 127 area record).',
   },
   {
     method: 'GET', path: '/api/v1/areas/:areaId/context', mode: 'local',
-    reason: 'Same derived NYC OTI area; unknown area IDs fall through to the live API.',
+    reason: 'Derived NYC OTI and Swiss Dwellings areas; unknown area IDs fall through to the live API.',
+  },
+  {
+    method: 'GET', path: '/api/v1/buildings/:buildingId/register', mode: 'local',
+    reason: 'Registers for the derived buildings: the Swiss floor with its units and rooms, NYC footprints with no floors.',
+  },
+  {
+    method: 'GET', path: '/api/v1/sources/:sourceId/file', mode: 'local',
+    reason: 'Serves the retained original bytes behind the derived records, for the evidence viewer.',
   },
 ];
 

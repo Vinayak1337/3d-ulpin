@@ -1,0 +1,9 @@
+.page { min-height: 100%; background: var(--ui-background); overflow: auto; }
+.header { display: flex; align-items: center; justify-content: space-between; height: var(--ui-header-height); padding: 0 var(--ui-space-5); background: var(--ui-surface); border-bottom: 1px solid var(--ui-divider); }
+.main { max-width: 560px; margin: 0 auto; padding: var(--ui-space-5) var(--ui-space-4) var(--ui-space-12); display: grid; gap: var(--ui-space-4); }
+.note { padding: 8px 12px; border-radius: var(--ui-radius-8); background: var(--ui-surface-subtle); color: var(--ui-ink-soft); font-size: 13px; }
+.result { display: flex; align-items: center; gap: var(--ui-space-3); padding: 16px 18px; border-radius: var(--ui-radius-12); font: 600 20px/24px var(--ui-font-sans); }
+.resultText { flex: 1; }
+.success { background: var(--ui-success-soft); color: var(--ui-success); }
+.warning { background: var(--ui-warning-soft); color: var(--ui-warning); }
+.danger { background: var(--ui-danger-soft); color: var(--ui-danger); font-size: 15px; }

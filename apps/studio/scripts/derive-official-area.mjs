@@ -13,6 +13,7 @@
  * Run: node apps/studio/scripts/derive-official-area.mjs
  */
 import { createHash } from 'node:crypto';
+import { NAMESPACE, round, uuidV5 } from './lib.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,7 +30,6 @@ if (sha256 !== manifest.sourceSha256) throw new Error(`Original hash ${sha256} d
 const original = JSON.parse(originalBytes.toString('utf8'));
 if (original.features.length !== manifest.countAfter) throw new Error('Feature count differs from the manifest count');
 
-const NAMESPACE = uuidV5('ulpin-studio-local-derivation', '6ba7b811-9dad-11d1-80b4-00c04fd430c8');
 const sourceRevisionId = uuidV5(`source:${sha256}`, NAMESPACE);
 const areaId = uuidV5(`area:${manifest.areaKey}:${sha256}`, NAMESPACE);
 const siteId = uuidV5(`site:${manifest.areaKey}`, NAMESPACE);
@@ -145,6 +145,10 @@ const write = (name, value) => {
 };
 write('nyc-bronx-areas.json', [area]);
 write('nyc-bronx-context.json', context);
+write('nyc-bronx-source.json', {
+  id: sourceRevisionId, name: `${manifest.areaKey}/${manifest.sourceFile}`, sha256, revision: 1, profile: 'nyc-oti-building-geojson',
+  createdAt: manifest.retrievedAt, url: `/api/v1/sources/${sourceRevisionId}/file`, evidence: [],
+});
 writeFileSync(join(outDir, 'nyc-bronx-lineage.json'), `${JSON.stringify(lineage, null, 1)}\n`);
 console.log(`Derived ${features.length} buildings into area ${areaId}`);
 
@@ -156,13 +160,4 @@ function ringArea(ring) {
   let s = 0;
   for (let i = 0; i < ring.length - 1; i++) s += ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1];
   return s / 2;
-}
-function round(v, d) { const k = 10 ** d; return Math.round(v * k) / k; }
-function uuidV5(name, namespace) {
-  const ns = Buffer.from(namespace.replace(/-/g, ''), 'hex');
-  const hash = createHash('sha1').update(Buffer.concat([ns, Buffer.from(name, 'utf8')])).digest();
-  hash[6] = (hash[6] & 0x0f) | 0x50;
-  hash[8] = (hash[8] & 0x3f) | 0x80;
-  const hex = hash.subarray(0, 16).toString('hex');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }

@@ -1,5 +1,5 @@
 import type { SceneEngine } from '@ulpin/scene';
-import styles from './MapPage.module.css';
+import styles from './MapWorkspace.module.css';
 
 const STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
 
