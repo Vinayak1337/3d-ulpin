@@ -12,3 +12,7 @@ export async function migrateLargeOriginalTx(client: PoolClient) {
 export async function migrateIngestionEventsTx(client: PoolClient) {
   await client.query(sql('ingestion.events.index'));
 }
+
+export async function migrateProjectedVectorTx(client:PoolClient){
+  await client.query(sql('ingestion.projected.schema'));
+}

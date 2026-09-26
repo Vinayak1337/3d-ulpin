@@ -11,6 +11,7 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
     status: z.enum(['proposed', 'approved', 'executed'])}),
   z.strictObject({kind: z.literal('upload.changed'), uploadId: id, uploadRevision: revision,
     status: z.enum(['receiving', 'finalizing', 'retained', 'aborting', 'aborted'])}),
+  z.strictObject({kind:z.literal('projected-vector.changed'),jobId:id,status:z.enum(['queued','running','succeeded','failed','stale'])}),
 ]);
 /** Intentionally separate from registry snapshot events. No original, filename or error text. */
 export const CaseIngestionOutboxSchema = z.strictObject({

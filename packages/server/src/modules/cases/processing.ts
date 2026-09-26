@@ -7,6 +7,7 @@ import { buildResultSchema, inspectionSchema } from "../../infrastructure/valida
 import { failSpatialMlJob, ingestSpatialMlJob, markSpatialMlRunning } from "../spatial/spatial-ml";
 
 import {failDatasetMl,ingestDatasetMl,markDatasetMlRunning} from '../datasets/dataset-ml';
+import {failProjectedJob,ingestProjectedResult,markProjectedRunning} from '../usp/ingestion/projected-publication';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 
 type WorkerReply = {
@@ -33,6 +34,7 @@ async function geo(path: string, init: RequestInit = {}): Promise<WorkerReply> {
 
 async function failJob(id: string, message: string) {
   const operation = (await query("SELECT operation FROM jobs WHERE id=$1", [id])).rows[0]?.operation;
+  if(operation==='projected-vector')return failProjectedJob(id);
   if (operation === "dataset-spatial-inference") return failDatasetMl(id,message);
   if (operation === "spatial-inference") return failSpatialMlJob(id, message);
   await transaction(async (client) => {
@@ -59,6 +61,7 @@ async function failJob(id: string, message: string) {
 
 export async function ingestJob(id: string, result: unknown) {
   const operation = (await query("SELECT operation FROM jobs WHERE id=$1", [id])).rows[0]?.operation;
+  if(operation==='projected-vector')return ingestProjectedResult(id,result);
   if (operation === "dataset-spatial-inference") return ingestDatasetMl(id,result);
   if (operation === "spatial-inference") return ingestSpatialMlJob(id, result);
   await transaction(async (client) => {
@@ -181,7 +184,8 @@ export async function dispatchTick(): Promise<number> {
           });
           if (reply.jobId !== job.id)
             throw new Error("Processor acknowledged a different job.");
-          await transaction(async (client) => {
+          if(job.operation==='projected-vector')await markProjectedRunning(job.id);
+          else await transaction(async (client) => {
             await client.query(
               "UPDATE jobs SET status=$2,dispatched_at=now(),next_attempt_at=now(),error=NULL WHERE id=$1 AND status IN ('queued','running')",
               [job.id, isInference(job.operation) ? "queued" : "running"],
