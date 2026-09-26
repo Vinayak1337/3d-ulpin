@@ -1,0 +1,2621 @@
+{
+  "schemaVersion": "ulpin-api-dataset-catalog/1",
+  "purpose": "Source metadata for API integration; not installed records or permission grants.",
+  "guide": "docs/api/real-sources.md",
+  "availabilityMeaning": "available refers to checked repository bytes; unavailable may mean retained outside Git. Neither proves an API import.",
+  "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
+  "packs": [
+    {
+      "manifest": "fixtures/usp/D1/single-roof/manifest.json",
+      "manifestSha256": "1cf9ebb88700669c3eb64e6b7a55c5edd7a176c44d7ecce63b188a0767250b71",
+      "packId": "D1",
+      "profile": "single-roof",
+      "version": 1,
+      "description": "One unchanged 3DBAG CityJSONFeature API response with independent source geometry oracle and HTTP receipt; only catalogue and byte stages are asserted. No rendered or recorded D1 qualification.",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "product_parser_qualification",
+        "triangulated_roof_rendering",
+        "feature_pick_identity",
+        "qualified_global_placement",
+        "internal_floor_geometry",
+        "unit_or_rights_evidence",
+        "record_workflow_verification"
+      ],
+      "assets": [
+        {
+          "id": "original.json",
+          "mediaType": "application/json",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://api.3dbag.nl/collections/pand/items/NL.IMBAG.Pand.1655100000500568"
+          },
+          "sourceVersion": null,
+          "attribution": "© 3DBAG by tudelft3d and 3DGI — https://docs.3dbag.nl/en/copyright/",
+          "permission": {
+            "state": "documented",
+            "reference": "https://docs.3dbag.nl/en/copyright/ (CC BY 4.0)",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": "EPSG:7415",
+            "verticalReference": "NAP height (EPSG:7415)",
+            "horizontalUnit": "m",
+            "verticalUnit": "m",
+            "sourceDate": null
+          },
+          "dependencies": [],
+          "content": {
+            "state": "available",
+            "path": "original.json",
+            "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+            "bytes": 6783,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D1/single-roof/original.json"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "acquisition.md"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "acquisition.md"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "response.headers",
+          "mediaType": "text/plain",
+          "classification": "unknown",
+          "origin": {
+            "kind": "external",
+            "url": "https://api.3dbag.nl/collections/pand/items/NL.IMBAG.Pand.1655100000500568"
+          },
+          "sourceVersion": null,
+          "attribution": "© 3DBAG by tudelft3d and 3DGI — https://docs.3dbag.nl/en/copyright/",
+          "permission": {
+            "state": "documented",
+            "reference": "https://docs.3dbag.nl/en/copyright/ (CC BY 4.0)",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": "EPSG:7415",
+            "verticalReference": "NAP height (EPSG:7415)",
+            "horizontalUnit": "m",
+            "verticalUnit": "m",
+            "sourceDate": null
+          },
+          "dependencies": [],
+          "content": {
+            "state": "available",
+            "path": "response.headers",
+            "sha256": "22919e818eaef9c0ef5b0573f64fdc7fc57c536b057066f56aa07abf486fb5f1",
+            "bytes": 245,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D1/single-roof/response.headers"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "acquisition.md"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "acquisition.md"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "expected.json",
+          "mediaType": "application/json",
+          "classification": "unknown",
+          "origin": {
+            "kind": "authored",
+            "generatorRef": "Independent standard-library inspection of original.json, detailed in acquisition.md"
+          },
+          "sourceVersion": "1",
+          "attribution": "3D ULPIN DATA fixture analysis",
+          "permission": {
+            "state": "documented",
+            "reference": "Authored independent D1 fixture analysis, project test use",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": "EPSG:7415",
+            "verticalReference": "NAP height (EPSG:7415)",
+            "horizontalUnit": "m",
+            "verticalUnit": "m",
+            "sourceDate": null
+          },
+          "dependencies": [
+            "original.json"
+          ],
+          "content": {
+            "state": "available",
+            "path": "expected.json",
+            "sha256": "12adc100852331d2f96d9feebee3e60b5c71bf5e7bbb109437a7ff207a178554",
+            "bytes": 1909,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D1/single-roof/expected.json"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "not_applicable",
+              "reason": "Authored test oracle rather than external catalogue asset"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "acquisition.md"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "acquisition.md",
+          "mediaType": "text/markdown",
+          "classification": "unknown",
+          "origin": {
+            "kind": "authored",
+            "generatorRef": "DATA source receipt, 2026-09-23"
+          },
+          "sourceVersion": "1",
+          "attribution": "3D ULPIN DATA source receipt",
+          "permission": {
+            "state": "documented",
+            "reference": "Authored independent D1 fixture analysis, project test use",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [],
+          "content": {
+            "state": "available",
+            "path": "acquisition.md",
+            "sha256": "1b7d3f98e00b35e360a4785494d356b37fc8cdc7816abef36ccca065e591caa7",
+            "bytes": 3425,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D1/single-roof/acquisition.md"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "not_applicable",
+              "reason": "Authored acquisition evidence rather than external catalogue asset"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "acquisition.md"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "manifest": "fixtures/usp/D3/official-scale-v1/manifest.json",
+      "manifestSha256": "49f930a3d66ab3a4714fc9d300dba5d942f5f185fdca8c154858ad45953270af",
+      "packId": "D3",
+      "profile": "karnataka-districts-vector-inspected",
+      "version": 1,
+      "description": "Official Karnataka district polygon archive acquired and byte-inspected as a 2D vector inventory. Source-specific reuse and redistribution permissions are unconfirmed; no runtime or scale qualification.",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "source_reuse_permission",
+        "source_redistribution_permission",
+        "authorized_runtime_use",
+        "3d_city_or_building_geometry",
+        "parcel_or_site_geometry",
+        "vertical_reference",
+        "survey_accuracy_or_current_boundary_validation",
+        "gf_scale_1_measurement"
+      ],
+      "assets": [
+        {
+          "id": "karnataka-district-boundaries-original",
+          "mediaType": "application/zip",
+          "classification": "unknown",
+          "origin": {
+            "kind": "external",
+            "url": "https://kgis.ksrsac.in/kgisdocuments/PDF_KML_SHP/District/Shapefiles/District.zip"
+          },
+          "sourceVersion": "HTTP Last-Modified: 2026-08-04",
+          "attribution": "State Remote Sensing Applications Centre (KSRSAC), Government of Karnataka; hosted through the Sujala III / Watershed Development Department portal",
+          "permission": {
+            "reason": "Official page advertises public Shape File downloads and the direct GET succeeded; source-specific reuse and redistribution terms could not be read",
+            "state": "unconfirmed"
+          },
+          "reference": {
+            "horizontalCrs": "WGS_1984_UTM_Zone_43N (literal District.prj name; no EPSG substitution)",
+            "horizontalUnit": "metre",
+            "sourceDate": "2026-08-04 HTTP Last-Modified header; not a boundary-validity date",
+            "verticalReference": null,
+            "verticalUnit": null
+          },
+          "dependencies": [],
+          "provenance": {
+            "acquiredAt": "2026-09-26T00:54:03+00:00",
+            "benchmark": null,
+            "coverage": "Karnataka district boundaries; official page labels the layer District boundaries. 31 polygon records are present in the acquired archive.",
+            "heightType": null,
+            "licenceFamily": null,
+            "missingCapabilities": [
+              "reuse_permission",
+              "redistribution_permission",
+              "training_permission",
+              "vertical_coordinates",
+              "building_geometry",
+              "parcel_or_site_boundaries",
+              "currentness_or_boundary_accuracy_validation",
+              "authorized_runtime_scale_profile"
+            ],
+            "nativeIds": [
+              "KGISDistri=01",
+              "KGISDistri=02",
+              "KGISDistri=03",
+              "KGISDistri=04",
+              "KGISDistri=05",
+              "KGISDistri=06",
+              "KGISDistri=07",
+              "KGISDistri=08",
+              "KGISDistri=09",
+              "KGISDistri=10",
+              "KGISDistri=11",
+              "KGISDistri=12",
+              "KGISDistri=13",
+              "KGISDistri=14",
+              "KGISDistri=15",
+              "KGISDistri=16",
+              "KGISDistri=17",
+              "KGISDistri=18",
+              "KGISDistri=19",
+              "KGISDistri=20",
+              "KGISDistri=21",
+              "KGISDistri=22",
+              "KGISDistri=23",
+              "KGISDistri=24",
+              "KGISDistri=25",
+              "KGISDistri=26",
+              "KGISDistri=27",
+              "KGISDistri=28",
+              "KGISDistri=29",
+              "KGISDistri=30",
+              "KGISDistri=31"
+            ],
+            "original": {
+              "bytes": 3935596,
+              "sha256": "0f5b59339c5d4e3a3c1efd4be810edd38264e40a51f29f17ab78b19067f88891"
+            },
+            "parser": {
+              "name": "Python 3 standard-library ZIP, SHP and DBF header/record parser",
+              "version": null
+            },
+            "privacy": null,
+            "purpose": "test_only",
+            "qualificationScope": null,
+            "resourceId": null,
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "State Remote Sensing Applications Centre (KSRSAC), Karnataka",
+            "sourceRelease": "HTTP Last-Modified: Tue, 04 Aug 2026 04:48:51 GMT; not evidence of boundary validity",
+            "stages": {
+              "acquired": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-10/report.md",
+                "status": "passed"
+              },
+              "discovered": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-10/report.md",
+                "status": "passed"
+              },
+              "inspected": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-10/report.md",
+                "status": "passed"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "subsetLineage": [],
+            "trainingPermission": {
+              "reason": "No source-specific permission for model training was observed",
+              "state": "unconfirmed"
+            }
+          },
+          "content": {
+            "reason": "Original retained outside Git at /Users/vinayak/.codex/task-data/ulpin-data-10/District.zip; source-specific reuse and redistribution permission remain unconfirmed",
+            "state": "unavailable",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "catalogue_checked": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-10/report.md",
+              "status": "passed"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "karnataka-district-source-observations",
+          "mediaType": "application/json",
+          "classification": "unknown",
+          "origin": {
+            "generatorRef": "scripts/usp/data/DATA-10-official-scale.py",
+            "kind": "authored"
+          },
+          "sourceVersion": "1",
+          "attribution": "DATA-10 inspection metadata computed from official KSRSAC source bytes",
+          "permission": {
+            "reason": "Inspection metadata cites the original source and retains its unconfirmed reuse/redistribution limits",
+            "state": "unconfirmed"
+          },
+          "reference": {
+            "horizontalCrs": "WGS_1984_UTM_Zone_43N (literal District.prj name; no EPSG substitution)",
+            "horizontalUnit": "metre",
+            "sourceDate": "2026-08-04 HTTP Last-Modified header; not a boundary-validity date",
+            "verticalReference": null,
+            "verticalUnit": null
+          },
+          "dependencies": [
+            "karnataka-district-boundaries-original"
+          ],
+          "content": {
+            "bytes": 7032,
+            "path": "source-observations.json",
+            "sha256": "fc6c44eea14f0f522c85837c167aa6b89806787bad68af563357952b1eb7499f",
+            "state": "available",
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D3/official-scale-v1/source-observations.json"
+          },
+          "manifestVerification": {
+            "bytes_preserved": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-10/report.md",
+              "status": "passed"
+            },
+            "catalogue_checked": {
+              "reason": "Source observation file is an inspection receipt, not a catalogue entry",
+              "status": "not_applicable"
+            },
+            "parsed": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-10/report.md",
+              "status": "passed"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "manifest": "fixtures/usp/D4/gf0-context-v1/manifest.json",
+      "manifestSha256": "fb86e101742fed4c9ab9ce6db6b61ba497a904ad27f1cbe90aeb93d11621e3e2",
+      "packId": "D4",
+      "profile": "gf0-context-v1",
+      "version": 1,
+      "description": "Retained nine-segment Uttam Nagar OpenStreetMap road context; no parcel or road-width claim.",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "cadastral_parcel_geometry",
+        "legal_road_width",
+        "recorded_heights",
+        "ownership",
+        "survey_accuracy"
+      ],
+      "assets": [
+        {
+          "id": "osm-road-centrelines.geojson",
+          "mediaType": "application/geo+json",
+          "classification": "observed",
+          "origin": {
+            "kind": "supplied",
+            "reference": "fixtures/uttam-nagar/uttam-nagar-road-centrelines.geojson"
+          },
+          "sourceVersion": "OSM snapshot 2026-09-16T20:48:53Z",
+          "attribution": "© OpenStreetMap contributors; ODbL 1.0",
+          "permission": {
+            "state": "documented",
+            "reference": "https://www.openstreetmap.org/copyright",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": "EPSG:4326",
+            "verticalReference": null,
+            "horizontalUnit": "degrees",
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [],
+          "content": {
+            "state": "available",
+            "path": "osm-road-centrelines.geojson",
+            "sha256": "317953642c770fb6913a14377a9a53904d9bf0eca5af7b150afbe7d5123d0f93",
+            "bytes": 8838,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D4/gf0-context-v1/osm-road-centrelines.geojson"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "provenance.json"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "provenance.json"
+            },
+            "parsed": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "expected.json",
+          "mediaType": "application/json",
+          "classification": "unknown",
+          "origin": {
+            "kind": "authored",
+            "generatorRef": "DATA-01 pre-implementation source inspection, 2026-09-25"
+          },
+          "sourceVersion": "1",
+          "attribution": "3D ULPIN DATA-01 bounded source check",
+          "permission": {
+            "state": "documented",
+            "reference": "Authored project test oracle",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [
+            "osm-road-centrelines.geojson"
+          ],
+          "content": {
+            "state": "available",
+            "path": "expected.json",
+            "sha256": "5065c2d2fb8ad0c034dabdb72576bf902b1635ac55505ca29622bfe9b2ef9c31",
+            "bytes": 540,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D4/gf0-context-v1/expected.json"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "not_applicable",
+              "reason": "Authored expected values"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "provenance.json"
+            },
+            "parsed": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "manifest": "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json",
+      "manifestSha256": "3f1a9968adb5a6df4de48f1f7ca266efbe2c9ec37a49d80d0f270236104ff06d",
+      "packId": "D4",
+      "profile": "gf0-structured-codes-v1",
+      "version": 1,
+      "description": "Public LGD district CSV for literal-code parser testing; no geometry or property rights.",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "spatial_geometry",
+        "parcel_identifiers",
+        "current_registration",
+        "ownership",
+        "height_or_floor_data"
+      ],
+      "assets": [
+        {
+          "id": "lgd-districts.csv",
+          "mediaType": "text/csv",
+          "classification": "unknown",
+          "origin": {
+            "kind": "external",
+            "url": "https://www.data.gov.in/resource/local-government-directory-lgd-districts"
+          },
+          "sourceVersion": null,
+          "attribution": "Ministry of Panchayati Raj, LGD via data.gov.in; GODL-India",
+          "permission": {
+            "state": "documented",
+            "reference": "https://www.data.gov.in/resource/local-government-directory-lgd-districts; GODL-India platform footer",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [],
+          "content": {
+            "state": "available",
+            "path": "lgd-districts.csv",
+            "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+            "bytes": 89622,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D4/gf0-structured-codes-v1/lgd-districts.csv"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "provenance.json"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "provenance.json"
+            },
+            "parsed": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "expected.json",
+          "mediaType": "application/json",
+          "classification": "unknown",
+          "origin": {
+            "kind": "authored",
+            "generatorRef": "DATA-01 pre-implementation CSV inspection, 2026-09-25"
+          },
+          "sourceVersion": "1",
+          "attribution": "3D ULPIN DATA-01 bounded CSV oracle",
+          "permission": {
+            "state": "documented",
+            "reference": "Authored project test oracle",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [
+            "lgd-districts.csv"
+          ],
+          "content": {
+            "state": "available",
+            "path": "expected.json",
+            "sha256": "65ceb3f4b26487c9431823091b741f77e5657dec25f017765b5422676dce609a",
+            "bytes": 676,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D4/gf0-structured-codes-v1/expected.json"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "not_applicable",
+              "reason": "Authored expected values"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "provenance.json"
+            },
+            "parsed": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/source-check.json"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "manifest": "fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json",
+      "manifestSha256": "dcdc217f00c531d222ca80630fcb03de6516f69f3f7b82b7d371b5f64467b68d",
+      "packId": "D4",
+      "profile": "reference-area-gurugram-59-63a",
+      "version": 1,
+      "description": "Official Gurugram source checks for a 1 km² context window; GMDA scene reuse unqualified",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "administrative_label_publication_permission",
+        "permitted_context_geometry",
+        "terrain",
+        "landuse",
+        "water",
+        "trees",
+        "context_buildings",
+        "hero_building_placement",
+        "underground_depth"
+      ],
+      "assets": [
+        {
+          "id": "gmda-sector-boundaries",
+          "mediaType": "application/json",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/18/query?where=Name+IN+%28%2759%27%2C%2763+A%27%29&outFields=FID%2CName%2CArea&returnGeometry=true&outSR=32643&f=json"
+          },
+          "sourceVersion": null,
+          "attribution": "Gurugram Metropolitan Development Authority",
+          "permission": {
+            "reason": "Authority endpoint is public; redistribution and scene reuse terms unverified",
+            "state": "unconfirmed"
+          },
+          "reference": {
+            "horizontalCrs": "EPSG:32643",
+            "horizontalUnit": "metre",
+            "sourceDate": null,
+            "verticalReference": null,
+            "verticalUnit": null
+          },
+          "dependencies": [],
+          "provenance": {
+            "acquiredAt": "2026-09-25T15:47:11.790714+00:00",
+            "benchmark": null,
+            "coverage": "Official sector 59 and 63 A source polygons; 1 km² analysis window uses their shared vertex",
+            "heightType": null,
+            "licenceFamily": null,
+            "missingCapabilities": [
+              "redistribution_permission",
+              "survey_accuracy",
+              "site_polygon"
+            ],
+            "nativeIds": [
+              "FID:165",
+              "FID:166"
+            ],
+            "original": {
+              "bytes": 1728,
+              "sha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8"
+            },
+            "parser": {
+              "name": "Python json/HTML source-byte check",
+              "version": null
+            },
+            "privacy": null,
+            "purpose": "test_only",
+            "qualificationScope": null,
+            "resourceId": null,
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Gurugram Metropolitan Development Authority",
+            "sourceRelease": null,
+            "stages": {
+              "acquired": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+                "status": "passed"
+              },
+              "discovered": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+                "status": "passed"
+              },
+              "inspected": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+                "status": "passed"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "subsetLineage": [],
+            "trainingPermission": {
+              "reason": "No source-specific ML training permission observed",
+              "state": "unconfirmed"
+            }
+          },
+          "content": {
+            "reason": "Original hash-pinned outside Git pending reuse qualification",
+            "state": "unavailable",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "catalogue_checked": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+              "status": "passed"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "gmda-road-centrelines",
+          "mediaType": "application/json",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/7/query?where=1%3D1&geometry=705564.1052549062%2C3142356.2916905787%2C706564.1052549062%2C3143356.2916905787&geometryType=esriGeometryEnvelope&inSR=32643&spatialRel=esriSpatialRelIntersects&outFields=FID%2CRoad_ID%2CRd_Name%2CType&returnGeometry=true&outSR=32643&f=json"
+          },
+          "sourceVersion": null,
+          "attribution": "Gurugram Metropolitan Development Authority",
+          "permission": {
+            "reason": "Authority endpoint is public; redistribution and scene reuse terms unverified",
+            "state": "unconfirmed"
+          },
+          "reference": {
+            "horizontalCrs": "EPSG:32643",
+            "horizontalUnit": "metre",
+            "sourceDate": null,
+            "verticalReference": null,
+            "verticalUnit": null
+          },
+          "dependencies": [],
+          "provenance": {
+            "acquiredAt": "2026-09-25T15:47:11.941964+00:00",
+            "benchmark": null,
+            "coverage": "Two official road features intersect the analysis window",
+            "heightType": null,
+            "licenceFamily": null,
+            "missingCapabilities": [
+              "redistribution_permission",
+              "legal_road_width"
+            ],
+            "nativeIds": [
+              "FID:175",
+              "FID:176"
+            ],
+            "original": {
+              "bytes": 1773,
+              "sha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0"
+            },
+            "parser": {
+              "name": "Python json/HTML source-byte check",
+              "version": null
+            },
+            "privacy": null,
+            "purpose": "test_only",
+            "qualificationScope": null,
+            "resourceId": null,
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Gurugram Metropolitan Development Authority",
+            "sourceRelease": null,
+            "stages": {
+              "acquired": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+                "status": "passed"
+              },
+              "discovered": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+                "status": "passed"
+              },
+              "inspected": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+                "status": "passed"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "subsetLineage": [],
+            "trainingPermission": {
+              "reason": "No source-specific ML training permission observed",
+              "state": "unconfirmed"
+            }
+          },
+          "content": {
+            "reason": "Original hash-pinned outside Git pending reuse qualification",
+            "state": "unavailable",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "catalogue_checked": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+              "status": "passed"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "gmda-parks-query",
+          "mediaType": "application/json",
+          "classification": "unknown",
+          "origin": {
+            "kind": "external",
+            "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/8/query?where=1%3D1&geometry=705564.1052549062%2C3142356.2916905787%2C706564.1052549062%2C3143356.2916905787&geometryType=esriGeometryEnvelope&inSR=32643&spatialRel=esriSpatialRelIntersects&outFields=FID%2CPark_Code%2CArea&returnGeometry=true&outSR=32643&f=json"
+          },
+          "sourceVersion": null,
+          "attribution": "Gurugram Metropolitan Development Authority",
+          "permission": {
+            "reason": "Authority endpoint is public; redistribution and scene reuse terms unverified",
+            "state": "unconfirmed"
+          },
+          "reference": {
+            "horizontalCrs": "EPSG:32643",
+            "horizontalUnit": "metre",
+            "sourceDate": null,
+            "verticalReference": null,
+            "verticalUnit": null
+          },
+          "dependencies": [],
+          "provenance": {
+            "acquiredAt": "2026-09-25T15:47:12.130393+00:00",
+            "benchmark": null,
+            "coverage": "Zero park features intersect the window",
+            "heightType": null,
+            "licenceFamily": null,
+            "missingCapabilities": [
+              "park_coverage",
+              "redistribution_permission"
+            ],
+            "nativeIds": [],
+            "original": {
+              "bytes": 410,
+              "sha256": "86d35a9b3635c9d61e1d25fca2a8bbdd27ff40be51914c701270105bdf2da31a"
+            },
+            "parser": {
+              "name": "Python json/HTML source-byte check",
+              "version": null
+            },
+            "privacy": null,
+            "purpose": "test_only",
+            "qualificationScope": null,
+            "resourceId": null,
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Gurugram Metropolitan Development Authority",
+            "sourceRelease": null,
+            "stages": {
+              "acquired": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+                "status": "passed"
+              },
+              "discovered": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+                "status": "passed"
+              },
+              "inspected": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+                "status": "passed"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "subsetLineage": [],
+            "trainingPermission": {
+              "reason": "No source-specific ML training permission observed",
+              "state": "unconfirmed"
+            }
+          },
+          "content": {
+            "reason": "Original hash-pinned outside Git pending reuse qualification",
+            "state": "unavailable",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "catalogue_checked": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+              "status": "passed"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "haryana-rera-2831-location",
+          "mediaType": "text/html",
+          "classification": "planned",
+          "origin": {
+            "kind": "external",
+            "url": "https://haryanarera.gov.in/view_project/project_preview_open/2831"
+          },
+          "sourceVersion": null,
+          "attribution": "Haryana Real Estate Regulatory Authority",
+          "permission": {
+            "reason": "Authority endpoint is public; redistribution and scene reuse terms unverified",
+            "state": "unconfirmed"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "sourceDate": null,
+            "verticalReference": null,
+            "verticalUnit": null
+          },
+          "dependencies": [],
+          "provenance": {
+            "acquiredAt": "2026-09-25T15:47:11.646187+00:00",
+            "benchmark": null,
+            "coverage": "Official address states Ullahwas and Behrampur, sectors 59 and 63A; no tower coordinate",
+            "heightType": null,
+            "licenceFamily": null,
+            "missingCapabilities": [
+              "tower_3_position",
+              "site_polygon",
+              "redistribution_permission"
+            ],
+            "nativeIds": [
+              "project:2831"
+            ],
+            "original": {
+              "bytes": 108086,
+              "sha256": "e2cbe2b5324067f47055761bf223e7b562c6b30e163c0f3d0b76e9ad7b24b05e"
+            },
+            "parser": {
+              "name": "Python json/HTML source-byte check",
+              "version": null
+            },
+            "privacy": "Source original remains outside Git; RERA HTML may contain personal details",
+            "purpose": "test_only",
+            "qualificationScope": null,
+            "resourceId": null,
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Haryana Real Estate Regulatory Authority",
+            "sourceRelease": null,
+            "stages": {
+              "acquired": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+                "status": "passed"
+              },
+              "discovered": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+                "status": "passed"
+              },
+              "inspected": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+                "status": "passed"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "subsetLineage": [],
+            "trainingPermission": {
+              "reason": "No source-specific ML training permission observed",
+              "state": "unconfirmed"
+            }
+          },
+          "content": {
+            "reason": "Original hash-pinned outside Git pending reuse qualification",
+            "state": "unavailable",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "catalogue_checked": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+              "status": "passed"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "lgd-gurugram.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://www.data.gov.in/resource/local-government-directory-lgd-districts"
+          },
+          "sourceVersion": null,
+          "attribution": "Ministry of Panchayati Raj LGD via data.gov.in",
+          "permission": {
+            "reason": "Portal-wide GODL notice observed; applicability and exemptions for this resource not independently pinned",
+            "state": "unconfirmed"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "sourceDate": null,
+            "verticalReference": null,
+            "verticalUnit": null
+          },
+          "dependencies": [],
+          "provenance": {
+            "acquiredAt": "2026-09-25T00:17:42.756870Z",
+            "benchmark": null,
+            "coverage": "One exact Gurugram district row derived from previously acquired LGD CSV; administrative label only",
+            "heightType": null,
+            "licenceFamily": "GODL-India portal-wide notice; resource-specific licence field unverified",
+            "missingCapabilities": [
+              "district_polygon",
+              "parcel_geometry",
+              "site_location"
+            ],
+            "nativeIds": [
+              "district_code:62"
+            ],
+            "original": {
+              "bytes": 89622,
+              "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59"
+            },
+            "parser": {
+              "name": "Python csv.DictReader",
+              "version": null
+            },
+            "privacy": null,
+            "purpose": "test_only",
+            "qualificationScope": null,
+            "resourceId": "37231365-78ba-44d5-ac22-3deec40b9197",
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Ministry of Panchayati Raj LGD districts",
+            "sourceRelease": null,
+            "stages": {
+              "acquired": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/acquisition.json",
+                "status": "passed"
+              },
+              "discovered": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-01/acquisition.json",
+                "status": "passed"
+              },
+              "inspected": {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+                "status": "passed"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "subsetLineage": [
+              {
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+                "operation": "Exact one-row Gurugram CSV extraction preserving source literal fields",
+                "sourceSha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59"
+              }
+            ],
+            "trainingPermission": {
+              "reason": "No source-specific ML training permission observed",
+              "state": "unconfirmed"
+            }
+          },
+          "content": {
+            "bytes": 239,
+            "path": "lgd-gurugram.csv",
+            "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce",
+            "state": "available",
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv"
+          },
+          "manifestVerification": {
+            "bytes_preserved": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+              "status": "passed"
+            },
+            "catalogue_checked": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/acquisition-ledger.json",
+              "status": "passed"
+            },
+            "parsed": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+              "status": "passed"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "source-observations.json",
+          "mediaType": "application/json",
+          "classification": "unknown",
+          "origin": {
+            "generatorRef": "DATA-09 deterministic observations from official source bytes",
+            "kind": "authored"
+          },
+          "sourceVersion": "1",
+          "attribution": "DATA-09 source-byte inspection",
+          "permission": {
+            "reason": "Derived observations retain LGD and GMDA source permission limits",
+            "state": "unconfirmed"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "sourceDate": null,
+            "verticalReference": null,
+            "verticalUnit": null
+          },
+          "dependencies": [
+            "gmda-sector-boundaries",
+            "gmda-road-centrelines",
+            "lgd-gurugram.csv"
+          ],
+          "content": {
+            "bytes": 944,
+            "path": "source-observations.json",
+            "sha256": "1aea2d4bdb4c83c9ad70933ddda658c0c345c91a71e66323f2b22fc2f21bb94c",
+            "state": "available",
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D4/reference-area-gurugram-59-63a/source-observations.json"
+          },
+          "manifestVerification": {
+            "bytes_preserved": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+              "status": "passed"
+            },
+            "catalogue_checked": {
+              "reason": "Derived check metadata",
+              "status": "not_applicable"
+            },
+            "parsed": {
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-09/attempt-1/source-check.json",
+              "status": "passed"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "manifest": "fixtures/usp/D5/gf0-multiunit-v1/manifest.json",
+      "manifestSha256": "77cc33f5c5ecaed58e643c205e1cbb185dfa544be33883d5770d610f4364fd23",
+      "packId": "D5",
+      "profile": "gf0-multiunit-v1",
+      "version": 1,
+      "description": "CC BY 4.0 Swiss Dwellings 81-row multi-unit vector test sample from a pinned 2 MiB published-file range; foreign test-only.",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "indian_operational_evidence",
+        "full_source_completeness",
+        "georeferenced_parcel",
+        "legal_unit_boundary",
+        "independent_ml_truth"
+      ],
+      "assets": [
+        {
+          "id": "swiss-dwellings-geometries-range-0-2097151",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://zenodo.org/records/7070952/files/geometries.csv"
+          },
+          "sourceVersion": "Zenodo 7070952 v1.0.0, HTTP bytes 0-2097151",
+          "attribution": "Swiss Dwellings authors; Zenodo 10.5281/zenodo.7070952; CC BY 4.0",
+          "permission": {
+            "state": "documented",
+            "reference": "https://zenodo.org/records/7070952, CC BY 4.0",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Swiss Dwellings",
+            "sourceRelease": "Zenodo 7070952 v1.0.0, 2022-09-20",
+            "resourceId": "geometries.csv bytes 0-2097151",
+            "nativeIds": [],
+            "acquiredAt": "2026-09-25T00:42:07.717811Z",
+            "original": {
+              "sha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+              "bytes": 2097152
+            },
+            "parser": {
+              "name": "Python standard csv",
+              "version": null
+            },
+            "heightType": null,
+            "benchmark": null,
+            "coverage": "First 2 MiB byte range of a 792527191-byte published CSV; final record truncated and ignored",
+            "licenceFamily": "CC-BY-4.0",
+            "trainingPermission": {
+              "state": "unconfirmed",
+              "reason": "Downstream training eligibility not separately assessed"
+            },
+            "purpose": "test_only",
+            "privacy": "Public de-identified vector geometry; individual privacy review not performed",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "indian_operational_evidence",
+              "legal_unit_boundary",
+              "surveyed_georeference",
+              "vertical_benchmark",
+              "full_source_completeness",
+              "independent_ml_truth"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "unavailable",
+            "reason": "Raw 2 MiB HTTP byte range retained outside Git; full 792527191-byte published file not acquired",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+            },
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "swiss-floor-127-164-717.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://zenodo.org/records/7070952/files/geometries.csv"
+          },
+          "sourceVersion": "Zenodo 7070952 v1.0.0; 81-row derived subset",
+          "attribution": "Swiss Dwellings authors; Zenodo 10.5281/zenodo.7070952; CC BY 4.0; filtered by DATA-05",
+          "permission": {
+            "state": "documented",
+            "reference": "https://zenodo.org/records/7070952, CC BY 4.0",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [
+            "swiss-dwellings-geometries-range-0-2097151"
+          ],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Swiss Dwellings",
+            "sourceRelease": "Zenodo 7070952 v1.0.0, 2022-09-20",
+            "resourceId": "geometries.csv bytes 0-2097151",
+            "nativeIds": [
+              "site_id=127",
+              "building_id=164",
+              "floor_id=717",
+              "unit_id=23024",
+              "unit_id=23025"
+            ],
+            "acquiredAt": "2026-09-25T00:42:07.717811Z",
+            "original": {
+              "sha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+              "bytes": 2097152
+            },
+            "parser": {
+              "name": "Python standard csv + bounded WKT POLYGON ring checker",
+              "version": null
+            },
+            "heightType": null,
+            "benchmark": null,
+            "coverage": "81 observed rows; two units on one floor of one Swiss building, without full-release completeness claim",
+            "licenceFamily": "CC-BY-4.0",
+            "trainingPermission": {
+              "state": "unconfirmed",
+              "reason": "Downstream training eligibility not separately assessed"
+            },
+            "purpose": "test_only",
+            "privacy": "Public de-identified vector geometry; individual privacy review not performed",
+            "subsetLineage": [
+              {
+                "sourceSha256": "81a0e70c3a09a580b57d16d6eddfb70f451b102918184d3a0d008fdd246b4581",
+                "operation": "From complete CSV records in first 2 MiB range, filter site_id=127, building_id=164, floor_id=717; preserve literal cells and WKT; no coordinate transform",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              }
+            ],
+            "missingCapabilities": [
+              "indian_operational_evidence",
+              "legal_unit_boundary",
+              "surveyed_georeference",
+              "vertical_benchmark",
+              "full_source_completeness",
+              "independent_ml_truth"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "tested": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+              }
+            },
+            "qualificationScope": "Bounded foreign multi-unit vector class/identifier/WKT fixture only; no georeference, legal boundary or ML truth"
+          },
+          "content": {
+            "state": "available",
+            "path": "swiss-floor-127-164-717.csv",
+            "sha256": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd",
+            "bytes": 27052,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D5/gf0-multiunit-v1/swiss-floor-127-164-717.csv"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+            },
+            "parsed": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "expected.json",
+          "mediaType": "application/json",
+          "classification": "unknown",
+          "origin": {
+            "kind": "authored",
+            "generatorRef": "DATA-05 source inspection, 2026-09-25"
+          },
+          "sourceVersion": "1",
+          "attribution": "3D ULPIN DATA-05 bounded source record",
+          "permission": {
+            "state": "documented",
+            "reference": "Project-authored test metadata",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [
+            "swiss-floor-127-164-717.csv"
+          ],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "project-authored DATA-05 source observation",
+            "sourceRelease": "2026-09-25",
+            "resourceId": null,
+            "nativeIds": [],
+            "acquiredAt": "2026-09-25T00:47:29.577760Z",
+            "original": {
+              "sha256": "c4a4586e2c6c3223999605f9c58916ee621c25c909519815bbc937124c2e1115",
+              "bytes": 785
+            },
+            "parser": {
+              "name": "Python standard json",
+              "version": null
+            },
+            "heightType": null,
+            "benchmark": null,
+            "coverage": "Only source observations named by the D5 pack",
+            "licenceFamily": "project-authored",
+            "trainingPermission": {
+              "state": "not_applicable",
+              "reason": "Authored source observation, not a training label"
+            },
+            "purpose": "authored_demo",
+            "privacy": "sanitized source metadata only",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "independent_ml_truth",
+              "cadastral_rights"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "available",
+            "path": "expected.json",
+            "sha256": "c4a4586e2c6c3223999605f9c58916ee621c25c909519815bbc937124c2e1115",
+            "bytes": 785,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D5/gf0-multiunit-v1/expected.json"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "not_applicable",
+              "reason": "Project-authored evidence"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+            },
+            "parsed": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "sample-manifest.csv",
+          "mediaType": "text/csv",
+          "classification": "unknown",
+          "origin": {
+            "kind": "authored",
+            "generatorRef": "DATA-05 source inspection, 2026-09-25"
+          },
+          "sourceVersion": "1",
+          "attribution": "3D ULPIN DATA-05 bounded source record",
+          "permission": {
+            "state": "documented",
+            "reference": "Project-authored test metadata",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [
+            "swiss-floor-127-164-717.csv"
+          ],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "project-authored DATA-05 source observation",
+            "sourceRelease": "2026-09-25",
+            "resourceId": null,
+            "nativeIds": [],
+            "acquiredAt": "2026-09-25T00:47:29.548355Z",
+            "original": {
+              "sha256": "2a2ffcec1f18fb5713399541a7d6fcd2a47166cd2939f1141cf3b431d8a5fa10",
+              "bytes": 484
+            },
+            "parser": {
+              "name": "Python standard csv",
+              "version": null
+            },
+            "heightType": null,
+            "benchmark": null,
+            "coverage": "Only source observations named by the D5 pack",
+            "licenceFamily": "project-authored",
+            "trainingPermission": {
+              "state": "not_applicable",
+              "reason": "Authored source observation, not a training label"
+            },
+            "purpose": "authored_demo",
+            "privacy": "sanitized source metadata only",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "independent_ml_truth",
+              "cadastral_rights"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "available",
+            "path": "sample-manifest.csv",
+            "sha256": "2a2ffcec1f18fb5713399541a7d6fcd2a47166cd2939f1141cf3b431d8a5fa10",
+            "bytes": 484,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D5/gf0-multiunit-v1/sample-manifest.csv"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "not_applicable",
+              "reason": "Project-authored evidence"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "manifest": "fixtures/usp/D5/gf0-public-plans-v1/manifest.json",
+      "manifestSha256": "c07caedbbfabb05677bf32ace164b7fab9c0d817fd4f599f6e85c9107530cd28",
+      "packId": "D5",
+      "profile": "gf0-public-plans-v1",
+      "version": 1,
+      "description": "Bihar and Haryana public planned-drawing candidates. Original PDFs are outside Git with reuse/training permission unconfirmed.",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "verified_same_unit_plan_association",
+        "as_built_geometry",
+        "survey_control",
+        "rights",
+        "redistribution_permission"
+      ],
+      "assets": [
+        {
+          "id": "bihar-magnolia-sanctioned-layout.pdf",
+          "mediaType": "application/pdf",
+          "classification": "planned",
+          "origin": {
+            "kind": "external",
+            "url": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf"
+          },
+          "sourceVersion": "drawings V5-01 and V5-02 dated 08.06.21",
+          "attribution": "Bihar RERA / project submitter",
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": "drawing-relative FFL ±00; surveyed datum unknown",
+            "horizontalUnit": "feet/inches (drawing dimensions)",
+            "verticalUnit": "feet/inches (relative FFL)",
+            "sourceDate": "08.06.21 (drawing date)"
+          },
+          "dependencies": [],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Bihar RERA sanctioned Magnolia Residency drawing",
+            "sourceRelease": "drawings V5-01 and V5-02 dated 08.06.21",
+            "resourceId": "RERAP2311201700019-3",
+            "nativeIds": [
+              "V5-01",
+              "V5-02"
+            ],
+            "acquiredAt": "2026-09-25T00:38:59.574536Z",
+            "original": {
+              "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+              "bytes": 2455183
+            },
+            "parser": {
+              "name": "pypdf+Poppler visual inspection",
+              "version": "pypdf 6.16.2"
+            },
+            "heightType": "planned relative level annotations",
+            "benchmark": null,
+            "coverage": "visual pages 1-2 of 6; Villa Type 5 sheet with blank unit number",
+            "licenceFamily": null,
+            "trainingPermission": {
+              "state": "unconfirmed",
+              "reason": "Public PDF access does not establish ML training rights"
+            },
+            "purpose": "test_only",
+            "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "as_built_geometry",
+              "survey_control",
+              "verified_unit_association",
+              "title_or_ownership",
+              "redistribution_permission",
+              "training_permission"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "unavailable",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+            },
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "haryana-2831-basement-01.pdf",
+          "mediaType": "application/pdf",
+          "classification": "planned",
+          "origin": {
+            "kind": "external",
+            "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c59456d263NDg2NTE="
+          },
+          "sourceVersion": "portal upload 29-08-2024",
+          "attribution": "Haryana RERA / project submitter",
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": "29-08-2024 (portal upload)"
+          },
+          "dependencies": [],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Haryana RERA 2831 uploaded basement drawing",
+            "sourceRelease": "portal upload 29-08-2024",
+            "resourceId": "2831",
+            "nativeIds": [
+              "BUILDING PLAN-BASEMENT-01"
+            ],
+            "acquiredAt": "2026-09-25T00:41:11.020005Z",
+            "original": {
+              "sha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49",
+              "bytes": 1711314
+            },
+            "parser": {
+              "name": "pypdf+Poppler visual inspection",
+              "version": "pypdf 6.16.2"
+            },
+            "heightType": null,
+            "benchmark": null,
+            "coverage": "one basement drawing page visually reviewed",
+            "licenceFamily": null,
+            "trainingPermission": {
+              "state": "unconfirmed",
+              "reason": "Public PDF access does not establish ML training rights"
+            },
+            "purpose": "test_only",
+            "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "as_built_geometry",
+              "survey_control",
+              "verified_unit_association",
+              "title_or_ownership",
+              "redistribution_permission",
+              "training_permission"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "unavailable",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+            },
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "haryana-2831-tower3-plan1.pdf",
+          "mediaType": "application/pdf",
+          "classification": "planned",
+          "origin": {
+            "kind": "external",
+            "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc="
+          },
+          "sourceVersion": "portal upload 29-08-2024",
+          "attribution": "Haryana RERA / project submitter",
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": "29-08-2024 (portal upload)"
+          },
+          "dependencies": [],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Haryana RERA 2831 uploaded tower drawing",
+            "sourceRelease": "portal upload 29-08-2024",
+            "resourceId": "2831",
+            "nativeIds": [
+              "TOWER-3 PLAN-1"
+            ],
+            "acquiredAt": "2026-09-25T00:41:16.696207Z",
+            "original": {
+              "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+              "bytes": 1655334
+            },
+            "parser": {
+              "name": "pypdf+Poppler visual inspection",
+              "version": "pypdf 6.16.2"
+            },
+            "heightType": null,
+            "benchmark": null,
+            "coverage": "one Tower-3 plan drawing page visually reviewed",
+            "licenceFamily": null,
+            "trainingPermission": {
+              "state": "unconfirmed",
+              "reason": "Public PDF access does not establish ML training rights"
+            },
+            "purpose": "test_only",
+            "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "as_built_geometry",
+              "survey_control",
+              "verified_unit_association",
+              "title_or_ownership",
+              "redistribution_permission",
+              "training_permission"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "unavailable",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+            },
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "haryana-2831-tower3-section.pdf",
+          "mediaType": "application/pdf",
+          "classification": "planned",
+          "origin": {
+            "kind": "external",
+            "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA="
+          },
+          "sourceVersion": "sheet Jan-2024; portal upload 29-08-2024",
+          "attribution": "Haryana RERA / project submitter",
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": "road ±0.000 as drawn; surveyed benchmark unknown",
+            "horizontalUnit": null,
+            "verticalUnit": "metres (drawn relative levels)",
+            "sourceDate": "Jan-2024 (sheet)"
+          },
+          "dependencies": [],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Haryana RERA 2831 uploaded tower section",
+            "sourceRelease": "sheet Jan-2024; portal upload 29-08-2024",
+            "resourceId": "2831",
+            "nativeIds": [
+              "TOWER-3 SECTION ELEVATION"
+            ],
+            "acquiredAt": "2026-09-25T00:43:08.042067Z",
+            "original": {
+              "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+              "bytes": 2448909
+            },
+            "parser": {
+              "name": "pypdf+Poppler visual inspection",
+              "version": "pypdf 6.16.2"
+            },
+            "heightType": "planned relative level annotations",
+            "benchmark": null,
+            "coverage": "one Tower-3 section/elevation visually reviewed",
+            "licenceFamily": null,
+            "trainingPermission": {
+              "state": "unconfirmed",
+              "reason": "Public PDF access does not establish ML training rights"
+            },
+            "purpose": "test_only",
+            "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "as_built_geometry",
+              "survey_control",
+              "verified_unit_association",
+              "title_or_ownership",
+              "redistribution_permission",
+              "training_permission"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "unavailable",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+            },
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "haryana-2079-last-approved.pdf",
+          "mediaType": "application/pdf",
+          "classification": "unknown",
+          "origin": {
+            "kind": "external",
+            "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/f3a0fa0a26MzAwMTY="
+          },
+          "sourceVersion": "portal upload 28-06-2023",
+          "attribution": "Haryana RERA / project submitter",
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": "28-06-2023 (portal upload)"
+          },
+          "dependencies": [],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "Haryana RERA 2079 uploaded attachment",
+            "sourceRelease": "portal upload 28-06-2023",
+            "resourceId": "2079",
+            "nativeIds": [
+              "A COMPLETE SET OF THE LAST APPROVED BUILDING PLANS"
+            ],
+            "acquiredAt": "2026-09-25T00:41:17.099850Z",
+            "original": {
+              "sha256": "a2ccde8e1d914c19e054b367c52ef5636cfd6e1410bd77617d9e1570f6895a18",
+              "bytes": 1517504
+            },
+            "parser": {
+              "name": "pypdf+Poppler visual inspection",
+              "version": "pypdf 6.16.2"
+            },
+            "heightType": null,
+            "benchmark": null,
+            "coverage": "12-page PDF; first page preview only, remaining pages uninspected",
+            "licenceFamily": null,
+            "trainingPermission": {
+              "state": "unconfirmed",
+              "reason": "Public PDF access does not establish ML training rights"
+            },
+            "purpose": "test_only",
+            "privacy": "Source may contain names/stamps/signatures; original retained outside Git and not redistributed",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "as_built_geometry",
+              "survey_control",
+              "verified_unit_association",
+              "title_or_ownership",
+              "redistribution_permission",
+              "training_permission"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "not_run"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "unavailable",
+            "reason": "Original acquired and hash-pinned outside Git; source-specific redistribution permission unconfirmed",
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+            },
+            "bytes_preserved": {
+              "status": "not_run"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "expected.json",
+          "mediaType": "application/json",
+          "classification": "unknown",
+          "origin": {
+            "kind": "authored",
+            "generatorRef": "DATA-05 source inspection, 2026-09-25"
+          },
+          "sourceVersion": "1",
+          "attribution": "3D ULPIN DATA-05 bounded source record",
+          "permission": {
+            "state": "documented",
+            "reference": "Project-authored test metadata",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [
+            "bihar-magnolia-sanctioned-layout.pdf",
+            "haryana-2831-basement-01.pdf",
+            "haryana-2831-tower3-plan1.pdf",
+            "haryana-2831-tower3-section.pdf",
+            "haryana-2079-last-approved.pdf"
+          ],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "project-authored DATA-05 source observation",
+            "sourceRelease": "2026-09-25",
+            "resourceId": null,
+            "nativeIds": [],
+            "acquiredAt": "2026-09-25T00:47:29.577613Z",
+            "original": {
+              "sha256": "2312534f3cb81e85868eb56420b83475ce61380c8e49da016bea9a7c39227318",
+              "bytes": 1726
+            },
+            "parser": {
+              "name": "Python standard json",
+              "version": null
+            },
+            "heightType": null,
+            "benchmark": null,
+            "coverage": "Only source observations named by the D5 pack",
+            "licenceFamily": "project-authored",
+            "trainingPermission": {
+              "state": "not_applicable",
+              "reason": "Authored source observation, not a training label"
+            },
+            "purpose": "authored_demo",
+            "privacy": "sanitized source metadata only",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "independent_numeric_oracle",
+              "source_permission"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "available",
+            "path": "expected.json",
+            "sha256": "2312534f3cb81e85868eb56420b83475ce61380c8e49da016bea9a7c39227318",
+            "bytes": 1726,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D5/gf0-public-plans-v1/expected.json"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "not_applicable",
+              "reason": "Project-authored evidence"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+            },
+            "parsed": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "sample-manifest.csv",
+          "mediaType": "text/csv",
+          "classification": "unknown",
+          "origin": {
+            "kind": "authored",
+            "generatorRef": "DATA-05 source inspection, 2026-09-25"
+          },
+          "sourceVersion": "1",
+          "attribution": "3D ULPIN DATA-05 bounded source record",
+          "permission": {
+            "state": "documented",
+            "reference": "Project-authored test metadata",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "horizontalUnit": null,
+            "verticalUnit": null,
+            "sourceDate": null
+          },
+          "dependencies": [
+            "bihar-magnolia-sanctioned-layout.pdf",
+            "haryana-2831-basement-01.pdf",
+            "haryana-2831-tower3-plan1.pdf",
+            "haryana-2831-tower3-section.pdf",
+            "haryana-2079-last-approved.pdf"
+          ],
+          "provenance": {
+            "schemaVersion": "usp-pack-provenance/1",
+            "sourceFamily": "project-authored DATA-05 source observation",
+            "sourceRelease": "2026-09-25",
+            "resourceId": null,
+            "nativeIds": [],
+            "acquiredAt": "2026-09-25T00:47:29.546214Z",
+            "original": {
+              "sha256": "33292ac8bb855f5aa1984e6a9286782f6a3caa275d64af9b0680dd26abe27be2",
+              "bytes": 1070
+            },
+            "parser": {
+              "name": "Python standard csv",
+              "version": null
+            },
+            "heightType": null,
+            "benchmark": null,
+            "coverage": "Only source observations named by the D5 pack",
+            "licenceFamily": "project-authored",
+            "trainingPermission": {
+              "state": "not_applicable",
+              "reason": "Authored source observation, not a training label"
+            },
+            "purpose": "authored_demo",
+            "privacy": "sanitized source metadata only",
+            "subsetLineage": [],
+            "missingCapabilities": [
+              "independent_numeric_oracle",
+              "source_permission"
+            ],
+            "stages": {
+              "discovered": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "acquired": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json"
+              },
+              "inspected": {
+                "status": "passed",
+                "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/inspection.json"
+              },
+              "qualified": {
+                "status": "not_run"
+              },
+              "tested": {
+                "status": "not_run"
+              }
+            },
+            "qualificationScope": null
+          },
+          "content": {
+            "state": "available",
+            "path": "sample-manifest.csv",
+            "sha256": "33292ac8bb855f5aa1984e6a9286782f6a3caa275d64af9b0680dd26abe27be2",
+            "bytes": 1070,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D5/gf0-public-plans-v1/sample-manifest.csv"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "not_applicable",
+              "reason": "Project-authored evidence"
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/finale/GF-DATA/DATA-05/source-check.json"
+            },
+            "parsed": {
+              "status": "not_run"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "retainedOfficialTestSources": [
+    {
+      "manifest": "fixtures/real-nyc/provenance.json",
+      "manifestSha256": "762ad8fe4b28a65715810961b65e1a1610a6b3525467177d2f75bb94806349f4",
+      "issuer": "City of New York Office of Technology and Innovation (OTI)",
+      "datasetUrl": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue",
+      "originalUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?doitt_id=353927",
+      "terms": {
+        "reference": "https://opendata.cityofnewyork.us/overview/#termsofuse"
+      },
+      "acquiredAt": "2026-09-13",
+      "content": {
+        "state": "available",
+        "path": "original.geojson",
+        "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+        "bytes": 1763,
+        "repositoryBytesVerified": true,
+        "repositoryPath": "fixtures/real-nyc/original.geojson"
+      },
+      "geography": "New York City, United States",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "limitations": [
+        "No interior room, floor, ownership or parcel boundary is supplied by this building footprint.",
+        "The prism is an approximation, not a measured watertight building solid or legal unit.",
+        "Published roof-height units are treated as feet; original values and conversion factor are retained for review.",
+        "Source SHAPE_AREA and SHAPE_LENGTH are not used; projected geometry determines quantities.",
+        "A new workspace gets its own prototype ID; NYC BIN/DOITT identifiers are preserved as source references, never replaced by an official ULPIN."
+      ]
+    },
+    {
+      "manifest": "fixtures/real-area/manifest.json",
+      "manifestSha256": "fbf50d585a37204d3bb218dea71fe4421636cbb585203464f81c22071e5ffc6d",
+      "issuer": "City of New York Office of Technology and Innovation (OTI)",
+      "datasetUrl": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue",
+      "originalUrl": null,
+      "terms": {
+        "status": "public_open_data_terms",
+        "termsUrl": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+        "metadataUrl": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+        "attribution": "City of New York Office of Technology and Innovation (OTI), BUILDING via NYC Open Data",
+        "scope": "Local informational demonstration under NYC Open Data terms; no warranty, official endorsement or cadastral authority.",
+        "redistributionNote": "Retain attribution and source terms. No unsupported public-domain or CC license claim."
+      },
+      "acquiredAt": "2026-09-13T23:50:24.450967+00:00",
+      "content": {
+        "state": "available",
+        "path": "original.geojson",
+        "sha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+        "bytes": 41792,
+        "repositoryBytesVerified": true,
+        "repositoryPath": "fixtures/real-area/original.geojson"
+      },
+      "geography": "New York City, United States",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "limitations": [
+        "A complete bounded query checked before and after transfer; not a provider transaction or all Bronx buildings. Whole polygons contained by within_box are selected; boundary-crossing buildings are excluded."
+      ]
+    }
+  ]
+}

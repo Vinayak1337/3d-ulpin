@@ -1,5 +1,7 @@
 # Real-source catalogue for API consumers
 
+The [machine-readable dataset catalogue](datasets.json) links the retained manifests, issuer/original URLs, hashes, permission/reference metadata and repository-byte checks. It does not claim API installation. Regenerate with `python3 scripts/api/build-dataset-catalog.py`; `--check` verifies metadata and available original bytes without starting services.
+
 This lists source packs found in the pinned checkout, not data already installed in a running service. The linked manifests carry the exact issuer URL, acquisition time, hash, byte count, permission, reference frame, stage and missing-capability details. `available` means the manifest says bytes are in the repository; `unavailable` means the original is outside this Git checkout even when a receipt and hash exist. Recheck the actual bytes before intake. No source below is an issued Indian parcel ULPIN or a complete building ownership record.
 
 | Source and geography | Exact original / availability | Scope and API journey |
