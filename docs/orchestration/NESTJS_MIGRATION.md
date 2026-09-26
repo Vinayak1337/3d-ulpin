@@ -66,7 +66,7 @@ Resume the dependency-ready backend plan from actual code/evidence, not its old 
 | Batch | State | Accepted commit / next action |
 | --- | --- | --- |
 | NEST-00 | accepted | Foundation `f5df91ad` merged at `fd7d3e39`; direct contracts dependency `08e58166` merged at `de77fe9`. Server/API builds and bounded loopback startup passed; no dependency health or GF-BACKEND pass. |
-| NEST-01 | phase 1 accepted; phase 2 running | SQL commit `dfb74fd2` merged at `714a6695`. Lead rechecked 25 exact SQL files / 136 statement hashes. Sol task `01a0db54-6463-72c3-85e2-67b10711c080` retains worktree `a1f7` for phase 2. |
+| NEST-01 | accepted; runtime execution pending | `dfb74fd2` extraction and `f42b81ac` wiring merged (latest `682bea9a`). Lead verified 25 exact files / 136 statement hashes and 24 named runtime calls; no database was opened. |
 | NEST-02 | preparation accepted; execution gated | `958b1c64` + review fix `1ee5585f` merged at `8aabfb1f`. Sol task `01a0db56-a8ae-77b0-a65c-19ac10dbd025`, worktree `0365`; actual service verification waits for integrated API. |
 | NEST-10 | running | Intake: task `01a0db64-588b-7610-89cc-2438a0e5f5f3`, worktree `c006`. |
 | NEST-11 | running | Register/officer: task `01a0db64-7470-7ca2-8e64-1e4b95927087`, worktree `b1dd`. |
@@ -81,3 +81,5 @@ Worker metadata observed for both initial tasks: model `gpt-6-sol`, effort `max`
 Lead dataset precheck: all 16 assets marked available across seven USP manifests matched recorded size/SHA-256. Eleven other assets remain unavailable in Git; manifest permissions include unconfirmed entries. This is a byte/catalogue check, not API installation or source qualification.
 
 All four API tasks started from accepted `fd7d3e39` and were instructed to merge the shared `08e58166` dependency correction. Observed model/effort is Sol/max for all; per-turn tier remains unobserved. SQL migration files are reserved to NEST-01, including `officer-ai.ts` until that seam is explicitly released. Lead frozen install at `8aabfb1f` passed.
+
+SQL ownership handoff: after accepted `f42b81ac`, NEST-13 may edit `modules/ai/officer-ai.ts` for explicit service exports, preserving the named SQL migration call. NEST-01 has finished its phase 2.
