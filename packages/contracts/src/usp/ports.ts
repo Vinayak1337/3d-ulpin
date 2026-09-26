@@ -67,6 +67,14 @@ export const UspModelGatewayRequestSchema = z.strictObject({
 export const UspModelGatewayResultSchema = z.strictObject({
   output: z.json(), modelId: CoreIdSchema, outputSchemaId: CoreIdSchema,
   evidenceRefs: z.array(UspEvidencePointerSchema).max(64).readonly(),
+  replayed:z.boolean().optional(),
+  receipt: z.strictObject({callId:CoreIdSchema, responseHash:CoreSha256Schema,
+    actualMicroInr:z.string().regex(/^(0|[1-9][0-9]*)$/), priceVersion:CoreIdSchema,
+    httpStatus:z.number().int().min(100).max(599),
+    inputTokens:z.number().int().nonnegative().safe().optional(),
+    outputTokens:z.number().int().nonnegative().safe().optional(),
+    semanticError:z.enum(['invalid_output','truncated_output']).optional(),
+  }).readonly().optional(),
 }).readonly();
 export const UspScanAssetRequestSchema = z.strictObject({
   uploadId: CoreIdSchema, assetHash: CoreSha256Schema,

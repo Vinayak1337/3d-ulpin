@@ -14,7 +14,7 @@ const region = { type:'object',required:['x','y','width','height'],properties:{
   x:{type:'number'},y:{type:'number'},width:{type:'number'},height:{type:'number'},
 } };
 const aiStatus = {type:'object',required:['provider','configured','state','message','freeVerified','quota'],properties:{
-  provider:{type:'string',enum:['nous']},configured:{type:'boolean'},
+  provider:{type:'string',enum:['nous','sarvam']},configured:{type:'boolean'},
   state:{type:'string',enum:['unconfigured','available','unavailable']},message:{type:'string'},
   model:{type:'string'},catalogCheckedAt:{type:'string',format:'date-time'},freeVerified:{type:'boolean'},
   capabilities:{type:'object',required:['image','structuredOutput'],properties:{image:{type:'boolean'},structuredOutput:{type:'boolean'}}},
@@ -32,7 +32,8 @@ const candidate = {type:'object',required:['id','entityId','subject','property',
 const aiRun = {type:'object',required:['id','packageId','packageRevision','requestKey','state','provider','inputFingerprint','sourceHashes','partHashes','partIds','entityIds','promptVersion','schemaVersion','candidates','questions','validationErrors','calls','budget','startedAt'],properties:{
   id:{type:'string',format:'uuid'},packageId:{type:'string',format:'uuid'},packageRevision:{type:'integer'},
   requestKey:{type:'string',format:'uuid'},state:{type:'string',enum:['blocked','running','succeeded','needs_input','failed','stale','applied']},
-  provider:{type:'string',enum:['nous']},model:{type:'string'},inputFingerprint:{type:'string'},
+  provider:{type:'string',enum:['nous','sarvam']},model:{type:'string'},inputFingerprint:{type:'string'},
+  gatewayPolicyHash:{type:'string'},principalHash:{type:'string'},
   sourceHashes:{type:'array',items:{type:'object',required:['sourceRevisionId','sha256'],properties:{
     sourceRevisionId:{type:'string',format:'uuid'},sha256:{type:'string',pattern:'^[a-f0-9]{64}$'}}}},
   partHashes:{type:'array',items:{type:'object',required:['partId','sha256'],properties:{
@@ -53,7 +54,9 @@ const aiRun = {type:'object',required:['id','packageId','packageRevision','reque
   validationErrors:{type:'array',items:{type:'string'}},message:{type:'string'},cached:{type:'boolean'},
   cachedFromRunId:{type:'string',format:'uuid'},
   calls:{type:'array',items:{type:'object',required:['latencyMs'],properties:{latencyMs:{type:'number'},inputTokens:{type:'integer'},
-    outputTokens:{type:'integer'},responseId:{type:'string'},httpStatus:{type:'integer'},outputHash:{type:'string'}}}},
+    outputTokens:{type:'integer'},responseId:{type:'string'},httpStatus:{type:'integer'},outputHash:{type:'string'},
+    callId:{type:'string',format:'uuid'},actualMicroInr:{type:'string',pattern:'^(0|[1-9][0-9]*)$'},priceVersion:{type:'string'},
+    semanticError:{type:'string',enum:['invalid_output','truncated_output']}}}},
   budget:{type:'object',required:['maxCalls','maxOutputTokens','timeoutMs'],properties:{
     maxCalls:{type:'integer'},maxOutputTokens:{type:'integer'},timeoutMs:{type:'integer'}}},
   startedAt:{type:'string',format:'date-time'},completedAt:{type:'string',format:'date-time'},

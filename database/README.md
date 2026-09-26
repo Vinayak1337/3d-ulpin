@@ -1,5 +1,7 @@
 # Database SQL authority (NEST-01)
 
+DEPLOY-01 adds [the model gateway migration](sql/90-model-gateway/model-gateway.sql) as a new authored, hash-pinned manifest step after the historical extraction. `migrateOfficerAi()` invokes it through `migrateModelGateway()` during the existing migration command. It creates one `usp_model_calls` reserve/settlement ledger and a singleton `usp_model_budget` control row for pinned policy/credential identity, exhaustion and shared pacing. The control row is first populated from explicit approved configuration at admission; there is no automatic allocation, seed or reset. Short admission/settlement transactions lock that row; provider transport always runs after commit. Unknown exposure remains deducted across restart. Historical SQL below remains unchanged. Fresh control-only schema execution/repeat was verified; populated migrations and live billing remain unqualified.
+
 This directory is an exact, ordered extraction of the PostgreSQL/PostGIS SQL at
 `39a70488f44800567ff42ef175b94d42c2ee66b5`. The `.sql` files are now
 the **executed SQL authority**: the existing migration functions call

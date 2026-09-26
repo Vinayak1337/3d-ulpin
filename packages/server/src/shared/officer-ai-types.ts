@@ -1,7 +1,7 @@
 import type { PreparationFact } from '@ulpin/contracts';
 
 export interface OfficerAiStatus {
-  provider: 'nous'; configured: boolean;
+  provider: 'nous' | 'sarvam'; configured: boolean;
   state: 'unconfigured' | 'available' | 'unavailable'; message: string;
   model?: string; catalogCheckedAt?: string; freeVerified: boolean;
   capabilities?: { image: boolean; structuredOutput: boolean };
@@ -23,7 +23,8 @@ export interface OfficerAiSuggestion {
 export interface OfficerAiRun {
   id: string; packageId: string; packageRevision: number; requestKey: string;
   state: 'blocked' | 'running' | 'succeeded' | 'needs_input' | 'failed' | 'stale' | 'applied';
-  provider: 'nous'; model?: string; inputFingerprint: string;
+  provider: 'nous' | 'sarvam'; model?: string; inputFingerprint: string;
+  gatewayPolicyHash?: string; principalHash?: string;
   sourceHashes: { sourceRevisionId: string; sha256: string }[];
   partHashes: { partId: string; sha256: string }[];
   imageRegions?: { partId: string; region: {x:number;y:number;width:number;height:number} }[];
@@ -33,7 +34,8 @@ export interface OfficerAiRun {
   suggestions?: OfficerAiSuggestion[];
   answers?: {question:string;answer:string}[];
   validationErrors: string[]; message?: string; cached?: boolean; cachedFromRunId?: string;
-  calls: { latencyMs: number; inputTokens?: number; outputTokens?: number; responseId?: string; httpStatus?: number; outputHash?: string }[];
+  calls: { latencyMs: number; inputTokens?: number; outputTokens?: number; responseId?: string; httpStatus?: number; outputHash?: string;
+    callId?: string; actualMicroInr?: string; priceVersion?: string; semanticError?: 'invalid_output' | 'truncated_output' }[];
   budget: { maxCalls: number; maxOutputTokens: number; timeoutMs: number };
   startedAt: string; completedAt?: string; appliedRevision?: number;
   appliedCandidateIds?: string[];
