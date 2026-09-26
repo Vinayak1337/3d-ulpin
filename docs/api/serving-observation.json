@@ -1,18 +1,18 @@
 {
   "schemaVersion": "ulpin-serving-observation/1",
-  "observedAt": "2026-09-26T12:45:58.857Z",
+  "observedAt": "2026-09-26T15:25:31.461439+00:00",
   "environment": "linked-loopback-3188",
   "apiBase": "http://127.0.0.1:3188/api/v1",
-  "servedCodeCommit": "8a64a83caa166b487c829fcdde2d54c7949238a7",
+  "servedCodeCommit": "89cd51b20003f836e6cf1294822aaf4fbfdaad51",
   "qualification": "Point-in-time local observation of administrative context, private post-admission tiles and one foreign footprint; not deployment, multiuser, Indian property-readiness, import-time GF-STREAM, scale or frontend qualification.",
   "database": {
     "status": "structurally_ready",
-    "manifestSha256": "7e41b4c1c246d64674fd403cdfa0801e408db07c7f73f9bd0868c1f5d045659e",
+    "manifestSha256": "899bb2bbad833637e4c48334a6dce224fd5f955fc4bd9714a156351a78888279",
     "originalsVerified": {
       "verifiedCount": 63,
       "verifiedBytes": 75416144
     },
-    "checkedForeignKeys": 115,
+    "checkedForeignKeys": 120,
     "orphanCount": 0,
     "geometryViolationCount": 0,
     "unvalidatedConstraints": [
@@ -249,11 +249,44 @@
       {
         "file": "install-serving-mvt-8a64a83.py",
         "sha256": "7bb74bce885a9d660dbcb7b4314d26f6e726ca9fc9eb33a7043bef4c37ef246b"
+      },
+      {
+        "file": "preflight-stream02-serving.json",
+        "sha256": "e5d157be5c29d0ef3257ce78e3542ffc97b1e2451e20b521178628ab41ebee7f"
+      },
+      {
+        "file": "upgrade-stream02-serving.json",
+        "sha256": "4173adfe5289958c4469f867c9b2f4feedbfbb6c0197fc23b66b72aea333aea2"
+      },
+      {
+        "file": "serving-stream02-compat-http.json",
+        "sha256": "173126386de3f843b4d40ba4ba9b87357e279e0c91540b991782dd361618405b"
+      },
+      {
+        "file": "preflight-stream02-compat-serving.json",
+        "sha256": "5c3c316c94d4feffa5d51b051b62a177379facbb70d0fdb3c1fe4eed4f137d46"
+      },
+      {
+        "file": "stream02-compat-verification.json",
+        "sha256": "76d00f5dff4ef097c45103dc01fcc6e8fbc3c670d8c9cca08b56fa635d66b884"
       }
     ],
     "additionalGuides": [
       "docs/evidence/usp/serving-nwic-handoff.md",
       "docs/evidence/usp/projected-vector-handoff.md"
     ]
+  },
+  "semanticChunkImplementation": {
+    "available": true,
+    "installedSourceUsesChunks": false,
+    "qualification": "Schema and API deployed locally; retained NWIC source is still its existing full-admission/post-admission generation. Committed-prefix runtime evidence belongs to stopped isolated nonce23efff47f982ef17. Forced-expiry recovery does not qualify natural timing.",
+    "handoff": "docs/evidence/usp/semantic-chunks-handoff.md"
+  },
+  "immutableGenerationUpgrade": {
+    "status": "passed",
+    "fixCommit": "b41a602f109f0a512896a3e05baf843c5a79abd5",
+    "httpServingCommit": "89cd51b20003f836e6cf1294822aaf4fbfdaad51",
+    "scope": "Exact approved historical full-admission compiler only; existing generation16,62cells, sampled original tile hash and canonical lookup preserved. Unknown historical profiles remain denied; new compilation stays strict.",
+    "privateDirectServiceReceiptSha256": "76d00f5dff4ef097c45103dc01fcc6e8fbc3c670d8c9cca08b56fa635d66b884"
   }
 }
