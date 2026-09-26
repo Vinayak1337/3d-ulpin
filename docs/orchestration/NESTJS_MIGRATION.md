@@ -66,11 +66,13 @@ Resume the dependency-ready backend plan from actual code/evidence, not its old 
 | Batch | State | Accepted commit / next action |
 | --- | --- | --- |
 | NEST-00 | running | Sol/max task `01a0db54-338c-7950-8101-46012dd75688`, worktree `45f5`, base `39a70488`. |
-| NEST-01 | running | Sol/max task `01a0db54-6463-72c3-85e2-67b10711c080`, worktree `a1f7`, base `39a70488`. Phase 1 extracts SQL; phase 2 wires after foundation. |
-| NEST-02 | running, static phase | Independent runtime worker; actual service verification waits for integrated API. |
+| NEST-01 | phase 1 accepted; wiring pending | SQL commit `dfb74fd2` merged at `714a6695`. Lead rechecked 25 exact SQL files / 136 statement hashes. Sol task `01a0db54-6463-72c3-85e2-67b10711c080` retains worktree `a1f7` for phase 2. |
+| NEST-02 | running, static phase | Sol/max task `01a0db56-a8ae-77b0-a65c-19ac10dbd025`, worktree `0365`; actual service verification waits for integrated API. |
 | NEST-10–13 | waiting for foundation | Assign exact moved paths from NEST-00 map. |
 | NEST-20–21 | pending | Integration/runtime checks, lead docs and cleanup. |
 
 Framework references checked for this decision: [Nest controllers](https://docs.nestjs.com/controllers), [Nest database integration](https://docs.nestjs.com/techniques/database), [node-postgres parameterized queries](https://node-postgres.com/features/queries), [Prisma unsupported-field/raw SQL guidance](https://docs.prisma.io/docs/orm/prisma-client/using-raw-sql/safeql). These inform the architecture; they do not prove this repository's runtime behavior.
 
 Worker metadata observed for both initial tasks: model `gpt-6-sol`, effort `max`; per-turn service tier not exposed. Both own separate worktrees.
+
+Lead dataset precheck: all 16 assets marked available across seven USP manifests matched recorded size/SHA-256. Eleven other assets remain unavailable in Git; manifest permissions include unconfirmed entries. This is a byte/catalogue check, not API installation or source qualification.
