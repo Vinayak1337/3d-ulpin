@@ -2,6 +2,16 @@
 
 User direction, 26 September 2026. Read this before every assignment, review, continuation and integration decision. This guide overrides older orchestration/model/testing instructions; backend requirements and release qualification remain intact; the 26 September backend-only scope supersedes older UI implementation plans.
 
+## Usage cutoff and pause
+
+The user's latest cutoff is interpreted conservatively as **50% used**, not 50% remaining. Before any project work or worker dispatch, and at completion/review checkpoints, read `get_usage_limits`. Inspect each available core Codex usage window; missing usage is unknown, never zero. If any window is at least 50% used, ordinary usage is disallowed, or usage cannot be read, stop project work and dispatch. Preserve edits and data. Interrupt active project tasks using a supported control and verify their status; do not wake idle tasks to tell them to stop, move checkouts to cause an interruption, or kill unrelated processes.
+
+Pause project execution automations and stop only owned temporary services while preserving volumes. Never spend reset credits or purchase credits to evade this cutoff. Resume only after explicit user direction and a fresh below-threshold usage check, or an explicit revised cutoff. An automatic reset alone is not permission to restart.
+
+Heartbeat `3d-ulpin-usage-stop-guard` checks every five minutes while project work is active. Re-enable it through the automation tool when an authorized resume passes the usage check; keep it paused while project work is paused. Checkpoints and the heartbeat are best-effort controls, not an instantaneous account-wide spending cap; an in-flight task can consume usage between checks.
+
+Current pause, 26 September 2026: weekly usage was observed at 63% used; the other window was unavailable. All nine migration tasks were verified idle and the retained subagent completed. No new work is assigned. The `continue-bhuaayam-design` automation and the usage guard are paused. The backend continuation remains recorded in the migration ledger without starting it.
+
 ## Role: own delivery and use delegation when useful
 
 The lead reads the relevant plan/task, identifies the actual work, owns its result and coordinates file ownership. The lead may execute a bounded task directly, including the user-directed historical cleanup, or delegate independent work when that improves delivery or review. A delegation is optional; it does not replace the lead's responsibility to inspect the result and complete integration. Select model and effort for any delegated role, and record what actually ran. Keep one writer per shared seam.
