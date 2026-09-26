@@ -12,8 +12,8 @@ export const sourceWorkspaceSchema = z.object({
   name: z.string().trim().min(1).max(150), worldStatus: z.enum(["observed", "planned", "hypothetical", "synthetic"]),
   caseId: z.string().uuid().optional(),
 }).strict();
-export function sourceWorkspaceParts(sources: {id: string; profile: string; inspection?: {referenceParts?: ImportPackage["parts"]} | null}[]): ImportPackage["parts"] {
-  return sources.filter(s => Object.hasOwn(documentProfileFormats, s.profile)).flatMap(s => s.inspection?.referenceParts?.length ? s.inspection.referenceParts : [{id: randomUUID(), sourceRevisionId:s.id, locator:"original file", text:"Retained original. Read and review source evidence before use.", entityIds:[]}]);
+export function sourceWorkspaceParts(sources: {id: string; profile: string; inspection?: {referenceParts?: ImportPackage["parts"]; documentOriginal?: {version?:string}; documentAccepted?: {nativeStatus?:string}} | null}[]): ImportPackage["parts"] {
+  return sources.filter(s => Object.hasOwn(documentProfileFormats, s.profile) || s.inspection?.documentAccepted?.nativeStatus==='extracted').flatMap(s => s.inspection?.referenceParts?.length ? s.inspection.referenceParts : s.inspection?.documentOriginal ? [] : [{id: randomUUID(), sourceRevisionId:s.id, locator:"original file", text:"Retained original. Read and review source evidence before use.", entityIds:[]}]);
 }
 export async function sourceWorkspaceForCase(caseId: string) {
   return (await query("SELECT body FROM import_packages WHERE case_id=$1 AND body ? 'sourceWorkspace' ORDER BY created_at DESC LIMIT 1", [caseId])).rows[0]?.body as ImportPackage | undefined || null;
