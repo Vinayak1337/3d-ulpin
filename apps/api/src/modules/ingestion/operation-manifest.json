@@ -336,7 +336,7 @@
       "responseSchema": "DocumentReceiptSchema",
       "responseStatus": 201,
       "transportProfile": "multipart",
-      "runtimeEvidence": "docs/evidence/usp/document-ingestion-handoff.md"
+      "runtimeEvidence": "docs/evidence/usp/document-authority-correction.md"
     },
     {
       "method": "GET",
@@ -349,7 +349,7 @@
       "responseSchema": "DocumentStatusSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "docs/evidence/usp/document-ingestion-handoff.md"
+      "runtimeEvidence": "docs/evidence/usp/document-authority-correction.md"
     },
     {
       "method": "POST",
@@ -362,7 +362,7 @@
       "responseSchema": "DocumentReceiptSchema",
       "responseStatus": 201,
       "transportProfile": "json",
-      "runtimeEvidence": "docs/evidence/usp/document-ingestion-handoff.md"
+      "runtimeEvidence": "docs/evidence/usp/document-authority-correction.md"
     }
   ]
 }
