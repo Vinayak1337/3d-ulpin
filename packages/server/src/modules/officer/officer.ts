@@ -20,6 +20,7 @@ import { query, transaction } from "../../infrastructure/db";
 import { getArea, getPackage, currentAreaCheckFingerprint } from "../areas/areas";
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { fingerprint } from "../cases/domain";
+import { assertPackageDocumentAuthority } from "../areas/package-authority";
 
 export async function physicalFeature(
   id: string,
@@ -361,10 +362,14 @@ export async function buildingDossier(id: string): Promise<BuildingDossier & {
       }) as PreparationCase,
   );
   const packages = (
-    await query(
-      `SELECT body FROM import_packages WHERE body->'features' @> $1::jsonb ORDER BY created_at DESC LIMIT 30`,
-      [JSON.stringify([{ id }])],
-    )
+    await transaction(async client => {
+      const rows = await client.query(
+        `SELECT body FROM import_packages WHERE body->'features' @> $1::jsonb ORDER BY created_at DESC LIMIT 30`,
+        [JSON.stringify([{ id }])],
+      );
+      for (const row of rows.rows) await assertPackageDocumentAuthority(client, row.body);
+      return rows;
+    })
   ).rows
     .map((r) => r.body as ImportPackage)
     .map((p) => {
@@ -645,6 +650,7 @@ export async function openPreparation(
       ],
       createdAt: now,
     };
+    await assertPackageDocumentAuthority(client, pkg);
     await client.query(
       "INSERT INTO import_packages(id,area_id,case_id,revision,state,body,operation_key) VALUES($1,$2,$3,1,$4,$5,$6)",
       [

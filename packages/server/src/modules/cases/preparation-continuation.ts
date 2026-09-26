@@ -4,9 +4,11 @@ import { preparationBuildState, type PreparationReceipt } from "../../shared/pre
 import { transaction } from "../../infrastructure/db";
 import { detailFromClient, fingerprint, jobFrom } from "./domain";
 import { notFound } from "../../infrastructure/errors";
+import { assertPackageDocumentAuthority } from "../areas/package-authority";
 
 export async function readPreparationBuild(client: PoolClient, packageId: string) {
   const pkg = (await client.query("SELECT body FROM import_packages WHERE id=$1", [packageId])).rows[0]?.body as ImportPackage | undefined;
+  if (pkg) await assertPackageDocumentAuthority(client, pkg);
   const prep = (await client.query("SELECT body FROM building_preparations WHERE package_id=$1", [packageId])).rows[0]?.body as PreparationCase | undefined;
   if (!pkg || !prep) notFound("Open this building’s preparation first.");
   const building = (await client.query("SELECT revision FROM physical_features WHERE id=$1", [prep.buildingId])).rows[0] ?? notFound();
