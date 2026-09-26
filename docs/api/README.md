@@ -149,6 +149,10 @@ The existing extraction routes and success statuses are unchanged. The provider 
 
 See the [gateway handoff and focused verification](../evidence/usp/deploy-01-handoff.md) and [executed gateway SQL](../../database/sql/90-model-gateway/model-gateway.sql). These controls do not establish live provider service, actual tariffs/funding, replay-corpus eligibility or real-source extraction accuracy. No new billing, credential or reset API is exposed.
 
+## Bounded local performance observation
+
+The [reviewed cold/warm handoff](../evidence/usp/semantic-scale-handoff.md) and [measurement summary](../evidence/usp/semantic-scale-runtime.json) record two unchanged NWIC imports on AppleM3/16GiB with a4CPU/6GiB Docker VM. Actual first tile+pick took16.9/16.1seconds; semantic closure59.7/68.5seconds; complete62-cell catalogs97.4/120.1seconds. Twenty serial tile reads and twenty picks per import had p95 below315ms. These met prospective local budgets. Memory maxima were sampled, not continuous peaks; source preparation timestamps are transaction creation times, not measured commit times. The overall run failed when the separate recovery source exceeded the retained-history cap; natural recovery and complete scale/release gates remain open. Application-cold does not mean OS/disk-cold; this is a vector administrative layer, not a3D city benchmark.
+
 ## Datasets and qualification
 
 Start with [real sources](real-sources.md) and [datasets.json](datasets.json). Entries include issuer/original links, manifests, hashes, reference systems, permission, limitations and repository-byte availability. Originals outside Git remain outside Git. A manifest is not an installed API record; use returned case/source/package IDs from the actual environment. The serving links above are observed local records, not universal IDs or fictional examples.

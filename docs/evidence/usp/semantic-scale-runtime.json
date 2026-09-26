@@ -1,0 +1,490 @@
+{
+  "schemaVersion": "ulpin-bounded-semantic-scale/1",
+  "status": "partial",
+  "pairStatus": "passed-fixed-budgets",
+  "originalOverallReceiptStatus": "failed",
+  "servedCodeCommit": "eaec89c831a7fd5504ef0f38ad85c3c88e11b6e3",
+  "environment": {
+    "kind": "stopped-isolated",
+    "nonce": "676b375c76879bf0"
+  },
+  "source": {
+    "bytes": 71238839,
+    "sha256": "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37"
+  },
+  "member": {
+    "bytes": 168356689,
+    "sha256": "2b27a478e24d8c51b0655e74ce3f4f880e75c752e4597550d6fc925ed06ac201"
+  },
+  "sourceManifest": "fixtures/usp/D3/nwic-boundaries-v1/manifest.json",
+  "planSha256": "4dddff9490804f03fe18c51b45dd458ef6de5834d86d140ed7f2641645140e44",
+  "privateReceiptSha256": "816ba618f9c84eebe094b9a9cda281c53c2eeab06ce1d79b0c815c2cfea43025",
+  "prospectiveBudgets": {
+    "uploadFinalizationMs": 90000,
+    "firstUsefulMs": 30000,
+    "semanticClosureMs": 120000,
+    "finalCatalogMs": 180000,
+    "tileP95Ms": 750,
+    "pickP95Ms": 750,
+    "totalDockerMemoryBytes": 5368709120,
+    "ownedProcessRssBytes": 1610612736,
+    "pairStorageGrowthBytes": 4294967296
+  },
+  "hardware": {
+    "hostModel": "Mac15,12",
+    "hostCpu": "Apple M3",
+    "hostMemoryBytes": 17179869184,
+    "hostOs": "27.0",
+    "docker": {
+      "cpus": 4,
+      "memoryBytes": 6198632448,
+      "version": "29.5.2"
+    }
+  },
+  "runs": [
+    {
+      "label": "application-cold",
+      "uploadFinalizationMs": 1822,
+      "preparation": {
+        "createdAt": "2026-09-26T15:38:54.640Z",
+        "creationTimestampFromQueueMs": 15667,
+        "processorExecutionSeconds": 14.327506083999651,
+        "qualification": "Original receipt calls this committedAt; actual SQL value is transaction creation/default now(), not an observed commit instant."
+      },
+      "firstUseful": {
+        "elapsedFromQueueMs": 16903,
+        "generation": {
+          "jobId": "450d9620-0f1d-4a5b-8f33-30fdd48f21d0",
+          "version": 1,
+          "sha256": "c152e402c9c2e6ee42789f3c189d176749110951ea7030e27a27972b7297fe69"
+        },
+        "coverage": {
+          "state": "partial",
+          "sourceAccepted": false,
+          "committedRecords": 9,
+          "remainingRecords": 724,
+          "expectedRecords": 733
+        },
+        "cell": {
+          "z": 2,
+          "x": 2,
+          "y": 1
+        },
+        "tileBytes": 2836,
+        "tileSha256": "bbc75fb404b57a452eabf1f1556fb91bcc260ad6b11bb943add46a6d68dd940d",
+        "feature": {
+          "id": 378,
+          "unitId": "a96fde3b-7229-4053-a488-2a4340bd4aed",
+          "rings": 1
+        },
+        "prefix": "/ingestion/cases/fcca267d-a555-4352-9b14-797792c3146d/sources/70d14486-9e5a-44f1-bd22-5e9e7ce447aa/private-mvt/generations/450d9620-0f1d-4a5b-8f33-30fdd48f21d0/1/tiles/2/2/1",
+        "sourceAtRead": {
+          "status": "running",
+          "records": 9,
+          "chunks": 1
+        }
+      },
+      "semanticClosureObservedMs": 59704,
+      "finalCatalogObservedMs": 97439,
+      "viewport": {
+        "sequential": true,
+        "actualCells": [
+          {
+            "z": 2,
+            "x": 2,
+            "y": 1
+          },
+          {
+            "z": 2,
+            "x": 3,
+            "y": 1
+          },
+          {
+            "z": 3,
+            "x": 5,
+            "y": 3
+          },
+          {
+            "z": 3,
+            "x": 6,
+            "y": 3
+          },
+          {
+            "z": 4,
+            "x": 11,
+            "y": 6
+          },
+          {
+            "z": 4,
+            "x": 11,
+            "y": 7
+          },
+          {
+            "z": 4,
+            "x": 12,
+            "y": 6
+          },
+          {
+            "z": 4,
+            "x": 12,
+            "y": 7
+          },
+          {
+            "z": 5,
+            "x": 22,
+            "y": 12
+          },
+          {
+            "z": 5,
+            "x": 22,
+            "y": 13
+          },
+          {
+            "z": 5,
+            "x": 22,
+            "y": 14
+          },
+          {
+            "z": 5,
+            "x": 22,
+            "y": 15
+          },
+          {
+            "z": 5,
+            "x": 23,
+            "y": 12
+          },
+          {
+            "z": 5,
+            "x": 23,
+            "y": 13
+          },
+          {
+            "z": 5,
+            "x": 23,
+            "y": 14
+          },
+          {
+            "z": 5,
+            "x": 23,
+            "y": 15
+          },
+          {
+            "z": 5,
+            "x": 24,
+            "y": 13
+          },
+          {
+            "z": 5,
+            "x": 24,
+            "y": 14
+          },
+          {
+            "z": 5,
+            "x": 24,
+            "y": 15
+          },
+          {
+            "z": 6,
+            "x": 44,
+            "y": 24
+          }
+        ],
+        "tileMs": [
+          212.6675830000022,
+          194.1802500000049,
+          192.9845830000122,
+          190.45987500000047,
+          207.29383399999642,
+          205.99379100000078,
+          198.79533300000185,
+          191.92687500000466,
+          191.02645800000755,
+          193.8623329999973,
+          196.53187500000058,
+          194.72841700000572,
+          202.26745800000208,
+          209.16816700001073,
+          197.06387499999255,
+          191.95787500000733,
+          191.2052920000133,
+          222.3304999999964,
+          202.3289589999913,
+          194.61220899999898
+        ],
+        "pickMs": [
+          215.97158399999898,
+          196.37916700000642,
+          196.33758300000045,
+          196.3801669999957,
+          205.29287499999919,
+          206.0324590000091,
+          196.03158299998904,
+          193.96883299999172,
+          194.53858300000138,
+          202.9569160000101,
+          199.47891700000037,
+          207.97745800000848,
+          199.98637500000768,
+          207.05766700000095,
+          200.15737500000978,
+          192.77270800000406,
+          193.46233300000313,
+          201.05983300000662,
+          209.71945899999992,
+          209.83562500000698
+        ],
+        "tileP95Ms": 212.6675830000022,
+        "pickP95Ms": 209.83562500000698,
+        "errors": 0
+      },
+      "idempotentReplay": {
+        "jobId": "cb055b72-6def-4c8b-8dea-464d851687b5",
+        "sameRequestKey": true,
+        "countsAsImport": false
+      },
+      "completeSource": {
+        "records": 733,
+        "admitted": 720,
+        "quarantined": 13,
+        "chunks": 67,
+        "cells": 62
+      }
+    },
+    {
+      "label": "warm",
+      "uploadFinalizationMs": 1879,
+      "preparation": {
+        "createdAt": "2026-09-26T15:40:41.028Z",
+        "creationTimestampFromQueueMs": 14656,
+        "processorExecutionSeconds": 13.731399044000682,
+        "qualification": "Original receipt calls this committedAt; actual SQL value is transaction creation/default now(), not an observed commit instant."
+      },
+      "firstUseful": {
+        "elapsedFromQueueMs": 16057,
+        "generation": {
+          "jobId": "eec5ce4b-30c1-4fbb-bf86-cdc02cb9d1a3",
+          "version": 1,
+          "sha256": "71b9d92ab730f52032561d359cc9aba4ea22dbb43010385409a09fe20807a913"
+        },
+        "coverage": {
+          "state": "partial",
+          "sourceAccepted": false,
+          "committedRecords": 9,
+          "remainingRecords": 724,
+          "expectedRecords": 733
+        },
+        "cell": {
+          "z": 2,
+          "x": 2,
+          "y": 1
+        },
+        "tileBytes": 2836,
+        "tileSha256": "bbc75fb404b57a452eabf1f1556fb91bcc260ad6b11bb943add46a6d68dd940d",
+        "feature": {
+          "id": 378,
+          "unitId": "a96fde3b-7229-4053-a488-2a4340bd4aed",
+          "rings": 1
+        },
+        "prefix": "/ingestion/cases/c6d66ee7-437e-4109-9f50-ff1889aad35b/sources/91bf88a1-8e02-4f88-9b94-ec7baead3295/private-mvt/generations/eec5ce4b-30c1-4fbb-bf86-cdc02cb9d1a3/1/tiles/2/2/1",
+        "sourceAtRead": {
+          "status": "running",
+          "records": 9,
+          "chunks": 1
+        }
+      },
+      "semanticClosureObservedMs": 68450,
+      "finalCatalogObservedMs": 120119,
+      "viewport": {
+        "sequential": true,
+        "actualCells": [
+          {
+            "z": 2,
+            "x": 2,
+            "y": 1
+          },
+          {
+            "z": 2,
+            "x": 3,
+            "y": 1
+          },
+          {
+            "z": 3,
+            "x": 5,
+            "y": 3
+          },
+          {
+            "z": 3,
+            "x": 6,
+            "y": 3
+          },
+          {
+            "z": 4,
+            "x": 11,
+            "y": 6
+          },
+          {
+            "z": 4,
+            "x": 11,
+            "y": 7
+          },
+          {
+            "z": 4,
+            "x": 12,
+            "y": 6
+          },
+          {
+            "z": 4,
+            "x": 12,
+            "y": 7
+          },
+          {
+            "z": 5,
+            "x": 22,
+            "y": 12
+          },
+          {
+            "z": 5,
+            "x": 22,
+            "y": 13
+          },
+          {
+            "z": 5,
+            "x": 22,
+            "y": 14
+          },
+          {
+            "z": 5,
+            "x": 22,
+            "y": 15
+          },
+          {
+            "z": 5,
+            "x": 23,
+            "y": 12
+          },
+          {
+            "z": 5,
+            "x": 23,
+            "y": 13
+          },
+          {
+            "z": 5,
+            "x": 23,
+            "y": 14
+          },
+          {
+            "z": 5,
+            "x": 23,
+            "y": 15
+          },
+          {
+            "z": 5,
+            "x": 24,
+            "y": 13
+          },
+          {
+            "z": 5,
+            "x": 24,
+            "y": 14
+          },
+          {
+            "z": 5,
+            "x": 24,
+            "y": 15
+          },
+          {
+            "z": 6,
+            "x": 44,
+            "y": 24
+          }
+        ],
+        "tileMs": [
+          279.81883299999754,
+          317.97212500000023,
+          256.354416999995,
+          283.232416999992,
+          240.85120800000732,
+          229.0127499999944,
+          237.32358299999032,
+          228.96054100000765,
+          235.2284159999981,
+          293.9659170000232,
+          272.82320800001617,
+          273.6199169999745,
+          274.53483300001244,
+          307.6557909999974,
+          273.9529169999878,
+          267.35745899999165,
+          248.36383300001035,
+          233.86270800000057,
+          237.46495799999684,
+          234.57291700001224
+        ],
+        "pickMs": [
+          294.99995800000033,
+          317.7514169999922,
+          291.73662499999045,
+          282.67679200001294,
+          233.34437499998603,
+          227.67604200000642,
+          236.14904099999694,
+          243.9993329999852,
+          264.0844999999972,
+          264.19095799999195,
+          248.85358300001826,
+          314.7950000000128,
+          307.2130000000179,
+          285.0322500000184,
+          275.19304199999897,
+          273.2234579999931,
+          243.34883299999638,
+          235.9307919999992,
+          253.93812500001513,
+          239.6070410000102
+        ],
+        "tileP95Ms": 307.6557909999974,
+        "pickP95Ms": 314.7950000000128,
+        "errors": 0
+      },
+      "idempotentReplay": {
+        "jobId": "94ffd6eb-2168-47e0-8584-6788daee6c8e",
+        "sameRequestKey": true,
+        "countsAsImport": false
+      },
+      "completeSource": {
+        "records": 733,
+        "admitted": 720,
+        "quarantined": 13,
+        "chunks": 67,
+        "cells": 62
+      }
+    }
+  ],
+  "resources": {
+    "samples": 59,
+    "samplingErrors": [],
+    "maximumStartGapMs": 4428,
+    "observedMaxDockerMemoryBytes": 2162078777.3440003,
+    "observedMaxOwnedRssBytes": 1101070336,
+    "pairPersistentVolumeAllocatedGrowthBytes": 1028407296,
+    "qualification": "Sampled maxima, not continuous peaks; all15 co-resident Docker containers included. Storage is allocated du size difference of three owned volumes, not whole-host/VM/container-layer growth."
+  },
+  "naturalRecovery": {
+    "status": "not-admitted",
+    "errorCode": "MVT_RETENTION_BUDGET",
+    "reason": "Six retained display jobs plus three required reservations exceed unchanged eight-job history cap. No recovery job/fault/expiry/resume observed."
+  },
+  "limitations": [
+    "Application/source cold only; OS/page caches not flushed.",
+    "Source preparation completes before semantic publication; no parsing overlap.",
+    "Preparation created_at is transaction creation, not commit observation.",
+    "Natural recovery and complete GF-STREAM/GF-SCALE remain unqualified.",
+    "Vector administrative profile only; no city/3D/frontend/accuracy/rights/deployment claim."
+  ],
+  "cleanup": {
+    "nonceStopped": true,
+    "allThreeVolumesPreserved": true,
+    "serving3188Unaffected": true
+  }
+}
