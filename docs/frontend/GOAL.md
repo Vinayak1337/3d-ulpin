@@ -224,7 +224,9 @@ Metrics come only from real runs.
 
 ## 11. Open items
 
-- **AGENTS.md** still says "Keep Next.js", "H22 retains the current Cesium runtime" and "run `$ui-design-check` for `apps/web`". Waiting for the user's OK to add a short frontend section (React + Vite, Three.js, this file).
-- Confirm the stack in section 4 at the start of implementation.
+- Build progress and verification live in [PLAN.md](PLAN.md). M1 and M2 are done; M3 (scene engine) has its first slice.
+- **AGENTS.md** now has a frontend lane section (React + Vite, Three.js, this file and PLAN.md), and the `ui-design-check` line names `apps/studio`. Done 26 September 2026 at the user's request.
+- The stack in section 4 was confirmed by building it: React 19.3, React Router 8.4, TanStack Query 5, Vite 8.3, TypeScript 5.9, three 0.186, 3d-tiles-renderer 0.5.3, MSW 2.15, Vitest 5.
 - The public `apps/global` stays full product unless the user brings a thin version into the finale.
 - The backend's official large layer (DATA-10) permission is unresolved; the frontend scale work uses the district boundary layers locally until then.
+- The linked database holds only two legacy synthetic datasets and no areas. Batches shows them as recorded; the map uses the local derived NYC OTI area until an official-source area is installed through the real import route.

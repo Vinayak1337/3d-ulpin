@@ -1,0 +1,23 @@
+{
+ "derivation": "apps/studio/scripts/derive-official-area.mjs",
+ "transformVersion": "studio-local/wgs84-enu-tangent/1",
+ "source": {
+  "manifest": "fixtures/real-area/manifest.json",
+  "file": "fixtures/real-area/original.geojson",
+  "sha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+  "provider": "City of New York Office of Technology and Innovation (OTI)",
+  "datasetUrl": "https://data.cityofnewyork.us/City-Government/BUILDING/5zhs-2jue",
+  "retrievedAt": "2026-09-13T23:50:24.450967+00:00",
+  "attribution": "City of New York Office of Technology and Innovation (OTI), BUILDING via NYC Open Data",
+  "termsUrl": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+  "geography": "New York, USA (foreign test geography; never placed on Indian coordinates)"
+ },
+ "limits": [
+  "Building-relative constant-height envelopes; no floors, rooms, parcels, rights or ULPIN associations.",
+  "Provider metadata documents NAVD88 for photogrammetric or modern ground elevations, with varying accuracy; individual feature datum is not stated. Use building-relative bases until datum review. An envelope is a constant-height approximation; no floor count or interior rights inferred."
+ ],
+ "outputs": {
+  "nyc-bronx-areas.json": "bd6df1b9932a5f592957b2c262ba1addee7e08f3567a7d5a3750a75917dca4b9",
+  "nyc-bronx-context.json": "fe1cc37c82d4ff3a4c5a82970dfea7710ef1c4be386c085c78448f26ab3492e1"
+ }
+}
