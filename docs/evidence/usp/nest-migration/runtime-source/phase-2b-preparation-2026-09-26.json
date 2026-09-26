@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "nest-runtime-source-preparation/1",
+  "recordedAt": "2026-09-26T02:19:12.517Z",
+  "assignment": "NEST-02 / NEST-20 phase 2B",
+  "acceptedRegistrationBase": "6d4d550b8680c43b4196bd2628a5fd81dfa2505a",
+  "status": "ready_for_lead_review",
+  "model": {
+    "requested": "gpt-6-sol",
+    "requestedEffort": "max",
+    "requestedSpeed": "Fast",
+    "configuredTier": "priority per operating guide",
+    "observedModelEffortTier": "unexposed"
+  },
+  "codeSources": [
+    {
+      "path": "scripts/usp/local-isolation.mjs",
+      "sha256": "fd393a7dabe6c6b841677fe313d7f7563b7908a95d9103ce539d57f44a4096c1"
+    },
+    {
+      "path": "scripts/usp/real-source-runtime.mjs",
+      "sha256": "f212936d1e6eee0a42e7c8c598407b5d26e9c4e4018810b0893100144710fb75"
+    },
+    {
+      "path": "scripts/usp/real-source-smoke.mjs",
+      "sha256": "da61ee0d32b6b1341c0003119f4f457370ccc97a3546cbf258730c09ecbfcfd0"
+    },
+    {
+      "path": "scripts/usp/REAL_SOURCE_RUNTIME.md",
+      "sha256": "e023bb525c0a852a33069324ed22dc4e0998c279e7e5fe16b39d5b65b4fe6c81"
+    }
+  ],
+  "operatorProvenance": {
+    "kind": "local_os_process",
+    "subject": "local-os:501:vinayak",
+    "uid": 501,
+    "account": "vinayak",
+    "humanAuthenticated": false
+  },
+  "sourcePermissionReceipt": {
+    "path": "docs/evidence/usp/nest-migration/official-runtime-source/source-check.json",
+    "sha256": "02db3eedd27dde2fb3926524e853d17b4c77582124c2ba33268a3600d4dc567e",
+    "acceptedSourceCommit": "25cbca3",
+    "interpretation": "Documented permission for the unchanged USGS PDF, foreign test_only deterministic local transport/page inspection."
+  },
+  "checks": [
+    {
+      "command": "node --check scripts/usp/local-isolation.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/usp/real-source-runtime.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/usp/real-source-smoke.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "node --input-type=module (inline isolation/process-attribution assertions)",
+      "exitCode": 0,
+      "actual": {
+        "validNonceLocalConfiguration": "passed",
+        "invalidConfigurationsRejected": [
+          "missing subject for new startup",
+          "retired local-demo-operator subject",
+          "subject with trailing whitespace",
+          "provider API key",
+          "remote storage endpoint"
+        ],
+        "historicalCleanupConfigurationReadable": true
+      }
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs prepare",
+      "exitCode": 1,
+      "expected": "Execution gate rejected before any service action."
+    },
+    {
+      "command": "node scripts/usp/real-source-smoke.mjs /not-a-run",
+      "exitCode": 1,
+      "expected": "Execution gate rejected before source reads or API calls."
+    }
+  ],
+  "plannedJourneys": [
+    {
+      "source": "USGS 1:62500-scale Quadrangle for Central City, CO 1910",
+      "mode": "canonical_queued_document_inspection",
+      "steps": [
+        "Actual-title case creation",
+        "Unchanged plan-pdf-v1 upload",
+        "Persisted queued inspect job",
+        "Owned processor outage and actual dispatch failure",
+        "Private original download while failed",
+        "Owned processor restart and canonical retry of the same source/fingerprint",
+        "Persisted needs_input PDF page inspection, without geometry/model",
+        "Same-key replay without duplicate source/job",
+        "Private original hash/size/disposition/MIME and remote-origin denial"
+      ]
+    },
+    {
+      "source": "NYC OTI unchanged original.geojson",
+      "mode": "synchronous_gis_import",
+      "steps": [
+        "Synchronous inspection/import",
+        "Distinct actual source revision and persisted candidate/evidence/area read",
+        "Private original integrity and remote-origin denial"
+      ],
+      "queuedJobClaim": false
+    }
+  ],
+  "runtime": {
+    "startupGateEnabled": false,
+    "smokeGateEnabled": false,
+    "servicesStarted": false,
+    "apiCalls": 0,
+    "sourceJobsCreated": 0,
+    "newStatefulNoncePrepared": false,
+    "previousVolumesPreserved": true
+  },
+  "unqualified": [
+    "Actual plan-pdf-v1 parser and queue success",
+    "Actual failure/retry persistence",
+    "Indian operational source suitability",
+    "geometry or ownership/rights accuracy",
+    "ML, scale, frontend or release-gate completion"
+  ]
+}

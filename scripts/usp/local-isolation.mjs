@@ -1,5 +1,6 @@
 /** Fresh, loopback-only Colima profile for the FND integration test. */
 import assert from 'node:assert/strict';
+import { userInfo } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertIsolation as assertHostedIsolation, redact } from '../engineering/isolation.mjs';
@@ -17,6 +18,22 @@ const endpoint = (value, protocol, port, path) => {
   assert.equal(url.search + url.hash, '');
   return url;
 };
+
+/** Local OS identity attributes process writes; it does not authenticate a human. */
+export function localOperatorProcessProvenance() {
+  const {uid, username: account} = userInfo();
+  assert(Number.isSafeInteger(uid) && uid >= 0, 'a local OS uid is required');
+  assert(typeof account === 'string' && account.length > 0, 'a local OS account is required');
+  const subject = `local-os:${uid}:${account}`;
+  assert(subject.length <= 256 && subject.trim() === subject && !/[\x00-\x1f\x7f]/.test(subject), 'local OS identity cannot form an operator subject');
+  return {kind: 'local_os_process', subject, uid, account, humanAuthenticated: false};
+}
+
+export function assertLocalOperatorProcess(env) {
+  const provenance = localOperatorProcessProvenance();
+  assert.equal(env.ULPIN_LOCAL_OPERATOR_SUBJECT, provenance.subject, 'explicit local OS process subject is required');
+  return provenance;
+}
 
 export function assertUspIsolation(env) {
   if (!['local-colima', 'local-docker', 'local-preview', 'local-nest'].includes(env.ULPIN_ISOLATION_PROFILE)) return assertHostedIsolation(env);
@@ -58,6 +75,9 @@ export function assertUspIsolation(env) {
     assert.equal(env.HOST, '127.0.0.1');
     assert.equal(env.PORT, '3188');
     assert.equal(env.API_PORT, '3188');
+    // Retained phase 2A configurations have no subject and remain readable for
+    // status/cleanup. New startup and smoke additionally require the OS identity.
+    if (env.ULPIN_LOCAL_OPERATOR_SUBJECT !== undefined) assertLocalOperatorProcess(env);
   }
   if (preview || nest) for (const key of localProviderKeys)
     assert(!env[key], `${key} is forbidden in this isolated local runtime`);
