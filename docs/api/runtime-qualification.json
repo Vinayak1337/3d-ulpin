@@ -105,5 +105,69 @@
         "/gisJourney/persistedRead"
       ]
     }
-  }
+  },
+  "additionalRuns": [
+    {
+      "receipt": "docs/evidence/usp/projected-vector-runtime.json",
+      "receiptSha256": "c9fe852350e7686817ab5eb031bceb5cd8b4d45304265cd26c3ff3234e84b5a1",
+      "servedCodeCommit": "6e85ae679207c8e8fce6df6a3879f8ccc9eafa79",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-e0c00ba88a5b1a20",
+        "nonce": "e0c00ba88a5b1a20"
+      },
+      "qualification": "Only this deterministic unchanged NWIC profile and the named private admission/read/recovery behaviors were observed. Installed records belong to the stopped isolated environment, not the linked serving database.",
+      "unqualified": [
+        "Boundary positional/legal/currentness accuracy, parcels/rights/height or survey controls",
+        "Generic archives/CRS/format coverage",
+        "Tiles/progressive scene generations/GF-STREAM/GF-SCALE/UI",
+        "Multiuser/replica authorization or provider/learning qualification"
+      ],
+      "operations": {
+        "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector": {
+          "scope": "Exact retained NWIC ZIP admission/replay; expired-attempt recovery, current-context retry and later re-admission preserve original and accepted history.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/staleAttemptRecovery",
+            "/checks/readmission",
+            "/attemptHandover",
+            "/acceptedHistory"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector": {
+          "scope": "Compact current private job/disposition status for this NWIC source; no whole-layer geometry.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/privateReads",
+            "/totals",
+            "/database"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/units": {
+          "scope": "At most25 metadata observations, typed native identity, pinned continuation and geographic bbox on accepted NWIC generation.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/privateReads",
+            "/totals"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/units/{unitId}/geometry": {
+          "scope": "One private exact-native or admitted geographic Feature;13 invalid-native records stay quarantined from geographic reads.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/privateReads",
+            "/database"
+          ]
+        }
+      }
+    }
+  ]
 }

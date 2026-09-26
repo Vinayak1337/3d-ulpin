@@ -1,6 +1,6 @@
 # Native NestJS API for frontend integration
 
-The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 147 operations and 173 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and fifteen added ingestion operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
+The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 151 operations and 176 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and nineteen added ingestion operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
 
 After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs). Its [OpenAPI JSON](http://127.0.0.1:3188/api/docs/openapi.json) and [dataset catalogue](http://127.0.0.1:3188/api/docs/datasets.json) are served by the same loopback backend. Swagger is light-only and opens schemas first. Write execution and the external validator are disabled. These links describe the configured default address; they do not mean a server is currently running.
 
@@ -16,7 +16,7 @@ The API and dispatcher run from a separate clean pinned checkout at `http://127.
 | Its geographic map area | [Area context](http://127.0.0.1:3188/api/v1/areas/d89d6d4a-36a0-490f-a7e9-2c382d59553f/context) |
 | Unchanged official source | [Private original](http://127.0.0.1:3188/api/v1/sources/318ea100-c171-4152-8686-c8441f04ef74/file) |
 
-This is one foreign 2D footprint, with height unknown and package `NEEDS_INPUT`; it supplies real geometry for a basic API integration, not an Indian building/block, interior, ownership record or scale result. Import replay returned the same IDs. Retained NWIC district vectors remain under INGEST-07 publication/recovery review and are not installed in this serving environment. The [delivery ledger](../orchestration/NESTJS_MIGRATION.md#active-delivery-after-consolidation) tracks that separate work.
+This is one foreign 2D footprint, with height unknown and package `NEEDS_INPUT`; it supplies real geometry for a basic API integration, not an Indian building/block, interior, ownership record or scale result. Import replay returned the same IDs. NWIC district-vector admission and recovery passed in a separate stopped isolated run and are merged in staging; those records are not installed in this serving environment. The [delivery ledger](../orchestration/NESTJS_MIGRATION.md#active-delivery-after-consolidation) tracks that separate work.
 
 ## Start and connect
 
@@ -40,6 +40,7 @@ For Vite, proxy `/api` to the local API and configure `API_ALLOWED_ORIGINS` with
 | Manual ingestion | 7 added | Retained GeoJSON profile, constrained conversion registry, source-pinned recipes, explicit approval and atomic execution through existing GIS intake |
 | Large original receipt | 7 added | Durable byte parts, resume/status, whole-original verification, one source publication and scoped abort/retry cleanup; conversion remains unsupported |
 | Private ingestion events | 1 added | Committed case-ingestion notifications with scoped SSE cursors, bounded replay and explicit context resync |
+| Projected-vector admission | 4 added | Exact NWIC district ZIP through canonical jobs;733 dispositions,720 geographic admissions,13 quarantined native geometries, bounded private metadata/geometry reads |
 
 Explicitly retired: `POST /areas/{areaId}/scenario`, `POST /spatial-datasets`, and `GET /spatial/calibration/{kind}/{assetPath}`. New `demo_ulpin` assertions are also rejected within `/external-identifiers`. Historical recorded data stays readable. The `real-nyc` compatibility URLs still expose genuine retained official-derived inputs; their names do not make the sources synthetic. AI crop previews remain an intentional privacy denial. A present provider-backed operation is not authorization or qualification for live provider calls.
 
