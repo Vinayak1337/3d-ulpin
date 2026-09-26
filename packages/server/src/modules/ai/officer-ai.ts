@@ -7,13 +7,17 @@ import { query, transaction } from '../../infrastructure/db';
 import { getArea, getPackage } from '../areas/areas';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendPreparationFacts } from '../officer/officer-preparation';
-import { aiBudget, callNous, extractionMessages, inspectNous } from './officer-ai-provider';
+import { aiBudget, extractionMessages, inspectModelGateway, minimizeExtractionOutput } from './officer-ai-provider';
 import { AI_PROPERTIES, digest, PROMPT_VERSION, redactPrivateText, SCHEMA_VERSION, validateExtraction } from './officer-ai-validation';
 import { selectedImageCrops } from './officer-ai-images';
 import { assertNoImageEgress, redactDerivative, redactDocumentViews } from '../usp/ingest/redact';
+import { localOperatorSubject, localRequestContext } from '../usp/principal';
+import { modelGatewayRuntime, modelGatewayPolicyHash, assertCurrentGatewayPolicy, migrateModelGateway } from '../model-gateway/runtime';
+import { extractionSchema } from './officer-ai-validation';
 
 export async function migrateOfficerAi() {
   await query(sql('officer-ai.schema'));
+  await migrateModelGateway();
 }
 const uuid=z.string().uuid(),revision=z.number().int().nonnegative();
 const regionSchema=z.object({x:z.number().min(0).max(1),y:z.number().min(0).max(1),width:z.number().positive().max(1),height:z.number().positive().max(1)}).strict().refine(r=>r.x+r.width<=1&&r.y+r.height<=1,'Crop must fit within the source image.');
@@ -44,7 +48,8 @@ async function snapshot(pkg:ImportPackage,input:Input) {
   const geometryFrames=[...new Set([siteFrame?.id,...(preparation?.placement.status==='reviewed'?[preparation.placement.sourceFrame]:[])].filter(Boolean))] as string[];
   const currentFacts=pkg.factCandidates.filter(f=>entityIds.includes(f.entityId)&&AI_PROPERTIES.includes(f.property as any)&&((typeof f.value==='number'&&Number.isFinite(f.value))||typeof f.value==='string')).slice(0,50).map(f=>({entityId:f.entityId,property:f.property,value:typeof f.value==='string'?redactPrivateText(f.value).slice(0,200):f.value,unit:f.unit,referenceFrameId:f.referenceFrameId,evidence:f.evidence.slice(0,4)}));
   const context={entities,knownReferenceFrames:frames,authorizedHorizontalFrames:geometryFrames,placementRevision:preparation?.placement.revision,currentFacts,operatorAnswers:(input.answers??[]).map(a=>({question:redactPrivateText(a.question),answer:redactPrivateText(a.answer)}))};
-  const fingerprint=digest({packageId:pkg.id,revision:pkg.revision,areaRevision:area.revision,sourceHashes,partHashes,entityIds,context,imageRegions:input.imageRegions??[],cropMethod:'native-image-crop-v1',promptVersion:PROMPT_VERSION,schemaVersion:SCHEMA_VERSION});
+  const fingerprint=digest({packageId:pkg.id,revision:pkg.revision,areaRevision:area.revision,sourceHashes,partHashes,entityIds,context,imageRegions:input.imageRegions??[],cropMethod:'native-image-crop-v1',promptVersion:PROMPT_VERSION,schemaVersion:SCHEMA_VERSION,
+    gatewayPolicyHash:modelGatewayPolicyHash(),principalHash:digest(localOperatorSubject())});
   return {parts,entityIds,sourceHashes,partHashes,context,entities,frames,geometryFrames,fingerprint};
 }
 async function saveRun(run:OfficerAiRun,rawOutputs:unknown[]) {
@@ -53,7 +58,7 @@ async function saveRun(run:OfficerAiRun,rawOutputs:unknown[]) {
 async function recoverInterruptedRun(run:OfficerAiRun) {
   const deadline=Date.parse(run.startedAt)+run.budget.maxCalls*run.budget.timeoutMs+75000+(run.imageRegions?.length??0)*30000;
   if(run.state==='running'&&Date.now()>deadline) {
-    run.state='failed';run.completedAt=new Date().toISOString();run.message='This attempt was interrupted before completion. Stored receipts remain available; start a new request to resume from the current evidence.';
+    run.state='failed';run.completedAt=new Date().toISOString();run.message='This attempt was interrupted before completion. Any admitted model reservation remains held until reconciled; manual preparation and stored receipts remain available.';
     await query("UPDATE officer_ai_runs SET body=$2 WHERE id=$1 AND body->>'state'='running'",[run.id,run]);
   }
   return redactDerivative(run);
@@ -64,15 +69,24 @@ async function extract(packageId:string,input:Input):Promise<OfficerAiRun> {
   const requestDigest=digest({...input,partIds:[...new Set(input.partIds)].sort(),entityIds:input.entityIds?[...new Set(input.entityIds)].sort():undefined});
   if(existing) {
     if(existing.private_input.requestDigest!==requestDigest) throw new AppError(409,'AI_REQUEST_KEY','This extraction request key was already used for different inputs.');
+    if(existing.body.provider==='sarvam') {
+      if(existing.body.principalHash!==digest(localOperatorSubject())) throw new AppError(403,'AI_RUN_PRINCIPAL','This extraction belongs to a different principal.');
+      const current=await getPackage(packageId);
+      if((await snapshot(current,input)).fingerprint!==existing.body.inputFingerprint) conflict('This extraction belongs to changed evidence or policy.');
+      if(['succeeded','needs_input','applied'].includes(existing.body.state)) assertCurrentGatewayPolicy(existing.body.gatewayPolicyHash);
+    } else throw new AppError(409,'AI_HISTORICAL_REQUEST','This key belongs to a historical provider run. Its history remains readable; use a new request under the current private policy.');
     return recoverInterruptedRun(existing.body);
   }
   const pkg=await getPackage(packageId),snap=await snapshot(pkg,input);
   if(input.mode==='cached') {
     const cached=(await query("SELECT body FROM officer_ai_runs WHERE package_id=$1 AND input_fingerprint=$2 AND body->>'state' IN ('succeeded','needs_input') AND body->>'promptVersion'=$3 ORDER BY created_at DESC LIMIT 1",[packageId,snap.fingerprint,PROMPT_VERSION])).rows[0]?.body;
     if(!cached) throw new AppError(404,'AI_CACHE_MISS','No completed extraction matches this exact preparation revision and evidence.');
+    assertCurrentGatewayPolicy(cached.gatewayPolicyHash);
+    if(cached.principalHash!==digest(localOperatorSubject())) throw new AppError(403,'AI_CACHE_PRINCIPAL','This cached extraction belongs to a different principal.');
     return {...cached,cached:true};
   }
-  const run:OfficerAiRun={id:randomUUID(),packageId,packageRevision:pkg.revision,requestKey:input.requestKey,state:'running',provider:'nous',inputFingerprint:snap.fingerprint,sourceHashes:snap.sourceHashes,partHashes:snap.partHashes,partIds:input.partIds,entityIds:snap.entityIds,imageRegions:input.imageRegions,answers:snap.context.operatorAnswers,promptVersion:PROMPT_VERSION,schemaVersion:SCHEMA_VERSION,candidates:[],questions:[],suggestions:[],validationErrors:[],calls:[],budget:aiBudget(),startedAt:new Date().toISOString()};
+  const run:OfficerAiRun={id:randomUUID(),packageId,packageRevision:pkg.revision,requestKey:input.requestKey,state:'running',provider:'sarvam',inputFingerprint:snap.fingerprint,
+    gatewayPolicyHash:modelGatewayPolicyHash(),principalHash:digest(localOperatorSubject()),sourceHashes:snap.sourceHashes,partHashes:snap.partHashes,partIds:input.partIds,entityIds:snap.entityIds,imageRegions:input.imageRegions,answers:snap.context.operatorAnswers,promptVersion:PROMPT_VERSION,schemaVersion:SCHEMA_VERSION,candidates:[],questions:[],suggestions:[],validationErrors:[],calls:[],budget:aiBudget(),startedAt:new Date().toISOString()};
   const inserted=await query('INSERT INTO officer_ai_runs(id,package_id,request_key,input_fingerprint,body,private_input) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(package_id,request_key) DO NOTHING RETURNING id',[run.id,packageId,input.requestKey,snap.fingerprint,run,{requestDigest,parts:snap.parts,context:snap.context}]);
   if(!inserted.rowCount) return extract(packageId,input);
   const rawOutputs:unknown[]=[];
@@ -81,13 +95,13 @@ async function extract(packageId:string,input:Input):Promise<OfficerAiRun> {
       run.state='needs_input';run.message='A selected part has no extracted text. Supply native text or a verified OCR derivative for the relevant page. No image or inferred geometry was sent.';
       run.questions=['Which source text supports the missing facts? Add or correct the relevant source part before resuming.'];
     } else {
-      const inspection=await inspectNous();
+      const inspection=await inspectModelGateway();
       if(inspection.status.state!=='available' || !inspection.model) {run.state='blocked';run.message=inspection.status.message;}
       else {
         run.model=inspection.model.id;
         if(input.imageRegions?.length&&!inspection.status.capabilities?.image) throw new AppError(422,'AI_IMAGE_ROUTE','The authenticated free route does not support image input.');
         const cached=(await query("SELECT body FROM officer_ai_runs WHERE package_id=$1 AND input_fingerprint=$2 AND body->>'model'=$3 AND body->>'state' IN ('succeeded','needs_input') ORDER BY created_at DESC LIMIT 1",[packageId,snap.fingerprint,run.model])).rows[0]?.body;
-        if(cached) {run.state=cached.state;run.candidates=cached.candidates;run.questions=cached.questions;run.suggestions=cached.suggestions??[];run.validationErrors=cached.validationErrors;run.derivatives=cached.derivatives;run.cached=true;run.cachedFromRunId=cached.cachedFromRunId??cached.id;run.message=`Reused stored extraction ${cached.id} for identical evidence, revision and route.`;}
+        if(cached) {assertCurrentGatewayPolicy(cached.gatewayPolicyHash);if(cached.principalHash!==run.principalHash) throw new AppError(403,'AI_CACHE_PRINCIPAL','This cached extraction belongs to a different principal.');run.state=cached.state;run.candidates=cached.candidates;run.questions=cached.questions;run.suggestions=cached.suggestions??[];run.validationErrors=cached.validationErrors;run.derivatives=cached.derivatives;run.cached=true;run.cachedFromRunId=cached.cachedFromRunId??cached.id;run.message=`Reused stored extraction ${cached.id} for identical evidence, revision and route.`;}
         else {
           const images=await selectedImageCrops(snap.parts,input.imageRegions??[]);
           run.derivatives=images.map(({bytes,dataUrl,...metadata})=>metadata);
@@ -95,11 +109,35 @@ async function extract(packageId:string,input:Input):Promise<OfficerAiRun> {
           const parts=snap.parts.map(part=>{const image=images.find(i=>i.partId===part.id);return {...part,...(image?{imageRegion:image.region,derivativeSha256:image.sha256}:{})};});
           await saveRun(run,rawOutputs);
           let repair: {output:unknown;errors:string[]}|undefined;
+          const gateway=await modelGatewayRuntime();
+          if(!gateway) throw new AppError(503,'MODEL_UNAVAILABLE','No private model key is configured. Manual preparation remains available.');
+          const authorize=async()=>{
+            assertCurrentGatewayPolicy(run.gatewayPolicyHash);
+            if(digest(localOperatorSubject())!==run.principalHash) throw new AppError(403,'MODEL_PRINCIPAL_CHANGED','The extraction principal changed.');
+            const current=await getPackage(packageId);
+            if(current.revision!==run.packageRevision || (await snapshot(current,input)).fingerprint!==run.inputFingerprint)
+              conflict('Extraction evidence changed before model dispatch or publication.');
+          };
+          const deadlineAt=new Date(Date.parse(run.startedAt)+45000);
           for(let attempt=0;attempt<run.budget.maxCalls;attempt++) {
-            const result=await callNous(run.model!,extractionMessages(parts,snap.context,repair,images));
-            run.calls.push(result.call);rawOutputs.push(result.raw);
+            const start=Date.now();
+            const port=gateway.port({invocationKey:run.id,attempt:attempt+1,consumer:'INGEST',scopeHash:run.inputFingerprint,
+              sourceHashes:run.sourceHashes.map(s=>s.sha256),deadlineAt,taskKind:'officer_extraction',outputSchemaId:SCHEMA_VERSION,
+              outputSchema:extractionSchema,authorize,minimizeOutput:minimizeExtractionOutput});
+            const serviceResult=await port.modelGateway(localRequestContext(run.id),{
+              taskKind:'officer_extraction',evidenceRefs:[],input:{messages:extractionMessages(parts,snap.context,repair,images)},
+              outputSchemaId:SCHEMA_VERSION,budget:{maxInputBytes:32768,deadlineMs:Math.max(1,deadlineAt.getTime()-Date.now())},
+              policyVersion:gateway.config.policyVersion,
+            });
+            if(serviceResult.state!=='available') throw new AppError(503,'MODEL_UNAVAILABLE','Private model inference is unavailable. Manual preparation remains available.');
+            const result=serviceResult.data;
+            const receipt=result.receipt!;
+            run.calls.push({latencyMs:Date.now()-start,httpStatus:receipt.httpStatus,inputTokens:receipt.inputTokens,
+              outputTokens:receipt.outputTokens,outputHash:receipt.responseHash,callId:receipt.callId,
+              actualMicroInr:receipt.actualMicroInr,priceVersion:receipt.priceVersion,semanticError:receipt.semanticError});
+            rawOutputs.push({output:result.output,outputHash:receipt.responseHash});
             await saveRun(run,rawOutputs);
-            const parsed=validateExtraction(result.output,parts,snap.entities,snap.frames,snap.geometryFrames);
+            const parsed=validateExtraction(receipt.semanticError?{invalidResponse:true}:result.output,parts,snap.entities,snap.frames,snap.geometryFrames);
             for(const candidate of [...parsed.candidates].filter(c=>c.property.endsWith('.geometry'))) {
               const valid=(await query('SELECT ST_IsValid(g) AND ST_Area(g)>0.00000001 valid FROM (SELECT ST_GeomFromGeoJSON($1) g) source',[JSON.stringify(candidate.value)])).rows[0]?.valid;
               if(!valid){parsed.candidates=parsed.candidates.filter(c=>c.id!==candidate.id);parsed.errors.push('Candidate geometry failed native topology validation; supply a valid measured outline, retaining holes and multipart boundaries.');}
@@ -116,8 +154,8 @@ async function extract(packageId:string,input:Input):Promise<OfficerAiRun> {
     const latest=await getPackage(packageId);
     if(latest.revision!==run.packageRevision || (await snapshot(latest,input)).fingerprint!==run.inputFingerprint) {run.state='stale';run.message='Evidence or preparation changed during extraction. Start a fresh extraction before applying suggestions.';}
   } catch(error) {
-    run.state=error instanceof AppError && error.code==='STALE_REVISION'?'stale':'failed';
-    run.message='The bounded extraction could not finish. No facts were applied; check provider availability and the selected source parts.';
+    run.state=error instanceof AppError && error.code==='STALE_REVISION'?'stale':error instanceof AppError && error.code.startsWith('MODEL_')?'blocked':'failed';
+    run.message=error instanceof AppError && error.code.startsWith('MODEL_')?error.message:'The bounded extraction could not finish. No facts were applied; check provider availability and the selected source parts.';
   }
   run.completedAt=new Date().toISOString();await saveRun(run,rawOutputs);return run;
 }
@@ -132,6 +170,8 @@ async function applyRun(packageId:string,runId:string,expectedRevision:number,ca
       return getPackage(packageId);
     }
     if(!['succeeded','needs_input'].includes(run.state) || !run.model) throw new AppError(422,'AI_RUN_NOT_READY','Only a completed grounded extraction can add draft facts.');
+    assertCurrentGatewayPolicy(run.gatewayPolicyHash);
+    if(run.principalHash!==digest(localOperatorSubject())) throw new AppError(403,'AI_RUN_PRINCIPAL','This extraction belongs to a different principal.');
     if(run.packageRevision!==expectedRevision) conflict('Extraction belongs to an older preparation revision.');
     await client.query('SELECT id FROM import_packages WHERE id=$1 FOR UPDATE',[packageId]);
     const pkg=await getPackage(packageId);
@@ -165,14 +205,31 @@ export const officerAiPackageProjection=(pkg:ImportPackage)=>{
 };
 
 /** Named domain entry points for the native Nest controller. The Next adapter below remains a thin compatibility seam. */
-export async function officerAiStatus() { return (await inspectNous()).status; }
+export async function officerAiStatus() { return (await inspectModelGateway()).status; }
+/** Read-time fence for current model output; never rewrites historical receipts. */
+async function projectCurrentRun(run:OfficerAiRun,pkg:ImportPackage):Promise<OfficerAiRun> {
+  const visible=await recoverInterruptedRun(run);
+  if(run.provider!=='sarvam') return visible;
+  try {
+    assertCurrentGatewayPolicy(run.gatewayPolicyHash);
+    if(run.principalHash!==digest(localOperatorSubject())) throw new Error('principal changed');
+    const current=await snapshot(pkg,{expectedRevision:pkg.revision,partIds:run.partIds,entityIds:run.entityIds,
+      requestKey:run.requestKey,mode:'cached',answers:run.answers,imageRegions:run.imageRegions,imageContentApproved:!!run.imageRegions?.length});
+    if(current.fingerprint!==run.inputFingerprint) throw new Error('evidence changed');
+    return visible;
+  } catch {
+    return {...visible,candidates:[],suggestions:[],questions:[],answers:[],validationErrors:[],
+      message:'Stored model output is withheld because its current evidence, principal or policy could not be reauthorized. Billing receipts and manual preparation remain available.'};
+  }
+}
 export async function listOfficerAiRuns(packageId:string):Promise<OfficerAiRun[]> {
-  await getPackage(uuid.parse(packageId));
-  return Promise.all((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 ORDER BY created_at DESC LIMIT 30',[packageId])).rows.map(r=>recoverInterruptedRun(r.body)));
+  const pkg=await getPackage(uuid.parse(packageId));
+  return Promise.all((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 ORDER BY created_at DESC LIMIT 30',[packageId])).rows.map(r=>projectCurrentRun(r.body,pkg)));
 }
 export async function getOfficerAiRun(packageId:string,runId:string):Promise<OfficerAiRun> {
-  return recoverInterruptedRun((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 AND id=$2',
-    [uuid.parse(packageId),uuid.parse(runId)])).rows[0]?.body??notFound('Extraction run not found.'));
+  const pkg=await getPackage(uuid.parse(packageId));
+  return projectCurrentRun((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 AND id=$2',
+    [packageId,uuid.parse(runId)])).rows[0]?.body??notFound('Extraction run not found.'),pkg);
 }
 export async function createOfficerAiRun(packageId:string,value:unknown):Promise<OfficerAiRun> {
   return redactDerivative(await extract(uuid.parse(packageId),officerAiExtractSchema.parse(value))) as OfficerAiRun;
