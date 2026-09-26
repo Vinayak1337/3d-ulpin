@@ -72,9 +72,9 @@ async function run(){
     assert.equal((await outbox()).sequence,'1');receipt.checks.push('one committed retained-source event; source/case context resync; exact receipt replay and same-byte deduplication append no events');
     phase='cursor-boundaries';await api(`/ingestion/cases/${peer}/events`,409,undefined,{'Last-Event-ID':cursor});
     await api(path+'/events?cursor=01',422);await api(path+'/events?cursor=0&cursor=0',422);await api(path+'/events?stream=caller-selected',422);
-    await api(path+'/events?cursor=0',409,undefined,{'Last-Event-ID':cursor});
+    await api(path+'/events?cursor='+(BigInt(cursor)+1n),409,undefined,{'Last-Event-ID':cursor});
     const ahead=await api(path+'/events',409,undefined,{'Last-Event-ID':(BigInt(cursor)+1000n).toString()});assert.equal(ahead.error.code,'INGESTION_RESYNC');assert.equal(ahead.error.details.reason,'cursor_out_of_range');
-    await delay(100);reading=await stream(caseId,'',{'Last-Event-ID':cursor});ready=await reading.next();assert.equal(ready.id,cursor);
+    await delay(100);reading=await stream(caseId,'?cursor=0',{'Last-Event-ID':cursor});ready=await reading.next();assert.equal(ready.id,cursor);
     const plan={version:profile.version,mode:'manual_mapping',source:profile.source,caseId,workspaceRevision:profile.workspaceRevision,workspaceFingerprint:profile.workspaceFingerprint,
       operations:[{target:'building.sourceKey',sourcePath:'/features/*/properties/doitt_id',conversionId:'literal_identifier@1'},{target:'building.geometry',sourcePath:'/features/*/geometry',conversionId:'geojson_polygon@1'}]};
     const author={requestKey:randomUUID(),expectedRecipeRevision:0,plan,destination:{kind:'new_area',namespace:'nyc-oti-5zhs-2jue',name:`NYC OTI building footprint ${nativeKey}`}};
@@ -106,7 +106,7 @@ async function run(){
     for(const item of replay){assert.equal(item.caseId,caseId);assert.equal(item.requiresRefresh,true);assert(Buffer.byteLength(JSON.stringify(item))<1024);
       for(const field of ['filename','geometry','body','sourceSha256','operatorSubject','provenance','snapshotId','manifestId'])assert(!JSON.stringify(item).includes('"'+field+'"'));}
     await reading.close();await delay(100);reading=await stream(caseId,'',{'Last-Event-ID':cursor});await reading.next();await reading.close();
-    receipt.checks.push('decimal Last-Event-ID reconnect after offline execution; explicit cursor=0 returns four ordered unique logical mutations; no source bytes/provenance/registry snapshots; heartbeat has no ID; cross-case, malformed, conflicting and ahead cursors reject');
+    receipt.checks.push('decimal Last-Event-ID reconnect with a fixed first cursor and after offline execution; explicit cursor=0 returns four ordered unique logical mutations; no source bytes/provenance/registry snapshots; heartbeat has no ID; cross-case, malformed, backwards-conflicting and ahead cursors reject');
     phase='disconnect-cleanup';await delay(650);
     receipt.counts=(await observer.query(`SELECT (SELECT count(*)::int FROM usp_outbox WHERE stream_id=$1) events,
       (SELECT count(*)::int FROM usp_outbox_streams WHERE stream_id=$1) streams,

@@ -35,19 +35,22 @@ export function ingestionCursor(binding: IngestionBinding, sequence: bigint): st
   if (sequence < 0n || sequence > maxSequence) throw new Error('Outbox sequence is outside bigint range.');
   return (binding.tag * radix + sequence).toString();
 }
-/** Only an explicit first query cursor=0 bootstraps the retained stream. */
+/** The query cursor is the replay floor; EventSource reconnects may advance it with Last-Event-ID. */
 export function parseIngestionCursor(binding: IngestionBinding, queryCursor?: string, lastEventId?: string): bigint | undefined {
   for (const value of [queryCursor, lastEventId]) if (value !== undefined && !CaseIngestionCursorSchema.safeParse(value).success)
     throw new AppError(422, 'INGESTION_CURSOR', 'Use a canonical decimal case-ingestion cursor.');
-  if (queryCursor !== undefined && lastEventId !== undefined && queryCursor !== lastEventId)
-    throw new AppError(409, 'INGESTION_CURSOR_CONFLICT', 'The first cursor and Last-Event-ID must agree.');
-  const value = lastEventId ?? queryCursor;
-  if (value === undefined) return undefined;
-  if (value === '0' && lastEventId === undefined) return 0n;
-  const encoded = BigInt(value), sequence = encoded % radix;
-  if (encoded / radix !== binding.tag || sequence > maxSequence)
-    throw new AppError(409, 'INGESTION_CURSOR_SCOPE', 'This cursor does not belong to the authorized case and local access context.');
-  return sequence;
+  const decode = (value: string, bootstrap: boolean) => {
+    if (bootstrap && value === '0') return 0n;
+    const encoded = BigInt(value), sequence = encoded % radix;
+    if (encoded / radix !== binding.tag || sequence > maxSequence)
+      throw new AppError(409, 'INGESTION_CURSOR_SCOPE', 'This cursor does not belong to the authorized case and local access context.');
+    return sequence;
+  };
+  const first = queryCursor === undefined ? undefined : decode(queryCursor,true);
+  const last = lastEventId === undefined ? undefined : decode(lastEventId,false);
+  if (first !== undefined && last !== undefined && last < first)
+    throw new AppError(409, 'INGESTION_CURSOR_CONFLICT', 'Last-Event-ID cannot precede the first query cursor.');
+  return last ?? first;
 }
 
 export async function appendCaseIngestionTx(client: PoolClient, caseId: string, change: CaseIngestionChange, subject?: string) {

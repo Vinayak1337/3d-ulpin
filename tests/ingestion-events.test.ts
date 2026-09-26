@@ -15,13 +15,15 @@ test('case/access-bound decimal cursors reject cross-case, malformed and conflic
     const binding=ingestionBinding(randomUUID()),other=ingestionBinding(randomUUID()),maximum=9223372036854775807n;
     assert.equal(parseIngestionCursor(binding),undefined);
     assert.equal(parseIngestionCursor(binding,'0'),0n);
+    assert.equal(parseIngestionCursor(binding,'0',ingestionCursor(binding,2n)),2n);
+    assert.equal(parseIngestionCursor(binding,ingestionCursor(binding,1n),ingestionCursor(binding,2n)),2n);
     assert.equal(parseIngestionCursor(binding,ingestionCursor(binding,maximum)),maximum);
     assert.equal(ingestionCursor(ingestionBinding(binding.caseId.toUpperCase()),1n),ingestionCursor(binding,1n));
     for(const input of ['', '01', '-1', '1.1', '1e2','9'.repeat(98)])
       assert.throws(()=>parseIngestionCursor(binding,input),(e:unknown)=>e instanceof AppError&&e.status===422);
     assert.throws(()=>parseIngestionCursor(binding,ingestionCursor(other,1n)),(e:unknown)=>e instanceof AppError&&e.code==='INGESTION_CURSOR_SCOPE');
     assert.throws(()=>parseIngestionCursor(binding,undefined,'0'));
-    assert.throws(()=>parseIngestionCursor(binding,ingestionCursor(binding,1n),ingestionCursor(binding,2n)),(e:unknown)=>e instanceof AppError&&e.code==='INGESTION_CURSOR_CONFLICT');
+    assert.throws(()=>parseIngestionCursor(binding,ingestionCursor(binding,2n),ingestionCursor(binding,1n)),(e:unknown)=>e instanceof AppError&&e.code==='INGESTION_CURSOR_CONFLICT');
     process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='changed-ingestion-protocol-control';
     assert.throws(()=>assertIngestionBinding(binding),(e:unknown)=>e instanceof AppError&&e.status===403);
   } finally { if(previous===undefined)delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=previous; }
