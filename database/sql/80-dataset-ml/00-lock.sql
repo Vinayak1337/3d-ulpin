@@ -1,0 +1,1 @@
+SELECT pg_advisory_xact_lock(hashtextextended('dataset-ml-schema-v1',0))
