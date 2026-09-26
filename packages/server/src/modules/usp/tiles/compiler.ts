@@ -7,9 +7,10 @@ import {sha256} from '../../../infrastructure/storage';
 import {sql} from '../../../infrastructure/sql-loader';
 import {AppError} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
+import {mvtBoundsTx} from './bounds';
 
 export function mvtCodeSha(){
-  const paths=['packages/contracts/src/usp/private-mvt.ts','packages/server/src/modules/usp/tiles/grid.ts',
+  const paths=['packages/contracts/src/usp/private-mvt.ts','packages/server/src/modules/usp/tiles/grid.ts','packages/server/src/modules/usp/tiles/bounds.ts',
     'packages/server/src/modules/usp/tiles/compiler.ts','packages/server/src/modules/usp/tiles/service.ts',
     'packages/server/src/modules/usp/tiles/publication.ts','packages/server/src/modules/usp/tiles/storage.ts','database/sql/95-ingestion/private-mvt-cell.sql',
     'database/sql/95-ingestion/private-mvt-schema.sql','packages/server/src/infrastructure/storage.ts','packages/server/src/modules/usp/jobs.ts',
@@ -24,8 +25,9 @@ export async function mvtCompilerPinsTx(client:PoolClient,transform:unknown){
   return PrivateMvtCompilerSchema.parse({...base,sha256:fingerprint(base)});
 }
 /** Source authority/fence is checked by the caller before this trusted, role-limited query. */
-export async function compilePrivateMvtCellTx(client:PoolClient,input:PrivateMvtInput,cell:PrivateMvtCell){
-  await client.query("SET LOCAL statement_timeout='8000ms'; SET LOCAL lock_timeout='2000ms'; SET LOCAL search_path=pg_catalog,public");
+export async function compilePrivateMvtCellTx(client:PoolClient,input:PrivateMvtInput,cell:PrivateMvtCell,deadline?:number){
+  await mvtBoundsTx(client,deadline);
+  await client.query('SET LOCAL search_path=pg_catalog,public');
   await client.query('SET LOCAL ROLE ulpin_private_mvt_compiler');
   // A failed statement aborts the transaction; rollback resets LOCAL role and
   // preserves the original SQL error instead of masking it with RESET failure.

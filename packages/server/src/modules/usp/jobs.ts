@@ -51,9 +51,10 @@ export async function assertUspJobAttemptTx(client:PoolClient,attempt:Attempt){
     conflict('This worker completion expired, changed inputs or was fenced.');
 }
 
-export async function claimUspJobAttempt(jobId: string, owner: string): Promise<Attempt> {
+export async function claimUspJobAttempt(jobId: string, owner: string,beforeLocks?:(client:PoolClient)=>Promise<void>): Promise<Attempt> {
   if (!owner || owner.length > 128) throw new AppError(400, 'USP_JOB_OWNER', 'A bounded worker identity is required.');
   return transaction(async client => {
+    if(beforeLocks)await beforeLocks(client);
     const job = (await client.query('SELECT * FROM jobs WHERE id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
     const meta = (await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
     if (['cancelled', 'paused', 'succeeded'].includes(meta.logical_state)) conflict('The logical job cannot be claimed.');
@@ -72,8 +73,9 @@ export async function claimUspJobAttempt(jobId: string, owner: string): Promise<
   });
 }
 
-export async function heartbeatUspJobAttempt(attempt: Attempt) {
+export async function heartbeatUspJobAttempt(attempt: Attempt,beforeLocks?:(client:PoolClient)=>Promise<void>) {
   return transaction(async client => {
+    if(beforeLocks)await beforeLocks(client);
     const row = (await client.query(`UPDATE usp_job_attempts SET lease_until=now()+interval '180 seconds'
       WHERE job_id=$1 AND number=$2 AND fence=$3 AND owner=$4 AND input_sha256=$5
       AND state='active' AND lease_until>now() RETURNING lease_until`,
@@ -86,7 +88,7 @@ export async function heartbeatUspJobAttempt(attempt: Attempt) {
 /** Completion is accepted only through a registered operation's result validator. */
 export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
   validateResult: (client: PoolClient, job: Record<string, unknown>, result: AssetRef) => Promise<void>,
-  beforeLocks?: (client:PoolClient)=>Promise<void>) {
+  beforeLocks?: (client:PoolClient)=>Promise<void>,beforeCommit?:()=>void) {
   const asset = UspAssetRefSchema.parse(result);
   return transaction(async client => {
     if(beforeLocks)await beforeLocks(client);
@@ -108,6 +110,7 @@ export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
     await client.query(`UPDATE jobs SET status='succeeded',completed_at=now(),error=NULL WHERE id=$1`, [attempt.jobId]);
     await appendUspOutboxTx(client, `job:${attempt.jobId}`, { type: 'job.succeeded', jobId: attempt.jobId,
       fence: attempt.fence, result: asset, inputManifestId: meta.input_manifest_id });
+    if(beforeCommit)beforeCommit();
     return asset;
   });
 }
