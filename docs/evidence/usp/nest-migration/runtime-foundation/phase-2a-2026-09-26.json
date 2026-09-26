@@ -1,0 +1,316 @@
+{
+  "schemaVersion": "nest-runtime-foundation/1",
+  "recordedAt": "2026-09-26T01:59:33Z",
+  "assignment": "NEST-02 / NEST-20 phase 2A",
+  "acceptedBase": "055534deb93eef0b85e8251b88cc40bc9a691fec",
+  "enablementCommit": "c392d1027784dc319e451137ab3b41b97b2b7210",
+  "servedCodeCommit": "40d70cbf20c7d32d0263839bf157d1b14e0bf1ed",
+  "checkout": "/Users/vinayak/.codex/worktrees/0365/3D Ulpin",
+  "model": {
+    "requested": "gpt-6-sol",
+    "requestedEffort": "max",
+    "requestedSpeed": "Fast",
+    "configuredTier": "priority per operating guide",
+    "observedModelEffortTier": "unexposed"
+  },
+  "result": {
+    "foundationStartup": "passed",
+    "canonicalMigration": "passed",
+    "sameDatabaseRepeatMigration": "passed",
+    "processorHealthRecovery": "passed",
+    "ownedShutdown": "passed",
+    "sourceToJobToRecord": "pending",
+    "sourceSmokeEnabled": false
+  },
+  "preflight": {
+    "cleanTrackedCheckout": true,
+    "rootEnvAbsent": true,
+    "apiPort": 3188,
+    "port3188HadNoListener": true,
+    "dockerContext": "colima-ulpin",
+    "dockerEngine": "29.5.2",
+    "composeCli": "docker-compose 5.5.1"
+  },
+  "failedAttempt": {
+    "nonce": "c31323ea907abb8d",
+    "codeCommit": "c392d1027784dc319e451137ab3b41b97b2b7210",
+    "startExit": 1,
+    "reason": "Docker CLI has no compose subcommand; startup and cleanup rejected --project-directory before any service was created.",
+    "labelledContainersAfter": 0,
+    "labelledVolumesAfter": 0,
+    "port3188ListenerAfter": false,
+    "privateDirectoryPreserved": true
+  },
+  "scope": {
+    "nonce": "17d34069655413cd",
+    "project": "ulpin-usptest-17d34069655413cd",
+    "database": "ulpin_usptest_17d34069655413cd",
+    "bucket": "ulpin-usptest-17d34069655413cd",
+    "privateDirectory": "/Users/vinayak/.codex/worktrees/0365/3D Ulpin/.runtime/run01/17d34069655413cd",
+    "apiUrl": "http://127.0.0.1:3188/",
+    "repoData": "false",
+    "apiDataModeLabel": "linked",
+    "dataModeExplanation": "REPO_DATA=false selects explicit configured endpoints; every endpoint is the guarded fresh nonce-owned local service. No linked/root .env was loaded.",
+    "snapshotRestore": false,
+    "seededOperationalRows": false,
+    "providerCalls": 0,
+    "modelFiles": []
+  },
+  "resources": {
+    "processGroups": {
+      "api": {
+        "label": "api",
+        "nonce": "17d34069655413cd",
+        "pid": 31529,
+        "pgid": 31529,
+        "started": "Sat Sep 26 07:26:27 2026"
+      },
+      "dispatcher": {
+        "label": "dispatcher",
+        "nonce": "17d34069655413cd",
+        "pid": 31412,
+        "pgid": 31412,
+        "started": "Sat Sep 26 07:26:27 2026"
+      }
+    },
+    "listener": {
+      "pid": 31942,
+      "binding": "127.0.0.1:3188",
+      "apiPgid": 31529
+    },
+    "membersBeforeStop": {
+      "api": [
+        31529,
+        31553,
+        31932,
+        31942,
+        31943
+      ],
+      "dispatcher": [
+        31412,
+        31436,
+        31901,
+        31935,
+        31941
+      ]
+    },
+    "containers": [
+      {
+        "service": "postgres",
+        "id": "e5f1ae44748f13847cab9fdee086afdf9d37f42d3954122d75f1aec4b122194b",
+        "image": "sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6"
+      },
+      {
+        "service": "minio",
+        "id": "53d26747a98288efb69610d4e2991e51334ab4ab53bf074f30fac3ca4c651516",
+        "image": "sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e"
+      },
+      {
+        "service": "redis",
+        "id": "b744dda6410550791d79755de9bf4b0fc0af18acc244d8ec2622fe69aea95524",
+        "image": "sha256:02419de7eddf55aa5bcf49efb74e88fa8d931b4d77c07eff8a6b2144472b6952"
+      },
+      {
+        "service": "geo",
+        "id": "bcde1a425b1f6543552dce2df78dc7b7b73d0e622cf66c9f9bb424e611a592fc",
+        "image": "sha256:91683e358f3fa8d8a132b8d02548d588343fbdb38c902e473512ce9c84ecefd2"
+      },
+      {
+        "service": "worker",
+        "id": "ece2dfd442f9662eb948534d07ee9aeae4e7c73f1c360c736bbef4796974980f",
+        "image": "sha256:91683e358f3fa8d8a132b8d02548d588343fbdb38c902e473512ce9c84ecefd2"
+      }
+    ],
+    "bootstrapMount": "/Users/vinayak/.codex/worktrees/0365/3D Ulpin/database/sql/00-bootstrap/postgis.sql -> /docker-entrypoint-initdb.d/001-extensions.sql",
+    "preservedVolumes": [
+      "ulpin-usptest-17d34069655413cd_minio-data",
+      "ulpin-usptest-17d34069655413cd_postgres-data",
+      "ulpin-usptest-17d34069655413cd_redis-data"
+    ]
+  },
+  "sql": {
+    "selectedStateBeforeAndAfterEqual": true,
+    "selectedState": {
+      "postgis": "3.5 USE_GEOS=1 USE_PROJ=1 USE_STATS=1",
+      "database": "ulpin_usptest_17d34069655413cd",
+      "postgres": "17.5 (Debian 17.5-1.pgdg110+1)",
+      "uspMarkers": [
+        "usp_f1_min_001",
+        "usp_geometry_separation_001",
+        "usp_identity_001"
+      ],
+      "analyticView": "usp_analytic_geometry",
+      "displayTable": "usp_display.derivatives",
+      "publicTables": 64,
+      "displayTables": 1,
+      "operationalRows": {
+        "jobs": 0,
+        "cases": 0,
+        "sources": 0,
+        "registryRecords": 0,
+        "physicalFeatures": 0
+      },
+      "readerRoleCount": 5,
+      "unsafeReaderRoles": 0,
+      "notValidGeometryConstraints": 6
+    },
+    "metadataQuery": "SELECT jsonb_build_object(\n'database',current_database(),'postgres',current_setting('server_version'),'postgis',PostGIS_Version(),\n'publicTables',(SELECT count(*) FROM pg_tables WHERE schemaname='public'),'displayTables',(SELECT count(*) FROM pg_tables WHERE schemaname='usp_display'),\n'uspMarkers',(SELECT jsonb_agg(name ORDER BY name) FROM usp_migration_ledger),\n'notValidGeometryConstraints',(SELECT count(*) FROM pg_constraint WHERE conname IN ('usp_registry_no_illustrative','usp_registry_history_no_illustrative','usp_features_no_illustrative','usp_feature_history_no_illustrative','usp_units_no_illustrative','usp_unit_history_no_illustrative') AND NOT convalidated),\n'unsafeReaderRoles',(SELECT count(*) FROM pg_roles WHERE rolname IN ('ulpin_usp_find','ulpin_usp_ready','ulpin_usp_pack','ulpin_usp_export','ulpin_usp_display_compiler') AND (rolsuper OR rolcreatedb OR rolcreaterole OR rolcanlogin OR rolreplication OR rolbypassrls OR rolinherit)),\n'readerRoleCount',(SELECT count(*) FROM pg_roles WHERE rolname IN ('ulpin_usp_find','ulpin_usp_ready','ulpin_usp_pack','ulpin_usp_export','ulpin_usp_display_compiler')),\n'analyticView',to_regclass('public.usp_analytic_geometry')::text,'displayTable',to_regclass('usp_display.derivatives')::text,\n'operationalRows',jsonb_build_object('cases',(SELECT count(*) FROM cases),'sources',(SELECT count(*) FROM sources),'jobs',(SELECT count(*) FROM jobs),'registryRecords',(SELECT count(*) FROM registry_records),'physicalFeatures',(SELECT count(*) FROM physical_features)));",
+    "metadataCommand": "docker-compose --project-directory <checkout> --env-file <privateDirectory>/compose.env -p ulpin-usptest-17d34069655413cd -f <checkout>/compose.yaml -f <privateDirectory>/override.json exec -T postgres psql -U ulpin_usptest -d ulpin_usptest_17d34069655413cd -v ON_ERROR_STOP=1 -At (query on stdin)"
+  },
+  "health": {
+    "httpStatus": 200,
+    "headers": {
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff"
+    },
+    "services": {
+      "database": true,
+      "storage": true,
+      "processor": true,
+      "redis": true,
+      "worker": true
+    },
+    "recovery": {
+      "before": {
+        "database": true,
+        "storage": true,
+        "processor": true,
+        "redis": true,
+        "worker": true
+      },
+      "degraded": {
+        "database": true,
+        "storage": true,
+        "processor": false,
+        "redis": false,
+        "worker": false
+      },
+      "after": {
+        "database": true,
+        "storage": true,
+        "processor": true,
+        "redis": true,
+        "worker": true
+      }
+    }
+  },
+  "cleanup": {
+    "stopExit": 0,
+    "profile": "app",
+    "labelledContainersAfter": 0,
+    "apiGroupMembersAfter": [],
+    "dispatcherGroupMembersAfter": [],
+    "ownedLeaderAliveAfter": false,
+    "listenerCountAfter": 0,
+    "volumesPreserved": true,
+    "apiAndDispatcherLogsContainGeneratedSecrets": false,
+    "checkedPortsAfter": [
+      3188,
+      25432,
+      29000,
+      29001,
+      26379,
+      28000
+    ]
+  },
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile --silent",
+      "exit": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/api build (includes typecheck)",
+      "exit": 0
+    },
+    {
+      "command": "node --check scripts/usp/real-source-runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node --check scripts/usp/real-source-smoke.mjs",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs prepare",
+      "exit": 0,
+      "nonce": "17d34069655413cd"
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs start <privateDirectory>",
+      "exit": 0
+    },
+    {
+      "command": "lsof -nP -iTCP:3188 -sTCP:LISTEN",
+      "exit": 0,
+      "listenerPid": 31942
+    },
+    {
+      "command": "curl --silent --show-error --fail --include http://127.0.0.1:3188/api/v1/health",
+      "exit": 0
+    },
+    {
+      "command": "owned SQL metadata query before repeat",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs migrate-repeat <privateDirectory>",
+      "exit": 0
+    },
+    {
+      "command": "owned SQL metadata query after repeat and deep-equality comparison",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs recovery <privateDirectory>",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs stop <privateDirectory>",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs status <privateDirectory>",
+      "exit": 0
+    },
+    {
+      "command": "docker ps -a --filter label=com.docker.compose.project=ulpin-usptest-17d34069655413cd --format '{{.ID}} {{.Names}} {{.Status}}'",
+      "exit": 0,
+      "rows": 0
+    },
+    {
+      "command": "docker volume ls --filter label=com.docker.compose.project=ulpin-usptest-17d34069655413cd --format {{.Name}}",
+      "exit": 0,
+      "rows": 3
+    },
+    {
+      "command": "lsof -nP -iTCP:3188 -iTCP:25432 -iTCP:29000 -iTCP:29001 -iTCP:26379 -iTCP:28000 -sTCP:LISTEN",
+      "exit": 1,
+      "meaning": "no matching listener"
+    },
+    {
+      "command": "Node receipt JSON/hash/credential scan and closed source-smoke gate validation",
+      "exit": 0
+    }
+  ],
+  "sha256": {
+    "scripts/usp/real-source-runtime.mjs": "d622a191c0a35b3b72f87c1d3e3bb40db5c1d6c880478faa27e772c72569c9e5",
+    "scripts/usp/local-isolation.mjs": "2148a140bbe4fad6968fbd64fa718610dba609e4099ab6342938a4eb5e4e1c70",
+    "compose.yaml": "2d2e5aeea98659d1efedf14d851f9b020345abe2f9b62773bc8e981d663cb472",
+    "database/manifest.json": "02a06ab15a1ff932e667b09539edc40f3f9ec2c47dfbced4916619712ca7f305",
+    "private/sql-before.json": "c15cfd778e3e40ffbd2f0d69e10bd3e29a07d763793315211392122da08352d8",
+    "private/sql-after.json": "c15cfd778e3e40ffbd2f0d69e10bd3e29a07d763793315211392122da08352d8",
+    "private/recovery.json": "af5d1e7fd9d2fff5241617a19ac44dc603e52dc344664970eb8ea2c0d72726b6",
+    "private/api.log": "5f4fc14e6d389cb57b6b3cd60870f80983c79095c95c43dbf3e1f0ea4a8cae35",
+    "private/dispatcher.log": "b32337d5ea7831e1b9c70295b85012c3390a2a271aea53484226ce1d5f1c6cd5"
+  },
+  "limits": [
+    "The source smoke gate remains false; no source endpoints, imports, records, UI or providers were exercised.",
+    "Dispatcher and worker readiness were observed; actual job processing is not qualified.",
+    "Repeatability is one rerun on the same fresh database with selected schema/ledger/role metadata equality, not a populated legacy migration or full schema equivalence proof.",
+    "No source accuracy, learning, performance, browser, deployment or complete GF-BACKEND gate is inferred."
+  ]
+}
