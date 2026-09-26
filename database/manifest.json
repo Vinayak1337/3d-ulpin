@@ -1448,6 +1448,56 @@
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateIngestionEventsTx"
       }
+    },
+    {
+      "id": "ingestion.projected.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/projected-vector.sql",
+        "function": "migrateProjectedVectorTx",
+        "kind": "authored-sql",
+        "task": "INGEST-07",
+        "acceptedBase": "78f44217312ae6cb545e04d844e363ac1c230ab6"
+      },
+      "file": "sql/95-ingestion/projected-vector.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 29,
+      "sha256": "f67ef2ea68524a671477a24daf29bfcd68d2e2a09cc655f6714d866357d2b06a",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "ff63315e6517f52c7e327af179f9cd0443f6a6f1a0a33e9012110d17b8d00e5a"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "da0afd51d2d54362b93f2ec6a486ee258a61aeab276c56c84f8d23bf55ed0f66"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "3d1019702b3c4abbfb3d50762997fe18ca9153cba0742029d613fa886a8a1127"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "5d6165a994db46e2c364cb71371a5efcdf7b11740020e7d8554579f2067a3c74"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "586084098fcc87e668d9d0bbb3370caa1513d35e92432ca896b44a10f1709298"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "74aedf5b901c4fddb8ff7a501664a8dd7b817b1bd46a613b2344496a8f5a6b7a"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateProjectedVectorTx"
+      }
     }
   ],
   "plannedButAbsent": []

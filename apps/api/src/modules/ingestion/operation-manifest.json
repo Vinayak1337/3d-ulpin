@@ -194,6 +194,58 @@
       "responseStatus": 200,
       "transportProfile": "private-sse",
       "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector",
+      "batch": "INGEST-07",
+      "disposition": "added",
+      "nativeController": "projected-vector",
+      "requestSchema": "ProjectedVectorRequestSchema",
+      "responseSchema": "ProjectedVectorStatusSchema",
+      "responseStatus": 202,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector",
+      "batch": "INGEST-07",
+      "disposition": "added",
+      "nativeController": "projected-vector",
+      "requestSchema": null,
+      "responseSchema": "ProjectedVectorStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/units",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_units",
+      "batch": "INGEST-07",
+      "disposition": "added",
+      "nativeController": "projected-vector",
+      "requestSchema": null,
+      "responseSchema": "AdministrativeObservationPageSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/units/{unitId}/geometry",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_units_unitId_geometry",
+      "batch": "INGEST-07",
+      "disposition": "added",
+      "nativeController": "projected-vector",
+      "requestSchema": null,
+      "responseSchema": "binary",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
     }
   ]
 }
