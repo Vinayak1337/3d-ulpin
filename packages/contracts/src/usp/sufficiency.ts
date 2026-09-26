@@ -22,12 +22,19 @@ export const SufficiencyQuestionSchema=z.strictObject({id,revision:z.number().in
   missing:z.array(CoreIdSchema).min(1).max(64),unlocks:z.array(CoreIdSchema).min(1).max(5),
   reason:coreText(512),choices:z.tuple([z.literal('provide_existing_evidence'),z.literal('not_sure')]),
   proposal:SufficiencyReferenceSchema.nullable(),createdAt:z.iso.datetime()});
+export const SufficiencyProcessingSchema=z.strictObject({
+  state:z.enum(['pending','running','failed','stale','needs_ocr','unsupported','tool_error','extracted','canonical_conversion_required']),
+  jobId:id.nullable(),resultSha256:hash.nullable(),
+  nativeStatus:z.enum(['extracted','needs_ocr','unsupported','encrypted','tool_error']).nullable(),
+  modelStatus:z.enum(['not_requested','disabled','unavailable','blocked','needs_input','proposed']).nullable(),
+});
 export const IngestionSufficiencyDecisionSchema=z.strictObject({version:z.literal(SUFFICIENCY_VERSION),id,pins:SufficiencyPinsSchema,
   recordPins:z.array(SufficiencyRecordPinSchema).max(192),
+  processing:SufficiencyProcessingSchema.nullable(),
   ...DataSufficiencyRequirementsShape,outcome:z.enum(['complete','fill_display','ask','park','reject_for_3d']),
   availability:z.enum(['available','needs_input','unavailable','stale']),evidence:z.array(SufficiencyEvidenceSchema).min(1).max(64),
   unlocks:z.array(CoreIdSchema).max(5),questionId:id.nullable(),
-  nextAction:z.enum(['none','neutral_presentation','review_mapping','review_evidence','provide_evidence','process_source','park','inspect_original']),
+  nextAction:z.enum(['none','neutral_presentation','review_mapping','review_evidence','provide_evidence','process_source','park','inspect_original','wait_for_extraction','retry_extraction','run_ocr','configure_provider','review_conversion']),
   reason:coreText(512),createdAt:z.iso.datetime()}).superRefine((value,ctx)=>{
     if(!exactSufficiencyRequirements(value) || (value.outcome==='complete' && value.missing.length!==0) ||
       (value.outcome==='ask' && !value.questionId) || value.evidence.length!==value.requirements.length ||

@@ -10,6 +10,7 @@ import {fingerprint} from '../../cases/domain';
 import {appendCaseIngestionTx,assertIngestionBinding} from './events';
 import {sufficiencyCaseTx,sufficiencySourceTx,type SufficiencyContext} from './sufficiency-context';
 import {assessSufficiency} from './sufficiency-policy';
+import {assertPackageDocumentAuthority} from '../../areas/package-authority';
 
 const uuid=z.uuid(),kind='ingestion-sufficiency';
 const same=(a:SufficiencyPins,b:SufficiencyPins)=>fingerprint(a)===fingerprint(b);
@@ -55,20 +56,20 @@ async function referenceExists(client:PoolClient,ctx:SufficiencyContext,ref:Suff
     return;
   }
   if(ref.kind==='source_part'){
-    const part=(await client.query(`SELECT 1 FROM sources WHERE id=$1 AND case_id=$2 AND
+    const part=source.document?source.document.parts.some(part=>part.id===ref.id):(await client.query(`SELECT 1 FROM sources WHERE id=$1 AND case_id=$2 AND
       jsonb_path_exists(inspection,'$.referenceParts[*] ? (@.id == $part)',jsonb_build_object('part',$3::text))`,[ref.sourceId,ctx.pins.caseId,ref.id])).rowCount;
     if(ref.packageId || ref.revision!==source.row.revision || !part)
       throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Choose an existing source part from the current retained revision.');
     return;
   }
   if(!ref.packageId)throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Choose an existing package evidence reference.');
-  const pkg=(await client.query(`SELECT revision,body->'review' review,
-    body->'sourceRevisionIds' source_ids,
-    (SELECT value FROM jsonb_array_elements(body->'factCandidates') WHERE value->>'id'=$3 LIMIT 1) candidate
-    FROM import_packages WHERE case_id=$1 AND id=$2`,[ctx.pins.caseId,ref.packageId,ref.id])).rows[0];
-  if(!pkg || pkg.revision!==ref.revision || !pkg.source_ids?.includes(ref.sourceId))conflict('The referenced package evidence is not current in this case.');
+  const pkg=(await client.query('SELECT body FROM import_packages WHERE case_id=$1 AND id=$2',[ctx.pins.caseId,ref.packageId])).rows[0]?.body;
+  if(!pkg)conflict('The referenced package evidence is not current in this case.');
+  await assertPackageDocumentAuthority(client,pkg);
+  const candidate=pkg.factCandidates.find((fact:any)=>fact.id===ref.id);
+  if(pkg.revision!==ref.revision || !pkg.sourceRevisionIds.includes(ref.sourceId))conflict('The referenced package evidence is not current in this case.');
   if(ref.kind==='package_review' ? ref.id!==ref.packageId || !pkg.review || pkg.review.packageRevision!==pkg.revision :
-    !pkg.candidate || !pkg.candidate.evidence?.some((e:{sourceRevisionId:string})=>e.sourceRevisionId===ref.sourceId))
+    !candidate || !candidate.evidence?.some((e:{sourceRevisionId:string})=>e.sourceRevisionId===ref.sourceId))
     throw new AppError(422,'SUFFICIENCY_EVIDENCE_REFERENCE','Choose an existing source-backed candidate or current officer review.');
 }
 export class IngestionSufficiencyService{
@@ -117,7 +118,7 @@ export class IngestionSufficiencyService{
         const reason=question?.state==='parked'?'Not sure was recorded for this evidence class. The affected task stays parked until source evidence or its normal approval changes.':
           question?.state==='answered'?'An existing evidence reference is proposed. Officer review has not satisfied the missing task requirements.':
           assessment.gapClass && !question?'The class question is unavailable or the case question budget is occupied. Retain the missing evidence and park this task.':assessment.reason;
-        decisions.push(IngestionSufficiencyDecisionSchema.parse({version:SUFFICIENCY_VERSION,id:randomUUID(),pins:ctx.pins,recordPins:ctx.recordPins,task,
+        decisions.push(IngestionSufficiencyDecisionSchema.parse({version:SUFFICIENCY_VERSION,id:randomUUID(),pins:ctx.pins,recordPins:ctx.recordPins,processing:ctx.document?.processing??null,task,
           requirements:assessment.evidence.map(e=>e.requirement),missing,outcome,availability:assessment.availability,evidence:assessment.evidence,
           unlocks:missing.length?[task]:[],questionId:question?.id??null,nextAction:question?.state==='answered'?'review_evidence':
             question?.state==='parked'?'park':assessment.nextAction,reason,createdAt:new Date().toISOString()}));
@@ -186,6 +187,7 @@ export class IngestionSufficiencyService{
         }
         const question=stored.questionId?currentQuestions.get(stored.questionId):undefined;
         const stale=!ctx.latest || !same(ctx.pins,stored.pins);
+        if(!stale && question?.proposal)await referenceExists(client,ctx,question.proposal);
         const decision=stale?{...stored,availability:'stale',outcome:'park',nextAction:'park',questionId:null,
           reason:'The source, case, approval, geometry, policy or access evidence changed. Reevaluate before using this decision.'}:
           question?.state==='parked'?{...stored,outcome:'park',nextAction:'park',reason:'Not sure was recorded. This task remains parked on unchanged evidence.'}:
