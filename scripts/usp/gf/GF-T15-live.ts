@@ -8,14 +8,14 @@ import { resolve } from 'node:path';
 import { assertUspIsolation } from '../local-isolation.mjs';
 import { ProjectIdentityReviewSchema, ProjectLocationSchema, UspCommitReceiptSchema,
   projectCodeForPayload } from '../../../packages/contracts/src/usp/index';
-import { fingerprint } from '../../../apps/web/lib/server/domain';
-import { localRequestContext } from '../../../apps/web/lib/server/usp/principal';
-import { captureRegistrySnapshot } from '../../../apps/web/lib/server/usp/snapshots';
+import { fingerprint } from '@ulpin/server/modules/cases/domain';
+import { localRequestContext } from '@ulpin/server/modules/usp/principal';
+import { captureRegistrySnapshot } from '@ulpin/server/modules/usp/snapshots';
 import { assignProjectCode, mutateProjectIdentity, prepareProjectIdentityReview,
-  resolveProjectIdentity } from '../../../apps/web/lib/server/usp/project-identity';
+  resolveProjectIdentity } from '@ulpin/server/modules/usp/project-identity';
 
 assertUspIsolation(process.env);
-const require = createRequire(resolve('apps/web/package.json'));
+const require = createRequire(resolve('packages/server/package.json'));
 const { Pool } = require('pg');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 4, connectionTimeoutMillis: 5000 });

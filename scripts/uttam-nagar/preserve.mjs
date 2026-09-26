@@ -4,7 +4,7 @@ import {readFile,writeFile} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {repositoryEnvironment,projectRoot} from '../repo-env.mjs';
-const root=projectRoot(),require=createRequire(resolve(root,'apps/web/package.json'));
+const root=projectRoot(),require=createRequire(resolve(root,'packages/server/package.json'));
 const {Pool}=require('pg'),env=repositoryEnvironment(false,root);
 const pool=new Pool({connectionString:env.DATABASE_URL});
 const file=resolve(root,'.runtime/uttam-nagar-before-rows.json');

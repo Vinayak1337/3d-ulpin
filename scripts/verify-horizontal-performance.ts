@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
-import { areaGeo } from "../apps/web/lib/server/areas";
-import { pool } from "../apps/web/lib/server/db";
+import { areaGeo } from "@ulpin/server/modules/areas/areas";
+import { pool } from "@ulpin/server/infrastructure/db";
 
 // Authored software fixture only. It never enters the user's area or storage.
 const source = "synthetic-horizontal-performance-r1";

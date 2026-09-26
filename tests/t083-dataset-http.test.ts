@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {localRequest} from '../apps/web/lib/server/spatial-core-http';
-import {workItemAction} from '../apps/web/lib/work-queue';
+import {localRequest} from '@ulpin/server/modules/spatial/spatial-core-http';
+import {workItemAction} from '@ulpin/server/shared/work-queue';
 const base='http://127.0.0.1:3000/api/v1/spatial-datasets';
 const run=process.env.DATASET_HTTP_TESTS==='true';
 const hash=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');

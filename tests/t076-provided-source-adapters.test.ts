@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProvidedDatasetFiles} from '../apps/web/features/spatial/reference-import/source-adapters';
-import {adaptReferenceScene} from '../apps/web/features/spatial/reference-import/adapter';
+import {normalizeProvidedDatasetFiles} from '@ulpin/server/modules/datasets/reference-import/source-adapters';
+import {adaptReferenceScene} from '@ulpin/server/modules/datasets/reference-import/adapter';
 const encode=(value:unknown)=>new TextEncoder().encode(JSON.stringify(value));
 const frame='LOCAL-SHIV-VIHAR-DEMO',datum='local assumed mean sea level';
 const open=[[1,1],[9,1],[9,8],[1,8]],closed=[...open,open[0]];

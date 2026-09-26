@@ -1,4 +1,4 @@
-import { pool, query } from "../apps/web/lib/server/db";
+import { pool, query } from "@ulpin/server/infrastructure/db";
 
 // Explicit IDs only: never infer that a similarly named user workspace is a test.
 const args = process.argv.slice(2);

@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { AreaReference, CoordinateFrame, ImportPackage } from "@ulpin/contracts";
-import { documentFormat, documentProfileFormats } from "../apps/web/lib/document-formats";
-import { sourceWorkspaceSchema } from "../apps/web/lib/server/source-workspaces";
-import { assertSourceWorkspaceReference } from "../apps/web/lib/server/source-workspace-policy";
-import { fingerprint } from "../apps/web/lib/server/domain";
+import { documentFormat, documentProfileFormats } from "@ulpin/server/shared/document-formats";
+import { sourceWorkspaceSchema } from "@ulpin/server/modules/cases/source-workspaces";
+import { assertSourceWorkspaceReference } from "@ulpin/server/modules/cases/source-workspace-policy";
+import { fingerprint } from "@ulpin/server/modules/cases/domain";
 const id = "10000000-0000-4000-8000-000000000000";
 const frame: CoordinateFrame = {id:"retained-frame",horizontalUnit:"m",verticalUnit:"m",benchmark:"declared-benchmark"};
 const reference = {analysisCrs:"EPSG:32643",origin:[500000,2800000]} as AreaReference;
@@ -36,13 +36,13 @@ test("source-only extraction pins complete named frame and area origin independe
 });
 
 test("unassigned receipt does not ask for invented spatial reference or property",async()=>{
-  const {sourceCaseSchema}=await import("../apps/web/lib/server/source-cases");
+  const {sourceCaseSchema}=await import("@ulpin/server/modules/cases/source-cases");
   assert(sourceCaseSchema.safeParse({requestKey:id,name:"Plans before placement"}).success);
   assert(!sourceCaseSchema.safeParse({requestKey:id,name:"Plans before placement",frame:{id:"invented"}}).success);
   assert(!sourceCaseSchema.safeParse({requestKey:id,name:"Plans before placement",buildingId:id}).success);
 });
 test("adopting an unassigned document keeps original part identity and native text",async()=>{
-  const {sourceWorkspaceParts}=await import("../apps/web/lib/server/source-workspaces");
+  const {sourceWorkspaceParts}=await import("@ulpin/server/modules/cases/source-workspaces");
   const part={id:"retained-part",sourceRevisionId:id,locator:"page 3",text:"Actual retained native text",entityIds:[]};
   const sources=[{id,profile:"pdf-reference-v2",inspection:{referenceParts:[part]}}];
   assert.deepEqual(sourceWorkspaceParts(sources),[part]);
@@ -51,7 +51,7 @@ test("adopting an unassigned document keeps original part identity and native te
 });
 
 test("document byte limits match native processing and allow exact size boundary",async()=>{
-  const {documentSizeError,documentLimitMiB}=await import("../apps/web/lib/document-formats");
+  const {documentSizeError,documentLimitMiB}=await import("@ulpin/server/shared/document-formats");
   for(const extension of ["pdf","docx","csv","txt","png","jpg","jpeg"]){
     const name=`source.${extension}`,format=documentFormat(name)!,limit=documentLimitMiB(format);
     assert.equal(limit,["png","jpeg"].includes(format)?16:10);

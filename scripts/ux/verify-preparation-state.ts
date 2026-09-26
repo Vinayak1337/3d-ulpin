@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { query, pool, transaction } from '../../apps/web/lib/server/db';
-import { preparationContinuation, readPreparationBuild } from '../../apps/web/lib/server/preparation-continuation';
+import { query, pool, transaction } from '@ulpin/server/infrastructure/db';
+import { preparationContinuation, readPreparationBuild } from '@ulpin/server/modules/cases/preparation-continuation';
 async function main() {
  const caseId='b5b9b4e8-c06a-4aca-afec-c8d443b708e1';
  const prep=(await query('SELECT package_id FROM building_preparations WHERE case_id=$1',[caseId])).rows[0];

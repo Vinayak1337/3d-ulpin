@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {zipSync,strToU8} from '../apps/web/node_modules/fflate/esm/index.mjs';
-import {readReferencePackage,sha256Bytes} from '../apps/web/features/spatial/reference-import/package';
+import {zipSync,strToU8} from 'fflate';
+import {readReferencePackage,sha256Bytes} from '@ulpin/server/modules/datasets/reference-import/package';
 
 test('JSON preserves whitespace and original byte identity',async()=>{
   const bytes=strToU8(' { "schemaVersion": "1.0.0" }\n');const pack=await readReferencePackage('source.json',bytes);

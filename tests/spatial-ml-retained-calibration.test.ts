@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { AreaReference, CoordinateFrame, ImportPackage, SpatialMlCalibration, SpatialMlItem } from "@ulpin/contracts";
-import { retainedFootprintCalibration } from "../apps/web/lib/server/spatial-ml-retained-calibration";
-import { fingerprint } from "../apps/web/lib/server/domain";
+import { retainedFootprintCalibration } from "@ulpin/server/modules/spatial/spatial-ml-retained-calibration";
+import { fingerprint } from "@ulpin/server/modules/cases/domain";
 const frame: CoordinateFrame = {id:"area-frame",horizontalUnit:"m",verticalUnit:"m",benchmark:"documented-BM"};
 const reference = {analysisCrs:"EPSG:32643",origin:[500000,2800000]} as AreaReference;
 const part = {id:"part",sourceRevisionId:"source",entityIds:[],locator:"image",text:"retained image"};
