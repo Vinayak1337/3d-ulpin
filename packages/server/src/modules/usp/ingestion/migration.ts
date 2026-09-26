@@ -8,3 +8,7 @@ export async function migrateManualIngestionTx(client: PoolClient) {
 export async function migrateLargeOriginalTx(client: PoolClient) {
   await client.query(sql('ingestion.large.schema'));
 }
+
+export async function migrateIngestionEventsTx(client: PoolClient) {
+  await client.query(sql('ingestion.events.index'));
+}

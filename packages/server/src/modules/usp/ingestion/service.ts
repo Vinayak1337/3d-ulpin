@@ -15,6 +15,7 @@ import { fingerprint } from '../../cases/domain';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
 import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
+import { appendCaseIngestionTx } from './events';
 
 const uuid = z.string().uuid();
 async function workspace(client: PoolClient, caseId: string) {
@@ -112,7 +113,9 @@ export class ManualIngestionService {
         [sourceId,caseId,familyId,revision,file.name,file.bytes.length,hash,objectKey,{profile:'geojson-manual-v1',status:'needs_input',issues:[],summary:'Original GeoJSON retained and inspected. A source-pinned manual recipe requires explicit approval before package creation.',manualProfile:inventory,gis:inspection,actor}]);
       await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
       const fresh=await workspace(client,caseId),row=await source(client,caseId,sourceId),result=profile(row,fresh);
-      await remember(client,caseId,key,digest,result);return result;
+      await remember(client,caseId,key,digest,result);
+      await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:revision,status:'needs_input'},actor);
+      return result;
     }));
   }
   async inspect(caseIdValue:string,sourceIdValue:string):Promise<SourceProfile> {
@@ -138,7 +141,9 @@ export class ManualIngestionService {
         await client.query("INSERT INTO usp_mapping_recipes(id,case_id,source_id,revision,state,body) VALUES($1,$2,$3,$4,$5,$6)",[receipt.id,caseId,sourceId,receipt.revision,receipt.state,receipt]);
         await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,$2,$3)',[receipt.id,receipt.revision,receipt]);
       }
-      await remember(client,caseId,key,digest,receipt);return receipt;
+      await remember(client,caseId,key,digest,receipt);
+      await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:receipt.id,recipeRevision:receipt.revision,sourceId,status:receipt.state},subject);
+      return receipt;
     });
   }
   async read(caseIdValue:string,recipeIdValue:string) {
@@ -172,7 +177,9 @@ export class ManualIngestionService {
           retainedOriginal:{sourceId:validated.row.id,sourceSha256:validated.row.sha256}},client);
         receipt.execution={packageId:pkg.id,sourceRevisionId:validated.row.id,subject,at:now};receipt.state='executed';
       }
-      receipt.revision++;await save(client,receipt);await remember(client,caseId,key,digest,receipt);return receipt;
+      receipt.revision++;await save(client,receipt);await remember(client,caseId,key,digest,receipt);
+      await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:receipt.id,recipeRevision:receipt.revision,sourceId:receipt.plan.source.sourceId,status:receipt.state},subject);
+      return receipt;
     });
   }
 }

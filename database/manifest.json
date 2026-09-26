@@ -1418,6 +1418,36 @@
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateLargeOriginalTx"
       }
+    },
+    {
+      "id": "ingestion.events.index",
+      "source": {
+        "path": "database/sql/95-ingestion/events.sql",
+        "function": "migrateIngestionEventsTx",
+        "kind": "authored-sql",
+        "task": "INGEST-03B",
+        "acceptedBase": "1ce939e347b8c448924954b43d3c648d1df06ac5"
+      },
+      "file": "sql/95-ingestion/events.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 28,
+      "sha256": "ce1a8ea8cc8682689e604a41ac1b4dc7478ac8e4868e94dfeb316d2ab7380623",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "41c4fd1e4b0cabed6449d0eae66e76b7e20e8b63e805b63880e31b6b69a21fdc"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateIngestionEventsTx"
+      }
     }
   ],
   "plannedButAbsent": []
