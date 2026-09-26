@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {PRIVATE_MVT_PROFILE as p,PROJECTED_VECTOR_PROFILE,PrivateMvtInputSchema,PrivateMvtRequestSchema,PrivateMvtStatusSchema,PrivateMvtManifestSchema,
-  PrivateMvtGenerationPinSchema,PrivateMvtManifestResponseSchema,PrivateMvtCellSchema,PrivateMvtIdentityMapSchema,PrivateMvtLookupSchema,
+  PrivateMvtGenerationPinSchema,PrivateMvtManifestResponseSchema,PrivateMvtCellSchema,PrivateMvtIdentityMapSchema,PrivateMvtLookupSchema,SemanticDisplayReservationSchema,type SemanticDisplayPhase,
   type PrivateMvtInput,type PrivateMvtManifest,type PrivateMvtGenerationPin,type PrivateMvtCell} from '@ulpin/contracts/usp';
 import {mvtTransaction as transaction} from './bounds';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
@@ -14,32 +14,34 @@ import {appendCaseIngestionTx,ingestionBinding} from '../ingestion/events';
 import {mvtCompilerPinsTx} from './compiler';
 import {cellKey,sortedCells,boundsCells,windowCells,extentOf,type Bounds} from './grid';
 import {readMvtArtifact} from './storage';
+import {sealedPrefixTx,reservedDisplayCountTx} from '../ingestion/semantic-chunks';
 const uuid=(value:string)=>z.string().uuid().parse(value).toLowerCase();
-export async function mvtObservationsTx(client:PoolClient,admissionJobId:string,sourceId:string){
+export async function mvtObservationsTx(client:PoolClient,admissionJobId:string,sourceId:string,chunk?:PrivateMvtInput['source']['chunk']){
   const rows=(await client.query(`SELECT o.feature_index,o.unit_id,o.disposition,o.geographic_bounds,o.raw_ref->>'sha256' raw_sha,
     o.geographic_ref->>'sha256' geo_sha,u.native_key FROM administrative_unit_observations o JOIN administrative_units u ON u.id=o.unit_id
-    WHERE o.job_id=$1 AND o.source_id=$2 ORDER BY o.feature_index LIMIT 734`,[admissionJobId,sourceId])).rows;
-  if(rows.length!==733)throw new AppError(409,'MVT_SOURCE_CLOSURE','The complete accepted source observation set is unavailable.');
+    WHERE o.job_id=$1 AND o.source_id=$2 AND ($3::int IS NULL OR o.committed_chunk_sequence<=$3) ORDER BY o.feature_index LIMIT 734`,[admissionJobId,sourceId,chunk?.pin.sequence??null])).rows;
+  if(rows.length!==(chunk?.coverage.records??733))throw new AppError(409,'MVT_SOURCE_CLOSURE','The complete accepted source observation set is unavailable.');
   return rows.map(row=>({unitId:row.unit_id as string,featureIndex:row.feature_index as number,disposition:row.disposition as string,
     bounds:row.geographic_bounds as Bounds|null,rawSha256:row.raw_sha as string,geographicSha256:row.geo_sha as string|null,nativeKey:row.native_key}));
 }
-export async function mvtContextTx(client:PoolClient,caseId:string,sourceId:string,admissionJobId?:string,lock=false){
+export async function mvtContextTx(client:PoolClient,caseId:string,sourceId:string,admissionJobId?:string,lock=false,chunkPin?:unknown){
   if(lock)await projectedContextTx(client,caseId,sourceId,true);
-  const accepted=await acceptedProjectedTx(client,caseId,sourceId,admissionJobId),observations=await mvtObservationsTx(client,accepted.job.id,sourceId);
+  const prefix=chunkPin?await sealedPrefixTx(client,caseId,sourceId,admissionJobId!,chunkPin):null,accepted=prefix??await acceptedProjectedTx(client,caseId,sourceId,admissionJobId),
+    chunk=prefix?{pin:prefix.pin,coverage:prefix.chunk.coverage}:undefined,observations=await mvtObservationsTx(client,accepted.job.id,sourceId,chunk);
   if(observations.some(row=>row.nativeKey.type!=='number'||!Number.isSafeInteger(row.nativeKey.value)||row.nativeKey.value<0))
     throw new AppError(422,'MVT_NATIVE_ID','This profile requires its actual nonnegative numeric native transport IDs.');
   const source={caseId,caseRevision:accepted.ctx.current.revision,sourceId,sourceRevision:accepted.ctx.source.revision,
     sourceFamilyId:accepted.ctx.source.family_id,sha256:accepted.ctx.source.sha256,admissionJobId:accepted.job.id,
     admissionIndexSha256:accepted.pointer.index.sha256,admissionInputFingerprint:accepted.job.input_fingerprint,
-    sourceDependencySha256:fingerprint(observations),accessBinding:accepted.ctx.access,namespace:PROJECTED_VECTOR_PROFILE.namespace};
+    sourceDependencySha256:fingerprint(observations),accessBinding:accepted.ctx.access,namespace:PROJECTED_VECTOR_PROFILE.namespace,...(chunk?{chunk}:{})};
   const compiler=await mvtCompilerPinsTx(client,accepted.pointer.transform);
-  if(observations.filter(row=>row.disposition==='admitted').length!==720||observations.filter(row=>row.disposition==='quarantined').length!==13
-    ||new Set(observations.map(row=>row.nativeKey.value)).size!==733)
+  if(observations.filter(row=>row.disposition==='admitted').length!==(chunk?.coverage.admitted??720)||observations.filter(row=>row.disposition==='quarantined').length!==(chunk?.coverage.quarantined??13)
+    ||new Set(observations.map(row=>row.nativeKey.value)).size!==(chunk?.coverage.records??733))
     throw new AppError(409,'MVT_SOURCE_CLOSURE','The exact admitted/quarantined and unique native transport-ID source profile changed.');
   return {accepted,observations,source,compiler};
 }
 export async function assertMvtInputTx(client:PoolClient,job:any,lock=false){
-  const input=PrivateMvtInputSchema.parse(job.payload),ctx=await mvtContextTx(client,input.source.caseId,input.source.sourceId,input.source.admissionJobId,lock),
+  const input=PrivateMvtInputSchema.parse(job.payload),ctx=await mvtContextTx(client,input.source.caseId,input.source.sourceId,input.source.admissionJobId,lock,input.source.chunk?.pin),
     {inputFingerprint,...base}=input;
   if(input.jobId!==job.id||job.case_id!==input.source.caseId||job.source_id!==input.source.sourceId
     ||job.input_fingerprint!==inputFingerprint||fingerprint(base)!==inputFingerprint
@@ -81,53 +83,60 @@ export async function mvtStatusTx(client:PoolClient,caseId:string,sourceId:strin
     generation:row?{jobId:job.id,version:row.version,sha256:row.sha256}:null,preparedCells:row?.body.cells.length??0,
     plannedCells:job.payload.catalog.length,errorCode:job.error?/^[A-Z][A-Z0-9_]{0,79}$/.test(job.error)?job.error:'MVT_PROCESSING_FAILED':null});
 }
+export async function enqueuePrivateMvtTx(client:PoolClient,caseId:string,sourceId:string,value:unknown,reservedSlot?:{parentJobId:string;phase:SemanticDisplayPhase;jobId:string}){
+  const request=PrivateMvtRequestSchema.parse(value);
+  if(reservedSlot){const row=(await client.query("SELECT o.result,j.source_id,j.payload FROM operations o JOIN jobs j ON j.id=$3 WHERE o.case_id=$1 AND o.operation_key=$2 AND o.kind='stream-display-capacity' AND j.case_id=o.case_id AND j.operation='projected-vector' FOR UPDATE OF o",[caseId,`stream-display:${reservedSlot.parentJobId}`,reservedSlot.parentJobId])).rows[0];
+    const reservation=row?SemanticDisplayReservationSchema.parse(row.result):null;
+    if(!reservation||row.source_id!==sourceId||!row.payload.semanticChunks||reservation.slots[reservedSlot.phase]!==reservedSlot.jobId||reservation.outcomes[reservedSlot.phase].state!=='reserved'||request.requestKey!==reservedSlot.jobId||request.admissionJobId!==reservedSlot.parentJobId)
+      throw new AppError(409,'MVT_CAPACITY_RESERVATION','A canonical parent must own this exact unconsumed milestone slot.');
+  }
+  await client.query("SELECT pg_advisory_xact_lock(hashtextextended('private-mvt-admission-retirement-v1',0))");
+  await projectedContextTx(client,caseId,sourceId,true);
+  const digest=fingerprint({request,caseId,sourceId,access:ingestionBinding(caseId).access}),key=`private-mvt:${request.requestKey}`;
+  const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='private-mvt'",[caseId,key])).rows[0];
+  if(prior){if(prior.payload_hash!==digest)conflict('This tile request key names different input pins.');return mvtStatusTx(client,caseId,sourceId,prior.result.jobId);}
+  const ctx=await mvtContextTx(client,caseId,sourceId,request.admissionJobId,true,request.chunk);
+  if(request.expectedCaseRevision!==ctx.source.caseRevision||request.expectedSourceRevision!==ctx.source.sourceRevision)conflict('Refresh the current case/source revision before tiling.');
+  const actual=ctx.accepted.ctx.source.inspection.privateMvt?.accepted??null;
+  if(fingerprint(request.expectedGeneration)!==fingerprint(actual))throw new AppError(409,'MVT_BASE_PIN','Pin the current accepted generation before changing its catalog.');
+  const quota=(await client.query(`SELECT count(*)::int jobs,count(*) FILTER(WHERE status IN('queued','running'))::int active,
+    count(*) FILTER(WHERE status IN('queued','running','succeeded'))::int completed FROM jobs WHERE operation='private-mvt'`)).rows[0],
+    aliases=(await client.query("SELECT count(*)::int count FROM operations WHERE kind='private-mvt'")).rows[0].count;
+  const reserved=await reservedDisplayCountTx(client),consumed=reservedSlot?1:0;
+  if(quota.active>=p.active||quota.jobs+reserved-consumed>=p.jobs||quota.completed+reserved-consumed>=p.completed||aliases+reserved-consumed>=p.requests)
+    throw new AppError(429,'MVT_RETENTION_BUDGET','The finite private tile job/request/history capacity is occupied; exact existing keys remain replayable.');
+  const base=actual?await generationRowTx(client,sourceId,PrivateMvtGenerationPinSchema.parse(actual)):null,
+    old=base?await mvtObservationsTx(client,base.manifest.source.admissionJobId,sourceId,base.manifest.source.chunk):[],oldMap=new Map(old.map(row=>[row.unitId,row])),newMap=new Map(ctx.observations.map(row=>[row.unitId,row]));
+  const forced=new Set(request.revalidateUnitIds);for(const unit of forced)if(newMap.get(unit)?.disposition!=='admitted')throw new AppError(422,'MVT_REVALIDATION_UNIT','Choose an admitted canonical unit from this exact source.');
+  const changes:PrivateMvtInput['invalidation']['changes']=[];
+  for(const unitId of new Set([...oldMap.keys(),...newMap.keys()])){
+    const a=oldMap.get(unitId),b=newMap.get(unitId);
+    if(!a&&b)changes.push({unitId,kind:'added',oldBounds:null,newBounds:b.bounds});
+    else if(a&&!b)changes.push({unitId,kind:'removed',oldBounds:a.bounds,newBounds:null});
+    else if(fingerprint(a)!==fingerprint(b)||forced.has(unitId))changes.push({unitId,kind:forced.has(unitId)&&fingerprint(a)===fingerprint(b)?'revalidated':'changed',oldBounds:a?.bounds??null,newBounds:b?.bounds??null});
+  }
+  const sourceCells=boundsCells(extentOf(ctx.observations)),allowed=new Set(sourceCells.map(cellKey)),requested=request.window?windowCells(request.window):sourceCells;
+  if(requested.some(cell=>!allowed.has(cellKey(cell))))throw new AppError(422,'MVT_WINDOW_SCOPE','This bounded window is outside the accepted source envelope.');
+  let invalidated=base?sortedCells(changes.flatMap(change=>[change.oldBounds,change.newBounds].flatMap(bounds=>bounds?boundsCells(bounds):[]))):[];
+  if(base&&base.manifest.compiler.sha256!==ctx.compiler.sha256)invalidated=sortedCells([...invalidated,...base.manifest.catalog]);
+  const catalog=sortedCells([...requested,...(base?.manifest.catalog??[]),...invalidated]),oldCells=new Map((base?.manifest.cells??[]).map(cell=>[cellKey(cell.cell),cell])),dirty=new Set(invalidated.map(cellKey));
+  const plan=sortedCells(catalog.filter(cell=>!oldCells.has(cellKey(cell))||dirty.has(cellKey(cell))||base?.manifest.compiler.sha256!==ctx.compiler.sha256));
+  if(!plan.length&&base&&fingerprint(base.manifest.source)===fingerprint(ctx.source))
+    throw new AppError(409,'MVT_NO_CHANGE','The requested window and current source pins are already prepared; pin a real unit revalidation to rebuild it.');
+  const jobId=reservedSlot?.jobId??randomUUID(),payloadBase={kind:'retained_administrative_observations' as const,version:p.version,jobId,source:ctx.source,compiler:ctx.compiler,
+    base:request.expectedGeneration,window:request.window,catalog,plan,invalidation:{version:p.grid,cells:invalidated,changes,includeHalo:true as const,includeParents:true as const}},
+    payload=PrivateMvtInputSchema.parse({...payloadBase,inputFingerprint:fingerprint(payloadBase)});
+  if(Buffer.byteLength(JSON.stringify(payload))>512*1024)throw new AppError(422,'MVT_INPUT_BUDGET','The immutable tile input exceeds its bounded metadata profile.');
+  await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'private-mvt',$4,$5,$6)",[jobId,caseId,sourceId,ctx.source.caseRevision,payload.inputFingerprint,payload]);
+  await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:caseId,version:ctx.source.caseRevision+1},sourceId,payload.inputFingerprint);
+  await client.query('UPDATE sources SET inspection=$2 WHERE id=$1',[sourceId,{...ctx.accepted.ctx.source.inspection,privateMvt:{...ctx.accepted.ctx.source.inspection.privateMvt,currentJobId:jobId}}]);
+  await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'private-mvt',$3,$4)",[caseId,key,digest,{jobId}]);
+  await appendCaseIngestionTx(client,caseId,{kind:'private-mvt.changed',jobId,version:null,status:'queued'});
+  return mvtStatusTx(client,caseId,sourceId);
+}
 export class PrivateMvtService{
   async enqueue(caseIdValue:string,sourceIdValue:string,value:unknown){
-    const caseId=uuid(caseIdValue),sourceId=uuid(sourceIdValue),request=PrivateMvtRequestSchema.parse(value);
-    return transaction(async client=>{
-      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('private-mvt-admission-retirement-v1',0))");
-      await projectedContextTx(client,caseId,sourceId,true);
-      const digest=fingerprint({request,caseId,sourceId,access:ingestionBinding(caseId).access}),key=`private-mvt:${request.requestKey}`;
-      const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='private-mvt'",[caseId,key])).rows[0];
-      if(prior){if(prior.payload_hash!==digest)conflict('This tile request key names different input pins.');return mvtStatusTx(client,caseId,sourceId,prior.result.jobId);}
-      const ctx=await mvtContextTx(client,caseId,sourceId,request.admissionJobId,true);
-      if(request.expectedCaseRevision!==ctx.source.caseRevision||request.expectedSourceRevision!==ctx.source.sourceRevision)conflict('Refresh the current case/source revision before tiling.');
-      const actual=ctx.accepted.ctx.source.inspection.privateMvt?.accepted??null;
-      if(fingerprint(request.expectedGeneration)!==fingerprint(actual))throw new AppError(409,'MVT_BASE_PIN','Pin the current accepted generation before changing its catalog.');
-      const quota=(await client.query(`SELECT count(*)::int jobs,count(*) FILTER(WHERE status IN('queued','running'))::int active,
-        count(*) FILTER(WHERE status='succeeded')::int completed FROM jobs WHERE operation='private-mvt'`)).rows[0],
-        aliases=(await client.query("SELECT count(*)::int count FROM operations WHERE kind='private-mvt'")).rows[0].count;
-      if(quota.active>=p.active||quota.jobs>=p.jobs||quota.completed>=p.completed||aliases>=p.requests)
-        throw new AppError(429,'MVT_RETENTION_BUDGET','The finite private tile job/request/history capacity is occupied; exact existing keys remain replayable.');
-      const base=actual?await generationRowTx(client,sourceId,PrivateMvtGenerationPinSchema.parse(actual)):null,
-        old=base?await mvtObservationsTx(client,base.manifest.source.admissionJobId,sourceId):[],oldMap=new Map(old.map(row=>[row.unitId,row])),newMap=new Map(ctx.observations.map(row=>[row.unitId,row]));
-      const forced=new Set(request.revalidateUnitIds);for(const unit of forced)if(newMap.get(unit)?.disposition!=='admitted')throw new AppError(422,'MVT_REVALIDATION_UNIT','Choose an admitted canonical unit from this exact source.');
-      const changes:PrivateMvtInput['invalidation']['changes']=[];
-      for(const unitId of new Set([...oldMap.keys(),...newMap.keys()])){
-        const a=oldMap.get(unitId),b=newMap.get(unitId);
-        if(!a&&b)changes.push({unitId,kind:'added',oldBounds:null,newBounds:b.bounds});
-        else if(a&&!b)changes.push({unitId,kind:'removed',oldBounds:a.bounds,newBounds:null});
-        else if(fingerprint(a)!==fingerprint(b)||forced.has(unitId))changes.push({unitId,kind:forced.has(unitId)&&fingerprint(a)===fingerprint(b)?'revalidated':'changed',oldBounds:a?.bounds??null,newBounds:b?.bounds??null});
-      }
-      const sourceCells=boundsCells(extentOf(ctx.observations)),allowed=new Set(sourceCells.map(cellKey)),requested=request.window?windowCells(request.window):sourceCells;
-      if(requested.some(cell=>!allowed.has(cellKey(cell))))throw new AppError(422,'MVT_WINDOW_SCOPE','This bounded window is outside the accepted source envelope.');
-      let invalidated=base?sortedCells(changes.flatMap(change=>[change.oldBounds,change.newBounds].flatMap(bounds=>bounds?boundsCells(bounds):[]))):[];
-      if(base&&base.manifest.compiler.sha256!==ctx.compiler.sha256)invalidated=sortedCells([...invalidated,...base.manifest.catalog]);
-      const catalog=sortedCells([...requested,...(base?.manifest.catalog??[]),...invalidated]),oldCells=new Map((base?.manifest.cells??[]).map(cell=>[cellKey(cell.cell),cell])),dirty=new Set(invalidated.map(cellKey));
-      const plan=sortedCells(catalog.filter(cell=>!oldCells.has(cellKey(cell))||dirty.has(cellKey(cell))||base?.manifest.compiler.sha256!==ctx.compiler.sha256));
-      if(!plan.length&&base&&fingerprint(base.manifest.source)===fingerprint(ctx.source))
-        throw new AppError(409,'MVT_NO_CHANGE','The requested window and current source pins are already prepared; pin a real unit revalidation to rebuild it.');
-      const jobId=randomUUID(),payloadBase={kind:'retained_administrative_observations' as const,version:p.version,jobId,source:ctx.source,compiler:ctx.compiler,
-        base:request.expectedGeneration,window:request.window,catalog,plan,invalidation:{version:p.grid,cells:invalidated,changes,includeHalo:true as const,includeParents:true as const}},
-        payload=PrivateMvtInputSchema.parse({...payloadBase,inputFingerprint:fingerprint(payloadBase)});
-      if(Buffer.byteLength(JSON.stringify(payload))>512*1024)throw new AppError(422,'MVT_INPUT_BUDGET','The immutable tile input exceeds its bounded metadata profile.');
-      await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'private-mvt',$4,$5,$6)",[jobId,caseId,sourceId,ctx.source.caseRevision,payload.inputFingerprint,payload]);
-      await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:caseId,version:ctx.source.caseRevision+1},sourceId,payload.inputFingerprint);
-      await client.query('UPDATE sources SET inspection=$2 WHERE id=$1',[sourceId,{...ctx.accepted.ctx.source.inspection,privateMvt:{...ctx.accepted.ctx.source.inspection.privateMvt,currentJobId:jobId}}]);
-      await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'private-mvt',$3,$4)",[caseId,key,digest,{jobId}]);
-      await appendCaseIngestionTx(client,caseId,{kind:'private-mvt.changed',jobId,version:null,status:'queued'});
-      return mvtStatusTx(client,caseId,sourceId);
-    });
+    return transaction(client=>enqueuePrivateMvtTx(client,uuid(caseIdValue),uuid(sourceIdValue),value));
   }
   status(caseId:string,sourceId:string){return transaction(client=>mvtStatusTx(client,uuid(caseId),uuid(sourceId)));}
   manifest(caseId:string,sourceId:string,jobId:string,version:number){return transaction(async client=>{const value=await readableMvtGenerationTx(client,uuid(caseId),uuid(sourceId),uuid(jobId),version);
@@ -149,10 +158,10 @@ export class PrivateMvtService{
     if(cellKey(map.cell)!==cellKey(cell)||fingerprint(map.features)!==value.prepared.dependencySha256)throw new AppError(422,'MVT_MAP_INTEGRITY','The identity map does not match its registered cell dependencies.');
     const feature=map.features.find(item=>item.unitId===unitId)??notFound('The canonical unit is not emitted by this source tile.');
     return transaction(async client=>{const generation=await readableMvtGenerationTx(client,...pins),row=(await client.query(`SELECT o.*,u.native_key FROM administrative_unit_observations o JOIN administrative_units u ON u.id=o.unit_id
-      WHERE o.job_id=$1 AND o.source_id=$2 AND o.unit_id=$3 AND o.disposition='admitted'`,[generation.input.source.admissionJobId,pins[1],unitId])).rows[0];
+      WHERE o.job_id=$1 AND o.source_id=$2 AND o.unit_id=$3 AND o.disposition='admitted' AND ($4::int IS NULL OR o.committed_chunk_sequence<=$4)`,[generation.input.source.admissionJobId,pins[1],unitId,generation.input.source.chunk?.pin.sequence??null])).rows[0];
       if(!row||row.raw_ref.sha256!==feature.rawSha256||row.geographic_ref.sha256!==feature.geographicSha256||row.feature_index!==feature.featureIndex||row.native_key.value!==feature.mvtId)
         throw new AppError(409,'MVT_LOOKUP_STALE','This pick map does not match the exact accepted canonical observation.');
-      return PrivateMvtLookupSchema.parse({generation:generation.pin,mvtId:feature.mvtId,observation:observation(row,generation.ctx.accepted.ctx.source)});
+      return PrivateMvtLookupSchema.parse({generation:generation.pin,mvtId:feature.mvtId,observation:observation(row,generation.ctx.accepted.ctx.source),...(generation.input.source.chunk?{sourceChunk:generation.input.source.chunk}:{})});
     });
   }
 }

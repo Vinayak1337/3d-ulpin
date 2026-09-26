@@ -311,6 +311,19 @@
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
       "runtimeEvidence": "docs/evidence/usp/private-mvt-handoff.md"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/jobs/{jobId}/chunks/{sequence}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_jobs_jobId_chunks_sequence",
+      "batch": "STREAM-02",
+      "disposition": "added",
+      "nativeController": "projected-vector",
+      "requestSchema": null,
+      "responseSchema": "SemanticChunkResponseSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
     }
   ]
 }
