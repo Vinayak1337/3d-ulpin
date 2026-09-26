@@ -9,7 +9,7 @@ import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUs
 import {appendCaseIngestionTx} from './events';
 import {mvtBoundsTx,mvtTransaction,assertMvtDeadline} from '../tiles/bounds';
 import {semanticPartitions,prepareSemanticTx,sealSemanticTx,releaseSemanticDisplaysTx,sealedPrefixTx} from './semantic-chunks';
-import {runSemanticDisplay,createFinalSemanticDisplayTx} from './semantic-display';
+import {runSemanticDisplay,prepareFinalSemanticDisplayTx,createFinalSemanticDisplayTx,type FinalSemanticDisplayLock} from './semantic-display';
 import {projectedContextTx,assertProjectedInput,readProjectedArtifact,projectedObservationBytesTx} from './projected-vector';
 
 /** Callers take the admission/retirement advisory lock before case/source/job locks. */
@@ -160,6 +160,7 @@ export async function ingestProjectedResult(id:string,value:unknown){
       assertMvtDeadline(deadline);await stage(job,attempt,entry,deadline);
       if(entry.index%25===0)attempt=await heartbeatUspJobAttempt(attempt,client=>mvtBoundsTx(client,deadline));
     }
+    let finalDisplayLock:FinalSemanticDisplayLock|undefined;
     await acceptUspJobAttempt(attempt,{assetId:job.id,version:1,sha256:result.index.sha256},async client=>{
       const ctx=await projectedPublicationContextTx(client,job);
       const rows=(await client.query(`SELECT feature_index,disposition,raw_ref,geographic_ref FROM administrative_unit_observations
@@ -184,12 +185,15 @@ export async function ingestProjectedResult(id:string,value:unknown){
       await client.query('UPDATE sources SET inspection=$2 WHERE id=$1',[job.source_id,{...ctx.source.inspection,
         projectedVector:{...ctx.source.inspection.projectedVector,accepted}}]);
       await appendCaseIngestionTx(client,job.case_id,{kind:'projected-vector.changed',jobId:id,status:'succeeded'});
-    },async client=>{await mvtBoundsTx(client,deadline);
-      if(input.semanticChunks)await client.query("SELECT pg_advisory_xact_lock(hashtextextended('private-mvt-admission-retirement-v1',0))");
+    },async client=>{
+      if(input.semanticChunks)finalDisplayLock=await prepareFinalSemanticDisplayTx(client,deadline);
+      // Validation uses the source budget; the child's absolute deadline above
+      // is carried through adoption and never restarted after acquiring locks.
+      await mvtBoundsTx(client,deadline);
       await projectedPublicationContextTx(client,job);
     },async client=>{
       assertMvtDeadline(deadline);
-      if(input.semanticChunks){await createFinalSemanticDisplayTx(client,job,deadline);await releaseSemanticDisplaysTx(client,job,'MVT_MILESTONE_UNUSED');}
+      if(input.semanticChunks){await createFinalSemanticDisplayTx(client,job,deadline,finalDisplayLock!);await releaseSemanticDisplaysTx(client,job,'MVT_MILESTONE_UNUSED');}
       assertMvtDeadline(deadline);
     });
   }catch(error){

@@ -6,7 +6,7 @@ import {assertUspJobAttemptTx,type UspJobAttempt} from '../jobs';
 import {projectedContextTx,assertProjectedInput} from './projected-vector';
 import {displayReservationTx,displayOutcomeTx} from './semantic-chunks';
 import {enqueuePrivateMvtTx} from '../tiles/service';
-import {mvtTransaction,assertMvtDeadline} from '../tiles/bounds';
+import {mvtTransaction,mvtBoundsTx,assertMvtDeadline} from '../tiles/bounds';
 import {runPrivateMvtJob} from '../tiles/publication';
 type Pin=z.infer<typeof ProjectedChunkPinSchema>;
 const budget=()=>SEMANTIC_CHUNK_PROFILE.chunkMs;
@@ -60,16 +60,38 @@ export async function runSemanticDisplay(job:any,attempt:UspJobAttempt,phase:'ea
     if(child)await runPrivateMvtJob(child,deadline);
   }catch(error){
     assertMvtDeadline(parentDeadline);
-    await mvtTransaction(async client=>{await client.query("SELECT pg_advisory_xact_lock(hashtextextended('private-mvt-admission-retirement-v1',0))");
-      await unavailableTx(client,job,phase,error,attempt);},parentDeadline);
+    // No child/assets/capacity are created here. The exact reservation row and
+    // live parent fence serialize bookkeeping without the failed tile lock.
+    await mvtTransaction(client=>unavailableTx(client,job,phase,error,attempt),parentDeadline);
   }
   assertMvtDeadline(parentDeadline);
 }
+export type FinalSemanticDisplayLock={deadline:number;error?:unknown};
+/** Try the display lock before case/source/job locks. Failure rolls back only
+ * this acquisition; independent source adoption retains its parent deadline. */
+export async function prepareFinalSemanticDisplayTx(client:PoolClient,parentDeadline:number):Promise<FinalSemanticDisplayLock>{
+  const deadline=childDeadline(parentDeadline);
+  await mvtBoundsTx(client,deadline);
+  await client.query('SAVEPOINT final_semantic_display_lock');
+  try{
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended('private-mvt-admission-retirement-v1',0))");
+    assertMvtDeadline(deadline);
+    await client.query('RELEASE SAVEPOINT final_semantic_display_lock');
+    return {deadline};
+  }catch(error){
+    await client.query('ROLLBACK TO SAVEPOINT final_semantic_display_lock');
+    await client.query('RELEASE SAVEPOINT final_semantic_display_lock');
+    assertMvtDeadline(parentDeadline);
+    return {deadline,error};
+  }
+}
 /** Source acceptance remains atomic and independently valid when display-only
  * creation times out. The queued final job also pins its smaller attempt budget. */
-export async function createFinalSemanticDisplayTx(client:PoolClient,job:any,parentDeadline:number){
-  const deadline=childDeadline(parentDeadline);
-  try{await createSemanticDisplayTx(client,job,'final',undefined,deadline);}
+export async function createFinalSemanticDisplayTx(client:PoolClient,job:any,parentDeadline:number,prepared:FinalSemanticDisplayLock){
+  try{
+    if(prepared.error!==undefined)throw prepared.error;
+    await createSemanticDisplayTx(client,job,'final',undefined,prepared.deadline);
+  }
   catch(error){assertMvtDeadline(parentDeadline);
     await unavailableTx(client,job,'final',error);}
   assertMvtDeadline(parentDeadline);
