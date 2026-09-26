@@ -1,6 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { z } from 'zod';
+import { LargeOriginalEvidenceSchema } from '@ulpin/contracts/usp';
 
 const uuid = z.string().uuid();
 const nullable = <T extends z.ZodType>(schema: T) => schema.nullable();
@@ -33,6 +34,7 @@ export const unit = z.object({
 });
 const issue = z.object({code: z.string(), message: z.string(), field: z.string().optional(), severity: z.enum(['error', 'warning', 'info'])});
 const inspection = z.object({
+  largeOriginal: LargeOriginalEvidenceSchema.optional(),
   profile: z.string(), status: z.enum(['ready', 'needs_input', 'failed']), issues: z.array(issue), summary: z.string(),
   frame: frame.optional(), features: z.array(z.object({
     alias: z.string(), name: z.string(), kind: z.string(), footprint: z.array(point),
@@ -277,7 +279,7 @@ const requestSchema = (value: z.ZodType): SwaggerSchema => z.toJSONSchema(value,
 }) as unknown as SwaggerSchema;
 export const jsonBody = (value: z.ZodType) => ApiBody({schema: requestSchema(value)});
 export const retiredBranchResponse = () => ApiResponse({status: 410, schema: schema(error)});
-export function wireResponse(status: number, value: z.ZodType | typeof binary) {
+export function wireResponse(status: number, value: z.ZodType | typeof binary, additionalErrors:number[] = []) {
   const success = value === binary ? binary : schema(value as z.ZodType);
   const failure = schema(error);
   return applyDecorators(
@@ -290,6 +292,7 @@ export function wireResponse(status: number, value: z.ZodType | typeof binary) {
     ApiResponse({status: 415, schema: failure}),
     ApiResponse({status: 422, schema: failure}),
     ApiResponse({status: 503, schema: failure}),
+    ...additionalErrors.map(status=>ApiResponse({status,schema:failure})),
   );
 }
 export function multipartBody(required: string[], properties: Record<string, unknown>) {

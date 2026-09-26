@@ -48,6 +48,7 @@ function profile(row: any, scope: {revision: number; fingerprint: string}): Sour
   return SourceProfileSchema.parse({...fields,source:{sourceId:row.id,familyId:row.family_id,sourceRevision:row.revision,sourceSha256:row.sha256,schemaFingerprint},
     caseId:row.case_id,workspaceRevision:scope.revision,workspaceFingerprint:scope.fingerprint});
 }
+export {workspace as lockUnassignedSourceCase};
 async function validate(client: PoolClient, plan: z.infer<typeof MappingPlanSchema>, scope: {revision: number; fingerprint: string}) {
   const row = await source(client,plan.caseId,plan.source.sourceId), current = profile(row,scope);
   if (fingerprint(current.source) !== fingerprint(plan.source) || current.workspaceRevision !== plan.workspaceRevision || current.workspaceFingerprint !== plan.workspaceFingerprint)
