@@ -16,20 +16,26 @@ export function localRequest(request:Request):void {
   if(origin&&origin!==expectedOrigin||request.headers.get("sec-fetch-site")==="cross-site")throw new LegacySpatialReadError(403,"CROSS_ORIGIN_READ","Cross-origin spatial reads are not allowed");
 }
 
+/** Canonical normalized read used by both the Next adapter and Nest transport. */
+export async function readNormalizedLegacyCore(areaId:string,world:string,expected?:string,read=readLegacySpatialSlice) {
+  validateLegacyReadSelection(areaId,world);
+  if(expected&&!/^[a-f0-9]{64}$/.test(expected))throw new LegacySpatialReadError(400,"SNAPSHOT_DIGEST","Expected snapshot digest is invalid");
+  const slice=await read(areaId,world),result=await normalizeLegacySpatialSlice(slice,world);
+  if(expected&&expected!==result.readDigest)throw new LegacySpatialReadError(409,"SNAPSHOT_CHANGED","The selected legacy records changed; reload the complete read slice");
+  const body=JSON.stringify({...result,consistency:"repeatable-read-read-only",selection:"published-current-only"});
+  if(Buffer.byteLength(body,"utf8")>CORE_LEGACY_LIMITS.outputBytes)throw new LegacySpatialReadError(413,"LEGACY_READ_BYTES","Normalized response exceeds the bounded payload profile");
+  return {body,readDigest:result.readDigest};
+}
+
 export async function handleLegacyCoreRead(request:Request,areaId:string,read=readLegacySpatialSlice):Promise<Response> {
   const headers={"Cache-Control":"no-store","Content-Type":"application/json; charset=utf-8","X-Content-Type-Options":"nosniff"};
   try {
     localRequest(request);
     const url=new URL(request.url),world=url.searchParams.get("world")??"";
     for(const key of url.searchParams.keys())if(!["world","expectedDigest"].includes(key)||url.searchParams.getAll(key).length!==1)throw new LegacySpatialReadError(400,"READ_PARAMETER","Unsupported or repeated core read parameter");
-    validateLegacyReadSelection(areaId,world);
     const expected=url.searchParams.get("expectedDigest");
-    if(expected&&!/^[a-f0-9]{64}$/.test(expected))throw new LegacySpatialReadError(400,"SNAPSHOT_DIGEST","Expected snapshot digest is invalid");
-    const slice=await read(areaId,world),result=await normalizeLegacySpatialSlice(slice,world);
-    if(expected&&expected!==result.readDigest)throw new LegacySpatialReadError(409,"SNAPSHOT_CHANGED","The selected legacy records changed; reload the complete read slice");
-    const body=JSON.stringify({...result,consistency:"repeatable-read-read-only",selection:"published-current-only"});
-    if(Buffer.byteLength(body,"utf8")>CORE_LEGACY_LIMITS.outputBytes)throw new LegacySpatialReadError(413,"LEGACY_READ_BYTES","Normalized response exceeds the bounded payload profile");
-    return new Response(body,{status:200,headers:{...headers,ETag:`"${result.readDigest}"`}});
+    const result=await readNormalizedLegacyCore(areaId,world,expected??undefined,read);
+    return new Response(result.body,{status:200,headers:{...headers,ETag:`"${result.readDigest}"`}});
   }catch(error){
     if(error instanceof LegacySpatialReadError)return new Response(JSON.stringify({error:{code:error.code,message:error.message}}),{status:error.status,headers});
     if(error instanceof CoreContractError)return new Response(JSON.stringify({error:{code:error.code,message:"The legacy slice could not be normalized without changing its meaning"}}),{status:422,headers});

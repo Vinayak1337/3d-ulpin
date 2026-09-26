@@ -13,7 +13,7 @@ import {receiveCaseDocument} from '../cases/source-cases';
 import {documentFormat} from '../../shared/document-formats';
 import {pdfPageCount} from '../cases/pdf-pages';
 const itemSchema=z.object({sourceId:z.string().uuid(),task:z.enum(['floor-plan','building']),page:z.number().int().min(1).max(500)}).strict();
-const batchSchema=z.object({requestKey:z.string().uuid(),expectedDigest:z.string().regex(/^[a-f0-9]{64}$/),items:z.array(itemSchema).min(1).max(12)}).strict();
+export const datasetMlBatchSchema=z.object({requestKey:z.string().uuid(),expectedDigest:z.string().regex(/^[a-f0-9]{64}$/),items:z.array(itemSchema).min(1).max(12)}).strict();
 const runSelect=`r.id,r.source_id AS "sourceId",s.name AS "sourceName",r.task,r.page,r.model_id AS "modelId",j.status,j.error,r.created_at AS "createdAt",r.result,(SELECT body FROM spatial_dataset_ml_reviews v WHERE v.run_id=r.id ORDER BY v.created_at DESC,v.id DESC LIMIT 1) review`;
 type PdfSource={sha256:string;object_key:string;bytes:number|string};
 const pageCounts=new Map<string,Promise<number>>();
@@ -45,7 +45,7 @@ export async function datasetMlOverview(id:string):Promise<DatasetMlOverview>{
  return {datasetId:id,name:dataset.name,digest:dataset.digest,frameId:frame.id,verticalDatum:frame.verticalDatum,sources:described,runs,retainedOnly:sources.length-eligible.length};
 }
 export async function queueDatasetMl(id:string,value:unknown){
- const input=batchSchema.parse(value),dataset=await getSpatialDataset(id);await ensureDatasetMl();
+ const input=datasetMlBatchSchema.parse(value),dataset=await getSpatialDataset(id);await ensureDatasetMl();
  if(input.expectedDigest!==dataset.digest)conflict('The dataset snapshot changed. Reload its sources.');
  if(new Set(input.items.map(i=>fingerprint(i))).size!==input.items.length)throw new AppError(422,'DUPLICATE_SOURCE','Select a source/page/task only once per batch.');
  const models=await spatialMlStatus(),batchDigest=fingerprint(input);
@@ -86,9 +86,9 @@ export async function datasetMlArtifact(datasetId:string,runId:string,kind:strin
  const bytes=await readObject(artifact.objectKey);if(bytes.length!==artifact.bytes||sha256(bytes)!==artifact.sha256)throw new AppError(409,'ARTIFACT_INTEGRITY','Retained artifact hash changed.');
  return new Response(new Uint8Array(bytes),{headers:{'Content-Type':'image/png','Cache-Control':'private, max-age=31536000, immutable','X-Content-Type-Options':'nosniff'}});
 }
-const reviewSchema=z.object({requestKey:z.string().uuid(),runId:z.string().uuid(),decision:z.enum(['keep','reject']),componentIds:z.array(z.string().min(1).max(120)).min(1).max(100),note:z.string().trim().min(3).max(2000),calibration:spatialMlCalibrationSchema.optional(),lowerM:z.number().finite().min(-1000).max(10000).optional(),upperM:z.number().finite().min(-1000).max(10000).optional(),levelEvidence:z.string().trim().min(3).max(2000).optional()}).strict();
+export const datasetMlReviewSchema=z.object({requestKey:z.string().uuid(),runId:z.string().uuid(),decision:z.enum(['keep','reject']),componentIds:z.array(z.string().min(1).max(120)).min(1).max(100),note:z.string().trim().min(3).max(2000),calibration:spatialMlCalibrationSchema.optional(),lowerM:z.number().finite().min(-1000).max(10000).optional(),upperM:z.number().finite().min(-1000).max(10000).optional(),levelEvidence:z.string().trim().min(3).max(2000).optional()}).strict();
 export async function reviewDatasetMl(datasetId:string,value:unknown){
- const input=reviewSchema.parse(value);await getSpatialDataset(datasetId);await ensureDatasetMl();
+ const input=datasetMlReviewSchema.parse(value);await getSpatialDataset(datasetId);await ensureDatasetMl();
  return transaction(async client=>{
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`dataset-ml-review:${input.runId}:${input.requestKey}`]);
   const prior=(await client.query('SELECT v.request_digest,v.body FROM spatial_dataset_ml_reviews v JOIN spatial_dataset_ml_runs r ON r.id=v.run_id WHERE v.run_id=$1 AND v.request_key=$2 AND r.dataset_id=$3',[input.runId,input.requestKey,datasetId])).rows[0];
