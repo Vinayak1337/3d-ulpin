@@ -1355,7 +1355,6 @@
       "workerCheckoutPolicy": "separate_worktree_and_branch_per_model_task_from_pinned_accepted_staging",
       "planHardeningOwner": "lead_direct",
       "lunaReasoning": [
-        "xhigh",
         "max"
       ],
       "firstTasks": [

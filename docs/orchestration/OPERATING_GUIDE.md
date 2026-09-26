@@ -29,13 +29,13 @@ Use ordinary reusable Codex tasks for each model/role; do not spawn subagents. R
 
 | Lane | Model | Effort selection |
 | --- | --- | --- |
-| Lead orchestration | GPT-6 Astra | High normally; xhigh for a specific difficult coordination decision |
-| Implementation | GPT-6 Sol | High normally; medium/low for a bounded simple fix; xhigh only for difficult integration |
-| Research, official data discovery, administrative work | GPT-6 Luna | xhigh or max for every assignment |
-| Backend contract verification | GPT-6 Luna | xhigh or max; use Sol when code execution is the better fit |
-| Risk review | GPT-6 Astra | High for security, privacy, transactions or geometry; medium for a small targeted review |
+| Lead orchestration | GPT-6 Astra | High normally; xhigh/max for difficult coordination decisions |
+| Implementation | GPT-6 Sol | High for bounded changes; xhigh/max for complex implementation or integration; medium/low for simple fixes |
+| Research, official data discovery, administrative work | GPT-6 Luna | Max only for every assignment |
+| Backend contract verification | GPT-6 Luna | Max only; use Sol when code execution is the better fit |
+| Risk review | GPT-6 Astra | Xhigh/max for consequential security, privacy, transaction or geometry reviews; high/medium for bounded reviews |
 
-A straightforward review can use Sol in a separate review assignment when useful. Tiny fixes may go to Luna only with explicit isolated ownership; Sol remains the default code writer. Do not default every job to xhigh. Verify observed model/effort rather than claiming the requested setting was applied. The user allows any supported effort for other models; every Luna worker must use xhigh or max.
+A straightforward review can use Sol in a separate review assignment when useful. Tiny fixes may go to Luna only with explicit isolated ownership; Sol remains the default code writer. The user authorizes more expensive workers for upcoming assignments and prioritizes quality: use higher-effort Sol or Astra where complexity or consequence warrants it, without expanding scope or repeating unnecessary checks. Every Luna worker must use max only. Other models may use any supported effort appropriate to the task. Verify observed model/effort rather than claiming the requested setting was applied.
 
 Fast is the requested default. The local configuration was observed with `service_tier = "priority"`; the task API exposes no speed argument. Report requested Fast, configured tier and observed per-turn tier separately. If turn metadata omits the tier, say unobserved. Do not modify host authentication/configuration, buy API access or retry an authentication failure in a loop; report the blocker once.
 

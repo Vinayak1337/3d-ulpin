@@ -16,12 +16,12 @@ The user requests Fast. On 26 September this task observed `service_tier = "prio
 
 | Tier | Ordinary task | Default | Use |
 | --- | --- | --- | --- |
-| T-lead | Delivery/coordination | GPT-6 Astra high | Scope, ownership, direct assigned work, integration; xhigh only for a difficult specific decision |
-| T-work | Implementation | GPT-6 Sol high | Bounded backend changes; medium/low for simple fixes, xhigh for difficult integration |
-| T-read | Research/data/admin | GPT-6 Luna xhigh/max | Official acquisition and bounded data/verification tasks; no plan-hardening delegation |
-| T-risk | Review | GPT-6 Astra high | Security, privacy, transactions and geometry; medium for a small review |
+| T-lead | Delivery/coordination | GPT-6 Astra high | Scope, ownership, direct assigned work, integration; xhigh/max for difficult decisions |
+| T-work | Implementation | GPT-6 Sol high | Bounded backend changes; xhigh/max for complex implementation/integration, medium/low for simple fixes |
+| T-read | Research/data/admin | GPT-6 Luna max only | Official acquisition and bounded data/verification tasks; no plan-hardening delegation |
+| T-risk | Review | GPT-6 Astra xhigh/max | Consequential security, privacy, transaction and geometry reviews; high/medium for bounded reviews |
 
-A separate Sol review is appropriate for straightforward changes. Verify actual model/effort; do not claim a requested override ran. Every Luna assignment uses xhigh or max; choose supported efforts for other models according to the bounded task. If the client cannot enforce a selection, record the limitation and use an explicit serial fallback within the authorized role. Astra/Sol/Luna review is same-family engineering review; cross-family or human milestone acceptance remains separately required. Runtime private-record inference uses H20's governed gateway, never coding tasks.
+A separate Sol review is appropriate for straightforward changes. The user authorizes more expensive workers for upcoming assignments where they improve quality; choose supported efforts for other models according to the bounded task. Every Luna assignment uses max only. Verify actual model/effort; do not claim a requested override ran. If the client cannot enforce a selection, record the limitation and use an explicit serial fallback within the authorized role. Astra/Sol/Luna review is same-family engineering review; cross-family or human milestone acceptance remains separately required. Runtime private-record inference uses H20's governed gateway, never coding tasks.
 
 ## 3. Ownership and assignment
 
