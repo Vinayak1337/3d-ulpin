@@ -54,11 +54,12 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
         conflict('Document job input changed before publication.');
       await readDocumentResult(input,accepted.sha256);
     },beforeLocks,async client=>{
-      const referenceParts=result.native.parts.map(p=>({id:p.id,sourceRevisionId:p.sourceId,locator:p.locator.label,text:p.text,entityIds:[],nativeLocator:p.locator,method:p.method}));
+      // Staged native text lives only in the fenced result object. Copying it to
+      // generic inspection/package views would bypass current job/access pins.
       await client.query(`UPDATE sources SET status=$2,inspection=inspection || $3::jsonb WHERE id=$1`,[input.sourceId,
         native.status==='extracted'?'needs_input':native.status==='tool_error'?'failed':'needs_input',
         {status:'needs_input',summary:'Source-bound extraction receipt retained. Native results and model proposals are separate; no facts are approved.',
-          referenceParts,documentAccepted:{jobId,sha256:hash,nativeStatus:native.status,modelStatus:model.status}}]);
+          documentAccepted:{jobId,sha256:hash,nativeStatus:native.status,modelStatus:model.status}}]);
       await appendCaseIngestionTx(client,input.caseId,{kind:'document.changed',sourceId:input.sourceId,sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
     });
     async function authorizePins(client:Parameters<typeof assertDocumentInputTx>[0]){

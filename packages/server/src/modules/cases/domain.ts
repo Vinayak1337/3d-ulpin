@@ -63,6 +63,11 @@ export function caseFrom(row: Row): CaseRecord {
   };
 }
 export function sourceFrom(row: Row): SourceRevision {
+  let inspection=row.inspection;
+  if(inspection?.documentOriginal){
+    const {documentOriginal:_original,documentAccepted:_accepted,referenceParts:_parts,...metadata}=inspection;
+    inspection=metadata;
+  }
   return {
     id: row.id,
     caseId: row.case_id,
@@ -75,7 +80,7 @@ export function sourceFrom(row: Row): SourceRevision {
     sha256: row.sha256,
     status: row.status,
     createdAt: iso(row.created_at),
-    inspection: redactDocumentViews(row.inspection),
+    inspection: redactDocumentViews(inspection),
   };
 }
 export function jobFrom(row: Row): ProcessingJob {
