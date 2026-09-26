@@ -92,7 +92,7 @@ export const caseDetail = z.object({
 export const demoInputs = z.object({sourceIds: z.array(uuid)});
 export const binary = {type: 'string', format: 'binary'} as const;
 export const sourceCase = z.object({caseId: uuid});
-export const caseDocument = z.object({caseId: uuid, sourceId: uuid});
+export const caseDocument = z.object({caseId: uuid, sourceId: uuid, jobId:uuid.optional()});
 
 const geometry = z.object({
   type: z.enum(['GeometryCollection', 'Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon']),

@@ -8,7 +8,7 @@ import { canonical, fingerprint } from '../cases/domain';
 import { AppError, conflict } from '../../infrastructure/errors';
 import { putOriginal, readObject, sha256 } from '../../infrastructure/storage';
 import { assertLocalUsp, readManifest, readRegistryEvidenceBytes,
-  readSnapshotBody, resolveRegistryTarget } from './snapshots';
+  readSnapshotBody, resolveRegistryTarget,assertSnapshotDocumentsTx } from './snapshots';
 
 export type Packet0Line = { pointer: EvidencePointer; sourceSha256: string; excerpt: string | null;
   reasonCode: string | null };
@@ -94,6 +94,7 @@ export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
   const objectKey = `usp/packets/${packetId}/${artifactHash}`;
   await putOriginal(objectKey, bytes, contentType);
   return transaction(async client => {
+    await assertSnapshotDocumentsTx(client,ctx,request.scope,true);
     const key = `${ctx.principal.subject}:${scopeKey}:packet0:${request.guard.requestKey}`;
     await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [key]);
     const replay = (await client.query(
@@ -113,6 +114,7 @@ export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
       format: request.format, artifact: { assetId: packetId, version: 1, sha256: artifactHash },
       included, unavailable, contentType, createdAt: new Date().toISOString(),
       status: unavailable.length ? 'incomplete' : 'complete', commandSha256: hash });
+    assertLocalUsp(ctx);
     await client.query(`INSERT INTO usp_packets(id,manifest_id,target_namespace,target_id,artifact_hash,object_key,body)
       VALUES($1,$2,$3,$4,$5,$6,$7)`, [packetId, manifest.id, request.target.ref.namespace,
       request.target.ref.id, artifactHash, objectKey, receipt]);
@@ -140,6 +142,7 @@ export async function readPacket0(ctx: RequestContext, packetId: string) {
   if (sha256(bytes) !== row.artifact_hash || row.artifact_hash !== receipt.artifact.sha256) {
     throw new AppError(422, 'USP_PACKET_INTEGRITY', 'The saved packet no longer matches its receipt.');
   }
+  await readManifest(ctx,receipt.scope);
   return { bytes, receipt };
 }
 
