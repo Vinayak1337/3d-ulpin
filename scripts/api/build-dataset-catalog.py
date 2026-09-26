@@ -92,6 +92,19 @@ def catalogue():
             **qualification(relative),
             "limitations": manifest.get("limitations", [manifest.get("snapshotNote")]),
         })
+        # Publish the retained official text used by document intake, not just
+        # the geometry asset in the same source manifest. Verify exact bytes.
+        documents = [asset for asset in manifest.get('assets', [])
+                     if asset['file'] == 'evidence/nyc-building-metadata.md']
+        if documents:
+            retained[-1]['documents'] = [{
+                'originalUrl': asset['url'], 'acquiredAt': asset['retrievedAt'],
+                'content': checked_content(file, {
+                    'state': 'available', 'path': asset['file'],
+                    'sha256': asset['sha256'], 'bytes': asset['byteLength']}),
+                'purpose': 'Foreign official native-text extraction test; not property facts or an installed document.',
+                'handoff': 'docs/evidence/usp/document-ingestion-handoff.md',
+            } for asset in documents]
     return {
         "schemaVersion": "ulpin-api-dataset-catalog/1",
         "purpose": "Source metadata for API integration; not installed records or permission grants.",

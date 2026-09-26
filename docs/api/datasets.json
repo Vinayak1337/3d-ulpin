@@ -3204,6 +3204,29 @@
           "frontend or release-gate completion",
           "PDF.js page/rendering helper",
           "Populated/linked environment migration or deployment"
+        ],
+        "additionalReceipts": [
+          {
+            "receipt": "docs/evidence/usp/document-authority-correction.json",
+            "servedCodeCommit": "69ce92cf47ec253807d6a3907e7dcfab1174f997",
+            "operations": {
+              "POST /api/v1/ingestion/cases/{caseId}/documents": "Unchanged official NYC metadata retained before native extraction; actual scanned USGS PDF retained with needs_ocr; provider disabled.",
+              "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}": "Source-bound native parts/status and honest model-disabled/needs_ocr outcomes; generic projection and current-source denial checks.",
+              "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/retry": "Native retry against actual current case/source pins after observed source-context drift."
+            },
+            "environment": {
+              "kind": "stopped-isolated",
+              "project": "ulpin-usptest-d546a4764d77205d",
+              "nonce": "d546a4764d77205d"
+            },
+            "qualification": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188.",
+            "unqualified": [
+              "Live model calls, extraction accuracy, OCR, all-format support and learning",
+              "Legitimate property-linked marked-source copy/packet/export success",
+              "Final d400c79 HTTP/PostgreSQL runtime qualification; package checks are memory-only protocol evidence",
+              "Indian operational data, geometry/rights, deployment and complete release gates"
+            ]
+          }
         ]
       },
       "missingCapabilities": [
@@ -3460,10 +3483,47 @@
         "repositoryPath": "fixtures/real-area/original.geojson"
       },
       "geography": "New York City, United States",
-      "apiInstallation": "not-verified",
-      "runtimeVerified": false,
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "runtimeVerified": true,
+      "runtimeEvidence": {
+        "receipt": "docs/evidence/usp/document-authority-correction.json",
+        "servedCodeCommit": "69ce92cf47ec253807d6a3907e7dcfab1174f997",
+        "operations": {
+          "POST /api/v1/ingestion/cases/{caseId}/documents": "Unchanged official NYC metadata retained before native extraction; actual scanned USGS PDF retained with needs_ocr; provider disabled.",
+          "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}": "Source-bound native parts/status and honest model-disabled/needs_ocr outcomes; generic projection and current-source denial checks.",
+          "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/retry": "Native retry against actual current case/source pins after observed source-context drift."
+        },
+        "environment": {
+          "kind": "stopped-isolated",
+          "project": "ulpin-usptest-d546a4764d77205d",
+          "nonce": "d546a4764d77205d"
+        },
+        "qualification": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188.",
+        "unqualified": [
+          "Live model calls, extraction accuracy, OCR, all-format support and learning",
+          "Legitimate property-linked marked-source copy/packet/export success",
+          "Final d400c79 HTTP/PostgreSQL runtime qualification; package checks are memory-only protocol evidence",
+          "Indian operational data, geometry/rights, deployment and complete release gates"
+        ]
+      },
       "limitations": [
         "A complete bounded query checked before and after transfer; not a provider transaction or all Bronx buildings. Whole polygons contained by within_box are selected; boundary-crossing buildings are excluded."
+      ],
+      "documents": [
+        {
+          "originalUrl": "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+          "acquiredAt": "2026-09-13T23:50:24.450967+00:00",
+          "content": {
+            "state": "available",
+            "path": "evidence/nyc-building-metadata.md",
+            "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27",
+            "bytes": 12973,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/real-area/evidence/nyc-building-metadata.md"
+          },
+          "purpose": "Foreign official native-text extraction test; not property facts or an installed document.",
+          "handoff": "docs/evidence/usp/document-ingestion-handoff.md"
+        }
       ]
     }
   ]
