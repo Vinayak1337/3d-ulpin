@@ -250,7 +250,7 @@
     },
     {
       "manifest": "fixtures/usp/D3/nwic-boundaries-v1/manifest.json",
-      "manifestSha256": "c99b2a33c96707a608eb740543b3db9db7009c3ab71e53a7a890cbd6c2ee4e70",
+      "manifestSha256": "db1cd001da8cf32dbaf1cde24e24af9b8239087009fb45b2b39ddd927b0ee3f2",
       "packId": "D3",
       "profile": "nwic-india-districts-vector-inspected",
       "version": 1,
@@ -429,6 +429,64 @@
             "parsed": {
               "status": "passed",
               "evidenceRef": "docs/evidence/usp/nest-migration/nwic-boundaries/source-check.json"
+            },
+            "rendered": {
+              "status": "not_run"
+            },
+            "workflow_verified": {
+              "status": "not_run"
+            }
+          }
+        },
+        {
+          "id": "nwic-district-boundaries-vector-admission-profile",
+          "mediaType": "application/json",
+          "classification": "unknown",
+          "origin": {
+            "kind": "authored",
+            "generatorRef": "scripts/usp/data/profile-nwic-vector.py; derived from unchanged GeoJSON member SHA-256 2b27a478e24d8c51b0655e74ce3f4f880e75c752e4597550d6fc925ed06ac201 in image sha256:91683e358f3fa8d8a132b8d02548d588343fbdb38c902e473512ce9c84ecefd2"
+          },
+          "sourceVersion": "nwic-vector-admission-profile/1",
+          "attribution": "Derived structural, CRS-operation and native-topology metadata for the Geological Survey of India / NWIC District Boundary GeoJSON; no source geometry coordinates are included.",
+          "permission": {
+            "state": "documented",
+            "reference": "https://www.nwdp.nwic.gov.in/footer/copyrightPolicy (attributed, accurate, non-misleading reproduction conditions); https://www.nwdp.nwic.gov.in/dataset/district-boundary/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d",
+            "permittedUses": [
+              "research",
+              "demo",
+              "redistribution"
+            ]
+          },
+          "reference": {
+            "horizontalCrs": "EPSG:7755 (WGS 84 / India NSF LCC); literal source URN urn:ogc:def:crs:EPSG::7755",
+            "verticalReference": null,
+            "horizontalUnit": "metre",
+            "verticalUnit": null,
+            "sourceDate": "NWIC resource updated 2025-05-01; dataset page updated 2025-05-05"
+          },
+          "dependencies": [
+            "nwic-district-boundaries-original",
+            "nwic-district-boundaries-source-observations"
+          ],
+          "content": {
+            "state": "available",
+            "path": "vector-admission-profile.json",
+            "sha256": "6701d5423d5985dd6216973f6b8289d93b52120e5785102e448ca72abe266f28",
+            "bytes": 28674,
+            "repositoryBytesVerified": true,
+            "repositoryPath": "fixtures/usp/D3/nwic-boundaries-v1/vector-admission-profile.json"
+          },
+          "manifestVerification": {
+            "catalogue_checked": {
+              "status": "not_applicable",
+              "reason": "Derived profile is not a source catalogue entry."
+            },
+            "bytes_preserved": {
+              "status": "passed",
+              "evidenceRef": "docs/evidence/usp/nwic-vector-profile-handoff.md"
+            },
+            "parsed": {
+              "status": "not_run"
             },
             "rendered": {
               "status": "not_run"
