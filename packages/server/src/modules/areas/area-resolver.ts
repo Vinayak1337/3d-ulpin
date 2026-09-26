@@ -186,7 +186,7 @@ export async function resolveAreaIdentifier(identifier: string) {
       areaIds: row.area_id ? [row.area_id] : [],
       matchEvidence: [
         {
-          scheme: [row.body.identifier, row.id].some(
+          scheme: [row.identifier, row.id].some(
             (v) => v?.toUpperCase() === normalized,
           )
             ? "app_identifier"
@@ -226,6 +226,9 @@ export async function bindExternalIdentifier(input: {
   locator: string;
   expectedRevision: number;
 }) {
+  if (input.scheme === "demo_ulpin") {
+    throw new AppError(410, "RETIRED_OPERATION", "New demonstration ULPIN assertions are no longer available. Historical assertions remain readable.");
+  }
   return transaction(async (client) => {
     const isPhysical = !!input.featureId,
       target = input.featureId || input.recordId!;
@@ -248,18 +251,6 @@ export async function bindExternalIdentifier(input: {
         422,
         "PARCEL_REQUIRED",
         "An official ULPIN assertion must target a parcel. A building source ID is a separate identifier.",
-      );
-    if (
-      input.scheme === "demo_ulpin" &&
-      (!isPhysical ||
-        row.body.kind !== "parcel" ||
-        row.body.worldStatus !== "synthetic" ||
-        !input.value.startsWith("DEMO-"))
-    )
-      throw new AppError(
-        422,
-        "DEMO_PARCEL_REQUIRED",
-        "This application test identifier must begin DEMO- and target a synthetic parcel.",
       );
     const areaId = isPhysical ? row.area_id : row.site_id;
     const source = (

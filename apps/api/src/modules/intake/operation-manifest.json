@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "batch": "NEST-10",
+  "acceptedBase": "fd7d3e3973e886deab5925eb4d61e9fed8a50f5e",
+  "acceptedDependencyPatch": "08e5816657fbefbf1ed8a794a182d651e0a1d5cb",
+  "module": {
+    "class": "IntakeModule",
+    "import": "./modules/intake/intake.module",
+    "leadRegistrationRequired": true
+  },
+  "schemaAuthorities": [
+    "packages/server/src/infrastructure/validation.ts",
+    "packages/server/src/modules/areas/area-validation.ts",
+    "packages/server/src/modules/cases/source-cases.ts#sourceCaseSchema",
+    "packages/server/src/modules/cases/source-workspaces.ts#sourceWorkspaceSchema",
+    "apps/api/src/modules/intake/wire-schemas.ts (response shapes from canonical service results and contracts)"
+  ],
+  "limits": {
+    "sourceOriginalBytes": 16777216,
+    "gisOriginalBytes": 16777216,
+    "documentBytes": "PDF/DOCX/CSV/text: 10 MiB; PNG/JPEG: 16 MiB; canonical services enforce nonempty files."
+  },
+  "semanticsChanges": [
+    "Authored area crossings are retired with 410 before parsing and zero generator writes; historical packages/records remain readable.",
+    "New ordinary cases use UNASSIGNED frame/benchmark instead of shared demo frame; existing records are untouched.",
+    "Source-original downloads reject a receipt byte-size or SHA-256 mismatch with 422 SOURCE_INTEGRITY.",
+    "GIS intake rejects empty/oversized bytes before unmapped-ID processor validation.",
+    "The demo_ulpin write branch returns 410 before its transaction; historical assertions remain readable.",
+    "Site resolver evidence now reads registry_sites.identifier rather than nonexistent registry_sites.body.identifier."
+  ],
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/server typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/api typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/api build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec tsx --test tests/source-intake.test.ts",
+      "exit": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/api test:boundary",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-intake.test.ts",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "One-off esbuild bundle with apps/api/scripts/build.mjs settings -> node dist/intake-di-check.mjs (temporary entry/output removed)",
+      "exit": 0,
+      "observed": "In-memory Nest application context resolved all 3 controller dependencies to the real CaseIntakeService/AreaIntakeService instances. No listener/domain call."
+    }
+  ],
+  "runtimeBoundary": "Only a dependency-free ephemeral loopback intake validation listener was used and closed. No database/container/processor/provider/object-store service was started or called. Stateful success and recovery are unqualified.",
+  "officialSourceQueueGap": {
+    "state": "open",
+    "actualFlow": "Unchanged official NYC GeoJSON uses synchronous ingestArea -> retained-original download -> package/candidate/read. No job is queued for that original. The real-nyc derived local input pair queues inspect/build separately and does not close this gap.",
+    "smallestCanonicalFollowOn": "Add a supported original GIS profile to the existing contracts/validators and Python inspect conversion, then split original receipt/enqueue from package normalization/persistence through existing jobs/dispatcher. Pin the same source revision/object key/hash, mapping, import signature and expected destination revision; publish completion through existing transaction/fencing and retry rules. No parallel queue or derived-source substitution."
+  },
+  "verificationNotes": [
+    "The first typecheck attempts found no installed node_modules; frozen installation reused locked packages.",
+    "API typecheck exposed Swagger schema typing errors; those were corrected and the final API build/typecheck passed.",
+    "Existing source-intake (6) and common boundary (4) checks passed once. The focused intake check (2) was repeated only after relevant schema/retirement edits.",
+    "Each controller uses explicit @Inject tokens because emitDecoratorMetadata is disabled; tsx HTTP and esbuild in-memory DI checks both passed."
+  ],
+  "requestedExecution": {
+    "model": "Sol",
+    "reasoningEffort": "max",
+    "speed": "Fast",
+    "observedModelEffortTier": "Not exposed in this task context; host settings were not modified."
+  },
+  "transportProfiles": {
+    "json": "application/json; actual received bytes <= 2 MiB",
+    "multipart": "multipart/form-data; actual received envelope <= 17 MiB",
+    "gis-import": "JSON acquisition receipt <= 2 MiB OR multipart original envelope <= 17 MiB",
+    "none": "No request body is consumed; retirement returns before parsing."
+  },
+  "runtimeEvidenceProfiles": {
+    "pending": {
+      "state": "not-exercised",
+      "reason": "Stateful success/recovery awaits integrated fresh owned services."
+    },
+    "retirement": {
+      "state": "verified-retirement",
+      "check": "tests/nest-intake.test.ts",
+      "observed": "Native HTTP 410; canonical function and legacy route reject before input parsing. Canonical generator has no persistence/processor dependencies."
+    },
+    "original": {
+      "state": "partial",
+      "check": "tests/nest-intake.test.ts",
+      "observed": "original.geojson HTTP 200; private cache/attachment headers and exact byte equality to retained fixture. provenance.json parameter not exercised."
+    },
+    "invalid-json": {
+      "state": "validation-only",
+      "check": "tests/nest-intake.test.ts",
+      "observed": "Malformed case JSON HTTP 400 INVALID_JSON; no operational success result claimed."
+    },
+    "identifier-branch": {
+      "state": "partial",
+      "check": "tests/nest-intake.test.ts",
+      "observed": "Canonical demo_ulpin branch returns 410 before transaction; real identifier success remains unexercised."
+    }
+  },
+  "codeSha256": {
+    "apps/api/src/modules/intake/area-sources.controller.ts": "2ddc2802c7b3421ed30cf1a14da22223a8e3f09ad05d0a684be404d9ba6094be",
+    "apps/api/src/modules/intake/cases.controller.ts": "3484b2f4657b0abfe574c3c28b7a88b4394e8c48a49c390860453b5667db9bf8",
+    "apps/api/src/modules/intake/import-packages.controller.ts": "4a67b176837b16d4ccc64abcc9baea0fad317832bdc8ca2de687b481363c1488",
+    "apps/api/src/modules/intake/intake.module.ts": "cf2dfef89c65b3459481a209d4b2ddd24f619128faf0baf691b195bed7d37cf0",
+    "apps/api/src/modules/intake/wire-schemas.ts": "9041ffb10c4b56582c5d61d40598974f9200b487becedcd291ad6f5b2a2aca0b",
+    "packages/server/src/modules/areas/area-intake-service.ts": "7dff6d96c20a4a772ad24ea53be5191b7bf0c2d01e13848982607adefad140e3",
+    "packages/server/src/modules/areas/area-resolver.ts": "b98a713a0223a1b957fa5055ac277a918abe1e38b861ce5a78481ee1e6ffb2a7",
+    "packages/server/src/modules/areas/area-routes.ts": "f325332c87ca77c629d692ae0c46f4a5546b4a1d20595091974395ef35878c48",
+    "packages/server/src/modules/areas/area-scenario.ts": "c00baf4e1361bd2fb38ced6c78c33b8ee843b85794ac6650b6486ddab030f28f",
+    "packages/server/src/modules/areas/area-validation.ts": "7dc9a53530cf3116b9990e2b54e7404c059401dafc698eb348f38c6a746684e4",
+    "packages/server/src/modules/cases/case-intake-service.ts": "2c94f7abfbb3e62dfaaa09ae35db4438c7cb3ed6cbe3d603132ef94a464d115d",
+    "packages/server/src/modules/cases/domain.ts": "2f26c0ce34e1fd57eee038c07599a7854ccdbf65414b6931b3c945bd7c018877",
+    "packages/server/src/modules/cases/gis-inspection.ts": "13e166d9da3a41b3256210f8ac32a922a711c90614d498b410f6a31ae6696313",
+    "tests/nest-intake.test.ts": "ab1fa481839dd1fd7fb813b511fc59cce4ab783bc3b48a1a36e23af139582922"
+  },
+  "retainedSourceSha256": {
+    "fixtures/real-nyc/original.geojson": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+    "fixtures/real-nyc/provenance.json": "762ad8fe4b28a65715810961b65e1a1610a6b3525467177d2f75bb94806349f4",
+    "fixtures/real-nyc/spatial.json": "c44a8242c662d69c88272ed0c894885d6c19814ad422f2109d72266d7a41f686",
+    "fixtures/real-nyc/levels-r1.csv": "65bad40670e0e0cc3dad24b79a12fe7473be4859aa942b669432c6cb93c97b6b",
+    "fixtures/real-area/original.geojson": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a"
+  },
+  "operations": [
+    {"method":"GET","path":"/api/v1/demo-assets/real-nyc/{asset}","operationId":"GET_api_v1_demo_assets_real_nyc_asset","disposition":"retained","nativeController":"cases","requestSchema":null,"responseSchema":"binary","runtimeEvidence":"original","responseStatus":200,"transportProfile":"none"},
+    {"method":"GET","path":"/api/v1/demo-files/{caseId}/{filename}","operationId":"GET_api_v1_demo_files_caseId_filename","disposition":"retained","nativeController":"cases","requestSchema":null,"responseSchema":"binary","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"GET","path":"/api/v1/sources/{sourceId}/file","operationId":"GET_api_v1_sources_sourceId_file","disposition":"replaced","nativeController":"cases","requestSchema":null,"responseSchema":"binary","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"POST","path":"/api/v1/jobs/{jobId}/retry","operationId":"POST_api_v1_jobs_jobId_retry","disposition":"replaced","nativeController":"cases","requestSchema":null,"responseSchema":"job","runtimeEvidence":"pending","responseStatus":202,"transportProfile":"none"},
+    {"method":"GET","path":"/api/v1/cases","operationId":"GET_api_v1_cases","disposition":"replaced","nativeController":"cases","requestSchema":null,"responseSchema":"z.array(caseRecord)","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"POST","path":"/api/v1/cases","operationId":"POST_api_v1_cases","disposition":"replaced","nativeController":"cases","requestSchema":"createCaseSchema","responseSchema":"caseRecord","runtimeEvidence":"invalid-json","responseStatus":201,"transportProfile":"json"},
+    {"method":"GET","path":"/api/v1/cases/{caseId}","operationId":"GET_api_v1_cases_caseId","disposition":"replaced","nativeController":"cases","requestSchema":null,"responseSchema":"caseDetail","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"POST","path":"/api/v1/cases/{caseId}/sources","operationId":"POST_api_v1_cases_caseId_sources","disposition":"replaced","nativeController":"cases","requestSchema":"multipart fields","responseSchema":"sourceRevision","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"multipart"},
+    {"method":"POST","path":"/api/v1/cases/{caseId}/demo-inputs","operationId":"POST_api_v1_cases_caseId_demo_inputs","disposition":"retained","nativeController":"cases","requestSchema":"demoSchema","responseSchema":"demoInputs","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/cases/{caseId}/prepare","operationId":"POST_api_v1_cases_caseId_prepare","disposition":"replaced","nativeController":"cases","requestSchema":"prepareSchema","responseSchema":"caseDetail","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/cases/{caseId}/apply-levels","operationId":"POST_api_v1_cases_caseId_apply_levels","disposition":"replaced","nativeController":"cases","requestSchema":"applyLevelsSchema","responseSchema":"caseDetail","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/cases/{caseId}/build","operationId":"POST_api_v1_cases_caseId_build","disposition":"replaced","nativeController":"cases","requestSchema":"buildSchema","responseSchema":"job","runtimeEvidence":"pending","responseStatus":202,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/cases/{caseId}/units","operationId":"POST_api_v1_cases_caseId_units","disposition":"replaced","nativeController":"cases","requestSchema":"addUnitSchema","responseSchema":"unit","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"json"},
+    {"method":"PATCH","path":"/api/v1/cases/{caseId}/units/{unitId}","operationId":"PATCH_api_v1_cases_caseId_units_unitId","disposition":"replaced","nativeController":"cases","requestSchema":"editUnitSchema","responseSchema":"unit","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/source-cases","operationId":"POST_api_v1_source_cases","disposition":"replaced","nativeController":"area-sources","requestSchema":"sourceCaseSchema","responseSchema":"sourceCase","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/cases/{caseId}/reference-documents","operationId":"POST_api_v1_cases_caseId_reference_documents","disposition":"replaced","nativeController":"area-sources","requestSchema":"multipart fields","responseSchema":"caseDocument","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"multipart"},
+    {"method":"GET","path":"/api/v1/source-workspaces","operationId":"GET_api_v1_source_workspaces","disposition":"replaced","nativeController":"area-sources","requestSchema":null,"responseSchema":"z.nullable(importPackage)","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"POST","path":"/api/v1/source-workspaces","operationId":"POST_api_v1_source_workspaces","disposition":"replaced","nativeController":"area-sources","requestSchema":"sourceWorkspaceSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"json"},
+    {"method":"GET","path":"/api/v1/source-catalog","operationId":"GET_api_v1_source_catalog","disposition":"replaced","nativeController":"area-sources","requestSchema":null,"responseSchema":"sourceCatalog","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"GET","path":"/api/v1/areas","operationId":"GET_api_v1_areas","disposition":"replaced","nativeController":"area-sources","requestSchema":null,"responseSchema":"z.array(mapArea)","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"GET","path":"/api/v1/areas/{areaId}/context","operationId":"GET_api_v1_areas_areaId_context","disposition":"replaced","nativeController":"area-sources","requestSchema":null,"responseSchema":"areaContext","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"POST","path":"/api/v1/areas/{areaId}/scenario","operationId":"POST_api_v1_areas_areaId_scenario","disposition":"retired","nativeController":"area-sources","requestSchema":null,"responseSchema":"ApiError(RETIRED_OPERATION)","runtimeEvidence":"retirement","responseStatus":410,"transportProfile":"none"},
+    {"method":"GET","path":"/api/v1/resolve","operationId":"GET_api_v1_resolve","disposition":"replaced","nativeController":"area-sources","requestSchema":null,"responseSchema":"resolvedIdentifier","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"POST","path":"/api/v1/external-identifiers","operationId":"POST_api_v1_external_identifiers","disposition":"replaced","nativeController":"area-sources","requestSchema":"externalIdentifierSchema","responseSchema":"externalIdentifier","runtimeEvidence":"identifier-branch","responseStatus":201,"transportProfile":"json","retiredBranch":"demo_ulpin -> 410"},
+    {"method":"POST","path":"/api/v1/acquisitions/probe","operationId":"POST_api_v1_acquisitions_probe","disposition":"replaced","nativeController":"area-sources","requestSchema":"acquisitionProbeSchema","responseSchema":"acquisitionProbe","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/acquisitions","operationId":"POST_api_v1_acquisitions","disposition":"replaced","nativeController":"area-sources","requestSchema":"acquisitionSchema","responseSchema":"acquisition","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"json"},
+    {"method":"GET","path":"/api/v1/acquisitions/{acquisitionId}","operationId":"GET_api_v1_acquisitions_acquisitionId","disposition":"replaced","nativeController":"area-sources","requestSchema":null,"responseSchema":"acquisition","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"POST","path":"/api/v1/import-packages/inspect","operationId":"POST_api_v1_import_packages_inspect","disposition":"replaced","nativeController":"import-packages","requestSchema":"multipart fields","responseSchema":"gisInspection","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"multipart"},
+    {"method":"POST","path":"/api/v1/import-packages","operationId":"POST_api_v1_import_packages","disposition":"replaced","nativeController":"import-packages","requestSchema":"acquisitionImportSchema or areaImportMetadataSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"gis-import"},
+    {"method":"GET","path":"/api/v1/import-packages/{packageId}","operationId":"GET_api_v1_import_packages_packageId","disposition":"replaced","nativeController":"import-packages","requestSchema":null,"responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"GET","path":"/api/v1/import-packages/{packageId}/questions","operationId":"GET_api_v1_import_packages_packageId_questions","disposition":"replaced","nativeController":"import-packages","requestSchema":null,"responseSchema":"z.array(question)","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/correction","operationId":"POST_api_v1_import_packages_packageId_correction","disposition":"replaced","nativeController":"import-packages","requestSchema":"packageCorrectionSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/answers","operationId":"POST_api_v1_import_packages_packageId_answers","disposition":"replaced","nativeController":"import-packages","requestSchema":"packageAnswerSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/review","operationId":"POST_api_v1_import_packages_packageId_review","disposition":"replaced","nativeController":"import-packages","requestSchema":"packageRevisionSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/prepare","operationId":"POST_api_v1_import_packages_packageId_prepare","disposition":"replaced","nativeController":"import-packages","requestSchema":"packageRevisionSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/rebase","operationId":"POST_api_v1_import_packages_packageId_rebase","disposition":"replaced","nativeController":"import-packages","requestSchema":"packageRevisionSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/commit","operationId":"POST_api_v1_import_packages_packageId_commit","disposition":"replaced","nativeController":"import-packages","requestSchema":"packageCommitSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/copy-case-documents","operationId":"POST_api_v1_import_packages_packageId_copy_case_documents","disposition":"replaced","nativeController":"import-packages","requestSchema":"copyCaseDocumentsSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/documents","operationId":"POST_api_v1_import_packages_packageId_documents","disposition":"replaced","nativeController":"import-packages","requestSchema":"multipart fields","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"multipart"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/source-documents","operationId":"POST_api_v1_import_packages_packageId_source_documents","disposition":"replaced","nativeController":"import-packages","requestSchema":"multipart fields","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"multipart"},
+    {"method":"POST","path":"/api/v1/import-packages/{packageId}/facts","operationId":"POST_api_v1_import_packages_packageId_facts","disposition":"replaced","nativeController":"import-packages","requestSchema":"packageFactSchema","responseSchema":"importPackage","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"json"},
+    {"method":"POST","path":"/api/v1/area-checks","operationId":"POST_api_v1_area_checks","disposition":"replaced","nativeController":"import-packages","requestSchema":"areaCheckSchema","responseSchema":"areaCheck","runtimeEvidence":"pending","responseStatus":201,"transportProfile":"json"},
+    {"method":"GET","path":"/api/v1/area-checks/{checkId}","operationId":"GET_api_v1_area_checks_checkId","disposition":"replaced","nativeController":"import-packages","requestSchema":null,"responseSchema":"areaCheck","runtimeEvidence":"pending","responseStatus":200,"transportProfile":"none"}
+  ]
+}

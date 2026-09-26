@@ -5,6 +5,8 @@ import { z } from "zod";
 import { query } from "../../infrastructure/db";
 import { inspectGisUpload, validateUnmappedGisIdentity } from "../cases/gis-inspection";
 import { areaGeo } from "./areas";
+import { areaMappingSchema } from "./area-validation";
+import { areaScenarioRetired } from "./area-scenario";
 import { AppError, notFound } from "../../infrastructure/errors";
 import {
   SOURCE_CATALOG,
@@ -28,90 +30,11 @@ import {
   createPackageCorrection,
 } from "./areas";
 import { resolveAreaIdentifier, bindExternalIdentifier } from "./area-resolver";
-import { createAreaScenario } from "./area-scenario";
 const uuid = z.string().uuid(),
   revision = z.number().int().nonnegative(),
   str = z.string().trim().min(1).max(150),
   field = z.string().trim().min(1).max(80);
-const geometryRole = z.enum([
-  "unknown",
-  "observed_ground_occupation",
-  "observed_roof_projection",
-  "approved_building_outline",
-  "recorded_parcel",
-  "public_road_land",
-  "road_surface",
-  "public_land",
-  "physical_utility",
-  "documented_restriction",
-]);
-const mapping = z
-  .object({
-    idField: field.optional(),
-    nameField: field.optional(),
-    kind: z.enum(["building", "parcel", "road", "public_land", "utility"]),
-    heightField: field.optional(),
-    heightUnit: z.enum(["m", "ft"]).optional(),
-    heightMeaning: z.string().trim().min(1).max(500).optional(),
-    identifierFields: z.array(field).max(10).optional(),
-    geometryRole: geometryRole.optional(),
-    geometryRoleField: field.optional(),
-    roleValues: z.record(z.string(), geometryRole).optional(),
-    levelReference: str.optional(),
-    floorCountField: field.optional(),
-    approvalStatusField: field.optional(),
-    sourceDateField: field.optional(),
-    validFromField: field.optional(),
-    validToField: field.optional(),
-    horizontalUncertaintyField: field.optional(),
-    horizontalUncertaintyUnit: z.enum(["m", "ft"]).optional(),
-    worldStatusField: field.optional(),
-    worldStatusValues: z
-      .record(
-        z.string(),
-        z.enum(["observed", "planned", "hypothetical", "synthetic"]),
-      )
-      .optional(),
-    verticalExtent: z
-      .object({
-        lowerField: field,
-        upperField: field,
-        unit: z.enum(["m", "ft"]),
-        reference: str,
-      })
-      .strict()
-      .optional(),
-    utility: z
-      .object({
-        assetIdField: field.optional(),
-        utilityTypeField: field.optional(),
-        operatorField: field.optional(),
-        startLevelField: field.optional(),
-        endLevelField: field.optional(),
-        levelsField: field.optional(),
-        levelUnit: z.enum(["m", "ft"]),
-        levelMeaning: z.enum([
-          "centre",
-          "invert",
-          "crown",
-          "depth_below_ground",
-        ]),
-        depthTo: z.enum(["centre", "invert", "crown"]).optional(),
-        verticalReference: str.nullable(),
-        interpolation: z.enum(["per_vertex", "linear_endpoints"]).optional(),
-        groundStartField: field.optional(),
-        groundEndField: field.optional(),
-        groundReference: str.optional(),
-        crossSection: z.enum(["circular", "rectangular"]).optional(),
-        diameterField: field.optional(),
-        widthField: field.optional(),
-        heightField: field.optional(),
-        dimensionUnit: z.enum(["m", "ft"]),
-      })
-      .strict()
-      .optional(),
-  })
-  .strict();
+const mapping = areaMappingSchema;
 const json = (value: unknown, status = 200) =>
   Response.json(redactDocumentViews(value), { status, headers: { "Cache-Control": "no-store" } });
 async function body(request: Request) {
@@ -169,18 +92,7 @@ export async function areaRoutes(
     p.length === 3 &&
     method === "POST"
   ) {
-    const input = z
-      .object({ expectedRevision: revision, kind: z.enum(["road", "utility"]) })
-      .strict()
-      .parse(await body(request));
-    return json(
-      await createAreaScenario(
-        uuid.parse(p[1]),
-        input.expectedRevision,
-        input.kind,
-      ),
-      201,
-    );
+    return areaScenarioRetired();
   }
   if (p[0] === "resolve" && p.length === 1 && method === "GET")
     return json(

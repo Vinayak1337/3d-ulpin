@@ -55,13 +55,18 @@ export async function inspectGisUpload(
   const file = form.get("file");
   if (!(file instanceof File))
     throw new AppError(400, "MISSING_FILE", "Choose a GIS source file.");
-  if (!file.size || file.size > 16 * 1024 * 1024)
-    throw new AppError(
-      413,
-      "FILE_SIZE",
-      "Choose a nonempty GIS file up to 16 MiB.",
-    );
   const layer = form.get("layer");
+  return inspectGisBytes({name: file.name, bytes: new Uint8Array(await file.arrayBuffer())}, layer, inspect);
+}
+
+/** Byte-oriented inspection used by native transports after one bounded multipart read. */
+export async function inspectGisBytes(
+  file: { name: string; bytes: Uint8Array },
+  layer: FormDataEntryValue | null,
+  inspect: (input: {base64: string; layer?: string}) => Promise<Omit<GisInspection, "suggestedTitle" | "suggestedNamespace">>,
+): Promise<GisInspection> {
+  if (!file.bytes.length || file.bytes.length > 16 * 1024 * 1024)
+    throw new AppError(413, "FILE_SIZE", "Choose a nonempty GIS file up to 16 MiB.");
   if (
     layer !== null &&
     (typeof layer !== "string" || !layer.length || layer.length > 256)
@@ -72,7 +77,7 @@ export async function inspectGisUpload(
       "Choose an available source layer.",
     );
   const metadata = await inspect({
-    base64: Buffer.from(await file.arrayBuffer()).toString("base64"),
+    base64: Buffer.from(file.bytes).toString("base64"),
     ...(layer ? { layer: String(layer) } : {}),
   });
   return {
