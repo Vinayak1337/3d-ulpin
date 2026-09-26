@@ -146,16 +146,16 @@ export async function putPartObject(key:string,bytes:Uint8Array,expectedHash:str
   return verifyObjectStream(key,bytes.length,expectedHash,30000);
 }
 /** Registered private tile derivatives only; callers reserve the exact bytes before PUT. */
-export async function putPrivateMvtObject(key:string,bytes:Uint8Array,expectedHash:string,maxBytes:number,mediaType:string){
+export async function putPrivateMvtObject(key:string,bytes:Uint8Array,expectedHash:string,maxBytes:number,mediaType:string,timeoutMs=10000){
   if(!/^private-mvt\/[a-f0-9]{64}\/[a-f0-9]{64}\/(tiles|maps|manifests)\/[a-f0-9-]+-[a-f0-9]{64}\.(mvt|json)$/.test(key)
     ||!key.endsWith(`-${expectedHash}.${key.endsWith('.mvt')?'mvt':'json'}`)||!Number.isInteger(maxBytes)||maxBytes>2*1024*1024
     ||bytes.length>maxBytes||(!bytes.length&&!key.endsWith('.mvt'))||sha256(bytes)!==expectedHash
-    ||!['application/vnd.mapbox-vector-tile','application/json'].includes(mediaType))
+    ||!['application/vnd.mapbox-vector-tile','application/json'].includes(mediaType)||!Number.isInteger(timeoutMs)||timeoutMs<1||timeoutMs>10000)
     throw new AppError(422,'MVT_ASSET_SCOPE','The bounded immutable tile artifact does not match its registered content address.');
   try{await s3().send(new PutObjectCommand({Bucket:settings.s3Bucket,Key:key,Body:bytes,ContentLength:bytes.length,ContentType:mediaType,
-    IfNoneMatch:'*',Metadata:{sha256:expectedHash}}),{abortSignal:AbortSignal.timeout(10000)});}
+    IfNoneMatch:'*',Metadata:{sha256:expectedHash}}),{abortSignal:AbortSignal.timeout(timeoutMs)});}
   catch(error){if((error as {$metadata?:{httpStatusCode?:number}}).$metadata?.httpStatusCode!==412)throw error;}
-  await verifyObjectStream(key,bytes.length,expectedHash,10000);
+  await verifyObjectStream(key,bytes.length,expectedHash,timeoutMs);
 }
 const assemblyKey=(key:string)=>{if(!/^large-originals\/[a-f0-9-]{36}\/[a-f0-9]{64}$/.test(key))throw new Error('Invalid server assembly key.');};
 /** This receipt profile reclaims payload by overwriting exact keys with permanent empty markers. */

@@ -27,7 +27,7 @@ export const PrivateMvtInvalidationSchema=z.strictObject({version:z.literal(p.gr
   includeHalo:z.literal(true),includeParents:z.literal(true)});
 export const PrivateMvtInputSchema=z.strictObject({kind:z.literal('retained_administrative_observations'),version:z.literal(p.version),jobId:id,
   source:PrivateMvtSourcePinsSchema,compiler:PrivateMvtCompilerSchema,base:PrivateMvtGenerationPinSchema.nullable(),
-  window:PrivateMvtWindowSchema.nullable(),catalog:z.array(PrivateMvtCellSchema).min(1).max(p.cells),plan:z.array(PrivateMvtCellSchema).min(1).max(p.cells),
+  window:PrivateMvtWindowSchema.nullable(),catalog:z.array(PrivateMvtCellSchema).min(1).max(p.cells),plan:z.array(PrivateMvtCellSchema).max(p.cells),
   invalidation:PrivateMvtInvalidationSchema,inputFingerprint:hash});
 export const PrivateMvtAssetSchema=z.strictObject({key:z.string().min(1).max(500),sha256:hash,bytes:integer.max(p.tileBytes)});
 export const PrivateMvtMapEntrySchema=z.strictObject({mvtId:integer.safe(),unitId:id,featureIndex:integer.max(732),

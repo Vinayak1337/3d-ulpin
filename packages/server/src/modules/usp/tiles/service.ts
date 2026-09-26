@@ -4,7 +4,7 @@ import {z} from 'zod';
 import {PRIVATE_MVT_PROFILE as p,PROJECTED_VECTOR_PROFILE,PrivateMvtInputSchema,PrivateMvtRequestSchema,PrivateMvtStatusSchema,PrivateMvtManifestSchema,
   PrivateMvtGenerationPinSchema,PrivateMvtManifestResponseSchema,PrivateMvtCellSchema,PrivateMvtIdentityMapSchema,PrivateMvtLookupSchema,
   type PrivateMvtInput,type PrivateMvtManifest,type PrivateMvtGenerationPin,type PrivateMvtCell} from '@ulpin/contracts/usp';
-import {transaction} from '../../../infrastructure/db';
+import {mvtTransaction as transaction} from './bounds';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
@@ -115,7 +115,8 @@ export class PrivateMvtService{
       if(base&&base.manifest.compiler.sha256!==ctx.compiler.sha256)invalidated=sortedCells([...invalidated,...base.manifest.catalog]);
       const catalog=sortedCells([...requested,...(base?.manifest.catalog??[]),...invalidated]),oldCells=new Map((base?.manifest.cells??[]).map(cell=>[cellKey(cell.cell),cell])),dirty=new Set(invalidated.map(cellKey));
       const plan=sortedCells(catalog.filter(cell=>!oldCells.has(cellKey(cell))||dirty.has(cellKey(cell))||base?.manifest.compiler.sha256!==ctx.compiler.sha256));
-      if(!plan.length)throw new AppError(409,'MVT_NO_CHANGE','The requested window is already prepared; pin a real unit revalidation to rebuild it.');
+      if(!plan.length&&base&&fingerprint(base.manifest.source)===fingerprint(ctx.source))
+        throw new AppError(409,'MVT_NO_CHANGE','The requested window and current source pins are already prepared; pin a real unit revalidation to rebuild it.');
       const jobId=randomUUID(),payloadBase={kind:'retained_administrative_observations' as const,version:p.version,jobId,source:ctx.source,compiler:ctx.compiler,
         base:request.expectedGeneration,window:request.window,catalog,plan,invalidation:{version:p.grid,cells:invalidated,changes,includeHalo:true as const,includeParents:true as const}},
         payload=PrivateMvtInputSchema.parse({...payloadBase,inputFingerprint:fingerprint(payloadBase)});
