@@ -1,4 +1,4 @@
-# Frontend goal — 3D ULPIN Studio
+# Frontend goal — BhuAayam Studio
 
 Owner: the user, with Claude as frontend lead. Written 26 September 2026 from the planning conversation, on branch `frontend/studio` (worktree `/Users/vinayak/Desktop/ulpin-frontend`, based on staging `3cc5790`). This is the frontend's own plan. The repository's other active plans are backend-only and say the UI is user-owned ([H99](../usp-agent-handoffs/99-ui-ux-and-integration.md), [backend streaming plan](../usp-agent-handoffs/backend-streaming-plan.md), [NestJS ledger](../orchestration/NESTJS_MIGRATION.md)).
 
@@ -77,7 +77,9 @@ apps/global              deferred (full product)
 
 Finale screens (IDs from [screens.md](../design-system/mockups/officer-studio/screens.md)): S1 Batches, S2 Add files, S3 Live import, S4 Area map, S5 Building and floors, S6 Underground, S7 Evidence viewer, S8 Findings, S9 Workspace review, S10 Check and record, S11 Assign proposed code, S12 Register, S13 Deviation, S14 Property Card, P4L local Verify. Admin A1–A7, Portal P1–P7 and S15–S19 are full product.
 
-The mockup, reviewed at 1440 × 900, repeats the same facts in many places and fills the screen with chrome. **Apply these overrides; they win over the mockup.**
+> **Superseded on 26 September 2026 (later the same day).** The user compared the result with the mockup and chose to **follow the mockup as-is**. The overrides below are kept for the record only; section 13 is what is built.
+
+The mockup, reviewed at 1440 × 900, repeats the same facts in many places and fills the screen with chrome. The overrides that were applied until then:
 
 1. **One header, 56 px.** Wordmark · Batches / Map / Register · search · area switcher (revision and dataset classification as its subtitle) · user. **Remove** the scope strip, the language menu (Hindi is *Planned*), the More menu (only *Planned* items), the theme toggle and the always-on "Live" pill (show *Snapshot* only when viewing a snapshot). Crumbs move into the inspector title. **Add files** lives on Batches and in Empty states, not on the map.
 2. **Left panel = Layers only** (base, imagery, Colour by, AI candidates, Model/Volumes). The level's space list moves into the level inspector, where it doubles as the accessible list alternative to the map. Sources become evidence chips inline with each fact. Checks live only in the tray.
@@ -241,5 +243,30 @@ The mockup code (`app.jsx`, `screens.jsx`, `studio-panel.jsx`, `scene.js`) and 2
 - **One inspector with variants:** area (building list), building, level (space list), space (status, code, facts, rights, evidence), findings, underground. Crumbs of the selection path sit in its header, replacing the scope strip.
 - **Flow:** Record reviewed details → Assign code (dialog) → toast → Property Card → Open local link (Verify). Evidence chips open the evidence viewer.
 
-Where we differ from the mockup on purpose: the section-5 overrides stand (no scope strip, language, More or theme menus; no Live pill; left panel is Layers only; Register is a table view; no readiness meter until READY-01; Batches shows no stage badge). Tools that cannot run yet (measure, section, trench drawing) are not shown. Screens whose data does not exist show their Empty, *Unknown* or *Not assessed* state instead of the mockup's worked example.
+Superseded by section 13. Previously: the section-5 overrides stood (no scope strip, language, More or theme menus; no Live pill; left panel is Layers only; Register is a table view; no readiness meter until READY-01; Batches shows no stage badge). Tools that cannot run yet (measure, section, trench drawing) are not shown. Screens whose data does not exist show their Empty, *Unknown* or *Not assessed* state instead of the mockup's worked example.
 
+
+## 13. Mockup parity, as built (26 September 2026, later)
+
+The user's direction after comparing the rebuild with the mockup:
+
+- **Follow the mockup's layout and behaviour as-is.** The section-5 overrides are dropped. Our own code, our own components; the mockup stays a protected visual reference.
+- **The app is BhuAayam.** "3D ULPIN" remains the name of the proposed code only.
+- **No theme switch, no language menu.** Every tool either works or is removed: no 2D switch, no Model/Volumes switch, no Planned menu items.
+- **The frontend is ready for all the data the backend will publish.** The mockup's worked example (Lake View) is served through the local API routes in the backend's shapes and presented as production data. No screen says "mockup", "demo", "fictional" or "local". Swapping a route to `live` changes no screen.
+
+What each module does now:
+
+| Module | Built |
+| --- | --- |
+| S1 Batches | Stage chips, aligned rows (batch, stage, next action, readiness blocks, time), count cards that link to their target |
+| S2 Add files | New files: drop, live inspect, mapping, Start import. Saved batch (`?batch=`): detection, CRS to choose, mapping questions; answers persist; Start import continues to review |
+| S4–S6, S8 Map | Panel rail (Layers, Spaces, Sources, Checks); storey-by-storey building, rights colours, findings volume and tray; Measure, Section, Underground with trench drawing; legends per mode; hint pill; readout |
+| S7 Evidence | Paged documents open on the cited page, zoomed to the clause or to the unit outlined on a calibrated plan; tables and GeoJSON as before; 3D still; "Supports" chips |
+| S9 Review details | `/studio/review/:buildingId?level=`: plan page with room candidates, Accept / Adjust / Reject (persisted), level register; level questions (B2) |
+| S10 Check and record | `?stage=check`: grouped checks, finding shown in 3D, changes since the last revision, Record gated on blocking findings |
+| S12/S13 Register | 3D with level rail beside Units, Shares, Documents, Checks, History; deviation split view with Create finding; Export CityJSON 2.0, units CSV, register JSON |
+| S14 / P4L | Card and Verify read parcel, level, carpet area and share from the records; print isolates the card |
+| Public portal | `/portal`: search, results with a view-only 3D view, record page with section and printable card, public map with released-record labels, verify by code |
+
+Draft contracts added for these screens are in `packages/api-client/src/draft` and listed in PLAN.md.

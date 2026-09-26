@@ -24,4 +24,5 @@ export { FindingCard, SeverityBadge, type Severity } from './components/FindingC
 export { DigColumn, type DigBand } from './components/DigColumn';
 export { ImportStream, type StreamRow } from './components/ImportStream';
 export { PropertyCard } from './components/PropertyCard';
+export { StrataSection, type StrataLevel } from './components/StrataSection';
 export { formatDate, formatDateTime, formatRelative, formatMeasure } from './format';

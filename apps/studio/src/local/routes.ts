@@ -52,6 +52,26 @@ export const ROUTES: RouteEntry[] = [
     reason: 'DOC-01: preview render of one page of a retained document.',
   },
   {
+    method: 'GET', path: '/api/v1/public/records', mode: 'local', draft: true,
+    reason: 'PUBLIC-01: search over released records only.',
+  },
+  {
+    method: 'GET', path: '/api/v1/public/records/:recordId', mode: 'local', draft: true,
+    reason: 'PUBLIC-01: the released facts of one record.',
+  },
+  {
+    method: 'GET', path: '/api/v1/public/buildings/:buildingId', mode: 'local', draft: true,
+    reason: 'PUBLIC-01: released massing and records of one building.',
+  },
+  {
+    method: 'GET', path: '/api/v1/public/areas', mode: 'local', draft: true,
+    reason: 'PUBLIC-01: areas with released records.',
+  },
+  {
+    method: 'GET', path: '/api/v1/public/areas/:areaId/map', mode: 'local', draft: true,
+    reason: 'PUBLIC-01: the public base map of an area (no utilities).',
+  },
+  {
     method: 'GET', path: '/api/v1/areas', mode: 'local',
     reason: 'No area is installed in the running API. Answers with Lake View and the areas derived from retained official sources (NYC OTI Bronx crop; Swiss Dwellings site 127).',
   },
