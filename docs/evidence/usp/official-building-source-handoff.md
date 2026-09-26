@@ -1,6 +1,8 @@
 # DATA-11 — official building or cadastral source discovery
 
-**Result:** no source was admitted or acquired. The bounded search found one strong official building-footprint lead (KDMC) and one cadastral service lead (TGRAC), but neither yielded an accessible, rights-qualified original ≤16 MiB. The machine-readable record is [source-check.json](../../../fixtures/usp/D3/official-building-context-v1/source-check.json).
+**Historical result (26 September):** no source was admitted or acquired. The bounded search found one strong official building-footprint lead (KDMC) and one cadastral service lead (TGRAC), but neither yielded an accessible, rights-qualified original ≤16 MiB. The machine-readable record is [source-check.json](../../../fixtures/usp/D3/official-building-context-v1/source-check.json).
+
+**27 September update:** KDMC access succeeded via `KDMC_BASEMAP_24_04_25/FeatureServer/11`: live count12,242 and100 real footprint polygons downloaded unchanged into private discovery storage. Reuse permission and 3D heights remain unresolved; no admission occurred. See the [current source index](../../api/real-sources.md) for exact retained manifest and limitations. Earlier failed-attempt receipt below remains unchanged.
 
 ## Official catalogue first
 
