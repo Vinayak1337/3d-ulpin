@@ -124,9 +124,16 @@ def audit_historical() -> tuple[dict, int]:
     for step in steps:
         source = step["source"]
         source_path = source["path"]
-        if source_path not in source_cache:
+        authored = source["kind"] == "authored-sql"
+        if authored:
+            if source_path != "database/" + step["file"] or source.get("task") != "DEPLOY-01" or not re.fullmatch(r"[a-f0-9]{40}", source.get("acceptedBase", "")):
+                raise ValueError(f"Authored SQL provenance is invalid: {step['id']}")
+            original = (ROOT / source_path).read_bytes()
+        elif source_path not in source_cache:
             source_cache[source_path] = source_bytes(commit, source_path).decode("utf-8")
-        if source["kind"] == "file":
+        if authored:
+            pass
+        elif source["kind"] == "file":
             original = source_cache[source_path].encode("utf-8")
         else:
             prefix = "\n".join(source_cache[source_path].splitlines()[: source["line"] - 1])
@@ -155,7 +162,7 @@ def audit_historical() -> tuple[dict, int]:
         ]
         if hashes != step["statements"]:
             raise ValueError(f"Statement hashes differ from pinned source: {step['id']}")
-        if source["kind"] != "file" and "$1" in matches[0] and not step["parameters"]:
+        if source["kind"] not in ("file", "authored-sql") and "$1" in matches[0] and not step["parameters"]:
             raise ValueError(f"Parameter metadata missing: {step['id']}")
 
     expected_files = {str(ROOT / "database" / step["file"]) for step in steps}
@@ -200,7 +207,7 @@ def audit_runtime(manifest: dict) -> None:
             if (ROOT / source["path"]).exists():
                 raise ValueError("Redundant bootstrap SQL copy remains in infra/postgres")
             continue
-        moved = moved_paths.get(source["path"])
+        moved = runtime["path"] if source["kind"] == "authored-sql" else moved_paths.get(source["path"])
         if moved != runtime["path"]:
             raise ValueError(f"Runtime caller differs from extraction map: {step['id']}")
         expected_by_file.setdefault(moved, []).append((step["order"], step["id"]))
@@ -233,14 +240,18 @@ if __name__ == "__main__":
     parser.parse_args()
     try:
         manifest, discovered = audit_historical()
-        statement_count = sum(len(step["statements"]) for step in manifest["steps"])
+        historical = [step for step in manifest["steps"] if step["source"]["kind"] != "authored-sql"]
+        authored = [step for step in manifest["steps"] if step["source"]["kind"] == "authored-sql"]
+        statement_count = sum(len(step["statements"]) for step in historical)
         print(
-            f"PASS historical: {len(manifest['steps'])} exact SQL files, "
+            f"PASS historical: {len(historical)} exact SQL files, "
             f"{statement_count} statement hashes, {discovered} schema query literals "
             f"at {manifest['sourceCommit']}"
         )
+        if authored:
+            print(f"PASS authored additions: {len(authored)} manifest/hash-pinned SQL files (not historical extraction)")
         audit_runtime(manifest)
-        print("PASS runtime wiring: 24 named migration queries and canonical Compose bootstrap")
+        print(f"PASS runtime wiring: {len(manifest['steps'])-1} named migration queries and canonical Compose bootstrap")
     except (ValueError, KeyError, OSError, subprocess.CalledProcessError) as error:
         print(f"FAIL: {error}", file=sys.stderr)
         sys.exit(1)

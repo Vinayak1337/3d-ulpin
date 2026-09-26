@@ -65,6 +65,12 @@
       "source": "apps/web/lib/server/dataset-ml-db.ts",
       "function": "ensureDatasetMl",
       "timing": "lazy-first-use-after-spatial-datasets"
+    },
+    {
+      "source": "database/sql/90-model-gateway/model-gateway.sql",
+      "function": "migrateModelGateway",
+      "timing": "migration-command",
+      "task": "DEPLOY-01"
     }
   ],
   "steps": [
@@ -1283,13 +1289,57 @@
         "path": "packages/server/src/modules/datasets/dataset-ml-db.ts",
         "function": "ensureDatasetMl"
       }
+    },
+    {
+      "id": "model-gateway.schema",
+      "source": {
+        "path": "database/sql/90-model-gateway/model-gateway.sql",
+        "function": "migrateModelGateway",
+        "kind": "authored-sql",
+        "task": "DEPLOY-01",
+        "acceptedBase": "d6de80e351cc38c46516fb3f315f1bec5ed514c5"
+      },
+      "file": "sql/90-model-gateway/model-gateway.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": "usp-model-core-schema-v1",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 25,
+      "sha256": "800e07948200bdd9cc97b44afa4a8d70a425b5005054d3ad1bb5bb8eb22d6bef",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "8addc0050e4153b6cf81048a81c24a3d8e195c0ece3e1e25b9c37cf98172db50"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "710e54b6fd5b8a09e24785d12b091999822706c55b7738a12fcfc977d5c76a47"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "8aad57eb9aad3c07e7867e9fd21047a6a53bc1f42206e6b48712896f8c513e03"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "758ef263042acbe67cc066787a22c37e1b2e42882b716a3497b39bf680b6e12f"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "433025bf044848aa59aabfb453bc85929af75eda92e87f9fed57158273d36608"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "e9ebd4cd6510efcdcbd839f571a999ecc19b3587bc57e7d83c7c5d98d95485ed"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/model-gateway/runtime.ts",
+        "function": "migrateModelGateway"
+      }
     }
   ],
-  "plannedButAbsent": [
-    {
-      "topic": "H20 provider budget, reservation and queue tables",
-      "status": "no schema-producing migration in the pinned source",
-      "existingCode": "apps/web/lib/server/officer-ai-provider.ts:aiBudget is an in-memory request bound; officer_ai_runs stores run bodies"
-    }
-  ]
+  "plannedButAbsent": []
 }
