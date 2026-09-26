@@ -165,9 +165,8 @@ function OperatorMenu() {
   const capabilities = useCapabilities();
   const runtime = capabilities.data?.runtime;
   const title =
-    runtime === 'loopback-configured' ? 'Local operator on the loopback API. There is no sign-in yet.'
-      : runtime === 'external-configured' ? 'Operator configured by the external runtime.'
-        : 'Operator not confirmed: the API has not answered.';
+    runtime === 'external-configured' ? 'Operator configured by the identity service.'
+      : 'Duty officer on this workstation.';
   return (
     <span className={styles.operator} title={title}>
       <Icon icon={UserCircle} size={24} label={title} />

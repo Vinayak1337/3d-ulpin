@@ -7,7 +7,8 @@
    "nextAction": {
     "label": "Review 1 mapping",
     "target": {
-     "kind": "add-files"
+     "kind": "add-files",
+     "batchId": "1492aa36-e7dc-5971-8b40-d8bfce483f76"
     }
    },
    "readiness": {
@@ -97,7 +98,7 @@
    "stage": "check",
    "detail": null,
    "nextAction": {
-    "label": "Explain 0.50 % in shares",
+    "label": "Explain 0.49 % in shares",
     "target": {
      "kind": "register",
      "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a"
@@ -155,7 +156,8 @@
    "value": 1,
    "label": "import needs input",
    "target": {
-    "kind": "add-files"
+    "kind": "add-files",
+    "batchId": "1492aa36-e7dc-5971-8b40-d8bfce483f76"
    }
   },
   {

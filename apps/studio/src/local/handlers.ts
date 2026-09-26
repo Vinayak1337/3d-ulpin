@@ -1,7 +1,7 @@
 import { http, HttpResponse, passthrough } from 'msw';
 import { LOCAL_SOURCE_HEADER } from '@ulpin/api-client';
 import { localRoutes } from './routes';
-import { LOCAL_SOURCE_LABELS, derivedAreas, derivedContexts, derivedRegister, derivedSourceFiles, ledgers, workBoard, workQueue } from './sources';
+import { LOCAL_SOURCE_LABELS, derivedAreas, derivedContexts, derivedRegister, derivedSourceFiles, documents, importBatches, ledgers, levelReviews, workBoard, workQueue } from './sources';
 
 const ALL_LOCAL = Object.values(LOCAL_SOURCE_LABELS).join('; ');
 const json = (body: unknown, label: string) => HttpResponse.json(body as never, { headers: { [LOCAL_SOURCE_HEADER]: label } });
@@ -20,6 +20,27 @@ const RESOLVERS: Record<string, (params: Params, url: URL) => Response | undefin
   '/api/v1/buildings/:buildingId/ledger': ({ buildingId }) => {
     const body = ledgers[String(buildingId)];
     return body ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
+  },
+  '/api/v1/buildings/:buildingId/levels/:levelId/review': ({ buildingId, levelId }) => {
+    const body = levelReviews[String(levelId)];
+    return body && body.buildingId === buildingId ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
+  },
+  '/api/v1/import-batches/:batchId': ({ batchId }) => {
+    const body = importBatches[String(batchId)];
+    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
+  },
+  '/api/v1/sources/:sourceId/pages': ({ sourceId }) => {
+    const doc = documents[String(sourceId)];
+    if (!doc) return undefined;
+    return json({
+      sourceId, name: doc.name, revision: doc.revision, pageCount: doc.pages.length,
+      pages: doc.pages.map((p) => ({ page: p.page, label: p.label, calibration: p.calibration ?? null, url: `/api/v1/sources/${String(sourceId)}/pages/${p.page}` })),
+      anchors: doc.anchors.map(([locator, page, region]) => ({ locator, page, region: region ?? null })),
+    }, LOCAL_SOURCE_LABELS.lake);
+  },
+  '/api/v1/sources/:sourceId/pages/:page': ({ sourceId, page }) => {
+    const found = documents[String(sourceId)]?.pages.find((p) => String(p.page) === String(page));
+    return found ? new HttpResponse(found.svg, { headers: { 'Content-Type': 'image/svg+xml', [LOCAL_SOURCE_HEADER]: LOCAL_SOURCE_LABELS.lake } }) : undefined;
   },
   '/api/v1/areas': () => json(derivedAreas, ALL_LOCAL),
   '/api/v1/areas/:areaId/context': ({ areaId }) => {

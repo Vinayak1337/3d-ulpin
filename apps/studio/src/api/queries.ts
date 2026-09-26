@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
-import type { BuildingLedger, WorkBoard } from '@ulpin/api-client/draft';
+import type { BuildingLedger, DocumentPages, ImportBatch, LevelReview, WorkBoard } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
@@ -22,6 +22,8 @@ export const queryKeys = {
   register: (buildingId: string) => ['buildings', buildingId, 'register'] as const,
   ledger: (buildingId: string) => ['buildings', buildingId, 'ledger'] as const,
   workBoard: ['work-board'] as const,
+  levelReview: (buildingId: string, levelId: string) => ['buildings', buildingId, 'levels', levelId, 'review'] as const,
+  documentPages: (sourceId: string) => ['sources', sourceId, 'pages'] as const,
 };
 
 /** Draft routes (not in the OpenAPI document yet): same client conventions, typed by the draft contract. */
@@ -39,6 +41,50 @@ export function useBuildingLedger(buildingId: string | null | undefined) {
     enabled: Boolean(buildingId),
     queryFn: () => getDraft<BuildingLedger>(`/api/v1/buildings/${buildingId}/ledger`),
     staleTime: 60_000,
+  });
+}
+
+/** What an officer reviews on one level: room candidates from a plan page, or a level question. */
+export function useLevelReview(buildingId: string | null | undefined, levelId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.levelReview(buildingId ?? '', levelId ?? ''),
+    enabled: Boolean(buildingId && levelId),
+    queryFn: () => getDraft<LevelReview>(`/api/v1/buildings/${buildingId}/levels/${levelId}/review`),
+    staleTime: 60_000,
+  });
+}
+
+/** Page list of a retained document. Null for sources that are not paged documents (tables, features). */
+export function useDocumentPages(sourceId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.documentPages(sourceId ?? ''),
+    enabled: Boolean(sourceId),
+    queryFn: () => getDraft<DocumentPages>(`/api/v1/sources/${sourceId}/pages`).catch(() => null),
+    staleTime: Infinity,
+  });
+}
+
+/** Page render as an object URL (fetched, so the local layer answers it even without a service worker). */
+export function usePageImage(url: string | null | undefined) {
+  return useQuery({
+    queryKey: ['page-image', url ?? ''],
+    enabled: Boolean(url),
+    queryFn: async () => {
+      const response = await globalThis.fetch(url!);
+      if (!response.ok) throw new ApiError(response.status, url!, null);
+      // Any image type the document service renders (SVG, PNG); kept for the session.
+      return URL.createObjectURL(await response.blob());
+    },
+    staleTime: Infinity,
+  });
+}
+
+/** A saved import batch: what was found in each file and the questions still open. */
+export function useImportBatch(batchId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['import-batches', batchId ?? ''],
+    enabled: Boolean(batchId),
+    queryFn: () => getDraft<ImportBatch>(`/api/v1/import-batches/${batchId}`),
   });
 }
 

@@ -36,6 +36,22 @@ export const ROUTES: RouteEntry[] = [
     reason: 'READY-01, RIGHTS-01, HISTORY-02: rights, areas, shares, readiness, checks and revisions per building.',
   },
   {
+    method: 'GET', path: '/api/v1/buildings/:buildingId/levels/:levelId/review', mode: 'local', draft: true,
+    reason: 'EXTRACT-02: room candidates from a plan page, or the level question to confirm.',
+  },
+  {
+    method: 'GET', path: '/api/v1/import-batches/:batchId', mode: 'local', draft: true,
+    reason: 'INGEST-03: a saved import batch with detection, CRS, mapping state and open questions.',
+  },
+  {
+    method: 'GET', path: '/api/v1/sources/:sourceId/pages', mode: 'local', draft: true,
+    reason: 'DOC-01: page list, locator anchors and plan calibration of a retained document.',
+  },
+  {
+    method: 'GET', path: '/api/v1/sources/:sourceId/pages/:page', mode: 'local', draft: true,
+    reason: 'DOC-01: preview render of one page of a retained document.',
+  },
+  {
     method: 'GET', path: '/api/v1/areas', mode: 'local',
     reason: 'No area is installed in the running API. Answers with Lake View and the areas derived from retained official sources (NYC OTI Bronx crop; Swiss Dwellings site 127).',
   },

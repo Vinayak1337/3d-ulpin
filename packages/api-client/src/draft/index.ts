@@ -68,7 +68,7 @@ export interface BuildingLedger {
 
 /** Where a next action or count leads, resolved by the Studio to a route. */
 export type WorkTarget =
-  | { kind: 'add-files' }
+  | { kind: 'add-files'; batchId?: string }
   | { kind: 'register'; buildingId: string }
   | { kind: 'finding'; areaId: string; buildingId: string; findingId: string }
   | { kind: 'review'; areaId: string; buildingId: string; levelId: string }
@@ -85,4 +85,64 @@ export interface WorkBoard {
     readiness: { met: number; unknown: number; of: number };
   }>;
   counts: Array<{ key: string; value: number; label: string; target: WorkTarget }>;
+}
+
+/** GET /api/v1/sources/{sourceId}/pages — DOC-01: the pages of a retained document and where locators point. */
+export interface DocumentPages {
+  sourceId: string;
+  name: string;
+  revision: string;
+  pageCount: number;
+  /** `calibration` maps local metres (east, north) to page units: page = origin + metres × scale, north up. */
+  pages: Array<{ page: number; label: string; url: string; calibration: { scale: number; origin: [number, number] } | null }>;
+  /** `region` (page units: x, y, width, height) is the part of the page the locator names. */
+  anchors: Array<{ locator: string; page: number; region: [number, number, number, number] | null }>;
+}
+
+/** GET /api/v1/buildings/{buildingId}/levels/{levelId}/review — EXTRACT-02: what an officer reviews on a level. */
+export interface LevelReview {
+  buildingId: string;
+  levelId: string;
+  level: string;
+  stage: 'review';
+  sheet: { sourceId: string; source: string; page: number; pages: number[]; revision: string } | null;
+  /** The space the candidates were extracted inside, when the plan is a unit layout. */
+  withinSpaceId: string | null;
+  method: string;
+  candidates: Array<{
+    id: string;
+    label: string;
+    kind: 'room' | 'wall';
+    geometry: { type: 'Polygon'; coordinates: number[][][] };
+    dimensions: string;
+    areaM2: number;
+    confidence: 'high' | 'medium' | 'low';
+    locator: string;
+  }>;
+  /** A level with nothing to extract: the question the officer answers. */
+  question?: string;
+}
+
+/** GET /api/v1/import-batches/{batchId} — INGEST-03: a saved batch, what was found in each file and its open questions. */
+export interface ImportBatch {
+  id: string;
+  name: string;
+  areaId: string;
+  buildingId: string | null;
+  /** Where the batch continues after import (the level to review). */
+  reviewLevelId: string | null;
+  savedAt: string;
+  files: Array<{
+    name: string;
+    sourceId: string | null;
+    detected: string;
+    /** Null with `crsApplies` true: the file is spatial but states no CRS. */
+    crs: string | null;
+    crsApplies?: boolean;
+    crsOptions?: string[];
+    contents: string;
+    mapping: 'reused' | 'proposed' | 'manual';
+    note?: string;
+  }>;
+  questions: Array<{ id: string; file: string; field: string; text: string; answers: Array<{ value: string; label: string }>; otherFields: string[] }>;
 }

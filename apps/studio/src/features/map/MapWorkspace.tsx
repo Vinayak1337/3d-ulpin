@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { FilePlus } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
-import type { BuildingDetailInput, FindingInput, Measurement, MultiPolygon, Pick, SceneEngine, SceneState, SceneTool, StoreyInput, Trench } from '@ulpin/scene';
+import type { FindingInput, Measurement, Pick, SceneEngine, SceneState, SceneTool, Trench } from '@ulpin/scene';
 import { Badge, Banner, Icon, Legend, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
 import { useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
@@ -12,7 +12,8 @@ import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AssignDialog } from '../identity/AssignDialog';
 import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
-import { polygonsOf, storeysFrom, toBase, toFootprints } from './footprints';
+import { polygonsOf } from './footprints';
+import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { LeftPanel } from './LeftPanel';
 import { MapToolbar } from './MapToolbar';
 import { PanelRail } from './PanelRail';
@@ -20,7 +21,7 @@ import { ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
-import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace, tokenColour } from './ledger';
+import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
 import { AreaInspector } from './inspector/AreaInspector';
 import { BuildingInspector } from './inspector/BuildingInspector';
 import { FindingsInspector } from './inspector/FindingsInspector';
@@ -54,7 +55,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   const buildings = useMemo(() => context.features.filter((f) => f.kind === 'building'), [context.features]);
   const utilities = useMemo(() => context.features.filter((f) => f.kind === 'utility'), [context.features]);
-  const base = useMemo(() => toBase(context.features), [context.features]);
   const feature = selection.buildingId ? buildings.find((b) => b.id === selection.buildingId) ?? null : null;
   const registerQuery = useBuildingRegister(feature?.id);
   const register = registerQuery.data;
@@ -69,45 +69,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const findings = register?.findings ?? [];
   const finding = selection.mode === 'findings' ? findings.find((f) => f.id === selection.findingId) ?? findings[0] ?? null : null;
 
-  // The explored building is drawn storey by storey once its levels and ground elevation are known.
-  const storeys = useMemo(() => {
-    const map = new Map<string, StoreyInput[]>();
-    if (feature && model) {
-      const s = storeysFrom(model, groundM, polygonsOf(feature.geometry));
-      if (s) map.set(feature.id, s);
-    }
-    return map;
-  }, [feature, model, groundM]);
-  const footprints = useMemo(() => toFootprints(context.features, storeys), [context.features, storeys]);
+  const { base, footprints, detail } = useBuildingScene(context.features, feature, model, ledger, colour);
 
-  const detail = useMemo<BuildingDetailInput | null>(() => {
-    if (!model || !feature) return null;
-    const rel = (v: number | null) => (v === null ? null : groundM === null ? v : v - groundM);
-    const colours = { exclusive: tokenColour(RIGHTS_TOKEN.exclusive), shared: tokenColour(RIGHTS_TOKEN.shared), public: tokenColour(RIGHTS_TOKEN.public) };
-    return {
-      buildingId: feature.id,
-      levels: model.levels.map((l) => ({
-        id: l.id, order: l.order, lowerM: rel(l.lower), upperM: rel(l.upper),
-        spaces: model.spaces.filter((s) => s.levelId === l.id && s.polygons.length).map((s) => {
-          const rights = ledgerSpace(ledger, s.id)?.rights ?? 'unknown';
-          const unverified = s.record.geometry ? !s.record.geometry.lowerVerified || !s.record.geometry.upperVerified : false;
-          const fill = colour === 'rights'
-            ? { color: rights === 'unknown' ? tokenColour(RIGHTS_TOKEN.unknown) : colours[rights], hatch: rights === 'unknown' || unverified }
-            : { hatch: unverified };
-          return { id: s.id, polygons: s.polygons, lowerM: rel(s.lower), upperM: rel(s.upper), fill };
-        }),
-      })),
-    };
-  }, [model, feature, ledger, colour, groundM]);
-
-  const findingInput = useMemo<FindingInput | null>(() => {
-    if (!finding) return null;
-    const q = (finding.quantities ?? {}) as Record<string, number>;
-    const polygons = finding.geometry ? polygonsOf(finding.geometry as never) : [];
-    const lower = typeof q.lowerM === 'number' ? q.lowerM - (groundM ?? 0) : 0;
-    const upper = typeof q.upperM === 'number' ? q.upperM - (groundM ?? 0) : lower;
-    return { id: finding.id, polygons: polygons as MultiPolygon, lowerM: lower, upperM: upper, participants: finding.featureIds };
-  }, [finding, groundM]);
+  const findingInput = useMemo<FindingInput | null>(() => (finding ? findingVolume(finding, groundM) : null), [finding, groundM]);
 
   const sceneState = useMemo<SceneState>(() => ({
     mode: selection.mode, buildingId: selection.buildingId, levelId: selection.levelId, spaceId: selection.spaceId,

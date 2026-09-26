@@ -114,3 +114,10 @@
 .ul-level { grid-template-columns: minmax(34px, 1fr) auto; gap: var(--ui-space-3); }
 a.ul-btn { text-decoration: none; }
 .ul-evid b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Printing from the card dialog prints the card alone. */
+@media print {
+  body:has(.ul-card) * { visibility: hidden; }
+  body:has(.ul-card) .ul-card, body:has(.ul-card) .ul-card * { visibility: visible; }
+  body:has(.ul-card) .ul-card { position: fixed; top: 24px; left: 24px; width: 640px; box-shadow: none; }
+}

@@ -4,7 +4,7 @@ import { DescriptionList, type Fact } from './DescriptionList';
 
 /**
  * One-page card for a space. Released fields only; footer says it is a technical record, not a
- * title document, with the revision, hash and chain state. The QR opens the local link.
+ * title document, with the revision, hash and chain state. The QR opens the verification page.
  */
 export function PropertyCard({ title, code, location, facts, revision, hash, chain, qr }: {
   title: string; code: string | null; location: string[] | null; facts: Fact[];
@@ -14,7 +14,7 @@ export function PropertyCard({ title, code, location, facts, revision, hash, cha
     <article className="ul-card">
       <div className="ul-card__head">
         <div className="ul-stack" style={{ gap: 6 }}>
-          <span className="ul-wordmark">3D ULPIN <small>Property Card</small></span>
+          <span className="ul-wordmark">BhuAayam <small>Property Card</small></span>
           <h2 className="ul-title" style={{ fontSize: 20, lineHeight: '28px' }}>{title}</h2>
         </div>
         <div className="ul-qr">{qr}</div>
