@@ -1,34 +1,40 @@
-import type { Bounds2D, SceneMode, ViewMode } from './types';
+import type { Bounds2D, SceneMode } from './types';
 
 export interface CameraPose {
   position: [number, number, number];
   target: [number, number, number];
 }
 
-/** Unit view directions (from target to camera) per mode, in scene axes (x east, y up, z south). */
+/** View directions (target → camera) per mode, in scene axes (x east, y up, z south). */
 const DIRECTIONS: Record<SceneMode, [number, number, number]> = {
-  area: [-0.5, 0.62, 0.6], // high oblique from the south-west
-  building: [-0.55, 0.5, 0.67],
-  level: [-0.45, 0.72, 0.53], // closer, steeper, at the level's height
-  findings: [-0.6, 0.45, 0.66],
-  underground: [0.4, 0.34, 0.85], // low view from the street side, looking at the section
+  area: [112, 88, 134], // high oblique from the south-east
+  building: [52, 28, 62],
+  level: [24, 31, 36], // closer and steeper, at the level's height
+  findings: [-22, 8.6, 26], // low, close to the finding
+  underground: [48, 28, -52], // from the street side, looking at the section
+};
+
+/** How much of the shown bounds' radius the view frames, per mode. */
+const FIT: Record<SceneMode, { scale: number; min: number }> = {
+  area: { scale: 0.42, min: 40 },
+  building: { scale: 1.9, min: 15 },
+  level: { scale: 1.02, min: 8 },
+  findings: { scale: 1.1, min: 8 },
+  underground: { scale: 2.4, min: 40 },
 };
 
 /**
  * Camera preset for a mode, computed from the bounds of what is shown (never fixed coordinates).
- * `focusY` is the height the view centres on (a level's base, half a building's height).
- * 2D is the same target seen from directly above at the same distance.
+ * `focusY` is the height the view centres on (a level's base, a third of a building's height).
  */
-export function presetFor(mode: SceneMode, bounds: Bounds2D, focusY: number, extentY: number, view: ViewMode, fovDeg: number): CameraPose {
+export function presetFor(mode: SceneMode, bounds: Bounds2D, focusY: number, extentY: number, fovDeg: number): CameraPose {
   const cx = (bounds.minX + bounds.maxX) / 2;
   const cz = -(bounds.minY + bounds.maxY) / 2;
   const planRadius = Math.hypot(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) / 2;
-  const minRadius = mode === 'area' ? 40 : mode === 'level' ? 8 : mode === 'underground' ? 28 : 15;
-  const radius = Math.max(planRadius, extentY * 0.6, minRadius);
-  const fit = mode === 'area' ? 0.85 : mode === 'level' ? 0.95 : 1.05;
-  const distance = (radius / Math.sin((fovDeg * Math.PI) / 360)) * fit;
+  const { scale, min } = FIT[mode];
+  const radius = Math.max(planRadius * scale, mode === 'area' ? 0 : extentY * 0.6 * scale, min);
+  const distance = radius / Math.sin((fovDeg * Math.PI) / 360);
   const target: [number, number, number] = [cx, focusY, cz];
-  if (view === '2d') return { position: [cx, focusY + distance, cz + 0.001], target };
   const [dx, dy, dz] = DIRECTIONS[mode];
   const length = Math.hypot(dx, dy, dz);
   return { position: [cx + (dx / length) * distance, focusY + (dy / length) * distance, cz + (dz / length) * distance], target };

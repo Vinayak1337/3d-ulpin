@@ -23,7 +23,7 @@ export function VerifyPage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <span className="ul-wordmark">3D ULPIN <small>Verify</small></span>
+        <span className="ul-wordmark">BhuAayam <small>Verify</small></span>
         <Link to="/studio/work" className="ul-btn ul-btn--ghost">Back to Studio</Link>
       </header>
       <main className={styles.main}>
