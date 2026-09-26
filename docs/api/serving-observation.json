@@ -1,9 +1,9 @@
 {
   "schemaVersion": "ulpin-serving-observation/1",
-  "observedAt": "2026-09-26T21:04:44.905566+00:00",
+  "observedAt": "2026-09-26T22:06:12.370148+00:00",
   "environment": "linked-loopback-3188",
   "apiBase": "http://127.0.0.1:3188/api/v1",
-  "servedCodeCommit": "71d3a30a40f74c7b4a15f14cff304a7cd56ae710",
+  "servedCodeCommit": "4c4b1affc47a59e971db04f5cacbe9700e9bdb2c",
   "qualification": "Point-in-time local observation of administrative context, private post-admission tiles and one foreign footprint; not deployment, multiuser, Indian property-readiness, import-time GF-STREAM, scale or frontend qualification.",
   "database": {
     "status": "structurally_ready",
@@ -396,5 +396,21 @@
     },
     "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-runtime.json",
     "scope": "Local additive upgrade and read-only needs-input check. Question mutation journey is separately pinned isolated evidence at4695ae0; no new broad gate."
+  },
+  "registryReportUpgrade": {
+    "servedCodeCommit": "4c4b1affc47a59e971db04f5cacbe9700e9bdb2c",
+    "candidateCommit": "f6da4e86efa8abd7e5a353d92c49728f1f40b6ef",
+    "isolatedVerifiedProductionCommit": "ea276fd373c7b9dd266c65a7c15df089dbfd72d4",
+    "apiOperations": 163,
+    "namedSchemas": 191,
+    "health": "all services healthy; schema structurally_ready",
+    "schemaMigration": false,
+    "dataMutationByLead": false,
+    "providersEnabled": false,
+    "servedOpenapiAndDatasetsMatch": true,
+    "runtimeEvidence": "docs/evidence/usp/registry-report-handoff.md",
+    "qualification": "Isolated unchanged official NYC source: explicitly unrecorded JSON/PDF and visual check passed. Linked serving has no eligible recorded inhabited building; populated owners, occupants and floor/unit hierarchy remain unqualified. Historical archived source context unchanged.",
+    "privateLaunchReceipt": "/Users/vinayak/.codex/task-data/ulpin-serving-readiness/launch-serving-registry-pdf.json",
+    "privateHttpReceipt": "/Users/vinayak/.codex/task-data/ulpin-serving-readiness/serving-registry-pdf-http.json"
   }
 }
