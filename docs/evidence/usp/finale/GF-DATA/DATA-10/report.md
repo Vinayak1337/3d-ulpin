@@ -27,3 +27,7 @@ The DATA-10 source checker is an acquisition/inspection check only. It is not in
 - python3 scripts/usp/data/DATA-10-official-scale.py --check — exit 0; archive hash, 7 archive members, 31 polygons, 76 parts, 374,947 positions, DBF keys and projected extent matched the recorded observations.
 - pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D3/official-scale-v1/manifest.json — exit 254; this worktree does not have tsx installed. Dependencies were not installed, so the shared Zod pack-schema command remains unverified.
 - Requested task setting was Luna / max with Fast priority configured. Runtime model, effort and tier were not exposed to this worker and are not asserted.
+
+## Lead integration check
+
+At consolidated staging `6073b131ad5691e332bfba94a769c94d4b148645`, the lead reran the offline source checker and the shared `pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D3/official-scale-v1/manifest.json` command: both exited 0. The shared check verified the 7,032-byte observations asset and correctly reported the original as outside Git. This closes the worker's missing-dependency verification gap only; permission, runtime and scale qualification remain open.
