@@ -29,12 +29,13 @@ function stable(value: unknown): string {
 export function createApiDocument(app: INestApplication): OpenAPIObject {
   const document = SwaggerModule.createDocument(app, new DocumentBuilder()
     .setTitle('3D ULPIN private backend')
-    .setDescription('Native NestJS API. Loopback single-operator boundary; not public or multiuser authentication. Source provenance, installed records and runtime qualification are separate. [Dataset catalogue](/api/docs/datasets.json). SQL authority: database/manifest.json in the repository. Nine operations carry bounded official-source runtime receipts in x-runtime-qualification; this does not qualify every input or workflow. All public-portal work remains full product.')
+    .setDescription('Native NestJS API. Loopback single-operator boundary; not public or multiuser authentication. Source provenance, installed records and runtime qualification are separate. [Dataset catalogue](/api/docs/datasets.json). SQL authority: database/manifest.json in the repository. Bounded official-source runtime receipts appear in x-runtime-qualification with their own code and environment pins; they do not qualify every input or workflow. All public-portal work remains full product.')
     .setVersion('1.0.0').addServer('http://127.0.0.1:3188', 'Default local configuration; consult the run receipt for an observed listener.')
     .build()) as OpenAPIObject & Json;
   document.openapi = '3.0.3';
   const baseline = readJson('docs/orchestration/nestjs-operation-ledger.json');
   const runtime = readJson('docs/api/runtime-qualification.json');
+  const runtimeRuns: Json[] = [runtime, ...(runtime.additionalRuns ?? [])];
   const manifests = modules.map(name => ({path: `apps/api/src/modules/${name}/operation-manifest.json`, value: readJson(`apps/api/src/modules/${name}/operation-manifest.json`)}));
   const inventory = new Map<string, Json>();
   for (const {path, value} of manifests) for (const operation of value.operations) {
@@ -80,11 +81,13 @@ export function createApiDocument(app: INestApplication): OpenAPIObject {
     op['x-batch'] = entry.batch;
     op['x-disposition'] = entry.disposition;
     op['x-code-status'] = entry.disposition === 'retired' ? 'retired-410' : 'implemented-native';
-    const observed = runtime.operations[key];
-    op['x-runtime-verified'] = Boolean(observed);
-    op['x-runtime-qualification'] = observed ? {
-      ...observed, receipt: runtime.receipt, servedCodeCommit: runtime.servedCodeCommit,
-      environment: runtime.environment, limitation: runtime.qualification,
+    const observed = runtimeRuns.filter(run => run.operations[key]).map(run => ({
+      ...run.operations[key], receipt: run.receipt, servedCodeCommit: run.servedCodeCommit,
+      environment: run.environment, limitation: run.qualification,
+    }));
+    op['x-runtime-verified'] = observed.length > 0;
+    op['x-runtime-qualification'] = observed.length ? {
+      ...observed[0], ...(observed.length > 1 ? {additionalReceipts: observed.slice(1)} : {}),
     } : 'No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.';
     if (entry.manifest) op['x-operation-manifest'] = entry.manifest;
     if (entry.maxBodyBytes !== undefined) op['x-max-body-bytes'] = entry.maxBodyBytes;
