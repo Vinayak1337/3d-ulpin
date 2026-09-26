@@ -1,0 +1,973 @@
+{
+  "schemaVersion": "nwic-vector-admission-profile/1",
+  "source": {
+    "outsideGitPath": "/Users/vinayak/.codex/task-data/ulpin-nwic-boundaries-v1/extracted/district_nwic.GeoJSON",
+    "containerPath": "/input/district_nwic.GeoJSON",
+    "bytes": 168356689,
+    "sha256": "2b27a478e24d8c51b0655e74ce3f4f880e75c752e4597550d6fc925ed06ac201",
+    "unchangedSourceMember": true,
+    "featureCollectionHeader": {
+      "type": "FeatureCollection",
+      "name": "district_nwic",
+      "crs": {
+        "type": "name",
+        "properties": {
+          "name": "urn:ogc:def:crs:EPSG::7755"
+        }
+      },
+      "featuresArrayByteOffset": 151
+    }
+  },
+  "runtime": {
+    "containerImageDigest": "sha256:91683e358f3fa8d8a132b8d02548d588343fbdb38c902e473512ce9c84ecefd2",
+    "python": "3.12.14",
+    "platform": "linux",
+    "numpy": "2.0.2",
+    "shapely": "2.0.7",
+    "geos": "3.11.4",
+    "pyproj": "3.6.1",
+    "proj": "9.3.0",
+    "projNetworkEnabled": false,
+    "projDataDirectory": "/usr/local/lib/python3.12/site-packages/pyproj/proj_dir/share/proj",
+    "projDatabase": {
+      "bytes": 8581120,
+      "sha256": "79b660eb3c09f50c0f251e958db7cbf9a2d5d18d2836e99082095b31c7e029c5"
+    },
+    "requirementsFileSha256": "118eb43f0bf7ad98af17e4676c32a0eadbf0748f917e623c3316ada646aefa1d",
+    "profilerSha256": "a220d85c15ee61cc2ac457827e0770665c98e63ac913b1ee47222c42c3a527c9"
+  },
+  "crsDiagnostic": {
+    "source": {
+      "authority": "EPSG:7755",
+      "name": "WGS 84 / India NSF LCC",
+      "axes": [
+        {
+          "name": "Easting",
+          "abbreviation": "X",
+          "direction": "east",
+          "unit": "metre"
+        },
+        {
+          "name": "Northing",
+          "abbreviation": "Y",
+          "direction": "north",
+          "unit": "metre"
+        }
+      ]
+    },
+    "target": {
+      "authority": "EPSG:4326",
+      "name": "WGS 84",
+      "axisOrderUsed": "longitude, latitude (always_xy=True)"
+    },
+    "operation": {
+      "description": "Inverse of Survey of India Lambert + axis order change (2D)",
+      "definition": "proj=pipeline step inv proj=lcc lat_0=24 lon_0=80 lat_1=12.472955 lat_2=35.1728044444444 x_0=4000000 y_0=4000000 ellps=WGS84 step proj=unitconvert xy_in=rad xy_out=deg",
+      "accuracyReportedByPROJMetres": 0.0,
+      "bestAvailable": true,
+      "availableOperationCount": 1,
+      "unavailableOperationCount": 0,
+      "alwaysXY": true,
+      "ballparkAllowed": false,
+      "grids": [],
+      "interpretation": "This is the mathematical CRS operation metadata, not a positional-accuracy claim."
+    },
+    "finiteTransformedExtentLongitudeLatitude": [
+      68.17751186834793,
+      6.755952899354266,
+      97.4128965141613,
+      37.0883417738344
+    ],
+    "inverseRoundTripResidualInSourceMetres": {
+      "coordinateCount": 3125505,
+      "maximum": 6.51925802230835e-09,
+      "mean": 1.2490108583717708e-09,
+      "rms": 1.622972144968263e-09,
+      "interpretation": "Numerical forward/inverse round-trip residual only; not source positional accuracy."
+    }
+  },
+  "geometry": {
+    "featureCount": 733,
+    "featureIdTypes": {},
+    "featureIdAbsentCount": 733,
+    "geometryTypeCounts": {
+      "MultiPolygon": 733
+    },
+    "geometryDispositions": {
+      "coordinates-absent": 0,
+      "coordinates-empty": 0,
+      "coordinates-not-array": 0,
+      "coordinates-null": 0,
+      "empty-polygon": 0,
+      "empty-ring": 0,
+      "extra-dimension-position": 0,
+      "geometry-not-object": 0,
+      "geometry-null": 0,
+      "geometry-structure-evaluable": 733,
+      "geometry-structure-not-evaluable": 0,
+      "malformed-polygon": 0,
+      "malformed-position": 0,
+      "malformed-ring": 0,
+      "non-finite-position": 0,
+      "short-ring": 0,
+      "topology-validation-error": 0,
+      "unclosed-ring": 0
+    },
+    "polygonCount": 1220,
+    "ringCount": 1326,
+    "rawCoordinatePositionCount": 3125505,
+    "finiteXYPositionCount": 3125505,
+    "coordinateDimensions": {
+      "2": 3125505
+    },
+    "nativeProjectedExtent": [
+      2818369.546553203,
+      2177948.4534365367,
+      5679118.542969628,
+      5444563.235709688
+    ],
+    "maximumPositionsInFeature": 17228,
+    "maximumRingsInFeature": 112,
+    "maximumPolygonsInFeature": 112,
+    "maximumPositionsInRing": 16903,
+    "maximumsWithSourceOffsets": {
+      "featureByteSpan": {
+        "featureIndex": 59,
+        "byteOffset": 18292522,
+        "byteEndExclusive": 19219309,
+        "byteLength": 926787,
+        "properties.id": 14,
+        "properties.objectid": 14,
+        "positionCount": 17228,
+        "polygonCount": 1,
+        "ringCount": 3,
+        "maxRingPositions": 16903
+      },
+      "positionsInFeature": {
+        "featureIndex": 59,
+        "byteOffset": 18292522,
+        "byteEndExclusive": 19219309,
+        "byteLength": 926787,
+        "properties.id": 14,
+        "properties.objectid": 14,
+        "positionCount": 17228,
+        "polygonCount": 1,
+        "ringCount": 3,
+        "maxRingPositions": 16903
+      },
+      "polygonsInFeature": {
+        "featureIndex": 48,
+        "byteOffset": 12855936,
+        "byteEndExclusive": 13571638,
+        "byteLength": 715702,
+        "properties.id": 3,
+        "properties.objectid": 3,
+        "positionCount": 13285,
+        "polygonCount": 112,
+        "ringCount": 112,
+        "maxRingPositions": 3941
+      },
+      "ringsInFeature": {
+        "featureIndex": 48,
+        "byteOffset": 12855936,
+        "byteEndExclusive": 13571638,
+        "byteLength": 715702,
+        "properties.id": 3,
+        "properties.objectid": 3,
+        "positionCount": 13285,
+        "polygonCount": 112,
+        "ringCount": 112,
+        "maxRingPositions": 3941
+      },
+      "positionsInRing": {
+        "featureIndex": 59,
+        "byteOffset": 18292522,
+        "byteEndExclusive": 19219309,
+        "byteLength": 926787,
+        "properties.id": 14,
+        "properties.objectid": 14,
+        "positionCount": 17228,
+        "polygonCount": 1,
+        "ringCount": 3,
+        "maxRingPositions": 16903
+      }
+    },
+    "topology": {
+      "method": "Shapely native is_valid/explain_validity on unchanged source coordinates; no repair or rewrite",
+      "featureCounts": {
+        "valid": 720,
+        "invalid": 13
+      },
+      "invalidReasonCounts": {
+        "Ring Self-intersection[4421088.52217345 3440019.66918025]": 1,
+        "Ring Self-intersection[4353398.66051877 3461000.98893105]": 1,
+        "Ring Self-intersection[3118153.06280184 3938095.71198164]": 1,
+        "Ring Self-intersection[3211298.12301693 3978831.82185226]": 1,
+        "Ring Self-intersection[3584686.14969175 3977032.85473378]": 1,
+        "Ring Self-intersection[4443915.43143389 3525172.27490269]": 1,
+        "Ring Self-intersection[4292071.6822443 3599746.99994578]": 1,
+        "Ring Self-intersection[3906687.40531381 2524344.54751778]": 1,
+        "Ring Self-intersection[3966646.19507602 2672796.18885033]": 1,
+        "Ring Self-intersection[5182719.93175986 3995136.95807107]": 1,
+        "Ring Self-intersection[4316569.56756665 4194944.89418549]": 1,
+        "Ring Self-intersection[3922783.3517895 4363477.53030053]": 1,
+        "Ring Self-intersection[3744272.99313283 4582437.46341393]": 1
+      },
+      "invalidFeatures": [
+        {
+          "featureIndex": 58,
+          "byteOffset": 17938720,
+          "byteEndExclusive": 18292520,
+          "byteLength": 353800,
+          "properties.id": 13,
+          "properties.objectid": 13,
+          "reason": "Ring Self-intersection[4421088.52217345 3440019.66918025]"
+        },
+        {
+          "featureIndex": 60,
+          "byteOffset": 19219311,
+          "byteEndExclusive": 19812465,
+          "byteLength": 593154,
+          "properties.id": 15,
+          "properties.objectid": 15,
+          "reason": "Ring Self-intersection[4353398.66051877 3461000.98893105]"
+        },
+        {
+          "featureIndex": 214,
+          "byteOffset": 46629499,
+          "byteEndExclusive": 47168823,
+          "byteLength": 539324,
+          "properties.id": 169,
+          "properties.objectid": 169,
+          "reason": "Ring Self-intersection[3118153.06280184 3938095.71198164]"
+        },
+        {
+          "featureIndex": 220,
+          "byteOffset": 48413570,
+          "byteEndExclusive": 48721874,
+          "byteLength": 308304,
+          "properties.id": 175,
+          "properties.objectid": 175,
+          "reason": "Ring Self-intersection[3211298.12301693 3978831.82185226]"
+        },
+        {
+          "featureIndex": 447,
+          "byteOffset": 102601921,
+          "byteEndExclusive": 102788961,
+          "byteLength": 187040,
+          "properties.id": 428,
+          "properties.objectid": 428,
+          "reason": "Ring Self-intersection[3584686.14969175 3977032.85473378]"
+        },
+        {
+          "featureIndex": 491,
+          "byteOffset": 115441252,
+          "byteEndExclusive": 115710308,
+          "byteLength": 269056,
+          "properties.id": 458,
+          "properties.objectid": 458,
+          "reason": "Ring Self-intersection[4443915.43143389 3525172.27490269]"
+        },
+        {
+          "featureIndex": 506,
+          "byteOffset": 120031662,
+          "byteEndExclusive": 120275767,
+          "byteLength": 244105,
+          "properties.id": 473,
+          "properties.objectid": 473,
+          "reason": "Ring Self-intersection[4292071.6822443 3599746.99994578]"
+        },
+        {
+          "featureIndex": 565,
+          "byteOffset": 134040370,
+          "byteEndExclusive": 134334761,
+          "byteLength": 294391,
+          "properties.id": 560,
+          "properties.objectid": 560,
+          "reason": "Ring Self-intersection[3906687.40531381 2524344.54751778]"
+        },
+        {
+          "featureIndex": 572,
+          "byteOffset": 135447678,
+          "byteEndExclusive": 135629291,
+          "byteLength": 181613,
+          "properties.id": 544,
+          "properties.objectid": 544,
+          "reason": "Ring Self-intersection[3966646.19507602 2672796.18885033]"
+        },
+        {
+          "featureIndex": 604,
+          "byteOffset": 141851359,
+          "byteEndExclusive": 142088502,
+          "byteLength": 237143,
+          "properties.id": 585,
+          "properties.objectid": 585,
+          "reason": "Ring Self-intersection[5182719.93175986 3995136.95807107]"
+        },
+        {
+          "featureIndex": 657,
+          "byteOffset": 150277421,
+          "byteEndExclusive": 150598976,
+          "byteLength": 321555,
+          "properties.id": 638,
+          "properties.objectid": 638,
+          "reason": "Ring Self-intersection[4316569.56756665 4194944.89418549]"
+        },
+        {
+          "featureIndex": 672,
+          "byteOffset": 154066967,
+          "byteEndExclusive": 154320880,
+          "byteLength": 253913,
+          "properties.id": 653,
+          "properties.objectid": 653,
+          "reason": "Ring Self-intersection[3922783.3517895 4363477.53030053]"
+        },
+        {
+          "featureIndex": 706,
+          "byteOffset": 162329047,
+          "byteEndExclusive": 162554241,
+          "byteLength": 225194,
+          "properties.id": 687,
+          "properties.objectid": 687,
+          "reason": "Ring Self-intersection[3744272.99313283 4582437.46341393]"
+        }
+      ],
+      "notEvaluableFeatures": [],
+      "validationErrors": []
+    },
+    "largestFeatureSpans": [
+      {
+        "featureIndex": 59,
+        "byteOffset": 18292522,
+        "byteEndExclusive": 19219309,
+        "byteLength": 926787,
+        "properties.id": 14,
+        "properties.objectid": 14,
+        "positionCount": 17228,
+        "polygonCount": 1,
+        "ringCount": 3,
+        "maxRingPositions": 16903
+      },
+      {
+        "featureIndex": 361,
+        "byteOffset": 78145363,
+        "byteEndExclusive": 78961282,
+        "byteLength": 815919,
+        "properties.id": 316,
+        "properties.objectid": 316,
+        "positionCount": 15165,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 15165
+      },
+      {
+        "featureIndex": 50,
+        "byteOffset": 14239972,
+        "byteEndExclusive": 15045947,
+        "byteLength": 805975,
+        "properties.id": 5,
+        "properties.objectid": 5,
+        "positionCount": 14981,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 14981
+      },
+      {
+        "featureIndex": 390,
+        "byteOffset": 90605220,
+        "byteEndExclusive": 91325691,
+        "byteLength": 720471,
+        "properties.id": 345,
+        "properties.objectid": 345,
+        "positionCount": 13391,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 13391
+      },
+      {
+        "featureIndex": 429,
+        "byteOffset": 96969686,
+        "byteEndExclusive": 97688987,
+        "byteLength": 719301,
+        "properties.id": 413,
+        "properties.objectid": 413,
+        "positionCount": 13367,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 13367
+      },
+      {
+        "featureIndex": 48,
+        "byteOffset": 12855936,
+        "byteEndExclusive": 13571638,
+        "byteLength": 715702,
+        "properties.id": 3,
+        "properties.objectid": 3,
+        "positionCount": 13285,
+        "polygonCount": 112,
+        "ringCount": 112,
+        "maxRingPositions": 3941
+      },
+      {
+        "featureIndex": 384,
+        "byteOffset": 87758750,
+        "byteEndExclusive": 88457248,
+        "byteLength": 698498,
+        "properties.id": 339,
+        "properties.objectid": 339,
+        "positionCount": 12983,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 12983
+      },
+      {
+        "featureIndex": 49,
+        "byteOffset": 13571640,
+        "byteEndExclusive": 14239970,
+        "byteLength": 668330,
+        "properties.id": 4,
+        "properties.objectid": 4,
+        "positionCount": 12421,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 12421
+      },
+      {
+        "featureIndex": 363,
+        "byteOffset": 79362239,
+        "byteEndExclusive": 79998135,
+        "byteLength": 635896,
+        "properties.id": 318,
+        "properties.objectid": 318,
+        "positionCount": 11816,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 11816
+      },
+      {
+        "featureIndex": 113,
+        "byteOffset": 26318950,
+        "byteEndExclusive": 26952295,
+        "byteLength": 633345,
+        "properties.id": 54,
+        "properties.objectid": 54,
+        "positionCount": 11770,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 11770
+      }
+    ],
+    "largestPositionFeatures": [
+      {
+        "featureIndex": 59,
+        "byteOffset": 18292522,
+        "byteEndExclusive": 19219309,
+        "byteLength": 926787,
+        "properties.id": 14,
+        "properties.objectid": 14,
+        "positionCount": 17228,
+        "polygonCount": 1,
+        "ringCount": 3,
+        "maxRingPositions": 16903
+      },
+      {
+        "featureIndex": 361,
+        "byteOffset": 78145363,
+        "byteEndExclusive": 78961282,
+        "byteLength": 815919,
+        "properties.id": 316,
+        "properties.objectid": 316,
+        "positionCount": 15165,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 15165
+      },
+      {
+        "featureIndex": 50,
+        "byteOffset": 14239972,
+        "byteEndExclusive": 15045947,
+        "byteLength": 805975,
+        "properties.id": 5,
+        "properties.objectid": 5,
+        "positionCount": 14981,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 14981
+      },
+      {
+        "featureIndex": 390,
+        "byteOffset": 90605220,
+        "byteEndExclusive": 91325691,
+        "byteLength": 720471,
+        "properties.id": 345,
+        "properties.objectid": 345,
+        "positionCount": 13391,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 13391
+      },
+      {
+        "featureIndex": 429,
+        "byteOffset": 96969686,
+        "byteEndExclusive": 97688987,
+        "byteLength": 719301,
+        "properties.id": 413,
+        "properties.objectid": 413,
+        "positionCount": 13367,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 13367
+      },
+      {
+        "featureIndex": 48,
+        "byteOffset": 12855936,
+        "byteEndExclusive": 13571638,
+        "byteLength": 715702,
+        "properties.id": 3,
+        "properties.objectid": 3,
+        "positionCount": 13285,
+        "polygonCount": 112,
+        "ringCount": 112,
+        "maxRingPositions": 3941
+      },
+      {
+        "featureIndex": 384,
+        "byteOffset": 87758750,
+        "byteEndExclusive": 88457248,
+        "byteLength": 698498,
+        "properties.id": 339,
+        "properties.objectid": 339,
+        "positionCount": 12983,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 12983
+      },
+      {
+        "featureIndex": 49,
+        "byteOffset": 13571640,
+        "byteEndExclusive": 14239970,
+        "byteLength": 668330,
+        "properties.id": 4,
+        "properties.objectid": 4,
+        "positionCount": 12421,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 12421
+      },
+      {
+        "featureIndex": 363,
+        "byteOffset": 79362239,
+        "byteEndExclusive": 79998135,
+        "byteLength": 635896,
+        "properties.id": 318,
+        "properties.objectid": 318,
+        "positionCount": 11816,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 11816
+      },
+      {
+        "featureIndex": 113,
+        "byteOffset": 26318950,
+        "byteEndExclusive": 26952295,
+        "byteLength": 633345,
+        "properties.id": 54,
+        "properties.objectid": 54,
+        "positionCount": 11770,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 11770
+      }
+    ],
+    "largestRingFeatures": [
+      {
+        "featureIndex": 48,
+        "byteOffset": 12855936,
+        "byteEndExclusive": 13571638,
+        "byteLength": 715702,
+        "properties.id": 3,
+        "properties.objectid": 3,
+        "positionCount": 13285,
+        "polygonCount": 112,
+        "ringCount": 112,
+        "maxRingPositions": 3941
+      },
+      {
+        "featureIndex": 46,
+        "byteOffset": 12080490,
+        "byteEndExclusive": 12591503,
+        "byteLength": 511013,
+        "properties.id": 1,
+        "properties.objectid": 1,
+        "positionCount": 9488,
+        "polygonCount": 52,
+        "ringCount": 52,
+        "maxRingPositions": 4127
+      },
+      {
+        "featureIndex": 39,
+        "byteOffset": 9994109,
+        "byteEndExclusive": 10477128,
+        "byteLength": 483019,
+        "properties.id": 709,
+        "properties.objectid": 709,
+        "positionCount": 8969,
+        "polygonCount": 38,
+        "ringCount": 38,
+        "maxRingPositions": 4386
+      },
+      {
+        "featureIndex": 47,
+        "byteOffset": 12591505,
+        "byteEndExclusive": 12855934,
+        "byteLength": 264429,
+        "properties.id": 2,
+        "properties.objectid": 2,
+        "positionCount": 4907,
+        "polygonCount": 22,
+        "ringCount": 22,
+        "maxRingPositions": 1310
+      },
+      {
+        "featureIndex": 562,
+        "byteOffset": 133260122,
+        "byteEndExclusive": 133475237,
+        "byteLength": 215115,
+        "properties.id": 557,
+        "properties.objectid": 557,
+        "positionCount": 3990,
+        "polygonCount": 22,
+        "ringCount": 22,
+        "maxRingPositions": 3464
+      },
+      {
+        "featureIndex": 358,
+        "byteOffset": 77301461,
+        "byteEndExclusive": 77372253,
+        "byteLength": 70792,
+        "properties.id": 313,
+        "properties.objectid": 313,
+        "positionCount": 1306,
+        "polygonCount": 21,
+        "ringCount": 21,
+        "maxRingPositions": 118
+      },
+      {
+        "featureIndex": 340,
+        "byteOffset": 74186422,
+        "byteEndExclusive": 74501678,
+        "byteLength": 315256,
+        "properties.id": 295,
+        "properties.objectid": 295,
+        "positionCount": 5853,
+        "polygonCount": 17,
+        "ringCount": 17,
+        "maxRingPositions": 5589
+      },
+      {
+        "featureIndex": 561,
+        "byteOffset": 132966444,
+        "byteEndExclusive": 133260120,
+        "byteLength": 293676,
+        "properties.id": 556,
+        "properties.objectid": 556,
+        "positionCount": 5452,
+        "polygonCount": 11,
+        "ringCount": 15,
+        "maxRingPositions": 4962
+      },
+      {
+        "featureIndex": 13,
+        "byteOffset": 3397309,
+        "byteEndExclusive": 3512468,
+        "byteLength": 115159,
+        "properties.id": 503,
+        "properties.objectid": 503,
+        "positionCount": 2133,
+        "polygonCount": 13,
+        "ringCount": 14,
+        "maxRingPositions": 1024
+      },
+      {
+        "featureIndex": 233,
+        "byteOffset": 52167335,
+        "byteEndExclusive": 52434205,
+        "byteLength": 266870,
+        "properties.id": 188,
+        "properties.objectid": 188,
+        "positionCount": 4954,
+        "polygonCount": 11,
+        "ringCount": 11,
+        "maxRingPositions": 3857
+      }
+    ],
+    "largestRingPositionFeatures": [
+      {
+        "featureIndex": 59,
+        "byteOffset": 18292522,
+        "byteEndExclusive": 19219309,
+        "byteLength": 926787,
+        "properties.id": 14,
+        "properties.objectid": 14,
+        "positionCount": 17228,
+        "polygonCount": 1,
+        "ringCount": 3,
+        "maxRingPositions": 16903
+      },
+      {
+        "featureIndex": 361,
+        "byteOffset": 78145363,
+        "byteEndExclusive": 78961282,
+        "byteLength": 815919,
+        "properties.id": 316,
+        "properties.objectid": 316,
+        "positionCount": 15165,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 15165
+      },
+      {
+        "featureIndex": 50,
+        "byteOffset": 14239972,
+        "byteEndExclusive": 15045947,
+        "byteLength": 805975,
+        "properties.id": 5,
+        "properties.objectid": 5,
+        "positionCount": 14981,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 14981
+      },
+      {
+        "featureIndex": 390,
+        "byteOffset": 90605220,
+        "byteEndExclusive": 91325691,
+        "byteLength": 720471,
+        "properties.id": 345,
+        "properties.objectid": 345,
+        "positionCount": 13391,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 13391
+      },
+      {
+        "featureIndex": 429,
+        "byteOffset": 96969686,
+        "byteEndExclusive": 97688987,
+        "byteLength": 719301,
+        "properties.id": 413,
+        "properties.objectid": 413,
+        "positionCount": 13367,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 13367
+      },
+      {
+        "featureIndex": 384,
+        "byteOffset": 87758750,
+        "byteEndExclusive": 88457248,
+        "byteLength": 698498,
+        "properties.id": 339,
+        "properties.objectid": 339,
+        "positionCount": 12983,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 12983
+      },
+      {
+        "featureIndex": 49,
+        "byteOffset": 13571640,
+        "byteEndExclusive": 14239970,
+        "byteLength": 668330,
+        "properties.id": 4,
+        "properties.objectid": 4,
+        "positionCount": 12421,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 12421
+      },
+      {
+        "featureIndex": 363,
+        "byteOffset": 79362239,
+        "byteEndExclusive": 79998135,
+        "byteLength": 635896,
+        "properties.id": 318,
+        "properties.objectid": 318,
+        "positionCount": 11816,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 11816
+      },
+      {
+        "featureIndex": 113,
+        "byteOffset": 26318950,
+        "byteEndExclusive": 26952295,
+        "byteLength": 633345,
+        "properties.id": 54,
+        "properties.objectid": 54,
+        "positionCount": 11770,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 11770
+      },
+      {
+        "featureIndex": 387,
+        "byteOffset": 89196146,
+        "byteEndExclusive": 89825399,
+        "byteLength": 629253,
+        "properties.id": 342,
+        "properties.objectid": 342,
+        "positionCount": 11696,
+        "polygonCount": 1,
+        "ringCount": 1,
+        "maxRingPositions": 11696
+      }
+    ]
+  },
+  "properties": {
+    "malformedPropertiesFeatureCount": 0,
+    "duplicatePropertyKeyCounts": {},
+    "fields": {
+      "district": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "string": 733
+        },
+        "distinctScalarValues": 728,
+        "duplicateScalarOccurrences": 5
+      },
+      "ds_name": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "string": 733
+        },
+        "distinctScalarValues": 1,
+        "duplicateScalarOccurrences": 732
+      },
+      "dtcode": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "string": 733
+        },
+        "distinctScalarValues": 732,
+        "duplicateScalarOccurrences": 1
+      },
+      "id": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "number": 733
+        },
+        "distinctScalarValues": 733,
+        "duplicateScalarOccurrences": 0
+      },
+      "objectid": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "number": 733
+        },
+        "distinctScalarValues": 733,
+        "duplicateScalarOccurrences": 0
+      },
+      "shape_area": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "number": 733
+        },
+        "distinctScalarValues": 733,
+        "duplicateScalarOccurrences": 0
+      },
+      "shape_length": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "number": 733
+        },
+        "distinctScalarValues": 733,
+        "duplicateScalarOccurrences": 0
+      },
+      "src_agency": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "string": 733
+        },
+        "distinctScalarValues": 1,
+        "duplicateScalarOccurrences": 732
+      },
+      "state": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "string": 733
+        },
+        "distinctScalarValues": 36,
+        "duplicateScalarOccurrences": 697
+      },
+      "state_name": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "string": 733
+        },
+        "distinctScalarValues": 36,
+        "duplicateScalarOccurrences": 697
+      },
+      "stcode": {
+        "count": 733,
+        "nullCount": 0,
+        "jsonTypes": {
+          "string": 733
+        },
+        "distinctScalarValues": 36,
+        "duplicateScalarOccurrences": 697
+      }
+    },
+    "duplicateGroups": {
+      "id": [],
+      "objectid": [],
+      "dtcode": [
+        {
+          "value": "999",
+          "count": 2,
+          "features": [
+            {
+              "featureIndex": 731,
+              "byteOffset": 168166202,
+              "properties.id": 731,
+              "properties.objectid": 731
+            },
+            {
+              "featureIndex": 732,
+              "byteOffset": 168253046,
+              "properties.id": 732,
+              "properties.objectid": 732
+            }
+          ]
+        }
+      ]
+    },
+    "nativeIdInterpretation": "Source property ids are attributes only; no value is promoted as an application or ULPIN identity."
+  },
+  "execution": {
+    "elapsedSeconds": 9.113456879997102,
+    "peakResidentBytes": 65863680,
+    "readerChunkBytes": 1048576,
+    "positionsPerTransformBatch": 50000,
+    "network": "disabled by docker --network none and PROJ_NETWORK=OFF",
+    "sourceBytesRewritten": false,
+    "geometryRepaired": false,
+    "providerCalls": false
+  },
+  "limitations": [
+    "This profile records source structure and native topology only; it establishes no legal boundary correctness, currentness, survey accuracy, or positional accuracy.",
+    "The inverse round-trip residual measures numerical behavior of the selected CRS operation, not the accuracy of the NWIC/GSI coordinates.",
+    "The profile does not qualify semantic ingestion, publication, tiles, GF-STREAM, GF-SCALE, runtime budgets, or DATA qualification.",
+    "Source attributes and geometries are not parcel identifiers, ownership evidence, building facts, or vertical measurements."
+  ]
+}
