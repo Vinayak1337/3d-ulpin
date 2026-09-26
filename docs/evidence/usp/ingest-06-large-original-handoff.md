@@ -37,7 +37,7 @@ Seven additions are appended to the existing ingestion operation manifest with p
 | POST | `/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/abort` | Fence incomplete receipt; retained originals cannot be aborted |
 | POST | `/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/cleanup` | Retry scoped payload reclamation; completed replay has no I/O |
 
-The existing `/api/v1/sources/{sourceId}/file` identity remains. Large native downloads recompute full hash/size before headers, recheck source/case/operator/receipt pins, then conditionally read the same sealed ETag and stream with backpressure and a final hash/size check. ETag guards identity; it does not prove the hash. This costs two complete reads and holds the two-reader allowance through completion under a total 120-second deadline. Disconnect aborts the transfer. Failure after headers terminates the response and records a structured failure; it cannot retract bytes already sent or emit a success JSON envelope. Partial ranges return416; cross-site reads return403. The legacy whole-byte storage reader rejects `large-originals/` keys before fetching them; small byte downloads remain unchanged.
+The existing `/api/v1/sources/{sourceId}/file` identity remains. Large native downloads recompute full hash/size before headers, recheck source/case/operator/receipt pins, then conditionally read the same sealed ETag and stream with backpressure and a final hash/size check. ETag guards identity; it does not prove the hash. This costs two complete reads and holds the two-reader allowance through completion under a total 120-second deadline. Disconnect aborts the transfer. Failure after headers terminates the response and records a structured failure; it cannot retract bytes already sent or emit a success JSON envelope. Partial ranges return 416; cross-site reads return 403. The legacy whole-byte storage reader rejects `large-originals/` keys before fetching them; small byte downloads remain unchanged.
 
 Source publication uses the existing `sources` authority: profile `large-original-v1`, status `needs_input`, conversion `unsupported`, verified hash/size/ETag and declared provenance. It creates no conversion, extraction, model, package, placement or publication job. Existing case/workspace/operator/revision locks and source membership are reused. `usp_source_uploads`/`usp_source_upload_parts` hold receipt metadata beside that source authority; they are not a semantic batch registry or queue. Storage I/O is outside database transactions. Additive named SQL is `ingestion.large.schema`; historical SQL bytes/hashes remain unchanged.
 
@@ -45,26 +45,26 @@ Source publication uses the existing `sources` authority: profile `large-origina
 
 | Limit | Value |
 | --- | --- |
-| Original | Greater than16MiB, at most128MiB; ZIP or octet-stream opaque original |
-| Byte part | Fixed8MiB, final part exact remaining bytes; at most16 parts; one active part per receipt |
+| Original | Greater than 16 MiB, at most 128 MiB; ZIP or octet-stream opaque original |
+| Byte part | Fixed 8 MiB, final part exact remaining bytes; at most 16 parts; one active part per receipt |
 | Active receipts | 2 per case, 2 per configured operator, 4 globally |
 | Lifetime receipt capacity | **128 total rows forever in this bounded profile**, including active, retained and aborted rows; no retention/eviction system added |
-| Registered key ceiling | At most17 keys per receipt, therefore at most2176 registered keys; not a measured physical metadata/disk bound |
-| Payload reservation | 512MiB total declared non-aborted original payload; worst-case managed temporary+original copies bounded by1GiB; object metadata/storage-engine overhead separate |
-| Admission lifetime / producer lease | 24hours /180seconds |
-| Raw read / individual storage read | 30seconds /30seconds |
-| Finalization / cleanup / full download | 120seconds each |
+| Registered key ceiling | At most17 keys per receipt, therefore at most 2176 registered keys; not a measured physical metadata/disk bound |
+| Payload reservation | 512 MiB total declared non-aborted original payload; worst-case managed temporary+original copies bounded by 1 GiB; object metadata/storage-engine overhead separate |
+| Admission lifetime / producer lease | 24 hours /180 seconds |
+| Raw read / individual storage read | 30 seconds /30 seconds |
+| Finalization / cleanup / full download | 120 seconds each |
 | Part / finalization attempts | At most3 each |
 | Download readers | At most2 in this process |
 | Required object store profile | Confirmed unversioned private bucket with conditional PUT semantics; enabled/suspended/non200/failed capability probes fail closed |
 
-The lifetime row cap does not reset on abort, expiry or a new day. Exhaustion rejects admission with429; cleanup cannot manufacture new lifetime capacity. Payload reservation is released only after scoped cleanup reaches its fenced terminal state.
+The lifetime row cap does not reset on abort, expiry or a new day. Exhaustion rejects admission with 429; cleanup cannot manufacture new lifetime capacity. Payload reservation is released only after scoped cleanup reaches its fenced terminal state.
 
 Parts use `If-None-Match:*`. Fresh state/token/lease validation precedes I/O, while **permanent zero-payload fences** protect the subsequent check/write window: cleanup replaces exact owned temporary keys with empty objects carrying the upload owner, verifies zero bytes, and never removes these markers. Aborted allocated-original keys receive the same fence. Canonical source references are checked before reclamation, and retained original keys are preserved. Durable receipt/part metadata retains key ownership after abort. `cleanupPending=false` means temporary **payload** was reclaimed with fences retained; it does not mean all objects were deleted. The row/key ceilings bound object-count growth; physical metadata overhead was not measured.
 
 A failed/expired cleanup claim can resume the **same immutable request** under current row/state/lease fencing. Only completed cleanup qualifies for its replay shortcut. A changed payload under the saved cleanup key conflicts. Live producers/cleanup leases remain explicitly pending until they finish or expire.
 
-Original assembly now preflights actual ordered-part hash/size, then re-reads verified bounded parts into one conditional streaming PUT, using a byte-mode64KiB high-water mark, and verifies the stored original again before source publication. It has no independent new multipart-upload parts. The128MiB profile fits the [documented single-PUT capacity](https://docs.aws.amazon.com/AmazonS3/latest/userguide/upload-objects.html). The fencing reasoning relies on [documented conditional-write behavior](https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html), supported here by actual configured-store tests, not by documentation alone.
+Original assembly now preflights actual ordered-part hash/size, then re-reads verified bounded parts into one conditional streaming PUT, using a byte-mode 64 KiB high-water mark, and verifies the stored original again before source publication. It has no independent new multipart-upload parts. The 128 MiB profile fits the [documented single-PUT capacity](https://docs.aws.amazon.com/AmazonS3/latest/userguide/upload-objects.html). The fencing reasoning relies on [documented conditional-write behavior](https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html), supported here by actual configured-store tests, not by documentation alone.
 
 Exact-key legacy MPU cleanup remains for previously pinned implementations. It assumes old producers are quiesced. All older owned runtimes are stopped; fresh nonce tests do **not** qualify a hot upgrade with live old MPU producers. No bucket settings were changed. An external administrator or lifecycle policy removing fences is outside the tested profile.
 
@@ -72,8 +72,8 @@ Exact-key legacy MPU cleanup remains for previously pinned implementations. It a
 
 | Nonce / served pin | Observation |
 | --- | --- |
-| `1c24e431ae6c655f` / `97ea277…` | Prepare only; start refused because3188 was occupied by original staging API. No worker services started. Original prepared files preserved. Lead authorized3189; the staging process was never stopped. |
-| `493bb6b7ee42c39e` / `c33c429…` | Startup/schema repeat/API-only restart passed. Full harness failed on post-restart GET with observed `fetch failed`. Keepalive reuse is a **suspected** cause, not proven. A fresh200 status read proved rev5, two exact received parts and16,777,216 bytes survived. Failed receipt and stopped volumes preserved. |
+| `1c24e431ae6c655f` / `97ea277…` | Prepare only; start refused because 3188 was occupied by original staging API. No worker services started. Original prepared files preserved. Lead authorized 3189; the staging process was never stopped. |
+| `493bb6b7ee42c39e` / `c33c429…` | Startup/schema repeat/API-only restart passed. Full harness failed on post-restart GET with observed `fetch failed`. Keepalive reuse is a **suspected** cause, not proven. A fresh 200 status read proved rev 5, two exact received parts and 16,777,216 bytes survived. Failed receipt and stopped volumes preserved. |
 | `5de0baf1b120d51b` / `1b77e29…` | Full native journey passed seven grouped checks: admission/replay/conflict/scope; partial finalize denial; two-part restart/resume; nine-part wrong declared whole-digest rejection without source; peer-only abort/replay/cleanup; successful nine-part finalize/replay; exact private download and separate official NYC small-GIS retain/download compatibility. Counts in the NWIC case: `{"sources":1,"uploads":2,"retained":1,"aborted":1,"parts":9,"jobs":0,"modelCalls":0}`. |
 | `92f0eab6f400311c` / `9d4e885…` | Focused corrected-code recovery/finalization passed five grouped checks; details below. Counts: `{"sources":1,"uploads":3,"aborted":2,"reserved":"71238839","jobs":0,"modelCalls":0}`. |
 
@@ -81,30 +81,30 @@ The full journey retains source `6f09412c-0a54-47ca-9e32-1391c8677f60` and uploa
 
 Current focused source: `06e9eb77-f726-4e75-a6d5-c601a0e18914`. Recovery observations:
 
-1. Stored a real8MiB part with durable writing intent, interrupted metadata publication, and aborted while its producer was fenced. Injected one reclaim failure. The same immutable cleanup request resumed from failed revision6 to completed revision8, reclaimed actual payload, then replayed without further storage I/O. Changed binding returned409.
+1. Stored a real 8 MiB part with durable writing intent, interrupted metadata publication, and aborted while its producer was fenced. Injected one reclaim failure. The same immutable cleanup request resumed from failed revision 6 to completed revision 8, reclaimed actual payload, then replayed without further storage I/O. Changed binding returned 409.
 2. Paused a part producer **after its fresh database validation and before storage dispatch**, from `2026-09-26T09:47:49.399Z`. Its actual lease expired at `2026-09-26T09:50:49.383Z`. Cleanup completed and verified the zero fence at `2026-09-26T09:50:49.639Z` before releasing the delayed producer. The configured store refused replacement; publication failed with `SOURCE_INTEGRITY` and the receipt remained aborted with cleanup complete.
-3. Attempted the actual conditional streaming original PUT against that aborted original fence. SDK precondition failure412 was observed (`alreadyExists=true`); remaining payload stayed0 and no exact-key MPU existed. The SDK emitted its expected non-retryable-stream warning for this denied control; the harness completed successfully.
-4. A fresh nine-part corrected finalization/replay retained and privately downloaded exactly71,238,839 bytes with the original SHA-256. Cleanup of its temporary payload preserved the canonical original.
-5. Scoped read-only Head/count audit observed **14 registered objects: 13 zero-payload fences and one unchanged original**, total payload71238839 bytes. Reserved payload equals one original; two aborted receipts hold no payload reservation. Jobs/model calls remain0.
+3. Attempted the actual conditional streaming original PUT against that aborted original fence. SDK precondition failure 412 was observed (`alreadyExists=true`); remaining payload stayed 0 and no exact-key MPU existed. The SDK emitted its expected non-retryable-stream warning for this denied control; the harness completed successfully.
+4. A fresh nine-part corrected finalization/replay retained and privately downloaded exactly 71,238,839 bytes with the original SHA-256. Cleanup of its temporary payload preserved the canonical original.
+5. Scoped read-only Head/count audit observed **14 registered objects: 13 zero-payload fences and one unchanged original**, total payload 71,238,839 bytes. Reserved payload equals one original; two aborted receipts hold no payload reservation. Jobs/model calls remain 0.
 
 These barriers do not hold an **already-dispatched remote PUT** in flight. They prove the post-validation/before-dispatch schedule and a conditional request after a fence exists. General concurrent commit ordering remains the storage semantic assumption; exact pinned MinIO implementation review and AWS documentation support the reasoning. No claim is made for arbitrary S3-compatible endpoints, provider cancellation guarantees, versioned buckets or other network schedules.
 
-The tested store is `quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e`, actual container image ID matching that digest. All API listeners were127.0.0.1:3189; other fixed ports and nonce/database/bucket/process/operator guards remained intact. Health's `dataMode=linked` reflects `REPO_DATA=false`; verified saved endpoints selected the fresh isolated nonce resources, not linked populated services.
+The tested store is `quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e`, actual container image ID matching that digest. All started owned API listeners were 127.0.0.1:3189; other fixed ports and nonce/database/bucket/process/operator guards remained intact. Health's `dataMode=linked` reflects `REPO_DATA=false`; verified saved endpoints selected the fresh isolated nonce resources, not linked populated services.
 
 ## Commands and evidence
 
 | Command/check | Observed exit/result |
 | --- | --- |
 | `pnpm install --frozen-lockfile --offline` | 0; dependencies already locked/up to date |
-| Initial affected six-file test set (`large-original`, `manual-ingestion`, `source-intake`, `gis-inspection`, `nest-intake`, API boundary) | 1 initially:27/28; operation-ID manifest typo only. Corrected manual test rerun:0,2/2. |
-| Current directly affected `large-original` + `manual-ingestion` tests | 0,5/5; all146 native identities reconcile |
-| Existing `engineering-isolation.test.mjs`, extended with port guards | 0,33/33; no other profiles relaxed |
+| Initial affected six-file test set (`large-original`, `manual-ingestion`, `source-intake`, `gis-inspection`, `nest-intake`, API boundary) | 1 initially: 27/28; operation-ID manifest typo only. Corrected manual test rerun:0, 2/2. |
+| Current directly affected `large-original` + `manual-ingestion` tests | 0, 5/5; all 146 native identities reconcile |
+| Existing `engineering-isolation.test.mjs`, extended with port guards | 0, 33/33; no other profiles relaxed |
 | Current `pnpm typecheck:backend` and `pnpm build` | 0; server/API typechecks and builds |
-| `python3 scripts/db/verify_extraction.py` | 0;25 historical exact files/136 statement hashes,3 authored additions,27 named runtime queries |
+| `python3 scripts/db/verify_extraction.py` | 0; 25 historical exact files/136 statement hashes, 3 authored additions, 27 named runtime queries |
 | Harness/helper syntax and `git diff --check` | 0 |
-| Guarded schema repeat, nonce493 | 0; all required services ready |
-| Full native smoke, nonce5de /1b77 | 0,seven grouped checks |
-| Focused recovery, nonce92 /9d4 | 0,five grouped checks plus scoped fence audit |
+| Guarded schema repeat, nonce 493 | 0; all required services ready |
+| Full native smoke, nonce 5de /1b77 | 0, seven grouped checks |
+| Focused recovery, nonce 92 /9d4 | 0, five grouped checks plus scoped fence audit |
 | Owned runtime stop/status | 0; no containers, no owned process-group members; named volumes retained |
 
 Private receipts remain outside Git under `.runtime/run01/`; credential files were not copied into this handoff. SHA-256 pins:
@@ -129,7 +129,7 @@ Current code/artifact hashes (the runtime served TypeScript at its clean commit,
 | `database/sql/95-ingestion/large-original.sql` | `d2c2cfd914818e5bbcc2c1b334cc630c4e871875cf4421852acf52ca1152aaf0` |
 | `pnpm-lock.yaml` | `f90787f4e7ca2881cca77b0700f40a09a16a2745d53ffa4e2c73a3a84813af61` |
 
-Owned runtime shutdown is complete for nonce493,5de and92: recorded API/dispatcher groups are gone and their Compose containers are absent. Each nonce preserves its `minio-data`, `postgres-data` and `redis-data` volumes. The initial nonce1c24 has no started runtime. No volume deletion, broad bucket cleanup, reset/reseed, replacement snapshot or linked/staging service stop occurred.
+Owned runtime shutdown is complete for nonce 493,5de and92: recorded API/dispatcher groups are gone and their Compose containers are absent. Each nonce preserves its `minio-data`, `postgres-data` and `redis-data` volumes. The initial nonce 1c24 has no started runtime. No volume deletion, broad bucket cleanup, reset/reseed, replacement snapshot or linked/staging service stop occurred.
 
 ## Remaining qualification and review
 
