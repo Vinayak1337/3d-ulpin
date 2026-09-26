@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import type { PoolClient } from 'pg';
 import {
   codePin, connection, datasetPins, fingerprints, hash, integrity, loadEnvironment,
-  originalIntegrity, preserved, requireGuard, target, writeReceipt, type Fingerprint,
+  originalIntegrity, preserved, requireGuard, target, writeReceipt,
 } from './serving-common';
 
 type Snapshot = Awaited<ReturnType<typeof audit>>;
@@ -82,9 +82,10 @@ async function main() {
     codeCommit: codePin(), startedAt: new Date().toISOString(), mutationAttempted: false };
   const p = connection(environment.env.DATABASE_URL, mode === 'preflight');
   p.on('error', () => {});
-  const client = await p.connect();
+  let client: PoolClient | undefined;
   let locked = false;
   try {
+    client = await p.connect();
     if (mode === 'preflight') {
       receipt.snapshot = await audit(client, environment.endpoint);
       receipt.envHash = environment.envHash;
@@ -137,9 +138,9 @@ async function main() {
       : 'No serving mutation attempted. Correct the named guard and create a new preflight receipt.';
     process.exitCode = 1;
   } finally {
-    await client.query('ROLLBACK').catch(() => {});
-    if (locked) await client.query("SELECT pg_advisory_unlock(hashtextextended('ulpin-serving-upgrade',0))").catch(() => {});
-    client.release(); await p.end();
+    await client?.query('ROLLBACK').catch(() => {});
+    if (locked) await client?.query("SELECT pg_advisory_unlock(hashtextextended('ulpin-serving-upgrade',0))").catch(() => {});
+    client?.release(); await p.end();
     receipt.completedAt = new Date().toISOString(); writeReceipt(out, receipt);
     console.log(JSON.stringify({mode,status:receipt.status,errorCode:receipt.errorCode,receipt:out,
       mutationAttempted:receipt.mutationAttempted}));
