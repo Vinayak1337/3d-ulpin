@@ -65,10 +65,13 @@ Resume the dependency-ready backend plan from actual code/evidence, not its old 
 
 | Batch | State | Accepted commit / next action |
 | --- | --- | --- |
-| NEST-00 | running | Sol/max task `01a0db54-338c-7950-8101-46012dd75688`, worktree `45f5`, base `39a70488`. |
-| NEST-01 | phase 1 accepted; wiring pending | SQL commit `dfb74fd2` merged at `714a6695`. Lead rechecked 25 exact SQL files / 136 statement hashes. Sol task `01a0db54-6463-72c3-85e2-67b10711c080` retains worktree `a1f7` for phase 2. |
-| NEST-02 | running, static phase | Sol/max task `01a0db56-a8ae-77b0-a65c-19ac10dbd025`, worktree `0365`; actual service verification waits for integrated API. |
-| NEST-10–13 | waiting for foundation | Assign exact moved paths from NEST-00 map. |
+| NEST-00 | accepted | Foundation `f5df91ad` merged at `fd7d3e39`; direct contracts dependency `08e58166` merged at `de77fe9`. Server/API builds and bounded loopback startup passed; no dependency health or GF-BACKEND pass. |
+| NEST-01 | phase 1 accepted; phase 2 running | SQL commit `dfb74fd2` merged at `714a6695`. Lead rechecked 25 exact SQL files / 136 statement hashes. Sol task `01a0db54-6463-72c3-85e2-67b10711c080` retains worktree `a1f7` for phase 2. |
+| NEST-02 | preparation accepted; execution gated | `958b1c64` + review fix `1ee5585f` merged at `8aabfb1f`. Sol task `01a0db56-a8ae-77b0-a65c-19ac10dbd025`, worktree `0365`; actual service verification waits for integrated API. |
+| NEST-10 | running | Intake: task `01a0db64-588b-7610-89cc-2438a0e5f5f3`, worktree `c006`. |
+| NEST-11 | running | Register/officer: task `01a0db64-7470-7ca2-8e64-1e4b95927087`, worktree `b1dd`. |
+| NEST-12 | running | Evidence/identity: task `01a0db64-aa4b-7781-807a-982281dc5e00`, worktree `2b4e`. |
+| NEST-13 | running | Spatial/AI: task `01a0db64-d960-7d61-a20d-47b549e24331`, worktree `2ace`. |
 | NEST-20–21 | pending | Integration/runtime checks, lead docs and cleanup. |
 
 Framework references checked for this decision: [Nest controllers](https://docs.nestjs.com/controllers), [Nest database integration](https://docs.nestjs.com/techniques/database), [node-postgres parameterized queries](https://node-postgres.com/features/queries), [Prisma unsupported-field/raw SQL guidance](https://docs.prisma.io/docs/orm/prisma-client/using-raw-sql/safeql). These inform the architecture; they do not prove this repository's runtime behavior.
@@ -76,3 +79,5 @@ Framework references checked for this decision: [Nest controllers](https://docs.
 Worker metadata observed for both initial tasks: model `gpt-6-sol`, effort `max`; per-turn service tier not exposed. Both own separate worktrees.
 
 Lead dataset precheck: all 16 assets marked available across seven USP manifests matched recorded size/SHA-256. Eleven other assets remain unavailable in Git; manifest permissions include unconfirmed entries. This is a byte/catalogue check, not API installation or source qualification.
+
+All four API tasks started from accepted `fd7d3e39` and were instructed to merge the shared `08e58166` dependency correction. Observed model/effort is Sol/max for all; per-turn tier remains unobserved. SQL migration files are reserved to NEST-01, including `officer-ai.ts` until that seam is explicitly released. Lead frozen install at `8aabfb1f` passed.
