@@ -1,22 +1,22 @@
-# Database SQL extraction (NEST-01 phase 1)
+# Database SQL authority (NEST-01)
 
 This directory is an exact, ordered extraction of the PostgreSQL/PostGIS SQL at
-`39a70488f44800567ff42ef175b94d42c2ee66b5`. **Runtime wiring is pending
-NEST-01 phase 2.** At this revision, `scripts/migrate.ts` still calls the
-TypeScript migration functions; the Docker init script still comes from
-`infra/postgres/001-extensions.sql`. The [manifest](manifest.json) gives every
-old query call (or init file), source function and line, SHA-256 of the whole
-query batch and of each SQL statement, order, timing, transaction scope, lock,
-condition and parameter. Each
-`.sql` file preserves one complete original query string, including its
-whitespace and any multiple statements. The files contain no generated rows.
+`39a70488f44800567ff42ef175b94d42c2ee66b5`. The `.sql` files are now
+the **executed SQL authority**: the existing migration functions call
+`packages/server/src/infrastructure/sql-loader.ts` by named manifest ID, and
+`compose.yaml` mounts the bootstrap file here. The [manifest](manifest.json)
+records both the pinned historical source path/function/line and current
+runtime caller, SHA-256 of each query batch and SQL statement, order, timing,
+transaction scope, lock, condition and parameter. Each file preserves one
+complete original query string, including its whitespace and any multiple
+statements. The files contain no generated rows. Static wiring and hash checks
+have passed; database execution remains for the separate runtime qualification.
 
 ## Execution order and boundaries
 
 1. **New PostgreSQL data directory only:** Docker's `/docker-entrypoint-initdb.d`
-   mounts `infra/postgres/001-extensions.sql`; its exact copy is
-   [sql/00-bootstrap/postgis.sql](sql/00-bootstrap/postgis.sql). An existing
-   populated volume does not replay Docker init.
+   mounts [sql/00-bootstrap/postgis.sql](sql/00-bootstrap/postgis.sql) from
+   `compose.yaml`. An existing populated volume does not replay Docker init.
 2. **Migration command:** `scripts/migrate.ts` invokes `migrate()` in `db.ts`,
    then private bucket setup. `migrate()` sends the core, registry, area,
    officer, officer AI and spatial ML files as six *sequential* `pg` query
@@ -48,13 +48,11 @@ whitespace and any multiple statements. The files contain no generated rows.
    batch. It has the same promise/failure behavior.
 
 The migration command is a deliberate invocation; an API process start alone
-does not establish that it ran. This extraction is **not** a reset script.
-Do not concatenate the files, run them with `psql`, or replay them against a
-linked/populated service. Phase 2 must route the existing migration functions
-through this manifest while retaining their conditional control flow and
-transaction boundaries. It also must decide with the lead how the fresh-volume
-Docker init mount should point at the extracted bootstrap file. No database
-was opened to prepare or verify phase 1.
+does not establish that it ran. This is **not** a reset script. Do not
+concatenate the files, run them with `psql`, or replay them against a
+linked/populated service. The existing TypeScript functions retain the
+conditional control flow and transaction boundaries. No database was opened
+to prepare or verify NEST-01.
 
 ## Schema groups and relationships
 
@@ -87,8 +85,10 @@ invent that schema in NEST-01.
 ## Source integrity check
 
 Run `python3 scripts/db/verify_extraction.py` from the repository. It reads
-the pinned source with `git show`, compares exact UTF-8 SQL bytes and hashes,
-checks manifest/file coverage, and scans the pinned server tree for any
-unlisted schema-bearing query literal. It imports no application modules and
-does not connect to PostgreSQL. A changed migration literal needs a reviewed
-manifest/SQL update in phase 2, not a silent overwrite of the extracted file.
+the pinned historical source with `git show`, compares exact UTF-8 SQL bytes
+and hashes, checks manifest/file coverage, scans the pinned server tree for
+unlisted schema-bearing query literals, and checks current runtime wiring in
+the moved server modules and Compose mount. It imports no application modules
+and does not connect to PostgreSQL. A future SQL change needs a reviewed SQL,
+manifest and migration update; the historical source comparison remains a
+separate provenance check.
