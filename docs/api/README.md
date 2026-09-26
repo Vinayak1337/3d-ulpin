@@ -34,6 +34,14 @@ Preserve `Idempotency-Key`, request keys, expected revisions, exact source/manif
 
 Source downloads verify retained size/hash before returning bytes. Original-source hash headers, packet artifact hash headers, ETags, content disposition and cache policy are separate contracts. Binary replies use the source/artifact media type; do not parse them as a JSON error/result blindly. Private data is not eligible for shared public caches. Unknown/withheld/conflicting values remain distinct; source geometry is not ownership, an issued parcel ULPIN or verified global placement.
 
+## Private extraction gateway
+
+New officer extraction uses the shared Sarvam gateway with durable reservation/settlement, a project cap, protected ingestion allocation and a daily principal call cap. It stays disabled without explicit server configuration. The status endpoint inspects configuration only: `available` does not prove live provider health, funded capacity, residency or permission; quota remains unknown and `freeVerified` remains false. Manual preparation stays available when model inference is unavailable. Configuration and secrets belong to the backend, never to frontend request bodies.
+
+The existing extraction routes and success statuses are unchanged. The provider enum retains historical `nous` records and adds `sarvam`; new runs may include `gatewayPolicyHash` and `principalHash`. Call receipts may include `callId`, `actualMicroInr` (a decimal integer string), `priceVersion` and `semanticError`. Reusing a historical provider request key returns 409. Current output is checked against evidence, principal and policy before POST/GET responses, cache reuse or application; stale or unauthorized output is withheld while stored history and billing remain intact. Render the returned state/message and available fields rather than filling withheld values. A failed or timed-out call is not necessarily free: uncertain usage remains reserved.
+
+See the [gateway handoff and focused verification](../evidence/usp/deploy-01-handoff.md) and [executed gateway SQL](../../database/sql/90-model-gateway/model-gateway.sql). These controls do not establish live provider service, actual tariffs/funding, replay-corpus eligibility or real-source extraction accuracy. No new billing, credential or reset API is exposed.
+
 ## Datasets and qualification
 
 Start with [real sources](real-sources.md) and [datasets.json](datasets.json). Entries include issuer/original links, manifests, hashes, reference systems, permission, limitations and repository-byte availability. Originals outside Git remain outside Git. A manifest is not an installed API record; use returned case/source/package IDs from the actual environment. No fictional example records or fixed installed IDs are supplied.
