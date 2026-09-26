@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { usesGeographicNeighbours, automaticNeighbourAllowed } from "../apps/web/lib/server/neighbour-scenario-policy";
+import { usesGeographicNeighbours, automaticNeighbourAllowed } from "@ulpin/server/shared/neighbour-scenario-policy";
 
 test("real reference checks never automatically consume invented neighbouring scenarios", () => {
   const real = [{ worldStatus: "observed" as const }];

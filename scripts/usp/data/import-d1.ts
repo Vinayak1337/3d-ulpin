@@ -104,9 +104,9 @@ export async function deriveD1(): Promise<Derived> {
 
 async function apply(derived: Derived) {
   const isolation = assertUspIsolation(process.env);
-  const { areaContext, attachDocument, commitPackage, ingestArea, reviewPackage } = await import('../../../apps/web/lib/server/areas');
-  const { pool, query } = await import('../../../apps/web/lib/server/db');
-  const { readObject } = await import('../../../apps/web/lib/server/storage');
+  const { areaContext, attachDocument, commitPackage, ingestArea, reviewPackage } = await import('@ulpin/server/modules/areas/areas');
+  const { pool, query } = await import('@ulpin/server/infrastructure/db');
+  const { readObject } = await import('@ulpin/server/infrastructure/storage');
   const lock = await pool().connect();
   try {
     const claimed = (await lock.query("SELECT pg_try_advisory_lock(hashtext('usp-d1-3dbag-single-roof-v1-import')) ok")).rows[0]?.ok;

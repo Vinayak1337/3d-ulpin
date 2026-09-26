@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { SpatialMlCalibration, SpatialMlItem } from "@ulpin/contracts";
-import { deriveSpatialMlGeometry, spatialMlBatchSchema, validateSpatialMlPixels } from "../apps/web/lib/server/spatial-ml";
+import { deriveSpatialMlGeometry, spatialMlBatchSchema, validateSpatialMlPixels } from "@ulpin/server/modules/spatial/spatial-ml";
 
 const calibration: SpatialMlCalibration = { rasterSha256: "a".repeat(64), imagePoints: [[0, 0], [100, 0]], worldPoints: [[10, 20], [20, 20]], frame: "test-drawing-metres", reason: "Synthetic documented control pair" };
 const item = {

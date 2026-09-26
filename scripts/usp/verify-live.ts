@@ -9,12 +9,12 @@ import { assertUspIsolation } from './local-isolation.mjs';
 
 assertUspIsolation(process.env);
 const { registerUspJobInputTx, claimUspJobAttempt, heartbeatUspJobAttempt,
-  acceptUspJobAttempt, cancelUspJob, readUspJob } = await import('../../apps/web/lib/server/usp/jobs');
-const require = createRequire(resolve('apps/web/package.json'));
+  acceptUspJobAttempt, cancelUspJob, readUspJob } = await import('@ulpin/server/modules/usp/jobs');
+const require = createRequire(resolve('packages/server/package.json'));
 const { Pool } = require('pg');
 const { UspVerticalSelectionSchema } = await import('../../packages/contracts/src/usp/index');
-const { resolveRegistryTarget, resolveRegistryVerticalContext } = await import('../../apps/web/lib/server/usp/snapshots');
-const { localRequestContext } = await import('../../apps/web/lib/server/usp/principal');
+const { resolveRegistryTarget, resolveRegistryVerticalContext } = await import('@ulpin/server/modules/usp/snapshots');
+const { localRequestContext } = await import('@ulpin/server/modules/usp/principal');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 5000, max: 2 });
 const base = `${process.env.ULPIN_TEST_URL}/api/v1`;
 const hash = (value: Uint8Array | string) => createHash('sha256').update(value).digest('hex');

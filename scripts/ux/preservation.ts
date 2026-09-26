@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
-import {pool} from '../../apps/web/lib/server/db';
-import {settings} from '../../apps/web/lib/server/config';
+import {pool} from '@ulpin/server/infrastructure/db';
+import {settings} from '@ulpin/server/infrastructure/config';
 const mode=process.argv[2];assert(['before','after'].includes(mode));assert.equal(settings.dataMode,'linked');
 const file='.runtime/ux-preservation-before.json';
 const tables=['physical_feature_revisions','registry_revisions','unit_revisions'];

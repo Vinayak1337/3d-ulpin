@@ -9,8 +9,8 @@ import {
   type AreaContext, type PhysicalFeature,
 } from "../packages/contracts/src/index";
 import { calibrationSnapshot } from "../apps/web/features/spatial/data/calibration";
-import { compileSpatialSnapshot } from "../apps/web/features/spatial/compiler/compile";
-import { buildMeshes } from "../apps/web/features/spatial/compiler/architecture";
+import { compileSpatialSnapshot } from "@ulpin/server/modules/spatial/scene/compile";
+import { buildMeshes } from "@ulpin/server/modules/spatial/scene/architecture";
 import { adaptAreaContext } from "../apps/web/features/spatial/data/legacy-adapter";
 import { ResourceCache } from "../apps/web/features/spatial/data/resource-cache";
 import { MapSessions } from "../apps/web/features/spatial/data/session";

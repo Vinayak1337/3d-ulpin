@@ -3,11 +3,11 @@ import { randomUUID, createHash } from 'node:crypto';
 import { deflateSync } from 'node:zlib';
 import { writeFile, mkdir } from 'node:fs/promises';
 import type { ImportPackage } from '@ulpin/contracts';
-import type { OfficerAiRun } from '../../apps/web/lib/officer-ai-types';
-import { ingestArea, attachDocument, areaContext, getPackage } from '../../apps/web/lib/server/areas';
-import { migrateOfficerAi, officerAiRoutes } from '../../apps/web/lib/server/officer-ai';
-import { query, transaction, pool } from '../../apps/web/lib/server/db';
-import { removeOrphan } from '../../apps/web/lib/server/storage';
+import type { OfficerAiRun } from '@ulpin/server/shared/officer-ai-types';
+import { ingestArea, attachDocument, areaContext, getPackage } from '@ulpin/server/modules/areas/areas';
+import { migrateOfficerAi, officerAiRoutes } from '@ulpin/server/modules/ai/officer-ai';
+import { query, transaction, pool } from '@ulpin/server/infrastructure/db';
+import { removeOrphan } from '@ulpin/server/infrastructure/storage';
 
 // All sources and all model responses in this test are explicitly synthetic.
 // The provider is mocked in-process, never contacted with a test credential.

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { pool, transaction } from "../apps/web/lib/server/db";
+import { pool, transaction } from "@ulpin/server/infrastructure/db";
 import type {
   CaseDetail,
   RegistryDraft,

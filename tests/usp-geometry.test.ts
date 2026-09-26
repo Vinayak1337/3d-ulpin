@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { UspGeometryMetadataSchema, DataSufficiencyVerdictSchema, UspDeclarationChangeSchema,
   UspPrepareProposalSchema, UspSnapshotManifestSchema, UspGeometryProjectionSchema } from '../packages/contracts/src/usp';
-import { geometryProjection, sameCanonicalGeometryPayload } from '../apps/web/lib/server/usp/geometry';
+import { geometryProjection, sameCanonicalGeometryPayload } from '@ulpin/server/modules/usp/geometry';
 import { uspFixtures as existing } from './fixtures/usp-common';
 
 // Schema/metadata assertions only. No geometry, operational records or source facts are authored.
