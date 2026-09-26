@@ -13,3 +13,4 @@ export * from './ingestion-events';
 export * from './projected-vector';
 export * from './private-mvt';
 export * from './semantic-chunks';
+export * from './sufficiency';

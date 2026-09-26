@@ -26,14 +26,19 @@ export const UspGeometryMetadataSchema = z.strictObject({
   }
 }).readonly();
 
-export const DataSufficiencyVerdictSchema = z.strictObject({
+export const DataSufficiencyRequirementsShape = {
   task: CoreIdSchema, requirements: z.array(CoreIdSchema).min(1).max(64).readonly(),
-  outcome: z.enum(['sufficient', 'partial', 'insufficient_for_spatial_reconstruction']),
   missing: z.array(CoreIdSchema).max(64).readonly(),
+};
+export function exactSufficiencyRequirements(value: {requirements: readonly string[]; missing: readonly string[]}) {
+  return new Set(value.requirements).size === value.requirements.length &&
+    new Set(value.missing).size === value.missing.length && value.missing.every(item => value.requirements.includes(item));
+}
+export const DataSufficiencyVerdictSchema = z.strictObject({
+  ...DataSufficiencyRequirementsShape,
+  outcome: z.enum(['sufficient', 'partial', 'insufficient_for_spatial_reconstruction']),
 }).superRefine((value, ctx) => {
-  if (new Set(value.requirements).size !== value.requirements.length ||
-      new Set(value.missing).size !== value.missing.length ||
-      value.missing.some(item => !value.requirements.includes(item)) ||
+  if (!exactSufficiencyRequirements(value) ||
       (value.outcome === 'sufficient') !== (value.missing.length === 0) ||
       (value.outcome === 'partial' && value.missing.length === value.requirements.length)) {
     ctx.addIssue({ code: 'custom', message: 'Sufficiency must preserve the exact required and missing evidence' });

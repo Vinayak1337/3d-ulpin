@@ -24,3 +24,6 @@ export async function migratePrivateMvtTx(client:PoolClient){
 export async function migrateSemanticChunksTx(client:PoolClient){
   await client.query(sql('ingestion.semantic.schema'));
 }
+export async function migrateSufficiencyTx(client:PoolClient){
+  await client.query(sql('ingestion.sufficiency.schema'));
+}
