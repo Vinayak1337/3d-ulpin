@@ -7,6 +7,13 @@ import { parse } from 'dotenv';
 import { Pool, type PoolClient } from 'pg';
 
 export const hash = (bytes: string | Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+export const originalVerificationBounds = Object.freeze({ count: 1000, perObjectBytes: 128*1024*1024,
+  totalBytes: 512*1024*1024, scanMs: 60000, perObjectMs: 10000 });
+export function admitOriginalScan(sizes: number[]) {
+  requireGuard(sizes.length <= originalVerificationBounds.count &&
+    sizes.every(n => Number.isSafeInteger(n) && n > 0 && n <= originalVerificationBounds.perObjectBytes) &&
+    sizes.reduce((n,s) => n+s,0) <= originalVerificationBounds.totalBytes, 'ORIGINAL_SCAN_BOUND_EXCEEDED');
+}
 export function requireGuard(ok: unknown, code: string): asserts ok {
   if (!ok) throw Object.assign(new Error(code), { code });
 }
@@ -103,13 +110,13 @@ export async function integrity(client: PoolClient) {
 export async function originalIntegrity(client: PoolClient) {
   const { verifyObjectStream, closeStorageClient } = await import('@ulpin/server/infrastructure/storage');
   const sources = (await client.query('SELECT object_key,sha256,bytes FROM sources ORDER BY id')).rows;
-  requireGuard(sources.length <= 1000 && sources.every(s => Number(s.bytes) > 0 && Number(s.bytes) <= 16*1024*1024) &&
-    sources.reduce((n,s) => n+Number(s.bytes),0) <= 64*1024*1024, 'ORIGINAL_SCAN_BOUND_EXCEEDED');
+  admitOriginalScan(sources.map(s => Number(s.bytes)));
   try {
-    const deadline = Date.now()+60000;
+    const deadline = Date.now()+originalVerificationBounds.scanMs;
     for (const source of sources) {
       requireGuard(Date.now() < deadline, 'ORIGINAL_SCAN_DEADLINE');
-      await verifyObjectStream(source.object_key, Number(source.bytes), source.sha256, Math.min(10000,deadline-Date.now()));
+      await verifyObjectStream(source.object_key, Number(source.bytes), source.sha256,
+        Math.min(originalVerificationBounds.perObjectMs,deadline-Date.now()));
     }
     return { verifiedCount: sources.length, verifiedBytes: sources.reduce((n,s) => n+Number(s.bytes),0) };
   } finally { closeStorageClient(); }
