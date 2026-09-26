@@ -28,8 +28,9 @@ try {
   sourceFiles.push(join(root, 'docs/orchestration/nestjs-operation-ledger.json'), join(root, 'docs/api/datasets.json'));
   sourceFiles.push(join(root, 'docs/api/runtime-qualification.json'));
   const pins = Object.fromEntries(sourceFiles.sort().map(path => [relative(root, path), createHash('sha256').update(readFileSync(path)).digest('hex')]));
+  const operations = Object.entries(document.paths).flatMap(([path, item]) => Object.keys(item!).filter(method => ['get','post','patch','put','delete','head','options'].includes(method)).map(method => `${method.toUpperCase()} ${path}`)).sort();
   emit('docs/api/openapi.json', document);
   emit('docs/api/source-pins.json', {schemaVersion: 'ulpin-native-openapi-pins/1', sourceSha256: pins,
-    operations: Object.entries(document.paths).flatMap(([path, item]) => Object.keys(item!).filter(method => ['get','post','patch','put','delete','head','options'].includes(method)).map(method => `${method.toUpperCase()} ${path}`)).sort()});
-  console.log(`Native API catalogue ${check ? 'matches' : 'generated'}: 132 operations, ${Object.keys(document.components?.schemas ?? {}).length} named schemas; no listener or domain operation opened.`);
+    operations});
+  console.log(`Native API catalogue ${check ? 'matches' : 'generated'}: ${operations.length} operations, ${Object.keys(document.components?.schemas ?? {}).length} named schemas; no listener or domain operation opened.`);
 } finally { await app.close(); }
