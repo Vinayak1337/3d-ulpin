@@ -3,7 +3,7 @@ import type { WorkTarget } from '@ulpin/api-client/draft';
 /** Where a work-board target leads in the Studio. */
 export function targetHref(target: WorkTarget): string {
   switch (target.kind) {
-    case 'add-files': return '/studio/add-files';
+    case 'add-files': return target.batchId ? `/studio/add-files?batch=${target.batchId}` : '/studio/add-files';
     case 'register': return `/studio/properties/${target.buildingId}/register`;
     case 'finding': return `/studio/areas/${target.areaId}?feature=${target.buildingId}&mode=findings&finding=${target.findingId}`;
     case 'review': return `/studio/review/${target.buildingId}?level=${target.levelId}`;

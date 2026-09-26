@@ -770,7 +770,10 @@ export class SceneEngine {
     const target = this.cameraTarget(mode, buildingId, levelId, finding);
     if (!target) return;
     this.cameraKey = key;
-    const pose = presetFor(mode, target.bounds, target.focusY, target.extentY, this.camera.fov);
+    // Fit to the narrower of the vertical and horizontal fields of view, so a narrow canvas still shows the whole target.
+    const aspect = this.container.clientWidth / Math.max(1, this.container.clientHeight);
+    const hFov = (2 * Math.atan(Math.tan((this.camera.fov * Math.PI) / 360) * aspect) * 180) / Math.PI;
+    const pose = presetFor(mode, target.bounds, target.focusY, target.extentY, Math.min(this.camera.fov, hFov));
     const to: [Vector3, Vector3] = [new Vector3(...pose.position), new Vector3(...pose.target)];
     if (instant || this.options.reducedMotion) {
       this.camera.position.copy(to[0]);

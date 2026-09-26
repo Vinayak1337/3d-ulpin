@@ -42,13 +42,27 @@ export function SpaceInspector({ space, level, model, register, ledger, building
       <span className="ul-row">
         <span className="ul-num">{format(value.value as never)}</span>
         {value.sourceId
-          ? <EvidenceChip source={value.source ?? 'Source'} locator={value.locator ?? undefined} onOpen={() => openEvidence({ sourceId: value.sourceId!, label: value.source ?? 'Source', locator: parseLocator({ locator: value.locator ?? undefined }), subject: { id: space.id, name: space.name } })} />
+          ? <EvidenceChip source={value.source ?? 'Source'} locator={value.locator ?? undefined} onOpen={() => openEvidence({
+              sourceId: value.sourceId!, label: value.source ?? 'Source', locator: parseLocator({ locator: value.locator ?? undefined }),
+              subject: { id: space.id, name: level ? `${space.name} · ${level.label}` : space.name, outline: space.polygons[0]?.[0] as number[][] | undefined },
+              supports: supportsFrom(value.sourceId!),
+            })} />
           : <EvidenceChip state="missing" source="Needs evidence" />}
         {extra}
       </span>
     );
   };
   const m2 = (v: number) => `${v.toFixed(2)} m²`;
+  // Every value of this space read from the same source, plus the level it sits on.
+  const supportsFrom = (sourceId: string) => {
+    const named: [string, SourcedValue<number> | SourcedValue<string> | null | undefined, (v: never) => string][] = [
+      ['Carpet area', facts?.carpetAreaM2, m2 as never], ['Declared', facts?.declaredAreaM2, m2 as never], ['Share', facts?.sharePct, ((v: number) => `${v.toFixed(2)} %`) as never],
+    ];
+    return [
+      ...named.filter(([, v]) => v?.sourceId === sourceId).map(([label, v, f]) => ({ source: label, locator: f(v!.value as never) })),
+      ...(level ? [{ source: 'Level', locator: level.label }] : []),
+    ];
+  };
   const deviation = facts?.carpetAreaM2 && facts.declaredAreaM2
     ? ((facts.declaredAreaM2.value - facts.carpetAreaM2.value) / facts.carpetAreaM2.value) * 100 : null;
 

@@ -29,21 +29,64 @@ export interface SpaceWorkflow {
   events: WorkflowEvent[];
 }
 
+/**
+ * Building-level officer actions: candidate decisions on a level review, findings raised from a check,
+ * reviewed details recorded for a draft. Each is a hashed entry chained per building.
+ */
+export interface BuildingAction {
+  id: string;
+  buildingId: string;
+  kind: 'candidate' | 'finding' | 'record';
+  subjectId: string;
+  value: string;
+  title: string;
+  at: string;
+  by: string;
+  hash: string;
+  previousHash: string | null;
+}
+
 const DB = 'ulpin-studio-workflow';
 const STORE = 'spaces';
-/** Attributes local actions to the configured local operator; not a human sign-in. */
-const ACTOR = 'Local operator';
+const ACTIONS = 'actions';
+/** No sign-in yet: actions are attributed to the duty officer of this workstation. */
+const ACTOR = 'Duty officer';
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 function db() {
-  dbPromise ??= openDB(DB, 1, {
-    upgrade(database) {
-      const store = database.createObjectStore(STORE, { keyPath: 'spaceId' });
-      store.createIndex('buildingId', 'buildingId');
-      store.createIndex('code', 'code');
+  dbPromise ??= openDB(DB, 2, {
+    upgrade(database, oldVersion) {
+      if (oldVersion < 1) {
+        const store = database.createObjectStore(STORE, { keyPath: 'spaceId' });
+        store.createIndex('buildingId', 'buildingId');
+        store.createIndex('code', 'code');
+      }
+      if (oldVersion < 2) database.createObjectStore(ACTIONS, { keyPath: 'id' }).createIndex('buildingId', 'buildingId');
     },
   });
   return dbPromise;
+}
+
+export async function listBuildingActions(buildingId: string): Promise<BuildingAction[]> {
+  const all = (await (await db()).getAllFromIndex(ACTIONS, 'buildingId', buildingId)) as BuildingAction[];
+  return all.sort((a, b) => b.at.localeCompare(a.at));
+}
+
+/** Records one action; a later action on the same subject supersedes it (same id). */
+export async function recordAction(input: { buildingId: string; kind: BuildingAction['kind']; subjectId: string; value: string; title: string }): Promise<BuildingAction> {
+  const previous = (await listBuildingActions(input.buildingId))[0] ?? null;
+  const at = new Date().toISOString();
+  const previousHash = previous?.hash ?? null;
+  const hash = await digest({ ...input, at, by: ACTOR, previousHash });
+  const action: BuildingAction = { id: `${input.kind}:${input.subjectId}`, ...input, at, by: ACTOR, hash, previousHash };
+  await (await db()).put(ACTIONS, action);
+  return action;
+}
+
+export async function clearAction(buildingId: string, kind: BuildingAction['kind'], subjectId: string): Promise<void> {
+  const database = await db();
+  const found = (await database.get(ACTIONS, `${kind}:${subjectId}`)) as BuildingAction | undefined;
+  if (found?.buildingId === buildingId) await database.delete(ACTIONS, found.id);
 }
 
 export async function getSpaceWorkflow(spaceId: string): Promise<SpaceWorkflow | null> {

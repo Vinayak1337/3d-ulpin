@@ -4,8 +4,10 @@ export interface EvidenceRef {
   /** Short name for the chip ("Roof height", the file name). */
   label: string;
   locator: Locator;
-  /** The record the evidence supports (for the viewer's scene still). */
-  subject?: { id: string; name: string };
+  /** The record the evidence supports (for the viewer's scene still). `outline` (local metres) is drawn on calibrated plan pages. */
+  subject?: { id: string; name: string; outline?: number[][] };
+  /** Values this place in the source supports, shown under the viewer. */
+  supports?: { source: string; locator: string }[];
 }
 
 export type Locator =

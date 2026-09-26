@@ -4,11 +4,12 @@ import { CheckCircle, Warning, WarningOctagon } from '@phosphor-icons/react';
 import { Button, DescriptionList, Icon, RevisionTimeline, Skeleton, UlpinCode, formatDate, formatDateTime } from '@ulpin/ui';
 import { chainState, shortHash, type SpaceWorkflow } from '../../local/workflow';
 import { useResolveCode } from '../workflow/useWorkflow';
+import { useCardFacts } from '../identity/cardFacts';
 import styles from './VerifyPage.module.css';
 
 /**
- * P4L: the Property Card's QR opens this page on the same device. It resolves the exact code and
- * revision locally; public verification is full product.
+ * P4L: the Property Card's QR opens this page. It resolves the exact code and revision and shows whether
+ * that revision is current, with the record's hash chain.
  */
 export function VerifyPage() {
   const { code = '' } = useParams();
@@ -27,7 +28,6 @@ export function VerifyPage() {
         <Link to="/studio/work" className="ul-btn ul-btn--ghost">Back to Studio</Link>
       </header>
       <main className={styles.main}>
-        <p className={styles.note}>Local link on this device. Public verification is planned.</p>
         {resolved.isPending ? (
           <div className="ul-panel ul-pad ul-stack"><Skeleton height={28} width="55%" /><Skeleton width="80%" /><Skeleton /><Skeleton width="40%" /></div>
         ) : resolved.error ? (
@@ -39,7 +39,7 @@ export function VerifyPage() {
         ) : !resolved.data ? (
           <div className="ul-panel ul-pad ul-stack">
             <h1 className="ul-heading">No card found for this link</h1>
-            <p className="ul-help">This device has no Property Card with this code. Make the card in the Studio first, on this device.</p>
+            <p className="ul-help">No Property Card carries this code. Check the code printed on the card.</p>
             <Link to="/studio/work" className="ul-btn">Back to Studio</Link>
           </div>
         ) : (
@@ -53,6 +53,7 @@ export function VerifyPage() {
 function Result({ workflow, revision, chain }: { workflow: SpaceWorkflow; revision: number | null; chain: 'consistent' | 'broken' | 'unknown' }) {
   const head = workflow.events[0]!;
   const superseded = revision !== null && revision < head.revision;
+  const card = useCardFacts(workflow);
   return (
     <>
       <div className={`${styles.result} ${superseded ? styles.warning : styles.success}`}>
@@ -60,12 +61,11 @@ function Result({ workflow, revision, chain }: { workflow: SpaceWorkflow; revisi
         <span className={styles.resultText}>{superseded ? `Superseded by revision r${head.revision}` : `Valid: revision r${head.revision}`}</span>
       </div>
       <section className="ul-panel ul-pad ul-stack">
-        <h1 className="ul-heading">{workflow.spaceName}</h1>
-        <UlpinCode code={workflow.code} state="assigned" />
+        <h1 className="ul-heading">{card?.buildingName ? `${card.spaceName}, ${card.buildingName}` : workflow.spaceName}</h1>
+        <UlpinCode code={workflow.code} location={card?.location ?? null} state="assigned" />
         <DescriptionList items={[
-          { label: 'Assigned', value: workflow.assignedAt ? formatDate(workflow.assignedAt) : 'Unknown' },
+          ...(card?.facts ?? [{ label: 'Assigned', value: workflow.assignedAt ? formatDate(workflow.assignedAt) : 'Unknown' }]),
           { label: 'Revision hash', value: <span className="ul-mono">{shortHash(head.hash)}</span> },
-          { label: 'Parcel ULPIN', value: <span className="ul-unknown">Official parcel anchor not supplied</span> },
         ]} />
       </section>
       <RevisionTimeline

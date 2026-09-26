@@ -15,3 +15,6 @@
 .on { color: var(--ui-ink); font-weight: 600; }
 .on .dot { background: var(--ui-primary); color: var(--ui-on-primary); }
 .done .dot { background: var(--ui-primary-soft); color: var(--ui-primary); }
+.questionDone { background: var(--ui-surface-subtle); }
+@media (prefers-reduced-motion: no-preference) { .question { transition: background 200ms ease-out; } }
+.footNote { margin-right: auto; }

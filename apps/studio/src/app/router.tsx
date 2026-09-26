@@ -21,6 +21,7 @@ export const router = createBrowserRouter([
       { path: 'registry', lazy: async () => ({ Component: (await import('../features/register/RegistryIndex')).RegistryIndex }) },
       { path: 'registry/*', element: <Navigate to="/studio/registry" replace /> },
       { path: 'properties/:buildingId/register', lazy: async () => ({ Component: (await import('../features/register/RegisterPage')).RegisterPage }) },
+      { path: 'review/:buildingId', lazy: async () => ({ Component: (await import('../features/review/WorkspacePage')).WorkspacePage }) },
       { path: 'datasets/*', element: <PlannedPage title="Dataset" milestone="M5" /> },
       { path: 'cases/*', element: <PlannedPage title="Workspace review" milestone="M5" /> },
       { path: '*', element: <NotFoundPage /> },

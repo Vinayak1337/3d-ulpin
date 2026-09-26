@@ -8555,7 +8555,7 @@
    "id": "a0248863-a40b-51cf-9c54-360f76c10f26",
    "category": "needs_review",
    "code": "share_total",
-   "message": "Shares total 99.50 %",
+   "message": "Shares total 99.51 %",
    "featureIds": [
     "e8e17f26-e098-5caa-92e9-49948df1816a"
    ],
@@ -8563,7 +8563,7 @@
    "quantities": {
     "unitsDeclared": 48,
     "units": 48,
-    "totalPct": 99.5
+    "totalPct": 99.51
    },
    "evidence": [
     {

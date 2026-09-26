@@ -19,7 +19,7 @@ const DIRECTIONS: Record<SceneMode, [number, number, number]> = {
 const FIT: Record<SceneMode, { scale: number; min: number }> = {
   area: { scale: 0.42, min: 40 },
   building: { scale: 1.9, min: 15 },
-  level: { scale: 1.02, min: 8 },
+  level: { scale: 1.25, min: 8 },
   findings: { scale: 1.1, min: 8 },
   underground: { scale: 2.4, min: 40 },
   deviation: { scale: 2.4, min: 20 },

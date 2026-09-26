@@ -12,6 +12,9 @@ import lakeLedger from './data/lake-view/ledger.json';
 import lakeFiles from './data/lake-view/files.json';
 import lakeWorkQueue from './data/lake-view/work-queue.json';
 import lakeWorkBoard from './data/lake-view/work-board.json';
+import lakeDocuments from './data/lake-view/documents.json';
+import lakeLevelReviews from './data/lake-view/level-reviews.json';
+import lakeImportBatches from './data/lake-view/import-batches.json';
 import swissOriginal from '../../../../fixtures/usp/D5/gf0-multiunit-v1/swiss-floor-127-164-717.csv?raw';
 
 /**
@@ -59,6 +62,11 @@ export function derivedRegister(buildingId: string): { body: Json; source: keyof
 export const ledgers: Record<string, Json> = { [lakeLedger.buildingId]: lakeLedger as unknown as Json };
 export const workQueue = lakeWorkQueue as unknown as Json & { items: Array<Record<string, unknown>> };
 export const workBoard = lakeWorkBoard as unknown as Json;
+export const importBatches = lakeImportBatches as unknown as Record<string, Json>;
+export const levelReviews = lakeLevelReviews as unknown as Record<string, Json & { buildingId: string }>;
+
+type DocumentPage = { page: number; label: string; svg: string; calibration?: { scale: number; origin: number[] } };
+export const documents = lakeDocuments as unknown as Record<string, { name: string; revision: string; pages: DocumentPage[]; anchors: [string, number, number[]?][] }>;
 
 /** Context features of Lake View that are buildings: their registers are the building alone. */
 const lakeBuildings = lakeContext.features.filter((f) => f.kind === 'building' && f.id !== lakeRegister.property.id);

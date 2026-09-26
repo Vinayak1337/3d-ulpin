@@ -14,6 +14,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { round, sha256, uuidV5 } from './lib.mjs';
+import { PLAN_CALIBRATION, planPage, schedulePage, textPage } from './lake-view-pages.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 const outDir = join(root, 'apps/studio/src/local/data/lake-view');
@@ -266,6 +267,9 @@ const flat704 = spaceMeta.find((s) => s.key === 'Flat 704');
 const CARPET_704 = 69.3, DECLARED_704 = 72.0;
 const carpetPct = round(((DECLARED_704 - CARPET_704) / CARPET_704) * 100, 1);
 const units = spaceMeta.filter((s) => s.use === 'apartment');
+const SHARE_704 = 1.84, OTHER_SHARE = 2.078;
+const SHARE_TOTAL = round(SHARE_704 + (units.length - 1) * OTHER_SHARE, 2);
+const SHARE_GAP = round(100 - SHARE_TOTAL, 2);
 const findings = [
   {
     id: id('finding:overlap'), category: 'blocking', code: 'exclusive_overlap',
@@ -289,8 +293,8 @@ const findings = [
   },
   {
     id: id('finding:shares'), category: 'needs_review', code: 'share_total',
-    message: 'Shares total 99.50 %', featureIds: [RESIDENCE_ID], method: 'Check v1.4',
-    quantities: { unitsDeclared: units.length, units: units.length, totalPct: 99.5 },
+    message: `Shares total ${SHARE_TOTAL.toFixed(2)} %`, featureIds: [RESIDENCE_ID], method: 'Check v1.4',
+    quantities: { unitsDeclared: units.length, units: units.length, totalPct: SHARE_TOTAL },
     evidence: [{ sourceRevisionId: SRC.declaration.revisionId }], limitations: [],
   },
   {
@@ -327,11 +331,11 @@ const registerBody = {
 };
 
 // ------------------------------------------------------------------ draft: building ledger (rights, areas, shares, readiness, checks, history)
-const share = (s) => (s.key === 'Flat 704' ? 1.84 : round(99.5 / units.length, 2));
+const share = (s) => (s.key === 'Flat 704' ? SHARE_704 : OTHER_SHARE);
 const ledger = {
   buildingId: RESIDENCE_ID, revision: 3, status: 'reviewed', address: '12 Lake View Road', parcelUlpin: MAIN_PARCEL,
   declaration: 'Apartment declaration', siteDatum: 'SD-1', groundElevationM: GROUND,
-  shareBasis: 'carpet area', shareTotalPct: 99.5,
+  shareBasis: 'carpet area', shareTotalPct: SHARE_TOTAL,
   shareEvidence: { sourceId: SRC.declaration.id, source: 'Deed of declaration', locator: 'schedule B' },
   spaces: spaceMeta.map((s) => ({
     spaceId: s.id, rights: s.rights,
@@ -354,7 +358,7 @@ const ledger = {
     { name: 'Exclusive overlap', detail: `Flat 101 / Flat 201 · ${overlapV.toFixed(1)} m³`, state: 'blocking', findingId: findings[0].id },
     { name: 'Partition completeness', detail: `${voidV.toFixed(1)} m³ void on F8`, state: 'blocking', findingId: findings[1].id },
     { name: 'Carpet area', detail: `Flat 704 · ${carpetPct} %`, state: 'needs_review', findingId: findings[2].id },
-    { name: 'Shares', detail: '99.50 %', state: 'needs_review', findingId: findings[3].id },
+    { name: 'Shares', detail: `${SHARE_TOTAL.toFixed(2)} %`, state: 'needs_review', findingId: findings[3].id },
     { name: 'Exclusive overlap · F3', detail: 'Not assessed: open shell on Flat 305', state: 'not_assessed', findingId: null },
     { name: 'Stack consistency', detail: null, state: 'passed', findingId: null },
     { name: 'Anchoring', detail: null, state: 'passed', findingId: null },
@@ -367,7 +371,7 @@ const ledger = {
     { findingId: findings[1].id, calculation: ['Partition completeness · F8', `${voidV.toFixed(1)} m³ not assigned to any space`], evidence: [], actions: ['Request evidence'] },
     { findingId: findings[2].id, calculation: [`${DECLARED_704.toFixed(2)} − ${CARPET_704.toFixed(2)} = ${(DECLARED_704 - CARPET_704).toFixed(2)} m²`, `${(DECLARED_704 - CARPET_704).toFixed(2)} ÷ ${CARPET_704.toFixed(2)} = ${carpetPct} % · threshold 2 %`],
       evidence: [{ kind: 'document', sourceId: SRC.plan.id, source: 'Plan F7', locator: 'p.3 · r2' }, { kind: 'document', sourceId: SRC.deed.id, source: 'Sale deed', locator: 'cl.2' }], actions: ['Review area'] },
-    { findingId: findings[3].id, calculation: [`${units.length} of ${units.length} units declared`, '100.00 − 99.50 = 0.50 % unexplained'],
+    { findingId: findings[3].id, calculation: [`${units.length} of ${units.length} units declared`, `100.00 − ${SHARE_TOTAL.toFixed(2)} = ${SHARE_GAP.toFixed(2)} % unexplained`],
       evidence: [{ kind: 'document', sourceId: SRC.declaration.id, source: 'Deed of declaration', locator: null }], actions: ['Request evidence'] },
     { findingId: findings[4].id, calculation: ['Covered stilt, allotted by association', 'No source linked'], evidence: [{ state: 'missing', sourceId: null, source: null, locator: 'Needs evidence' }], actions: ['Request evidence'] },
   ],
@@ -392,12 +396,12 @@ const ledger = {
 
 // ------------------------------------------------------------------ work queue (API shape) + draft board fields
 const WORK = [
-  { key: 'bundle', name: 'Lake View bundle', kind: 'import', state: 'NEEDS_INPUT', sub: '5 files', stage: 'add_files', next: 'Review 1 mapping', target: 'add-files', readiness: [3, 1], at: '14:10' },
+  { key: 'bundle', name: 'Lake View bundle', kind: 'import', state: 'NEEDS_INPUT', sub: '5 files', stage: 'add_files', next: 'Review 1 mapping', target: 'batch:bundle', readiness: [3, 1], at: '14:10' },
   { key: 'f1f2', name: 'Lake View Residence · F1–F2', kind: 'case', state: 'REVIEWED', stage: 'check', next: `Resolve ${overlapV.toFixed(1)} m³ overlap`, target: 'finding:overlap', readiness: [4, 1], at: '14:02' },
   { key: 'f7', name: 'Lake View Residence · F7', kind: 'case', state: 'READY_FOR_REVIEW', stage: 'review', next: 'Review 6 room candidates', target: 'review:F7', readiness: [3, 1], at: '13:58' },
   { key: 'f7units', name: 'Lake View Residence · F7 units', kind: 'case', state: 'COMMITTED', stage: 'recorded', next: 'Assign codes for 6 units', target: 'level:F7', readiness: [6, 0], at: '13:40' },
   { key: 'f8', name: 'Lake View Residence · F8', kind: 'case', state: 'REVIEWED', stage: 'check', next: `Resolve ${voidV.toFixed(1)} m³ void`, target: 'finding:void', readiness: [4, 1], at: '13:31' },
-  { key: 'shares', name: 'Lake View Residence · shares', kind: 'case', state: 'REVIEWED', stage: 'check', next: 'Explain 0.50 % in shares', target: 'register', readiness: [5, 0], at: '13:12' },
+  { key: 'shares', name: 'Lake View Residence · shares', kind: 'case', state: 'REVIEWED', stage: 'check', next: `Explain ${SHARE_GAP.toFixed(2)} % in shares`, target: 'register', readiness: [5, 0], at: '13:12' },
   { key: '704', name: 'Flat 704', kind: 'case', state: 'READY_FOR_REVIEW', stage: 'review', next: `Review carpet area +${carpetPct} %`, target: 'space:Flat 704', readiness: [5, 0], at: '12:55' },
   { key: 'basements', name: 'Lake View Residence · basements', kind: 'case', state: 'READY_FOR_REVIEW', stage: 'review', next: 'Confirm B2 levels', target: 'review:B2', readiness: [4, 2], at: '12:40' },
 ];
@@ -413,6 +417,7 @@ const workQueue = {
 };
 const resolveTarget = (t) => {
   if (t === 'add-files') return { kind: 'add-files' };
+  if (t.startsWith('batch:')) return { kind: 'add-files', batchId: id(`work:${t.slice(6)}`) };
   if (t === 'register') return { kind: 'register', buildingId: RESIDENCE_ID };
   const [k, v] = t.split(':');
   if (k === 'finding') return { kind: 'finding', areaId: AREA_ID, buildingId: RESIDENCE_ID, findingId: id(`finding:${v}`) };
@@ -426,7 +431,7 @@ const board = {
     readiness: { met: w.readiness[0], unknown: w.readiness[1], of: 6 },
   })),
   counts: [
-    { key: 'imports_running', value: WORK.filter((w) => w.kind === 'import').length, label: WORK.filter((w) => w.kind === 'import').length === 1 ? 'import needs input' : 'imports need input', target: { kind: 'add-files' } },
+    { key: 'imports_running', value: WORK.filter((w) => w.kind === 'import').length, label: WORK.filter((w) => w.kind === 'import').length === 1 ? 'import needs input' : 'imports need input', target: { kind: 'add-files', batchId: id('work:bundle') } },
     { key: 'findings_open', value: findings.length, label: 'findings need review', target: { kind: 'finding', areaId: AREA_ID, buildingId: RESIDENCE_ID, findingId: findings[0].id } },
     { key: 'units_ready', value: units.filter((u) => u.level === 'F7').length, label: 'units ready for codes', target: { kind: 'level', areaId: AREA_ID, buildingId: RESIDENCE_ID, levelId: levelId('F7') } },
   ],
@@ -441,6 +446,149 @@ const files = {
   [SRC.parcels.id]: { type: 'application/geo+json', body: JSON.stringify({ type: 'FeatureCollection', features: features.filter((f) => f.kind === 'parcel').map((f) => ({ type: 'Feature', id: f.sourceKey, properties: f.properties, geometry: f.geographicGeometry })) }, null, 1) },
 };
 
+
+// ------------------------------------------------------------------ document pages (GET /sources/{id}/pages, /pages/{n})
+const FLAT_704_RING = rect(-W + 0.1, -W + UNIT_W - 0.1, -D + 0.1, -1.6);
+const ROOMS_704 = [
+  { key: 'living', label: 'Living room', ring: rect(-14.9, -10.4, -5.4, -1.6), dims: '4.5 × 3.8 m', confidence: 'high' },
+  { key: 'bed1', label: 'Bedroom 1', ring: rect(-10.2, -5.1, -5.4, -1.6), dims: '5.1 × 3.8 m', confidence: 'high' },
+  { key: 'kitchen', label: 'Kitchen', ring: rect(-14.9, -12.1, -8.6, -5.4), dims: '2.8 × 3.2 m', confidence: 'high' },
+  { key: 'bath', label: 'Bath', ring: rect(-12.1, -10.4, -8.6, -5.4), dims: '1.7 × 3.2 m', confidence: 'medium' },
+  { key: 'bed2', label: 'Bedroom 2', ring: rect(-10.2, -5.1, -8.6, -5.4), dims: '5.1 × 3.2 m', confidence: 'medium' },
+  { key: 'wall', label: 'Wall W-12', ring: rect(-10.4, -10.2, -8.6, -1.6), dims: '0.2 × 7.0 m', confidence: 'low', wall: true },
+];
+const BALCONY_704 = { label: 'Balcony', ring: rect(-14.9, -5.1, -9.9, -8.6), dims: '9.8 × 1.3 m', labelAt: [-12.4, -9.25] };
+const floorSpaces = (n) => [
+  ...FLAT_SLOTS.map(([slot, x0, x1, y0, y1]) => ({ label: `${n}${slot}`, ring: rect(x0 + 0.1, x1 - 0.1, y0 + 0.1, y1 - 0.1), hideLabel: n === '7' && slot === '04' })),
+  { label: 'S1', ring: rect(-W + 0.1, -W + 4, -1.4, 1.4), small: true }, { label: 'L1', ring: rect(-W + 4.1, -W + 6.5, -1.4, 1.4), small: true },
+  { label: 'Corridor', ring: rect(-W + 6.6, W - 0.1, -1.4, 1.4), small: true },
+];
+const shareRows = units.map((u) => [u.key, (u.key === 'Flat 704' ? CARPET_704 : round(u.area * 0.815, 2)).toFixed(2), share(u).toFixed(3), u.key === 'Flat 704']);
+const documents = {
+  [SRC.plan.id]: {
+    name: SRC.plan.name, revision: 'r2',
+    pages: [
+      { page: 1, label: 'Key plan and levels', svg: planPage({ outline: residenceRing, spaces: [{ label: 'STILT PARKING (G)', ring: rect(-W + 0.1, W - 0.1, -D + 0.1, D - 0.1) }], title: 'Key plan · levels G to Roof, SD-1', sheet: '1 of 3', date: '18 Mar 2019' }) },
+      { page: 2, label: 'Seventh floor, general arrangement', svg: planPage({ outline: residenceRing, spaces: floorSpaces('7').map((s) => ({ ...s, hideLabel: false })), title: 'Seventh floor plan · general arrangement', sheet: '2 of 3', date: '18 Mar 2019' }) },
+      { page: 3, label: 'Seventh floor, unit layout', calibration: PLAN_CALIBRATION, svg: planPage({
+        outline: residenceRing, spaces: floorSpaces('7'), rooms: [...ROOMS_704, BALCONY_704],
+        carpet: { at: [-6.95, -9.1], text: `CARPET ${CARPET_704.toFixed(2)} m²` },
+        title: 'Seventh floor plan · unit layout', sheet: '3 of 3', date: '18 Mar 2019',
+      }) },
+    ],
+    anchors: [['p.1', 1], ['p.2', 2], ['p.3', 3], ['r2', 3]],
+  },
+  [SRC.deed.id]: {
+    name: SRC.deed.name, revision: 'r1',
+    pages: [
+      { page: 1, label: 'Parties and recitals', svg: textPage({ header: 'DEED OF SALE', footer: 'Registered at Sub-Registrar Haveli IV · Doc. No. HVL4-8812/2021 · page 1 of 2', lines: [
+        ['This Deed of Sale is made at Pune on 14 June 2021', {}], ['', { gap: 6 }],
+        ['BETWEEN Lake View Developers LLP, a limited liability partnership, hereinafter the VENDOR,', {}],
+        ['AND ', { redact: 220 }], ['hereinafter the PURCHASER.', { indent: true }], ['', { gap: 6 }],
+        ['WHEREAS the Vendor has constructed the building known as Lake View Residence on land bearing', {}],
+        ['Survey No. 118/2B, Parcel ULPIN MH2507A1B3C4D5, under permit BP/2019/0412;', {}],
+        ['AND WHEREAS the building has been submitted to the Apartment Ownership Act by a Deed of', {}],
+        ['Declaration registered as Doc. No. HVL4-5120/2021;', {}],
+        ['NOW THIS DEED WITNESSETH as follows:', { weight: 700 }],
+        ['Personal details are redacted for display.', { muted: true, size: 8 }],
+      ] }) },
+      { page: 2, label: 'Clause 2, the apartment', svg: textPage({ header: 'DEED OF SALE', footer: 'Registered at Sub-Registrar Haveli IV · Doc. No. HVL4-8812/2021 · page 2 of 2', lines: [
+        ['1. The Vendor sells and the Purchaser purchases the apartment described in clause 2.', {}], ['', { gap: 6 }],
+        [`2. Apartment No. 704 on the seventh floor of Lake View Residence, having a carpet area of ${DECLARED_704.toFixed(2)} m²`, { highlight: true, weight: 700 }],
+        ['   (775.00 sq ft), together with an undivided share of 1.84 % in the common areas and facilities', { highlight: true }],
+        ['   described in Schedule A of the Deed of Declaration, and one covered parking space in the stilt.', {}], ['', { gap: 6 }],
+        ['3. The consideration has been paid in full as acknowledged in the receipt annexed hereto.', {}],
+        ['4. The Purchaser shall observe the bye-laws of Lake View Residence Apartment Owners Association.', {}], ['', { gap: 18 }],
+        ['Signed and delivered by the Vendor', {}], ['Signed and delivered by the Purchaser ', { redact: 160 }],
+      ] }) },
+    ],
+    anchors: [['cl.2', 2, [40, 64, 762, 150]], ['cl.1', 2], ['p.1', 1], ['p.2', 2]],
+  },
+  [SRC.declaration.id]: {
+    name: SRC.declaration.name, revision: 'r1',
+    pages: [
+      { page: 1, label: 'Declaration', svg: textPage({ header: 'DEED OF DECLARATION', footer: 'Doc. No. HVL4-5120/2021 · page 1 of 4', lines: [
+        ['Made under the Maharashtra Apartment Ownership Act, 1970, by Lake View Developers LLP,', {}],
+        ['the sole owner of the land and building described in Schedule A.', {}], ['', { gap: 6 }],
+        ['The building Lake View Residence comprises two basements, a stilt at ground level, eight upper', {}],
+        [`floors of six apartments each (${units.length} apartments) and a roof terrace.`, {}], ['', { gap: 6 }],
+        ['The undivided share of each apartment in the common areas and facilities is set out in', {}],
+        ['Schedule B and is computed in proportion to carpet area.', {}],
+      ] }) },
+      { page: 2, label: 'Common areas', svg: textPage({ header: 'DEED OF DECLARATION', footer: 'Doc. No. HVL4-5120/2021 · page 2 of 4', lines: [
+        ['Common areas and facilities:', { weight: 700 }],
+        ['(a) the land bearing Survey No. 118/2B, Parcel ULPIN MH2507A1B3C4D5;', { indent: true }],
+        ['(b) the stilt, basements B1 and B2, staircase S1 and lift L1 on every floor;', { indent: true }],
+        ['(c) the corridors on floors one to eight and the roof terrace;', { indent: true }],
+        ['(d) water tanks, stair cabin, pumps and electrical installations.', { indent: true }],
+      ] }) },
+      { page: 3, label: 'Schedule A', svg: textPage({ header: 'SCHEDULE A', footer: 'Doc. No. HVL4-5120/2021 · page 3 of 4', lines: [
+        ['Land: Survey No. 118/2B, Lake View, Taluka Haveli, District Pune.', {}],
+        ['Parcel ULPIN MH2507A1B3C4D5 · area 1,628.00 m² as per the parcel register.', {}],
+        ['Bounded on the south by Lake View Road and on the north by the service lane.', {}],
+      ] }) },
+      { page: 4, label: 'Schedule B, shares', svg: schedulePage({ header: 'SCHEDULE B', subtitle: 'Undivided share of each apartment in the common areas, in proportion to carpet area',
+        rows: shareRows, total: `${SHARE_TOTAL.toFixed(2)} %`, footer: 'Doc. No. HVL4-5120/2021 · page 4 of 4' }) },
+    ],
+    anchors: [['schedule B', 4, [40, 70, 762, 290]], ['schedule A', 3], ['p.1', 1]],
+  },
+  [SRC.drone.id]: {
+    name: SRC.drone.name, revision: 'r1',
+    pages: [
+      { page: 1, label: 'Survey report', svg: textPage({ header: 'UAV LiDAR SURVEY REPORT', footer: 'Survey of 12 Sep 2026 · report 1 of 1', lines: [
+        ['Site: Lake View Residence, 12 Lake View Road · Parcel MH2507A1B3C4D5', {}],
+        ['Flown: 12 Sep 2026, 10:40–11:05 · sensor: multi-return LiDAR, 240 kHz', {}],
+        ['Points: 18.4 million · mean density 142 pts/m² · CRS EPSG:32643, heights site datum SD-1', { mono: true, size: 9 }], ['', { gap: 6 }],
+        ['Accuracy: 12 ground checkpoints · checkpoint RMSE 0.08 m (vertical), 0.05 m (horizontal)', { highlight: true, weight: 700 }], ['', { gap: 6 }],
+        ['Observed on the building:', { weight: 700 }],
+        ['Roof slab elevation 242.80 m · 30.0 m above ground (212.40 m)', { indent: true }],
+        ['Storeys counted from facade returns: 10 above ground', { indent: true }],
+        ['Rooftop structure 118 m² on the western half, 3.0 m high', { indent: true }],
+        ['Stair cabin and water tank identified and excluded from storey count', { indent: true }], ['', { gap: 6 }],
+        ['Setback not measured: vegetation occludes the southern boundary.', { muted: true }],
+      ] }) },
+    ],
+    anchors: [['12 Sep 2026', 1, [40, 70, 762, 280]], ['checkpoint', 1, [40, 70, 762, 280]]],
+  },
+};
+
+// ------------------------------------------------------------------ draft: level reviews (room candidates, level confirmation)
+const levelReviews = {
+  [levelId('F7')]: {
+    buildingId: RESIDENCE_ID, levelId: levelId('F7'), level: 'F7', stage: 'review',
+    sheet: { sourceId: SRC.plan.id, source: SRC.plan.name, page: 3, pages: [3, 2, 1], revision: 'r2' },
+    withinSpaceId: spaceId('Flat 704'), method: 'Plan extraction v2.1 with OCR',
+    candidates: ROOMS_704.map((r) => ({
+      id: id(`candidate:704:${r.key}`), label: r.label, kind: r.wall ? 'wall' : 'room', geometry: poly(r.ring),
+      dimensions: r.dims, areaM2: round(ringArea(r.ring), 2), confidence: r.confidence, locator: 'p.3 · r2',
+    })),
+  },
+  [levelId('B2')]: {
+    buildingId: RESIDENCE_ID, levelId: levelId('B2'), level: 'B2', stage: 'review',
+    sheet: null, withinSpaceId: null, method: 'Level schedule check', candidates: [],
+    question: 'B2 is not in levels.csv. Its lower limit 205.8 m is estimated from B1 and a 3.3 m storey.',
+  },
+};
+
+// ------------------------------------------------------------------ draft: import batches (what was found in each file, open questions)
+const importBatches = {
+  [id('work:bundle')]: {
+    id: id('work:bundle'), name: 'Lake View bundle', areaId: AREA_ID, buildingId: RESIDENCE_ID, reviewLevelId: levelId('F7'),
+    savedAt: '2026-09-24T14:10:00.000+05:30',
+    files: [
+      { name: 'parcels.gpkg', sourceId: SRC.parcels.id, detected: 'GeoPackage', crs: 'EPSG:32643', contents: `${1 + CONTEXT.length} parcels`, mapping: 'reused', note: 'Mapping reused from the district parcel layer' },
+      { name: 'unit_inventory.xlsx', sourceId: SRC.inventory.id, detected: 'Excel inventory', crs: null, crsApplies: false, contents: `${units.length} rows`, mapping: 'proposed' },
+      { name: 'levels.csv', sourceId: SRC.levels.id, detected: 'CSV level schedule', crs: null, crsApplies: false, contents: `${LEVELS.filter((l) => l.source === 'levels').length} levels`, mapping: 'manual' },
+      { name: 'plan_F7.pdf', sourceId: SRC.plan.id, detected: 'PDF plan', crs: null, crsApplies: true, crsOptions: ['EPSG:32643', 'EPSG:7755', 'Site grid (local)'], contents: '3 pages', mapping: 'proposed' },
+      { name: 'sale_deed_704.pdf', sourceId: SRC.deed.id, detected: 'Registered deed', crs: null, crsApplies: false, contents: '2 pages', mapping: 'proposed' },
+    ],
+    questions: [
+      { id: id('question:carpet_sqft'), file: 'unit_inventory.xlsx', field: 'carpet_sqft', text: 'looks like carpet area in ft². Convert to m²?',
+        answers: [{ value: 'convert', label: 'Yes' }, { value: 'keep', label: 'No' }], otherFields: ['unit', 'level', 'carpet_sqft', 'use'] },
+    ],
+  },
+};
+
 const write = (name, body) => writeFileSync(join(outDir, name), `${JSON.stringify(body, null, 1)}\n`);
 write('areas.json', [area]);
 write('context.json', { area, features, packages: [], latestCheck: null, parcelAssociations: [], parcelIdentifiers: [], sceneAssets: [] });
@@ -449,4 +597,7 @@ write('ledger.json', ledger);
 write('work-queue.json', workQueue);
 write('work-board.json', board);
 write('files.json', files);
+write('documents.json', documents);
+write('level-reviews.json', levelReviews);
+write('import-batches.json', importBatches);
 console.log(`Lake View: ${features.length} features, ${register.length} register records, ${findings.length} findings → ${outDir}`);

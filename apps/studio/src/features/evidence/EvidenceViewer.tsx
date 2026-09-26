@@ -1,17 +1,111 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowSquareOut } from '@phosphor-icons/react';
-import { Button, Dialog, EmptyState, Icon, Skeleton } from '@ulpin/ui';
-import { WarningCircle } from '@phosphor-icons/react';
+import { ArrowSquareOut, WarningCircle } from '@phosphor-icons/react';
+import type { DocumentPages } from '@ulpin/api-client/draft';
+import { Badge, Button, Dialog, EmptyState, EvidenceChip, Icon, Skeleton } from '@ulpin/ui';
+import { useDocumentPages, usePageImage } from '../../api/queries';
 import { resolvePointer, type EvidenceRef } from './refs';
 import styles from './EvidenceViewer.module.css';
 
 /**
- * S7 Evidence viewer: the retained original beside a still of the 3D space. The preview is chosen by
- * the locator kind (row → table rows, JSON pointer → the pointed node), so a new file format with an
- * existing locator kind needs no new viewer.
+ * S7 Evidence viewer: the retained original beside a still of the 3D space. Paged documents show the
+ * page the locator anchors to; files are previewed by locator kind (row → table rows, JSON pointer →
+ * the pointed node), so a new format with an existing locator kind needs no new viewer.
  */
 export function EvidenceViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still: string | null; onClose: () => void }) {
+  const pages = useDocumentPages(evidence.sourceId);
+  if (pages.isPending) return <Dialog title={evidence.label} onClose={onClose} footer={<Button onClick={onClose}>Close</Button>}><div className="ul-stack">{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} />)}</div></Dialog>;
+  if (pages.data) return <PagedViewer evidence={evidence} still={still} doc={pages.data} onClose={onClose} />;
+  return <FileViewer evidence={evidence} still={still} onClose={onClose} />;
+}
+
+/** Documents (plans, deeds, survey reports): the page the locator points to, with the subject drawn on calibrated plans. */
+function PagedViewer({ evidence, still, doc, onClose }: { evidence: EvidenceRef; still: string | null; doc: DocumentPages; onClose: () => void }) {
+  const locator = evidence.locator.text;
+  const anchor = doc.anchors.find((a) => locator === a.locator || locator.startsWith(`${a.locator} `) || locator.startsWith(`${a.locator}·`));
+  const anchored = anchor?.page ?? Number(/\bp\.(\d+)/.exec(locator)?.[1] ?? NaN);
+  const [whole, setWhole] = useState(false);
+  const [pageNo, setPageNo] = useState(Number.isFinite(anchored) ? anchored : doc.pages[0]!.page);
+  const page = doc.pages.find((p) => p.page === pageNo) ?? doc.pages[0]!;
+  const image = usePageImage(page.url);
+  const cal = page.calibration;
+  const outline = cal && evidence.subject?.outline?.length
+    ? evidence.subject.outline.map(([x, y]) => `${cal.origin[0] + x! * cal.scale},${cal.origin[1] - y! * cal.scale}`).join(' ') : null;
+  const title = `${evidence.label} · p.${page.page}`;
+  // Open on the part of the page the locator names: the subject on a calibrated plan, or the anchor's region.
+  const focus = whole ? null : outline && cal ? regionAround(evidence.subject!.outline!.map(([x, y]) => [cal.origin[0] + x! * cal.scale, cal.origin[1] - y! * cal.scale]))
+    : anchor?.page === page.page && anchor.region ? pageRegion(anchor.region) : null;
+  const viewBox = focus ? focus.join(' ') : '0 0 842 595';
+  return (
+    <Dialog
+      title={title}
+      onClose={onClose}
+      aside={(
+        <span className="ul-row">
+          <Badge icon={null}>{doc.revision}</Badge>
+          <span className="ul-caption">{doc.name}</span>
+          {image.data ? <a className="ul-btn ul-btn--ghost" href={image.data} target="_blank" rel="noreferrer"><Icon icon={ArrowSquareOut} />Open original</a> : null}
+        </span>
+      )}
+      footer={(
+        <>
+          {evidence.supports?.length ? (
+            <span className={styles.supports}>
+              <span className="ul-muted">Supports</span>
+              {evidence.supports.map((s) => <EvidenceChip key={s.source} source={s.source} locator={s.locator} />)}
+            </span>
+          ) : <span className={styles.supports} />}
+          <Button onClick={onClose}>Close</Button>
+        </>
+      )}
+    >
+      <div className={styles.grid}>
+        <div className={styles.pageColumn}>
+          <div className={styles.page}>
+            {image.isPending ? <Skeleton width="100%" height={320} /> : image.error ? <EmptyState icon={WarningCircle} title="Page not available">{image.error.message}</EmptyState> : (
+              <svg viewBox={viewBox} preserveAspectRatio="xMidYMid meet" className={styles.pageSvg} role="img" aria-label={`${doc.name}, page ${page.page}${evidence.subject ? `, ${evidence.subject.name} outlined` : ''}`}>
+                <image href={image.data} width="842" height="595" />
+                {outline ? <polygon points={outline} className={styles.outline} /> : null}
+              </svg>
+            )}
+          </div>
+          {doc.pages.length > 1 ? (
+            <div className={styles.pager} role="tablist" aria-label="Pages">
+              {doc.pages.map((p) => (
+                <button key={p.page} type="button" role="tab" aria-selected={p.page === page.page} onClick={() => setPageNo(p.page)} title={p.label}>p.{p.page}</button>
+              ))}
+              <span className="ul-caption">{page.label}</span>
+            </div>
+          ) : null}
+          {focus || whole ? <button type="button" className={`ul-btn ul-btn--ghost ${styles.fit}`} onClick={() => setWhole((w) => !w)}>{whole ? 'Zoom to the cited part' : 'Whole page'}</button> : null}
+        </div>
+        <figure className={styles.still}>
+          {still ? <img src={still} alt={evidence.subject ? `${evidence.subject.name} in 3D` : '3D view'} /> : <span className="ul-help">No 3D view open</span>}
+          {evidence.subject ? <figcaption className={styles.pill}>{evidence.subject.name}</figcaption> : null}
+        </figure>
+      </div>
+    </Dialog>
+  );
+}
+
+/** A page region around points, padded and at the page's aspect ratio. */
+function regionAround(points: number[][]): [number, number, number, number] {
+  const xs = points.map(([x]) => x!), ys = points.map(([, y]) => y!);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const w = (Math.max(...xs) - Math.min(...xs)) * 2.4, h = (Math.max(...ys) - Math.min(...ys)) * 2.4;
+  return pageRegion([cx - w / 2, cy - h / 2, w, h]);
+}
+
+/** Grows a region to the page's aspect ratio (about its centre) and keeps it on the page. */
+function pageRegion([x, y, w, h]: [number, number, number, number]): [number, number, number, number] {
+  const cx = x + w / 2, cy = y + h / 2;
+  if (w / h > 842 / 595) h = (w * 595) / 842; else w = (h * 842) / 595;
+  const clamp = (v: number, size: number, max: number) => (size >= max ? (max - size) / 2 : Math.min(Math.max(v, 0), max - size));
+  return [clamp(cx - w / 2, w, 842), clamp(cy - h / 2, h, 595), w, h];
+}
+
+/** Tables and feature files: the rows or node the locator names. */
+function FileViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still: string | null; onClose: () => void }) {
   const file = useQuery({
     queryKey: ['source-file', evidence.sourceId],
     queryFn: async () => {
