@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "data-10-source-observations/1",
+  "status": "acquired_and_inspected; use and redistribution permission unconfirmed; no runtime or scale gate pass",
+  "source": {
+    "authority": "State Remote Sensing Applications Centre (KSRSAC), under Karnataka Department of Personnel and Administrative Reforms (e-Governance); public download linked by the Sujala III / Watershed Development Department portal",
+    "title": "District boundaries",
+    "officialPortalUrl": "https://sujala3lri.karnataka.gov.in/",
+    "directDownloadUrl": "https://kgis.ksrsac.in/kgisdocuments/PDF_KML_SHP/District/Shapefiles/District.zip",
+    "dataGovInDiscoveryUrl": "https://www.data.gov.in/resource/district-boundary",
+    "dataGovInAccessLimit": "The data.gov.in resource exposed a WMS GetCapabilities endpoint; WMS tiles were not harvested."
+  },
+  "accessAndRights": {
+    "httpStatus": 200,
+    "contentType": "application/x-zip-compressed",
+    "contentLength": 3935596,
+    "httpDate": "Sat, 26 Sep 2026 00:54:01 GMT",
+    "lastModified": "Tue, 04 Aug 2026 04:48:51 GMT",
+    "publicDownloadOffer": "The official portal lists district boundaries with PDF, KML and Shape File downloads and says the public may select an area and obtain these formats.",
+    "termsUrl": "https://sujala3lri.karnataka.gov.in/TermsofUse/Index",
+    "termsObservation": "The terms page returned a portal shell with an embedded CMS frame. The linked frame returned 404; no source-specific licence or reuse terms could be verified.",
+    "accessPermission": "Public download access observed; direct unauthenticated GET returned HTTP 200.",
+    "usePermission": "unconfirmed",
+    "redistributionPermission": "unconfirmed",
+    "trainingPermission": "unconfirmed",
+    "licenceFamily": null
+  },
+  "original": {
+    "filename": "District.zip",
+    "privatePath": "/Users/vinayak/.codex/task-data/ulpin-data-10/District.zip",
+    "acquiredAtUtc": "2026-09-26T00:54:03+00:00",
+    "sha256": "0f5b59339c5d4e3a3c1efd4be810edd38264e40a51f29f17ab78b19067f88891",
+    "bytes": 3935596,
+    "preservedOutsideGit": true
+  },
+  "archiveMembers": [
+    {"name": "District.shp", "bytes": 6001168, "compressedBytes": 3932831, "crc32": "3273e291", "sha256": "1b1262f6078b37313e654aae4d8ee3f217f028c8504e229c4f434aae0f425150", "memberTimestamp": [2026, 8, 4, 10, 18, 44]},
+    {"name": "District.shx", "bytes": 348, "compressedBytes": 289, "crc32": "06618b13", "sha256": "d7613a1ec2f13f42139cbb62159667105a1374185572a28a76f98fff75cd9be2", "memberTimestamp": [2026, 8, 4, 10, 18, 44]},
+    {"name": "District.dbf", "bytes": 2799, "compressedBytes": 1109, "crc32": "4fba2c55", "sha256": "3ecbbb801da70695fd0dff62adb49423faaea15723d26849e6bd4fc590dc6ee3", "memberTimestamp": [2026, 8, 4, 10, 18, 44]},
+    {"name": "District.prj", "bytes": 401, "compressedBytes": 256, "crc32": "72fe1223", "sha256": "58368ff5825675f291b623e0132d25ce8d7e56c478dfb5431f84247fe1a80bd2", "memberTimestamp": [2026, 8, 4, 10, 18, 42]},
+    {"name": "District.cpg", "bytes": 5, "compressedBytes": 7, "crc32": "0e813c50", "sha256": "3ad3031f5503a4404af825262ee8232cc04d4ea6683d42c5dd0a2f2a27ac9824", "memberTimestamp": [2026, 8, 4, 10, 18, 44]},
+    {"name": "District.sbn", "bytes": 452, "compressedBytes": 303, "crc32": "c578c819", "sha256": "202539c3b017a66e10a9342b97dbe1f3367bbb23a5aa3f28817f910a313881fe", "memberTimestamp": [2026, 8, 4, 10, 18, 44]},
+    {"name": "District.sbx", "bytes": 148, "compressedBytes": 79, "crc32": "aea9eb5b", "sha256": "8571c19912d01e314ab597390349877ea3fe3a4057930e0718051d739ca80e28", "memberTimestamp": [2026, 8, 4, 10, 18, 44]}
+  ],
+  "geometry": {
+    "format": "ESRI Shapefile in ZIP",
+    "geometryType": "Polygon",
+    "shapeTypeCode": 5,
+    "recordCount": 31,
+    "partCount": 76,
+    "positionCount": 374947,
+    "shapefileBytes": 6001168,
+    "extentOrder": ["xmin", "ymin", "xmax", "ymax"],
+    "extentProjected": [401635.7703999998, 1282418.1261999998, 888865.7544999998, 2044540.0311999992],
+    "horizontalCrsName": "WGS_1984_UTM_Zone_43N",
+    "horizontalUnit": "metre, explicitly stated in District.prj",
+    "projectionWkt": "PROJCS[\"WGS_1984_UTM_Zone_43N\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"False_Easting\",500000.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\",75.0],PARAMETER[\"Scale_Factor\",0.9996],PARAMETER[\"Latitude_Of_Origin\",0.0],UNIT[\"Meter\",1.0]]",
+    "verticalCoordinates": "None; source shapefile is 2D Polygon shape type 5.",
+    "verticalReference": null
+  },
+  "attributes": {
+    "dbfRecordCount": 31,
+    "dbfHeaderBytes": 225,
+    "dbfRecordBytes": 83,
+    "encodingLabel": "UTF-8 (District.cpg)",
+    "fields": [
+      {"name": "KGISDistri", "type": "C", "width": 2},
+      {"name": "LGD_Distri", "type": "N", "width": 10},
+      {"name": "KGISDist_1", "type": "C", "width": 30},
+      {"name": "BhuCodeDis", "type": "C", "width": 2},
+      {"name": "SHAPE_STAr", "type": "F", "width": 19},
+      {"name": "SHAPE_STLe", "type": "F", "width": 19}
+    ],
+    "nativeKeysObserved": [
+      {"field": "KGISDistri", "nonblank": 31, "distinct": 31, "sampleValues": ["01", "02", "03", "04", "05"]},
+      {"field": "LGD_Distri", "nonblank": 31, "distinct": 31, "sampleValues": ["527", "524", "530", "538", "529"]}
+    ],
+    "keySemantics": "Field names and unique values were observed in source DBF bytes; stable-key semantics were not separately documented."
+  },
+  "candidateSearch": [
+    {
+      "candidate": "All India Pincode Boundary Geo JSON",
+      "sourceUrl": "https://www.data.gov.in/catalog/all-india-pincode-boundary-geo-json",
+      "observed": "Official catalog page showed no result; the resource endpoint timed out; no original bytes acquired."
+    },
+    {
+      "candidate": "Taluka-wise PMRDA administrative boundaries, 30 June 2025",
+      "sourceUrl": "https://www.data.gov.in/resource/taluka-wise-pmrda-administrative-boundaries-gis-dataset-30-june-2025",
+      "observed": "Official resource showed zero downloads and page access timed out; no original bytes acquired."
+    },
+    {
+      "candidate": "Karnataka district boundary",
+      "sourceUrl": "https://www.data.gov.in/resource/district-boundary",
+      "observed": "data.gov.in exposed a WMS reference; the official KSRSAC-hosted Sujala page linked an area-specific Shapefile ZIP, which was acquired from its exact public link."
+    }
+  ],
+  "profile": {
+    "supported": "Official 2D district polygon source inventory and bounded Shapefile structure/metadata inspection only.",
+    "notQualified": [
+      "source reuse or redistribution permission",
+      "runtime ingestion or publication",
+      "3D city/building context",
+      "parcel, ownership, title or site-boundary use",
+      "vertical measurement",
+      "currentness, survey accuracy or legal boundary correctness",
+      "GF-SCALE-1 performance or service-budget pass"
+    ]
+  }
+}
