@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
-import { decodeCityJsonRoof, type ExternalRoofScene } from '../apps/web/features/usp/shared/external-scene';
+import { decodeCityJsonRoof, type ExternalRoofScene } from '@ulpin/server/modules/usp/external/external-scene';
 
 const bytes = readFileSync('fixtures/usp/D1/single-roof/original.json');
 const source = () => JSON.parse(bytes.toString('utf8'));

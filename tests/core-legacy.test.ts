@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {CoreContractError,measureCoreRepresentation} from "../packages/contracts/src";
-import {normalizeLegacySpatialSlice} from "../apps/web/features/spatial/data/core-legacy-adapter";
+import {normalizeLegacySpatialSlice} from "@ulpin/server/modules/spatial/legacy/core-legacy-adapter";
 import {legacySliceFixture,LEGACY_IDS} from "./fixtures/core-legacy";
 
 // Workspace ESM/CJS consumers can have distinct constructor identities. The

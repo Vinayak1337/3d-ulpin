@@ -1,10 +1,10 @@
 /** Allocated synthetic integration test; never edits presentation properties. */
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { areaContext, commitPackage, currentAreaCheckFingerprint, getArea, ingestArea, reviewPackage, runAreaCheck } from "../apps/web/lib/server/areas";
-import { createBlockGroup } from "../apps/web/lib/server/officer";
-import { pool, query, transaction } from "../apps/web/lib/server/db";
-import { removeOrphan } from "../apps/web/lib/server/storage";
+import { areaContext, commitPackage, currentAreaCheckFingerprint, getArea, ingestArea, reviewPackage, runAreaCheck } from "@ulpin/server/modules/areas/areas";
+import { createBlockGroup } from "@ulpin/server/modules/officer/officer";
+import { pool, query, transaction } from "@ulpin/server/infrastructure/db";
+import { removeOrphan } from "@ulpin/server/infrastructure/storage";
 
 const run = randomUUID(), areas: string[] = [];
 const baseX = 530000, baseY = 3130000;

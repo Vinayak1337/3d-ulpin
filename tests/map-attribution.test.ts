@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { hasGoogleAttribution, hasOsmAttribution } from "../apps/web/lib/map-attribution";
+import { hasGoogleAttribution, hasOsmAttribution } from "@ulpin/server/shared/map-attribution";
 test("OSM source and synthetic derivatives retain visible attribution", () => {
   assert.equal(hasOsmAttribution([{ properties: { attribution: "© OpenStreetMap contributors", provenance: "Synthetic copy" } }]), true);
 });

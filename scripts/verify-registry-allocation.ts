@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 import {
   createSite,
   createRegistryDraft,
-} from "../apps/web/lib/server/registry";
-import { pool, transaction } from "../apps/web/lib/server/db";
+} from "@ulpin/server/modules/registry/registry";
+import { pool, transaction } from "@ulpin/server/infrastructure/db";
 import type { RegistryBody } from "../packages/contracts/src";
 
 // This isolated allocation test never publishes records or modifies the demo site.

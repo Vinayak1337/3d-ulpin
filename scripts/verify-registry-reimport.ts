@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import type { CaseDetail, Point2, RegistryDraft, SpatialFeature } from "../packages/contracts/src";
-import { settings } from "../apps/web/lib/server/config";
-import { pool, query, transaction } from "../apps/web/lib/server/db";
-import { createCase, getCase, prepareCase, requestBuild, uploadSource } from "../apps/web/lib/server/domain";
-import { ingestJob } from "../apps/web/lib/server/processing";
-import { migrateRegistry } from "../apps/web/lib/server/registry-db";
-import { bodyOnly, commitRegistryReview, createRegistryDraft, draftDetail, editRegistryDraft, prepareRegistryReview, siteDetail } from "../apps/web/lib/server/registry";
-import { importRegistryCase } from "../apps/web/lib/server/registry-seed";
-import { removeOrphan } from "../apps/web/lib/server/storage";
+import { settings } from "@ulpin/server/infrastructure/config";
+import { pool, query, transaction } from "@ulpin/server/infrastructure/db";
+import { createCase, getCase, prepareCase, requestBuild, uploadSource } from "@ulpin/server/modules/cases/domain";
+import { ingestJob } from "@ulpin/server/modules/cases/processing";
+import { migrateRegistry } from "@ulpin/server/modules/registry/registry-db";
+import { bodyOnly, commitRegistryReview, createRegistryDraft, draftDetail, editRegistryDraft, prepareRegistryReview, siteDetail } from "@ulpin/server/modules/registry/registry";
+import { importRegistryCase } from "@ulpin/server/modules/registry/registry-seed";
+import { removeOrphan } from "@ulpin/server/infrastructure/storage";
 
 // All evidence and geometry in this isolated test are explicitly synthetic.
 // Inspection, model construction, and review calculations use the real processor.

@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
-const require=createRequire(new URL('../../apps/web/package.json',import.meta.url));
+const require=createRequire(new URL('../../packages/contracts/package.json',import.meta.url));
 const {z}=require('zod');
 export const MAX_SAFE=9007199254740991;
 export const portableId=z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}(?![\s\S])/);

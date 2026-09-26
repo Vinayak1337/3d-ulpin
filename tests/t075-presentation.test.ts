@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizePresentation} from '../apps/web/features/spatial/reference-import/presentation';
+import {normalizePresentation} from '@ulpin/server/modules/datasets/reference-import/presentation';
 
 test('display sidecar excludes cadastral decisions and rejects invalid placement',()=>{
  const value={classification:'synthetic_visual_decoration',trees:[[2,3]],rights:{owner:'not display data'},conflict:true};

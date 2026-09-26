@@ -31,3 +31,35 @@ repository, independent of the process working directory. `ULPIN_FIXTURE_ROOT`
 remains an explicit override. `.env` is read from the repository root without
 copying it. `REPO_DATA=true` still selects only the isolated repository
 environment; `false` retains the linked environment behavior.
+
+## Backend commands and retained web references
+
+Root `dev` and `start` run Nest plus the existing dispatcher; root `build` and
+`typecheck` target the backend packages. `web:dev`, `web:start`, `web:build`,
+`web:typecheck` and `web:demo` explicitly retain the user-owned Next UI. The
+compatibility UI launcher starts no processing services, migrations or seeds.
+The saved-snapshot `test:fresh-install` command now exits with a retirement
+notice pointing to the authorized real-source runtime guide.
+
+Backend scripts and unit tests import canonical server modules. Remaining
+`apps/web` references in tools have these bounded purposes:
+
+- Actual browser, asset and UI checks: `scripts/spatial/browser*.mjs`,
+  `scripts/copy-viewer-assets.mjs`, `scripts/studio/acquire-materials.py`,
+  `scripts/ux/verify-{complete-journey,source-intake}.mjs`,
+  `scripts/usp/gf/FND-06-browser.mjs`, and the icon warning tool. They remain
+  legacy UI tools and do not qualify the migrated backend.
+- Actual UI tests: `studio-*.test.ts`, `v2-*.test.ts`, building-scene,
+  scoped-svg-export, preparation-continuation, local-session, source-purpose,
+  mask-pixels, intake-routing and survey-render. The mixed spatial-core and
+  ML-page tests retain only their browser/runtime or UI-helper assertions;
+  their backend imports use this package.
+- Source audit and historical receipts: `scripts/usp/gf/GF-CONTRACT.mjs`
+  checks canonical server producers while retaining actual UI consumer rows.
+  Its historical inventory receipt is preserved and must be deliberately
+  refreshed by the lead before it can qualify current code. The lead-owned
+  `scripts/api/**` checker is being migrated separately; `scripts/db/**`
+  intentionally reads the original Git tree to verify SQL lineage.
+
+Paused USP replay/preview launchers remain fail-closed. No retained web
+reference permits restoring authored saved-state bundles or reseeding data.

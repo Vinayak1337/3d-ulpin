@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { P3_ALPHABET, ProjectLocationSchema, normalizeProjectCode, projectCodeForPayload,
   verticalLocator } from '../packages/contracts/src/usp/project-identity';
-import { newProjectCode } from '../apps/web/lib/server/usp/project-code-generator';
+import { newProjectCode } from '@ulpin/server/modules/usp/project-code-generator';
 
 const vectors = [
   ['00000000000000000000', 'P3-00000000000000000000-RP'],

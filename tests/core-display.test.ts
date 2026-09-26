@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {inflateSync} from "node:zlib";
-import {normalizeLegacySpatialSlice} from "../apps/web/features/spatial/data/core-legacy-adapter";
-import {displayProjector,projectCoreNeighbourhood,DISPLAY_REFERENCE} from "../apps/web/features/spatial/data/core-display";
-import {compileSpatialSnapshot} from "../apps/web/features/spatial/compiler/compile";
-import {materialTexture} from "../apps/web/features/spatial/compiler/texture";
-import {handleNeighbourhoodScene,NeighbourhoodSceneCache} from "../apps/web/lib/server/spatial-core-scene";
+import {normalizeLegacySpatialSlice} from "@ulpin/server/modules/spatial/legacy/core-legacy-adapter";
+import {displayProjector,projectCoreNeighbourhood,DISPLAY_REFERENCE} from "@ulpin/server/modules/spatial/legacy/core-display";
+import {compileSpatialSnapshot} from "@ulpin/server/modules/spatial/scene/compile";
+import {materialTexture} from "@ulpin/server/modules/spatial/scene/texture";
+import {handleNeighbourhoodScene,NeighbourhoodSceneCache} from "@ulpin/server/modules/spatial/spatial-core-scene";
 import {legacySliceFixture} from "./fixtures/core-legacy";
 import {measureRepresentation} from "../packages/contracts/src";
 

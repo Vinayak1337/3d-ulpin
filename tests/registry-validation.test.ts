@@ -4,8 +4,8 @@ import {
   openRegistryRing,
   recordBodySchema,
   querySchema,
-} from "../apps/web/lib/server/registry";
-import { buildResultSchema } from "../apps/web/lib/server/validation";
+} from "@ulpin/server/modules/registry/registry";
+import { buildResultSchema } from "@ulpin/server/infrastructure/validation";
 
 const footprint = [
   [0, 0],

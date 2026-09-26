@@ -2,9 +2,11 @@
 import assert from "node:assert/strict";
 import {mkdir,writeFile} from "node:fs/promises";
 import {spawn,type ChildProcess} from "node:child_process";
-import {pool} from "../../apps/web/lib/server/db";
-import {readLegacySpatialSlice} from "../../apps/web/lib/server/spatial-core-read";
-import {normalizeLegacySpatialSlice} from "../../apps/web/features/spatial/data/core-legacy-adapter";
+import {join} from "node:path";
+import {pool} from "@ulpin/server/infrastructure/db";
+import {settings} from "@ulpin/server/infrastructure/config";
+import {readLegacySpatialSlice} from "@ulpin/server/modules/spatial/spatial-core-read";
+import {normalizeLegacySpatialSlice} from "@ulpin/server/modules/spatial/legacy/core-legacy-adapter";
 import type {WorldState} from "../../packages/contracts/src";
 
 const selections:readonly [string,WorldState][]=[
@@ -18,12 +20,12 @@ const base=process.env.SPATIAL_BASE_URL;
 if(base){const url=new URL(base);assert(["localhost","127.0.0.1"].includes(url.hostname)&&url.protocol==="http:"&&!url.username&&!url.password);}
 let ownedServer:ChildProcess|undefined;
 async function startOwnedServer(){
-  assert.equal(base,"http://127.0.0.1:3000","Owned verification server has one explicit loopback address");
-  let occupied=false;try{await fetch(`${base}/api/v1/spatial/calibration/garden/summary.json`,{signal:AbortSignal.timeout(1000)});occupied=true;}catch{}
+  assert.equal(base,"http://127.0.0.1:3188","Owned verification server has one explicit loopback address");
+  let occupied=false;try{await fetch(`${base}/api`,{signal:AbortSignal.timeout(1000)});occupied=true;}catch{}
   assert(!occupied,"An existing server owns the verification port; do not replace it");
-  ownedServer=spawn(process.execPath,["apps/web/node_modules/next/dist/bin/next","start","apps/web","--hostname","127.0.0.1","--port","3000"],{env:{...process.env,NEXT_TELEMETRY_DISABLED:"1"},stdio:["ignore","ignore","pipe"],windowsHide:true});
+  ownedServer=spawn(process.execPath,[join(settings.repositoryRoot,"apps/api/dist/main.js")],{cwd:settings.repositoryRoot,env:{...process.env,API_PORT:"3188",PORT:"3188"},stdio:["ignore","ignore","pipe"],windowsHide:true});
   let startupError:Error|undefined;ownedServer.on("error",e=>{startupError=e;});
-  for(let i=0;i<60;i++){if(startupError)throw startupError;assert(ownedServer.exitCode===null,"Owned server stopped before readiness");try{if((await fetch(`${base}/api/v1/spatial/calibration/garden/summary.json`,{signal:AbortSignal.timeout(1000)})).ok)return;}catch{}await new Promise(r=>setTimeout(r,500));}
+  for(let i=0;i<60;i++){if(startupError)throw startupError;assert(ownedServer.exitCode===null,"Owned server stopped before readiness");try{if((await fetch(`${base}/api`,{signal:AbortSignal.timeout(1000)})).ok)return;}catch{}await new Promise(r=>setTimeout(r,500));}
   throw new Error("Owned verification server did not become ready");
 }
 async function fingerprint(){

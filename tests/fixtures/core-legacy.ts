@@ -1,5 +1,5 @@
 import type {PhysicalFeature,RegistryRecord} from "../../packages/contracts/src";
-import type {LegacySpatialReadSlice} from "../../apps/web/features/spatial/data/core-legacy-types";
+import type {LegacySpatialReadSlice} from "@ulpin/server/modules/spatial/legacy/core-legacy-types";
 
 export const LEGACY_IDS={area:"11111111-1111-4111-8111-111111111111",site:"22222222-2222-4222-8222-222222222222",building:"33333333-3333-4333-8333-333333333333",source:"44444444-4444-4444-8444-444444444444",family:"55555555-5555-4555-8555-555555555555",case:"66666666-6666-4666-8666-666666666666",unit:"77777777-7777-4777-8777-777777777777",level:"88888888-8888-4888-8888-888888888888",otherArea:"99999999-9999-4999-8999-999999999999"};
 export function legacySliceFixture():LegacySpatialReadSlice {

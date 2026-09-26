@@ -5,7 +5,7 @@ import {
   propertyIdentifier,
   childCode,
   identityLevel,
-} from "../apps/web/lib/identifiers";
+} from "@ulpin/server/shared/identifiers";
 
 test("parent encoding retains UUID differences at both ends with fixed length", () => {
   const zero = "00000000-0000-0000-0000-000000000000";

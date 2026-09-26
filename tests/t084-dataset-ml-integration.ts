@@ -2,11 +2,11 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {writeFile} from 'node:fs/promises';
-import {datasetMlOverview,queueDatasetMl,reviewDatasetMl,datasetMlArtifact} from '../apps/web/lib/server/dataset-ml';
-import {validateRetainedInference} from '../apps/web/lib/server/spatial-ml';
-import {readSpatialDatasetOriginal} from '../apps/web/lib/server/spatial-datasets';
-import {readObject,sha256} from '../apps/web/lib/server/storage';
-import {query,pool} from '../apps/web/lib/server/db';
+import {datasetMlOverview,queueDatasetMl,reviewDatasetMl,datasetMlArtifact} from '@ulpin/server/modules/datasets/dataset-ml';
+import {validateRetainedInference} from '@ulpin/server/modules/spatial/spatial-ml';
+import {readSpatialDatasetOriginal} from '@ulpin/server/modules/spatial/spatial-datasets';
+import {readObject,sha256} from '@ulpin/server/infrastructure/storage';
+import {query,pool} from '@ulpin/server/infrastructure/db';
 const lake='22b196c2-b467-4f38-9252-5b4c5e3a2f14',shiv='160028fd-b3a4-42e9-b6da-daff641ddd3c';
 const checks:string[]=[];
 async function main(){

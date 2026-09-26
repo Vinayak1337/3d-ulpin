@@ -4,7 +4,7 @@ import type {
   BuildingDossier,
   RegistryRecord,
 } from "../packages/contracts/src";
-import { selectRegisterScope } from "../apps/web/lib/register-scope";
+import { selectRegisterScope } from "@ulpin/server/shared/register-scope";
 const record = (
   id: string,
   kind: RegistryRecord["kind"],

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {workItemAction,type WorkItem} from '../apps/web/lib/work-queue';
+import {workItemAction,type WorkItem} from '@ulpin/server/shared/work-queue';
 const base='http://127.0.0.1:3000/api/v1/spatial-datasets/22b196c2-b467-4f38-9252-5b4c5e3a2f14/ml';
 const run=process.env.DATASET_HTTP_TESTS==='true';
 test('saved dataset processing resumes at the ML workflow without a publication claim',()=>{
