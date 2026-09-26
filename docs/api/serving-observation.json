@@ -1,18 +1,18 @@
 {
   "schemaVersion": "ulpin-serving-observation/1",
-  "observedAt": "2026-09-26T19:17:02.695463+00:00",
+  "observedAt": "2026-09-26T21:04:44.905566+00:00",
   "environment": "linked-loopback-3188",
   "apiBase": "http://127.0.0.1:3188/api/v1",
-  "servedCodeCommit": "21f93c61d5811dd0eb8c1494d512faf9c3dc426a",
+  "servedCodeCommit": "71d3a30a40f74c7b4a15f14cff304a7cd56ae710",
   "qualification": "Point-in-time local observation of administrative context, private post-admission tiles and one foreign footprint; not deployment, multiuser, Indian property-readiness, import-time GF-STREAM, scale or frontend qualification.",
   "database": {
     "status": "structurally_ready",
-    "manifestSha256": "899bb2bbad833637e4c48334a6dce224fd5f955fc4bd9714a156351a78888279",
+    "manifestSha256": "12fb0ed92058efce0e8251236ac5154915c53c5c53941f6f995f2162ea68eafe",
     "originalsVerified": {
       "verifiedCount": 63,
       "verifiedBytes": 75416144
     },
-    "checkedForeignKeys": 120,
+    "checkedForeignKeys": 122,
     "orphanCount": 0,
     "geometryViolationCount": 0,
     "unvalidatedConstraints": [
@@ -289,6 +289,26 @@
       {
         "file": "serving-doc-ingest-http.json",
         "sha256": "6de921e7738b556a87a0c00bf848c98e3b843295e58cbcb7b201a325fa9941ea"
+      },
+      {
+        "file": "preflight-sufficiency-before.json",
+        "sha256": "c00430d001c4cf05f5d00ceef6e117f9c7633d6964f31e7b9831337283659b1e"
+      },
+      {
+        "file": "preflight-sufficiency-current.json",
+        "sha256": "bb288750035027cbcd9d9fa5bb323f2f47a4c96f09d5786b1fea340eadde3a25"
+      },
+      {
+        "file": "upgrade-sufficiency-serving.json",
+        "sha256": "4409a0505dcafa035d227f5a33951e381a232900cd77cae599df877928857e13"
+      },
+      {
+        "file": "launch-serving-sufficiency.json",
+        "sha256": "86f3f4ded32f9a4b2073c9c72a79b32eab39b5a6026920be85084eccac790194"
+      },
+      {
+        "file": "serving-sufficiency-http.json",
+        "sha256": "5cb6148bf18fede45483fc8cf934eadad78bdded29b651a7ac095d55ea2daa4d"
       }
     ],
     "additionalGuides": [
@@ -355,5 +375,26 @@
       "End-to-end document write proof on linked serving database",
       "Release/accuracy/learning gates"
     ]
+  },
+  "sufficiencyUpgrade": {
+    "status": "passed",
+    "servedCodeCommit": "71d3a30a40f74c7b4a15f14cff304a7cd56ae710",
+    "operations": 163,
+    "namedSchemas": 190,
+    "schemaChange": "Additive usp_ingestion_questions and indexes; no original/source/registry rewrite.",
+    "preservation": "all pre-existing rows and original bytes unchanged",
+    "checks": {
+      "healthy": true,
+      "openapiMatchesStaging": true,
+      "datasetsMatchStaging": true,
+      "needsInput": {
+        "status": 200,
+        "decisions": 0,
+        "questions": 0,
+        "hasMore": false
+      }
+    },
+    "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-runtime.json",
+    "scope": "Local additive upgrade and read-only needs-input check. Question mutation journey is separately pinned isolated evidence at4695ae0; no new broad gate."
   }
 }
