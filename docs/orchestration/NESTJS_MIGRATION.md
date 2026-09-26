@@ -62,9 +62,11 @@ Resume the dependency-ready backend plan from actual code/evidence, not its old 
 
 | Batch | State | Accepted commit / next action |
 | --- | --- | --- |
-| NEST-00 | planned | Dispatch foundation worker from this committed plan. |
-| NEST-01 | planned | Dispatch SQL worker in parallel. |
+| NEST-00 | running | Sol/max task `01a0db54-338c-7950-8101-46012dd75688`, worktree `45f5`, base `39a70488`. |
+| NEST-01 | running | Sol/max task `01a0db54-6463-72c3-85e2-67b10711c080`, worktree `a1f7`, base `39a70488`. Phase 1 extracts SQL; phase 2 wires after foundation. |
 | NEST-10–13 | waiting for foundation | Assign exact moved paths from NEST-00 map. |
 | NEST-20–21 | pending | Integration/runtime checks, lead docs and cleanup. |
 
 Framework references checked for this decision: [Nest controllers](https://docs.nestjs.com/controllers), [Nest database integration](https://docs.nestjs.com/techniques/database), [node-postgres parameterized queries](https://node-postgres.com/features/queries), [Prisma unsupported-field/raw SQL guidance](https://docs.prisma.io/docs/orm/prisma-client/using-raw-sql/safeql). These inform the architecture; they do not prove this repository's runtime behavior.
+
+Worker metadata observed for both initial tasks: model `gpt-6-sol`, effort `max`; per-turn service tier not exposed. Both own separate worktrees.
