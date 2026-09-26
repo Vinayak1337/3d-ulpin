@@ -2,6 +2,8 @@
 
 Owner: LEAD; implementation: FND, INGEST and DATA. Adopted from the user's 26 September 2026 answers. This document resolves conflicts in the supplied hardening review and pasted suggestions; it does not turn their historical claims into verified results. Read it with H01, H14, H22, H28 and H29.
 
+Current execution order is superseded by the [NestJS migration ledger](../orchestration/NESTJS_MIGRATION.md), authorized later on 26 September. It retains these data/streaming/scale requirements and resumes their dependency-ready work after migration. Next.js is no longer the target backend.
+
 ## Decisions and source normalization
 
 - Implement backend plan tasks in separate worker worktrees. The lead hardens and integrates plans directly. Ordinary Codex tasks are reused by model; every Luna assignment uses max only. Fast is requested, with actual turn tier reported only when observable.

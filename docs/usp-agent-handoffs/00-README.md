@@ -4,7 +4,7 @@
 
 <!-- plan-next-gate: GF0 -->
 
-**Current execution focus, 26 September 2026:** Follow [the normalized backend architecture and streaming decisions](backend-streaming-plan.md). First deliver API-DOC-01 and DATA-10 in independent worktrees; then API-01, the qualified streaming profile and the required GF-SCALE-1 backend rung. All public-portal work remains full product. Frontend technology and `design-mockup/` are untouched.
+**Current execution focus, 26 September 2026:** Follow the [NestJS migration and delivery ledger](../orchestration/NESTJS_MIGRATION.md): reviewed modular backend extraction, explicit SQL, parallel Sol API batches, then isolated qualification and lead-owned OpenAPI/dataset handoff. API-DOC-01 and the bounded DATA-10 investigation are integrated; their runtime/permission gaps remain open. Resume the streaming/finale backend queue after migration. Frontend implementation and `design-mockup/` remain untouched.
 
 **Compatibility and route cleanup:** Work the backend contracts and wiring needed for GF0 and subsequent gates through the [backend cleanup plan](backend-cleanup-plan.md). The user owns the UI redesign, so no UI implementation cards are scheduled in this backend work. Only their API/wiring requirements remain in active plans; user-owned visual implementation and validation are external dependencies. The backend plan includes an API route cleanup phase after a pinned route inventory; an inventory or route deletion alone does not pass a runtime gate.
 
@@ -62,7 +62,7 @@ Next gate: **GF0**. Existing D0/PACK0 and D1 are the baseline to reuse, not a re
 
 ## Fixed decisions
 
-- Keep Next.js, shared MapViewport, current Cesium D0/D1 runtime, PostgreSQL/PostGIS, S3-compatible private originals, Redis/Celery and Python. Qualify SFCGAL/tools before use; do not infer capabilities from an installed package. Three/R3F is a later measured renderer option; Helsinki is a data/semantic-city inspiration, not a rendering engine.
+- Migrate the application backend to NestJS with `packages/server` and visible SQL/`pg`; follow the migration ledger for temporary Next compatibility. Preserve frontend-owned MapViewport/Cesium boundaries, PostgreSQL/PostGIS, S3-compatible private originals, Redis/Celery and Python. Qualify SFCGAL/tools before use; do not infer capabilities from an installed package. Three/R3F is a later measured renderer option; Helsinki is a data/semantic-city inspiration, not a rendering engine.
 - Preserve all originals, IDs, revisions, input fingerprints, linked evidence and current datasets. One registry, job authority, provider gateway and geometry-validation authority. No competing card service or map.
 - Operational geography is Indian; data.gov.in is first preference, not proof of suitable surveys. No required locality. Any permitted geography may be tested separately; foreign geometry is never relocated to appear Indian.
 - Sarvam is a governed runtime option for the India-resident architecture. Open-source availability is model-specific and does not establish hosted API licensing, data residency or training permission. Verify each selected product and the whole storage/log/backup/egress path. No paid or unapproved provider fallback.
