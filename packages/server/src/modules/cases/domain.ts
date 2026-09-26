@@ -26,6 +26,7 @@ import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { putOriginal, removeOrphan, sha256 } from "../../infrastructure/storage";
 import { settings } from "../../infrastructure/config";
 import { persistIdentity, readIdentity } from "../registry/identities";
+import { localOperatorSubject } from "../usp/principal";
 
 type Row = Record<string, any>;
 export const defaultFrame: CoordinateFrame = {
@@ -103,9 +104,10 @@ export async function recordEvent(
   kind: string,
   message: string,
 ) {
+  const actor = localOperatorSubject();
   await client.query(
-    "INSERT INTO events(id,case_id,kind,message) VALUES($1,$2,$3,$4)",
-    [randomUUID(), caseId, kind, message],
+    "INSERT INTO events(id,case_id,kind,message,actor) VALUES($1,$2,$3,$4,$5)",
+    [randomUUID(), caseId, kind, message, actor],
   );
 }
 async function bumpCase(client: PoolClient, caseId: string) {
@@ -270,6 +272,7 @@ export async function uploadSource(
   caseId: string,
   input: UploadInput,
 ): Promise<SourceRevision> {
+  localOperatorSubject();
   if (input.bytes.length === 0 || input.bytes.length > 16 * 1024 * 1024)
     throw new AppError(
       413,
@@ -442,6 +445,7 @@ export async function prepareCase(
     controlSourceId?: string;
   },
 ): Promise<CaseDetail> {
+  localOperatorSubject();
   await transaction(async (client) => {
     await lockCase(client, caseId);
     const spatial = await usableSource(
@@ -571,6 +575,7 @@ export async function applyLevels(
   caseId: string,
   input: { sourceId: string; expectedRevision: number },
 ) {
+  localOperatorSubject();
   await transaction(async (client) => {
     const current = await lockCase(client, caseId);
     if (current.revision !== input.expectedRevision) conflict();
@@ -643,6 +648,7 @@ export async function updateUnit(
     calibration?: PlanCalibration;
   },
 ) {
+  localOperatorSubject();
   return transaction(async (client) => {
     await lockCase(client, caseId);
     const row =
@@ -746,6 +752,7 @@ export async function addUnit(
     calibration?: PlanCalibration;
   },
 ) {
+  localOperatorSubject();
   return transaction(async (client) => {
     await lockCase(client, caseId);
     if (
@@ -791,6 +798,7 @@ export async function addUnit(
 }
 
 export async function requestBuild(caseId: string, expectedRevision: number) {
+  localOperatorSubject();
   return transaction(async (client) => {
     const current = await lockCase(client, caseId);
     if (current.revision !== expectedRevision) conflict();

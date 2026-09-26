@@ -1,4 +1,4 @@
-import type { RequestContext } from '@ulpin/contracts/usp';
+import { UspPrincipalSchema, type RequestContext } from '@ulpin/contracts/usp';
 import { AppError } from '../../infrastructure/errors';
 import { allowedLoopbackHost } from '../../infrastructure/loopback-host';
 
@@ -19,9 +19,20 @@ export function assertLocalRequest(request: Request) {
   }
 }
 
-/** F1-min principal is derived by the guarded server route, never accepted from JSON/headers. */
+/** Local process provenance only; this configuration does not authenticate a human. */
+export function localOperatorSubject(): string {
+  const subject = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  if (!subject || subject.trim() !== subject || subject === 'local-demo-operator'
+    || !UspPrincipalSchema.unwrap().shape.subject.safeParse(subject).success) {
+    throw new AppError(503, 'LOCAL_OPERATOR_CONFIGURATION',
+      'Set ULPIN_LOCAL_OPERATOR_SUBJECT to a valid local process attribution subject (1–256 characters, no surrounding whitespace or ASCII control characters). The historical default cannot be used for new attribution.');
+  }
+  return subject;
+}
+
+/** Derived from server configuration after the loopback guard, never from JSON/headers. */
 export function localRequestContext(requestId: string): RequestContext {
-  return { requestId, principal: { subject: 'local-demo-operator', roles: ['operator'],
+  return { requestId, principal: { subject: localOperatorSubject(), roles: ['operator'],
     entitlementVersion: 'local-1', mode: 'local_demo' },
     accessViewId: 'local-demo-view-1', policyVersion: 'usp-local-1' };
 }
