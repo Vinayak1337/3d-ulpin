@@ -33,7 +33,7 @@ export class IngestionEventsController {
   @Get('cases/:caseId/events')
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_events',summary:'Read committed private case ingestion notifications with bounded durable replay'})
   @ApiParam({name:'caseId',schema:{type:'string',format:'uuid'}})
-  @ApiQuery({name:'cursor',required:false,schema:{type:'string',pattern:'^(0|[1-9][0-9]*)$',maxLength:97},description:'Omit to tail the current head; use 0 once to replay retained events. Subsequent scoped decimal IDs and Last-Event-ID must agree if both supplied.'})
+  @ApiQuery({name:'cursor',required:false,schema:{type:'string',pattern:'^(0|[1-9][0-9]*)$',maxLength:97},description:'Omit to tail the current head; 0 replays retained events. Last-Event-ID takes precedence on reconnect if it names this case/access context and is at or beyond the first query cursor; a backwards cursor conflicts.'})
   @ApiHeader({name:'Last-Event-ID',required:false,description:'Case/access-bound decimal SSE ID. A copied cursor from another case or access context is rejected.'})
   @ApiResponse({status:200,description:'SSE ready, ingestion.change and resync frames. Every notification requires refreshing current records. Heartbeats are comments without IDs. Single configured local operator only.',content:{'text/event-stream':{schema:{type:'string'},
     'x-change-data-schema':z.toJSONSchema(CaseIngestionEventSchema,{target:'openapi-3.0'}),
