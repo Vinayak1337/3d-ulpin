@@ -4,7 +4,8 @@ import { ModelGatewayConfigSchema, readProviderSecret, validateSecretReference }
 import { cost } from '@ulpin/server/modules/model-gateway/pricing';
 import { classifyProviderFailure, minimizeMessages, ReplayAdapter, SarvamAdapter } from '@ulpin/server/modules/model-gateway/adapter';
 import { configuredGateway, hash } from '@ulpin/server/modules/model-gateway/config';
-import { inspectModelGateway } from '@ulpin/server/modules/ai/officer-ai-provider';
+import { extractionMessages, inspectModelGateway, minimizeExtractionOutput } from '@ulpin/server/modules/ai/officer-ai-provider';
+import { validateExtraction } from '@ulpin/server/modules/ai/officer-ai-validation';
 import { nonIndiaProviderAllowed } from '@ulpin/server/infrastructure/provider-policy';
 import { PgModelCallLedger, type Transact } from '@ulpin/server/modules/model-gateway/ledger';
 import { ModelGateway } from '@ulpin/server/modules/model-gateway/gateway';
@@ -81,6 +82,44 @@ test('Sarvam V1 fixed transport, minimized prompt, complete/invalid response cos
   assert.match(truncated.responseHash,/^[a-f0-9]{64}$/);
   const noMeter=await adapter.propose(request);assert.equal(noMeter.usage,undefined);
   assert(!JSON.stringify(noMeter.output).includes('control-only-token'));
+});
+test('encoded selected text/operator answers mask credential fields before transport and preserve numeric tokens', async () => {
+  const encoded='{"apiKey":"control-secret","controlFraction":1.2500,"controlCounter":100000000000000001}';
+  const original=JSON.stringify({selectedParts:[{text:encoded}],nested:JSON.stringify({text:JSON.stringify(encoded)})});
+  const messages=minimizeMessages([{role:'user',content:original}]);
+  const text=JSON.parse(messages[0].content).selectedParts[0].text;
+  assert(!messages[0].content.includes('control-secret'));
+  assert(text.includes('"controlFraction":1.2500'));assert(text.includes('"controlCounter":100000000000000001'));
+  assert(original.includes('control-secret'));assert(encoded.includes('control-secret'));
+  let calls=0;
+  const adapter=new SarvamAdapter('control-only-token',(async(_url,init)=>{
+    calls++;const body=JSON.parse(String(init?.body));assert(!JSON.stringify(body).includes('control-secret'));
+    return Response.json({choices:[{finish_reason:'stop',message:{content:'{"candidates":[],"questions":[]}'}}]});
+  }) as typeof fetch);
+  const request={model:'sarvam-105b' as const,outputSchema:{type:'object'},maxOutputTokens:1,inputHash:hash('control'),sourceHashes:[],
+    signal:new AbortController().signal,authorize:async()=>{}};
+  await adapter.propose({...request,messages:extractionMessages([],{operatorAnswers:[{question:'control',answer:encoded}]})});
+  await assert.rejects(adapter.propose({...request,messages:[{role:'user',content:JSON.stringify({selectedParts:[{text:'{"apiKey":"control-secret"'}]})}]}),
+    (e:any)=>e.code==='MODEL_PROMPT_PRIVACY');
+  await assert.rejects(adapter.propose({...request,messages:[{role:'user',content:'['.repeat(41)+'0'+']'.repeat(41)}]}),
+    (e:any)=>e.code==='MODEL_PROMPT_PRIVACY');
+  await assert.rejects(adapter.propose({...request,messages:[{role:'user',content:JSON.stringify({selectedParts:[{text:'control prefix {"api\\u004bey":"control-secret"} suffix'}]})}]}),
+    (e:any)=>e.code==='MODEL_PROMPT_PRIVACY');
+  assert.equal(calls,1);
+});
+test('decoded and further JSON-encoded response strings/keys suppress the exact provider key before retention', async () => {
+  const content='{"candidates":[],"questions":["\\u0063ontrol-only-token","\\\"\\\\u0063ontrol-only-token\\\""],"\\u0063ontrol-only-token":1.25}';
+  const adapter=new SarvamAdapter('control-only-token',(async()=>Response.json({choices:[{finish_reason:'stop',message:{content}}],
+    usage:{prompt_tokens:1,completion_tokens:1}})) as typeof fetch);
+  const result=await adapter.propose({model:'sarvam-105b',messages:[{role:'user',content:'control'}],outputSchema:{type:'object'},
+    maxOutputTokens:1,inputHash:hash('control'),sourceHashes:[],signal:new AbortController().signal,authorize:async()=>{}});
+  assert(!JSON.stringify(result.output).includes('control-only-token'));
+  assert.equal((result.output as any)['[redacted provider secret]'],1.25);
+  // Use only the existing extraction question envelope, with no property/source fixtures.
+  const output=minimizeExtractionOutput({candidates:[],questions:(result.output as any).questions});
+  const validated=validateExtraction(output,[],[],[]);
+  assert.equal(validated.errors.length,0);assert(!JSON.stringify(validated.questions).includes('control-only-token'));
+  assert.equal(result.usage?.completionTokens,1);assert.match(result.responseHash,/^[a-f0-9]{64}$/);
 });
 test('replay fails closed with no actual eligible material; no replay facts are manufactured', async () => {
   const replay=new ReplayAdapter(async()=>undefined);

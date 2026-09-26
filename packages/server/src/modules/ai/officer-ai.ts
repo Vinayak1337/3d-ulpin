@@ -99,7 +99,7 @@ async function extract(packageId:string,input:Input):Promise<OfficerAiRun> {
       if(inspection.status.state!=='available' || !inspection.model) {run.state='blocked';run.message=inspection.status.message;}
       else {
         run.model=inspection.model.id;
-        if(input.imageRegions?.length&&!inspection.status.capabilities?.image) throw new AppError(422,'AI_IMAGE_ROUTE','The authenticated free route does not support image input.');
+        if(input.imageRegions?.length&&!inspection.status.capabilities?.image) throw new AppError(422,'AI_IMAGE_ROUTE','The private model gateway does not support image input.');
         const cached=(await query("SELECT body FROM officer_ai_runs WHERE package_id=$1 AND input_fingerprint=$2 AND body->>'model'=$3 AND body->>'state' IN ('succeeded','needs_input') ORDER BY created_at DESC LIMIT 1",[packageId,snap.fingerprint,run.model])).rows[0]?.body;
         if(cached) {assertCurrentGatewayPolicy(cached.gatewayPolicyHash);if(cached.principalHash!==run.principalHash) throw new AppError(403,'AI_CACHE_PRINCIPAL','This cached extraction belongs to a different principal.');run.state=cached.state;run.candidates=cached.candidates;run.questions=cached.questions;run.suggestions=cached.suggestions??[];run.validationErrors=cached.validationErrors;run.derivatives=cached.derivatives;run.cached=true;run.cachedFromRunId=cached.cachedFromRunId??cached.id;run.message=`Reused stored extraction ${cached.id} for identical evidence, revision and route.`;}
         else {
@@ -211,6 +211,7 @@ async function projectCurrentRun(run:OfficerAiRun,pkg:ImportPackage):Promise<Off
   const visible=await recoverInterruptedRun(run);
   if(run.provider!=='sarvam') return visible;
   try {
+    if(pkg.revision!==run.packageRevision) throw new Error('evidence changed');
     assertCurrentGatewayPolicy(run.gatewayPolicyHash);
     if(run.principalHash!==digest(localOperatorSubject())) throw new Error('principal changed');
     const current=await snapshot(pkg,{expectedRevision:pkg.revision,partIds:run.partIds,entityIds:run.entityIds,
@@ -232,7 +233,10 @@ export async function getOfficerAiRun(packageId:string,runId:string):Promise<Off
     [packageId,uuid.parse(runId)])).rows[0]?.body??notFound('Extraction run not found.'),pkg);
 }
 export async function createOfficerAiRun(packageId:string,value:unknown):Promise<OfficerAiRun> {
-  return redactDerivative(await extract(uuid.parse(packageId),officerAiExtractSchema.parse(value))) as OfficerAiRun;
+  const id=uuid.parse(packageId),run=await extract(id,officerAiExtractSchema.parse(value));
+  // The terminal POST has the same current-authorization fence as GET, even after a denied repair.
+  // Stored history and settled billing remain intact when this response withholds earlier output.
+  return projectCurrentRun(run,await getPackage(id));
 }
 export async function applyOfficerAiRun(packageId:string,runId:string,value:unknown) {
   const input=officerAiApplySchema.parse(value);

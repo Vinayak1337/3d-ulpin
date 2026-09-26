@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { AppError } from '../../infrastructure/errors';
-import { redactDerivative, redactMessageText } from '../usp/ingest/redact';
+import { redactDerivative } from '../usp/ingest/redact';
 import { hash } from './config';
 import { createHash } from 'node:crypto';
 import type { Usage } from './pricing';
+import { minimizeDecodedOutput, minimizeStructuredText } from './redaction';
 
 export type Message = { role: 'system' | 'user' | 'assistant'; content: string };
 export type ProviderRequest = {
@@ -31,15 +32,7 @@ export function minimizeMessages(value: unknown): Message[] {
     content:z.string().max(32768)})).min(1).max(4).safeParse(value);
   if (!parsed.success || parsed.data.some(m => /data:|image_url|base64/i.test(m.content)))
     throw new AppError(403, 'MODEL_PROMPT_PRIVACY', 'Only bounded minimized text messages may reach the provider.');
-  const redactControls = (value: unknown): unknown => Array.isArray(value) ? value.map(redactControls)
-    : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key,item]) => [key,
-      /^(apikey|secret|password|authorization|credential|accesstoken|subscriptionkey)$/i.test(key.replace(/[_ .-]/g,''))
-        ? '[redacted credential field]' : redactControls(item)])) : value;
-  const messages = parsed.data.map(m => {
-    let content=redactMessageText(m.content);
-    try { content=JSON.stringify(redactControls(JSON.parse(content))); } catch { /* ordinary minimized text */ }
-    return {role:m.role,content};
-  });
+  const messages = parsed.data.map(m => ({role:m.role,content:minimizeStructuredText(m.content)}));
   if (Buffer.byteLength(JSON.stringify(messages)) > 24 * 1024)
     throw new AppError(413, 'MODEL_INPUT_LIMIT', 'Select smaller source excerpts for extraction.');
   return messages;
@@ -88,7 +81,7 @@ export class SarvamAdapter implements ProviderAdapter {
   readonly kind = 'sarvam' as const;
   constructor(private readonly key: string, private readonly fetcher: typeof fetch = fetch) {}
   async propose(request: ProviderRequest): Promise<ProviderResult> {
-    const messages = minimizeMessages(request.messages).map(m => ({...m,content:m.content.split(this.key).join('[redacted provider secret]')}));
+    const messages = minimizeMessages(request.messages).map(m => ({...m,content:minimizeStructuredText(m.content,this.key)}));
     await request.authorize();
     let response: Response;
     try {
@@ -111,7 +104,7 @@ export class SarvamAdapter implements ProviderAdapter {
     if (choice?.finish_reason !== 'stop' || choice?.message?.tool_calls?.length
       || typeof choice?.message?.content !== 'string' || !choice.message.content.trim())
       semanticError = choice?.finish_reason === 'length' ? 'truncated_output' : 'invalid_output';
-    else { try { output = redactDerivative(JSON.parse(choice.message.content.split(this.key).join('[redacted provider secret]'))); } catch { semanticError = 'invalid_output'; } }
+    else { try { output = minimizeDecodedOutput(JSON.parse(choice.message.content),this.key); } catch { semanticError = 'invalid_output'; } }
     return {output:output ?? {invalidResponse:true},responseHash:parsedResponse.responseHash,httpStatus:response.status,usage,semanticError};
   }
 }
