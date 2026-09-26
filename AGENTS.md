@@ -4,6 +4,8 @@ Read [the active NestJS migration ledger](docs/orchestration/NESTJS_MIGRATION.md
 
 <!-- plan-next-gate: GF0 -->
 
+Usage stop rule: check Codex usage before starting or dispatching work and at task checkpoints. Stop all project work at **50% used in either available core usage window**, or when usage cannot be checked. Follow the [usage cutoff and pause procedure](docs/orchestration/OPERATING_GUIDE.md#usage-cutoff-and-pause) before resuming; do not let workers or automations bypass it.
+
 Consolidated application baseline: `45d033baae7ec4e5a572d82459b0062c70a12c95`; reconcile the live staging head before implementation.
 
 ## Release and product scope
