@@ -65,3 +65,7 @@ Owned shutdown exited zero. Final status reported zero nonce containers, no API/
 - `83bff9096b280a2a` / `40f8162`: disk/daemon I/O failure terminated the observer before a complete receipt. Raw logs/volumes preserved; lead later stopped the exact containers. No runtime gate claim.
 
 This passing run demonstrates backend local integration and real-source committed-prefix behavior under the disclosed controlled recovery fault. Natural lease expiry and autonomous recovery timing remain unqualified. It does not qualify parsing/transform overlap, a second official changed-geometry/deletion revision, boundary positional/legal/currentness accuracy, property/rights/height facts, ML training permissions, public/multiuser/replica deployment, generative preview, frontend acceptance or GF-SCALE. No deployment, push, provider call, populated reset or pruning was performed.
+
+## Populated serving upgrade limitation
+
+Lead integration at `0d0ef4a` passed the guarded populated schema upgrade with all pre-existing rows/originals unchanged, but old retained MVT status lost its generation and the exact generation URL returned409 `MVT_CONTEXT_STALE`. The preceding serving code was restored; old generation16/62cells, sampled tile hash and canonical lookup work again. The new-code fresh isolated result above remains valid for its scope; cross-version immutable-generation reads are a separate regression awaiting correction. Do not rewrite stored fingerprints/artifacts or weaken source/access revocation to make it pass.
