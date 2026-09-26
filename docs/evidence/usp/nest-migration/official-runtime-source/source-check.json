@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "official-runtime-source-check/1",
+  "status": "candidate_for_review",
+  "testId": "NEST-RUN-01/OFFICIAL-PDF-SOURCE",
+  "runAt": "2026-09-26T02:08:03Z",
+  "codeCommit": "055534deb93eef0b85e8251b88cc40bc9a691fec",
+  "environment": {
+    "platform": "Darwin 27.0.0 arm64",
+    "shell": "zsh",
+    "poppler": "26.05.0",
+    "node": "v26.7.0"
+  },
+  "agent": {
+    "product": "Codex",
+    "assignedModel": "gpt-6-luna",
+    "assignedEffort": "max",
+    "observedModelAndEffort": "not exposed in task telemetry",
+    "requestedTier": "Fast",
+    "configuredTier": "priority (per repository operating guide)",
+    "observedPerTurnTier": "unobserved"
+  },
+  "source": {
+    "issuer": "U.S. Geological Survey, U.S. Department of the Interior",
+    "title": "USGS 1:62500-scale Quadrangle for Central City, CO 1910",
+    "geography": "Central City quadrangle, Colorado, United States (foreign test_only)",
+    "originalUrl": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Maps/HistoricalTopo/PDF/CO/62500/CO_Central%20City_232520_1910_62500_geo.pdf",
+    "officialSourceReference": "https://www.usgs.gov/programs/national-geospatial-program/us-topo-maps-america",
+    "sourcePermissionReference": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted",
+    "permissionState": "documented",
+    "permissionEvidence": "The USGS FAQ describes USGS-produced topographic maps as public domain and says qualifying maps may be used for any purpose. Its listed third-party-content exceptions apply to specified US Topo products from 2009 onward; this is a 1910 Historical Topographic Map Collection sheet.",
+    "permittedTaskPurpose": "One local deterministic PDF transport/page-inspection check. No source redistribution, training, or provider/LLM use was performed.",
+    "sourceHttp": {
+      "sourceRequestAttempts": 2,
+      "headStatus": 200,
+      "contentType": "application/pdf",
+      "contentLength": 9344939,
+      "lastModified": "2024-09-25T08:43:38Z",
+      "headCommandExit": 0,
+      "getCommandExit": 0,
+      "getStatus": "Successful transfer; status code not separately captured"
+    },
+    "acquiredAt": "2026-09-26T01:59:36Z",
+    "original": {
+      "localPath": "/Users/vinayak/.codex/task-data/ulpin-official-runtime-pdf-v1/usgs-central-city-co-1910-topographic-map.pdf",
+      "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+      "bytes": 9344939,
+      "maximumBytes": 10485760,
+      "mimeType": "application/pdf",
+      "unchanged": "Downloaded directly from the official source URL; no conversion or edits. Local size matches the source Content-Length."
+    },
+    "reference": {
+      "mapDate": "1910",
+      "scale": "1:62,500",
+      "contourInterval": "100 feet",
+      "horizontalReference": "Map states Polyconic projection and a NAD27 placement note; formal CRS remains unresolved.",
+      "verticalReference": "Map states mean sea level; exact vertical datum remains unknown.",
+      "limitations": [
+        "Historical U.S. map, not current source data or Indian operational evidence.",
+        "No parcel, building, unit, ownership, title, or same-property association.",
+        "Map reference metadata is insufficient for present-day measurement or legal/cadastral use."
+      ]
+    }
+  },
+  "candidateSearch": [
+    {
+      "source": "Retained Bihar/Haryana RERA planned PDFs",
+      "officialReference": "fixtures/usp/D5/gf0-public-plans-v1/manifest.json and docs/evidence/usp/finale/GF-DATA/DATA-05/acquisition.json",
+      "result": "not_selected",
+      "reason": "Existing source records explicitly leave source-specific local reuse/processing permission unconfirmed. No retained PDF was promoted or reprocessed."
+    },
+    {
+      "source": "OGD Platform India land-use statistics resource",
+      "officialReference": "https://www.data.gov.in/catalog/land-use-statistics-lus",
+      "result": "not_a_pdf_candidate",
+      "reason": "Official catalog discovery showed API/ZIP data resources, not a PDF document for the requested inspector. No resource bytes were acquired."
+    },
+    {
+      "source": "DDA-hosted Yamuna Manifesto PDF",
+      "officialReference": "https://dda.gov.in/sites/default/files/Landescape/Yamuna_Manifesto.pdf",
+      "termsReferences": [
+        "https://dda.gov.in/copyright-policy",
+        "https://dda.gov.in/terms-and-conditions"
+      ],
+      "result": "not_selected",
+      "reason": "The PDF does include a note allowing reproduction of parts, but identifies Project Y and its editors as publishers rather than DDA as issuing authority. DDA's current website terms and copyright policy were also reviewed. This was not accepted as an official DDA-issued source for the task; no local copy was acquired."
+    }
+  ],
+  "checks": [
+    {
+      "id": "http-head",
+      "command": "curl -sSIL --max-time 30 <official-pdf-url>",
+      "exitCode": 0,
+      "actual": "HTTP 200; application/pdf; Content-Length 9344939; Last-Modified 2024-09-25T08:43:38Z"
+    },
+    {
+      "id": "download-original",
+      "command": "curl -fsSL --max-time 60 --max-filesize 10485760 <official-pdf-url> -o <private-local-path>",
+      "exitCode": 0,
+      "actual": "9344939 bytes saved directly; no conversion"
+    },
+    {
+      "id": "sha256-and-size",
+      "command": "shasum -a 256 <private-local-path>; stat -f '%z bytes' <private-local-path>",
+      "exitCode": 0,
+      "actual": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf; 9344939 bytes"
+    },
+    {
+      "id": "format-identification",
+      "command": "file <private-local-path>",
+      "exitCode": 0,
+      "actual": "PDF document, version 1.6, 1 pages"
+    },
+    {
+      "id": "pdfinfo",
+      "command": "pdfinfo <private-local-path>",
+      "exitCode": 0,
+      "actual": "Pages 1; Encrypted no; page size 1190.37 x 1495 pts; PDF 1.6; file size 9344939 bytes"
+    },
+    {
+      "id": "application-pdfjs-page-count",
+      "command": "node --input-type=module -e '<direct pdfjs-dist page-count invocation>' <private-local-path>",
+      "exitCode": 1,
+      "actual": "Not run: pdfjs-dist is not installed in this pinned worktree (ERR_MODULE_NOT_FOUND). No dependency install, API process, database, or service was started."
+    }
+  ],
+  "planPdfV1Inspector": {
+    "status": "application_parser_pending_runtime_owner",
+    "staticCodeReference": "packages/server/src/modules/cases/pdf-pages.ts",
+    "staticCodeBehavior": "The helper parses the retained PDF page tree using pdfjs-dist/legacy/build/pdf.mjs.",
+    "result": "Poppler parsed the unchanged file as a one-page, unencrypted PDF. The exact application PDF.js helper was not run because pdfjs-dist is unavailable in this worktree; the runtime Sol owner will verify the current parser.",
+    "verificationOwner": "Runtime Sol owner",
+    "receiptStatus": "not_a_runtime_or_plan_pdf_v1_pass"
+  },
+  "modelHashes": [],
+  "limitations": [
+    "The PDF is a foreign historical topographic reference, not a matched building or Indian plan/rights source.",
+    "Page-tree parsing via Poppler is verified; exact Nest/application parser compatibility and workflow remain unverified.",
+    "No geometry, content-accuracy, survey-control, ownership, scale, or ML qualification is claimed.",
+    "The source remains outside Git."
+  ],
+  "unqualifiedClaims": [
+    "Indian plan source suitability",
+    "plan-pdf-v1 live or application-parser success",
+    "current land or parcel conditions",
+    "geometry or property-rights accuracy",
+    "runtime, GF-BACKEND, GF-DATA, GF0, or scale gate completion"
+  ]
+}
