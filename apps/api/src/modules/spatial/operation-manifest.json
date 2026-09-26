@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "batch": "NEST-13",
+  "baselineCommit": "fd7d3e3973e886deab5925eb4d61e9fed8a50f5e",
+  "acceptedDependencies": [
+    "08e5816657fbefbf1ed8a794a182d651e0a1d5cb",
+    "f42b81ac64659511e2a7742dee4a09a96b209f8a"
+  ],
+  "module": {
+    "class": "SpatialModule",
+    "import": "apps/api/src/modules/spatial/spatial.module",
+    "registration": "lead-owned domain-modules.ts; not changed in this batch"
+  },
+  "schemas": "spatial.openapi.ts + canonical exported Zod request validators",
+  "runtimeEvidence": {
+    "native-routing-openapi": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-spatial-api.test.ts",
+      "exit": 0,
+      "scope": "All 28 method/path/operation IDs; real in-memory Nest instances resolve all eight controllers; ephemeral loopback retirement/invalid-input/cross-site responses and the matching exact Next calibration retirement. No DB/provider calls or operational success fixtures. Listener closes in finally."
+    },
+    "stateful-acceptance": {
+      "state": "not-run",
+      "reason": "Reserved for integrated fresh owned services; no database/container/provider startup authorized in this coding batch."
+    }
+  },
+  "transportLimitsBytes": {
+    "datasetMlJson": 100000,
+    "spatialMlJson": 100000,
+    "cancelBody": 0,
+    "mlImageOriginal": 16777216,
+    "mlPdfOriginal": 10485760,
+    "retiredSavedDatasetIntake": "Native route accepts no body; legacy adapter retains its 20971520-byte reader but canonical writer now returns 410."
+  },
+  "operations": [
+    {
+      "operationId": "GET_api_v1_spatial_datasets",
+      "method": "GET",
+      "path": "/api/v1/spatial-datasets",
+      "disposition": "replaced",
+      "canonicalService": "listSpatialDatasets",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_spatial_datasets",
+      "method": "POST",
+      "path": "/api/v1/spatial-datasets",
+      "disposition": "retired",
+      "canonicalService": "retired; saveSpatialDataset compatibility entry also returns 410",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "status": 410
+    },
+    {
+      "operationId": "GET_api_v1_spatial_datasets_id",
+      "method": "GET",
+      "path": "/api/v1/spatial-datasets/{id}",
+      "disposition": "replaced",
+      "canonicalService": "getSpatialDataset / ensureDatasetIdentifiers / readSpatialDatasetOriginal",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_datasets_search",
+      "method": "GET",
+      "path": "/api/v1/spatial-datasets/search",
+      "disposition": "replaced",
+      "canonicalService": "searchDatasetIdentifiers",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_datasets_id_ml",
+      "method": "GET",
+      "path": "/api/v1/spatial-datasets/{id}/ml",
+      "disposition": "replaced",
+      "canonicalService": "datasetMlOverview / datasetMlArtifact",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_spatial_datasets_id_ml",
+      "method": "POST",
+      "path": "/api/v1/spatial-datasets/{id}/ml",
+      "disposition": "replaced",
+      "canonicalService": "queueDatasetMl / reviewDatasetMl",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_spatial_datasets_id_ml_source",
+      "method": "POST",
+      "path": "/api/v1/spatial-datasets/{id}/ml/source",
+      "disposition": "replaced",
+      "canonicalService": "attachDatasetMlSource",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 201
+    },
+    {
+      "operationId": "GET_api_v1_spatial_ml_status",
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/status",
+      "disposition": "replaced",
+      "canonicalService": "spatialMlStatus",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_ml_batches",
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/batches",
+      "disposition": "replaced",
+      "canonicalService": "listSpatialMlBatches",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_spatial_ml_batches",
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/batches",
+      "disposition": "replaced",
+      "canonicalService": "createSpatialMlBatch",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 201
+    },
+    {
+      "operationId": "GET_api_v1_spatial_ml_batches_batchId",
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/batches/{batchId}",
+      "disposition": "replaced",
+      "canonicalService": "getSpatialMlBatch",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_ml_items_itemId",
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/items/{itemId}",
+      "disposition": "replaced",
+      "canonicalService": "getSpatialMlItem",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_ml_items_itemId_artifacts_artifact",
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/items/{itemId}/artifacts/{artifact}",
+      "disposition": "replaced",
+      "canonicalService": "spatialMlArtifact",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_spatial_ml_items_itemId_retry",
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/items/{itemId}/retry",
+      "disposition": "replaced",
+      "canonicalService": "retrySpatialMlItem",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_spatial_ml_items_itemId_cancel",
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/items/{itemId}/cancel",
+      "disposition": "replaced",
+      "canonicalService": "cancelSpatialMlItem",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_spatial_ml_items_itemId_apply",
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/items/{itemId}/apply",
+      "disposition": "replaced",
+      "canonicalService": "applySpatialMlItem",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_spatial_ml_items_itemId_footprint_drafts",
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/items/{itemId}/footprint-drafts",
+      "disposition": "replaced",
+      "canonicalService": "createSpatialMlFootprintDraft",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_areas_areaId",
+      "method": "GET",
+      "path": "/api/v1/spatial/areas/{areaId}",
+      "disposition": "replaced",
+      "canonicalService": "readSpatialAreaCompatibility",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_core_areas_areaId",
+      "method": "GET",
+      "path": "/api/v1/spatial/core/areas/{areaId}",
+      "disposition": "replaced",
+      "canonicalService": "readNormalizedLegacyCore",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_core_areas_areaId_scene_assetPath",
+      "method": "GET",
+      "path": "/api/v1/spatial/core/areas/{areaId}/scene/{assetPath}",
+      "disposition": "replaced",
+      "canonicalService": "readNeighbourhoodSceneAsset",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_core_areas_areaId_external_featureId",
+      "method": "GET",
+      "path": "/api/v1/spatial/core/areas/{areaId}/external/{featureId}",
+      "disposition": "replaced",
+      "canonicalService": "readExternalScene",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_spatial_calibration_kind_assetPath",
+      "method": "GET",
+      "path": "/api/v1/spatial/calibration/{kind}/{assetPath}",
+      "disposition": "retired",
+      "canonicalService": "retired public generator; exact Next backend route also returns 410",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "status": 410
+    }
+  ],
+  "exactPathReview": {
+    "retiredNextCompatibilityRoute": "apps/web/app/api/v1/spatial/calibration/[kind]/[...asset]/route.ts",
+    "preservedPrivateCalibration": "packages/server/src/modules/spatial/spatial-ml-retained-calibration.ts",
+    "preservation": "Existing source-linked calibration receipts are read with fingerprint/frame fences; no original, receipt, source history or calibration fixture file was changed. This is not a new official-source qualification."
+  },
+  "sceneChange": "Non-synthetic server meshes use bounded plain extrusion; invented facade and roof details are omitted. Canonical source geometry/measurements are unchanged.",
+  "checks": [
+    {
+      "command": "pnpm --filter @ulpin/server typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/api typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-spatial-api.test.ts tests/spatial-ml-backend.test.ts tests/spatial-ml-retained-calibration.test.ts tests/usp-external-scene.test.ts",
+      "exit": 0,
+      "tests": 39
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-spatial-api.test.ts tests/core-legacy-read.test.ts tests/spatial-core.test.ts",
+      "exit": 0,
+      "tests": 49
+    },
+    {
+      "command": "pnpm --filter @ulpin/api test:boundary",
+      "exit": 0,
+      "tests": 4
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-spatial-api.test.ts",
+      "exit": 0,
+      "tests": 1,
+      "scope": "Final code including explicit controller resolution, cross-site guard and exact Next calibration retirement."
+    },
+    {
+      "command": "pnpm exec tsx --test --test-name-pattern='legacy adapter' tests/spatial-core.test.ts",
+      "exit": 0,
+      "tests": 2,
+      "scope": "Released pure compatibility adapter now delegates to the server authority."
+    }
+  ],
+  "execution": {
+    "requested": {
+      "model": "gpt-6-sol",
+      "effort": "max",
+      "speed": "Fast"
+    },
+    "hostConfigured": {
+      "model": "gpt-6-sol",
+      "effort": "high",
+      "serviceTier": "priority"
+    },
+    "observedPerTurnModelEffortTier": "unobserved",
+    "hostSettingsChanged": false
+  },
+  "existingOfficialFixtureCheck": {
+    "path": "fixtures/usp/D1/single-roof/original.json",
+    "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2",
+    "scope": "Unchanged historical D1 bytes checked by existing topology unit test; no new D1 or stateful acceptance claimed."
+  },
+  "leadExtractionMapEntry": {
+    "source": "apps/web/features/spatial/data/legacy-adapter.ts",
+    "destination": "packages/server/src/modules/spatial/legacy/area-compat-adapter.ts",
+    "kind": "transitive",
+    "note": "Explicit compatibility re-export closes this omitted pure projection. extraction-map.json remains lead/foundation owned."
+  },
+  "privacyFence": "PrivateSpatialGuard rejects Sec-Fetch-Site: cross-site with 403 CROSS_ORIGIN_READ before body parsing or service IO, including cross-site subresource requests with no Origin. Shared socket Host/Origin guard remains authoritative."
+}

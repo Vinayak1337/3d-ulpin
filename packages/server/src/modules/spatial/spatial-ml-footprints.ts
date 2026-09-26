@@ -12,7 +12,7 @@ import {
   spatialMlCalibrationSchema,
 } from "./spatial-ml";
 
-const schema = z
+export const spatialMlFootprintDraftSchema = z
   .object({
     requestKey: z.string().uuid(),
     expectedRevision: z.number().int().nonnegative(),
@@ -48,7 +48,7 @@ export async function createSpatialMlFootprintDraft(
   id: string,
   value: unknown,
 ): Promise<{ package: ImportPackage; receipt: Record<string, unknown> }> {
-  const input = schema.parse(value),
+  const input = spatialMlFootprintDraftSchema.parse(value),
     digest = fingerprint(input);
   const canonicalSelections = [...input.selections].sort((a, b) =>
     a.componentId.localeCompare(b.componentId),
