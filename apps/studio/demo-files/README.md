@@ -6,10 +6,12 @@ layer serves. Run the Studio with `pnpm studio:dev` (port 5188).
 1. **Start clean:** open `http://127.0.0.1:5188/studio/work?reset-session`. Batches is empty, the header reads "No areas yet".
 2. **Import the area:** Add files → drop `1-area/lake_view_survey.geojson` → answer **Yes** to the height question → Continue → Start import.
    The map opens and fills over about 16 s: roads and parcels, then buildings from the residence outwards. Press **Done** on the tray.
-3. **Open the residence:** click Lake View Residence. It has no floors yet ("Blocked: no floors recorded").
-4. **Add its documents:** Add files (inspector) → drop everything in `2-building/` → Start import.
-   Floors stack from B2 up to the roof over about 10 s; units, shares and findings arrive at the end.
-5. **Explore:** Explore floors → F7 → Flat 704 → evidence chips open the plan and deed pages. Findings, Register and Check work from here.
-6. **Public portal:** open `http://127.0.0.1:5188/portal/map` (a second tab can stay open during step 4: it updates by itself once the floors are recorded).
+3. **Every building has a 3D ULPIN:** click Lake View Residence. The inspector shows its proposed 3D ULPIN; it has no floors yet ("Blocked: no floors recorded").
+4. **A citizen finds it (second tab):** open `http://127.0.0.1:5188/portal`, search `Lake View Residence` (or paste its code) → Open building → **Request this building's register**. Fill name, a 10-digit mobile, a note, attach `2-building/plan_F7.pdf` → Send request. Note the reference (RQ-…).
+5. **The officer reviews it:** back in the Studio, **Register** shows a count. Open the request → Take up → write a note → **Accept** → **Add files**.
+6. **Add its documents:** drop everything in `2-building/` → Start import. Floors stack from B2 up to the roof over about 10 s; units, shares and findings arrive at the end.
+7. **Explore:** Explore floors → F7 → Flat 704 → evidence chips open the plan and deed pages. Findings, Register and Check work from here.
+8. **The portal follows:** the building page in the second tab fills in by itself (levels, released flats). **Track a request** with the reference and mobile shows Received → In review → Accepted with the officer's note. `/verify/<building code>` confirms a building's 3D ULPIN.
+9. **Delete:** a building (inspector → Delete building, or Register → Buildings) or the whole area (Area inspector → Delete area). Both disappear from the portal too.
 
 Timings are in `src/local/session.ts` (`AREA_STREAM_MS`, `FLOORS_STREAM_MS`).

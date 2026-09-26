@@ -98,3 +98,53 @@
   padding: 5px 12px; border-radius: 999px; background: var(--ui-primary); color: var(--ui-on-primary); font: 600 13px/18px var(--ui-font-sans); box-shadow: var(--ui-shadow-floating);
 }
 .mapLabel:focus-visible { outline: none; box-shadow: var(--ui-focus-ring); }
+
+/* Buildings, requests and tracking */
+.sectionLabel { margin-top: 8px; }
+.buildingFacts { display: grid; gap: 18px; }
+.cta { display: grid; gap: 12px; padding: 20px; border-radius: var(--ui-radius-12); background: var(--ui-surface-subtle); }
+.cta p { margin: 0; }
+.cta a { justify-self: start; text-decoration: none; }
+.recordList { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.recordList a {
+  display: flex; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-8);
+  background: var(--ui-surface); color: var(--ui-ink); text-decoration: none; font: 400 16px/22px var(--ui-font-sans);
+}
+.recordList a:hover { border-color: var(--ui-primary); }
+.form { max-width: 720px; display: grid; gap: 22px; }
+.form :global(.ul-field) { max-width: none; }
+.form textarea { min-height: 120px; resize: vertical; font: 400 16px/24px var(--ui-font-sans); }
+.twoCol { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.kindPick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.kindPick label {
+  display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-12); cursor: pointer; background: var(--ui-surface);
+}
+.kindPick label:has(input:checked) { border-color: var(--ui-primary); box-shadow: inset 0 0 0 1px var(--ui-primary); background: var(--ui-primary-soft); }
+.kindPick label:has(input:disabled) { opacity: .55; cursor: not-allowed; }
+.kindPick input { position: absolute; opacity: 0; pointer-events: none; }
+.drop {
+  display: grid; justify-items: center; gap: 6px; padding: 22px; border: 1.5px dashed var(--ui-border-strong); border-radius: var(--ui-radius-12);
+  background: var(--ui-surface); color: var(--ui-muted); text-align: center; cursor: pointer; font: 400 15px/22px var(--ui-font-sans);
+}
+.drop:hover, .drop[data-over="true"] { border-color: var(--ui-primary); color: var(--ui-ink); }
+.drop input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.fileList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.fileList li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: var(--ui-radius-8); background: var(--ui-surface-subtle); font-size: 15px; }
+.consent { display: flex; gap: 10px; align-items: flex-start; font: 400 15px/22px var(--ui-font-sans); }
+.consent input { margin-top: 4px; width: 18px; height: 18px; }
+.formError { margin: 0; color: var(--ui-danger); font: 500 15px/22px var(--ui-font-sans); }
+.done { max-width: 640px; display: grid; gap: 18px; padding: 28px; border-radius: var(--ui-radius-12); background: var(--ui-surface); border: 1px solid var(--ui-border-strong); box-shadow: var(--ui-shadow-card); }
+.done p { margin: 0; }
+.refBig { font: 600 28px/34px var(--ui-font-mono); letter-spacing: .02em; }
+.doneActions { display: flex; flex-wrap: wrap; gap: 12px; }
+.doneActions a { text-decoration: none; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.steps li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; padding-bottom: 18px; position: relative; }
+.steps li::before { content: ''; position: absolute; left: 11px; top: 22px; bottom: 0; width: 2px; background: var(--ui-divider); }
+.steps li:last-child::before { display: none; }
+.stepDot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--ui-divider); color: var(--ui-muted); }
+.steps li[data-state="done"] .stepDot { background: var(--ui-primary); color: var(--ui-on-primary); }
+.steps li[data-state="rejected"] .stepDot { background: var(--ui-danger); color: var(--ui-on-primary); }
+.stepText { display: grid; gap: 2px; font: 400 15px/22px var(--ui-font-sans); }
+.stepText b { font-weight: 600; }
+@media (max-width: 720px) { .twoCol, .kindPick { grid-template-columns: 1fr; } }

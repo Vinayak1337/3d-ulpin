@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useMatch, useNavigate, useSearchParams } from 'react-router';
 import { CaretDown, FilePlus, MagnifyingGlass, UserCircle } from '@phosphor-icons/react';
 import { Icon } from '@ulpin/ui';
-import { useAreas, useCapabilities, type Area } from '../api/queries';
+import { useAreas, useCapabilities, useRegisterRequests, type Area } from '../api/queries';
 import { readLastArea, writeLastArea } from './lastArea';
 import styles from './Frame.module.css';
 
@@ -19,7 +19,7 @@ export function Frame() {
         <nav className={styles.nav} aria-label="Studio">
           <NavLink to="/studio/work">Batches</NavLink>
           <MapNavLink />
-          <NavLink to="/studio/registry">Register</NavLink>
+          <RegisterNavLink />
         </nav>
         <HeaderSearch />
         <span className={styles.spacer} />
@@ -44,6 +44,16 @@ function MapNavLink() {
     <Link to={lastArea ? `/studio/areas/${lastArea}` : '/studio/map'} aria-current={onArea || onIndex ? 'page' : undefined}>
       Map
     </Link>
+  );
+}
+
+/** Register, with the count of open requests from the public. */
+function RegisterNavLink() {
+  const open = useRegisterRequests('open').data?.length ?? 0;
+  return (
+    <NavLink to="/studio/registry" aria-label={open ? `Register, ${open} open requests` : 'Register'}>
+      Register{open ? <span className={styles.navCount}>{open}</span> : null}
+    </NavLink>
   );
 }
 

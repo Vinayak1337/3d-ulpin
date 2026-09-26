@@ -172,6 +172,25 @@ export interface PublicSearch {
   items: PublicRecordSummary[];
   /** Units in the matched buildings that are not released yet (counted, never listed). */
   notReleased: number;
+  /** Buildings matching by name, 3D ULPIN or parcel ULPIN. Every committed building is public. */
+  buildings: PublicBuildingSummary[];
+}
+
+/** A building's public identity: its proposed 3D ULPIN from the area import and what its register holds. */
+export interface PublicBuildingSummary {
+  id: string;
+  name: string;
+  areaId: string;
+  areaName: string;
+  code: string;
+  /** Parcel and structure parts of the building identifier, for display only. */
+  location: string[] | null;
+  parcelUlpin: string | null;
+  address: string | null;
+  heightM: number | null;
+  /** Levels recorded in the building's register (0: footprint only). */
+  levels: number;
+  records: number;
 }
 
 export interface PublicStorey { id: string; label: string; lowerM: number | null; upperM: number | null; estimated: boolean; belowGround: boolean; use: string | null }
@@ -182,6 +201,10 @@ export interface PublicBuilding {
   id: string;
   name: string;
   areaId: string;
+  areaName: string;
+  code: string;
+  location: string[] | null;
+  heightM: number | null;
   address: string | null;
   parcelUlpin: string | null;
   datum: string | null;
@@ -213,6 +236,40 @@ export interface PublicMap {
   /** Same feature shape as the area context, limited to buildings, parcels, roads and public land. */
   features: Array<Record<string, unknown> & { id: string; kind: string; name: string }>;
   released: Array<{ buildingId: string; records: number }>;
+  /** Every building of the area with its proposed 3D ULPIN. */
+  buildings: PublicBuildingSummary[];
+}
+
+/**
+ * Requests from the public (REQUEST-01): a citizen asks for a building's register, or for a correction to
+ * a released record. Officers review them in the Studio. The applicant's contact is never public.
+ */
+export type RequestKind = 'register' | 'correction';
+export type RequestState = 'submitted' | 'in_review' | 'accepted' | 'rejected';
+
+/** POST /api/v1/public/requests answers with this; GET /api/v1/public/requests/{ref} tracks it. */
+export interface PublicRequestStatus {
+  ref: string;
+  kind: RequestKind;
+  buildingId: string;
+  buildingName: string;
+  buildingCode: string;
+  recordName: string | null;
+  state: RequestState;
+  /** The officer's note to the applicant, when accepted or rejected. */
+  note: string | null;
+  submittedAt: string;
+  updatedAt: string;
+  history: Array<{ state: RequestState; at: string; note: string | null }>;
+}
+
+/** GET /api/v1/register-requests and /{ref}: the officer's view, with the applicant's contact. */
+export interface RegisterRequest extends PublicRequestStatus {
+  recordId: string | null;
+  applicant: { name: string; mobile: string; relation: string };
+  message: string;
+  files: Array<{ name: string; bytes: number }>;
+  history: Array<{ state: RequestState; at: string; note: string | null; by: string }>;
 }
 
 /** POST /api/v1/buildings/{buildingId}/imports/inspect — INGEST-04: what each building document is. */

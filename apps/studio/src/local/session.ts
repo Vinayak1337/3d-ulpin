@@ -1,8 +1,9 @@
 /**
  * The state of this workstation's imports, as the local data layer serves it: when the area survey was
- * imported and when the building's floor documents were. Each local route answers from these, so the
- * Studio starts empty, the map fills while an import streams, and floors appear once their files are in.
- * Kept in localStorage; `?reset-session` in any URL clears it (and the officer's workflow store).
+ * imported, when the building's floor documents were, and which buildings an officer deleted. Each local
+ * route answers from these, so the Studio starts empty, the map fills while an import streams, and floors
+ * appear once their files are in. Kept in localStorage; `?reset-session` in any URL clears it (and the
+ * officer's workflow store and the public requests).
  */
 const KEY = 'bhuaayam.session';
 
@@ -10,8 +11,11 @@ const KEY = 'bhuaayam.session';
 export const AREA_STREAM_MS = 16_000;
 export const FLOORS_STREAM_MS = 10_000;
 
-interface Session { areaStartedAt: number | null; floorsStartedAt: number | null; areaPackageId: string | null; floorsImportId: string | null; floorsFiles: string[] }
-const EMPTY: Session = { areaStartedAt: null, floorsStartedAt: null, areaPackageId: null, floorsImportId: null, floorsFiles: [] };
+interface Session {
+  areaStartedAt: number | null; floorsStartedAt: number | null; areaPackageId: string | null; floorsImportId: string | null; floorsFiles: string[];
+  deletedBuildings: string[];
+}
+const EMPTY: Session = { areaStartedAt: null, floorsStartedAt: null, areaPackageId: null, floorsImportId: null, floorsFiles: [], deletedBuildings: [] };
 
 export function readSession(): Session {
   try { return { ...EMPTY, ...(JSON.parse(localStorage.getItem(KEY) ?? 'null') ?? {}) }; } catch { return EMPTY; }
@@ -22,8 +26,20 @@ export function writeSession(patch: Partial<Session>) {
 }
 
 export function resetSession() {
-  try { localStorage.removeItem(KEY); } catch { /* nothing stored */ }
+  try { localStorage.removeItem(KEY); localStorage.removeItem('bhuaayam.requests'); } catch { /* nothing stored */ }
 }
+
+/** Deleting the area removes everything its import brought in: the area, its buildings and their floors. */
+export function deleteArea() {
+  writeSession({ ...EMPTY });
+}
+
+export function deleteBuilding(id: string) {
+  const s = readSession();
+  if (!s.deletedBuildings.includes(id)) writeSession({ deletedBuildings: [...s.deletedBuildings, id] });
+}
+
+export const isDeleted = (id: string) => readSession().deletedBuildings.includes(id);
 
 const progress = (startedAt: number | null, ms: number) => (startedAt === null ? 0 : Math.min(1, (Date.now() - startedAt) / ms));
 /** 0 before the area import, 1 once it has streamed in. */

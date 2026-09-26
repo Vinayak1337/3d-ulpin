@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { FilePlus } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
@@ -11,6 +11,7 @@ import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AssignDialog } from '../identity/AssignDialog';
 import { AddFilesDialog } from '../intake/AddFilesDialog';
+import { DeleteDialog } from '../manage/DeleteDialog';
 import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { polygonsOf } from './footprints';
@@ -48,8 +49,10 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  const [dialog, setDialog] = useState<'assign' | 'card' | 'files' | null>(null);
+  const [dialog, setDialog] = useState<'assign' | 'card' | 'files' | 'delete-building' | 'delete-area' | null>(null);
+  const navigate = useNavigate();
   const [toast, setToast] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
 
   const buildings = useMemo(() => context.features.filter((f) => f.kind === 'building'), [context.features]);
@@ -232,11 +235,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   } else if (feature) {
     inspector = (
       <BuildingInspector feature={feature} register={register} model={model} ledger={ledger} registerPending={registerQuery.isPending} crumbs={crumbs}
-        exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')}
+        exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')} onDelete={() => setDialog('delete-building')}
         onExplore={() => { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }}
         onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })} />
     );
-  } else inspector = <AreaInspector area={context.area} buildings={buildings} onSelect={(id) => dispatch({ type: 'selectBuilding', id })} />;
+  } else inspector = <AreaInspector area={context.area} buildings={buildings} onSelect={(id) => dispatch({ type: 'selectBuilding', id })} onDelete={() => setDialog('delete-area')} />;
 
   const closeParam = (key: string) => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete(key); return n; }, { replace: true });
   const tray = packageId ? <ImportTray packageId={packageId} onClose={() => closeParam('package')} />
@@ -330,6 +333,14 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
       </div>
 
       {dialog === 'files' && feature ? <AddFilesDialog buildingId={feature.id} onClose={() => setDialog(null)} /> : null}
+      {dialog === 'delete-building' && feature ? (
+        <DeleteDialog target={{ kind: 'building', id: feature.id, name: feature.name, detail: `${feature.name} and its register (floors, units, findings and history) are deleted from ${context.area.name}.` }}
+          onClose={() => setDialog(null)} onDeleted={() => { setDialog(null); dispatch({ type: 'selectBuilding', id: null }); setNotice(`${feature.name} deleted`); }} />
+      ) : null}
+      {dialog === 'delete-area' ? (
+        <DeleteDialog target={{ kind: 'area', id: context.area.id, name: context.area.name, detail: `${context.area.name} and its ${buildings.length} buildings, parcels, roads and utilities are deleted, with every building register in it.` }}
+          onClose={() => setDialog(null)} onDeleted={() => navigate('/studio/map', { replace: true })} />
+      ) : null}
       {dialog === 'assign' && space && register ? (
         <AssignDialog space={space} register={register} onClose={() => setDialog(null)} onAssigned={(code) => { setDialog(null); setToast(code); }} />
       ) : null}
@@ -343,6 +354,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
           <button type="button" className="ul-btn ul-btn--soft" onClick={() => { setToast(null); setDialog('card'); }}>Make Property Card</button>
         </Toast>
       ) : null}
+      {notice ? <Toast onDone={() => setNotice(null)}>{notice}</Toast> : null}
     </EvidenceProvider>
   );
 }

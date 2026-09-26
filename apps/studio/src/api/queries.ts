@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
-import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, WorkBoard } from '@ulpin/api-client/draft';
+import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
@@ -166,3 +166,36 @@ export function useBuildingImport(importId: string | null) {
     refetchInterval: (query) => (query.state.data?.state === 'running' ? 700 : false),
   });
 }
+
+/** The proposed 3D ULPIN the area import allotted a building (absent on sources that carry none). */
+export const featureCode = (feature: AreaFeature | null | undefined): string | null =>
+  ((feature as { projectCode?: string } | null | undefined)?.projectCode) ?? null;
+
+// ------------------------------------------------------------------ requests from the public (REQUEST-01)
+export type RequestFilter = 'open' | 'accepted' | 'rejected' | 'all';
+
+export function useRegisterRequests(filter: RequestFilter) {
+  return useQuery({
+    queryKey: ['register-requests', filter],
+    queryFn: async () => (await getDraft<RegisterRequest[]>(`/api/v1/register-requests?state=${filter}`)) ?? [],
+    // New requests from the portal show up without a reload.
+    refetchInterval: 3000,
+  });
+}
+
+export async function decideRegisterRequest(ref: string, state: RequestState, note: string | null): Promise<RegisterRequest> {
+  const response = await globalThis.fetch(`/api/v1/register-requests/${encodeURIComponent(ref)}`, {
+    method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ state, note }),
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error((body as { message?: string } | null)?.message ?? `Could not update the request (${response.status}).`);
+  return body as RegisterRequest;
+}
+
+// ------------------------------------------------------------------ deletion
+async function remove(path: string) {
+  const response = await globalThis.fetch(path, { method: 'DELETE' });
+  if (!response.ok && response.status !== 204) throw new ApiError(response.status, path, await response.json().catch(() => null));
+}
+export const deleteBuilding = (buildingId: string) => remove(`/api/v1/buildings/${buildingId}`);
+export const deleteArea = (areaId: string) => remove(`/api/v1/areas/${areaId}`);

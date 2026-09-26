@@ -1,4 +1,5 @@
-import { areaProgress, floorsProgress, readSession } from './session';
+import { areaProgress, floorsProgress, isDeleted, readSession } from './session';
+import { buildingCode } from './codes';
 import { lake } from './sources';
 
 /**
@@ -32,13 +33,19 @@ const ARRIVAL = (() => {
 })();
 
 export const areaStarted = () => readSession().areaStartedAt !== null;
-export const floorsStarted = () => readSession().floorsStartedAt !== null;
-export const floorsDone = () => floorsProgress() >= 1;
+export const floorsStarted = () => readSession().floorsStartedAt !== null && !isDeleted(RESIDENCE);
+export const floorsDone = () => floorsStarted() && floorsProgress() >= 1;
+
+/** Every building carries the proposed 3D ULPIN allotted when the import committed it. */
+const withCode = (f: Feature): Feature => (f.kind === 'building' ? { ...f, projectCode: buildingCode(f.id) } as unknown as Feature : f);
 
 export function visibleFeatures(): Feature[] {
   const p = areaProgress();
-  return lake.context.features.filter((f) => (ARRIVAL.get(f.id) ?? 1) <= p);
+  return lake.context.features.filter((f) => (ARRIVAL.get(f.id) ?? 1) <= p && !isDeleted(f.id)).map(withCode);
 }
+
+/** A building that exists in this deployment now: imported and not deleted. */
+export const buildingVisible = (id: string) => visibleFeatures().some((f) => f.id === id && f.kind === 'building');
 
 export function storyAreas(): Json[] | null {
   if (!areaStarted()) return [];

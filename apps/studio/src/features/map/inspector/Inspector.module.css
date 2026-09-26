@@ -41,3 +41,5 @@
 .inspector :global(.ul-tabs) { padding: 0 var(--ui-space-1, 4px); scrollbar-width: none; }
 .inspector :global(.ul-tab) { padding: 0 6px; }
 .inspector :global(.ul-dl) { grid-template-columns: 84px minmax(0, 1fr); column-gap: var(--ui-space-2); }
+
+.delete { justify-self: start; color: var(--ui-danger); padding-left: 0; }

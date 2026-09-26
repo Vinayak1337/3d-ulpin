@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { ApiError } from '@ulpin/api-client';
-import type { PublicBuilding, PublicMap, PublicRecord, PublicSearch } from '@ulpin/api-client/draft';
+import type { PublicBuilding, PublicBuildingSummary, PublicMap, PublicRecord, PublicRequestStatus, PublicSearch } from '@ulpin/api-client/draft';
 
 /** Public portal reads: released facts only (PUBLIC-01). A 404 means "not released" and resolves to null. */
 async function getPublic<T>(path: string): Promise<T | null> {
@@ -28,9 +28,27 @@ export function usePublicBuilding(id: string | null | undefined) {
 }
 
 export function usePublicAreas() {
-  return useQuery({ queryKey: ['public', 'areas'], queryFn: () => getPublic<Array<{ id: string; name: string; records: number }>>('/api/v1/public/areas'), refetchInterval: 3000 });
+  return useQuery({ queryKey: ['public', 'areas'], queryFn: () => getPublic<Array<{ id: string; name: string; records: number; buildings: number }>>('/api/v1/public/areas'), refetchInterval: 3000 });
 }
 
 export function usePublicMap(areaId: string | null | undefined) {
   return useQuery({ queryKey: ['public', 'map', areaId], enabled: Boolean(areaId), queryFn: () => getPublic<PublicMap>(`/api/v1/public/areas/${areaId}/map`), refetchInterval: 3000 });
 }
+
+export function usePublicCode(code: string) {
+  return useQuery({
+    queryKey: ['public', 'code', code], enabled: Boolean(code), retry: false,
+    queryFn: () => getPublic<{ kind: 'building'; building: PublicBuildingSummary } | { kind: 'unit'; recordId: string }>(`/api/v1/public/codes/${encodeURIComponent(code)}`),
+  });
+}
+
+async function send<T>(path: string, init: RequestInit): Promise<T> {
+  const response = await globalThis.fetch(path, init);
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error((body as { message?: string } | null)?.message ?? `The request could not be sent (${response.status}).`);
+  return body as T;
+}
+
+export const fileRequest = (form: FormData) => send<PublicRequestStatus>('/api/v1/public/requests', { method: 'POST', body: form });
+export const trackRequest = (ref: string, mobile: string) =>
+  send<PublicRequestStatus>('/api/v1/public/requests/track', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ref, mobile }) });

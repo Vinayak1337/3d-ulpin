@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { FilePlus, Stack, WarningOctagon } from '@phosphor-icons/react';
+import { FilePlus, Stack, Trash, WarningOctagon } from '@phosphor-icons/react';
 import type { BuildingLedger } from '@ulpin/api-client/draft';
 import {
   Button, DescriptionList, EvidenceChip, Icon, ReadinessMeter, RevisionTimeline, Skeleton, StatusBadge, Tabs, formatCount, formatDate,
-  formatMeasure, type Fact,
+  UlpinCode, formatMeasure, type Fact,
 } from '@ulpin/ui';
-import type { AreaFeature, BuildingRegister } from '../../../api/queries';
+import { featureCode, type AreaFeature, type BuildingRegister } from '../../../api/queries';
 import type { BuildingModel } from '../../../model/building';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
@@ -30,9 +30,9 @@ export function levelSummary(model: BuildingModel): string {
   return parts.join(' · ');
 }
 
-export function BuildingInspector({ feature, register, model, ledger, registerPending, crumbs, exploring, onExplore, onFindings, onAddFiles }: {
+export function BuildingInspector({ feature, register, model, ledger, registerPending, crumbs, exploring, onExplore, onFindings, onAddFiles, onDelete }: {
   feature: AreaFeature; register: BuildingRegister | undefined; model: BuildingModel | null; ledger: BuildingLedger | null | undefined;
-  registerPending: boolean; crumbs: Crumb[]; exploring: boolean; onExplore: () => void; onFindings: (findingId?: string) => void; onAddFiles?: () => void;
+  registerPending: boolean; crumbs: Crumb[]; exploring: boolean; onExplore: () => void; onFindings: (findingId?: string) => void; onAddFiles?: () => void; onDelete?: () => void;
 }) {
   const [tab, setTab] = useState<Tab>('overview');
   const openEvidence = useOpenEvidence();
@@ -100,10 +100,12 @@ export function BuildingInspector({ feature, register, model, ledger, registerPe
     >
       {tab === 'overview' ? (
         <>
+          {featureCode(feature) ? <UlpinCode code={featureCode(feature)} location={feature.identifier ? feature.identifier.split('/') : null} /> : null}
           <DescriptionList items={facts} />
           {ledger ? (
             <ReadinessMeter task={ledger.readiness.task} dimensions={ledger.readiness.dimensions.map((d) => ({ name: d.name, value: d.value ?? 'unknown', label: d.label }))} />
           ) : <p className={styles.note}>Geometry and height come from the source. They do not establish ownership, floors or rights.</p>}
+          {onDelete ? <Button variant="ghost" icon={Trash} className={styles.delete} onClick={onDelete} aria-label={`Delete ${feature.name}`}>Delete building</Button> : null}
         </>
       ) : tab === 'rights' && ledger ? (
         <RightsSummary ledger={ledger} />

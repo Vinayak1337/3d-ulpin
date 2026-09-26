@@ -4,11 +4,19 @@ import { localRoutes } from './routes';
 import { areaPackage, buildingImport, detect, inspectAreaFile, startAreaImport, startFloorsImport } from './imports';
 import { lake } from './sources';
 import { storyAreas, storyBoard, storyContext, storyLedger, storyQueueItems, storyRegister } from './story';
-import { publicAreas, publicBuilding, publicMap, publicRecord, publicSearch } from './public';
+import { publicAreas, publicBuilding, publicCode, publicMap, publicRecord, publicSearch } from './public';
+import { RequestError, decideRequest, fileRequest, getRequest, listRequests, trackRequest } from './requests';
+import { deleteArea, deleteBuilding } from './session';
+import { buildingVisible } from './story';
 import { LOCAL_SOURCE_LABELS, derivedContexts, derivedRegister, derivedSourceFiles, documents, importBatches, ledgers, levelReviews, workBoard, workQueue } from './sources';
 
 const ALL_LOCAL = Object.values(LOCAL_SOURCE_LABELS).join('; ');
 const json = (body: unknown, label: string) => HttpResponse.json(body as never, { headers: { [LOCAL_SOURCE_HEADER]: label } });
+const fail = (error: unknown) => {
+  if (error instanceof RequestError) return HttpResponse.json({ error: error.code, message: error.message }, { status: error.status });
+  throw error;
+};
+const LOCAL = LOCAL_SOURCE_LABELS.lake;
 
 type Params = Record<string, string | readonly string[] | undefined>;
 /** Local answers by route path. Returning undefined means "not held locally": fall through to the API. */
@@ -23,6 +31,7 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
   '/api/v1/work-board': () => json(storyBoard(workBoard as never, storyQueueItems(workQueue.items)), LOCAL_SOURCE_LABELS.lake),
   '/api/v1/buildings/:buildingId/ledger': ({ buildingId }) => {
     const raw = ledgers[String(buildingId)];
+    if (raw && !buildingVisible(String(buildingId))) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
     const body = raw ? storyLedger(raw) : undefined;
     return body ? json(body, LOCAL_SOURCE_LABELS.lake) : raw ? HttpResponse.json({ error: 'not_found' }, { status: 404 }) : undefined;
   },
@@ -86,6 +95,37 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
     const body = await publicMap(String(areaId));
     return body ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
   },
+  '/api/v1/public/codes/:code': async ({ code }) => {
+    const body = await publicCode(decodeURIComponent(String(code)));
+    return body ? json(body, LOCAL) : HttpResponse.json({ error: 'not_found' }, { status: 404 });
+  },
+  '/api/v1/public/requests': async (_p, _u, request) => {
+    try { return HttpResponse.json(await fileRequest(await request.formData()) as never, { status: 201, headers: { [LOCAL_SOURCE_HEADER]: LOCAL } }); } catch (e) { return fail(e); }
+  },
+  '/api/v1/public/requests/track': async (_p, _u, request) => {
+    const { ref, mobile } = (await request.json().catch(() => ({}))) as { ref?: string; mobile?: string };
+    const body = ref && mobile ? trackRequest(ref, mobile) : undefined;
+    return body ? json(body, LOCAL) : HttpResponse.json({ error: 'not_found', message: 'No request matches this reference and mobile number.' }, { status: 404 });
+  },
+  '/api/v1/register-requests': (_p, url) => json(listRequests(url.searchParams.get('state')), LOCAL),
+  '/api/v1/register-requests/:ref': async ({ ref }, _u, request) => {
+    if (request.method === 'PATCH') {
+      const { state, note } = (await request.json().catch(() => ({}))) as { state?: string; note?: string };
+      try { return json(decideRequest(String(ref), state as never, note ?? null), LOCAL); } catch (e) { return fail(e); }
+    }
+    const body = getRequest(String(ref));
+    return body ? json(body, LOCAL) : HttpResponse.json({ error: 'not_found' }, { status: 404 });
+  },
+  '/api/v1/buildings/:buildingId': ({ buildingId }) => {
+    if (!buildingVisible(String(buildingId))) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
+    deleteBuilding(String(buildingId));
+    return new HttpResponse(null, { status: 204 });
+  },
+  '/api/v1/areas/:areaId': ({ areaId }) => {
+    if (String(areaId) !== lake.context.area.id || !storyAreas()?.length) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
+    deleteArea();
+    return new HttpResponse(null, { status: 204 });
+  },
   '/api/v1/areas': () => json(storyAreas(), ALL_LOCAL),
   '/api/v1/areas/:areaId/context': ({ areaId }) => {
     if (String(areaId) === lake.context.area.id) {
@@ -97,6 +137,7 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
   },
   '/api/v1/buildings/:buildingId/register': ({ buildingId }) => {
     const found = derivedRegister(String(buildingId));
+    if (found?.source === 'lake' && !buildingVisible(String(buildingId))) return HttpResponse.json({ error: 'not_found' }, { status: 404 });
     return found ? json(storyRegister(String(buildingId), found.body as never), LOCAL_SOURCE_LABELS[found.source]) : undefined;
   },
   '/api/v1/sources/:sourceId/file': ({ sourceId }) => {
@@ -115,6 +156,6 @@ const RESOLVERS: Record<string, (params: Params, url: URL, request: Request) => 
 export const handlers = localRoutes().map((route) => {
   const resolver = RESOLVERS[route.path];
   if (!resolver) throw new Error(`Local route ${route.method} ${route.path} has no resolver`);
-  const method = route.method.toLowerCase() as 'get' | 'post' | 'patch';
+  const method = route.method.toLowerCase() as 'get' | 'post' | 'patch' | 'delete';
   return http[method](route.path, async ({ params, request }) => (await resolver(params, new URL(request.url), request)) ?? passthrough());
 });

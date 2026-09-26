@@ -14,6 +14,7 @@
 }
 .nav a:hover { background: var(--ui-surface-tint); }
 .nav a[aria-current="page"] { background: var(--ui-primary-soft); color: var(--ui-primary); }
+.navCount { margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--ui-primary); color: var(--ui-on-primary); font: 600 11px/18px var(--ui-font-sans); text-align: center; }
 .search {
   flex: 0 1 380px; min-width: 200px; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 10px;
   border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-8); background: var(--ui-background); color: var(--ui-muted);

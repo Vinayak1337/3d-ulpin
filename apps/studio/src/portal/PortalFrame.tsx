@@ -15,6 +15,7 @@ export function PortalFrame() {
           <NavLink to="/portal" end>Search</NavLink>
           <NavLink to="/portal/map">Map</NavLink>
           <NavLink to="/portal/verify">Verify a card</NavLink>
+          <NavLink to="/portal/track">Track a request</NavLink>
         </nav>
       </header>
       <main id="portal-main" className={styles.main}><Outlet /></main>
