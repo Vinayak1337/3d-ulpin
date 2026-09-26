@@ -6,6 +6,12 @@ const identifier=z.strictObject({id,applicationId:text,kind:z.enum(['parcel','bu
 const address=z.strictObject({line:field,locality:field,district:field,region:field,postalCode:field,country:field});
 export const ConsolidatedRegistryReportSchema=z.strictObject({schemaVersion:z.literal('building-registry-summary/1'),
   generatedAt:z.iso.datetime(),selection:z.strictObject({id,kind:z.enum(['building','floor','space'])}),
+  recordState:z.enum(['recorded','unrecorded']),
+  sourcePackage:z.strictObject({id,revision:z.number().int().positive(),state:text}).nullable(),
+  unrecordedFacts:z.strictObject({address:z.literal('unknown'),ownership:z.literal('unknown'),residents:z.literal('unknown'),
+    parcelAssociations:z.literal('unknown'),officialUlpin:z.literal('unknown')}).nullable(),
+  groups:z.array(z.strictObject({kind:z.enum(['building','floor','multiple_parents','outside_selection','unlinked','cycle']),
+    parentIds:z.array(id).max(30),recordIds:z.array(id).max(2000)})).max(2000),
   building:identifier.extend({name:field,areaName:field,areaRevision:revision,siteRevision:revision,recordedAt:z.iso.datetime().nullable()}),
   parcels:z.array(identifier.extend({authority:z.enum(['physical_feature','registry_record']),relationship:text,
     associationState:text,sources:z.array(id),officialAssertions:z.array(z.strictObject({value:field,issuer:field,state:text}))})).max(200),

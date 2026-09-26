@@ -73,12 +73,16 @@ export class OfficerController {
   @ApiQuery({ name: 'record', required: false, schema: { type: 'string', format: 'uuid' } })
   @ApiQuery({ name: 'profile', required: false, schema: { type: 'string', enum: ['consolidated'] },
     description: 'Opt-in facts-only registry summary. Supports json/html/pdf; omits drawings, measurements and findings.' })
+  @ApiQuery({ name: 'includeUnrecorded', required: false, schema: { type: 'boolean', default: false },
+    description: 'Consolidated profile only: allow a prominently labelled revision 0 source/import summary from a current active native GeoJSON import. No record selection or registry/legal facts are included.' })
   @doc.ApiExport({ oneOf: [doc.propertyRegisterExport, doc.consolidatedRegistryReport] }, ['csv', 'html', 'pdf', 'zip'])
   async buildingRegister(@Param('buildingId') buildingId: string, @Query('format') format: string | undefined,
-    @Query('record') record: string | undefined, @Query('profile') profile: string | undefined, @Res() res: Response) {
+    @Query('record') record: string | undefined, @Query('profile') profile: string | undefined,
+    @Query('includeUnrecorded') includeUnrecorded: string | undefined, @Res() res: Response) {
     await sendWebResponse(res, await this.service.registerExport(uuid.parse(buildingId),
       z.enum(['json', 'csv', 'html', 'pdf', 'zip']).parse(format ?? 'json'), undefined,
-      record === undefined ? undefined : uuid.parse(record), profile === undefined ? undefined : z.literal('consolidated').parse(profile)));
+      record === undefined ? undefined : uuid.parse(record), profile === undefined ? undefined : z.literal('consolidated').parse(profile),
+      includeUnrecorded === undefined ? false : z.enum(['true', 'false']).parse(includeUnrecorded) === 'true'));
   }
 
   @Post('buildings/:buildingId/preparation-cases')
