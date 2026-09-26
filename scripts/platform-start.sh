@@ -13,12 +13,7 @@ if [[ -z "${ULPIN_DOCKER_CONTEXT:-}" ]] && command -v colima >/dev/null 2>&1; th
 fi
 source "$ULPIN_ROOT/scripts/platform-lib.sh"
 docker info >/dev/null
-if [[ "$(node "$ULPIN_ROOT/scripts/platform-mode.mjs" project)" = 'ulpin-repo' ]] && [[ "${1:-}" != '--infra-only' ]]; then
-  cd "$ULPIN_ROOT"
-  pnpm repo:init
-  bash "$ULPIN_ROOT/scripts/platform-health.sh"
-  exit 0
-fi
+ULPIN_PROJECT="$(node "$ULPIN_ROOT/scripts/platform-mode.mjs" project)"
 if [[ "${1:-}" = '--infra-only' ]]; then
   ulpin_compose up -d --wait postgres minio redis
   ulpin_compose run --rm minio-init
@@ -26,6 +21,12 @@ else
   if [[ ! -f "$ULPIN_ROOT/services/geo/Dockerfile" ]]; then
     echo 'Geo Dockerfile is not present. Use --infra-only during initial development.' >&2
     exit 1
+  fi
+  if [[ "$ULPIN_PROJECT" = 'ulpin-repo' ]]; then
+    ulpin_compose up -d --wait postgres minio redis
+    ulpin_compose run --rm minio-init
+    cd "$ULPIN_ROOT"
+    pnpm db:migrate
   fi
   ulpin_compose --profile app up -d --build --wait
 fi

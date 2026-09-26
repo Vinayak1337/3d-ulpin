@@ -1,6 +1,6 @@
 # 16 · Shared spaces, access relationships and vertical rights
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **RIGHTS**. Historical baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 24 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [26](26-identifiers-and-standard-exchange.md), [28](28-data-acquisition-and-finale-tests.md), compatibility rules in [12](12-rights-aware-spatial-findings.md), packet applicability in [10](10-scoped-evidence-packets.md), and [99](99-ui-ux-and-integration.md). ER-05/06/11/13/24 are incorporated. New code paths are implementation tasks.
 
@@ -78,13 +78,12 @@ Prefix `/api/v1/usp/rights`: `GET /targets/:ref/relationships` with SnapshotScop
 | Existing registry contracts/validator and core references linked in B | FND compatible same-client mapping/geometry bridge, never independent enum change |
 | Proposed `packages/contracts/src/usp/rights.ts` | RIGHTS assertion, declaration/share, applicability, review and downstream projection schemas |
 | Proposed `apps/web/lib/server/usp/rights/{graph,assertions,declarations,review,applicability,routes}.ts`, `migrations/16-rights.ts` | RIGHTS additive versioned assertion/declaration store and leaf handlers; FND registers |
-| Proposed `apps/web/features/usp/rights/{RelationshipsPanel,AssertionForm,RelationshipEvidence}.tsx` | RIGHTS relation/evidence/forms |
-| [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx), shared map | UI mounts Relations within existing context, no permanent extra app |
+| [QuickRecords](../../apps/web/features/studio/product/QuickRecords.tsx), [RegisterPage](../../apps/web/features/officer/register/RegisterPage.tsx), shared map | User-owned consumer; backend supplies authorized relationship projections |
 | Proposed `tests/usp-rights.test.ts`, `tests/usp-rights-integration.ts`, `tests/e2e/usp-rights.spec.ts` | RIGHTS cardinality, component, clause, transaction and disclosure tests |
 
-## G. UI placement and interaction
+## G. Backend contract for user-owned consumers
 
-Quick register → Stair S1 → Relations → beneficiaries → cited clause → propose correction/request evidence. Show short readable relationships before any graph. Selecting a beneficiary highlights its exact ID; one stair mesh remains. Full register expands evidence/history in the same contextual section. Missing graph says no relationships supplied, not private ownership. Unknown extent, conflicting claim, denied source, partial traversal and superseded revision have different labels. Review errors retain the draft. UI owns camera, focus and sheet; RIGHTS owns leaf contents.
+Return exact shared-space IDs, beneficiaries, cited clauses, reviewed proposals and relationship traversal limits. A physical space is not duplicated per beneficiary. No supplied relationships does not imply private ownership. Distinguish unknown extent, conflict, denied source, partial traversal and superseded revision. Failed review preserves the draft and version guards.
 
 ## H. Ownership and dependencies
 
@@ -115,13 +114,13 @@ Also test stale declaration/amendment population, concurrent review of the same 
 
 Run `pnpm typecheck`, `pnpm test:registry`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-identity.test.ts tests/usp-rights.test.ts`; `pnpm exec tsx tests/usp-rights-integration.ts`; `pnpm exec playwright test tests/e2e/usp-rights.spec.ts`. Return assertion/receipt before-after pins, component round-trip, packet-inclusion and permission evidence plus actual UI captures. No synthetic clause proves legal applicability.
 
-## K. Copy-paste assignment
+## K. Assignment boundary
 
-> Implement RIGHTS for `finale_v1` using 00, 01, H26, H28 and this handoff. Reuse D0 stair/duplex/claim truth and qualify a permitted public declaration (any geography, labelled) where available. Preserve legacy relations and one identity across component geometries. Build versioned assertions, exact evidence/validity/exclusivity, declaration-scoped rational UDS, complete-population checks, amendments and valid one-unit limited-common allocation. Keep physical, legal and planning volumes distinct; an elevated volume is not an inferred transferable air right. Review and commit through FND's same-client transaction. Supply FIND/PACK/IMPACT projections with explicit unknown states; no blanket inheritance or ownership inference. UI owns shared Cesium scene/parents, DATA independent pack oracles. Complete GF-T16 and relevant GF-T18 plus J's rollback/stale/component/clause/access tests; return source hashes, independent sums, receipts and screenshots with capability limits. Do not invent legal rights or merge main without authorization.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task card: [H29](29-agent-task-cards.md) RIGHTS-01.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task card: [H29](29-agent-task-cards.md) RIGHTS-01.
 
 ### Z1. Indian tenure regimes
 

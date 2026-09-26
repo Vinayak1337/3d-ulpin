@@ -1,6 +1,6 @@
 # 14 — Source-preserving chunks, progressive maps and learned handover
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Rewritten 24 September 2026. Owner: INGEST; shared APIs/jobs/contracts: FND; learner: LEARN; map: UI.** This replaces H14's earlier exclusion of concurrent learning. Read H00/H01/H21/H22/H23. Finale GF2 implements the qualified direct/exact and governed interpretation path with durable chunks/SSE. The learning branches, section G and learner-specific acceptance belong to `full_product` FP-LEARN; they cannot block finale ingestion. All new capabilities remain requirements until supported by execution evidence.
 
@@ -116,7 +116,7 @@ Report cold/warm first useful preview, stage time/throughput, teacher calls, lea
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) INGEST-01 to INGEST-03. Test: GF-AGENT in [H28](28-data-acquisition-and-finale-tests.md) Z2.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) INGEST-01 to INGEST-03. Test: GF-AGENT in [H28](28-data-acquisition-and-finale-tests.md) Z2.
 
 ### Z1. Hostile-input contract for every reader
 
@@ -163,4 +163,3 @@ Section I acceptance bullets that mention learner training are FP-LEARN, not GF2
 ### Z6. Incomplete input and every family (25 September 2026)
 
 The finale input families, their minimum evidence and the precedence for mixed inputs are in [H30](30-reference-scene-and-incomplete-data.md) F–G. Every object gets a `SufficiencyDecision` (H30 E): fill for display, ask one class-level question (at most five per batch), park under "Needs input", or reject for 3D while keeping the original as evidence. The fixed order is read the file, reuse a recipe, propose an inference, ask, park. Cards INGEST-04 and INGEST-05; test GF-SUFFICIENCY.
-

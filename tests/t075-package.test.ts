@@ -1,16 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
 import {zipSync,strToU8} from '../apps/web/node_modules/fflate/esm/index.mjs';
 import {readReferencePackage,sha256Bytes} from '../apps/web/features/spatial/reference-import/package';
 
-test('reference ZIP retains every source byte and verifies original fingerprints',async()=>{
-  const bytes=new Uint8Array(await readFile('design/reference-map-v5/data/neem-reference-dataset.zip'));
-  const pack=await readReferencePackage('neem.zip',bytes);
-  assert.deepEqual(pack.originalBytes,bytes);assert.equal(pack.originalSha256,await sha256Bytes(bytes));
-  assert.equal(pack.verifiedFiles,14);assert.ok(pack.files.size>=15);assert.equal(JSON.parse(pack.normalizedText).schemaVersion,'1.0.0');
-  assert.equal(pack.normalizedText,await readFile('design/reference-map-v5/dataset/normalized.json','utf8'));
-});
 test('JSON preserves whitespace and original byte identity',async()=>{
   const bytes=strToU8(' { "schemaVersion": "1.0.0" }\n');const pack=await readReferencePackage('source.json',bytes);
   assert.equal(pack.normalizedText,' { "schemaVersion": "1.0.0" }\n');assert.deepEqual(pack.originalBytes,bytes);

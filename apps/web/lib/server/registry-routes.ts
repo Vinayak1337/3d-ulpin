@@ -20,7 +20,7 @@ import {
   registryQuery,
   querySchema,
 } from "./registry";
-import { seedRegistry, importRegistryCase } from "./registry-seed";
+import { importRegistryCase } from "./registry-seed";
 const json = (x: unknown, status = 200) =>
   Response.json(x, { status, headers: { "Cache-Control": "no-store" } });
 async function readBody(request: Request): Promise<unknown> {
@@ -35,8 +35,6 @@ export async function registryRoutes(
   p: string[],
 ): Promise<Response | null> {
   const method = request.method;
-  if (p[0] === "registry-demo" && p.length === 1 && method === "POST")
-    return json(await seedRegistry());
   if (p[0] === "registry-imports" && p.length === 1 && method === "POST") {
     const body = z
       .object({

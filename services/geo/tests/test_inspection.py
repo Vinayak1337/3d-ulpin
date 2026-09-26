@@ -10,29 +10,14 @@ from geo.validation import InputError
 from conftest import FIXTURES
 
 
-@pytest.mark.parametrize("dataset", ["c001", "c002"])
-def test_every_advertised_file_has_real_parseable_bytes(dataset):
-    manifest = json.loads((FIXTURES / dataset / "manifest.json").read_text())
-    for source in manifest["files"]:
-        result = inspect_bytes(source["profile"], (FIXTURES / dataset / source["name"]).read_bytes())
-        assert result["status"] in ("ready", "needs_input"), result
-        if source["name"] == "spatial.json":
-            assert result["frame"] == manifest["frame"]
-            assert len([f for f in result["features"] if f["kind"] in ("unit", "common", "basement")]) == manifest["expected"]["unitCount"]
-        if source["name"].startswith("plan"):
-            assert result["status"] == "needs_input"
-            assert result["image"]["width"] == 1400
-            assert result["image"]["height"] == 900
-
-
-def test_incomplete_levels_preserve_null_and_exact_locator():
-    result = inspect_bytes("levels-csv-v1", (FIXTURES / "c001/levels-r1.csv").read_bytes())
-    assert result["status"] == "needs_input"
-    upper_west = next(row for row in result["levels"] if row["alias"] == "U03")
-    assert upper_west["lower"] is None
-    assert upper_west["upper"] == 6
-    assert upper_west["locator"] == "csv row 4"
-    assert len(result["issues"]) == 2
+def test_real_nyc_files_have_parseable_original_bytes():
+    folder = FIXTURES / "real-nyc"
+    spatial = inspect_bytes("parcel-local-json-v1", (folder / "spatial.json").read_bytes())
+    levels = inspect_bytes("levels-csv-v1", (folder / "levels-r1.csv").read_bytes())
+    assert spatial["status"] in ("ready", "needs_input")
+    assert levels["status"] in ("ready", "needs_input")
+    assert len([f for f in spatial["features"] if f["kind"] == "unit"]) == 1
+    assert levels["levels"][0]["alias"] == "NYC-ENV353927"
 
 
 @pytest.mark.parametrize("row", ["A,NaN,3,m,BM,test", "A,Infinity,3,m,BM,test", "A,nope,3,m,BM,test", "A,0,3,ft,BM,test", "A,4,3,m,BM,test", "A,0,3,m,,test", "A,0,3,m,BM,", "A,0,3,m,BM,test,unexpected"])
@@ -50,7 +35,7 @@ def test_csv_duplicate_alias_and_mixed_reference_fail():
 
 @pytest.mark.parametrize("mutation", ["nonfinite", "crossing", "holes", "frame", "feature_reference", "duplicate_alias"])
 def test_invalid_spatial_profiles(mutation):
-    source = json.loads((FIXTURES / "c001/spatial.json").read_text())
+    source = json.loads((FIXTURES / "real-nyc/spatial.json").read_text())
     if mutation == "nonfinite":
         source["features"][0]["footprint"][0][0] = float("nan")
     elif mutation == "crossing":
@@ -84,7 +69,7 @@ class FakeS3:
 
 
 def test_inspector_reads_original_and_verifies_hash_and_size():
-    raw = (FIXTURES / "c001/levels-r2.csv").read_bytes()
+    raw = (FIXTURES / "real-nyc/levels-r1.csv").read_bytes()
     data = {"sourceId": "source-id", "profile": "levels-csv-v1", "objectKey": "private/source-original", "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)}
     client = FakeS3(raw)
     assert inspect_object(data, client)["status"] == "ready"

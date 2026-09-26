@@ -1,6 +1,6 @@
-# How the local MVP works
+# Canonical backend architecture
 
-> **Direction note — 23 September 2026:** This is baseline architecture context; adopted shared-contract changes are specified in handoff 01. Current implementation and data/testing assignments are in [USP handoff 00](usp-agent-handoffs/00-README.md) and the assigned feature file.
+> **26 September scope:** Backend architecture and API compatibility only. [H00](usp-agent-handoffs/00-README.md) and H01 govern active planning; feature implementation needs a separate assignment. The user owns the UI.
 
 The application owns the case and its history. A private processing service inspects stored originals and computes geometry. The viewer displays persisted results and edits explicit candidate geometry; it does not calculate authoritative model results in the browser.
 
@@ -36,28 +36,9 @@ flowchart LR
 
 The worker computes `footprint area × (upper − lower)` and intersects footprint polygons across a positive shared elevation interval. Positive volume is an overlap finding; face/edge/point contact is informational. Unverified elevations receive independent warnings even when their numbers happen to be right. Results preserve IDs, revisions, source locators, the input fingerprint and processing-method version.
 
-## Start and connect
+## Startup ownership
 
-Run these from the repository root after the dependencies described in `docs/PLATFORM.md` are installed:
-
-```sh
-pnpm platform:start
-pnpm db:migrate
-pnpm dev
-```
-
-`pnpm dev` runs the Next.js server **and** `pnpm dispatcher`. For a production rehearsal, stop the development process, run `pnpm build`, then `pnpm start`; `start` also runs the dispatcher. Leaving out the dispatcher means uploads/builds remain queued even while the UI is reachable.
-
-| Process | Local address | Command / internal address |
-| --- | --- | --- |
-| Web UI/API | `http://127.0.0.1:3000` | `pnpm dev` or production `pnpm start` |
-| Geometry HTTP | `http://127.0.0.1:18000` | `uvicorn geo.api:app --host 0.0.0.0 --port 8000`; container `geo:8000` |
-| Celery worker | No public port | `celery -A geo.tasks:celery_app worker --loglevel=INFO --concurrency=2` |
-| PostgreSQL | `127.0.0.1:15432` | Container `postgres:5432` |
-| Redis | `127.0.0.1:16379` | Container `redis:6379`, database 0 |
-| S3 / MinIO console | `127.0.0.1:19000` / `:19001` | Containers `minio:9000` / `:9001` |
-
-Published services bind to localhost. Root `.env` contains private local credentials; never copy its contents into screenshots, docs or commits. Compose supplies container-specific S3/Redis addresses. Named volumes preserve DB, originals and Redis state across service restarts. `pnpm platform:stop` preserves those volumes. On this Apple Silicon machine, PostGIS runs through AMD64 emulation while the Python worker runs natively.
+Follow [the current startup boundary](OFFICER_STARTUP.md). Obsolete repository/Uttam snapshot restoration and synthetic seeding are retired. Inspect the live package/service configuration before an explicitly assigned run; this documentation cleanup starts no service. The dispatcher remains necessary for queued work. Keep private services loopback/internal, credentials outside logs/Git and existing volumes intact.
 
 ## Interfaces, verification and recovery
 
@@ -65,17 +46,6 @@ Public application operations live under `/api/v1`: cases, source uploads/origin
 
 The private service accepts `POST /internal/jobs {jobId,operation,input}` and serves `GET /internal/jobs/:jobId`, both authenticated with `GEO_SERVICE_TOKEN`. The same ID/input returns the existing state; changed input returns 409. A failed processing retry gets a new ID. Temporary queue submission failures can safely resubmit the same ID. `/health` checks process liveness; authenticated `/internal/ready` checks Redis and an actual Celery worker ping and returns `{ok,redis,worker}`.
 
-Verified checks are repeatable:
+Verification follows the affected backend seam and the current source policy. Use current commands and isolated services only after an explicit execution assignment. Historical Python/service smoke numbers and synthetic-case API runs belong to their recorded revision, not the current cleanup. Do not execute deleted seed/replay checks to reproduce them.
 
-```sh
-pnpm platform:health
-python3 scripts/platform-smoke.py
-cd services/geo
-.venv/bin/python -m pytest
-```
-
-The **46 Python tests passed locally and in Python 3.12**: the original 42 processing checks plus four readiness checks. They cover both fixtures, actual source parsing, malformed inputs, checksum/size rejection, exact overlap regions, correction, evidence changes, authentication, idempotency and queue recovery. `platform-smoke.py` additionally passed the real HTTP → Redis → Celery path, independently checking **96 / 102.4 m³** unit volumes and **6.4 m³** overlap; it does not substitute a fake worker result.
-
-Application-level commands are `pnpm test:demo` and `pnpm exec tsx scripts/api-regression.ts`; their evidence and the controlled stale-result race are recorded separately in `docs/API_TEST_EVIDENCE.md`. Full UI rehearsal remains a distinct check from service/unit tests. Keep originals and existing volumes when recovering a failed job, correct the indicated input or restart its service, then retry and rebuild explicitly.
-
-This is a local, single-operator MVP: there is no formal review/acceptance, official identity issuance, Android/offline workflow or automated image extraction. The current demo does not need a Nous API key or any paid/free model dependency.
+Preserve privacy, exact source hashes, immutable revisions, stale-result retention, idempotency and queue-recovery semantics when changing routes. Backend completion is distinct from user-owned browser/rendering acceptance, official-source accuracy, provider permission, performance and deployment. Use [H99](usp-agent-handoffs/99-ui-ux-and-integration.md) for consumer API contracts; no screen implementation is planned here.

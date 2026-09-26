@@ -15,12 +15,12 @@
       "fileEvidence": {
         "producer": {
           "path": "packages/contracts/src/usp/domain.ts",
-          "sha256": "dcd2ccd1ae5f4976fcb820e1091dd524a48781b5377da02296387a13f396d062",
+          "sha256": "94c5ebf1f7b9160dcaaf931b6440435244e878df8935cb1e1c8ed4cac633de47",
           "markerFound": true
         },
         "consumer": {
           "path": "apps/web/app/api/v1/usp/[...path]/route.ts",
-          "sha256": "e4153ddd990a0724d447f7a9f2a0820eed8f2e92f416fcc99766516cbe2d80b9",
+          "sha256": "98d468732b40ce806b61713c8bf35c49a630a776e30d76926b14e844df2397ce",
           "markerFound": true
         },
         "contract": {
@@ -49,17 +49,17 @@
       "fileEvidence": {
         "producer": {
           "path": "apps/web/lib/server/usp/snapshots.ts",
-          "sha256": "a5dea158f26c5e3b5e47e3f8163c176ade819d55762815a8b16be6c834d1f195",
+          "sha256": "97f375521e352e0aae1c9279df0b91ad6d2c23b51903576cdf41114dbe5d538a",
           "markerFound": true
         },
         "consumer": {
           "path": "apps/web/app/api/v1/usp/[...path]/route.ts",
-          "sha256": "e4153ddd990a0724d447f7a9f2a0820eed8f2e92f416fcc99766516cbe2d80b9",
+          "sha256": "98d468732b40ce806b61713c8bf35c49a630a776e30d76926b14e844df2397ce",
           "markerFound": true
         },
         "contract": {
           "path": "packages/contracts/src/usp/domain.ts",
-          "sha256": "dcd2ccd1ae5f4976fcb820e1091dd524a48781b5377da02296387a13f396d062",
+          "sha256": "94c5ebf1f7b9160dcaaf931b6440435244e878df8935cb1e1c8ed4cac633de47",
           "markerFound": true
         },
         "test": {
@@ -74,21 +74,21 @@
       "producer": "apps/web/lib/server/usp/snapshots.ts",
       "consumer": "apps/web/app/api/v1/usp/[...path]/route.ts",
       "contract": "packages/contracts/src/usp/common.ts",
-      "test": "scripts/usp/verify-d0-live.ts",
-      "testCommand": "node scripts/usp/local-isolation.mjs --run",
-      "status": "works",
-      "evidence": "Original and exact-part reads check pinned source revision and object hash; PACK0 uses these locators.",
-      "limitation": "Text/CSV exact parts are supported; broad PDF extraction and general multipart promotion are outside this tested path.",
+      "test": "scripts/usp/data/verify-pack.ts",
+      "testCommand": "pnpm exec tsx scripts/usp/data/verify-pack.ts fixtures/usp/D4/gf0-context-v1/manifest.json",
+      "status": "partial",
+      "evidence": "The retained D4 source pack verifies unchanged original bytes against its manifest.",
+      "limitation": "The historical D0 exact-part runtime replay was retired with its authored inputs; current endpoint behavior needs a new real-source isolated run.",
       "problems": [],
       "fileEvidence": {
         "producer": {
           "path": "apps/web/lib/server/usp/snapshots.ts",
-          "sha256": "a5dea158f26c5e3b5e47e3f8163c176ade819d55762815a8b16be6c834d1f195",
+          "sha256": "97f375521e352e0aae1c9279df0b91ad6d2c23b51903576cdf41114dbe5d538a",
           "markerFound": true
         },
         "consumer": {
           "path": "apps/web/app/api/v1/usp/[...path]/route.ts",
-          "sha256": "e4153ddd990a0724d447f7a9f2a0820eed8f2e92f416fcc99766516cbe2d80b9",
+          "sha256": "98d468732b40ce806b61713c8bf35c49a630a776e30d76926b14e844df2397ce",
           "markerFound": true
         },
         "contract": {
@@ -97,8 +97,8 @@
           "markerFound": true
         },
         "test": {
-          "path": "scripts/usp/verify-d0-live.ts",
-          "sha256": "e40a715f8d1d1a2a10c2cacf563a1c9fe6692dc9fcee21adcd56469078a23f98",
+          "path": "scripts/usp/data/verify-pack.ts",
+          "sha256": "3ae2520484d6abeb3b3993b6348b706b78570576b7b708ed11f9f527f5d622b4",
           "markerFound": true
         }
       }
@@ -117,12 +117,12 @@
       "fileEvidence": {
         "producer": {
           "path": "apps/web/lib/server/usp/external-scene.ts",
-          "sha256": "e711dd78d4ede0589640ee09aed14c3851c82ccd0dbad95a5ba36033cbcf8049",
+          "sha256": "6be1592ae38783ed71d268fed8f26fa2e57a52436f679a723e8d5b1859912849",
           "markerFound": true
         },
         "consumer": {
           "path": "apps/web/features/usp/shared/ExternalSceneViewport.tsx",
-          "sha256": "dcf8ac09dff456816fbeef626fa8292cf88132c1d55031a0c2e04d7019cb626a",
+          "sha256": "6df91bcf6d2886dc7814bc76e55c139c6da89bfac4c48657d42963e6af19e967",
           "markerFound": true
         },
         "contract": {
@@ -132,7 +132,7 @@
         },
         "test": {
           "path": "tests/e2e/usp-d1-journey.spec.ts",
-          "sha256": "56d619cb216c810a6f836a52a8773ea560eeab3f2e26a4a54a077150f25dc1b4",
+          "sha256": "c7baaf7f8eecc796dcdad30527f73ecd67575ccc593f944c7e85ce5a395be539",
           "markerFound": true
         }
       }
@@ -159,7 +159,7 @@
         "consumer": null,
         "contract": {
           "path": "packages/contracts/src/usp/domain.ts",
-          "sha256": "dcd2ccd1ae5f4976fcb820e1091dd524a48781b5377da02296387a13f396d062",
+          "sha256": "94c5ebf1f7b9160dcaaf931b6440435244e878df8935cb1e1c8ed4cac633de47",
           "markerFound": true
         },
         "test": {
@@ -185,7 +185,7 @@
       "fileEvidence": {
         "producer": {
           "path": "apps/web/lib/server/usp/commands.ts",
-          "sha256": "42ebe208263ef687526a4201679a10dba55118ec856a668139b1ffc10fae14da",
+          "sha256": "6a35ef2cd942e16bbdcea72122ebb073d67e81256944bbc21c0e95d63d1c30f4",
           "markerFound": true
         },
         "consumer": null,
@@ -220,7 +220,7 @@
         },
         "consumer": {
           "path": "apps/web/features/studio/product/SavedSceneViewport.tsx",
-          "sha256": "42edce482f4dc8c580900f7f1bb9924a195729991a65ed34a6cb812345e9452d",
+          "sha256": "01b8d35eb3e172b3541bff5e5510f97dd7c58be6046f01def10eb8fd4665e1ec",
           "markerFound": true
         },
         "contract": {

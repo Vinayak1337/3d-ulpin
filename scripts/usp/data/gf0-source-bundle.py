@@ -76,9 +76,6 @@ def inspect_context(root):
     retained = root / 'fixtures/uttam-nagar/uttam-nagar-road-centrelines.geojson'
     if digest(retained.read_bytes()) != digest(source_bytes):
         raise ValueError('Context differs from retained fixture')
-    bundle = read_json(root / 'data-bundles/uttam-nagar/manifest.json')
-    if not any(item['sha256'] == digest(source_bytes) and item['bytes'] == len(source_bytes) for item in bundle['objects']):
-        raise ValueError('Context not pinned by protected bundle manifest')
     collection = json.loads(source_bytes)
     if collection.get('type') != 'FeatureCollection':
         raise ValueError('Context is not a FeatureCollection')
@@ -106,7 +103,7 @@ def inspect_context(root):
         raise ValueError('Context IDs or bounds changed')
     validate_provenance(provenance, manifest, 'osm-road-centrelines.geojson', 'ODbL-1.0')
     return {'pack': manifest['profile'], 'featureCount': len(features), 'sourceSha256': digest(source_bytes),
-            'bundleSha256': digest((root / 'data-bundles/uttam-nagar/manifest.json').read_bytes()),
+            'retainedSourceSha256': digest(retained.read_bytes()),
             'boundsLonLat': bounds, 'checkedAssets': checked}
 
 

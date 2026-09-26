@@ -1,6 +1,8 @@
 # Historical audit and remediation ledger
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+
+**Historical audit boundary:** Findings and dated “Applied” statements below preserve the decisions at that revision. Their UI cards, screen counts, visual-capture assignments and superseded section numbers are historical, not an active queue; current backend contracts are H01/H99 and the delivery policy. No historical pass is upgraded by this scope change.
 
 **Updated 22 September 2026. This is history, not an additional implementation handoff.** The user authorized applying the remedies directly to the original files. The current instructions are [00](00-README.md), [01](01-shared-contracts-and-ownership.md), each feature's A–K handoff, [90](90-required-human-tasks.md) and [99](99-ui-ux-and-integration.md). An implementing agent does not need this audit or prior chat to execute its assignment.
 

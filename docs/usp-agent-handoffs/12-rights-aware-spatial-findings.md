@@ -1,6 +1,6 @@
 # 12 · Explainable spatial findings and a complete review action
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **FIND**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), the RIGHTS projection in [16](16-shared-spaces-and-vertical-rights.md) when enabled and UI slots in [99](99-ui-ux-and-integration.md). ER-08/11/12/13/24 are incorporated. New code paths below must be implemented.
 
@@ -83,13 +83,12 @@ Under `/api/v1/usp/findings`: `POST /runs` (scope/rules/guard → 202), `GET /ru
 | Proposed `packages/contracts/src/usp/findings.ts` | FIND rule/result/case/coverage/operation schemas |
 | Proposed `services/geo/geo/usp_findings.py` | FIND qualified planar/prism/slab operations; no arbitrary mesh authority |
 | Proposed `apps/web/lib/server/usp/findings/{rules,service,cases,routes}.ts`, `migrations/12-findings.ts` | FIND run/dedup/scoped-case persistence; FND registration |
-| Proposed `apps/web/features/usp/findings/{FindingPanel,FindingEvidence,CheckCoverage,ScopedCasePanel}.tsx` | FIND evidence/action leaves |
-| [FindingsTray](../../apps/web/features/officer/block/FindingsTray.tsx), [Issues](../../apps/web/features/officer/register/Issues.tsx), [Investigation](../../apps/web/features/officer/register/Investigation.tsx) | UI mounts compatible panels and exact overlays |
+| [FindingsTray](../../apps/web/features/officer/block/FindingsTray.tsx), [Issues](../../apps/web/features/officer/register/Issues.tsx), [Investigation](../../apps/web/features/officer/register/Investigation.tsx) | User-owned consumer; backend preserves typed results and access checks and exact overlays |
 | Proposed `tests/usp-findings.test.ts`, `tests/usp-findings-integration.ts`, `services/geo/tests/test_usp_findings.py`, `tests/e2e/usp-findings.spec.ts` | FIND numeric/persistence/review/permission tests |
 
-## G. UI placement and interaction
+## G. Backend contract for user-owned consumers
 
-Map Checks → result → exact participants/level/intersection → Evidence → Open review case. Parcel-only result opens its parcel-scoped case, not a fabricated building. Full register reuses the same panel. Show measurement, applicable source roles, coverage and next action before details. Loading marks old results stale; empty says no finding among assessed inputs; missing Z stays planar; failures allow bounded retry; denied evidence reveals no private filenames. 99 owns map/camera/mobile/focus. Review state never replaces a visible computational limitation.
+Return exact participants, level/intersection, operation/profile, measurement, applicable source roles, coverage, limitations and a scoped review-case command. Parcel-only findings stay parcel-scoped. Empty means no finding among assessed inputs; missing Z stays planar. Stale/error/denied are explicit, with bounded retry and no private filenames. Review disposition never replaces a computational limitation.
 
 ## H. Ownership and dependencies
 
@@ -116,6 +115,6 @@ Test unknown accuracy, incompatible datum, missing heights, same label/different
 
 Run `pnpm typecheck`, `pnpm test:registry`, `pnpm test:area`, `pnpm test:register-scope`; `python -m pytest services/geo/tests/test_registry.py services/geo/tests/test_usp_findings.py`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-findings.test.ts`; `pnpm exec tsx tests/usp-findings-integration.ts`; `pnpm exec playwright test tests/e2e/usp-findings.spec.ts`. Return numeric expected/actual values, source/manifest/case receipts, coverage and V4 evidence; no real-world accuracy claim from synthetic oracles.
 
-## K. Copy-paste assignment
+## K. Assignment boundary
 
-> Implement FIND from 00, 01 and this file on feat/usp-findings. Obtain D0 numeric fixtures; build qualified role-aware planar/prism checks, exact run coverage/dedup and the minimal scoped-case action including two parcels with no building. Preserve existing investigations via FND bridges, identities and source history. Qualify holes/components through actual storage before enabling analysis; never fill courtyards or construct a duplex envelope. Use the rights table, unknown states and explicit D7 real-data gate. UI/FND own shared mounts/hooks. Complete J real-service numeric, stale/retry and saved-review tests and return commits/receipts/screenshots. No legal verdict, duplicate geometry service, guessed survey evidence or main merge without authorization.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.

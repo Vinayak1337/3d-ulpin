@@ -113,11 +113,6 @@ async function createCase(label: string) {
   return value;
 }
 const detail = (id: string) => request<CaseDetail>(`/cases/${id}`);
-async function fixture(name: string): Promise<Uint8Array> {
-  const response = await fetch(`${base}/api/v1/demo-files/c001/${name}`);
-  assert.equal(response.status, 200, `Fixture download ${name} failed.`);
-  return new Uint8Array(await response.arrayBuffer());
-}
 async function upload(
   caseId: string,
   name: string,

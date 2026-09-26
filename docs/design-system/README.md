@@ -1,6 +1,6 @@
 # 3D ULPIN design system
 
-**Frontend replacement:** Rebuild affected legacy screens from this design language as their existing plan cards are implemented, then remove the superseded UI. This is progressive work within the plan, not a separate redesign phase. Preserve shared runtime/data contracts and saved-link compatibility; mockup data/code must not be copied. See the [delivery policy](../usp-agent-handoffs/current-delivery-policy.md).
+**Current ownership:** The user owns the UI redesign. Current assigned work is backend focused; UI implementation cards are not scheduled in this cleanup. When UI work resumes, use this design language, preserve shared runtime/data contracts and saved-link compatibility, and never copy mockup data or code. See the [delivery policy](../usp-agent-handoffs/current-delivery-policy.md).
 
 **Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
 
@@ -19,7 +19,7 @@ The visual and content rules for every 3D ULPIN screen: the design language agen
 | [components.md](components.md) | The 32 components: anatomy, classes, states, content and who supplies the data |
 | [reference/components.css](reference/components.css) | Reference CSS for those components and the type styles (read, then port) |
 | [ui-brief.md](ui-brief.md) | Screens, where each feature lives, flows and states |
-| [mockups/officer-studio/](mockups/officer-studio/README.md) | **Reference only, not production UI.** A description of the team's interactive mockup: frame, interactions, per-screen layout and the [view model schema](mockups/officer-studio/view-model.schema.json). Take ideas for look and behaviour from it; production requirements come from the plan. Never copy its data or code |
+| [mockups/officer-studio/](mockups/officer-studio/README.md) and [supplied interactive file](../../design-mockup/OfficerStudio.dc.html) | **Reference only, not production UI.** Notes and the supplied mockup show frame, interactions and screen layouts. Production requirements come from the plan. Never copy example data or code |
 
 ## Principles
 

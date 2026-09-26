@@ -1,6 +1,6 @@
 # 15 · Exact-space history and revision comparison
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **HISTORY**. Historical baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 24 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), [26](26-identifiers-and-standard-exchange.md), [28](28-data-acquisition-and-finale-tests.md), geometry contract in [12](12-rights-aware-spatial-findings.md) and [99](99-ui-ux-and-integration.md). ER-05/20/24 are incorporated. New files are implementation destinations.
 
@@ -67,13 +67,12 @@ Prefix `/api/v1/usp/history`: `GET /targets/:ref/history` with exact scope/curso
 | Existing registry/history/core/scene files linked in B | FND exact historical read and GF1 same-client identity/lineage adapter; UI retains old routes |
 | Proposed `packages/contracts/src/usp/history.ts` | HISTORY entry/comparison/lineage schemas using F0 refs |
 | Proposed `apps/web/lib/server/usp/history/{timeline,compare,lineage,routes}.ts`, `migrations/15-history.ts` | HISTORY bounded read/comparison and actual receipt links |
-| Proposed `apps/web/features/usp/history/{PropertyTimeline,ComparisonPanel,LineageStrip}.tsx` | HISTORY leaf UI |
-| Existing History/RevisionCompare/RecordHistory and shared map | UI mounts leaves; no duplicate timeline/map engine |
+| Existing History/RevisionCompare/RecordHistory and shared map | User-owned consumer; backend supplies exact revisions and differences |
 | Proposed `tests/usp-history.test.ts`, `tests/usp-history-integration.ts`, `tests/e2e/usp-history.spec.ts` | HISTORY old/current composition, no-write, geometry and permission tests |
 
-## G. UI placement and interaction
+## G. Backend contract for user-owned consumers
 
-Quick register → selected unit History → Compare versions → full register with same target and explicit left/right pins. One map offers Before/After/Difference; two source panes do not require two WebGL viewers. Keep both source dates, record dates, stage and classification visible. Loading does not display another unit's old content; empty says no earlier retained revision; incompatible frame/missing source yields field-only limitation; denied details are not leaked. Retired record has an explicit retired banner and successor links, not an automatic redirect hiding it. UI owns query, camera, focus and mobile sheet; HISTORY owns comparison content.
+Require exact target and left/right manifests; return source dates, record dates, stage/classification, retained evidence and differences. Missing frame/source permits only qualified field comparison with explicit limitation. Denied details never leak. Retired identities retain status and explicit successors rather than silently resolving to a current replacement. Consumer selection changes cannot alter an existing comparison.
 
 ## H. Ownership and dependencies
 
@@ -100,13 +99,13 @@ Test missing old original, current family/new source revision, same flat name in
 
 Run `pnpm typecheck`, `pnpm test:registry`, `pnpm test:studio`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/core-identity.test.ts tests/usp-history.test.ts`; `pnpm exec tsx tests/usp-history-integration.ts`; `pnpm exec playwright test tests/e2e/usp-history.spec.ts`. Return pack/source/manifest hashes, exact before/after expected/actual values, no-write/permission proofs and V6 screenshots. Separate read-history and supported-geometry results; report the GF1 lineage-write gate from actual FND receipts.
 
-## K. Copy-paste assignment
+## K. Assignment boundary
 
-> Implement HISTORY using 00, 01, H26, H28 and this handoff. Reuse retained D0 revisions and attempt one permitted dated real pair. Build exact historical manifests/constituents, field/source/relationship diff, supported FIND overlays and stable old-record navigation. For `finale_v1` GF1, consume FND's atomic reviewed split/merge, retirement and successor receipts; test stale/concurrent/rollback behavior under GF-T15. Never substitute current sources/placement, infer history, turn unknown into zero or hide a retired record through automatic redirect. FND owns immutable-read/identity writes, UI shared mounts and DATA independent packs. Return source/manifest hashes, before/after rows, actual receipts, V6 images and unqualified capabilities. Do not claim official issuance or legal history from fixtures.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) HISTORY-01 and HISTORY-02.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) HISTORY-01 and HISTORY-02.
 
 ### Z1. Split the sequence by gate
 

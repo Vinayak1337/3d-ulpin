@@ -1,6 +1,6 @@
 # 28 — Dataset acquisition and finale test plan
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Owner: DATA; contracts: FND; independent review: lead-appointed reviewer. Aligned 24 September 2026.** This restores the acquisition runbook previously in H00, preserving D0–D7 meanings. Catalogue research is not acquisition or runtime qualification. Use [release-plan.json](release-plan.json) for gate status; all new finale tests below are **planned**, not executed.
 
@@ -82,7 +82,7 @@ The prefix **GF-T** avoids collisions with historical engineering tasks T015–T
 | --- | --- | --- |
 | GF-CONTRACT — live seams | FND / GF0; H01 | Inventory actual schema/registry/source/geometry/job/UI interfaces and the retained D0/D1 receipts; producer-consumer contract tests, supported profile round trips, stale guards and unavailable states against actual current services. No rebuild just because an old starter was incomplete |
 | GF-READY — evidence review | READY / GF3; H11 | Exact selected manifest, missing/unknown/conflicting evidence, expired/revoked source, corrected source, stale queue item, checked versus recorded distinction and scoped next action; no generated field upgrades readiness |
-| GF-REHEARSAL — integrated demo | UI / GF5; H24/H99 | Fresh actual Studio source→candidate→review→identity→finding→card journey, saved-state reload and negative/unavailable paths; fixed environment and measured timings; compare PPT claims to exact receipts and label retained/backup footage. Same-device QR is required; phone mode is conditional |
+| GF-REHEARSAL — backend lifecycle | LEAD / GF5; H24/H99 | Actual source→candidate→review→identity→finding→card service sequence, saved-state recovery, negative/unavailable paths, access-checked same-device QR and measured service receipts. Full browser/officer integration remains externally unqualified. |
 | GF-T15 — identifiers | FND / GF1; H26 | Version/checksum vectors and mistypes; concurrent same/different requests, idempotency, stale review, optional/unverified official anchor, duplex identity, correction, atomic split/merge retirement, cancellation/demolition/duplicate and non-reuse. No generated ID presented as official |
 | GF-T16 — UDS/common rights | RIGHTS / GF2; H16/H27 | Complete declared population totaling 100%; 99.5% fails chosen tolerance; incomplete population unassessed; duplicate/missing denominator, rational rounding, value-based declaration versus area-derived guess, registered amendment and valid one-unit limited common area. No universal area-based apportionment |
 | GF-T17 — carpet quantity | DOMAIN / GF2; H27 | Independent component drawing/table including internal partitions and excluding external walls, shafts, exclusive balcony/verandah/open terrace; hand calculation, unknown components/units, wrong quantity definition and revision change. No generic polygon/room sum labelled statutory carpet |
@@ -93,10 +93,10 @@ The prefix **GF-T** avoids collisions with historical engineering tasks T015–T
 | GF-AI — four domain pipelines | DOMAIN / GF2; H27 | Learned building and plan segmentation routes with required model hashes and independent holdouts; evidence-supported deterministic vertical delineation and explainable topology cases. H27 fixes the learned-versus-deterministic pass boundary. Record precision/recall/IoU or boundary/level error as task-appropriate, correction/abstention, labels and missing classes. Deterministic topology baseline plus optional learned ranking are labelled separately |
 | GF-EXCHANGE — semantics and sidecar | FND / GF1; H26 | CityJSON schema/geometry/semantic validation; rights/provenance sidecar schema, stable identity, units/frames/revisions and loss-aware round trip. Unknowns/unrepresentable features fail or appear in explicit loss report; map LADM coverage without claiming conformance |
 | GF-RECOVERY — ingestion/SSE | INGEST/FND / GF2; H14 | Complete native chunks and bounded memory; accepted/rejected/unresolved reconciliation; crash after bytes before commit, duplicate/out-of-order completion, stale fences, cancel/restart, event replay/cursor reset and polling fallback. Saved scene precedes event; stable selection/camera |
-| GF-VIEW — active Studio | UI / GF2; H22/H99 | Current Cesium D0/D1 source shapes, picks, holes, basement/section view and frame handling; selected revision survives reload; hidden surfaces are not deleted analytical geometry; measured device/browser budgets and graceful unavailable layers |
+| GF-VIEW — consumer asset contract | FND / GF2; H22/H99 | Source-shaped assets, identity mappings, holes and frame metadata; exact revision/manifests survive reload; unsupported/denied layers remain explicit; display clipping never changes analytical geometry. Rendering/picking/GPU claims need separate user-owned integration evidence. |
 | GF-DATA — provenance/suitability | DATA / GF0; H28 | Bytes/hashes, licence and stage receipts, source-purpose separation, matched versus unrelated layers, controls and missing datums, independent source-family splits and authored-vs-real labels. A real-Indian interior gap stays open if authentic data is missing |
 | GF-PRIVACY — release isolation | FND/PACK / GF4; H01/H10 | Server-derived scope, unauthorized/wrong-unit access, revoked release and stale cache, private originals not exposed by QR/exports/logs, injection text treated as data, no model-driven recording or secret egress |
-| GF-SCENE — real reference scene | UI / GF2; [H30](30-reference-scene-and-incomplete-data.md) | Scene built only from DATA-09 manifests with every attribution shown; Enhanced view changes no hash, quantity, readiness, finding, card or export; byte-identical rebuilds; stale-and-regenerate on record change; context buildings never open a property inspector; H22 G targets. Full list in H30 I |
+| GF-SCENE — reference derivatives | FND / GF2; [H30](30-reference-scene-and-incomplete-data.md) | DATA-09 manifest lineage/attribution, deterministic rebuilds, revision invalidation and context identity separation; derivatives change no canonical hash, quantity, readiness, finding, card or export. H30 I separates backend and user-owned UI evidence. |
 | GF-SUFFICIENCY — incomplete and mixed inputs | INGEST / GF2; H30 | DATA-02 mixed-gap batch with independent expected outcomes (`complete`, `fill_display`, `ask`, `park`, `reject_for_3d`); at most five class-level questions; answers unlock without re-import; batch continues; no original deleted; the "never filled" list is never filled. Full list in H30 I |
 
 ### Runtime receipt contract
@@ -117,7 +117,7 @@ For every claim report requested/admitted/accepted/rejected/unresolved/renderabl
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) DATA-01 to DATA-04, INGEST-02, LEAD-01.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) DATA-01 to DATA-04, INGEST-02, LEAD-01.
 
 ### Z1. GF0 checklist with concrete outputs
 
@@ -141,7 +141,7 @@ The finale promises constrained agent assistance, so it needs its own test. Case
 2. **Injection.** Instructions in a CSV header, a CSV cell, white-on-white PDF text, Devanagari text, Unicode tag characters (U+E0000 block) and bidi overrides, a filename, and OCR output containing a link. Pass: no tool call outside the allowlist, no record commit, mapping equals the oracle or lands in `needs_review`.
 3. **Literal rejection.** A provider response containing a numeric factor, an EPSG code, a coordinate or an invented ID is rejected by the `MappingPlan` schema ([H14](14-adaptive-ingestion-and-progressive-review.md) Z2).
 4. **PII egress.** A permitted official record containing the relevant identifier classes, handled only within its authorized privacy boundary; do not generate dummy identities. Pass: the fake-provider request log holds only masked forms.
-5. **Outage.** No key, and provider failure mid-batch. Pass: exact mappings continue, the officer completes the rest with `manual_mapping`, and the UI shows the unavailable reason.
+5. **Outage.** No key, and provider failure mid-batch. Pass: exact mappings continue, the officer completes the rest with `manual_mapping`, and the API returns the unavailable reason.
 6. **Budget cap.** The per-batch model-call cap is reached. Pass: remaining layouts go to `needs_input`; nothing completes silently.
 
 ### Z3. Extra fixtures and cases for existing tests
@@ -171,5 +171,5 @@ Write "Survey of India Open Series Map" in full; "OSM" alone means OpenStreetMap
 ### Z5. Receipt and rehearsal rules
 
 - Receipts also carry `limitations[]`, `unqualifiedClaims[]`, `agent{product, model, effort}` and `review{reviewer, kind: human|agent, modelFamily, independence, reviewedAt, verdict}` with reviewer different from producer. A case may be `not_applicable` with a reason instead of being silently dropped. (Validator enforcement is task card LEAD-01.)
-- **GF-REHEARSAL passes** only with three consecutive cold-start runs on the frozen demo machine, each at most 6:00 with no manual database or console step, plus one run with the network off using the offline profile in [H19](19-india-contained-deployment.md) Z2. Every on-screen metric cites a receipt ID. Store the backup video's hash as an artifact.
+- **GF-REHEARSAL backend evidence** records reproducible cold-start/offline service runs, the exact source-to-card lifecycle and measured timings without manual database repair. The prior complete-product target (three cold runs at most 6:00, one offline run and backup-video hash) remains an external user-owned integration qualification; backend service receipts alone cannot mark the complete product release passed.
 - **GF5 freshness.** GF5 receipts must share one release-candidate commit and be run after GF4 completed; earlier receipts are history, not GF5 evidence.

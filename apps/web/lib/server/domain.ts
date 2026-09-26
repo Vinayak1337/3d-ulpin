@@ -910,18 +910,9 @@ export async function retryJob(jobId: string) {
 const demoProfiles: Record<string, { profile: SourceProfile; mime: string }> = {
   "spatial.json": { profile: "parcel-local-json-v1", mime: "application/json" },
   "levels-r1.csv": { profile: "levels-csv-v1", mime: "text/csv" },
-  "levels-r2.csv": { profile: "levels-csv-v1", mime: "text/csv" },
-  "controls.csv": { profile: "control-csv-v1", mime: "text/csv" },
-  "plan.png": { profile: "plan-png-v1", mime: "image/png" },
-  "plan.pdf": { profile: "plan-pdf-v1", mime: "application/pdf" },
 };
 export async function readDemoFile(dataset: string, name: string) {
-  if (!["c001", "c002", "real-nyc"].includes(dataset) || !demoProfiles[name])
-    notFound();
-  if (
-    dataset === "real-nyc" &&
-    !["spatial.json", "levels-r1.csv"].includes(name)
-  )
+  if (dataset !== "real-nyc" || !demoProfiles[name])
     notFound();
   return {
     bytes: await readFile(path.join(settings.fixtureRoot, dataset, name)),
@@ -930,21 +921,13 @@ export async function readDemoFile(dataset: string, name: string) {
 }
 export async function loadDemoInputs(
   caseId: string,
-  dataset: "c001" | "c002" | "real-nyc",
+  dataset: "real-nyc",
   operationKey?: string,
 ) {
   if((await query("SELECT 1 FROM building_preparations WHERE case_id=$1",[caseId])).rowCount)
     throw new AppError(422,"PROPERTY_EVIDENCE_REQUIRED","Add this property's own evidence in its block workspace. Sample datasets belong in a separate demonstration workspace.");
   const sourceIds: string[] = [];
-  for (const name of dataset === "real-nyc"
-    ? ["spatial.json", "levels-r1.csv"]
-    : [
-        "spatial.json",
-        "levels-r1.csv",
-        "controls.csv",
-        "plan.png",
-        "plan.pdf",
-      ]) {
+  for (const name of ["spatial.json", "levels-r1.csv"]) {
     const file = await readDemoFile(dataset, name);
     const source = await uploadSource(caseId, {
       name,
@@ -960,21 +943,4 @@ export async function loadDemoInputs(
 export async function readRealDemoAsset(name: string) {
   if (!["original.geojson", "provenance.json"].includes(name)) notFound();
   return readFile(path.join(settings.fixtureRoot, "real-nyc", name));
-}
-export async function loadDemoLevels(caseId: string, dataset: "c001" | "c002") {
-  const existing = (
-    await query(
-      "SELECT family_id FROM sources WHERE case_id=$1 AND name='levels-r1.csv' AND profile='levels-csv-v1' ORDER BY created_at DESC LIMIT 1",
-      [caseId],
-    )
-  ).rows[0];
-  const file = await readDemoFile(dataset, "levels-r2.csv");
-  return uploadSource(caseId, {
-    name: "levels-r2.csv",
-    bytes: file.bytes,
-    mimeType: file.mime,
-    profile: file.profile,
-    familyId: existing?.family_id,
-    operationKey: `demo-${dataset}:levels-r2.csv`,
-  });
 }

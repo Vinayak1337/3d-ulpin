@@ -1,6 +1,6 @@
 # 13 · Citizen evidence, corrections and scoped notifications
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Release: `full_product` (FP-PUBLIC).** The separate public data-request/evidence/correction dashboard remains planned with private submissions, released-only discovery, tracking and authorization. It is not a finale prerequisite. GF4 reuses the release/access contracts for the card without enabling a public portal.
 
@@ -84,13 +84,12 @@ Consume committed outbox events at least once; unique `(subscription,event)` cre
 | Existing source/case/registry/resolver/investigation helpers linked in B | FND narrow receipt/read-only projection/prepareProposal adapters, same-client transactions |
 | Proposed `packages/contracts/src/usp/citizen.ts` | CITIZEN submission/request/public/review/delivery schemas |
 | Proposed `apps/web/lib/server/usp/citizen/{service,public-projection,uploads,notifications,routes}.ts`, `migrations/13-citizen.ts` | CITIZEN lifecycle and leaf routes; shared receipt/scan/mail via ports |
-| Proposed `apps/web/features/usp/citizen/{PropertyFinder,SubmissionForm,SubmissionStatus,EvidenceRequestPanel,ReviewSubmission}.tsx` | CITIZEN leaf UX |
-| Proposed `apps/web/app/public/properties/page.tsx`, `apps/web/app/public/submissions/[id]/page.tsx`; existing WorkQueue/register parents | UI mounts; FND supplies SSR access wrapper; never full officer header/search on public page |
+| Proposed `apps/web/app/public/properties/page.tsx`, `apps/web/app/public/submissions/[id]/page.tsx`; existing WorkQueue/register parents | User-owned consumer outside the plan; FND supplies access contracts, never an internal dossier projection |
 | Proposed `tests/usp-citizen.test.ts`, `tests/usp-citizen-integration.ts`, `tests/e2e/usp-citizen.spec.ts` | CITIZEN multi-principal, restart, review and delivery tests |
 
-## G. UI placement and interaction
+## G. Backend contract for user-owned consumers
 
-Public Find my property supports identifier/address/map with optional location permission. Show building context and released floor/unit or My space is not listed. One form step at a time, with an explicit submitting-for-review label. Receipt distinguishes uploaded, submitted, accepted draft and recorded outcome. Studio missing-evidence action opens a request; Batches opens exact submission alongside property/source context. Scanning/loading persists across reload; empty search permits bounded unresolved submission; bad files retain form state; denied data is non-disclosing; clarification lists the exact fact needed. Mobile file/photo controls obey the same limits. UI owns sheets/focus/navigation; CITIZEN owns content.
+Deferred public services expose only released search results and own-submission receipts. Distinguish uploaded, submitted, accepted draft and recorded outcome; unresolved property stays intake-scoped. Durable scanning/status survives retry and reload. Bound unresolved search/submissions, retain allowed input after failure, return exact clarification needs and disclose nothing on denied reads. No dashboard/form/frontend implementation is planned.
 
 ## H. Ownership and dependencies
 
@@ -115,13 +114,13 @@ Interrupt before/after final upload receipt, scan, promotion, submission and dra
 
 Run `pnpm typecheck`, `pnpm test:case-document-copy`, `pnpm test:api`; `pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-citizen.test.ts`; `pnpm exec tsx tests/usp-citizen-integration.ts`; `pnpm exec playwright test tests/e2e/usp-citizen.spec.ts`. Keep local auth fixtures, real scanner qualification and real deployment tests as separate results. Return sanitized receipts, isolation proofs, recovery/delivery states and screenshots.
 
-## K. Copy-paste assignment
+## K. Assignment boundary
 
-> Implement CITIZEN from 00, 01 and this handoff on feat/usp-citizen. Obtain D0 two-person/reviewer data, attempt permitted D5 only for later real-source testing. Build public-release-only lookup, durable targetless receipts, hash-bound quarantine/promotion, explicit submit/clarify/withdraw/review commands and in-app notifications. FND supplies prepareProposal/commit/identity adapters; UI owns mounts; DEPLOY supplies scanner/mail. Complete the real submission→reviewed draft→separate recorded-receipt path, not fake acceptance. Run J crash/isolation/stale/delivery tests and return commits, pack/receipt evidence, screenshots and separate F2 gates. No direct registry writes, private-source public fallback, ownership-by-email, external activation or main merge without authorization.
+No implementation is authorized by this planning cleanup. For separately assigned backend work, use H02 and the operating guide, the current pinned staging head, explicit file ownership and directly relevant checks. Historical standalone branch/UI/synthetic-replay prompts are retired; preserve existing domain/security requirements and source evidence.
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. This file is **full_product** (FP-PUBLIC, after GF5 and FP-DEPLOY); "F0/F1-feature/F2" gate names above map to FP-DEPLOY and FP-PUBLIC-TEST. Task card: [H29](29-agent-task-cards.md) FP-PUBLIC-01.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. This file is **full_product** (FP-PUBLIC, after GF5 and FP-DEPLOY); "F0/F1-feature/F2" gate names above map to FP-DEPLOY and FP-PUBLIC-TEST. Task card: [H29](29-agent-task-cards.md) FP-PUBLIC-01.
 
 ### Z1. DPDP Act 2023 and Aadhaar rules
 

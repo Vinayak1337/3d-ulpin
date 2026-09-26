@@ -1,8 +1,8 @@
 # 29 · Task cards for any coding agent
 
-**26 September sequencing:** Replace legacy UI afresh from the design system and reference mockups while implementing each existing card; delete that surface's superseded components after migration. Do not divert into a separate redesign or continue polishing legacy screens. Reuse shared contracts/runtime, preserve unique inspection and saved URLs, and apply UI-08 record/provenance checks in every replacement. See [delivery policy](current-delivery-policy.md).
+**26 September sequencing:** Planning-only cleanup. No card is dispatched by this document. Future explicitly assigned work is backend-only through [the backend cleanup plan](backend-cleanup-plan.md); the user owns all frontend work. Preserve shared contracts, runtime boundaries, unique inspection and saved URLs.
 
-**Current scope:** [Current delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Written 24 September 2026 with the review in [H97](97-review-findings-and-alignment.md). Each card is one pull-request-sized piece of work that Codex, Claude Code, Gemini CLI or any other user-authorized coding agent can pick up without reading all 25 handoffs. A card names what to read, what to build, where it goes, and how to prove it is done. The handoffs stay the specification; a card never overrides them, and a handoff's "Z. Hardening addendum (H97)" section overrides older text in that handoff.
 
@@ -10,29 +10,19 @@ Written 24 September 2026 with the review in [H97](97-review-findings-and-alignm
 
 1. Read [AGENTS.md](../../AGENTS.md), [H00](00-README.md) and the card's **Read** list. Nothing else is required to start.
 2. Check **Needs**: every listed card is merged to staging, or its interface is already in `packages/contracts`. Gates order qualification, not the start of implementation: a GF3 card may start as soon as its inputs exist.
-3. Claim the card by opening a branch `agent/<CARD-ID>-<slug>` from the current staging head and a draft pull request titled `[<CARD-ID>] <title>` against `staging`. One card, one branch, one writer. Never merge to `main`.
-4. Fill the H02 ticket header in the pull-request description, including `agent.product`, `agent.model` and `agent.effort` as the client reports them.
+3. Claim the card with an explicit owner and pinned staging base. Use the sole original checkout and coordinate any branch change at a safe checkpoint; one writer owns each shared seam. Never merge to `main`.
+4. Record the H02 assignment fields, including `agent.product`, `agent.model` and `agent.effort` as the client reports them.
 5. Build only inside **Owns**. Needing a file owned by someone else means a patch request to that owner, not an edit.
 6. Finish when **Done when** is true. Runtime tests write receipts under `docs/evidence/usp/finale/<test-id>/` per [H28](28-data-acquisition-and-finale-tests.md). Ask for review from a different model family or a human.
 7. Stop and report instead of guessing when a card needs one of the few human inputs in [H90](90-required-human-tasks.md), a secret, a paid service or data you cannot obtain legally. Everything else (acquisition, labels, oracles, timing) is agent work: use documented open sources and record `failed(<reason>)` when one is unavailable.
 
 Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execution.md) section 2.
 
-## Start here: cards that can run in parallel on day one
+## Planning boundary and retired UI cards
 
-| Card | Why it can start now |
-| --- | --- |
-| FND-01 contract inventory | Reads current code only |
-| DATA-01 source bundle | Acquisition and manifests only |
-| DATA-02 official difficult cases | Official discovery, provenance and coverage gaps |
-| LEAD-01 plan machinery | Validator code and tests only |
-| UI-01 tokens, fonts, icons | Styling layer; no producer needed |
-| UI-08 record-backed content and provenance | Applied within every screen replacement; no standalone legacy-polishing stream |
-| DATA-09 real reference area | Open downloads (data.gov.in, OpenStreetMap, open DEMs); no person needed |
-| INGEST-01 hostile-input guards | Reader hardening with negative fixtures |
-| DATA-05 to DATA-08 public data, labels, drone set, oracles | Official downloads and source-derived expectations; gaps remain explicit |
-| READY-02, UI-07, LEAD-05, DEPLOY-04 | Replace former human tasks with agent work |
-| CLEANUP-01 remove obsolete files | Manifest already verified; one change |
+This is a dependency catalogue, not authorization to execute the cards now. FND-01 and the backend cleanup plan identify actual route/service consumers before any implementation assignment. Source discovery remains official-only; an old card or cleanup manifest is not permission to generate data, delete mixed assets or rerun retired scripts.
+
+UI-01 through UI-09 are retired implementation assignments, retained only as historical IDs. They do not form a future agent queue. Their backend obligations live in H99 and the existing FND/INGEST/DATA/PACK cards: identity and scope validation, record-backed projections, durable event/asset manifests, sufficiency, provenance, exact-revision packets and service receipts. Token/font/frame/layout/screen/rehearsal-capture tasks belong to the user-owned UI and are not scheduled. Historical card text is recoverable at `92e4d04cdeaaa2d8ccc65680c6fea1675dcee88a`.
 
 ## GF0 — data and contracts
 
@@ -116,23 +106,23 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### LEAD-02 · Retire stale pointers
 **Owner** LEAD · **Tier** T-read · **Needs** none
-- **Build:** point `docs/engineering-plan/00_START_HERE.md` at `release-plan.json` `nextGate` instead of the old F0/F1-min/V0 order; set legacy `next_task` fields to `"superseded: release-plan.json"` and adjust the legacy validator; add "Historical base X; current base = release-plan.json baseline" to handoff headers that still carry an older baseline; (the retired v2 design pack is removed by CLEANUP-01; [the design system](../design-system/README.md) replaces it).
+- **Build:** keep `docs/engineering-plan/00_START_HERE.md` as a historical pointer to H00 and `release-plan.json` `nextGate`; legacy `next_task` fields and their validator are retired only when their remaining consumers are migrated. Mark older handoff baselines as historical where they can be mistaken for the current integration head. The [design system](../design-system/README.md) replaces the retired v2 design pack as current UI direction.
 - **Done when:** both validators pass and no entry point names a different next step.
 
 ### LEAD-05 · Finale dataset decision
 **Owner** LEAD · **Tier** T-read · **Needs** DATA-01, DATA-05, DATA-06, DATA-09 · replaces H90 H5
-- **Build:** `docs/evidence/usp/finale/GF-DATA/site-decision.md` naming the chosen public bundles with licence and geography: the DATA-09 reference area the Studio opens on, the drone set (DATA-06), the D1 3DBAG building, the D5 plans, official rights and tenure cases where available, with DATA-02 gaps recorded; historical D0 is not replacement qualification. Any permitted geography is fine; no consent step.
+- **Build:** `docs/evidence/usp/finale/GF-DATA/site-decision.md` naming the chosen public bundles with licence and geography: the DATA-09 reference-area identifier and manifest the UI can request, the drone set (DATA-06), the D1 3DBAG building, the D5 plans, official rights and tenure cases where available, with DATA-02 gaps recorded; historical D0 is not replacement qualification. Any permitted geography is fine; no consent step.
 - **Done when:** GF0 checklist row 6 in H28 Z1 points at this file.
 
 ### CLEANUP-01 · Remove obsolete and duplicate files
 **Owner** LEAD · **Tier** T-work · **Needs** none
-- **Read:** `docs/cleanup-review/2026-09-25-removals.json` (every path, its reason and the evidence that nothing live uses it).
-- **Build:** remove exactly the listed paths on a branch from current staging after checking their recorded Git blob hashes. Remove the remaining GitHub workflows as part of the CI retirement; retain the active handoff and engineering plan files.
-- **Done when:** `python3 docs/usp-agent-handoffs/tools/validate_handoffs.py`, its unit tests, `python3 docs/engineering-plan/tools/validate_plan.py`, `pnpm typecheck`, `pnpm test:studio` and `pnpm test:ui` pass; `pnpm build` succeeds. If any fails, restore only the file it names and record why in the removals file.
+- **Read:** current exact-path cleanup inventories and consumer reviews; older removal manifests are historical and require reconciliation.
+- **Build, only when separately assigned:** reconcile exact path hashes and current consumers, migrate references, then retire only reviewed obsolete assets. Preserve real originals, mixed bundles, supplied design references and the user index; no blanket delete.
+- **Done when:** exact removals and retained evidence are recorded; document checks and only directly affected existing backend checks pass. A plan-only cleanup does not run application/build/browser suites.
 
 ### CLEANUP-02 · Retire the historical engineering plan and prototypes
 **Owner** LEAD · **Tier** T-risk · **Needs** CLEANUP-01
-- **Build:** retire `docs/engineering-plan/` (except anything the handoffs still link), `design/reference-map-v5/` and the R3F showcase scene only together with their remaining local consumers: `tests/engineering-acceptance.test.mjs`, the evidence writers in `scripts/spatial/save-demo-datasets.ts` and `tests/t084-dataset-ml-integration.ts`, `scripts/reference/build-shared.mjs`, and `CURRENT_WORK.md` as an entry point (move its gate line into H00 and drop it from `release-plan.json` `entryPoints`). Replace or remove the e2e specs that cannot pass (`tests/e2e/workbench.spec.ts`, `presentation.spec.ts`, `scripts/reference/browser.ts`). The GitHub workflows were retired in CLEANUP-01.
+- **Build:** retire superseded historical plan and capture paths after moving active pointers to H00 and pinning Git-history recovery. Keep the four acceptance-test inputs, legacy validator inputs, source/design hashes and live evidence readers until their consumers are migrated. Retire `design/reference-map-v5/` and the R3F showcase scene only together with their remaining local consumers: `tests/engineering-acceptance.test.mjs`, the evidence writers in `scripts/spatial/save-demo-datasets.ts` and `tests/t084-dataset-ml-integration.ts`, and `scripts/reference/build-shared.mjs`. Replace or remove the e2e specs that cannot pass (`tests/e2e/workbench.spec.ts`, `presentation.spec.ts`, `scripts/reference/browser.ts`). The GitHub workflows were retired in CLEANUP-01.
 - **Done when:** the applicable local validators, tests, typecheck and build pass, and the handoff validator still passes.
 
 ## GF1 — identify and exchange
@@ -146,7 +136,7 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 ### HISTORY-01 · Exact reads, diff and lineage
 **Owner** HISTORY · **Tier** T-work · **Test** GF-T15 history rows · **Needs** FND-02
 - **Read:** [H15](15-property-history-and-comparison.md) sections E, I and Z1, Z3, Z4.
-- **Build:** exact-revision reads, field diff, lineage display, `sourceDates[]` with roles and `mutationStatus`, and chain state wording.
+- **Build:** exact-revision reads, field diff, lineage projection, `sourceDates[]` with roles and `mutationStatus`, and chain state wording.
 - **Done when:** `2024-03-31` round-trips unchanged; a pending mutation is never shown as a recorded transfer; history rows of GF-T15 pass.
 
 ### FND-03 · CityJSON 2.0 plus sidecar, LADM mapping
@@ -237,45 +227,6 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 - **Build:** `R-MODEL-CORE`: one key from the env namespace, one call table with reserve and settle, project cap, consumer allocation, `ProviderAdapter` with Sarvam, fake and replay adapters.
 - **Done when:** G-04, G-05 (single pool), G-08, G-09, G-12, G-17, G-18, G-19 and G-22 pass with the fake provider.
 
-### UI-01 · Tokens, fonts and icons
-**Owner** UI · **Tier** T-work · **Test** GF-VIEW (visual) · **Needs** none
-- **Read:** [H99](99-ui-ux-and-integration.md) Z1 and Z6; [design system README](../design-system/README.md); [`tokens.css`](../design-system/tokens.css); [reference mockups](../design-system/mockups/officer-studio/README.md) (reference only, not production UI) and their rules.
-- **Build:** extend `--ui-*` tokens with map, rights, marks, ramps and utility values; retain reusable theme tokens without adding a switch; self-host Noto Sans, Noto Sans Devanagari and Noto Sans Mono; an `Icon` wrapper on Phosphor; a lint warning for new `lucide-react` imports.
-- **Done when:** no external font request offline; contrast checks pass in the delivered light theme; additional themes remain future work; a Hindi label renders.
-
-### UI-02 · Studio frame
-**Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01
-- **Read:** [H99](99-ui-ux-and-integration.md) sections 3–4 and Z2; [UI brief](../design-system/ui-brief.md) "How the map should look"; [reference mockups](../design-system/mockups/officer-studio/README.md) "The Studio frame" and "Interaction model" and [screens](../design-system/mockups/officer-studio/screens.md) "Frame", as design reference.
-- **Build:** 56 px top bar with Batches · Map · Register; scope strip; on-demand left panel; single tray; inspector widths and flexible layout seams; desktop-first/light-only, no theme control or reserved gap.
-- **Done when:** selection and camera survive every panel change; desktop scope/actions, keyboard access and zoom remain usable; mobile optimization is deferred.
-
-### UI-03 · Map styling and honest geometry
-**Owner** UI · **Tier** T-work · **Test** GF-VIEW · **Needs** UI-01, FND-04
-- **Read:** [map and 3D rules](../design-system/map-and-3d.md); [H22](22-rendering-and-sparse-data.md) Z1–Z3; [reference mockups](../design-system/mockups/officer-studio/README.md) "What the scene shows per mode", as design reference.
-- **Build:** Colour by (one at a time), evidence fill and record outline encodings, level rail with the named vertical reference, underground mode, "height unknown" and "illustrative" treatments, Indian level kinds.
-- **Done when:** each GF-VIEW fixture in H22 Z3 renders as specified and V1–V4 captures pass H99's V-shot contract with values from the loaded records.
-
-### UI-04 · Batches, intake and workspace
-**Owner** UI · **Tier** T-work · **Tests** GF-VIEW, GF-AGENT (UI path) · **Needs** INGEST-02, DOMAIN-02
-- **Read:** [reference screens](../design-system/mockups/officer-studio/screens.md) S1–S5 and S9–S11 (design reference, not production spec); [reference mockups](../design-system/mockups/officer-studio/README.md) "Any format in, the same screens out"; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Batch`, `IntakeSession`, `IntakeFile`, `FieldMapping`, `Candidate`, `Building`, `Level`, `Space`.
-- **Build:** S1 Batches, S2 Add files with inline mapping questions and "Reused mapping", S3 live import, S4 area map, S5 building and floors, S9 review details, S10 check and record, S11 assign dialog. Screens bind to records; an unknown profile or unmapped field is listed, never dropped.
-- **Done when:** the officer completes the D0 flow without retyping data; provider-down shows manual mapping.
-
-### UI-08 · No hard-coded demo content or "fictional" labels
-**Owner** UI, with DATA for stored names · **Tier** T-work · **Tests** GF-VIEW, GF-SCENE · **Needs** none to start; DATA-09 to finish
-- **Read:** [AGENTS.md](../../AGENTS.md) data invariants; [H99](99-ui-ux-and-integration.md) Z6; [reference mockups](../design-system/mockups/officer-studio/README.md) rules 3–4; [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Scope.classification` and `ProvenanceFlags`.
-- **Find:** `grep -rIli "fictional\|demonstration data\|specimen" apps/web --exclude-dir=node_modules --exclude-dir=.next` (35 source files outside `public/` on 25 September 2026: officer block, register, workspace, scene and work screens; `features/studio/data`; the reference import, runtime and workbench; `lib/server`; plus three protected files under `public/`).
-- **Sequencing:** apply this acceptance checklist within UI-03/UI-04/UI-05/PACK-01 and every other UI-bearing card. Replace the affected presentation from the design references, rather than patching old screens solely to satisfy this checklist. Preserve the unmerged attempt-1 checkpoint; no further standalone legacy-polishing attempt. DATA-09 scene qualification remains open; until qualified, show an explicit unselected or unavailable state, never auto-import a substitute.
-- **Build:** remove "Fictional demonstration" and similar disclaimers from screens and generated documents. Show each dataset's recorded classification in the scope strip, and *Test fixture* or a seeded-case badge only where the record's provenance says so. Finale screens read records through the ports; hard-coded sample arrays (for example the Lake View district and document generators) are not reachable from finale routes, and the Studio opens on the DATA-09 real reference area instead (H30 B). Keep legacy URLs working (AGENTS.md).
-- **Do not:** delete, re-seed or rewrite protected datasets, originals or files under `apps/web/public/datasets/`. A stored dataset or area name containing "FICTIONAL" is data. DATA may add a display label through a recorded, reversible revision; code must stop matching records by that text.
-- **Done when:** the grep above finds no user-visible string in finale screens (code comments and protected data files excepted, listed in the receipt); each finale screen shows provenance from the record; before and after screenshots of S1, S4, S5 and S12 are attached with their respective replacement cards, using the same unchanged corpus where available and explicitly recording missing baseline coverage.
-
-### UI-09 · Enhanced view and scene sync
-**Owner** UI · **Tier** T-work · **Test** GF-SCENE · **Needs** UI-03, FND-04, DATA-09; DOMAIN-01 for tier 1
-- **Read:** [H30](30-reference-scene-and-incomplete-data.md) C, D and I; [H22](22-rendering-and-sparse-data.md) C, Z1 and Z5; [map and 3D rules](../design-system/map-and-3d.md) "Enhanced view"; [reference mockups](../design-system/mockups/officer-studio/README.md) (design reference, not production UI).
-- **Build:** the Enhanced view on the shared Cesium path. Tier 1: load a capture's OpenDroneMap mesh (DOMAIN-01, H27 Z1) as a clipped, non-pickable `context_mesh` whose picks pass through to `recordId`; qualify it on the DATA-06 scene. Tier 2, where no capture exists, is the deterministic dressing: official DEM terrain, sourced road/water/green geometry and sourced building surfaces; no invented trees, widths, roofs, heights or storeys; display lighting and shadows. Derivatives go to the display-derivative store with input pins, generator version, seed and hash; they go stale and regenerate on record change. Add the attribution line and the "Context building · no record" selection.
-- **Done when:** GF-SCENE passes, including the no-change check across the view switch and byte-identical rebuilds.
-
 ## GF3 — govern
 
 ### READY-01 · Scoped readiness
@@ -300,18 +251,12 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 - **Build:** IMPACT0 promotion, corridor fixture, "Export screening report" with "Not a clearance or dig permission".
 - **Done when:** GF-T20 passes; unmapped areas never read as clear.
 
-### UI-05 · Register, evidence, deviation and underground screens
-**Owner** UI · **Tier** T-work · **Tests** GF-VIEW, GF-REHEARSAL · **Needs** HISTORY-02, IMPACT-01
-- **Read:** [reference screens](../design-system/mockups/officer-studio/screens.md) GF3 section (design reference, not production spec); [view model schema](../design-system/mockups/officer-studio/view-model.schema.json) `Underground`, `Finding`, `Check`, `Deviation`, `ShareLedger`, `Revision`, `EvidenceRef`.
-- **Build:** S6–S8, S12, S13 per the [UI brief](../design-system/ui-brief.md), using the reference mockups as a design guide, with the fixed wording in [H99](99-ui-ux-and-integration.md) Z4; S5 inspector refinements.
-- **Done when:** V4–V6 captures pass.
-
 ## GF4 — share scoped proof
 
 ### PACK-01 · Property Card and local QR
 **Owner** PACK · **Tier** T-risk · **Test** GF-T21 · **Needs** FND-02, RIGHTS-01, DOMAIN-03
 - **Read:** [H10](10-scoped-evidence-packets.md) GF4 sections.
-- **Build:** card subtype with P3 code, location line, vertical reference, chain state; `local_operator` resolver labelled "local demonstration link". The UI takes [reference screens](../design-system/mockups/officer-studio/screens.md) S14 and P4L as a design guide and binds `PropertyCard` and `VerifyResult`.
+- **Build:** card subtype with P3 code, location line, vertical reference, chain state; `local_operator` resolver labelled "local demonstration link". Expose authorized `PropertyCard` and `VerifyResult` contracts for the user-owned UI; no card screen is assigned.
 - **Done when:** GF-T21 passes, including sibling-leak pixel and metadata checks.
 
 ### FND-07 · Release isolation
@@ -322,41 +267,32 @@ Tiers (T-read, T-work, T-risk, T-lead) are defined in [H02](02-lead-agent-execut
 
 ### DEPLOY-02 · Offline rehearsal profile
 **Owner** DEPLOY · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** DEPLOY-01
-- **Build:** `local_demo_offline` with replayed responses labelled on screen, local tiles and fonts, egress-log assertion of zero non-allowlisted hosts.
+- **Build:** `local_demo_offline` with replayed responses carrying explicit provenance, authorized local assets, egress-log assertion of zero non-allowlisted hosts.
 
 ### DEPLOY-03 · Compliance note
 **Owner** DEPLOY · **Tier** T-read · **Needs** none
 - **Build:** the [H19](19-india-contained-deployment.md) Z3 table as a one-page note for the PPT appendix and judges.
 
-### UI-06 · Captures and rehearsal UI
-**Owner** UI · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** all GF4 cards
-- **Done when:** V1–V8 captures use the H28 qualified data and pass H99's V-shot contract; any comparison with the [reference mockups](../design-system/mockups/officer-studio/README.md) is a design review, not a pass condition; the rehearsal pass rule in [H28](28-data-acquisition-and-finale-tests.md) Z5 holds.
-
-### UI-07 · Automated task-completion and timing checks
-**Owner** UI · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** UI-04, UI-05 · replaces H90 H4 and the H9 study
-- **Build:** Playwright journeys (select building and unit, open evidence, make the card), wrong-unit guard, keyboard, focus, axe accessibility checks, desktop 1440 × 900 and browser zoom; mobile optimization deferred. Timing receipts: first selectable scene, time to card, and officer input count on the assisted path versus `manual_mapping`.
-- **Done when:** receipts exist and are labelled "scripted, not a human study"; the status reads "intended-user usability: untested" unless a person volunteers.
-
 ### DEPLOY-04 · Finale kit
 **Owner** DEPLOY · **Tier** T-work · **Test** GF-REHEARSAL · **Needs** DEPLOY-02 · replaces H90 H9 logistics
-- **Build:** a frozen-machine script (three cold starts and one offline run), local tile and font cache, a Playwright-recorded backup video with its hash, and the PPT export ready for upload.
-- **Done when:** the only remaining steps are H90 short-list items 1 and 2.
+- **Build:** a pinned backend service profile and evidence bundle for cold starts/offline recovery, asset hashes and egress policy. Browser/video/PPT production is outside this backend assignment.
+- **Done when:** backend evidence is reproducible; outstanding human and user-owned UI integration dependencies remain explicit.
 
 ### LEAD-03 · Rehearsal and gate sign-off
 **Owner** LEAD · **Tier** T-lead · **Test** GF-REHEARSAL · **Needs** every finale card
-- **Done when:** three cold-start runs at most 6:00 each plus one offline run; GF0–GF4 carry a cross-family review and the owner approves the GF5 freeze (H90 short-list item 3).
+- **Done when:** backend operation/recovery/timing receipts are present; GF0–GF4 retain cross-family review. User-owned end-to-end integration and owner-approved GF5 freeze remain required for a product release, not inferred from backend checks.
 
-### LEAD-04 · PPT
+### LEAD-04 · Evidence and claims ledger
 **Owner** LEAD · **Tier** T-work · **Needs** receipts from each test
 - **Read:** [H24](24-product-method-and-ppt.md) and Z.
-- **Done when:** every number on a slide cites a receipt ID; empty metric cards say "not yet measured".
+- **Done when:** each backend claim cites a receipt ID; unmeasured results say "not yet measured". Presentation production is outside the backend plan.
 
-## Full product (after GF5)
+## Deferred full-product backend contracts (no work scheduled)
 
 | Card | Gate | Read first | Key hardening |
 | --- | --- | --- | --- |
 | FP-PUBLIC-01 | FP-PUBLIC | [H13](13-citizen-evidence-and-corrections.md) Z | DPDP notice and retention, Aadhaar masking, quotas, identity provider, public ingress allowlist, GIGW 3.0, Hindi |
-| FP-ASSIST-01 | FP-ASSIST | [H18](18-grounded-assistance-and-mcp.md) Z | Origin and Host checks, inert quotes, question chips before free text |
+| FP-ASSIST-01 | FP-ASSIST | [H18](18-grounded-assistance-and-mcp.md) Z | Origin and Host checks, inert quotes, typed intents, authorized facts and explicit ambiguity |
 | FP-LEARN-01 | FP-LEARN | [H21](21-concurrent-schema-learning.md) Z | Offline qualification first, hashed receipts, regional units as `needs_input` |
 | FP-FORMATS-01 | FP-FORMATS | [H25](25-all-format-agent-and-ux4g.md) Z | Sanitized samples only, reference rejection, no network readers |
 | FP-ENRICH-01 | FP-ENRICH | [H22](22-rendering-and-sparse-data.md), [H25](25-all-format-agent-and-ux4g.md) | Display-derivative store only |

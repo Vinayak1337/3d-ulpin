@@ -1,6 +1,8 @@
 # 97 · Cross-family review of the finale handoffs
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+
+**Historical audit boundary:** Findings and dated “Applied” statements below preserve the decisions at that revision. Their UI cards, screen counts, visual-capture assignments and superseded section numbers are historical, not an active queue; current backend contracts are H01/H99 and the delivery policy. No historical pass is upgraded by this scope change.
 
 Reviewed 24 September 2026 by Claude (a different model family from the handoffs' author), at staging commit `7472730`. Scope: all 25 handoffs, `release-plan.json`, the plan validator and its tests, `AGENTS.md`, the engineering-plan entry points and the v2 design pack, compared against the team's hardened plan review, dataset and test plan, design system and UI brief. The validator and its 29 tests were run before and after the edits in this change.
 

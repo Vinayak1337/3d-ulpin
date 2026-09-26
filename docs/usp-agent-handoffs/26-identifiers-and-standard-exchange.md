@@ -1,6 +1,6 @@
 # 26 · Proposed project identifiers and standard exchange
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 Owner **FND** for allocation, transactions and registry projection; **HISTORY** for lineage reads; **DATA** for independent fixtures; **UI/PACK** consume the resolver. This is a `finale_v1` implementation specification, not an assertion that the code, official issuance or standards conformance exists. Read [01](01-shared-contracts-and-ownership.md), [15](15-property-history-and-comparison.md), [16](16-shared-spaces-and-vertical-rights.md) and the acquisition/test authority [28](28-data-acquisition-and-finale-tests.md). Implement after GF0 data/contracts; qualify at GF1 identity/exchange. The complete product retains wider exchange formats as later profiles.
 
@@ -78,7 +78,7 @@ Run focused contract/registry/transaction tests, DB rollback and two-writer conc
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) FND-02 and FND-03.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) FND-02 and FND-03.
 
 ### Z1. Display-only vertical locator
 

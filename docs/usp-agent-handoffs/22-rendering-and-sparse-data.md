@@ -1,26 +1,22 @@
-# 22 — Progressive rendering, visual completion and late evidence
+# 22 — Progressive asset delivery, source sufficiency and late evidence
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
-**New handoff, 24 September 2026. Owner: UI; shared geometry/source services: FND; learned estimators: LEARN.** Preserve existing H99 selection, permission, disposal, V1–V8 and actual-product acceptance. This document adds the revised visual direction; none of its new capabilities has been runtime-qualified in this task.
+**Backend ownership:** FND owns geometry/source/asset contracts, INGEST progressive publication and LEARN deferred permitted estimators. The user owns rendering and visual acceptance; no renderer or frontend implementation is assigned. H99 preserves selection/access contracts.
 
-## A. Rendering decision
+## A. Existing renderer compatibility boundary
 
-**`finale_v1`: retain the current shared Cesium runtime used by the recorded D0/D1 workflow.** Qualify its actual source-shaped meshes, picking, basement visibility, clipping and frame placement; do not infer support from a Cesium demo using a different primitive type. Display clipping never proves volumetric intersection.
+Retain the current shared Cesium D0/D1 runtime and its one-active-runtime boundary. Backend assets preserve source shapes, semantic/pick identity, bounds, units, reference frames and qualified transforms. Display clipping proves no volumetric intersection. Existing Three helpers remain compatible; do not schedule a renderer migration, new viewer or library installation.
 
-**`full_product`: evaluate Three.js + React Three Fiber + Drei behind the existing MapViewport boundary only for a measured unmet interaction/rendering need.** 3DTilesRendererJS is an optional candidate requiring decoder, metadata, selection, licence and cache qualification. It is not a committed engine migration or an installed capability. Test the same assets, camera and device against current Cesium before deciding. Maintain one active renderer lease and shared selection/cache semantics.
+FP-RENDER remains a deferred compatibility/research commitment only. Any later user-authorized renderer experiment needs identical source assets, metadata/codecs and measured consumer evidence; no backend-only test establishes picking, clipping, camera or GPU behavior. Helsinki supplies source/provenance context, not Indian property rights or a new required rendering engine. Optional real foreign sources stay in their native geography under H28.
 
-Helsinki 3D contributes an example of separate textured city context and semantic building models with source provenance. It is a city/data programme, not an alternative JavaScript engine. Use a permitted small native-coordinate sample for optional D2 visual tests; its model does not provide Indian apartment rights. See [H28](28-data-acquisition-and-finale-tests.md).
+## B. Durable progressive asset delivery
 
-Use GLB/glTF assets, hierarchical 3D Tiles, local engineering origins for numerical stability, bounded caches and suitable level of detail. Qualified horizontal/vertical transforms remain shared domain operations. Start with the stable WebGL path; WebGPU is an optional measured upgrade, not a guaranteed speed fix. MapLibre/deck.gl, iTowns, Giro3D or Babylon.js are not additional mandatory engines. Introduce one only for a measured unmet capability, not to collect libraries.
-
-## B. The map always streams progressively
-
-Chunking is independent of whether interpretation is AI-assisted, learned or exact. Geometry is prepared and published in useful batches. SSE announces saved ready assets; the shared map fetches and adds them without resetting the camera. Display-tile boundaries need not equal processing-chunk boundaries.
+Chunking is independent of whether interpretation is AI-assisted, learned or exact. Geometry is prepared and published in useful batches. SSE announces saved ready assets with version/identity contracts that allow the user-owned client to retain its selection/camera. Display-tile boundaries need not equal processing-chunk boundaries.
 
 Start with the existing 25–100 visible exteriors / 25 MiB visible-geometry profile and small selected interiors; keep existing compiler/frame limits until separately qualified. A 10k/100k/1M backend corpus is navigated through a spatial index, not loaded into one frame or one browser array. In the full-product release, promotion of the learner may increase conversion throughput where measured; it does not bypass draw-call, network, memory or GPU budgets.
 
-Visual quality comes from source-shaped geometry, roof silhouette, consistent units, stable lighting/materials, selective contact shadows, outlines and careful interaction. Render decorative repetitions with instancing where qualified. Dispose assets/materials and keep selection IDs stable across LoD and tile seams. Prioritize a coherent local view and connected roads, while retaining fair queue scheduling.
+Expose stable IDs across LoD/tile seams, declared asset size/complexity, source-shaped geometry and deterministic derivative metadata. Keep processing fair and assets bounded. Lighting/material/outline behavior and client disposal are outside this backend assignment.
 
 ## C. Layer vocabulary and future enrichment (current scope restricted)
 
@@ -33,7 +29,7 @@ Current delivery renders official-source geometry and its traceable derivatives.
 | Estimated interpretation | Predicted height/roof class or an uncertain source-derived outline, with method, range and validation domain | Optional labelled preview; no automatic evidence coverage, legal boundary or ownership conclusion |
 | Illustrative presentation | Procedural facade detail, roof texture, neutral road ribbon, stylized placeholder massing | Visual context only; never copied into analytical geometry, official IDs, registry facts or training truth |
 
-A known footprint with missing height can have an optional illustrative massing view while the recorded height remains unknown. An estimated height needs a calibrated model and data support to be labelled a prediction; a constant or template is an illustrative assumption. A road centreline can be drawn as a styled ribbon, but that ribbon is not a recorded road-land polygon. Missing roads/buildings may appear only in a separately labelled illustrative scenario, not as purported observations of the actual area.
+A known footprint with missing height remains a footprint with unknown height under the current official-source policy; no new illustrative extrusion is authorized. An estimated height needs a calibrated model and data support to be labelled a prediction; a constant or template is an illustrative assumption. A road centreline can be drawn as a styled ribbon, but that ribbon is not a recorded road-land polygon. Missing roads/buildings may appear only in a separately labelled illustrative scenario, not as purported observations of the actual area.
 
 The evidence view is the default for recording and analysis. An explicit **Enhanced preview** toggle shows a persistent legend plus per-object labels; generated content is distinguishable without colour alone. Screenshots/exports containing it retain the legend/watermark and generation metadata. All-rendered content must not be selectable as a verified registry unit. Synthetic contextual objects have display IDs, not official/canonical property IDs.
 
@@ -59,23 +55,19 @@ Map existence must not depend on a registry document, supplied ULPIN or complete
 
 Later upload → retained revision → candidate association by exact identifiers first → ambiguity review → evidence link/new source observation → targeted revalidation → revised display/record if supported. A new authoritative height supersedes an estimate through a new revision; old sources, predictions and packets remain traceable. Do not rebuild all buildings for a new document. One building may span parcels; one unit may span floors; one stair can serve several units.
 
-## F. Separate public dashboard — full_product
+## F. Deferred public projection boundary
 
-Public: find released property, view permitted evidence status, report a discrepancy/missing space, upload allowed documents, answer clarification and track own submissions/notifications. Officer: compare sources, validate associations and approve an actual proposal through the existing registry workflow.
+Full-product public APIs use released lookup, own-submission receipts, quarantine and access-checked sources under H13. Do not reuse officer sessions/caches/dossiers or infer that a released exterior releases every deed or floor plan. Keep known-format limits and permission/retention contracts. Public dashboard/frontend implementation is outside all active plans.
 
-Share UI components and domain APIs, not unrestricted sessions, caches or records. A released map does not make every floor plan/deed public. Build the public dashboard as a distinct experience, not an officer drawer; preserve H13 authentication/quarantine/release/receipt rules and H01 permission checks. MVP public uploads remain bounded known formats; broader attachments get tested parsers, not an unrestricted upload promise.
+## G. Backend acceptance and unqualified consumer metrics
 
-## G. Acceptance
+Validate persisted source-shaped assets, canonical identity maps, holes/reference metadata, bounded manifest/event delivery, stale removal, late evidence and permission/restart recovery. Derived styling must leave source hashes, quantities, readiness, rights, findings and exports unchanged. Insufficient geometry cannot become a complete cadastre; new evidence creates a traceable revision without changing physical identity.
 
-For the finale, run a real active-product camera path while qualified ingestion is active. Full-product learner qualification additionally runs that path during training. Verify pan/orbit/zoom, basement visibility, source-shaped roofs/holes, stable picks and no stale target information. The deferred renderer experiment compares current and candidate renderers with identical assets/camera/device; it cannot block finale acceptance. Keep previous V1–V8 regressions.
-
-Proposed initial performance targets from the existing plan: first useful local scene within 8 seconds after admitted prepared inputs, cached selection feedback within 100 ms and desktop frame-time p95 at most 33 ms on declared reference hardware. Measure acquisition, source preparation and conversion latency separately rather than hiding them from end-to-end preview time. These are engineering targets, not achieved results.
-
-During full-product enrichment qualification, toggle enhanced preview and assert source hashes, measured quantities, readiness, rights, findings and evidence exports are unchanged. Insufficient geometry must not become an apparently complete cadastre. Add real evidence and prove the estimate is superseded without changing physical identity. Ten repeated navigation cycles must not show continuing owned-resource growth after expected cache warmup. Software-WebGL screenshots do not qualify actual GPU performance.
+Measure acquisition, preparation, conversion, first committed usable asset and service resource budgets separately. Historical consumer targets (first useful scene within 8 seconds, cached selection within 100 ms, frame-time p95 at most 33 ms on declared hardware) are unqualified external UI measurements, not a backend acceptance claim or assignment. Browser/GPU/camera/picking/accessibility and full-product runtime interaction checks require separately supplied user-owned integration evidence. No visual captures or renderer work is scheduled.
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) FND-04 and UI-03.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) FND-04 and the H99 API compatibility contract; former UI-03 is retired.
 
 ### Z1. Two fields instead of one overloaded "layer"
 
@@ -102,7 +94,7 @@ Plus `DataSufficiencyVerdict {task, requirements[], outcome: sufficient | partia
 
 ### Z3. Indian level realities
 
-Add `levelKind`: `stilt`, `basement`, `lower_ground`, `ground`, `mezzanine`, `typical`, `terrace`, `rooftop_structure`. Level order comes from the source, not elevation. Unknown elevations stay null; illustrative spacing appears only in Enhanced preview. Hill buildings where the road entrance is "ground" keep the source's naming. Every value carries its unit or is `not_assessed`. Add matching GF-VIEW fixtures: storey count without heights ("4 storeys (source), height illustrative"), a footprint with no height rendered 2D and labelled "height unknown", a point with no footprint producing no polygon, a stilt floor and a mezzanine.
+Add `levelKind`: `stilt`, `basement`, `lower_ground`, `ground`, `mezzanine`, `typical`, `terrace`, `rooftop_structure`. Level order comes from the source, not elevation. Unknown elevations stay null; illustrative spacing appears only in Enhanced preview. Hill buildings where the road entrance is "ground" keep the source's naming. Every value carries its unit or is `not_assessed`. Seek unchanged official-source GF-VIEW cases; missing coverage stays unqualified: storey count without heights ("4 storeys (source), height illustrative"), a footprint with no height rendered 2D and labelled "height unknown", a point with no footprint producing no polygon, a stilt floor and a mezzanine.
 
 ### Z4. Definitions for acceptance
 
@@ -112,4 +104,3 @@ Add `levelKind`: `stilt`, `basement`, `lower_ground`, `ground`, `mezzanine`, `ty
 ### Z5. Finale Enhanced view and real reference area (25 September 2026)
 
 [H30](30-reference-scene-and-incomplete-data.md) brings a bounded part of section C's Enhanced preview into `finale_v1`: deterministic presentation of official DEM, road/water/green and building geometry, with neutral materials, sun and shadows; no invented trees, dimensions or building detail over a real Indian reference area (DATA-09), with the sync rules in H30 D. The no-change assertion in section G moves from full-product enrichment qualification into GF-SCENE for this bounded view. Generative detail is a future option subject to renewed user authorization; it is not part of current implementation. Section D's poor-data table is extended by H30 E's fill / ask / park / reject decisions and question budget.
-

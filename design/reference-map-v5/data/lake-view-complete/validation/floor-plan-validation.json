@@ -1,7 +1,0 @@
-{
-  "classification": "synthetic",
-  "planCount": 6,
-  "source": "floors.geojson and spaces.geojson",
-  "status": "generated_from_same_shapes",
-  "independentApproval": false
-}

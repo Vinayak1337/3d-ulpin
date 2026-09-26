@@ -1,6 +1,6 @@
 # 23 — Indian operational data, modular delivery and problem-statement coverage
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Plan date: 24 September 2026.** Read H14/H21/H22. This document distinguishes the supplied problem statement, current code evidence, new engineering decisions and external publisher information. No dataset downloads, permissions, training, runtime tests or production deployment are claimed by this plan.
 
@@ -114,7 +114,7 @@ S10. Government discovery: https://data.gov.in/catalog/digital-elevation-model-d
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) DATA-02 and DATA-03.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) DATA-02 and DATA-03.
 
 - **CRS checks cannot rely on "inside India".** UTM 43N data read as 44N moves about 600 km and still lands in India; Kalianpur/Everest data labelled WGS84 lands on the wrong parcel. Never infer zone or datum from coordinate ranges; send these cases to the unknown-CRS path and use a known control point residual. Fixtures are in [H28](28-data-acquisition-and-finale-tests.md) Z3.
 - **One India boundary.** The admission polygon is Survey of India's official boundary at a pinned release, with a coastal and island rule (an Andaman point is admitted, a Colombo point is rejected). No national overview map from a non-Survey of India boundary appears in the UI or PPT.

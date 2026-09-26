@@ -1,14 +1,9 @@
 /** Fresh, loopback-only Colima profile for the FND integration test. */
 import assert from 'node:assert/strict';
-import { randomBytes } from 'node:crypto';
-import { mkdtemp, writeFile, rm, lstat, realpath } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { spawn } from 'node:child_process';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertIsolation as assertHostedIsolation, redact } from '../engineering/isolation.mjs';
 
-const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const ports = { POSTGRES_PORT: '25432', S3_PORT: '29000', S3_CONSOLE_PORT: '29001',
   REDIS_PORT: '26379', GEO_PORT: '28000' };
 const previewProviderKeys = ['OPENAI_API_KEY', 'SARVAM_API_KEY', 'ANTHROPIC_API_KEY',
@@ -70,53 +65,7 @@ export function uspProcessEnvironment(env, repositoryRoot) {
 async function run() {
   assert.equal(process.argv.length, 3, 'Usage: local-isolation.mjs --run|--preview-run|--privacy-run|--privacy-hold|--privacy-persistent');
   assert(['--run', '--preview-run', '--privacy-run', '--privacy-hold', '--privacy-persistent'].includes(process.argv[2]));
-  const persistent = process.argv[2] === '--privacy-persistent';
-  const manualHold = process.argv[2] === '--privacy-hold' || persistent;
-  const privacy = process.argv[2] === '--privacy-run' || manualHold;
-  const preview = privacy || process.argv[2] === '--preview-run';
-  await assert.rejects(lstat(resolve(root, '.env')), { code: 'ENOENT' });
-  const temporary = await mkdtemp(join(tmpdir(), 'ulpin-usptest-'));
-  const nonce = randomBytes(8).toString('hex');
-  const colima = process.platform === 'darwin';
-  assert(['darwin', 'linux'].includes(process.platform), 'Local isolation needs macOS Colima or local Linux Docker');
-  const project = `ulpin-usptest-${nonce}`;
-  const database = `ulpin_usptest_${nonce}`;
-  const password = randomBytes(32).toString('hex');
-  const values = {
-    ULPIN_ISOLATION_PROFILE: preview ? 'local-preview' : colima ? 'local-colima' : 'local-docker', ULPIN_LOCAL_NONCE: nonce,
-    DOCKER_CONTEXT: colima ? 'colima-ulpin' : 'default', REPO_DATA: 'false', ULPIN_BASELINE_PROJECT: project,
-    POSTGRES_DB: database, POSTGRES_USER: 'ulpin_usptest', POSTGRES_PASSWORD: password,
-    POSTGRES_PORT: '25432', DATABASE_URL: `postgresql://ulpin_usptest:${password}@127.0.0.1:25432/${database}`,
-    S3_ACCESS_KEY: 'ulpin_usptest', S3_SECRET_KEY: randomBytes(32).toString('hex'),
-    S3_BUCKET: project, S3_ENDPOINT: 'http://127.0.0.1:29000', S3_REGION: 'us-east-1',
-    S3_PORT: '29000', S3_CONSOLE_PORT: '29001', REDIS_URL: 'redis://127.0.0.1:26379/0',
-    REDIS_PORT: '26379', GEO_URL: 'http://127.0.0.1:28000', GEO_PORT: '28000',
-    GEO_SERVICE_TOKEN: randomBytes(32).toString('hex'),
-    ULPIN_TEST_URL: `http://127.0.0.1:${preview ? persistent ? 3187 : 3108 : colima ? 3000 : 23000}`, NEXT_TELEMETRY_DISABLED: '1',
-    ...(preview ? { ULPIN_LOOPBACK_PORTS: persistent ? '3187' : '3108', ULPIN_ALLOW_NON_INDIA_PROVIDER: '0', ULPIN_RELEASE_PROFILE: 'finale_v1' } : {}),
-  };
-  const env = { ...process.env, ...values };
-  if (manualHold) env.ULPIN_FND06_MANUAL_HOLD = '1';
-  if (persistent) env.ULPIN_PERSISTENT_PREVIEW = '1';
-  for (const key of ['DOCKER_HOST', 'DOCKER_CERT_PATH', 'NOUS_API_KEY', 'OPENROUTER_API_KEY']) delete env[key];
-  if (preview) for (const key of previewProviderKeys) delete env[key];
-  assertUspIsolation(env);
-  const file = join(temporary, 'ulpin-local.env');
-  await writeFile(file, Object.entries(values).filter(([key]) => key !== 'ULPIN_ISOLATION_PROFILE' && key !== 'ULPIN_LOCAL_NONCE' && key !== 'DOCKER_CONTEXT')
-    .map(([key, value]) => `${key}=${value}`).join('\n') + '\n', { flag: 'wx', mode: 0o600 });
-  env.ULPIN_LOCAL_ENV_FILE = await realpath(file);
-  try {
-    const child = spawn(process.execPath, [privacy ? 'scripts/usp/gf/FND-06-isolated.mjs' : preview ? 'scripts/usp/ui/UI-03-isolated-preview.mjs' : 'scripts/usp/isolated-live.mjs'], { cwd: root, env, stdio: 'inherit' });
-    const forward = signal => { if (child.exitCode === null) child.kill(signal); };
-    const onInterrupt = () => forward('SIGINT'), onTerminate = () => forward('SIGTERM');
-    process.on('SIGINT', onInterrupt); process.on('SIGTERM', onTerminate);
-    let code;
-    try { code = await new Promise((done, reject) => { child.once('error', reject); child.once('close', done); }); }
-    finally { process.off('SIGINT', onInterrupt); process.off('SIGTERM', onTerminate); }
-    process.exitCode = code ?? 1;
-  } finally {
-    await rm(temporary, { recursive: true, force: true });
-  }
+  throw new Error('The historical isolated replay and preview runners depended on retired mixed saved-state bundles. A real-source isolated runner has not yet been qualified; no service or volume was changed.');
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

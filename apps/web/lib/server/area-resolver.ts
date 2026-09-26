@@ -259,7 +259,7 @@ export async function bindExternalIdentifier(input: {
       throw new AppError(
         422,
         "DEMO_PARCEL_REQUIRED",
-        "A demo ID must begin DEMO- and target a fictional parcel.",
+        "This application test identifier must begin DEMO- and target a synthetic parcel.",
       );
     const areaId = isPhysical ? row.area_id : row.site_id;
     const source = (

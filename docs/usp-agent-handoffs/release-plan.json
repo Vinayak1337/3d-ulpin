@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ulpin-release-plan/1",
-  "decisionDate": "2026-09-24",
+  "decisionDate": "2026-09-26",
   "currentRelease": "finale_v1",
   "nextGate": "GF0",
   "baseline": {
@@ -47,8 +47,8 @@
     "RIGHTS": "Declared rights and common-space relationships",
     "HISTORY": "Exact revision comparison and lineage reads",
     "IMPACT": "Coverage-aware infrastructure screening",
-    "PACK": "Scoped packets, card and QR presentation",
-    "UI": "Shared Studio routes and viewport",
+    "PACK": "Scoped backend packet/card artifacts and exact-revision QR contracts",
+    "UI": "User-owned external UI integration; no agent implementation queue",
     "DATA": "Acquisition, independent truth and manifests",
     "DEPLOY": "Provider, privacy and deployment controls",
     "CITIZEN": "Public requests and private submissions",
@@ -373,7 +373,8 @@
         "F02",
         "F06",
         "F12"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-ID",
@@ -390,7 +391,8 @@
       ],
       "auditFindings": [
         "F04"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-EXCHANGE",
@@ -405,7 +407,8 @@
       ],
       "auditFindings": [
         "F05"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-AI",
@@ -420,7 +423,8 @@
       ],
       "auditFindings": [
         "F06"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-INGEST",
@@ -436,7 +440,8 @@
       "auditFindings": [
         "F01",
         "F06"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-AGENT",
@@ -456,7 +461,8 @@
         "C05",
         "C06",
         "C08"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-SUFFICIENCY",
@@ -475,12 +481,13 @@
       "auditFindings": [
         "C60",
         "C61"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-VIEW",
-      "title": "Desktop-first light-only Studio on retained Cesium with official source-shaped geometry",
-      "owner": "UI",
+      "title": "Authorized source-shaped geometry/assets, identity/frame and selection contracts for existing consumers",
+      "owner": "FND",
       "gate": "GF2",
       "docs": [
         "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
@@ -495,12 +502,13 @@
       ],
       "auditFindings": [
         "F08"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-SCENE",
-      "title": "Official Indian reference scene and deterministic styling without invented scene data",
-      "owner": "UI",
+      "title": "Official Indian reference manifests and deterministic display derivatives isolated from analysis",
+      "owner": "FND",
       "gate": "GF2",
       "docs": [
         "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md",
@@ -515,7 +523,8 @@
       "auditFindings": [
         "C58",
         "C59"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-RIGHTS",
@@ -533,7 +542,8 @@
       "auditFindings": [
         "F09",
         "F10"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-CARPET",
@@ -548,7 +558,8 @@
       ],
       "auditFindings": [
         "F09"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-GEOMETRY",
@@ -566,7 +577,8 @@
         "F07",
         "F11",
         "F12"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-DEVIATION",
@@ -583,7 +595,8 @@
       "auditFindings": [
         "F11",
         "F12"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-IMPACT",
@@ -599,7 +612,8 @@
       ],
       "auditFindings": [
         "F12"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-CARD",
@@ -615,7 +629,8 @@
       ],
       "auditFindings": [
         "F13"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-TRUST",
@@ -635,7 +650,8 @@
       "auditFindings": [
         "F13",
         "F14"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-CLAIMS",
@@ -670,7 +686,8 @@
       ],
       "auditFindings": [
         "F01"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-FP-LEARN",
@@ -685,7 +702,8 @@
       ],
       "auditFindings": [
         "F01"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-FP-PUBLIC",
@@ -700,7 +718,8 @@
       ],
       "auditFindings": [
         "F01"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-FP-ASSIST",
@@ -715,7 +734,8 @@
       ],
       "auditFindings": [
         "F01"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-FP-FORMATS",
@@ -730,12 +750,13 @@
       ],
       "auditFindings": [
         "F01"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-FP-ENRICH",
-      "title": "FP-ENRICH retained full-product capability",
-      "owner": "UI",
+      "title": "Deferred enrichment provenance/isolation contracts; no generation or UI implementation authorized",
+      "owner": "FND",
       "gate": "FP-ENRICH",
       "docs": [
         "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
@@ -746,12 +767,13 @@
       ],
       "auditFindings": [
         "F01"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-FP-RENDER",
-      "title": "FP-RENDER retained full-product capability",
-      "owner": "UI",
+      "title": "Deferred asset/codec compatibility contracts; no renderer replacement authorized",
+      "owner": "FND",
       "gate": "FP-RENDER",
       "docs": [
         "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md"
@@ -761,7 +783,8 @@
       ],
       "auditFindings": [
         "F01"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-FP-SCALE",
@@ -776,7 +799,8 @@
       ],
       "auditFindings": [
         "F01"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-FP-DEPLOY",
@@ -793,7 +817,8 @@
       ],
       "auditFindings": [
         "F01"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-CONTRACT",
@@ -810,7 +835,8 @@
       "auditFindings": [
         "F01",
         "F02"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-READY",
@@ -827,12 +853,13 @@
       "auditFindings": [
         "F01",
         "F02"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     },
     {
       "id": "R-REHEARSAL",
-      "title": "Integrated Studio journey, metrics and honest PPT/backup rehearsal",
-      "owner": "UI",
+      "title": "Backend source-to-card lifecycle, recovery, timings and traceable claims",
+      "owner": "LEAD",
       "gate": "GF5",
       "docs": [
         "docs/usp-agent-handoffs/24-product-method-and-ppt.md",
@@ -848,7 +875,8 @@
       "auditFindings": [
         "F01",
         "F02"
-      ]
+      ],
+      "acceptanceScope": "backend_only"
     }
   ],
   "tests": {
@@ -966,7 +994,7 @@
     },
     "GF-VIEW": {
       "kind": "runtime",
-      "owner": "UI",
+      "owner": "FND",
       "specs": [
         "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
         "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
@@ -974,7 +1002,8 @@
       ],
       "status": "planned",
       "receipts": [],
-      "attempts": []
+      "attempts": [],
+      "acceptanceScope": "backend_contract_and_processing_only; user-owned UI integration unqualified"
     },
     "GF-DATA": {
       "kind": "runtime",
@@ -1030,13 +1059,14 @@
     },
     "FP-ENRICH-TEST": {
       "kind": "runtime",
-      "owner": "UI",
+      "owner": "FND",
       "specs": [
         "docs/usp-agent-handoffs/25-all-format-agent-and-ux4g.md"
       ],
       "status": "planned",
       "receipts": [],
-      "attempts": []
+      "attempts": [],
+      "acceptanceScope": "backend_contract_and_processing_only; user-owned UI integration unqualified"
     },
     "FP-FORMATS-TEST": {
       "kind": "runtime",
@@ -1050,13 +1080,14 @@
     },
     "FP-RENDER-TEST": {
       "kind": "runtime",
-      "owner": "UI",
+      "owner": "FND",
       "specs": [
         "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md"
       ],
       "status": "planned",
       "receipts": [],
-      "attempts": []
+      "attempts": [],
+      "acceptanceScope": "backend_contract_and_processing_only; user-owned UI integration unqualified"
     },
     "FP-SCALE-TEST": {
       "kind": "runtime",
@@ -1103,7 +1134,7 @@
     },
     "GF-REHEARSAL": {
       "kind": "runtime",
-      "owner": "UI",
+      "owner": "LEAD",
       "specs": [
         "docs/usp-agent-handoffs/24-product-method-and-ppt.md",
         "docs/usp-agent-handoffs/99-ui-ux-and-integration.md",
@@ -1111,7 +1142,8 @@
       ],
       "status": "planned",
       "receipts": [],
-      "attempts": []
+      "attempts": [],
+      "acceptanceScope": "backend_contract_and_processing_only; user-owned UI integration unqualified"
     },
     "GF-AGENT": {
       "kind": "runtime",
@@ -1127,7 +1159,7 @@
     },
     "GF-SCENE": {
       "kind": "runtime",
-      "owner": "UI",
+      "owner": "FND",
       "specs": [
         "docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md",
         "docs/usp-agent-handoffs/22-rendering-and-sparse-data.md",
@@ -1135,7 +1167,8 @@
       ],
       "status": "planned",
       "receipts": [],
-      "attempts": []
+      "attempts": [],
+      "acceptanceScope": "backend_contract_and_processing_only; user-owned UI integration unqualified"
     },
     "GF-SUFFICIENCY": {
       "kind": "runtime",
@@ -1154,8 +1187,7 @@
     "AGENTS.md",
     "README.md",
     "docs/usp-agent-handoffs/00-README.md",
-    "docs/usp-agent-handoffs/02-lead-agent-execution.md",
-    "docs/engineering-plan/CURRENT_WORK.md"
+    "docs/usp-agent-handoffs/02-lead-agent-execution.md"
   ],
   "activeDocDirectory": "docs/usp-agent-handoffs",
   "planValidation": {
@@ -1169,8 +1201,9 @@
       "C08",
       "C24"
     ],
-    "status": "passed",
-    "receipt": "docs/evidence/usp/finale/GF-EXCHANGE/FND-03/attempt-1/plan-validation.json"
+    "status": "pending",
+    "receipt": "docs/evidence/usp/finale/GF-EXCHANGE/FND-03/attempt-1/plan-validation.json",
+    "note": "Historical receipt retained; re-pin only after consolidated document validation. No runtime qualification implied."
   },
   "receiptContract": {
     "schemaVersion": "ulpin-test-receipt/1",
@@ -1206,7 +1239,7 @@
       "allowAgentAuthoredSyntheticData": false,
       "allowInventedSceneData": false,
       "derivedExtractsRequireOriginalHashes": true,
-      "historicalData": "preserve_only_not_current_qualification",
+      "historicalData": "reviewed_exact_path_retirement_only; preserve_real_originals_lineage_and_recorded_receipts",
       "unavailableCoverage": "unqualified_not_passed_or_waived"
     },
     "ui": {
@@ -1216,10 +1249,24 @@
       "mobileOptimizationRequired": false,
       "preserveFutureThemeAndResponsiveSeams": true,
       "desktopAccessibilityRequired": true,
-      "legacyPresentation": "replace_from_design_references",
-      "replacementSequence": "within_existing_plan_cards",
+      "legacyPresentation": "user_owned_outside_backend_plan",
+      "replacementSequence": "not_scheduled",
       "standaloneRedesignPhase": false,
-      "preserveSharedRuntimeAndSavedURLs": true
+      "preserveSharedRuntimeAndSavedURLs": true,
+      "implementationScheduled": false,
+      "viewModels": "authorized_canonical_API_projections_only"
+    },
+    "execution": {
+      "scope": "backend_only",
+      "currentAssignment": "planning_only",
+      "featureImplementationAuthorized": false,
+      "frontendOwner": "user",
+      "delegation": "ordinary_codex_tasks_not_subagents",
+      "leadMayExecuteAssignedWork": true,
+      "speedPreference": "Fast",
+      "configuredServiceTier": "priority",
+      "observedTurnServiceTier": null,
+      "newProductFeaturesScheduled": false
     }
   },
   "waivers": [],
@@ -1269,6 +1316,16 @@
       "status": "not_required",
       "owner": null,
       "fallback": "Use documented open-download sources; unavailable authenticated coverage remains unqualified."
+    }
+  ],
+  "externalIntegrationDependencies": [
+    {
+      "id": "USER-UI",
+      "owner": "user",
+      "status": "unqualified",
+      "scope": "User-owned browser/rendering/visual/accessibility/task-completion validation against backend contracts",
+      "blocksCompleteProductReleaseClaim": true,
+      "note": "No UI implementation tasks are scheduled; backend receipts cannot discharge this integration dependency."
     }
   ]
 }

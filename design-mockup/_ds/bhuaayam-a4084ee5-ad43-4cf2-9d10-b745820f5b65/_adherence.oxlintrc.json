@@ -1,0 +1,602 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": [
+          {
+            "element": "button",
+            "message": "Use <Button> from the design system instead of <button>."
+          },
+          {
+            "element": "table",
+            "message": "Use <DataTable> from the design system instead of <table>."
+          }
+        ]
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/actions/Button/**",
+              "components/actions/SegmentedControl/**",
+              "components/engineering/DigColumn/**",
+              "components/forms/Field/**",
+              "components/forms/Toggle/**",
+              "components/foundations/Icon/**",
+              "components/identity/UlpinCode/**",
+              "components/intake/ImportStream/**",
+              "components/layout/DataTable/**",
+              "components/layout/DescriptionList/**",
+              "components/layout/Panel/**",
+              "components/layout/Tabs/**",
+              "components/map-and-3d/LayerPanel/**",
+              "components/map-and-3d/Legend/**",
+              "components/map-and-3d/LevelRail/**",
+              "components/map-and-3d/MapCanvas/**",
+              "components/map-and-3d/MapPatterns/**",
+              "components/map-and-3d/MapStyle/**",
+              "components/map-and-3d/MapToolbar/**",
+              "components/map-and-3d/StrataSection/**",
+              "components/output/PropertyCard/**",
+              "components/record/CarpetAreaCheck/**",
+              "components/record/EvidenceChip/**",
+              "components/record/Inspector/**",
+              "components/record/ReadinessMeter/**",
+              "components/record/ShareLedger/**",
+              "components/review/FindingCard/**",
+              "components/review/RevisionTimeline/**",
+              "components/shell/PortalHeader/**",
+              "components/shell/StudioHeader/**",
+              "components/shell/Wordmark/**",
+              "components/status/Badge/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Noto Sans Devanagari|Noto Sans|Noto Sans Display|Noto Sans Mono))/i]",
+        "message": "Font not provided by the design system. Available: Noto Sans Devanagari, Noto Sans, Noto Sans Display, Noto Sans Mono."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Badge'] > JSXAttribute > JSXIdentifier[name!=/^(?:status|tone|icon|children|className|id|style|key|ref|className|style|children)$/]",
+        "message": "<Badge> doesn't accept that prop. Declared props: status, tone, icon, children, className, id, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Badge'] > JSXAttribute[name.name='status'] > Literal[value!=/^(?:Draft|Needs evidence|Needs review|Reviewed|Recorded|Assigned|Retired|Cancelled|Unknown|Not assessed|Not comparable|Test fixture|Blocking|Provisional|Passed)$/]",
+        "message": "<Badge> status must be one of 'Draft' | 'Needs evidence' | 'Needs review' | 'Reviewed' | 'Recorded' | 'Assigned' | 'Retired' | 'Cancelled' | 'Unknown' | 'Not assessed' | 'Not comparable' | 'Test fixture' | 'Blocking' | 'Provisional' | 'Passed'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Badge'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:neutral|success|warning|danger|info|primary)$/]",
+        "message": "<Badge> tone must be one of 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'primary'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute > JSXIdentifier[name!=/^(?:variant|size|icon|iconOnly|children|className|id|style|key|ref|className|style|children)$/]",
+        "message": "<Button> doesn't accept that prop. Declared props: variant, size, icon, iconOnly, children, className, id, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:danger|primary|default|soft|ghost)$/]",
+        "message": "<Button> variant must be one of 'danger' | 'primary' | 'default' | 'soft' | 'ghost'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:md|lg)$/]",
+        "message": "<Button> size must be one of 'md' | 'lg'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='CarpetAreaCheck'] > JSXAttribute > JSXIdentifier[name!=/^(?:unit|grossInternal|deductions|declared|declaredEvidence|tolerancePct|style|key|ref|className|style|children)$/]",
+        "message": "<CarpetAreaCheck> doesn't accept that prop. Declared props: unit, grossInternal, deductions, declared, declaredEvidence, tolerancePct, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='DataTable'] > JSXAttribute > JSXIdentifier[name!=/^(?:columns|rows|more|footer|hideHeader|key|ref|className|style|children)$/]",
+        "message": "<DataTable> doesn't accept that prop. Declared props: columns, rows, more, footer, hideHeader."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='DescriptionList'] > JSXAttribute > JSXIdentifier[name!=/^(?:items|key|ref|className|style|children)$/]",
+        "message": "<DescriptionList> doesn't accept that prop. Declared props: items."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='DigColumn'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|range|bands|nearby|nearbyLabel|actions|style|key|ref|className|style|children)$/]",
+        "message": "<DigColumn> doesn't accept that prop. Declared props: title, range, bands, nearby, nearbyLabel, actions, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='EvidenceChip'] > JSXAttribute > JSXIdentifier[name!=/^(?:source|locator|state|kind|icon|href|onClick|key|ref|className|style|children)$/]",
+        "message": "<EvidenceChip> doesn't accept that prop. Declared props: source, locator, state, kind, icon, href, onClick."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='EvidenceChip'] > JSXAttribute[name.name='state'] > Literal[value!=/^(?:linked|estimated|missing)$/]",
+        "message": "<EvidenceChip> state must be one of 'linked' | 'estimated' | 'missing'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='EvidenceChip'] > JSXAttribute[name.name='kind'] > Literal[value!=/^(?:document|table|feature)$/]",
+        "message": "<EvidenceChip> kind must be one of 'document' | 'table' | 'feature'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Field'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|help|error|className|id|style|key|ref|className|style|children)$/]",
+        "message": "<Field> doesn't accept that prop. Declared props: label, help, error, className, id, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='FindingCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:severity|title|method|calculation|evidence|actions|style|key|ref|className|style|children)$/]",
+        "message": "<FindingCard> doesn't accept that prop. Declared props: severity, title, method, calculation, evidence, actions, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='FindingCard'] > JSXAttribute[name.name='severity'] > Literal[value!=/^(?:info|blocking|needs-review|not-assessed)$/]",
+        "message": "<FindingCard> severity must be one of 'info' | 'blocking' | 'needs-review' | 'not-assessed'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Icon'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|size|label|children|className|id|style|ref|key|ref|className|style|children)$/]",
+        "message": "<Icon> doesn't accept that prop. Declared props: name, size, label, children, className, id, style, ref."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Icon'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:md|sm)$/]",
+        "message": "<Icon> size must be one of 'md' | 'sm'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ImportStream'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|meta|rows|style|key|ref|className|style|children)$/]",
+        "message": "<ImportStream> doesn't accept that prop. Declared props: title, meta, rows, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Inspector'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|status|code|location|tabs|activeTab|onTabChange|facts|children|primaryAction|secondaryAction|wide|style|key|ref|className|style|children)$/]",
+        "message": "<Inspector> doesn't accept that prop. Declared props: title, status, code, location, tabs, activeTab, onTabChange, facts, children, primaryAction, secondaryAction, wide, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Inspector'] > JSXAttribute[name.name='status'] > Literal[value!=/^(?:Draft|Needs evidence|Needs review|Reviewed|Recorded|Assigned|Retired|Cancelled|Unknown|Not assessed|Not comparable|Test fixture|Blocking|Provisional|Passed)$/]",
+        "message": "<Inspector> status must be one of 'Draft' | 'Needs evidence' | 'Needs review' | 'Reviewed' | 'Recorded' | 'Assigned' | 'Retired' | 'Cancelled' | 'Unknown' | 'Not assessed' | 'Not comparable' | 'Test fixture' | 'Blocking' | 'Provisional' | 'Passed'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='LayerPanel'] > JSXAttribute > JSXIdentifier[name!=/^(?:colourByOptions|colourBy|onColourByChange|groups|onToggle|style|key|ref|className|style|children)$/]",
+        "message": "<LayerPanel> doesn't accept that prop. Declared props: colourByOptions, colourBy, onColourByChange, groups, onToggle, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Legend'] > JSXAttribute > JSXIdentifier[name!=/^(?:sections|style|key|ref|className|style|children)$/]",
+        "message": "<Legend> doesn't accept that prop. Declared props: sections, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='LevelRail'] > JSXAttribute > JSXIdentifier[name!=/^(?:levels|reference|ground|selected|defaultSelected|onSelect|key|ref|className|style|children)$/]",
+        "message": "<LevelRail> doesn't accept that prop. Declared props: levels, reference, ground, selected, defaultSelected, onSelect."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapCanvas'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|overlays|height|style|key|ref|className|style|children)$/]",
+        "message": "<MapCanvas> doesn't accept that prop. Declared props: children, overlays, height, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapStyle'] > JSXAttribute > JSXIdentifier[name!=/^(?:selectedLabel|parcelCode|findingLabel|utilityLabel|style|key|ref|className|style|children)$/]",
+        "message": "<MapStyle> doesn't accept that prop. Declared props: selectedLabel, parcelCode, findingLabel, utilityLabel, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapToolbar'] > JSXAttribute > JSXIdentifier[name!=/^(?:tool|defaultTool|onToolChange|hiddenTools|view|onViewChange|render|onRenderChange|onResetCamera|key|ref|className|style|children)$/]",
+        "message": "<MapToolbar> doesn't accept that prop. Declared props: tool, defaultTool, onToolChange, hiddenTools, view, onViewChange, render, onRenderChange, onResetCamera."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapToolbar'] > JSXAttribute[name.name='tool'] > Literal[value!=/^(?:select|measure-distance|measure-area|section|impact|underground)$/]",
+        "message": "<MapToolbar> tool must be one of 'select' | 'measure-distance' | 'measure-area' | 'section' | 'impact' | 'underground'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapToolbar'] > JSXAttribute[name.name='defaultTool'] > Literal[value!=/^(?:select|measure-distance|measure-area|section|impact|underground)$/]",
+        "message": "<MapToolbar> defaultTool must be one of 'select' | 'measure-distance' | 'measure-area' | 'section' | 'impact' | 'underground'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapToolbar'] > JSXAttribute[name.name='view'] > Literal[value!=/^(?:3D|2D)$/]",
+        "message": "<MapToolbar> view must be one of '3D' | '2D'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapToolbar'] > JSXAttribute[name.name='render'] > Literal[value!=/^(?:Model|Volumes)$/]",
+        "message": "<MapToolbar> render must be one of 'Model' | 'Volumes'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Panel'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|aside|head|flush|children|footer|as|bodyPadding|className|style|key|ref|className|style|children)$/]",
+        "message": "<Panel> doesn't accept that prop. Declared props: title, aside, head, flush, children, footer, as, bodyPadding, className, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Panel'] > JSXAttribute[name.name='as'] > Literal[value!=/^(?:section|div|aside|article)$/]",
+        "message": "<Panel> as must be one of 'section' | 'div' | 'aside' | 'article'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='PortalHeader'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|department|languageSwitch|signInLabel|accessibilityBar|key|ref|className|style|children)$/]",
+        "message": "<PortalHeader> doesn't accept that prop. Declared props: title, department, languageSwitch, signInLabel, accessibilityBar."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='PropertyCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|code|location|facts|revision|hash|chain|qrLabel|style|key|ref|className|style|children)$/]",
+        "message": "<PropertyCard> doesn't accept that prop. Declared props: title, code, location, facts, revision, hash, chain, qrLabel, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ReadinessMeter'] > JSXAttribute > JSXIdentifier[name!=/^(?:task|dimensions|bare|style|key|ref|className|style|children)$/]",
+        "message": "<ReadinessMeter> doesn't accept that prop. Declared props: task, dimensions, bare, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='RevisionTimeline'] > JSXAttribute > JSXIdentifier[name!=/^(?:revisions|chain|title|style|key|ref|className|style|children)$/]",
+        "message": "<RevisionTimeline> doesn't accept that prop. Declared props: revisions, chain, title, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='RevisionTimeline'] > JSXAttribute[name.name='chain'] > Literal[value!=/^(?:consistent|signed|broken)$/]",
+        "message": "<RevisionTimeline> chain must be one of 'consistent' | 'signed' | 'broken'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SegmentedControl'] > JSXAttribute > JSXIdentifier[name!=/^(?:options|value|defaultValue|onChange|style|className|key|ref|className|style|children)$/]",
+        "message": "<SegmentedControl> doesn't accept that prop. Declared props: options, value, defaultValue, onChange, style, className."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ShareLedger'] > JSXAttribute > JSXIdentifier[name!=/^(?:building|basis|rows|moreUnits|totalUnits|total|evidence|style|key|ref|className|style|children)$/]",
+        "message": "<ShareLedger> doesn't accept that prop. Declared props: building, basis, rows, moreUnits, totalUnits, total, evidence, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ShareLedger'] > JSXAttribute[name.name='basis'] > Literal[value!=/^(?:value|area)$/]",
+        "message": "<ShareLedger> basis must be one of 'value' | 'area'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StrataSection'] > JSXAttribute > JSXIdentifier[name!=/^(?:parcel|levels|selected|roof|ground|basements|airRights|utility|corridor|corridorRange|style|key|ref|className|style|children)$/]",
+        "message": "<StrataSection> doesn't accept that prop. Declared props: parcel, levels, selected, roof, ground, basements, airRights, utility, corridor, corridorRange, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StudioHeader'] > JSXAttribute > JSXIdentifier[name!=/^(?:surface|nav|active|onNavigate|searchPlaceholder|area|status|statusTone|initials|userName|actions|key|ref|className|style|children)$/]",
+        "message": "<StudioHeader> doesn't accept that prop. Declared props: surface, nav, active, onNavigate, searchPlaceholder, area, status, statusTone, initials, userName, actions."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StudioHeader'] > JSXAttribute[name.name='statusTone'] > Literal[value!=/^(?:neutral|success|warning|danger|info|primary)$/]",
+        "message": "<StudioHeader> statusTone must be one of 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'primary'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Tabs'] > JSXAttribute > JSXIdentifier[name!=/^(?:tabs|value|defaultValue|onChange|key|ref|className|style|children)$/]",
+        "message": "<Tabs> doesn't accept that prop. Declared props: tabs, value, defaultValue, onChange."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Toggle'] > JSXAttribute > JSXIdentifier[name!=/^(?:checked|defaultChecked|onChange|key|ref|className|style|children)$/]",
+        "message": "<Toggle> doesn't accept that prop. Declared props: checked, defaultChecked, onChange."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='UlpinCode'] > JSXAttribute > JSXIdentifier[name!=/^(?:code|location|state|labelled|legend|copyable|onCopy|locationTitles|note|key|ref|className|style|children)$/]",
+        "message": "<UlpinCode> doesn't accept that prop. Declared props: code, location, state, labelled, legend, copyable, onCopy, locationTitles, note."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='UlpinCode'] > JSXAttribute[name.name='state'] > Literal[value!=/^(?:assigned|draft|retired|cancelled)$/]",
+        "message": "<UlpinCode> state must be one of 'assigned' | 'draft' | 'retired' | 'cancelled'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Wordmark'] > JSXAttribute > JSXIdentifier[name!=/^(?:surface|size|key|ref|className|style|children)$/]",
+        "message": "<Wordmark> doesn't accept that prop. Declared props: surface, size."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "Badge": {
+        "replaces": []
+      },
+      "Button": {
+        "replaces": [
+          "button"
+        ]
+      },
+      "CarpetAreaCheck": {
+        "replaces": []
+      },
+      "DataTable": {
+        "replaces": [
+          "table"
+        ]
+      },
+      "DescriptionList": {
+        "replaces": []
+      },
+      "DigColumn": {
+        "replaces": []
+      },
+      "EvidenceChip": {
+        "replaces": []
+      },
+      "Field": {
+        "replaces": []
+      },
+      "FindingCard": {
+        "replaces": []
+      },
+      "Icon": {
+        "replaces": []
+      },
+      "ImportStream": {
+        "replaces": []
+      },
+      "Inspector": {
+        "replaces": []
+      },
+      "LayerPanel": {
+        "replaces": []
+      },
+      "Legend": {
+        "replaces": []
+      },
+      "LevelRail": {
+        "replaces": []
+      },
+      "MapCanvas": {
+        "replaces": []
+      },
+      "MapPatterns": {
+        "replaces": []
+      },
+      "MapStyle": {
+        "replaces": []
+      },
+      "MapToolbar": {
+        "replaces": []
+      },
+      "Panel": {
+        "replaces": []
+      },
+      "PortalHeader": {
+        "replaces": []
+      },
+      "PropertyCard": {
+        "replaces": []
+      },
+      "ReadinessMeter": {
+        "replaces": []
+      },
+      "RevisionTimeline": {
+        "replaces": []
+      },
+      "SegmentedControl": {
+        "replaces": []
+      },
+      "ShareLedger": {
+        "replaces": []
+      },
+      "StrataSection": {
+        "replaces": []
+      },
+      "StudioHeader": {
+        "replaces": []
+      },
+      "Tabs": {
+        "replaces": []
+      },
+      "Toggle": {
+        "replaces": []
+      },
+      "UlpinCode": {
+        "replaces": []
+      },
+      "Wordmark": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--a11y-bar",
+      "--bg",
+      "--border-strong",
+      "--control-height",
+      "--danger",
+      "--danger-soft",
+      "--dialog-lg",
+      "--dialog-md",
+      "--divider",
+      "--focus",
+      "--focus-ring",
+      "--font-display",
+      "--font-mono",
+      "--font-sans",
+      "--header-portal",
+      "--header-studio",
+      "--info",
+      "--info-soft",
+      "--ink",
+      "--ink-muted",
+      "--ink-soft",
+      "--line-control",
+      "--map-building",
+      "--map-building-edge",
+      "--map-ground",
+      "--map-halo",
+      "--map-parcel-line",
+      "--map-public-land",
+      "--map-road",
+      "--map-selected",
+      "--map-water",
+      "--mark-critical",
+      "--mark-good",
+      "--mark-serious",
+      "--mark-warning",
+      "--max-content",
+      "--on-primary",
+      "--opacity-context",
+      "--opacity-ghost",
+      "--opacity-ground-cut",
+      "--portal-content",
+      "--primary",
+      "--primary-hover",
+      "--primary-soft",
+      "--radius-12",
+      "--radius-16",
+      "--radius-4",
+      "--radius-8",
+      "--radius-pill",
+      "--rail-left",
+      "--rail-right",
+      "--rail-right-wide",
+      "--readiness-unknown",
+      "--rights-exclusive",
+      "--rights-public",
+      "--rights-shared",
+      "--seq-100",
+      "--seq-250",
+      "--seq-400",
+      "--seq-550",
+      "--seq-700",
+      "--shadow-card",
+      "--shadow-floating",
+      "--shadow-overlay",
+      "--sky-band",
+      "--soil-deep",
+      "--soil-top",
+      "--space-1",
+      "--space-10",
+      "--space-12",
+      "--space-16",
+      "--space-2",
+      "--space-3",
+      "--space-4",
+      "--space-5",
+      "--space-6",
+      "--space-8",
+      "--success",
+      "--success-soft",
+      "--surface",
+      "--surface-subtle",
+      "--surface-tint",
+      "--toolbar-height",
+      "--touch-height",
+      "--tray-height",
+      "--utility-electric",
+      "--utility-gas",
+      "--utility-reclaimed",
+      "--utility-sewer",
+      "--utility-telecom",
+      "--utility-water",
+      "--warning",
+      "--warning-soft",
+      "--z-canvas",
+      "--z-dialog",
+      "--z-map-overlay",
+      "--z-popover",
+      "--z-rail",
+      "--z-toast",
+      "--z-tray"
+    ],
+    "tokenKinds": {
+      "--bg": "color",
+      "--surface": "color",
+      "--surface-subtle": "color",
+      "--surface-tint": "color",
+      "--ink": "color",
+      "--ink-soft": "color",
+      "--ink-muted": "color",
+      "--divider": "color",
+      "--border-strong": "color",
+      "--line-control": "color",
+      "--primary": "color",
+      "--primary-hover": "color",
+      "--primary-soft": "color",
+      "--on-primary": "color",
+      "--focus": "color",
+      "--info": "color",
+      "--info-soft": "color",
+      "--success": "color",
+      "--success-soft": "color",
+      "--warning": "color",
+      "--warning-soft": "color",
+      "--danger": "color",
+      "--danger-soft": "color",
+      "--map-ground": "color",
+      "--map-road": "color",
+      "--map-public-land": "color",
+      "--map-water": "color",
+      "--map-parcel-line": "color",
+      "--map-building": "color",
+      "--map-building-edge": "color",
+      "--map-selected": "color",
+      "--map-halo": "color",
+      "--sky-band": "color",
+      "--soil-top": "color",
+      "--soil-deep": "color",
+      "--rights-exclusive": "color",
+      "--rights-public": "color",
+      "--rights-shared": "color",
+      "--mark-critical": "color",
+      "--mark-serious": "color",
+      "--mark-warning": "color",
+      "--mark-good": "color",
+      "--seq-100": "color",
+      "--seq-250": "color",
+      "--seq-400": "color",
+      "--seq-550": "color",
+      "--seq-700": "color",
+      "--readiness-unknown": "color",
+      "--utility-electric": "color",
+      "--utility-gas": "color",
+      "--utility-telecom": "color",
+      "--utility-water": "color",
+      "--utility-reclaimed": "color",
+      "--utility-sewer": "color",
+      "--shadow-card": "shadow",
+      "--shadow-floating": "shadow",
+      "--shadow-overlay": "shadow",
+      "--focus-ring": "shadow",
+      "--space-1": "spacing",
+      "--space-2": "spacing",
+      "--space-3": "spacing",
+      "--space-4": "spacing",
+      "--space-5": "spacing",
+      "--space-6": "spacing",
+      "--space-8": "spacing",
+      "--space-10": "spacing",
+      "--space-12": "spacing",
+      "--space-16": "spacing",
+      "--radius-4": "radius",
+      "--radius-8": "radius",
+      "--radius-12": "radius",
+      "--radius-16": "radius",
+      "--radius-pill": "radius",
+      "--header-studio": "spacing",
+      "--header-portal": "spacing",
+      "--a11y-bar": "spacing",
+      "--toolbar-height": "spacing",
+      "--control-height": "spacing",
+      "--touch-height": "spacing",
+      "--rail-left": "spacing",
+      "--rail-right": "spacing",
+      "--rail-right-wide": "spacing",
+      "--tray-height": "spacing",
+      "--dialog-md": "spacing",
+      "--dialog-lg": "spacing",
+      "--max-content": "spacing",
+      "--portal-content": "spacing",
+      "--opacity-context": "other",
+      "--opacity-ghost": "other",
+      "--opacity-ground-cut": "other",
+      "--z-canvas": "other",
+      "--z-map-overlay": "other",
+      "--z-rail": "other",
+      "--z-tray": "other",
+      "--z-popover": "other",
+      "--z-dialog": "other",
+      "--z-toast": "other",
+      "--font-sans": "font",
+      "--font-display": "font",
+      "--font-mono": "font"
+    },
+    "fontFamilies": [
+      "Noto Sans",
+      "Noto Sans Devanagari",
+      "Noto Sans Display",
+      "Noto Sans Mono"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 # 25 — All-format agent, generative enrichment and UX4G-guided design
 
-**Current scope:** [25 September delivery policy](current-delivery-policy.md) overrides older instructions here: official-source data only; desktop-first and light-only. Do not generate synthetic fixtures or invent scene data. Unavailable source coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Release: `full_product` (FP-ENRICH / FP-FORMATS).** Broad all-format adaptation and generative enrich-first previews remain the product ambition; no universal support claim. The finale uses qualified direct conversion and evidence-supported reconstruction under H14/H27. Enrichment/learner/renderer experiments do not block it. **25 September 2026:** the finale now includes a bounded part of this file through [H30](30-reference-scene-and-incomplete-data.md): one real sample per core input family (H30 F), fill/ask/park/reject handling of incomplete input (H30 E) and a deterministic Enhanced view over real layers (H30 C). Route 2 with learned or generative enrichment stays full_product. Shared accessibility practices apply to every delivered surface.
 
@@ -44,30 +44,19 @@ Sarvam's Trust Center states India-only residency for Indian deployments. That s
 
 Operational maps use Indian geography, with data.gov.in first. Tests may use any permitted geography in isolated test namespaces. No city is compulsory and existing datasets are preserved.
 
-## E. Government design framework: UX4G plus GIGW 3.0
+## E. Backend inclusion and public-service contracts
 
-The verified reference is **UX4G — User Experience for Government**, a Digital India / MeitY initiative providing design guidance and reusable interface components. Its official site currently presents Design System 3.0. **GIGW 3.0 — Guidelines for Indian Government Websites and Apps** complements it with quality, accessibility, security and lifecycle guidance, including WCAG 2.1 Level AA.
+Retain the UX4G/GIGW reference material in the protected design system for the user-owned UI. No framework installation, token/component/layout work or public frontend is scheduled. Backend acceptance covers authorization, retention, safe uploads, structured error/status reasons, language/locale metadata, exact source labels and traceable receipts. Never claim government affiliation, certification, legal compliance or full accessibility from a schema or library choice.
 
-Use UX4G as our design reference and GIGW 3.0 as our implementation/review target. These are government-web/app frameworks, not a claim that every private app is required to adopt them. Do not claim government approval, affiliation, STQC certification or full conformance merely because a component library is used. Do not copy government identity/emblems or imply official ownership of this project.
-
-| Project surface | Planned application |
-| --- | --- |
-| Public property finder and dashboard | Clear navigation, readable type/contrast, responsive layout, plain-language status and predictable actions |
-| Evidence/correction submission | Properly labelled inputs, visible required fields, retained form state, inline errors plus error summary, upload progress and trackable receipts |
-| Streaming map | Non-map list/search alternatives; keyboard-accessible selection and actions; stable focus; coalesced status announcements; reduced-motion reveal |
-| Generated versus evidence geometry | Persistent text/icon legend, accessible details and export labels; never colour alone |
-| Officer register/review | Same reusable buttons, dialogs, form rules, status vocabulary and table behavior, with separate permissions |
-| Inclusion | English/Hindi interface plan with correct language metadata, text expansion and reviewed translations; no untranslated invented property facts |
-
-Reuse existing UI tokens/components behind a small shared UX4G-alignment layer. Do not introduce global CSS resets, conflicting JS behavior, another router/map or unrelated government-service integrations just to adopt the framework. Inspect the exact package version, licence, accessibility behavior and compatibility before installing; guidance adoption does not require replacing our entire frontend. The finale retains the current shared Cesium runtime; H22 governs any later measured Three/R3F experiment.
+Expose authorized list/search projections as well as geometry, meaningful status/error codes, bounded upload progress and replayable events without embedding layout decisions. Preserve unknown versus estimated classifications and source dates/units. User-owned interface translation and accessibility remain separately unqualified; do not invent translated property facts.
 
 ## F. Acceptance and claims
 
-Record a capability matrix per input family/version: received, reader qualified, interpreted, enriched, converted, rendered, learner-qualified and blocked reason. Demonstrate both conversion routes with preserved source lineage and on-screen progressive results. A one-file success does not establish universal coverage.
+Record a capability matrix per input family/version: received, reader qualified, interpreted, enriched, converted, rendered, learner-qualified and blocked reason. Demonstrate both conversion routes with preserved source lineage and persisted progressive results and event receipts. A one-file success does not establish universal coverage.
 
 Run source→enriched derivative→render tests and prove generated fields never upgrade evidence readiness or measurements. Test insufficient geometry, unknown datum, later evidence, restart and model/adapter-version change. Retain all H14/H21 recovery/handover tests.
 
-For UX4G/GIGW alignment, test complete public and officer journeys with keyboard, screen reader, 200% zoom, mobile layout, focus restoration, reduced motion, source-upload failures and announcements during streaming. Automated accessibility checks complement manual task tests; neither a widget nor a library establishes whole-app conformance. Save applicable-checkpoint status and unresolved gaps. No certification or performance result is asserted by this planning update.
+Backend contract checks do not establish UX4G/GIGW or whole-product conformance. Keep security, privacy, audit and source-integrity evidence; consumer accessibility/browser outcomes remain an external user-owned dependency. No certification or performance result is asserted by this planning update.
 
 ## Official sources checked 24 September 2026
 
@@ -81,9 +70,9 @@ The agent/enrichment design and acceptance cases above are project decisions bas
 
 ## Z. Hardening addendum (H97)
 
-Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Where this section conflicts with text above in this file, this section wins. Task cards: [H29](29-agent-task-cards.md) UI-01 and FP-FORMATS-01.
+Added 24 September 2026 by the cross-family review in [H97](97-review-findings-and-alignment.md). Within the retained backend contracts this addendum resolves older detail; the current delivery policy and backend-only scope take precedence. Task cards: [H29](29-agent-task-cards.md) FP-FORMATS-01; former UI-01 is retired.
 
-- **Design system decision.** The finale UI follows [the repository design system](../design-system/README.md): UX4G 3.1 foundations (as published in the UX4G `web_design_system` repository; the public site may still label the kit 3.0) transcribed into the existing `--ui-*` tokens, plus our own map and 3D layer. **Do not install the UX4G CSS or JS bundle into Studio**; it ships a global reboot and scripts this file already bans. How any format reaches the same screens (profile, frame, mapping, retained attributes, evidence by locator) is set out with the [reference mockups](../design-system/mockups/officer-studio/README.md#any-format-in-the-same-screens-out) (design reference, not production UI). FP-PUBLIC may use UX4G components only under `/public/*` and only if their styles stay scoped to those routes. The Sarvam line lives in [H24](24-product-method-and-ppt.md) Z3.
+- **Design reference boundary.** Preserve the repository design system and supplied mockups for the user-owned interface. Active work covers only the profile/frame/mapping/attribute/evidence contracts; no UI tokens, CSS/JS bundles or screen implementation are assigned.
 - **Keep display derivatives out of analysis.** Enrichment output goes to the separate display-derivative store ([H22](22-rendering-and-sparse-data.md) Z1), keyed by `recordId`. FIND, READY, PACK, LEARN examples and the H26 export have no query path to it. FP-ENRICH-TEST asserts at SQL level that canonical tables hold zero `illustrative` rows.
 - **Adapter development samples.** Adapter-development tasks receive only DEPLOY-approved sanitized, traceable official-source extracts, never private originals. Every reader runs without network inside the job's extracted directory and follows the hostile-input contract in [H14](14-adaptive-ingestion-and-progressive-review.md) Z1. Source text never becomes a tool argument; tools come only from the capability-registry enum.
 - **Tests.** A VRT pointing at `/etc/passwd`, a glTF `uri` pointing at `169.254.169.254`, a zip-slip entry, a nested zip over the expanded cap, and a plan PDF containing "assign code now" all fail safely.
