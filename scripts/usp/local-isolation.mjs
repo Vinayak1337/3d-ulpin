@@ -6,7 +6,7 @@ import { assertIsolation as assertHostedIsolation, redact } from '../engineering
 
 const ports = { POSTGRES_PORT: '25432', S3_PORT: '29000', S3_CONSOLE_PORT: '29001',
   REDIS_PORT: '26379', GEO_PORT: '28000' };
-const previewProviderKeys = ['OPENAI_API_KEY', 'SARVAM_API_KEY', 'ANTHROPIC_API_KEY',
+const localProviderKeys = ['OPENAI_API_KEY', 'SARVAM_API_KEY', 'ANTHROPIC_API_KEY',
   'GOOGLE_API_KEY', 'GEMINI_API_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'];
 const endpoint = (value, protocol, port, path) => {
   const url = new URL(value);
@@ -19,11 +19,12 @@ const endpoint = (value, protocol, port, path) => {
 };
 
 export function assertUspIsolation(env) {
-  if (!['local-colima', 'local-docker', 'local-preview'].includes(env.ULPIN_ISOLATION_PROFILE)) return assertHostedIsolation(env);
+  if (!['local-colima', 'local-docker', 'local-preview', 'local-nest'].includes(env.ULPIN_ISOLATION_PROFILE)) return assertHostedIsolation(env);
   const preview = env.ULPIN_ISOLATION_PROFILE === 'local-preview';
+  const nest = env.ULPIN_ISOLATION_PROFILE === 'local-nest';
   const persistent = preview && env.ULPIN_PERSISTENT_PREVIEW === '1';
   assert(!env.ULPIN_PERSISTENT_PREVIEW || (persistent && env.ULPIN_FND06_MANUAL_HOLD === '1'));
-  const colima = env.ULPIN_ISOLATION_PROFILE === 'local-colima' || (preview && process.platform === 'darwin');
+  const colima = env.ULPIN_ISOLATION_PROFILE === 'local-colima' || ((preview || nest) && process.platform === 'darwin');
   assert.equal(process.platform, colima ? 'darwin' : 'linux');
   assert.equal(env.DOCKER_CONTEXT, colima ? 'colima-ulpin' : 'default');
   assert.equal(env.REPO_DATA, 'false');
@@ -43,7 +44,7 @@ export function assertUspIsolation(env) {
   assert.equal(db.password, env.POSTGRES_PASSWORD);
   for (const [key, protocol, port, path] of [
     ['S3_ENDPOINT', 'http:', 29000, '/'], ['GEO_URL', 'http:', 28000, '/'],
-    ['REDIS_URL', 'redis:', 26379, '/0'], ['ULPIN_TEST_URL', 'http:', preview ? persistent ? 3187 : 3108 : colima ? 3000 : 23000, '/'],
+    ['REDIS_URL', 'redis:', 26379, '/0'], ['ULPIN_TEST_URL', 'http:', nest ? 3188 : preview ? persistent ? 3187 : 3108 : colima ? 3000 : 23000, '/'],
   ]) {
     const url = endpoint(env[key], protocol, port, path);
     assert.equal(url.username + url.password, '');
@@ -52,8 +53,14 @@ export function assertUspIsolation(env) {
   for (const key of ['DOCKER_HOST', 'DOCKER_CERT_PATH', 'NOUS_API_KEY', 'OPENROUTER_API_KEY'])
     assert(!env[key], `${key} must not point at private or remote resources`);
   if (persistent) assert.equal(env.ULPIN_LOOPBACK_PORTS, '3187');
-  if (preview) for (const key of previewProviderKeys)
-    assert(!env[key], `${key} is forbidden in the read-only UI preview`);
+  if (nest) {
+    assert.equal(env.ULPIN_LOOPBACK_PORTS, '3188');
+    assert.equal(env.HOST, '127.0.0.1');
+    assert.equal(env.PORT, '3188');
+    assert.equal(env.API_PORT, '3188');
+  }
+  if (preview || nest) for (const key of localProviderKeys)
+    assert(!env[key], `${key} is forbidden in this isolated local runtime`);
   return scope;
 }
 
