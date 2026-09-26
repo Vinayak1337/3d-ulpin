@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "official-scale-source-check/1",
+  "status": "permission_unconfirmed_no_replacement",
+  "testId": "DATA-10/PERMISSION-FOLLOW-ON",
+  "runAt": "2026-09-26T02:19:44Z",
+  "baseCommit": "6d4d550b8680c43b4196bd2628a5fd81dfa2505a",
+  "agent": {
+    "product": "Codex",
+    "assignedModel": "gpt-6-luna",
+    "assignedEffort": "max",
+    "observedModelAndEffort": "not exposed in task telemetry",
+    "requestedTier": "Fast",
+    "configuredTier": "priority (per repository operating guide)",
+    "observedPerTurnTier": "unobserved"
+  },
+  "scope": {
+    "purpose": "Determine whether an official source policy covers local deterministic ingestion/benchmark use of the existing Karnataka District.zip; if not, reuse at most two already-screened official Indian vector alternatives.",
+    "noSourceBytesReprocessed": true,
+    "noProviderOrModelCalls": true,
+    "noServiceStartup": true,
+    "noExternalPermissionRequestSent": true
+  },
+  "existingSource": {
+    "issuer": "State Remote Sensing Applications Centre (KSRSAC), Karnataka Department of Personnel and Administrative Reforms (e-Governance); offered through the Sujala III / Watershed Development Department portal",
+    "title": "District boundaries",
+    "originalUrl": "https://kgis.ksrsac.in/kgisdocuments/PDF_KML_SHP/District/Shapefiles/District.zip",
+    "officialPortalUrl": "https://sujala3lri.karnataka.gov.in/",
+    "privateOriginalPath": "/Users/vinayak/.codex/task-data/ulpin-data-10/District.zip",
+    "existingSha256": "0f5b59339c5d4e3a3c1efd4be810edd38264e40a51f29f17ab78b19067f88891",
+    "existingBytes": 3935596,
+    "metadataReference": "fixtures/usp/D3/official-scale-v1/manifest.json",
+    "priorInspectionReference": "docs/evidence/usp/finale/GF-DATA/DATA-10/report.md",
+    "priorSourceObservationsReference": "fixtures/usp/D3/official-scale-v1/source-observations.json",
+    "byteAndCrsInspection": "Reused from existing DATA-10 evidence; not rerun in this follow-on."
+  },
+  "issuerPolicyReview": {
+    "sujalaPortal": {
+      "termsUrl": "https://sujala3lri.karnataka.gov.in/TermsofUse/Index",
+      "portalPageUrl": "https://sujala3lri.karnataka.gov.in/",
+      "observation": "The official portal page labels a District Boundaries entry and offers PDF/KML/Shape File downloads for public selection. This establishes download availability only. The Terms of Use route renders a portal shell with an embedded CMS frame; opening the frame returned HTTP 404, and no reuse licence or local-processing permission text was available.",
+      "policyResult": "no applicable source-specific reuse term found"
+    },
+    "kgisDownloadPage": {
+      "url": "https://kgis.ksrsac.in/kgis/downloads.aspx",
+      "observation": "The official K-GIS downloads page timed out when opened; no applicable licence text was obtained."
+    },
+    "kgisExchangeProtocol": {
+      "url": "https://ksrsac.in/web/sites/default/files/projects/2018-02/K-GIS%20Data%20Exchange%20Protocol.pdf",
+      "observation": "The protocol describes internal departmental data exchange and public sharing through the K-GIS platform; it does not provide a reuse licence for this exact District.zip."
+    },
+    "kgisPolicyStatus": {
+      "url": "https://ksrsac.in/web/sites/default/files/projects/2018-02/KGIS%20Status.pdf",
+      "observation": "The 2018 status document said a K-GIS policy was under discussion. It is not a current licence and does not establish permission for this file."
+    },
+    "ogdResource": {
+      "url": "https://www.data.gov.in/resource/district-boundary",
+      "provider": "KSRSAC / Karnataka Department of Personnel and Administrative Reforms",
+      "resourceDate": "Published and updated 12 October 2021",
+      "observedAccess": "The OGD record reports zero downloads; existing DATA-10 source notes identify a WMS reference, not an acquired file. No WMS tiles were requested or harvested.",
+      "licenseUrl": "https://karnataka.data.gov.in/godl",
+      "licenseScope": "The OGD page describes GODL-India as covering data published under that licence and allowing study, copying, adaptation, and lawful commercial or non-commercial use subject to attribution and other stated terms.",
+      "coverageAssessment": "The OGD record has the same provider and a similar title, but no source release, checksum, download URI, or lineage ties its 2021 WMS resource to the separately acquired 2026 District.zip. This record is not treated as permission for the exact private ZIP."
+    },
+    "permissionStateForExactZip": "unconfirmed",
+    "localIngestionOrBenchmarkUse": "not admitted"
+  },
+  "alternativeCandidates": [
+    {
+      "candidate": "All India Pincode Boundary Geo JSON",
+      "sourceUrl": "https://www.data.gov.in/catalog/all-india-pincode-boundary-geo-json",
+      "priorScreenReference": "fixtures/usp/D3/official-scale-v1/source-observations.json",
+      "result": "not_acquired",
+      "reason": "The existing DATA-10 screen recorded no catalog result and a timed-out resource endpoint. No original vector bytes or exact local-use terms were obtained. Postal boundaries also do not constitute a district/city layer."
+    },
+    {
+      "candidate": "Taluka-wise PMRDA administrative boundaries, 30 June 2025",
+      "sourceUrl": "https://www.data.gov.in/resource/taluka-wise-pmrda-administrative-boundaries-gis-dataset-30-june-2025",
+      "priorScreenReference": "fixtures/usp/D3/official-scale-v1/source-observations.json",
+      "result": "not_acquired",
+      "reason": "The existing DATA-10 screen recorded zero downloads and a timed-out resource page. No original vector bytes or exact local-processing terms were obtained."
+    }
+  ],
+  "candidateBound": {
+    "substantiveCandidateCount": 3,
+    "ogdKarnatakaDistrictRecordTreatment": "Evaluated only as a possible licence-scope reference for the existing KSRSAC candidate; not counted as a separate alternative corpus.",
+    "counted": [
+      "Existing KSRSAC District.zip",
+      "All India Pincode Boundary Geo JSON",
+      "Taluka-wise PMRDA administrative boundaries"
+    ],
+    "additionalCandidateSearch": "none; the prior DATA-10 evidence had already used the two alternative slots"
+  },
+  "outcome": {
+    "replacementAcquired": false,
+    "newFixturePackCreated": false,
+    "runtimeAdmission": false,
+    "gfScale1Status": "remains open; no source-specific permission for the retained ZIP and no eligible replacement was established",
+    "concreteGap": "The exact District.zip lacks a readable issuer policy or licence tied to its source release that supports local deterministic ingestion/benchmark use. The two previously screened OGD alternatives had no accessible original bytes or applicable local-use terms. No permission request was sent."
+  },
+  "limitations": [
+    "No legal conclusion is made; the receipt records visible issuer/platform terms and their observed scope.",
+    "The OGD GODL resource is not assumed to cover the separately acquired ZIP without release/lineage evidence.",
+    "No substitute corpus was fabricated, downloaded from a mirror, or inferred from WMS tiles.",
+    "No 3D city, building, parcel, ownership, runtime, benchmark, performance, or service-budget claim is qualified."
+  ],
+  "unqualifiedClaims": [
+    "local use or benchmark permission for the KSRSAC District.zip",
+    "authorized runtime ingestion or publication",
+    "GF-SCALE-1 pass",
+    "3D city or building capacity"
+  ]
+}
