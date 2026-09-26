@@ -50,8 +50,10 @@ async function archive(client: PoolClient, before: Snapshot, file: string) {
   for (const entry of review.datasets) {
     const pin = pins.get(entry.id);
     requireGuard(pin && pin.originalSha256 === entry.originalSha256 && pin.fingerprint === entry.fingerprint &&
-      entry.decision === 'archive_active_only' && entry.basis === 'reviewed_original_lineage_synthetic_only' &&
+      entry.decision === 'archive_active_only' &&
+      ['reviewed_original_lineage_synthetic_only','reviewed_retired_unqualified_legacy_scene'].includes(entry.basis) &&
       typeof entry.evidenceFile === 'string' && /^[a-f0-9]{64}$/.test(entry.evidenceSha256), 'ARCHIVAL_PIN_OR_LINEAGE_REVIEW_MISSING');
+    // Retiring a derived scene asserts nothing about member originals. Both bases require exact lead evidence.
     // Evidence can be private; never serialize its content or interpret the legacy classification as proof.
     requireGuard(hash(readFileSync(entry.evidenceFile)) === entry.evidenceSha256, 'ARCHIVAL_EVIDENCE_CHANGED');
   }
