@@ -69,6 +69,9 @@ def run_job(identity: str, store=None) -> dict:
         elif record["operation"] == "spatial-inference":
             from .spatial_ml import infer_spatial
             result = infer_spatial(record["input"])
+        elif record["operation"] == "projected-vector":
+            from .projected_vector import run_projected
+            result = run_projected(record["input"])
         else:
             result = build_model(record["input"])
         store.update(identity, status="succeeded", result=result)

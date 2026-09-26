@@ -26,7 +26,7 @@ def authorize(authorization: Annotated[Optional[str], Header()] = None) -> None:
 class JobRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     jobId: uuid.UUID
-    operation: Literal["inspect", "build", "spatial-inference"]
+    operation: Literal["inspect", "build", "spatial-inference", "projected-vector"]
     input: dict[str, Any] = Field(min_length=1)
 
 
