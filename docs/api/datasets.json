@@ -6,22 +6,49 @@
   "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
   "servingObservation": {
     "schemaVersion": "ulpin-serving-observation/1",
-    "observedAt": "2026-09-26T11:38:28.810Z",
+    "observedAt": "2026-09-26T12:19:33.951Z",
     "environment": "linked-loopback-3188",
     "apiBase": "http://127.0.0.1:3188/api/v1",
-    "servedCodeCommit": "34adbd2600cd17f661a698e54a18599e58ef2beb",
-    "qualification": "Point-in-time observation of this local environment only. Not a live status, deployment, multiuser, India, property-readiness or scale qualification.",
+    "servedCodeCommit": "8f612df9a56205d0af8fac3e692ff60229563724",
+    "qualification": "Point-in-time observation of this local environment only. Administrative context and a foreign footprint; not a live status, deployment, multiuser, Indian property-readiness, tiles or scale qualification.",
     "database": {
       "status": "structurally_ready",
-      "manifestSha256": "6dbe5a7f9297aa50bb5dc74f7f96112d6ac6512db86308324f40c6379d62c0da",
+      "manifestSha256": "4efd80ec0bce8d366ef0454dbaecffed2d087108eb607cd617eaf15dc4bc59be",
       "originalsVerified": {
-        "verifiedCount": 62,
-        "verifiedBytes": 4177305
+        "verifiedCount": 63,
+        "verifiedBytes": 75416144
       },
-      "checkedForeignKeys": 106,
+      "checkedForeignKeys": 109,
       "orphanCount": 0,
+      "geometryViolationCount": 0,
+      "unvalidatedConstraints": [
+        {
+          "name": "usp_feature_history_no_illustrative",
+          "table": "physical_feature_revisions"
+        },
+        {
+          "name": "usp_features_no_illustrative",
+          "table": "physical_features"
+        },
+        {
+          "name": "usp_registry_history_no_illustrative",
+          "table": "registry_revisions"
+        },
+        {
+          "name": "usp_registry_no_illustrative",
+          "table": "registry_records"
+        },
+        {
+          "name": "usp_unit_history_no_illustrative",
+          "table": "unit_revisions"
+        },
+        {
+          "name": "usp_units_no_illustrative",
+          "table": "units"
+        }
+      ],
       "counts": {
-        "sourceCount": 62,
+        "sourceCount": 63,
         "importPackageCount": 1,
         "physicalFeatureCount": 1,
         "activeLegacyDatasetCount": 0
@@ -52,6 +79,62 @@
           "original": "http://127.0.0.1:3188/api/v1/sources/318ea100-c171-4152-8686-c8441f04ef74/file"
         },
         "limitations": "One foreign 2D footprint; geometry role unknown; no height mapped, interior, ownership, official ULPIN, Indian suitability or scale claim."
+      },
+      {
+        "manifest": "fixtures/usp/D3/nwic-boundaries-v1/manifest.json",
+        "originalSha256": "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37",
+        "issuer": "National Water Informatics Centre (NWIC); portal producer Geological Survey of India; original attributes Survey of India",
+        "originalUrl": "https://nwdp.nwic.gov.in/dataset/6c1af675-1dec-4927-882c-c1ba9d73f76b/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d/download/district_nwic_geojson.zip",
+        "geography": "India",
+        "purpose": "administrative_context",
+        "read": {
+          "caseId": "0cea1799-2924-45d6-838f-7ab45753db0c",
+          "uploadId": "6b041cfa-5ff8-48ab-8a9a-5c96888639c5",
+          "sourceId": "c848bbbc-350f-4934-b64a-d281eb559876",
+          "jobId": "129f91be-e89e-4eca-aa5f-5fa7cc7a3052",
+          "metadataPages": 30,
+          "dispositions": {
+            "total": 733,
+            "admitted": 720,
+            "quarantined": 13
+          },
+          "originalHashPreserved": true,
+          "privateGeometry": true,
+          "quarantineExcluded": true,
+          "remoteOriginDenied": true,
+          "admittedUnitId": "92771db9-8b2e-4809-9460-26ddfc7dffe5",
+          "quarantinedUnitId": "43560697-0a7e-4093-afdf-19adf97efbff",
+          "sameIntentReplay": {
+            "case": true,
+            "upload": true,
+            "job": true
+          }
+        },
+        "links": {
+          "status": "http://127.0.0.1:3188/api/v1/ingestion/cases/0cea1799-2924-45d6-838f-7ab45753db0c/sources/c848bbbc-350f-4934-b64a-d281eb559876/projected-vector",
+          "units": "http://127.0.0.1:3188/api/v1/ingestion/cases/0cea1799-2924-45d6-838f-7ab45753db0c/sources/c848bbbc-350f-4934-b64a-d281eb559876/projected-vector/units?limit=25&jobId=129f91be-e89e-4eca-aa5f-5fa7cc7a3052",
+          "original": "http://127.0.0.1:3188/api/v1/sources/c848bbbc-350f-4934-b64a-d281eb559876/file",
+          "geographicGeometry": "http://127.0.0.1:3188/api/v1/ingestion/cases/0cea1799-2924-45d6-838f-7ab45753db0c/sources/c848bbbc-350f-4934-b64a-d281eb559876/projected-vector/units/92771db9-8b2e-4809-9460-26ddfc7dffe5/geometry?jobId=129f91be-e89e-4eca-aa5f-5fa7cc7a3052&representation=geographic"
+        },
+        "transform": {
+          "sourceCrs": "EPSG:7755",
+          "targetCrs": "EPSG:4326",
+          "axisOrder": "always_xy",
+          "sourceUnit": "metre",
+          "targetUnit": "degree",
+          "verticalReference": null,
+          "pyproj": "3.6.1",
+          "proj": "9.3.0",
+          "shapely": "2.0.7",
+          "projDatabaseSha256": "79b660eb3c09f50c0f251e958db7cbf9a2d5d18d2836e99082095b31c7e029c5",
+          "definition": "proj=pipeline step inv proj=lcc lat_0=24 lon_0=80 lat_1=12.472955 lat_2=35.1728044444444 x_0=4000000 y_0=4000000 ellps=WGS84 step proj=unitconvert xy_in=rad xy_out=deg",
+          "network": false,
+          "ballpark": false,
+          "grids": [],
+          "accuracyQualification": "numerical_transform_only_not_survey_accuracy",
+          "parserSha256": "ba5ff17a255f8161c1b73d19b0961549f73b9cc0a9e94f9faeca1c73387bb633"
+        },
+        "limitations": "Deterministic administrative context only; boundary accuracy/currentness, parcel/building/height/rights, tiles and scale remain unqualified."
       }
     ],
     "evidence": {
@@ -93,7 +176,27 @@
         {
           "file": "launch-serving-34ad.json",
           "sha256": "c41c3737129ab146f772f132328a1f3111748190a3e984031d34854fa12d92a2"
+        },
+        {
+          "file": "launch-serving-8f612df.json",
+          "sha256": "f141a305262aee9180bde134820f78bb4154f23dca822c0be25a84bd347b6e65"
+        },
+        {
+          "file": "nwic-serving-8f612df-01.json",
+          "sha256": "ef7eb39eb2369bd4841744a8fc93f976697a51b9444d2f40e49fc04236fc557b"
+        },
+        {
+          "file": "nwic-serving-8f612df-repeat.json",
+          "sha256": "750a9894009b062fb8216cafc6cf4429e3941cc2dea85f0af0db26db388bdabe"
+        },
+        {
+          "file": "preflight-serving-8f612df-final.json",
+          "sha256": "298b4f934e903fddc9280bc4df0b8170bf707828a1e4393b979e8f20252fcd4a"
         }
+      ],
+      "additionalGuides": [
+        "docs/evidence/usp/serving-nwic-handoff.md",
+        "docs/evidence/usp/projected-vector-handoff.md"
       ]
     }
   },
