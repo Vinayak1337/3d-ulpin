@@ -4,7 +4,7 @@ Read [the active NestJS migration ledger](docs/orchestration/NESTJS_MIGRATION.md
 
 <!-- plan-next-gate: GF0 -->
 
-Reset stop rule: check Codex usage before work/dispatch and at task checkpoints. The user means **weekly remaining allowance** (`100 - usedPercent`), currently 37%. Continue while remaining is at most 80%; stop all project work if it rises **above 80%**, for example after an external reset. The former 50%-used rule is revoked. Follow the [usage cutoff and pause procedure](docs/orchestration/OPERATING_GUIDE.md#usage-cutoff-and-pause); workers and automations must follow it.
+Usage monitoring was revoked by the user on 26 September 2026. Do not poll Codex usage, apply the former percentage/reset cutoff, or recreate the deleted usage guard schedule. Continue authorized backend work; ordinary platform limits still apply.
 
 Consolidated application baseline: `45d033baae7ec4e5a572d82459b0062c70a12c95`; reconcile the live staging head before implementation.
 
