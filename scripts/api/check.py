@@ -14,6 +14,32 @@ def require(condition, message):
         raise SystemExit('API-DOC: ' + message)
 
 
+def operation_inventory(ledger, pins):
+    baseline = {o['method'] + ' ' + o['path']: o for o in ledger['operations']}
+    require(len(baseline) == len(ledger['operations']), 'duplicate baseline operation')
+    inventory = {key: {**entry, 'disposition': 'retained', 'manifest': None}
+                 for key, entry in baseline.items() if entry['batch'] == 'NEST-00'}
+    for file in sorted((ROOT / 'apps/api/src/modules').glob('*/operation-manifest.json')):
+        path = file.relative_to(ROOT).as_posix()
+        require(path in pins['sourceSha256'], f'unpinned operation manifest: {path}')
+        manifest = json.loads(file.read_text())
+        for entry in manifest['operations']:
+            key = entry['method'] + ' ' + entry['path']
+            require(entry['method'].lower() in METHODS and entry['method'].isupper(),
+                    f'invalid manifest method: {key}')
+            require(key not in inventory, f'duplicate operation manifest: {key}')
+            if key in baseline:
+                require(entry['operationId'] == baseline[key]['operationId'],
+                        f'baseline operation ID changed: {key}')
+                require(entry['disposition'] in {'retained', 'replaced', 'retired'},
+                        f'invalid baseline disposition: {key}')
+            else:
+                require(entry['disposition'] == 'added', f'undeclared additive operation: {key}')
+            inventory[key] = {**entry, 'batch': manifest['batch'], 'manifest': path}
+    require(set(baseline) <= set(inventory), 'baseline operations missing from manifests')
+    return inventory, set(baseline)
+
+
 def main():
     spec = json.loads((ROOT / 'docs/api/openapi.json').read_text())
     pins = json.loads((ROOT / 'docs/api/source-pins.json').read_text())
@@ -37,17 +63,27 @@ def main():
         file = ROOT / path
         require(file.is_file() and hashlib.sha256(file.read_bytes()).hexdigest() == digest,
                 f'producer changed; regenerate/review contract: {path}')
+    inventory, baseline = operation_inventory(ledger, pins)
     operations, ids = set(), set()
     for path, item in spec['paths'].items():
         for method, op in item.items():
             if method not in METHODS:
                 continue
-            operations.add(method.upper() + ' ' + path)
+            key = method.upper() + ' ' + path
+            operations.add(key)
+            require(key in inventory, f'operation absent from declared inventory: {key}')
+            entry = inventory[key]
+            require(op['operationId'] == entry['operationId'], f'operation ID differs from manifest: {key}')
+            require(op['x-disposition'] == entry['disposition'], f'disposition differs from manifest: {key}')
+            require(op['x-batch'] == entry['batch'], f'owner batch differs from manifest: {key}')
+            require(op.get('x-operation-manifest') == entry['manifest'], f'manifest reference differs: {key}')
             require(op['operationId'] not in ids, f'duplicate operation ID: {path}')
             ids.add(op['operationId'])
             require(op['x-source-file'] in pins['sourceSha256'], f'unpinned controller: {path}')
             require(op['x-source-file'].startswith('apps/api/'), f'legacy producer: {path}')
             require(op['x-code-status'] in ['implemented-native', 'retired-410'], f'unknown code state: {path}')
+            require(op['x-code-status'] == ('retired-410' if entry['disposition'] == 'retired' else 'implemented-native'),
+                    f'code status differs from disposition: {key}')
             require(isinstance(op['x-runtime-verified'], bool), f'missing runtime distinction: {path}')
             require(op['x-runtime-verified'] == (method.upper() + ' ' + path in runtime['operations']),
                     f'runtime status differs from observed scope: {path}')
@@ -57,8 +93,8 @@ def main():
             for name in re.findall(r'\{([^}]+)\}', path):
                 require(any(p.get('in') == 'path' and p.get('name') == name and p.get('required') and p.get('schema')
                             for p in op.get('parameters', [])), f'incomplete path parameter {name}: {path}')
-    expected = {o['method'] + ' ' + o['path'] for o in ledger['operations']}
-    require(operations == expected == set(pins['operations']), 'native operations differ from reconciled baseline')
+    require(operations == set(inventory) == set(pins['operations']),
+            'native operations differ from baseline plus declared additions')
     require('UnresolvedJson' not in json.dumps(spec), 'avoidable unresolved model placeholder remains')
 
     def refs(value):
@@ -85,7 +121,9 @@ def main():
             if '://' in target or target.startswith('#'):
                 continue
             require((document.parent / target.split('#', 1)[0]).resolve().exists(), f'broken link {document.name}: {target}')
-    print(f"API-DOC: {len(operations)} native operations, {len(spec['components']['schemas'])} named schemas; pins, models, dataset link valid")
+    print(f"API-DOC: {len(operations)} native operations ({len(baseline)} baseline + "
+          f"{len(operations - baseline)} added), {len(spec['components']['schemas'])} named schemas; "
+          "pins, manifests, models, dataset link valid")
 
 
 if __name__ == '__main__':
