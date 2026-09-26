@@ -42,6 +42,8 @@ Counts come from the operation ledger, not guessed controller counts. If actual 
 
 ## Acceptance and lean checks
 
+Each API worker also returns an operation manifest plus exported request/response/error schema metadata derived from actual validators and service types. The current catalogue uses `UnresolvedJson` in 122 of 132 operations; the migration must replace avoidable placeholders with known envelopes and model schemas, while genuinely unconstrained values remain explicitly typed as such. Workers own metadata beside their module, not the final OpenAPI. The lead assembles and checks the published specification.
+
 Each worker: inspect producer/consumer contracts, typecheck owned packages, run directly relevant existing checks once, verify one meaningful affected success/failure path when the isolated environment is available, and return commit(s), actual commands/exits, exact operation disposition and any unresolved source/runtime limits. No new exhaustive test project. Small tests for real transport, privacy, transaction, source integrity or stale-publication risks are appropriate. Test process control with existing real source bytes; never manufacture operational facts.
 
 Integration: frozen install and backend build/typecheck; complete 132-operation disposition with no silent drop; backend dependency closure has no `apps/web` imports; visible SQL agrees with runtime migrations; API startup works without Next; current guarded health/source→job→record plus failure/recovery receipt; changed access/private-download semantics checked; preserved original hashes and unchanged protected assets. Runtime failures are fixed or explicitly block the affected acceptance, never marked passed from documentation alone.
