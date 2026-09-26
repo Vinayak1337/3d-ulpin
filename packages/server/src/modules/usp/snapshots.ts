@@ -12,12 +12,14 @@ import { AppError, notFound } from '../../infrastructure/errors';
 import { settings } from '../../infrastructure/config';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { geometryProjection, withUspAnalyticalReader } from './geometry';
+import { localOperatorSubject } from './principal';
 
 type BodyRow = { namespace: string; object_id: string; revision: number; body: Record<string, any> };
 
 export function assertLocalUsp(ctx: RequestContext) {
   // Context must be constructed server-side; this is a second fail-closed adapter guard.
-  if (ctx.principal.mode !== 'local_demo' || ctx.principal.subject !== 'local-demo-operator') {
+  const subject = localOperatorSubject();
+  if (ctx.principal.mode !== 'local_demo' || ctx.principal.subject !== subject) {
     throw new AppError(403, 'USP_LOCAL_ONLY', 'This workflow is limited to the local operator.');
   }
 }

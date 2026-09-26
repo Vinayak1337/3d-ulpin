@@ -26,6 +26,7 @@ import { putOriginal, readObject, sha256 } from "../../infrastructure/storage";
 import { propertyIdentifier } from "../../shared/identifiers";
 import { originalAttempt } from "../cases/original-attempt";
 import { checkAssociations, enrichFindings } from "../officer/officer";
+import { localOperatorSubject } from "../usp/principal";
 
 export type Mapping = {
   idField?: string;
@@ -1587,6 +1588,7 @@ export async function copyCaseDocuments(
     reason: string;
   },
 ): Promise<ImportPackage> {
+  const actor = localOperatorSubject();
   if (
     !input.sourceIds.length ||
     input.sourceIds.length > 20 ||
@@ -1606,6 +1608,7 @@ export async function copyCaseDocuments(
     );
   const sourceIds = [...input.sourceIds].sort();
   const copy: CopyBatch = {
+    actor,
     caseId: input.caseId,
     buildingId: input.buildingId,
     sourceIds,
@@ -1668,7 +1671,7 @@ export async function copyCaseDocuments(
         sourceProfile: source.profile,
         reason,
         copiedAt,
-        actor: "local-demo-operator",
+        actor,
       },
     });
   }
@@ -1689,6 +1692,7 @@ export type DocumentFile = {
   >;
 };
 type CopyBatch = {
+  actor: string;
   caseId: string;
   buildingId: string;
   sourceIds: string[];
@@ -2017,11 +2021,12 @@ async function attachDocumentBatch(
           ],
         );
         await client.query(
-          "INSERT INTO events(id,case_id,kind,message) VALUES($1,$2,'documents_assigned',$3)",
+          "INSERT INTO events(id,case_id,kind,message,actor) VALUES($1,$2,'documents_assigned',$3,$4)",
           [
             randomUUID(),
             row.case_id,
             `Explicitly copied ${files.length} document(s) from case ${copy.caseId} to building ${copy.buildingId}. ${copy.reason}`,
+            copy.actor,
           ],
         );
       }
