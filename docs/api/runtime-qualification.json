@@ -418,6 +418,62 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/ingest-04a-sufficiency-runtime.json",
+      "receiptSha256": "5ce4130ccf0940881c2a6dd0c01f89f0dbb18863b8b5f44f3e77f06f73703d15",
+      "receiptCodeField": "productionCommit",
+      "servedCodeCommit": "4695ae0f23794b3609b68a4c90049ec177132eac",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-4877753081237afd",
+        "nonce": "4877753081237afd"
+      },
+      "qualification": "Scoped sufficiency MVP on unchanged foreign official inputs: one real unqualified-height question, class reuse/replays/Not sure and scanned-PDF tool state. No broad gate pass.",
+      "unqualified": [
+        "Foreign test_only NYC/USGS originals; no rights, geometry qualification, inference, OCR success, source accuracy or release gate.",
+        "Actual five-distinct-class saturation and DATA-02 mixed-gap corpus remain unqualified; case-lock cap and actual same-class concurrency checked.",
+        "Runtime reference-answer path used Not sure; legitimate approved evidence references/qualified target-linked document conversion not independently runtime-qualified.",
+        "NWIC sufficiency reuses canonical acceptedProjectedTx; no repeat import/tile/scale campaign."
+      ],
+      "operations": {
+        "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/sufficiency": {
+          "scope": "Official NYC unqualified-height decision/question and scanned USGS needs_ocr -> run_ocr with no factual questions.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json",
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/runtime/checks",
+            "/runtime/sources",
+            "/privateReceipt"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/needs-input": {
+          "scope": "Current bounded questions and parked Not sure state on unchanged source; archived context denied.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json",
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/runtime/checks",
+            "/runtime/sources",
+            "/privateReceipt"
+          ]
+        },
+        "POST /api/v1/ingestion/cases/{caseId}/questions/{questionId}/answers": {
+          "scope": "Not sure persists and identical answers replay; no fact/geometry approval.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json",
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/runtime/checks",
+            "/runtime/sources",
+            "/privateReceipt"
+          ]
+        }
+      }
     }
   ]
 }
