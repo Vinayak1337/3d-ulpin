@@ -969,22 +969,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -1263,22 +1263,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -1361,22 +1361,22 @@
         "description": "Implemented dispatch branch at pinned source. Payload details not covered by a named schema remain unresolved; confirm against producer and runtime receipt.",
         "parameters": [],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -1583,19 +1583,14 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UnresolvedJson"
-              }
-            },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/GisUpload"
+                "$ref": "#/components/schemas/GisInspectionUpload"
               }
             }
           }
         },
-        "x-validation-schema": "Route-local Zod or service parser in apps/web/lib/server/area-routes.ts; published JSON Schema unresolved.",
+        "x-validation-schema": "inspectGisUpload in apps/web/lib/server/gis-inspection.ts; malformed/non-form requests return INVALID_FORM.",
         "x-limit": "Multipart GIS file: nonempty <=16 MiB; declared/raw request >17 MiB rejected for inspection. Import form checks declared >17 MiB."
       }
     },
@@ -1770,22 +1765,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -2170,7 +2165,7 @@
         ],
         "operationId": "POST_api_v1_import_packages_packageId_documents",
         "summary": "POST /api/v1/import-packages/{packageId}/documents",
-        "description": "Implemented dispatch branch at pinned source. Payload details not covered by a named schema remain unresolved; confirm against producer and runtime receipt.",
+        "description": "Current package revision is required. Missing expectedRevision is coerced to zero and normally conflicts. entityIds is a JSON array of 1\u2013100 UUIDs; requestKey is not used on this route.",
         "parameters": [
           {
             "name": "packageId",
@@ -2214,12 +2209,13 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UploadDocument"
+                "$ref": "#/components/schemas/PackageDocumentUpload"
               }
             }
           }
         },
-        "x-limit": "Multipart area form rejects declared Content-Length >17 MiB; UI file guidance is 16 MiB."
+        "x-limit": "Multipart area form rejects declared Content-Length >17 MiB; UI file guidance is 16 MiB.",
+        "x-validation-schema": "area-routes.ts multipart parser; areas.ts attachDocument revision and source-document receipt checks"
       }
     },
     "/api/v1/import-packages/{packageId}/source-documents": {
@@ -2229,7 +2225,7 @@
         ],
         "operationId": "POST_api_v1_import_packages_packageId_source_documents",
         "summary": "POST /api/v1/import-packages/{packageId}/source-documents",
-        "description": "Implemented dispatch branch at pinned source. Payload details not covered by a named schema remain unresolved; confirm against producer and runtime receipt.",
+        "description": "Current package revision is required. Missing expectedRevision is coerced to zero and normally conflicts. Requires an explicit source workspace; entityIds is forced to an empty array. Optional requestKey controls same-payload replay and changed-payload conflict.",
         "parameters": [
           {
             "name": "packageId",
@@ -2273,12 +2269,13 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UploadDocument"
+                "$ref": "#/components/schemas/SourceWorkspaceDocumentUpload"
               }
             }
           }
         },
-        "x-limit": "Multipart area form rejects declared Content-Length >17 MiB; UI file guidance is 16 MiB."
+        "x-limit": "Multipart area form rejects declared Content-Length >17 MiB; UI file guidance is 16 MiB.",
+        "x-validation-schema": "area-routes.ts multipart parser; areas.ts attachDocument revision and source-document receipt checks"
       }
     },
     "/api/v1/import-packages/{packageId}/facts": {
@@ -2783,22 +2780,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -2842,7 +2839,17 @@
           }
         ],
         "responses": {
-          "200": {
+          "default": {
+            "description": "Route-specific error; see guide.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
             "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
             "content": {
               "application/json": {
@@ -2852,12 +2859,12 @@
               }
             }
           },
-          "default": {
-            "description": "Route-specific error; see guide.",
+          "200": {
+            "description": "Existing prepared review returned unchanged.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -2891,22 +2898,22 @@
         "description": "Implemented dispatch branch at pinned source. Payload details not covered by a named schema remain unresolved; confirm against producer and runtime receipt.",
         "parameters": [],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -2940,22 +2947,22 @@
         "description": "Implemented dispatch branch at pinned source. Payload details not covered by a named schema remain unresolved; confirm against producer and runtime receipt.",
         "parameters": [],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -3095,22 +3102,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -3272,22 +3279,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -3321,22 +3328,22 @@
         "description": "Implemented dispatch branch at pinned source. Payload details not covered by a named schema remain unresolved; confirm against producer and runtime receipt.",
         "parameters": [],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -3485,22 +3492,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -4242,22 +4249,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -4360,22 +4367,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -4419,22 +4426,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnresolvedJson"
-                }
-              }
-            }
-          },
           "default": {
             "description": "Route-specific error; see guide.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Producer response; exact fields unresolved unless a named schema is referenced.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnresolvedJson"
                 }
               }
             }
@@ -6120,7 +6127,7 @@
         ],
         "operationId": "POST_api_v1_spatial_datasets_id_ml_source",
         "summary": "POST /api/v1/spatial-datasets/{id}/ml/source",
-        "description": "Implemented dispatch branch at pinned source. Payload details not covered by a named schema remain unresolved; confirm against producer and runtime receipt.",
+        "description": "Attach a PDF, PNG or JPEG original to the saved dataset case. X-File-Name and UUID X-Request-Key are validated by service; source byte limit 16 MiB. Reusing a receipt key with different name, format or original bytes returns a conflict.",
         "parameters": [
           {
             "name": "id",
@@ -6136,15 +6143,19 @@
             "in": "header",
             "schema": {
               "type": "string"
-            }
+            },
+            "required": true,
+            "description": "Percent-encoded simple .pdf, .png, .jpg or .jpeg filename, decoded before validation; no slash, backslash, control character, or length >200."
           },
           {
             "name": "X-Request-Key",
             "in": "header",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             },
-            "description": "Passed to attachDatasetMlSource; inspect producer for replay semantics."
+            "description": "UUID case-document receipt. Same key and identical name/format/bytes replays; changed payload conflicts.",
+            "required": true
           }
         ],
         "responses": {
@@ -6183,7 +6194,7 @@
             }
           }
         },
-        "x-limit": "16 MiB readPackageBody; X-Request-Key supplied to attachDatasetMlSource."
+        "x-limit": "16 MiB request reader; retained document service further caps PDF at 10 MiB and PNG/JPEG at 16 MiB."
       }
     },
     "/api/v1/spatial-ml/status": {
@@ -7214,52 +7225,6 @@
           }
         }
       },
-      "UploadDocument": {
-        "type": "object",
-        "required": [
-          "file",
-          "format"
-        ],
-        "properties": {
-          "file": {
-            "type": "string",
-            "format": "binary"
-          },
-          "format": {
-            "type": "string",
-            "enum": [
-              "pdf",
-              "docx",
-              "text",
-              "csv",
-              "png",
-              "jpeg"
-            ]
-          },
-          "expectedRevision": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "requestKey": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "familyId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "referenceOnly": {
-            "type": "string",
-            "enum": [
-              "true"
-            ]
-          },
-          "entityIds": {
-            "type": "string",
-            "description": "JSON array of 1\u2013100 UUIDs for package documents; source documents use an empty array."
-          }
-        }
-      },
       "ServiceInfo": {
         "type": "object",
         "required": [
@@ -7571,6 +7536,110 @@
           }
         ],
         "description": "Multipart import branch; mapping is JSON encoded form text, validated by route-local Zod schema."
+      },
+      "GisInspectionUpload": {
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "properties": {
+          "file": {
+            "$ref": "#/components/schemas/Binary"
+          },
+          "layer": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "additionalProperties": true,
+        "description": "Only file and optional layer are read by inspectGisUpload; extra form fields are ignored."
+      },
+      "PackageDocumentUpload": {
+        "type": "object",
+        "required": [
+          "file",
+          "format",
+          "expectedRevision",
+          "entityIds"
+        ],
+        "properties": {
+          "file": {
+            "$ref": "#/components/schemas/Binary"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "pdf",
+              "docx",
+              "text",
+              "csv",
+              "png",
+              "jpeg"
+            ]
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "entityIds": {
+            "type": "string",
+            "description": "JSON-encoded array of 1\u2013100 UUID entity IDs; route does not assert uniqueness at form parsing."
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "referenceOnly": {
+            "type": "string",
+            "enum": [
+              "true"
+            ]
+          }
+        }
+      },
+      "SourceWorkspaceDocumentUpload": {
+        "type": "object",
+        "required": [
+          "file",
+          "format",
+          "expectedRevision"
+        ],
+        "properties": {
+          "file": {
+            "$ref": "#/components/schemas/Binary"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "pdf",
+              "docx",
+              "text",
+              "csv",
+              "png",
+              "jpeg"
+            ]
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Optional idempotency receipt; same key and payload replays, changed bytes or associations conflict."
+          },
+          "familyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "referenceOnly": {
+            "type": "string",
+            "enum": [
+              "true"
+            ]
+          }
+        }
       }
     }
   },
