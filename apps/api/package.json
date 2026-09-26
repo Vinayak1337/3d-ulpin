@@ -17,6 +17,7 @@
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.0.0",
+    "@ulpin/contracts": "workspace:*",
     "@ulpin/server": "workspace:*",
     "dotenv": "^17.2.0",
     "earcut": "^3.0.2",
