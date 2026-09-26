@@ -115,6 +115,7 @@ export async function originalIntegrity(client: PoolClient) {
   } finally { closeStorageClient(); }
 }
 export async function datasetPins(client: PoolClient) {
+  if (!(await client.query("SELECT to_regclass('public.spatial_datasets') AS name")).rows[0].name) return [];
   const rows = (await client.query(`SELECT id,sha256,archived_at IS NOT NULL AS archived,
     building_count,floor_count,source_count,
     encode(sha256(convert_to((to_jsonb(d)-'archived_at')::text,'UTF8')),'hex') AS fingerprint
