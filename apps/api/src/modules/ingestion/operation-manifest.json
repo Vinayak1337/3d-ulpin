@@ -206,7 +206,7 @@
       "responseSchema": "ProjectedVectorStatusSchema",
       "responseStatus": 202,
       "transportProfile": "json",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/projected-vector-handoff.md"
     },
     {
       "method": "GET",
@@ -219,7 +219,7 @@
       "responseSchema": "ProjectedVectorStatusSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/projected-vector-handoff.md"
     },
     {
       "method": "GET",
@@ -232,7 +232,7 @@
       "responseSchema": "AdministrativeObservationPageSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/projected-vector-handoff.md"
     },
     {
       "method": "GET",
@@ -245,7 +245,7 @@
       "responseSchema": "binary",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/projected-vector-handoff.md"
     }
   ]
 }
