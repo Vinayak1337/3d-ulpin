@@ -14,9 +14,7 @@ import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { polygonsOf } from './footprints';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
-import { LeftPanel } from './LeftPanel';
-import { MapToolbar } from './MapToolbar';
-import { PanelRail } from './PanelRail';
+import { MapSidebar } from './MapSidebar';
 import { ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { SceneLabels } from './SceneLabels';
@@ -123,6 +121,28 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     if (next !== 'measure') setMeasurement(null);
     setTool(next);
   };
+  const toggleUnderground = () => { setTool('select'); dispatch(selection.mode === 'underground' ? { type: 'leaveMode' } : { type: 'openUnderground' }); };
+  const chooseColour = (c: Exclude<typeof colour, never>) => {
+    patch({ colourBy: c });
+    if (c === 'rights' && selection.mode !== 'level') { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }
+    if (c === 'utilities' && feature && selection.mode !== 'underground') dispatch({ type: 'openUnderground' });
+  };
+  // Tool shortcuts, shown in the sidebar: V select, M measure, X section, U underground, R reset.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (dialog || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
+      const key = event.key.toLowerCase();
+      if (key === 'v') chooseTool('select');
+      else if (key === 'm') chooseTool(tool === 'measure' ? 'select' : 'measure');
+      else if (key === 'x' && feature) chooseTool(tool === 'section' ? 'select' : 'section');
+      else if (key === 'u' && feature) toggleUnderground();
+      else if (key === 'r') engine?.resetCamera();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
   const typicalFloor = () => {
     const floors = model?.levels.filter((l) => /^F\d/i.test(l.label)) ?? [];
     return floors.length > 2 ? floors[Math.floor(floors.length / 4)] : floors[0] ?? model?.levels[0];
@@ -243,21 +263,24 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   return (
     <EvidenceProvider snapshot={snapshot}>
-      <div className={`${styles.workspace} ${selection.panel ? styles.withPanel : ''}`}>
-        <PanelRail panel={selection.panel} onPanel={(panel) => patch({ panel })}
-          counts={{ checks: ledger?.checks.filter((c) => c.state === 'blocking' || c.state === 'needs_review').length }} />
-        {selection.panel ? (
-          <LeftPanel panel={selection.panel} selection={selection} context={context} register={register} model={model} ledger={ledger}
-            onClose={() => patch({ panel: null })}
-            onColour={(c) => {
-              patch({ colourBy: c });
-              if (c === 'rights' && selection.mode !== 'level') { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }
-              if (c === 'utilities' && feature && selection.mode !== 'underground') dispatch({ type: 'openUnderground' });
-            }}
-            onSelectLevel={(id) => dispatch({ type: 'selectLevel', id })}
-            onSelectSpace={(id, levelId) => dispatch({ type: 'pickSpace', id, levelId })}
-            onOpenFinding={(id) => dispatch({ type: 'openFindings', findingId: id })} />
-        ) : null}
+      <div className={styles.workspace}>
+        <MapSidebar
+          tool={tool} underground={selection.mode === 'underground'} canSection={Boolean(feature)} canUnderground={Boolean(feature)}
+          onTool={chooseTool} onUnderground={toggleUnderground} onReset={() => engine?.resetCamera()}
+          section={tool === 'section' && feature && sectionM !== null ? { value: sectionM, max: engine?.buildingTopM(feature.id) ?? 30, onChange: setSectionM } : null}
+          measurement={measurement} onClearMeasure={() => engine?.clearMeasure()}
+          colour={colour} onColour={chooseColour}
+          colourOptions={[
+            { value: 'none', label: 'None' },
+            { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
+            { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
+          ]}
+          floor={selection.mode === 'level' && level ? level.label : null}
+          spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
+          rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
+          selectedSpaceId={selection.spaceId}
+          onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
+        />
 
         <section className={`${styles.canvasColumn} ${tray ? styles.withTray : ''}`} aria-label="Map">
           <div className={styles.canvasWrap}>
@@ -275,26 +298,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               onReady={setEngine}
               label={`3D map of ${context.area.name}. The inspector lists the same buildings and spaces.`}
             />
-            <div className={styles.topLeft}>
-              <MapToolbar tool={tool} underground={selection.mode === 'underground'} canUnderground={Boolean(feature)} canSection={Boolean(feature)}
-                onTool={chooseTool}
-                onUnderground={() => { setTool('select'); dispatch(selection.mode === 'underground' ? { type: 'leaveMode' } : { type: 'openUnderground' }); }}
-                onReset={() => engine?.resetCamera()} />
-              {tool === 'section' && feature && sectionM !== null ? (
-                <label className={`ul-float ${styles.toolPanel}`}>
-                  <span>Cut at <b className="ul-num">{sectionM.toFixed(1)} m</b> above ground</span>
-                  <input type="range" min={0.5} max={engine?.buildingTopM(feature.id) ?? 30} step={0.1} value={sectionM}
-                    onChange={(e) => setSectionM(Number(e.target.value))} aria-label="Section height" />
-                </label>
-              ) : null}
-              {tool === 'measure' && typeof measurement?.distanceM === 'number' ? (
-                <div className={`ul-float ${styles.toolPanel}`} role="status">
-                  <span>Distance <b className="ul-num">{measurement.distanceM.toFixed(2)} m</b></span>
-                  <span className="ul-muted ul-num">Horizontal {measurement.horizontalM!.toFixed(2)} m · Vertical {Math.abs(measurement.verticalM!).toFixed(2)} m</span>
-                  <button type="button" className="ul-btn ul-btn--ghost" onClick={() => engine?.clearMeasure()}>Clear</button>
-                </div>
-              ) : null}
-            </div>
             {!reference ? (
               <div className={styles.banner}>
                 <Banner tone="info">This area stays in its source’s local frame: the source states no coordinate reference system, so it is not placed on the map.</Banner>

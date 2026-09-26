@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { BuildingLedger, CheckState } from '@ulpin/api-client/draft';
 import { Button } from '@ulpin/ui';
-import { CheckBadge } from '../map/LeftPanel';
+import { CheckBadge } from '../map/CheckBadge';
 import styles from './Review.module.css';
 
 type Check = BuildingLedger['checks'][number];
