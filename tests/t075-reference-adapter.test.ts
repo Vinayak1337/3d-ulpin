@@ -2,8 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { coreRefKey, measureCoreCatalog } from "../packages/contracts/src/index";
-import { adaptReferenceScene, projectReferenceScene, toReferenceRenderScene } from "../apps/web/features/spatial/reference-import/index";
-import { compileSpatialSnapshot } from "../apps/web/features/spatial/compiler/compile";
+import { adaptReferenceScene } from "@ulpin/server/modules/datasets/reference-import/adapter";
+import { projectReferenceScene } from "@ulpin/server/modules/datasets/reference-import/display";
+import { toReferenceRenderScene } from "@ulpin/server/modules/datasets/reference-import/render-scene";
+import { compileSpatialSnapshot } from "@ulpin/server/modules/spatial/scene/compile";
 
 const anchor = { longitude: 77.1, latitude: 28.6, ellipsoidHeight: 120, provenance: "Explicit synthetic fixture placement; not surveyed" };
 const rectangle = (x: number, y: number, w: number, h: number) => [[x,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y]];

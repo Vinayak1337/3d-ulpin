@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
-import {readWorkQueue} from '../../apps/web/lib/server/work-queue';
-import {pool} from '../../apps/web/lib/server/db';
-import {workItemAction} from '../../apps/web/lib/work-queue';
+import {readWorkQueue} from '@ulpin/server/modules/officer/work-queue';
+import {pool} from '@ulpin/server/infrastructure/db';
+import {workItemAction} from '@ulpin/server/shared/work-queue';
 async function main(){
  const first=await readWorkQueue(new URL('http://local'));
  assert(first.total>20);assert.equal(first.items.length,20);

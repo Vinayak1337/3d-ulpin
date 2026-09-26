@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type {QueryResultRow} from "../apps/web/node_modules/@types/pg";
-import {LegacySpatialReadError,readLegacySpatialSlice,type LegacyReadClient} from "../apps/web/lib/server/spatial-core-read";
-import {handleLegacyCoreRead} from "../apps/web/lib/server/spatial-core-http";
+import type {QueryResultRow} from "pg";
+import {LegacySpatialReadError,readLegacySpatialSlice,type LegacyReadClient} from "@ulpin/server/modules/spatial/spatial-core-read";
+import {handleLegacyCoreRead} from "@ulpin/server/modules/spatial/spatial-core-http";
 import {legacySliceFixture,LEGACY_IDS} from "./fixtures/core-legacy";
 
 function clientFixture(options:{missing?:boolean;throwRead?:boolean;overflow?:boolean;corruptRecord?:boolean;columnEnvelope?:boolean}={}) {

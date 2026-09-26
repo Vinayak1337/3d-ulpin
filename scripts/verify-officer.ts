@@ -5,13 +5,13 @@ import {
   getArea,
   reviewPackage,
   commitPackage,
-} from "../apps/web/lib/server/areas";
-import { query, pool, transaction } from "../apps/web/lib/server/db";
+} from "@ulpin/server/modules/areas/areas";
+import { query, pool, transaction } from "@ulpin/server/infrastructure/db";
 import {
   removeOrphan,
   readObject,
   sha256,
-} from "../apps/web/lib/server/storage";
+} from "@ulpin/server/infrastructure/storage";
 const run = randomUUID(),
   allocated: string[] = [];
 const url =

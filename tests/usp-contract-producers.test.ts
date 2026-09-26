@@ -7,8 +7,8 @@ import {
   UspModelGatewayRequestSchema, UspScanReceiptSchema, UspSendReceiptResultSchema,
   parseUsp,
 } from '../packages/contracts/src/usp/index';
-import { hasVerticalMembership, storedRevision } from '../apps/web/lib/server/usp/snapshots';
-import { renderPacket0, selectExactPart } from '../apps/web/lib/server/usp/packet0';
+import { hasVerticalMembership, storedRevision } from '@ulpin/server/modules/usp/snapshots';
+import { renderPacket0, selectExactPart } from '@ulpin/server/modules/usp/packet0';
 import { uspFixtures } from './fixtures/usp-common';
 
 const wire = <T>(value: T): T => JSON.parse(JSON.stringify(value));

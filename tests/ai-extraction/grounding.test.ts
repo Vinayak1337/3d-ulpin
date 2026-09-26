@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { boundedPolygon, chooseFreeModel, digest, isFreeModel, redactPrivateText, validateExtraction, type AiPart } from '../../apps/web/lib/server/officer-ai-validation';
-import { callNous, extractionMessages, inspectNous, minimizeExtractionOutput } from '../../apps/web/lib/server/officer-ai-provider';
-import { redactDocumentViews, redactMessageText } from '../../apps/web/lib/server/usp/ingest/redact';
+import { boundedPolygon, chooseFreeModel, digest, isFreeModel, redactPrivateText, validateExtraction, type AiPart } from '@ulpin/server/modules/ai/officer-ai-validation';
+import { callNous, extractionMessages, inspectNous, minimizeExtractionOutput } from '@ulpin/server/modules/ai/officer-ai-provider';
+import { redactDocumentViews, redactMessageText } from '@ulpin/server/modules/usp/ingest/redact';
 
 // Synthetic unit cases exercise rejection boundaries. They are not a real-document accuracy evaluation.
 const entity={id:'building-a',worldStatus:'observed' as const};

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { permitsReferenceRecordSource, permitsReferenceRightSource } from "../apps/web/lib/server/registry-reference-policy";
+import { permitsReferenceRecordSource, permitsReferenceRightSource } from "@ulpin/server/modules/registry/registry-reference-policy";
 const native = { status: "inspected", profile: "text-reference-v2", inspection: { status: "reference_only", partCount: 4 } };
 test("native document part can support a reviewed non-geometric right", () => {
   assert.equal(permitsReferenceRightSource(native, "right"), true);

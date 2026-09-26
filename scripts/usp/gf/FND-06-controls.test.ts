@@ -1,13 +1,13 @@
 /** Configuration, checksum arithmetic and transport controls only. No invented source/identity records. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { allowedLoopbackHost } from '../../../apps/web/lib/server/loopback-host';
-import { nonIndiaProviderAllowed } from '../../../apps/web/lib/server/provider-policy';
-import { workspaceCapabilities } from '../../../apps/web/lib/server/workspace-capabilities';
-import { workspacePrivacyCopy } from '../../../apps/web/lib/workspace-capabilities';
-import { passesVerhoeff, redactDerivative, redactDocumentViews, assertNoImageEgress } from '../../../apps/web/lib/server/usp/ingest/redact';
-import { callNous, inspectNous, extractionMessages } from '../../../apps/web/lib/server/officer-ai-provider';
-import { selectedImageCrops } from '../../../apps/web/lib/server/officer-ai-images';
+import { allowedLoopbackHost } from '@ulpin/server/infrastructure/loopback-host';
+import { nonIndiaProviderAllowed } from '@ulpin/server/infrastructure/provider-policy';
+import { workspaceCapabilities } from '@ulpin/server/infrastructure/workspace-capabilities';
+import { workspacePrivacyCopy } from '@ulpin/server/shared/workspace-capabilities';
+import { passesVerhoeff, redactDerivative, redactDocumentViews, assertNoImageEgress } from '@ulpin/server/modules/usp/ingest/redact';
+import { callNous, inspectNous, extractionMessages } from '@ulpin/server/modules/ai/officer-ai-provider';
+import { selectedImageCrops } from '@ulpin/server/modules/ai/officer-ai-images';
 
 test('only canonical loopback authorities and explicitly configured ports pass', () => {
   for (const host of ['localhost:3108','LOCALHOST:3108','127.0.0.1:3108','[::1]:3108']) assert(allowedLoopbackHost(host,'3108'));

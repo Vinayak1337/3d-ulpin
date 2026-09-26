@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {dirname} from 'node:path';
-import {pool} from '../../apps/web/lib/server/db';
+import {pool} from '@ulpin/server/infrastructure/db';
 const [mode,file,out]=process.argv.slice(2);
 assert(['before','after'].includes(mode),'Usage: preservation.ts before <checkpoint.json> | after <checkpoint.json> <report.json>');
 assert(file,'A checkpoint path is required');

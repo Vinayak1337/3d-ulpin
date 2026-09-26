@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import {
   inspectGisUpload,
   validateUnmappedGisIdentity,
-} from "../apps/web/lib/server/gis-inspection";
+} from "@ulpin/server/modules/cases/gis-inspection";
 const bytes = new Uint8Array([0, 255, 80, 75, 128, 7]);
 const digest = createHash("sha256").update(bytes).digest("hex");
 const metadata = {

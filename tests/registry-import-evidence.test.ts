@@ -9,7 +9,7 @@ import {
   assertRegistrySourceFrame,
   contextImportEvidence,
   unitImportEvidence,
-} from "../apps/web/lib/server/registry-import-evidence";
+} from "@ulpin/server/modules/registry/registry-import-evidence";
 
 const context: ContextFeature = {
   alias: "A",

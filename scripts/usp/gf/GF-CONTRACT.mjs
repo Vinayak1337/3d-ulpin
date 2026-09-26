@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 export const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 export const inventoryPath = 'docs/evidence/usp/finale/GF-CONTRACT/inventory.json';
-const unit = 'pnpm exec tsx --tsconfig apps/web/tsconfig.json --test tests/usp-*.test.ts';
+const unit = 'pnpm exec tsx --test tests/usp-*.test.ts';
 const live = 'node scripts/usp/local-isolation.mjs --run';
 
 // A declared file is not enough: each marker names the implementation or import
@@ -23,7 +23,7 @@ export const seams = [
     limitation: 'UspPorts still declares upload, model, scanner and delivery operations without live bindings; this row does not qualify every declared port.',
   },
   {
-    id: 'registry', producer: 'apps/web/lib/server/usp/snapshots.ts', producerMarker: 'captureRegistrySnapshotTx',
+    id: 'registry', producer: 'packages/server/src/modules/usp/snapshots.ts', producerMarker: 'captureRegistrySnapshotTx',
     consumer: 'apps/web/app/api/v1/usp/[...path]/route.ts', consumerMarker: 'captureRegistrySnapshot(ctx',
     contract: 'packages/contracts/src/usp/domain.ts', contractMarker: 'UspScopePageSchema',
     test: 'scripts/usp/verify-live.ts', testMarker: 'snapshot',
@@ -32,7 +32,7 @@ export const seams = [
     limitation: 'Historical D0 result must be rerun at this code revision; this is local operator scope only.',
   },
   {
-    id: 'source', producer: 'apps/web/lib/server/usp/snapshots.ts', producerMarker: 'readRegistryEvidenceBytes',
+    id: 'source', producer: 'packages/server/src/modules/usp/snapshots.ts', producerMarker: 'readRegistryEvidenceBytes',
     consumer: 'apps/web/app/api/v1/usp/[...path]/route.ts', consumerMarker: 'readRegistryEvidenceBytes(ctx',
     contract: 'packages/contracts/src/usp/common.ts', contractMarker: 'UspEvidencePointerSchema',
     test: 'scripts/usp/data/verify-pack.ts', testMarker: 'verifyUspPack',
@@ -41,16 +41,16 @@ export const seams = [
     limitation: 'The historical D0 exact-part runtime replay was retired with its authored inputs; current endpoint behavior needs a new real-source isolated run.',
   },
   {
-    id: 'geometry', producer: 'apps/web/lib/server/usp/external-scene.ts', producerMarker: 'decodeCityJsonRoof',
+    id: 'geometry', producer: 'packages/server/src/modules/usp/external-scene.ts', producerMarker: 'decodeCityJsonRoof',
     consumer: 'apps/web/features/usp/shared/ExternalSceneViewport.tsx', consumerMarker: "kind: 'external_asset'",
-    contract: 'apps/web/features/usp/shared/external-scene.ts', contractMarker: "schemaVersion: 'usp-external-roof/1'",
+    contract: 'packages/server/src/modules/usp/external/external-scene.ts', contractMarker: "schemaVersion: 'usp-external-roof/1'",
     test: 'tests/e2e/usp-d1-journey.spec.ts', testMarker: 'sourceFaceIndex',
     testCommand: live, declaredStatus: 'partial',
     evidence: 'A retained CityJSON exterior is decoded and displayed through the shared MapViewport/Cesium path.',
     limitation: 'This display profile is local-frame only; analytical solids, global placement and wider source coverage are unqualified.',
   },
   {
-    id: 'job', producer: 'apps/web/lib/server/usp/jobs.ts', producerMarker: 'claimUspJobAttempt',
+    id: 'job', producer: 'packages/server/src/modules/usp/jobs.ts', producerMarker: 'claimUspJobAttempt',
     consumer: null, consumerMarker: null,
     contract: 'packages/contracts/src/usp/domain.ts', contractMarker: 'UspJobProjectionSchema',
     test: 'scripts/usp/verify-live.ts', testMarker: 'acceptUspJobAttempt',
@@ -59,7 +59,7 @@ export const seams = [
     limitation: 'No production caller of the USP attempt functions was found; the existing dispatcher does not yet consume this USP fence API. Test-only use is not production wiring.',
   },
   {
-    id: 'sse', producer: 'apps/web/lib/server/usp/commands.ts', producerMarker: 'appendUspOutboxTx',
+    id: 'sse', producer: 'packages/server/src/modules/usp/commands.ts', producerMarker: 'appendUspOutboxTx',
     consumer: null, consumerMarker: null,
     contract: 'packages/contracts/src/usp/ports.ts', contractMarker: 'UspOutboxEventSchema',
     test: 'scripts/usp/verify-live.ts', testMarker: 'outbox',

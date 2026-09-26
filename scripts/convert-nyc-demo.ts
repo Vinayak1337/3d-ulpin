@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { pool, query } from "../apps/web/lib/server/db";
+import { pool, query } from "@ulpin/server/infrastructure/db";
 
 // Bounded conversion of the pinned NYC original, not a general GIS importer.
 const directory = new URL("../fixtures/real-nyc/", import.meta.url);

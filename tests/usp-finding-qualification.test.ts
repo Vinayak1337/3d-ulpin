@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { assessFindingParticipants, qualifyFindingParticipants, requireQualifiedFindingParticipants,
-  projectFindingHistory, type FindingEvidence, type QualifiedParticipantRow } from '../apps/web/lib/server/usp/finding-qualification';
+  projectFindingHistory, type FindingEvidence, type QualifiedParticipantRow } from '@ulpin/server/modules/usp/finding-qualification';
 import { uspFixtures as existing } from './fixtures/usp-common';
 
 // Metadata-only boundary assertions: reuse existing contract tokens; no geometry,
