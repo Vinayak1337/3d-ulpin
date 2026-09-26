@@ -61,3 +61,52 @@ export type MappingPlan = z.infer<typeof MappingPlanSchema>;
 export type MappingReceipt = z.infer<typeof MappingReceiptSchema>;
 export type SourceProfile = z.infer<typeof SourceProfileSchema>;
 export type MappingDestination = z.infer<typeof MappingDestinationSchema>;
+
+/** Byte receipt is independent of semantic parsing/conversion admission. */
+export const LARGE_ORIGINAL_LIMITS = {
+  version: 'large-original/1', partBytes: 8 * 1024 * 1024, maxOriginalBytes: 128 * 1024 * 1024,
+  maxParts: 16, maxActivePerCase: 2, maxActivePerOperator: 2, maxActiveGlobal: 4,
+  maxUploadReceipts: 128, maxZeroPayloadFenceObjectsPerReceipt: 17,
+  maxReservedOriginalBytes: 512 * 1024 * 1024, maxStoredBytesIncludingTemporaryCopies: 1024 * 1024 * 1024,
+  uploadLifetimeSeconds: 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 30,
+  leaseSeconds: 180, finalizationSeconds: 120, cleanupSeconds: 120, maxFinalizationAttempts: 3, maxPartAttempts: 3,
+  maxConcurrentDownloads: 2, downloadSeconds: 120,
+  storageProfile: 'unversioned_private_conditional_put', cleanupProtection: 'permanent_zero_payload_fences',
+} as const;
+const caseRevision = z.number().int().nonnegative();
+const url = z.string().url().max(2048).refine(value => /^https?:\/\//.test(value));
+export const LargeUploadCreateSchema = z.strictObject({
+  requestKey: id, expectedCaseRevision: caseRevision,
+  filename: z.string().min(1).max(150).refine(value => value.trim() === value && !/[\u0000-\u001f\/\\]/.test(value)),
+  mediaType: z.enum(['application/zip', 'application/octet-stream']),
+  bytes: z.number().int().min(16 * 1024 * 1024 + 1).max(LARGE_ORIGINAL_LIMITS.maxOriginalBytes),
+  sha256: hash,
+  provenance: z.strictObject({issuer: z.string().min(1).max(500), originalUrl: url, acquiredAt: z.string().datetime(),
+    permissionReference: z.string().min(1).max(2048), limitations: z.array(z.string().min(1).max(2000)).max(20)}),
+});
+export const LargeUploadGuardSchema = z.strictObject({requestKey: id, expectedRevision: revision, expectedCaseRevision: caseRevision});
+export const LargeUploadFinalizeSchema = LargeUploadGuardSchema.extend({sha256: hash});
+export const LargeUploadPartSchema = LargeUploadGuardSchema.extend({partNumber: z.number().int().min(1).max(LARGE_ORIGINAL_LIMITS.maxParts), sha256: hash});
+export const LargeOriginalEvidenceSchema = z.strictObject({
+  uploadId: id, operatorSubject: z.string(), objectEtag: z.string(), verifiedSha256: hash,
+  verifiedBytes: z.number().int().positive().max(LARGE_ORIGINAL_LIMITS.maxOriginalBytes),
+  provenance: LargeUploadCreateSchema.shape.provenance.extend({state: z.literal('caller_declared')}),
+  conversion: z.literal('unsupported'), bundleCompleteness: z.literal('single_original_only_archive_dependencies_not_assessed'),
+});
+export const LargeUploadStatusSchema = z.strictObject({
+  version: z.literal('large-original/1'), id, caseId: id, revision, currentCaseRevision: caseRevision,
+  pinnedCaseRevision: caseRevision, state: z.enum(['receiving','finalizing','retained','aborting','aborted']),
+  operatorSubject: z.string(), filename: z.string(), mediaType: z.string(), bytes: z.number().int().positive(),
+  declaredSha256: hash, verifiedSha256: hash.nullable(), partBytes: z.literal(LARGE_ORIGINAL_LIMITS.partBytes),
+  partCount: revision, receivedBytes: z.number().int().nonnegative(), expiresAt: z.string().datetime(),
+  parts: z.array(z.strictObject({partNumber: revision, bytes: z.number().int().positive(),
+    state: z.enum(['writing','failed','received']), sha256: hash, requestKey: id, attempts: revision, leaseExpiresAt: z.string().datetime().nullable()})),
+  source: z.strictObject({sourceId: id, sourceRevision: revision, sha256: hash, bytes: z.number().int().positive()}).nullable(),
+  conversion: z.literal('unsupported'), bundleCompleteness: z.literal('single_original_only_archive_dependencies_not_assessed'),
+  cleanupPending: z.boolean(), lastError: z.string().nullable(),
+});
+export type LargeUploadCreate = z.infer<typeof LargeUploadCreateSchema>;
+export type LargeUploadGuard = z.infer<typeof LargeUploadGuardSchema>;
+export type LargeUploadPart = z.infer<typeof LargeUploadPartSchema>;
+export type LargeUploadStatus = z.infer<typeof LargeUploadStatusSchema>;
+export type LargeOriginalEvidence = z.infer<typeof LargeOriginalEvidenceSchema>;

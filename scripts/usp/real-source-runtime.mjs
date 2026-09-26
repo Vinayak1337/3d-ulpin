@@ -6,13 +6,13 @@ import { createServer } from 'node:net';
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync, openSync, closeSync, realpathSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertUspIsolation, assertLocalOperatorProcess, localOperatorProcessProvenance } from './local-isolation.mjs';
+import { assertUspIsolation, assertLocalOperatorProcess, localOperatorProcessProvenance, localNestApiPort } from './local-isolation.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const base = join(root, '.runtime', 'run01');
 // Enable only after the lead accepts this preparation and authorizes the run.
 const STARTUP_ENABLED = true;
-const ports = [25432, 29000, 29001, 26379, 28000, 3188];
+const servicePorts = [25432, 29000, 29001, 26379, 28000];
 const allowed = ['HOME', 'PATH', 'USER', 'LOGNAME', 'TMPDIR', 'SHELL', 'LANG'];
 const context = process.platform === 'darwin' ? 'colima-ulpin' : 'default';
 const secret = () => randomBytes(32).toString('hex');
@@ -155,7 +155,8 @@ async function waitHealth(c, seconds=150) {
   }
   throw new Error('Nest API did not report every required service ready before deadline');
 }
-async function prepare() {
+async function prepare(apiPortValue='3188') {
+  const apiPort=String(localNestApiPort(apiPortValue));
   assert(!existsSync(join(root,'.env')), 'root .env is present; refuse to select linked configuration');
   assert.equal(command('git',['status','--porcelain','--untracked-files=no'],{}),'','runtime checkout must have no tracked edits');
   const nonce=randomBytes(8).toString('hex'), dir=join(base,nonce);
@@ -166,7 +167,7 @@ async function prepare() {
     POSTGRES_DB:database,POSTGRES_USER:'ulpin_usptest',POSTGRES_PASSWORD:password,POSTGRES_PORT:'25432',DATABASE_URL:`postgresql://ulpin_usptest:${password}@127.0.0.1:25432/${database}`,
     S3_ACCESS_KEY:'ulpin_usptest',S3_SECRET_KEY:s3Secret,S3_BUCKET:project,S3_ENDPOINT:'http://127.0.0.1:29000',S3_REGION:'us-east-1',S3_PORT:'29000',S3_CONSOLE_PORT:'29001',
     REDIS_URL:'redis://127.0.0.1:26379/0',REDIS_PORT:'26379',GEO_URL:'http://127.0.0.1:28000',GEO_PORT:'28000',GEO_SERVICE_TOKEN:secret(),
-    HOST:'127.0.0.1',PORT:'3188',API_PORT:'3188',ULPIN_LOOPBACK_PORTS:'3188',ULPIN_TEST_URL:'http://127.0.0.1:3188/',ULPIN_LOCAL_OPERATOR_SUBJECT:operatorProvenance.subject};
+    HOST:'127.0.0.1',ULPIN_NEST_API_PORT:apiPort,PORT:apiPort,API_PORT:apiPort,ULPIN_LOOPBACK_PORTS:apiPort,ULPIN_TEST_URL:`http://127.0.0.1:${apiPort}/`,ULPIN_LOCAL_OPERATOR_SUBJECT:operatorProvenance.subject};
   assertUspIsolation(env);
   writeFileSync(runFile(dir),JSON.stringify(env),{flag:'wx',mode:0o600});
   writeFileSync(join(dir,'compose.env'),Object.entries(env).map(([k,v])=>`${k}=${v}`).join('\n')+'\n',{flag:'wx',mode:0o600});
@@ -185,7 +186,7 @@ async function start(dir, resume=false) {
   const existing=command('docker',['volume','ls','--format','{{.Name}}','--filter',`label=com.docker.compose.project=${c.scope.project}`],c.env);
   if (!resume) assert(!existing,'nonce project already has volumes; use resume only after verifying ownership');
   else assert(existing,'resume requires this nonce\'s preserved named volumes');
-  for (const port of ports) await free(port);
+  for (const port of [...servicePorts,Number(c.env.API_PORT)]) await free(port);
   console.log(`Starting ${c.scope.project}; all published ports bound to 127.0.0.1.`);
   try {
     compose(c,['up','-d','--wait','postgres','minio','redis']);
@@ -269,6 +270,25 @@ async function processorStart(dir) {
   const after=await waitHealth(c,60);
   console.log(JSON.stringify({project:c.scope.project,after:after.services,processor:'started'}));
 }
+async function apiRestart(dir) {
+  const c=config(dir);
+  pinned(c);
+  await waitHealth(c,20);
+  const previous=readGroup(c,'api'),dispatcher=readGroup(c,'dispatcher');
+  assert(previous && processAlive(c,'api'),'verified owned API leader is required');
+  assert(groupMembers(previous.pgid).includes(previous.pid),'owned API group leader is absent');
+  // Only this nonce's verified API group is signalled. All other services stay running.
+  process.kill(-previous.pgid,'SIGTERM');
+  assert.equal((await waitGroupGone(previous.pgid)).length,0,'previous owned API group did not exit');
+  await free(Number(c.env.API_PORT));
+  pinned(c);
+  assert(processAlive(c,'dispatcher'),'owned dispatcher must remain running');
+  assert.deepEqual(readGroup(c,'dispatcher'),dispatcher,'dispatcher identity changed during API restart');
+  await launch(c,'api',['--filter','@ulpin/api','start']);
+  const after=await waitHealth(c,60),replacement=readGroup(c,'api');
+  assert.notEqual(replacement.pid,previous.pid,'replacement API must have a new process identity');
+  console.log(JSON.stringify({project:c.scope.project,apiRestart:'passed',previousGroup:previous,replacementGroup:replacement,services:after.services}));
+}
 async function stop(dir) {
   const c=config(dir);
   const unresolved=[];
@@ -305,10 +325,11 @@ async function stop(dir) {
   if (unresolved.length) throw new Error(`owned cleanup unresolved: ${unresolved.join('; ')}`);
   console.log(`Stopped ${c.scope.project}; named volumes preserved.`);
 }
-const [action,dir]=process.argv.slice(2);
+const [action,dir,portValue,...extra]=process.argv.slice(2);
 try {
   if (!STARTUP_ENABLED && !['stop','status'].includes(action)) throw new Error('RUN-01 phase 2B runtime actions are gated pending lead acceptance and run authorization; no service action was taken.');
-  if(action==='prepare'&&!dir)await prepare();
+  if(action==='prepare' && (!dir || dir==='--api-port' && portValue) && !extra.length)await prepare(portValue);
+  else if(portValue || extra.length)throw new Error('Unexpected extra runtime arguments.');
   else if(action==='start'&&dir)await start(dir);
   else if(action==='resume'&&dir)await start(dir,true);
   else if(action==='status'&&dir)status(dir);
@@ -316,10 +337,11 @@ try {
   else if(action==='recovery'&&dir)await recovery(dir);
   else if(action==='processor-stop'&&dir)await processorStop(dir);
   else if(action==='processor-start'&&dir)await processorStart(dir);
+  else if(action==='api-restart'&&dir)await apiRestart(dir);
   else if(action==='stop'&&dir)await stop(dir);
-  else throw new Error('Usage: real-source-runtime.mjs prepare | start|resume|status|migrate-repeat|recovery|processor-stop|processor-start|stop <private-run-directory>');
+  else throw new Error('Usage: real-source-runtime.mjs prepare [--api-port <port>] | start|resume|status|migrate-repeat|recovery|processor-stop|processor-start|api-restart|stop <private-run-directory>');
 } catch(error) {
-  try {const env=dir?JSON.parse(readFileSync(runFile(dir),'utf8')):{};
+  try {const env=action!=='prepare' && dir?JSON.parse(readFileSync(runFile(dir),'utf8')):{};
     const message=error instanceof AggregateError ? `${error.message}: ${error.errors.map(item=>item.message).join('; ')}` : error.message;
     console.error(redacted(message,env));}
   catch {console.error('RUN-01 failed; inspect the private run directory. Credentials withheld.');}

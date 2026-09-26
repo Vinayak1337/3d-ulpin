@@ -40,7 +40,7 @@ export function createApiDocument(app: INestApplication): OpenAPIObject {
   for (const {path, value} of manifests) for (const operation of value.operations) {
     const key = `${operation.method} ${operation.path}`;
     if (inventory.has(key)) throw new Error(`Duplicate operation manifest: ${key}`);
-    inventory.set(key, {...operation, batch: value.batch, manifest: path});
+    inventory.set(key, {...operation, batch: operation.batch ?? value.batch, manifest: path});
   }
   for (const operation of baseline.operations.filter((o: Json) => o.batch === 'NEST-00')) {
     inventory.set(`${operation.method} ${operation.path}`, {...operation, disposition: 'retained'});
