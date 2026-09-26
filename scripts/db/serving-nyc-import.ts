@@ -1,7 +1,9 @@
 /** One retained official foreign footprint through the native API. No provider fetch, height mapping or Indian claim. */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { codePin, connection, hash, loadEnvironment, requireGuard, target, writeReceipt } from './serving-common';
+import type { Pool, PoolClient } from 'pg';
+import { codePin, connection, hash, loadEnvironment, requireGuard, target, reserveReceipt, toolRoot, toolPath,
+  assertEffectiveEnvironment } from './serving-common';
 
 async function main() {
   const args = process.argv.slice(2), opts = new Map<string,string>();
@@ -11,15 +13,20 @@ async function main() {
     opts.set(key.slice(2),value);
   }
   const get = (key: string) => { const value = opts.get(key); requireGuard(value, `REQUIRED_${key.toUpperCase().replaceAll('-','_')}`); return value; };
-  const out = get('out'); requireGuard(!existsSync(out), 'RECEIPT_ALREADY_EXISTS');
-  const env = loadEnvironment(get('env-file'));
+  const out = toolPath(get('out'));
   const receipt: Record<string,unknown> = { version: 'serving-nyc-import/1', status: 'running', codeCommit: codePin(),
     startedAt: new Date().toISOString(), mutationAttempted: false, geography: 'New York City, USA', purpose: 'test_only' };
-  const p = connection(env.env.DATABASE_URL,true); p.on('error',() => {});
-  const client = await p.connect();
+  const durable = reserveReceipt(out,receipt);
+  let p: Pool | undefined, client: PoolClient | undefined;
   try {
-    requireGuard(!execFileSync('git',['status','--porcelain'],{encoding:'utf8',timeout:5000}).trim(), 'CLEAN_PINNED_CHECKOUT_REQUIRED');
+    const env = loadEnvironment(get('env-file'));
+    receipt.envHash=env.envHash; receipt.resourceBindingHash=await assertEffectiveEnvironment(env);
+    p=connection(env.env.DATABASE_URL,true); p.on('error',() => {}); client=await p.connect();
+    requireGuard(!execFileSync('git',['status','--porcelain'],{cwd:toolRoot,encoding:'utf8',timeout:5000}).trim(), 'CLEAN_PINNED_CHECKOUT_REQUIRED');
     requireGuard(codePin() === get('expect-code'), 'CODE_PIN_CHANGED');
+    requireGuard(get('verified-api-code') === codePin(), 'VERIFIED_API_LAUNCH_REQUIRED');
+    receipt.apiCode = { codeCommit: codePin(), basis: 'caller_verified_launch',
+      limitation: 'Health attests database target and manifest, not the API process loaded code.' };
     requireGuard((await target(client,env.endpoint)).token === get('expect-target'), 'LIVE_TARGET_CHANGED');
     const api = new URL(get('api'));
     requireGuard(api.protocol === 'http:' && ['127.0.0.1','localhost','[::1]'].includes(api.hostname) &&
@@ -46,8 +53,9 @@ async function main() {
     requireGuard(health.ok === true && health.databaseReadiness?.schema?.ready === true &&
       health.databaseReadiness.schema.targetToken === get('expect-target') &&
       health.databaseReadiness.schema.manifestSha256 === get('expect-manifest'), 'API_TARGET_SCHEMA_OR_HEALTH_MISMATCH');
-    const original = readFileSync('fixtures/real-nyc/original.geojson');
-    const manifestBytes = readFileSync('fixtures/real-nyc/provenance.json');
+    receipt.targetToken=get('expect-target'); receipt.manifestSha256=get('expect-manifest'); receipt.api=api.href;
+    const original = readFileSync(toolPath('fixtures/real-nyc/original.geojson'));
+    const manifestBytes = readFileSync(toolPath('fixtures/real-nyc/provenance.json'));
     const provenance = JSON.parse(manifestBytes.toString('utf8'));
     requireGuard(hash(original) === provenance.originalSha256 && original.length === 1763 &&
       provenance.originalSha256 === '6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda', 'RETAINED_OFFICIAL_SOURCE_CHANGED');
@@ -67,6 +75,7 @@ async function main() {
       body->>'datasetNamespace'=$2 AND body->>'name'=$3`,[hash(original),fields.namespace,fields.name])).rows;
     requireGuard(prior.length <= 1, 'EXISTING_IMPORT_AMBIGUOUS');
     receipt.mutationAttempted = true;
+    receipt.phase='import_intent'; durable.update(receipt);
     const pkg = JSON.parse((await call('/import-packages',{method:'POST',body:form(true)})).bytes.toString('utf8'));
     requireGuard(!prior.length || pkg.id === prior[0].id, 'IMPORT_REPEAT_CHANGED_PACKAGE');
     const saved = (await client.query('SELECT body FROM import_packages WHERE id=$1',[pkg.id])).rows[0]?.body;
@@ -97,9 +106,14 @@ async function main() {
     receipt.recovery = 'Keep source/package history. Recheck exact target and existing package before API retry; never reset or delete an uncertain publication.';
     process.exitCode = 1;
   } finally {
-    client.release(); await p.end(); receipt.completedAt = new Date().toISOString(); writeReceipt(out,receipt);
+    client?.release(); await p?.end().catch(() => {receipt.cleanup='pool_close_failed';});
+    receipt.completedAt = new Date().toISOString();
+    try { durable.update(receipt); } finally { durable.close(); }
     console.log(JSON.stringify({status:receipt.status,receipt:out,errorCode:receipt.errorCode,mutationAttempted:receipt.mutationAttempted}));
   }
 }
 try { await main(); }
-catch { console.error('SERVING_IMPORT_CONFIGURATION_FAILED'); process.exitCode = 1; }
+catch (error) {
+  const code=(error as {code?:string}).code;
+  console.error(code && /^[A-Z0-9_]+$/.test(code) ? code : 'SERVING_IMPORT_RECEIPT_UNCERTAIN'); process.exitCode = 1;
+}
