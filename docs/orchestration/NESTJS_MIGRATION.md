@@ -66,15 +66,17 @@ Resume the dependency-ready backend plan from actual code/evidence, not its old 
 
 | Batch | State | Accepted commit / next action |
 | --- | --- | --- |
-| NEST-00 | accepted | Foundation `f5df91ad` merged at `fd7d3e39`; direct contracts dependency `08e58166` merged at `de77fe9`. Server/API builds and bounded loopback startup passed; no dependency health or GF-BACKEND pass. |
-| NEST-01 | accepted; runtime execution pending | `dfb74fd2` extraction and `f42b81ac` wiring merged (latest `682bea9a`). Lead verified 25 exact files / 136 statement hashes and 24 named runtime calls; no database was opened. |
-| NEST-02 | phase 2A runtime verification running | `958b1c64` + review fix `1ee5585f` merged at `8aabfb1f`. Sol task `01a0db56-a8ae-77b0-a65c-19ac10dbd025`, worktree `0365`; foundation/SQL health, repeatability and recovery now authorized; source smoke waits for API integration. |
-| NEST-03 | running | Foundation task reused from `055534d` for backend tool imports and root commands. |
-| NEST-10 | running | Intake: task `01a0db64-588b-7610-89cc-2438a0e5f5f3`, worktree `c006`. |
-| NEST-11 | running | Register/officer: task `01a0db64-7470-7ca2-8e64-1e4b95927087`, worktree `b1dd`. |
-| NEST-12 | running | Evidence/identity: task `01a0db64-aa4b-7781-807a-982281dc5e00`, worktree `2b4e`. |
-| NEST-13 | running | Spatial/AI: task `01a0db64-d960-7d61-a20d-47b549e24331`, worktree `2ace`. |
-| NEST-20–21 | pending | Integration/runtime checks, lead docs and cleanup. |
+| NEST-00 | accepted | `f5df91ad` foundation + `08e58166` dependency correction; isolated five-service health qualified below. |
+| NEST-01 | accepted, fresh execution verified | `dfb74fd2` extraction + `f42b81ac` wiring. Exact 25 files / 136 statement hashes; fresh migration and repeat passed in phase 2A. Populated migration remains unqualified. |
+| NEST-02 | phase 2A accepted | Through `20aa298f`, merged at `5b3bfbb`. Health, SQL repeatability and processor recovery passed; all owned processes stopped, volumes preserved. Source-flow gate still pending. |
+| NEST-03 | accepted | `8b25dea6`, merged at `cf633ea`. Backend tools/default commands use Nest; explicit UI tools remain classified. Historical GF-CONTRACT receipt remains historical. |
+| NEST-10 | accepted | `7b318602`, merged at `1c5ab29`. 43 operations, authored scenarios retired, source downloads hash/size checked. |
+| NEST-11 | accepted | `fb21e3b4`, independently reviewed by Astra. 40 operations, unsupported imported rights/use defaults removed. |
+| NEST-12 | accepted | `8b0d4512` + `43b0b86c`, merged at `27fa64a`. 18 operations; review caught and verified the explicit Nest injection correction. |
+| NEST-13 | accepted | `3347d140`, merged at `89a8182`. 28 operations, synthetic-only saved intake and calibration retired, private read fence retained. |
+| NEST-14 | accepted | `66242ba0`, merged at `3fcc241`. Required server-only local subject for new attribution; lead preflights API/dispatcher before service work. Historical actors/wire mode remain intact. |
+| NEST-20–21 | integrating | All 132 baseline operations have native registered modules or explicit retirement. Lead generates final OpenAPI, linked data handoff and integrated runtime acceptance; final cleanup follows. |
+
 
 Framework references checked for this decision: [Nest controllers](https://docs.nestjs.com/controllers), [Nest database integration](https://docs.nestjs.com/techniques/database), [node-postgres parameterized queries](https://node-postgres.com/features/queries), [Prisma unsupported-field/raw SQL guidance](https://docs.prisma.io/docs/orm/prisma-client/using-raw-sql/safeql). These inform the architecture; they do not prove this repository's runtime behavior.
 
@@ -86,4 +88,4 @@ All four API tasks started from accepted `fd7d3e39` and were instructed to merge
 
 SQL ownership handoff: after accepted `f42b81ac`, NEST-13 may edit `modules/ai/officer-ai.ts` for explicit service exports, preserving the named SQL migration call. NEST-01 has finished its phase 2.
 
-Additional bounded lanes: Luna/max official runtime PDF source task `01a0db6c-5238-7a72-9c58-bde1fe59a4ed` (worktree `b962`) checks documented permission for one unchanged input accepted by the existing queued PDF inspector. No new geometry/rights/scale claim. NEST-12 candidate `8b0d4512` awaits independent Astra review before integration; all 18 operations retained.
+Additional bounded lanes: Luna/max official runtime PDF source task `01a0db6c-5238-7a72-9c58-bde1fe59a4ed` (worktree `b962`) checks documented permission for one unchanged input accepted by the existing queued PDF inspector. No new geometry/rights/scale claim. NEST-12 was accepted after Astra review and the explicit injection fix; all 18 operations retained.

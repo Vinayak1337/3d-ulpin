@@ -6,7 +6,8 @@ import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 export const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
-export const inventoryPath = 'docs/evidence/usp/finale/GF-CONTRACT/inventory.json';
+// Current source inventory is separate from the immutable historical milestone receipt.
+export const inventoryPath = 'docs/engineering-plan/contract-inventory.json';
 const unit = 'pnpm exec tsx --test tests/usp-*.test.ts';
 const live = 'node scripts/usp/local-isolation.mjs --run';
 

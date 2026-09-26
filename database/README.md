@@ -10,7 +10,9 @@ runtime caller, SHA-256 of each query batch and SQL statement, order, timing,
 transaction scope, lock, condition and parameter. Each file preserves one
 complete original query string, including its whitespace and any multiple
 statements. The files contain no generated rows. Static wiring and hash checks
-have passed; database execution remains for the separate runtime qualification.
+have passed. The [phase 2A runtime receipt](../docs/evidence/usp/nest-migration/runtime-foundation/README.md)
+records fresh schema execution and same-database repeatability. Populated-data
+migration is separately unqualified.
 
 ## Execution order and boundaries
 

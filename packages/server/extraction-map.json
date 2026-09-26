@@ -53,6 +53,11 @@
       "kind": "transitive"
     },
     {
+      "source": "apps/web/features/spatial/data/legacy-adapter.ts",
+      "destination": "packages/server/src/modules/spatial/legacy/area-compat-adapter.ts",
+      "kind": "transitive"
+    },
+    {
       "source": "apps/web/features/spatial/reference-import/adapter.ts",
       "destination": "packages/server/src/modules/datasets/reference-import/adapter.ts",
       "kind": "transitive"
