@@ -22,3 +22,5 @@ The authored D0 pack was retired from this checkout. Historical D0 receipts do n
 ## Observed local workflows
 
 The [phase 2B receipt](../evidence/usp/nest-migration/runtime-source/README.md) records the USGS PDF queue/failure/retry/read and the distinct NYC single-feature import. The [operation qualification map](runtime-qualification.json) links each tested operation to its exact source manifest and receipt fields. Only these profiles were observed, on the pinned code; the isolated runtime is stopped and no installed IDs are advertised for other environments. Other catalogue packs remain unqualified for API installation. The [Indian scale-source follow-up](../evidence/usp/nest-migration/official-scale-source/source-check.json) found no acceptable replacement or permission evidence within its three-candidate bound.
+
+The [additional NWIC source check](../evidence/usp/nest-migration/official-scale-followup/source-check.json) also acquired no original: the Rivers download and two new alternatives hit redirect loops, with resource-specific admission unresolved. No new usable dataset or runtime capability was added by that investigation.
