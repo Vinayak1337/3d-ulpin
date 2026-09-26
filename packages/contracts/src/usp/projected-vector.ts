@@ -20,12 +20,20 @@ export const AdministrativeNativeKeySchema=z.discriminatedUnion('type',[
   z.strictObject({type:z.literal('string'),value:z.string().min(1).max(256)}),
 ]);
 export const ProjectedVectorRequestSchema=z.strictObject({requestKey:id,expectedCaseRevision:rev,
-  expectedSourceRevision:z.number().int().positive(),sourceSha256:hash});
+  expectedSourceRevision:z.number().int().positive(),sourceSha256:hash,
+  semanticChunks:z.literal('nwic-semantic-chunks/1').optional()});
 /** Internal job input: an existing retained source, never a scene/snapshot manifest. */
 export const ProjectedVectorInputSchema=z.strictObject({kind:z.literal('retained_source'),version:z.literal(PROJECTED_VECTOR_PROFILE.version),
   jobId:id,caseId:id,caseRevision:rev,sourceId:id,sourceRevision:z.number().int().positive(),sourceFamilyId:id,
   sha256:z.literal(PROJECTED_VECTOR_PROFILE.zipSha256),bytes:z.literal(PROJECTED_VECTOR_PROFILE.zipBytes),
-  objectKey:z.string().max(150),parserSha256:hash,accessBinding:hash,inputFingerprint:hash});
+  objectKey:z.string().max(150),parserSha256:hash,accessBinding:hash,inputFingerprint:hash,
+  semanticChunks:z.strictObject({version:z.literal('nwic-semantic-chunks/1'),publisherSha256:hash}).optional()});
+export const ProjectedChunkPinSchema=z.strictObject({sequence:z.number().int().min(1).max(128),sha256:hash});
+export const ProjectedChunkCoverageSchema=z.strictObject({kind:z.literal('committed_partial'),sourceAccepted:z.literal(false),
+  throughSequence:z.number().int().min(1).max(128),expectedChunks:z.number().int().min(1).max(128),
+  records:z.number().int().min(1).max(733),admitted:rev.max(720),quarantined:rev.max(13),positions:rev.max(3125505),
+  expectedRecords:z.literal(733),remainingRecords:rev.max(732),prefixDependencySha256:hash})
+  .refine(v=>v.admitted+v.quarantined===v.records&&v.remainingRecords+v.records===733,'Committed coverage counts must close.');
 export const ProjectedVectorArtifactSchema=z.strictObject({key:z.string().min(1).max(320),sha256:hash,
   bytes:z.number().int().positive().max(PROJECTED_VECTOR_PROFILE.geographicBytes)});
 export const ProjectedVectorTransformSchema=z.strictObject({sourceCrs:z.literal('EPSG:7755'),targetCrs:z.literal('EPSG:4326'),
@@ -50,7 +58,7 @@ export const ProjectedVectorResultSchema=z.strictObject({version:z.literal(PROJE
 export const ProjectedVectorStatusSchema=z.strictObject({version:z.literal(PROJECTED_VECTOR_PROFILE.version),caseId:id,sourceId:id,
   sourceRevision:z.number().int().positive(),sourceSha256:hash,currentCaseRevision:rev,
   jobId:id,status:z.enum(['queued','running','succeeded','failed','stale']),totals:ProjectedVectorTotalsSchema.nullable(),
-  transform:ProjectedVectorTransformSchema.nullable(),errorCode:z.string().max(80).nullable()});
+    transform:ProjectedVectorTransformSchema.nullable(),errorCode:z.string().max(80).nullable(),currentSourceAccepted:z.boolean().optional(),displayMilestones:z.array(z.strictObject({phase:z.enum(['early','middle','final']),jobId:id.nullable(),state:z.enum(['reserved','queued','running','succeeded','failed','stale','unavailable']),errorCode:z.string().max(80).nullable()})).length(3).optional(),coverage:ProjectedChunkCoverageSchema.optional(),chunk:ProjectedChunkPinSchema.optional()});
 export const AdministrativeObservationSchema=z.strictObject({id,kind:z.literal('district'),namespace:z.literal(PROJECTED_VECTOR_PROFILE.namespace),
   nativeKey:AdministrativeNativeKeySchema,sourceId:id,sourceRevision:z.number().int().positive(),jobId:id,
   featureIndex:rev,locator:z.strictObject({member:z.literal(PROJECTED_VECTOR_PROFILE.member),start:rev,end:rev}),
@@ -58,7 +66,7 @@ export const AdministrativeObservationSchema=z.strictObject({id,kind:z.literal('
   nativeBounds:box,geographicBounds:box.nullable(),rawSha256:hash,geographicSha256:hash.nullable(),
   sourceCrs:z.literal('EPSG:7755'),geographicCrs:z.literal('EPSG:4326'),verticalReference:z.null(),
   purpose:z.literal('administrative_context'),accuracyQualification:z.literal('source_boundary_accuracy_and_currentness_unqualified')});
-export const AdministrativeObservationPageSchema=z.strictObject({jobId:id,records:z.array(AdministrativeObservationSchema).max(25),next:rev.nullable()});
+export const AdministrativeObservationPageSchema=z.strictObject({jobId:id,records:z.array(AdministrativeObservationSchema).max(25),next:rev.nullable(),coverage:ProjectedChunkCoverageSchema.optional(),chunk:ProjectedChunkPinSchema.optional()});
 export type ProjectedVectorEntry=z.infer<typeof ProjectedVectorEntrySchema>;
 export type ProjectedVectorIndex=z.infer<typeof ProjectedVectorIndexSchema>;
 export type ProjectedVectorResult=z.infer<typeof ProjectedVectorResultSchema>;

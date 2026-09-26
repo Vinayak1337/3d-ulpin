@@ -1559,35 +1559,98 @@
         "path": "database/sql/95-ingestion/private-mvt-cell.sql",
         "function": "compilePrivateMvtCellTx",
         "kind": "authored-sql",
-        "task": "TILE-01",
-        "acceptedBase": "4c8d7510168235bef04139196851f0aac0defa4a"
+        "task": "STREAM-02",
+        "acceptedBase": "8a64a83caa166b487c829fcdde2d54c7949238a7"
       },
       "file": "sql/95-ingestion/private-mvt-cell.sql",
       "loadTiming": "private-display-compilation",
       "transactionScope": "private-mvt",
       "advisoryLock": null,
-      "condition": "server-pinned admitted source only; least-privilege compiler role",
+      "condition": "server-pinned accepted source or exact immutable sealed prefix; least-privilege compiler role",
       "parameters": [
         "accepted admission job UUID",
         "source UUID",
         "zoom",
         "x",
-        "y"
+        "y",
+        "optional exact sealed prefix sequence; null requires complete accepted authority"
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
       "order": 31,
-      "sha256": "946c755049ca0b6377c00af21894b4490a6361ee13353c9b9f27b16430924f79",
+      "sha256": "c04c41b2cc022e5c3ecb39c70f575c8f68a2b38f569b16d711cc58b0016d56a1",
       "statements": [
         {
           "ordinal": 1,
-          "sha256": "0bf1b74fa2603f2a16ff3b00b23aec61d7e498a9a475488d8cac78fe636c88ef"
+          "sha256": "46b9662a0d264523c607ef5cbc07a2b9c520428727e0f54638be1a3431ba7904"
         }
       ],
       "runtime": {
         "path": "packages/server/src/modules/usp/tiles/compiler.ts",
         "function": "compilePrivateMvtCellTx"
       }
+    },
+    {
+      "id": "ingestion.semantic.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/semantic-chunks.sql",
+        "function": "migrateSemanticChunksTx",
+        "kind": "authored-sql",
+        "task": "STREAM-02",
+        "acceptedBase": "8a64a83caa166b487c829fcdde2d54c7949238a7"
+      },
+      "file": "sql/95-ingestion/semantic-chunks.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 32,
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateSemanticChunksTx"
+      },
+      "sha256": "e14e828b729f63be6ee71d5b474968147a2c7ef6bf58e8a72f995e103185810c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "1d2a24f9ea67a2b4935e362cf036f222499ebdd472a2fadb71a219726e947419"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "e37defa314565bcb3230588468390baf063eed1d8a513ed6be0730c148ee9210"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "6a297e5b7786ad0f4aab7a8ecd5c8c51a560af1a6551cb6d79e0492379222abc"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "b2003148c255952ce312831b852a7356da10e70fb3d1a5e2b970bc311ce7d76b"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "13fae0c9440dd65649b63730cd1e89bb90d9a7d60ee8f3c87d0f8f01922c2d58"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "bde4c3b3857b4c8c120ee4d503d7d167e2df4694622ce71789368ebf09d4c285"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "313b1f3088a9132f589170da098a03a29ffde79bb697f3b41d90abd48b0e2e0d"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "9975159b5e38a3a6dc03aa9460ac158582d40aaf71a807671db946e39f4964a6"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "2360229d624da68b0acaf4d79987020a43e21f07a90acffde9c9ac26b3a3fb8b"
+        }
+      ]
     }
   ],
   "plannedButAbsent": []

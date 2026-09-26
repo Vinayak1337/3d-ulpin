@@ -5,7 +5,7 @@ WITH bounds AS MATERIALIZED (
     (u.native_key->>'value')::bigint mvt_id,
     ST_AsMVTGeom(ST_Transform(o.geographic_geometry,3857),bounds.box,4096,64,true) clipped
   FROM administrative_unit_observations o JOIN administrative_units u ON u.id=o.unit_id CROSS JOIN bounds
-  WHERE o.job_id=$1 AND o.source_id=$2 AND o.disposition='admitted' AND ST_SRID(o.geographic_geometry)=4326
+  WHERE o.job_id=$1 AND o.source_id=$2 AND o.disposition='admitted' AND ($6::int IS NULL OR o.committed_chunk_sequence<=$6) AND ST_SRID(o.geographic_geometry)=4326
     AND u.native_key->>'type'='number' AND o.geographic_geometry && bounds.halo
   ORDER BY o.feature_index LIMIT 734
 ), kept AS MATERIALIZED (

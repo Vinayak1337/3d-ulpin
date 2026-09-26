@@ -88,7 +88,7 @@ export async function heartbeatUspJobAttempt(attempt: Attempt,beforeLocks?:(clie
 /** Completion is accepted only through a registered operation's result validator. */
 export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
   validateResult: (client: PoolClient, job: Record<string, unknown>, result: AssetRef) => Promise<void>,
-  beforeLocks?: (client:PoolClient)=>Promise<void>,beforeCommit?:()=>void) {
+  beforeLocks?: (client:PoolClient)=>Promise<void>,beforeCommit?:(client:PoolClient)=>void|Promise<void>) {
   const asset = UspAssetRefSchema.parse(result);
   return transaction(async client => {
     if(beforeLocks)await beforeLocks(client);
@@ -110,7 +110,7 @@ export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
     await client.query(`UPDATE jobs SET status='succeeded',completed_at=now(),error=NULL WHERE id=$1`, [attempt.jobId]);
     await appendUspOutboxTx(client, `job:${attempt.jobId}`, { type: 'job.succeeded', jobId: attempt.jobId,
       fence: attempt.fence, result: asset, inputManifestId: meta.input_manifest_id });
-    if(beforeCommit)beforeCommit();
+    if(beforeCommit)await beforeCommit(client);
     return asset;
   });
 }
