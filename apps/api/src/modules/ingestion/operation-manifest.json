@@ -375,7 +375,7 @@
       "responseSchema": "SufficiencyResultSchema",
       "responseStatus": 200,
       "transportProfile": "json",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-handoff.md"
     },
     {
       "method": "GET",
@@ -388,7 +388,7 @@
       "responseSchema": "NeedsInputSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-handoff.md"
     },
     {
       "method": "POST",
@@ -401,7 +401,7 @@
       "responseSchema": "SufficiencyQuestionSchema",
       "responseStatus": 200,
       "transportProfile": "json",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/ingest-04a-sufficiency-handoff.md"
     }
   ]
 }
