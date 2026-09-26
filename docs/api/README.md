@@ -6,7 +6,7 @@ After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs).
 
 ## Serving environment status
 
-**Upgrade verified:** serving code `89cd51b` exposes the157-operation/181-schema API. The exact reviewed historical full-admission compiler profile remains readable with unchanged source/access/artifact checks; stored fingerprints and tile bytes were not rewritten. Other historical compiler profiles remain unapproved. See the [serving observation](serving-observation.json).
+**Document API upgrade verified:** serving code `21f93c6` exposes 160 operations and 185 schemas on port3188. Health, served OpenAPI/catalogue equality and retained NWIC generation/tile/pick reads passed. Read-only audits before/after the code switch found unchanged records, originals and schema; no migration was needed. Live providers remain disabled, and no document test source was installed into this linked database. See the [serving observation](serving-observation.json).
 
 Observed on 26 September 2026 at15:25UTC on accepted serving code `89cd51b20003f836e6cf1294822aaf4fbfdaad51`: health reports `structurally_ready`; 120 foreign keys have no orphans, and the read-only audit found no geometry violations. There are 63 verified originals (75,416,144 bytes), one import package, one physical feature, and 733 source-linked NWIC administrative observations. All pre-existing records and originals survived the reviewed schema upgrades. Six historical constraints remain marked unvalidated; structural readiness does not assert blanket historical-data qualification. The two individually reviewed obsolete legacy scenes remain absent from active directories, with historical reads and originals preserved.
 
