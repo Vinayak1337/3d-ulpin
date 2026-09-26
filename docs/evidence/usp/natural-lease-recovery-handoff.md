@@ -14,7 +14,7 @@ Actual case `70255788-52a2-40f9-a9ac-a9885784aa30`, source `e86f1b08-b730-4efc-b
 | Guarded canonical dispatcher resume requested | 16:08:35.146 |
 | Resume helper returned with replacement73017 and five-service health | 16:08:35.494 |
 | Source closure observed | 43,853ms after captured expiry |
-| Final62-cell catalogue observed | 79,926ms after captured expiry |
+| Final62-cell catalogue observed | 79,835ms after captured expiry; later post-finish source/preparation observation79,926ms |
 | All recovery checks finished | 16:09:56.388;81,249ms after expiry |
 | Fixed observation deadline | 16:10:35.139; expiry+120,000ms |
 
@@ -40,4 +40,4 @@ Private directory: `/Users/vinayak/.codex/worktrees/0bc6/3D Ulpin/.runtime/run01
 
 Actual commands: syntax checks of the two edited harness files, `git diff --check`, `pnpm typecheck:backend`, guarded `prepare --api-port3191`, `start`, `node scripts/usp/semantic-chunks-smoke.mjs <owned-dir> --recovery-only`, guarded `stop` and `status` all exited0. Final status has no nonce containers/live leaders/group members; API71592, old dispatcher71470 and replacement73017 are gone. All three named volumes remain. The prior pair's failed receipt SHA256 `816ba618f9c84eebe094b9a9cda281c53c2eeab06ce1d79b0c815c2cfea43025` and three volumes were preserved; serving3188, other nonces, originals and credentials were untouched. Sol/max requestedDEFAULT tier; observed per-turn tier unavailable.
 
-This qualifies the bounded operator-triggered dispatcher restart after natural lease expiry for this unchanged vector profile, pending lead review. It does not establish automatic failover, uninterrupted availability, a repeated normal performance result, a second changed official revision, complete GF-STREAM/GF-SCALE, frontend/GPU/city/3D/public/replica performance, source positional/legal/currentness/rights accuracy or provider/training permission.
+This qualifies the bounded operator-triggered dispatcher restart after natural lease expiry for this unchanged vector profile, accepted by lead and independent Sol review. See the [sanitized receipt](natural-lease-recovery-runtime.json). It does not establish automatic failover, uninterrupted availability, a repeated normal performance result, a second changed official revision, complete GF-STREAM/GF-SCALE, frontend/GPU/city/3D/public/replica performance, source positional/legal/currentness/rights accuracy or provider/training permission.

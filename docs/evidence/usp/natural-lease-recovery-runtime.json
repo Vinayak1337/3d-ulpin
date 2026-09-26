@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "ulpin-natural-lease-recovery/1",
+  "status": "passed-bounded-scope",
+  "servedCodeCommit": "f0df0adea9ada663f59317cbdee87ec8e8d59742",
+  "environment": {
+    "kind": "stopped-isolated",
+    "nonce": "c237ec466729df1d"
+  },
+  "source": {
+    "bytes": 71238839,
+    "sha256": "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37"
+  },
+  "member": {
+    "bytes": 168356689,
+    "sha256": "2b27a478e24d8c51b0655e74ce3f4f880e75c752e4597550d6fc925ed06ac201"
+  },
+  "privateReceiptSha256": "a35de4354fb9ea748557df1907e1acb8b2fc660fcc597f221557f516e4e5d57a",
+  "planSha256": "85241e4ca7f5dffad2355b5e9ddd81099a1c958a52a1e01ac3d7da674dcbfb23",
+  "method": "Operator-triggered guarded dispatcher restart after unchanged configured lease naturally expired; no manual claim/timestamp edit/lease shortening.",
+  "earlyPrefix": {
+    "pin": {
+      "sequence": 1,
+      "sha256": "c926d410202eabd3219bd6e2d840db4942b8486c372171f316391dfdab670082"
+    },
+    "coverage": {
+      "kind": "committed_partial",
+      "sourceAccepted": false,
+      "throughSequence": 1,
+      "expectedChunks": 67,
+      "records": 9,
+      "admitted": 9,
+      "quarantined": 0,
+      "positions": 43585,
+      "expectedRecords": 733,
+      "remainingRecords": 724,
+      "prefixDependencySha256": "00ade7bc3085fb210967a0daf5cc84173e37c0c4fd15bcbb3b70b7701a8b71da"
+    },
+    "currentSourceAccepted": false
+  },
+  "configuredLeaseSeconds": 180,
+  "leaseObservationCount": 179,
+  "leaseUntil": "2026-09-26T16:08:35.139Z",
+  "expiryObservedAt": "2026-09-26T16:08:35.144Z",
+  "resumeRequestedAt": "2026-09-26T16:08:35.146Z",
+  "resumeHelperReturnedAt": "2026-09-26T16:08:35.494Z",
+  "signalToResumeHelperReturnMs": 179962,
+  "sourceClosureAfterExpiryMs": 43853,
+  "finalCatalogObservedAt": "2026-09-26T16:09:54.974Z",
+  "finalCatalogAfterExpiryMs": 79835,
+  "postFinishSourcePreparationReadsAfterExpiryMs": 79926,
+  "allChecksAfterExpiryMs": 81249,
+  "deadline": "2026-09-26T16:10:35.139Z",
+  "attempts": [
+    {
+      "number": 1,
+      "fence": "1",
+      "state": "active"
+    },
+    {
+      "number": 2,
+      "fence": "2",
+      "state": "accepted"
+    }
+  ],
+  "oldAttemptFailureDenied": true,
+  "sealedRowsSha256Before": "cd9c72f1ed675205ffe80087c7a37b5a97c0b227426acbe43cf2858066a7441a",
+  "sealedRowsSha256After": "cd9c72f1ed675205ffe80087c7a37b5a97c0b227426acbe43cf2858066a7441a",
+  "sqlClosure": {
+    "total": 733,
+    "admitted": 720,
+    "quarantined": 13,
+    "unsealed": 0
+  },
+  "generation": {
+    "jobId": "2c4777a4-e5db-41f0-ad2f-6162ef2a18a8",
+    "version": 11,
+    "sha256": "16417685a273c403d51bbe74a5bba54a2c0517aef500e9129c12f1885b735993"
+  },
+  "finalTileAndPick": {
+    "cell": {
+      "z": 2,
+      "x": 2,
+      "y": 1
+    },
+    "tileBytes": 216209,
+    "tileSha256": "55517ae1e416d32cdc26d4f66489403ae53baeec64b8f924e45f14cc83720a93",
+    "feature": {
+      "id": 4,
+      "unitId": "631fbb49-54a0-4c21-8cfd-f8df251eff65",
+      "rings": 4
+    },
+    "prefix": "/ingestion/cases/70255788-52a2-40f9-a9ac-a9885784aa30/sources/e86f1b08-b730-4efc-b2bf-7e43a2a57733/private-mvt/generations/2c4777a4-e5db-41f0-ad2f-6162ef2a18a8/11/tiles/2/2/1"
+  },
+  "modelCalls": 0,
+  "healthQualification": {
+    "samples": 15,
+    "duringOutage": 12,
+    "allObservedHealthy": true,
+    "maxOutageSampleStartGapMs": 15202,
+    "unsampledRecoveryGapMs": 80784,
+    "apiProcessIdentityUnchanged": true,
+    "continuousAvailabilityQualified": false
+  },
+  "priorPairFailedReceiptPreserved": true,
+  "cleanup": {
+    "nonceStopped": true,
+    "volumesPreserved": true,
+    "serving3188Unaffected": true
+  },
+  "unqualified": [
+    "Automatic failover or uninterrupted availability",
+    "Broader format/source or changed-official-revision coverage",
+    "New normal performance measurements",
+    "Complete release gates/frontend/3D/rights/provider-training qualification"
+  ],
+  "timingInterpretation": "Elapsed milliseconds recomputed from serialized ISO observations; these are observed response-completion times, not exact internal commit instants."
+}
