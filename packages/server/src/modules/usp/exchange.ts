@@ -3,8 +3,8 @@ import { UspExchangeCompareSchema, UspExchangeExportSchema,
   normalizeProjectCode, type RequestContext, type SnapshotScope, type TargetPin } from '@ulpin/contracts/usp';
 import { canonical, fingerprint } from '../cases/domain';
 import { AppError } from '../../infrastructure/errors';
-import { readObject, sha256 } from '../../infrastructure/storage';
-import { assertLocalUsp, readManifest, readSnapshotBody } from './snapshots';
+import { sha256 } from '../../infrastructure/storage';
+import { assertLocalUsp, readManifest, readSnapshotBody,readSnapshotOriginal } from './snapshots';
 
 type Json = Record<string, any>;
 type Source = { id: string; revision: number; sha256: string; licenceFamily: string | null;
@@ -308,12 +308,11 @@ async function exactInput(ctx: RequestContext, scope: SnapshotScope, targets: Ta
   for (const id of [...sourceIds].sort()) {
     const member = manifest.members.find(member => member.pin.ref.namespace === 'source_revision' && member.pin.ref.id === id);
     if (!member) throw new AppError(409, 'USP_EXCHANGE_SOURCE', 'A referenced exact source revision is unavailable.');
-    const body = await readSnapshotBody(ctx, scope, member.pin);
+    const {body,bytes} = await readSnapshotOriginal(ctx, scope, member.pin);
     if (body.id !== id || body.revision !== member.pin.revision || typeof body.sha256 !== 'string'
       || typeof body.object_key !== 'string') throw new AppError(409, 'USP_EXCHANGE_SOURCE', 'A source receipt is incomplete.');
     if (!Number.isSafeInteger(Number(body.bytes)) || Number(body.bytes) > 100_000_000)
       throw new AppError(413, 'USP_EXCHANGE_SOURCE_SIZE', 'Select a smaller source scope.');
-    const bytes = await readObject(body.object_key);
     if (sha256(bytes) !== body.sha256 || bytes.length !== Number(body.bytes))
       throw new AppError(422, 'USP_EXCHANGE_SOURCE_HASH', 'A retained original no longer matches its source receipt.');
     const { object_key: _privateKey, ...metadata } = body;
@@ -334,6 +333,7 @@ export async function exportCityJson(ctx: RequestContext, raw: unknown) {
   const result = buildExchange({ scope: input.scope, ...exact, licenceFamily: input.licenceFamily });
   if (Buffer.byteLength(JSON.stringify(result), 'utf8') > 900_000)
     throw new AppError(413, 'USP_EXCHANGE_SIZE', 'Select a smaller export scope.');
+  await readManifest(ctx,input.scope);
   return result;
 }
 

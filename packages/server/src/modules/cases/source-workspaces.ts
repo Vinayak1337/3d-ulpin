@@ -1,22 +1,26 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { ImportPackage } from "@ulpin/contracts";
-import { query, transaction } from "../../infrastructure/db";
+import { transaction } from "../../infrastructure/db";
 import { getArea } from "../areas/areas";
 import { fingerprint } from "./domain";
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { documentProfileFormats } from "../../shared/document-formats";
+import { assertPackageDocumentAuthority } from "../areas/package-authority";
 
 export const sourceWorkspaceSchema = z.object({
   requestKey: z.string().uuid(), areaId: z.string().uuid(), expectedAreaRevision: z.number().int().nonnegative(),
   name: z.string().trim().min(1).max(150), worldStatus: z.enum(["observed", "planned", "hypothetical", "synthetic"]),
   caseId: z.string().uuid().optional(),
 }).strict();
-export function sourceWorkspaceParts(sources: {id: string; profile: string; inspection?: {referenceParts?: ImportPackage["parts"]} | null}[]): ImportPackage["parts"] {
-  return sources.filter(s => Object.hasOwn(documentProfileFormats, s.profile)).flatMap(s => s.inspection?.referenceParts?.length ? s.inspection.referenceParts : [{id: randomUUID(), sourceRevisionId:s.id, locator:"original file", text:"Retained original. Read and review source evidence before use.", entityIds:[]}]);
+export function sourceWorkspaceParts(sources: {id: string; profile: string; inspection?: {referenceParts?: ImportPackage["parts"]; documentOriginal?: {version?:string}; documentAccepted?: {nativeStatus?:string}} | null}[]): ImportPackage["parts"] {
+  return sources.filter(s => !s.inspection?.documentOriginal && Object.hasOwn(documentProfileFormats, s.profile)).flatMap(s => s.inspection?.referenceParts?.length ? s.inspection.referenceParts : [{id: randomUUID(), sourceRevisionId:s.id, locator:"original file", text:"Retained original. Read and review source evidence before use.", entityIds:[]}]);
 }
 export async function sourceWorkspaceForCase(caseId: string) {
-  return (await query("SELECT body FROM import_packages WHERE case_id=$1 AND body ? 'sourceWorkspace' ORDER BY created_at DESC LIMIT 1", [caseId])).rows[0]?.body as ImportPackage | undefined || null;
+  return transaction(async client => {
+    const pkg = (await client.query("SELECT body FROM import_packages WHERE case_id=$1 AND body ? 'sourceWorkspace' ORDER BY created_at DESC LIMIT 1", [caseId])).rows[0]?.body as ImportPackage | undefined;
+    return pkg ? assertPackageDocumentAuthority(client, pkg) : null;
+  });
 }
 export async function createSourceWorkspace(value: unknown): Promise<ImportPackage> {
   const input = sourceWorkspaceSchema.parse(value), digest = fingerprint(input);
@@ -26,7 +30,7 @@ export async function createSourceWorkspace(value: unknown): Promise<ImportPacka
     const prior = (await client.query("SELECT body FROM import_packages WHERE operation_key=$1", [key])).rows[0]?.body;
     if (prior) {
       if (prior.datasetNamespace !== `source-workspace:${digest}`) conflict("This request key already names different source workspace inputs.");
-      return prior;
+      return assertPackageDocumentAuthority(client, prior);
     }
     const caseId = input.caseId || randomUUID();
     // Existing cases lock before their destination, matching manual ingestion.
@@ -51,6 +55,7 @@ export async function createSourceWorkspace(value: unknown): Promise<ImportPacka
       warnings: [], createdAt: new Date().toISOString(),
       sourceWorkspace: {caseId, frame, worldStatus: input.worldStatus, areaReferenceFingerprint: fingerprint(area.reference || null)},
     };
+    await assertPackageDocumentAuthority(client, pkg);
     await client.query("INSERT INTO import_packages(id,area_id,case_id,revision,state,body,operation_key) VALUES($1,$2,$3,1,$4,$5,$6)",[pkg.id,area.id,caseId,pkg.state,pkg,key]);
     await client.query("INSERT INTO import_package_revisions(package_id,revision,body) VALUES($1,1,$2)",[pkg.id,pkg]);
     return pkg;
