@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@ulpin/api-client';
-import type { GisQuarantine } from '@ulpin/contracts/gis-quarantine';
 import { Button, ImportStream, Skeleton, formatCount, type StreamRow } from '@ulpin/ui';
 import { useBuildingImport } from '../../api/queries';
 
@@ -38,7 +37,7 @@ export function ImportTray({ packageId, onClose }: { packageId: string; onClose:
   if (pkg.isPending) return <div className="ul-panel ul-pad"><Skeleton /></div>;
   if (pkg.error || !pkg.data) return <div className="ul-panel ul-pad ul-help">The import could not be read: {pkg.error?.message}</div>;
   const features = pkg.data.features as { kind?: string }[];
-  const quarantine = (pkg.data as typeof pkg.data & { quarantine?: GisQuarantine }).quarantine;
+  const quarantine = pkg.data.quarantine;
   const recorded = pkg.data.state === 'COMMITTED';
   const rows: StreamRow[] = KINDS.map(({ kinds, label, unit }) => {
     const n = features.filter((f) => kinds.includes(String(f.kind))).length;

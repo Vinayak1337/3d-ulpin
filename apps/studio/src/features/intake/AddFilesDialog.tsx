@@ -4,13 +4,12 @@ import { useNavigate } from 'react-router';
 import { CaretDown, CheckCircle, FileArrowUp, Trash, Warning } from '@phosphor-icons/react';
 import type { FileDetection, ImportBatch } from '@ulpin/api-client/draft';
 import { ApiError, api, type Schemas } from '@ulpin/api-client';
-import type { GisQuarantine } from '@ulpin/contracts/gis-quarantine';
 import { Badge, Banner, Button, DataTable, Dialog, Icon, Skeleton, StatusBadge, formatCount, formatDateTime } from '@ulpin/ui';
 import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
 
-type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'] & { quarantine?: GisQuarantine };
+type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'];
 type Kind = 'building' | 'parcel' | 'road' | 'public_land' | 'utility';
 
 interface Picked {
