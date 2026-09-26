@@ -12,6 +12,11 @@
     "demo": "bash scripts/demo-start.sh",
     "test:repo-data": "node --test tests/repo-data-mode.test.mjs",
     "dispatcher": "tsx scripts/dispatcher.ts",
+    "api:dev": "pnpm --filter @ulpin/api dev",
+    "api:start": "pnpm --filter @ulpin/api start",
+    "api:build": "pnpm --filter @ulpin/api build",
+    "server:build": "pnpm --filter @ulpin/server build",
+    "typecheck:backend": "pnpm --filter @ulpin/server typecheck && pnpm --filter @ulpin/api typecheck",
     "platform:start": "bash scripts/platform-start.sh",
     "platform:health": "bash scripts/platform-health.sh",
     "platform:stop": "bash scripts/platform-stop.sh",
@@ -42,5 +47,8 @@
     "dotenv": "^17.2.0",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "@ulpin/server": "workspace:*"
   }
 }

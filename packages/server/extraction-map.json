@@ -1,0 +1,567 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "39a70488f44800567ff42ef175b94d42c2ee66b5",
+  "mappings": [
+    {
+      "source": "apps/web/features/spatial/compiler/architecture.ts",
+      "destination": "packages/server/src/modules/spatial/scene/architecture.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/compiler/compile.ts",
+      "destination": "packages/server/src/modules/spatial/scene/compile.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/compiler/glb.ts",
+      "destination": "packages/server/src/modules/spatial/scene/glb.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/compiler/materials.ts",
+      "destination": "packages/server/src/modules/spatial/scene/materials.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/compiler/mesh.ts",
+      "destination": "packages/server/src/modules/spatial/scene/mesh.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/compiler/texture.ts",
+      "destination": "packages/server/src/modules/spatial/scene/texture.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/data/core-display.ts",
+      "destination": "packages/server/src/modules/spatial/legacy/core-display.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/data/core-legacy-adapter.ts",
+      "destination": "packages/server/src/modules/spatial/legacy/core-legacy-adapter.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/data/core-legacy-sources.ts",
+      "destination": "packages/server/src/modules/spatial/legacy/core-legacy-sources.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/data/core-legacy-types.ts",
+      "destination": "packages/server/src/modules/spatial/legacy/core-legacy-types.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-import/adapter.ts",
+      "destination": "packages/server/src/modules/datasets/reference-import/adapter.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-import/browser.ts",
+      "destination": "packages/server/src/modules/datasets/reference-import/browser.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-import/display.ts",
+      "destination": "packages/server/src/modules/datasets/reference-import/display.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-import/package.ts",
+      "destination": "packages/server/src/modules/datasets/reference-import/package.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-import/presentation.ts",
+      "destination": "packages/server/src/modules/datasets/reference-import/presentation.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-import/render-scene.ts",
+      "destination": "packages/server/src/modules/datasets/reference-import/render-scene.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-import/source-adapters.ts",
+      "destination": "packages/server/src/modules/datasets/reference-import/source-adapters.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-import/source-normalizer.ts",
+      "destination": "packages/server/src/modules/datasets/reference-import/source-normalizer.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-import/survey-assets.ts",
+      "destination": "packages/server/src/modules/datasets/reference-import/survey-assets.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-runtime/application-identifiers.ts",
+      "destination": "packages/server/src/modules/spatial/identifiers/application-identifiers.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/spatial/reference-runtime/records.js",
+      "destination": "packages/server/src/modules/spatial/identifiers/records.js",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/studio/product/urls.ts",
+      "destination": "packages/server/src/shared/urls/urls.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/usp/shared/external-resource.ts",
+      "destination": "packages/server/src/modules/usp/external/external-resource.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/features/usp/shared/external-scene.ts",
+      "destination": "packages/server/src/modules/usp/external/external-scene.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/dataset-ml.ts",
+      "destination": "packages/server/src/shared/dataset-ml.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/document-formats.ts",
+      "destination": "packages/server/src/shared/document-formats.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/identifiers.ts",
+      "destination": "packages/server/src/shared/identifiers.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/legacy-url.ts",
+      "destination": "packages/server/src/shared/legacy-url.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/map-attribution.ts",
+      "destination": "packages/server/src/shared/map-attribution.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/officer-ai-types.ts",
+      "destination": "packages/server/src/shared/officer-ai-types.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/preparation-continuation.ts",
+      "destination": "packages/server/src/shared/preparation-continuation.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/register-scope.ts",
+      "destination": "packages/server/src/shared/register-scope.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/server/area-acquisitions.ts",
+      "destination": "packages/server/src/modules/areas/area-acquisitions.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/area-db.ts",
+      "destination": "packages/server/src/modules/areas/area-db.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/area-resolver.ts",
+      "destination": "packages/server/src/modules/areas/area-resolver.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/area-routes.ts",
+      "destination": "packages/server/src/modules/areas/area-routes.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/area-scenario.ts",
+      "destination": "packages/server/src/modules/areas/area-scenario.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/areas.ts",
+      "destination": "packages/server/src/modules/areas/areas.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/block-export.ts",
+      "destination": "packages/server/src/modules/officer/block-export.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/config.ts",
+      "destination": "packages/server/src/infrastructure/config.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/dataset-ml-db.ts",
+      "destination": "packages/server/src/modules/datasets/dataset-ml-db.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/dataset-ml.ts",
+      "destination": "packages/server/src/modules/datasets/dataset-ml.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/db.ts",
+      "destination": "packages/server/src/infrastructure/db.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/domain.ts",
+      "destination": "packages/server/src/modules/cases/domain.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/errors.ts",
+      "destination": "packages/server/src/infrastructure/errors.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/gis-inspection.ts",
+      "destination": "packages/server/src/modules/cases/gis-inspection.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/identities.ts",
+      "destination": "packages/server/src/modules/registry/identities.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/loopback-host.ts",
+      "destination": "packages/server/src/infrastructure/loopback-host.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/neighbour-scenario-policy.ts",
+      "destination": "packages/server/src/shared/neighbour-scenario-policy.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/officer-ai-images.ts",
+      "destination": "packages/server/src/modules/ai/officer-ai-images.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/officer-ai-provider.ts",
+      "destination": "packages/server/src/modules/ai/officer-ai-provider.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/officer-ai-validation.ts",
+      "destination": "packages/server/src/modules/ai/officer-ai-validation.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/officer-ai.ts",
+      "destination": "packages/server/src/modules/ai/officer-ai.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/officer-db.ts",
+      "destination": "packages/server/src/modules/officer/officer-db.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/officer-investigations.ts",
+      "destination": "packages/server/src/modules/officer/officer-investigations.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/officer-preparation.ts",
+      "destination": "packages/server/src/modules/officer/officer-preparation.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "destination": "packages/server/src/modules/officer/officer-routes.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/officer.ts",
+      "destination": "packages/server/src/modules/officer/officer.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/original-attempt.ts",
+      "destination": "packages/server/src/modules/cases/original-attempt.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/pdf-pages.ts",
+      "destination": "packages/server/src/modules/cases/pdf-pages.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/preparation-continuation.ts",
+      "destination": "packages/server/src/modules/cases/preparation-continuation.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/processing.ts",
+      "destination": "packages/server/src/modules/cases/processing.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/provider-policy.ts",
+      "destination": "packages/server/src/infrastructure/provider-policy.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/register-pdf.ts",
+      "destination": "packages/server/src/modules/officer/register-pdf.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/registry-db.ts",
+      "destination": "packages/server/src/modules/registry/registry-db.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/registry-import-evidence.ts",
+      "destination": "packages/server/src/modules/registry/registry-import-evidence.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/registry-reference-policy.ts",
+      "destination": "packages/server/src/modules/registry/registry-reference-policy.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "destination": "packages/server/src/modules/registry/registry-routes.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/registry-seed.ts",
+      "destination": "packages/server/src/modules/registry/registry-seed.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/registry.ts",
+      "destination": "packages/server/src/modules/registry/registry.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/scene-assets.ts",
+      "destination": "packages/server/src/modules/spatial/scene-assets.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/source-bundle.ts",
+      "destination": "packages/server/src/modules/cases/source-bundle.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/source-cases.ts",
+      "destination": "packages/server/src/modules/cases/source-cases.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/source-workspace-policy.ts",
+      "destination": "packages/server/src/modules/cases/source-workspace-policy.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/source-workspaces.ts",
+      "destination": "packages/server/src/modules/cases/source-workspaces.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-core-http.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-core-http.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-core-read.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-core-read.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-core-scene.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-core-scene.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-dataset-db.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-dataset-db.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-dataset-http.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-dataset-http.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-datasets.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-datasets.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-identifiers.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-identifiers.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-ml-db.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-ml-db.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-ml-footprints.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-ml-footprints.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-ml-retained-calibration.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-ml-retained-calibration.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "destination": "packages/server/src/modules/spatial/spatial-ml.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/storage.ts",
+      "destination": "packages/server/src/infrastructure/storage.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/commands.ts",
+      "destination": "packages/server/src/modules/usp/commands.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/display-compiler.ts",
+      "destination": "packages/server/src/modules/usp/display-compiler.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/exchange.ts",
+      "destination": "packages/server/src/modules/usp/exchange.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/external-scene.ts",
+      "destination": "packages/server/src/modules/usp/external-scene.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/finding-qualification.ts",
+      "destination": "packages/server/src/modules/usp/finding-qualification.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/geometry-migration.ts",
+      "destination": "packages/server/src/modules/usp/geometry-migration.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/geometry.ts",
+      "destination": "packages/server/src/modules/usp/geometry.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/ingest/redact.ts",
+      "destination": "packages/server/src/modules/usp/ingest/redact.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/jobs.ts",
+      "destination": "packages/server/src/modules/usp/jobs.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/migrations.ts",
+      "destination": "packages/server/src/modules/usp/migrations.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/packet0.ts",
+      "destination": "packages/server/src/modules/usp/packet0.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/principal.ts",
+      "destination": "packages/server/src/modules/usp/principal.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/project-code-generator.ts",
+      "destination": "packages/server/src/modules/usp/project-code-generator.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/project-identity.ts",
+      "destination": "packages/server/src/modules/usp/project-identity.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/usp/snapshots.ts",
+      "destination": "packages/server/src/modules/usp/snapshots.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/validation.ts",
+      "destination": "packages/server/src/infrastructure/validation.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/work-queue.ts",
+      "destination": "packages/server/src/modules/officer/work-queue.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/server/workspace-capabilities.ts",
+      "destination": "packages/server/src/infrastructure/workspace-capabilities.ts",
+      "kind": "server"
+    },
+    {
+      "source": "apps/web/lib/source-catalog.ts",
+      "destination": "packages/server/src/shared/source-catalog.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/spatial-datasets.ts",
+      "destination": "packages/server/src/shared/spatial-datasets.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/ui/geometry.ts",
+      "destination": "packages/server/src/shared/geometry.ts",
+      "kind": "partial-pure-helper",
+      "movedExports": [
+        "transformPoint"
+      ],
+      "retainedExports": [
+        "boundsOf",
+        "number",
+        "unitColor"
+      ]
+    },
+    {
+      "source": "apps/web/lib/work-queue.ts",
+      "destination": "packages/server/src/shared/work-queue.ts",
+      "kind": "transitive"
+    },
+    {
+      "source": "apps/web/lib/workspace-capabilities.ts",
+      "destination": "packages/server/src/shared/workspace-capabilities.ts",
+      "kind": "transitive"
+    }
+  ],
+  "retainedExternalDependency": [
+    "scripts/repo-env.mjs"
+  ]
+}
