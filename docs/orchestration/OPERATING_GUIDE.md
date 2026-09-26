@@ -2,15 +2,9 @@
 
 User direction, 26 September 2026. Read this before every assignment, review, continuation and integration decision. This guide overrides older orchestration/model/testing instructions; backend requirements and release qualification remain intact; the 26 September backend-only scope supersedes older UI implementation plans.
 
-## Usage cutoff and pause
+## Usage monitoring revoked
 
-The user corrected the rule on 26 September 2026: the displayed 37% is **remaining weekly allowance**, not percentage consumed. Read `get_usage_limits` before work or worker dispatch and at completion/review checkpoints. For the core Codex window with `windowDurationMins=10080`, compute `remaining = max(0, min(100, 100 - usedPercent))`. The last observation is 63% used / 37% remaining. The former 50%-used cutoff is revoked; work is authorized to continue now.
-
-Stop all project work if weekly remaining rises **above 80%**, such as after the external reset the user mentioned. Do not stop just because consumed usage exceeds 50% or 80%, and do not substitute a newly reported short-window allowance for this weekly meter. A reset is a stop signal, not permission to continue. Do not infer who caused it. Missing weekly usage is unknown: hold new dispatch until checked. Stop if ordinary usage is disallowed.
-
-On a stop signal, preserve edits and data; interrupt active project tasks using a supported control and verify their status. Do not wake idle tasks to tell them to stop, move checkouts to cause interruption, or kill unrelated processes. Pause project execution automations and stop only owned temporary services while preserving volumes. Do not redeem reset credits or buy credits. After a threshold-triggered stop, resume only on explicit user direction.
-
-Heartbeat `3d-ulpin-usage-stop-guard` is active and checks every five minutes. Workers also check at task boundaries. Checkpoints and the heartbeat are best-effort controls, not an instantaneous account-wide cap; in-flight tasks can consume usage between checks. Keep the guard active while work is authorized, and pause it after threshold-triggered work shutdown. The user explicitly revoked the earlier mistaken pause, so the pre-existing BhuAayam continuation automation was restored to ACTIVE without changing its one-time action or schedule.
+The user revoked the custom usage/reset stop rule on 26 September 2026 and requested continued backend work. The `3d-ulpin-usage-stop-guard` schedule has been deleted. Do not poll account usage, hold dispatch based on the former threshold, or recreate the schedule. Normal platform limits still apply; no credit redemption or purchases are authorized.
 
 ## Role: own delivery and use delegation when useful
 
