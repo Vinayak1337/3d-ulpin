@@ -146,3 +146,70 @@ export interface ImportBatch {
   }>;
   questions: Array<{ id: string; file: string; field: string; text: string; answers: Array<{ value: string; label: string }>; otherFields: string[] }>;
 }
+
+/**
+ * Public portal (PUBLIC-01): released facts only. No owner or party names, no documents, no utilities.
+ * A record is released once recorded or once a proposed 3D ULPIN is assigned to it.
+ */
+export interface PublicRecordSummary {
+  id: string;
+  name: string;
+  buildingId: string;
+  buildingName: string;
+  address: string | null;
+  level: string | null;
+  carpetAreaM2: number | null;
+  code: string | null;
+  location: string[] | null;
+  status: 'recorded' | 'assigned';
+}
+
+/** GET /api/v1/public/records?q= */
+export interface PublicSearch {
+  q: string;
+  total: number;
+  items: PublicRecordSummary[];
+  /** Units in the matched buildings that are not released yet (counted, never listed). */
+  notReleased: number;
+}
+
+export interface PublicStorey { id: string; label: string; lowerM: number | null; upperM: number | null; estimated: boolean; belowGround: boolean; use: string | null }
+export interface PublicSpace { id: string; name: string | null; released: boolean; shared: boolean; polygon: { type: 'Polygon'; coordinates: number[][][] }; lowerM: number | null; upperM: number | null }
+
+/** GET /api/v1/public/buildings/{buildingId}: the building's released massing and records. */
+export interface PublicBuilding {
+  id: string;
+  name: string;
+  areaId: string;
+  address: string | null;
+  parcelUlpin: string | null;
+  datum: string | null;
+  groundM: number | null;
+  footprint: { type: 'Polygon'; coordinates: number[][][] };
+  storeys: Array<PublicStorey & { spaces: PublicSpace[] }>;
+  records: PublicRecordSummary[];
+  notReleased: number;
+  updatedAt: string;
+}
+
+/** GET /api/v1/public/records/{recordId} */
+export interface PublicRecord extends PublicRecordSummary {
+  levelId: string | null;
+  lowerM: number | null;
+  upperM: number | null;
+  datum: string | null;
+  parcelUlpin: string | null;
+  sharePct: number | null;
+  sharedSpaces: string[];
+  revision: number;
+  revisionHash: string;
+  updatedAt: string;
+}
+
+/** GET /api/v1/public/areas/{areaId}/map: base map and building massing, with released counts per building. */
+export interface PublicMap {
+  area: { id: string; name: string; reference: { sourceCrs: string; verticalReference: string } | null };
+  /** Same feature shape as the area context, limited to buildings, parcels, roads and public land. */
+  features: Array<Record<string, unknown> & { id: string; kind: string; name: string }>;
+  released: Array<{ buildingId: string; records: number }>;
+}

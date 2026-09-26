@@ -93,6 +93,11 @@ export async function getSpaceWorkflow(spaceId: string): Promise<SpaceWorkflow |
   return ((await (await db()).get(STORE, spaceId)) as SpaceWorkflow | undefined) ?? null;
 }
 
+/** Every space with a proposed code (the public projection releases them). */
+export async function listAssigned(): Promise<SpaceWorkflow[]> {
+  return ((await (await db()).getAll(STORE)) as SpaceWorkflow[]).filter((w) => w.code);
+}
+
 export async function listBuildingWorkflow(buildingId: string): Promise<SpaceWorkflow[]> {
   return (await (await db()).getAllFromIndex(STORE, 'buildingId', buildingId)) as SpaceWorkflow[];
 }

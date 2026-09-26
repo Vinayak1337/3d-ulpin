@@ -59,6 +59,9 @@ export function derivedRegister(buildingId: string): { body: Json; source: keyof
   return feature ? { body: nycRegister(feature), source: 'nyc' } : undefined;
 }
 
+/** The Lake View records the public projection is built from. */
+export const lake = { context: lakeContext, register: lakeRegister, ledger: lakeLedger };
+
 export const ledgers: Record<string, Json> = { [lakeLedger.buildingId]: lakeLedger as unknown as Json };
 export const workQueue = lakeWorkQueue as unknown as Json & { items: Array<Record<string, unknown>> };
 export const workBoard = lakeWorkBoard as unknown as Json;

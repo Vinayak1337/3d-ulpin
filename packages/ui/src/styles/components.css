@@ -207,3 +207,13 @@
 .body-devanagari { font: 400 16px/1.8 var(--ui-font-sans); }
 .id-code { font: 500 13px/18px var(--ui-font-mono); letter-spacing: 0.02em; }
 .data-num { font: 400 13px/18px var(--ui-font-mono); }
+
+/* Strata section */
+.ul-strata { margin: 0; padding: 12px; }
+.ul-strata__sky { fill: var(--ui-surface); }
+.ul-strata__soil { fill: color-mix(in srgb, var(--ui-map-ground) 70%, var(--ui-ink-soft) 12%); }
+.ul-strata__level { fill: var(--ui-surface-subtle); stroke: var(--ui-border-strong); stroke-width: 1; }
+.ul-strata__sel { fill: var(--ui-primary); stroke: var(--ui-primary); }
+.ul-strata__on { fill: var(--ui-on-primary); font: 600 12px var(--ui-font-sans); }
+.ul-strata__num { fill: var(--ui-ink-soft); font: 500 11px var(--ui-font-mono); }
+.ul-strata__ground { stroke: var(--ui-ink); stroke-width: 1.5; }

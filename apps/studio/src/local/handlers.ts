@@ -1,6 +1,7 @@
 import { http, HttpResponse, passthrough } from 'msw';
 import { LOCAL_SOURCE_HEADER } from '@ulpin/api-client';
 import { localRoutes } from './routes';
+import { publicAreas, publicBuilding, publicMap, publicRecord, publicSearch } from './public';
 import { LOCAL_SOURCE_LABELS, derivedAreas, derivedContexts, derivedRegister, derivedSourceFiles, documents, importBatches, ledgers, levelReviews, workBoard, workQueue } from './sources';
 
 const ALL_LOCAL = Object.values(LOCAL_SOURCE_LABELS).join('; ');
@@ -8,7 +9,7 @@ const json = (body: unknown, label: string) => HttpResponse.json(body as never, 
 
 type Params = Record<string, string | readonly string[] | undefined>;
 /** Local answers by route path. Returning undefined means "not held locally": fall through to the API. */
-const RESOLVERS: Record<string, (params: Params, url: URL) => Response | undefined> = {
+const RESOLVERS: Record<string, (params: Params, url: URL) => Response | undefined | Promise<Response | undefined>> = {
   '/api/v1/work-queue': (_params, url) => {
     const q = url.searchParams.get('q')?.toLowerCase() ?? '';
     const status = url.searchParams.get('status') ?? 'all';
@@ -42,6 +43,20 @@ const RESOLVERS: Record<string, (params: Params, url: URL) => Response | undefin
     const found = documents[String(sourceId)]?.pages.find((p) => String(p.page) === String(page));
     return found ? new HttpResponse(found.svg, { headers: { 'Content-Type': 'image/svg+xml', [LOCAL_SOURCE_HEADER]: LOCAL_SOURCE_LABELS.lake } }) : undefined;
   },
+  '/api/v1/public/records': async (_p, url) => json(await publicSearch(url.searchParams.get('q') ?? ''), LOCAL_SOURCE_LABELS.lake),
+  '/api/v1/public/records/:recordId': async ({ recordId }) => {
+    const body = await publicRecord(String(recordId));
+    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : HttpResponse.json({ error: 'not_released' }, { status: 404 });
+  },
+  '/api/v1/public/buildings/:buildingId': async ({ buildingId }) => {
+    const body = await publicBuilding(String(buildingId));
+    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : HttpResponse.json({ error: 'not_released' }, { status: 404 });
+  },
+  '/api/v1/public/areas': async () => json(await publicAreas(), LOCAL_SOURCE_LABELS.lake),
+  '/api/v1/public/areas/:areaId/map': async ({ areaId }) => {
+    const body = await publicMap(String(areaId));
+    return body ? json(body, LOCAL_SOURCE_LABELS.lake) : undefined;
+  },
   '/api/v1/areas': () => json(derivedAreas, ALL_LOCAL),
   '/api/v1/areas/:areaId/context': ({ areaId }) => {
     const body = derivedContexts[String(areaId)];
@@ -68,5 +83,5 @@ export const handlers = localRoutes().map((route) => {
   const resolver = RESOLVERS[route.path];
   if (!resolver) throw new Error(`Local route ${route.method} ${route.path} has no resolver`);
   const method = route.method.toLowerCase() as 'get' | 'post' | 'patch';
-  return http[method](route.path, ({ params, request }) => resolver(params, new URL(request.url)) ?? passthrough());
+  return http[method](route.path, async ({ params, request }) => (await resolver(params, new URL(request.url))) ?? passthrough());
 });
