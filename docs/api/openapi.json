@@ -28044,6 +28044,44 @@
                             "kind": {
                               "type": "string",
                               "enum": [
+                                "sufficiency.changed"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "evaluated",
+                                "answered",
+                                "parked",
+                                "stale"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "sourceId",
+                            "sourceRevision",
+                            "status"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
                                 "document.changed"
                               ]
                             },
@@ -31792,6 +31830,707 @@
             "nonce": "d546a4764d77205d"
           },
           "limitation": "Native document queue evidence at 69ce92c only, using unchanged foreign official sources. Later retained-package correction d400c79 has separately reviewed service/query protocol evidence, not a new HTTP runtime pass. These IDs are not installed on serving3188."
+        },
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/sufficiency": {
+      "post": {
+        "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_sufficiency",
+        "parameters": [
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Evaluate bounded source-pinned tasks without qualifying geometry or rights",
+        "tags": [
+          "ingestion sufficiency"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/sufficiency.controller.ts",
+        "x-batch": "INGEST-04A",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Official NYC unqualified-height decision/question and scanned USGS needs_ocr -> run_ocr with no factual questions.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json",
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/runtime/checks",
+            "/runtime/sources",
+            "/privateReceipt"
+          ],
+          "receipt": "docs/evidence/usp/ingest-04a-sufficiency-runtime.json",
+          "servedCodeCommit": "4695ae0f23794b3609b68a4c90049ec177132eac",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-4877753081237afd",
+            "nonce": "4877753081237afd"
+          },
+          "limitation": "Scoped sufficiency MVP on unchanged foreign official inputs: one real unqualified-height question, class reuse/replays/Not sure and scanned-PDF tool state. No broad gate pass."
+        },
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/needs-input": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_needs_input",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_needs_input_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read bounded current decisions and class questions from retained evidence receipts",
+        "tags": [
+          "ingestion sufficiency"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/sufficiency.controller.ts",
+        "x-batch": "INGEST-04A",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Current bounded questions and parked Not sure state on unchanged source; archived context denied.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json",
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/runtime/checks",
+            "/runtime/sources",
+            "/privateReceipt"
+          ],
+          "receipt": "docs/evidence/usp/ingest-04a-sufficiency-runtime.json",
+          "servedCodeCommit": "4695ae0f23794b3609b68a4c90049ec177132eac",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-4877753081237afd",
+            "nonce": "4877753081237afd"
+          },
+          "limitation": "Scoped sufficiency MVP on unchanged foreign official inputs: one real unqualified-height question, class reuse/replays/Not sure and scanned-PDF tool state. No broad gate pass."
+        },
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "private-bounded-read",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/questions/{questionId}/answers": {
+      "post": {
+        "operationId": "POST_api_v1_ingestion_cases_caseId_questions_questionId_answers",
+        "parameters": [
+          {
+            "name": "questionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_ingestion_cases_caseId_questions_questionId_answers_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_questions_questionId_answers_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Park a task or propose an existing evidence reference for officer review",
+        "tags": [
+          "ingestion sufficiency"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/sufficiency.controller.ts",
+        "x-batch": "INGEST-04A",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": true,
+        "x-runtime-qualification": {
+          "scope": "Not sure persists and identical answers replay; no fact/geometry approval.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json",
+            "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/runtime/checks",
+            "/runtime/sources",
+            "/privateReceipt"
+          ],
+          "receipt": "docs/evidence/usp/ingest-04a-sufficiency-runtime.json",
+          "servedCodeCommit": "4695ae0f23794b3609b68a4c90049ec177132eac",
+          "environment": {
+            "kind": "stopped-isolated",
+            "project": "ulpin-usptest-4877753081237afd",
+            "nonce": "4877753081237afd"
+          },
+          "limitation": "Scoped sufficiency MVP on unchanged foreign official inputs: one real unqualified-height question, class reuse/replays/Not sure and scanned-PDF tool state. No broad gate pass."
         },
         "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
         "x-transport-profile": "json",
@@ -105029,14 +105768,6 @@
                                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                               }
                             },
-                            "outcome": {
-                              "type": "string",
-                              "enum": [
-                                "sufficient",
-                                "partial",
-                                "insufficient_for_spatial_reconstruction"
-                              ]
-                            },
                             "missing": {
                               "readOnly": true,
                               "maxItems": 64,
@@ -105045,13 +105776,21 @@
                                 "type": "string",
                                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                               }
+                            },
+                            "outcome": {
+                              "type": "string",
+                              "enum": [
+                                "sufficient",
+                                "partial",
+                                "insufficient_for_spatial_reconstruction"
+                              ]
                             }
                           },
                           "required": [
                             "task",
                             "requirements",
-                            "outcome",
-                            "missing"
+                            "missing",
+                            "outcome"
                           ],
                           "additionalProperties": false
                         }
@@ -106490,14 +107229,6 @@
                                   "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                                 }
                               },
-                              "outcome": {
-                                "type": "string",
-                                "enum": [
-                                  "sufficient",
-                                  "partial",
-                                  "insufficient_for_spatial_reconstruction"
-                                ]
-                              },
                               "missing": {
                                 "readOnly": true,
                                 "maxItems": 64,
@@ -106506,13 +107237,21 @@
                                   "type": "string",
                                   "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                                 }
+                              },
+                              "outcome": {
+                                "type": "string",
+                                "enum": [
+                                  "sufficient",
+                                  "partial",
+                                  "insufficient_for_spatial_reconstruction"
+                                ]
                               }
                             },
                             "required": [
                               "task",
                               "requirements",
-                              "outcome",
-                              "missing"
+                              "missing",
+                              "outcome"
                             ],
                             "additionalProperties": false
                           }
@@ -108049,14 +108788,6 @@
                                       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                                     }
                                   },
-                                  "outcome": {
-                                    "type": "string",
-                                    "enum": [
-                                      "sufficient",
-                                      "partial",
-                                      "insufficient_for_spatial_reconstruction"
-                                    ]
-                                  },
                                   "missing": {
                                     "readOnly": true,
                                     "maxItems": 64,
@@ -108065,13 +108796,21 @@
                                       "type": "string",
                                       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                                     }
+                                  },
+                                  "outcome": {
+                                    "type": "string",
+                                    "enum": [
+                                      "sufficient",
+                                      "partial",
+                                      "insufficient_for_spatial_reconstruction"
+                                    ]
                                   }
                                 },
                                 "required": [
                                   "task",
                                   "requirements",
-                                  "outcome",
-                                  "missing"
+                                  "missing",
+                                  "outcome"
                                 ],
                                 "additionalProperties": false
                               }
@@ -109227,14 +109966,6 @@
                                       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                                     }
                                   },
-                                  "outcome": {
-                                    "type": "string",
-                                    "enum": [
-                                      "sufficient",
-                                      "partial",
-                                      "insufficient_for_spatial_reconstruction"
-                                    ]
-                                  },
                                   "missing": {
                                     "readOnly": true,
                                     "maxItems": 64,
@@ -109243,13 +109974,21 @@
                                       "type": "string",
                                       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                                     }
+                                  },
+                                  "outcome": {
+                                    "type": "string",
+                                    "enum": [
+                                      "sufficient",
+                                      "partial",
+                                      "insufficient_for_spatial_reconstruction"
+                                    ]
                                   }
                                 },
                                 "required": [
                                   "task",
                                   "requirements",
-                                  "outcome",
-                                  "missing"
+                                  "missing",
+                                  "outcome"
                                 ],
                                 "additionalProperties": false
                               }
@@ -110405,14 +111144,6 @@
                                       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                                     }
                                   },
-                                  "outcome": {
-                                    "type": "string",
-                                    "enum": [
-                                      "sufficient",
-                                      "partial",
-                                      "insufficient_for_spatial_reconstruction"
-                                    ]
-                                  },
                                   "missing": {
                                     "readOnly": true,
                                     "maxItems": 64,
@@ -110421,13 +111152,21 @@
                                       "type": "string",
                                       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
                                     }
+                                  },
+                                  "outcome": {
+                                    "type": "string",
+                                    "enum": [
+                                      "sufficient",
+                                      "partial",
+                                      "insufficient_for_spatial_reconstruction"
+                                    ]
                                   }
                                 },
                                 "required": [
                                   "task",
                                   "requirements",
-                                  "outcome",
-                                  "missing"
+                                  "missing",
+                                  "outcome"
                                 ],
                                 "additionalProperties": false
                               }
@@ -145130,6 +145869,1896 @@
           "expectedCaseRevision",
           "expectedSourceRevision",
           "sourceSha256"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "expectedCaseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expectedSourceRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "sourceSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+          },
+          "tasks": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+            }
+          }
+        },
+        "required": [
+          "requestKey",
+          "expectedCaseRevision",
+          "expectedSourceRevision",
+          "sourceSha256",
+          "tasks"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "ingestion-sufficiency/1"
+            ]
+          },
+          "decisions": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "string",
+                  "enum": [
+                    "ingestion-sufficiency/1"
+                  ]
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "pins": {
+                  "type": "object",
+                  "properties": {
+                    "caseId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "caseRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "familyId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "profile": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,80}(?![\\s\\S])"
+                    },
+                    "contextSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "evidenceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "accessSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "policyVersion": {
+                      "type": "string",
+                      "enum": [
+                        "retained-source-tasks/1"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "caseId",
+                    "caseRevision",
+                    "sourceId",
+                    "familyId",
+                    "sourceRevision",
+                    "sourceSha256",
+                    "profile",
+                    "contextSha256",
+                    "evidenceSha256",
+                    "accessSha256",
+                    "policyVersion"
+                  ],
+                  "additionalProperties": false
+                },
+                "recordPins": {
+                  "maxItems": 192,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "authority": {
+                        "type": "string",
+                        "enum": [
+                          "recipe",
+                          "job",
+                          "package",
+                          "area",
+                          "frame",
+                          "geometry",
+                          "qualification"
+                        ]
+                      },
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "authority",
+                      "id",
+                      "revision",
+                      "sha256"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "processing": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "running",
+                        "failed",
+                        "stale",
+                        "needs_ocr",
+                        "unsupported",
+                        "tool_error",
+                        "extracted",
+                        "canonical_conversion_required"
+                      ]
+                    },
+                    "jobId": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "resultSha256": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "nativeStatus": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "extracted",
+                        "needs_ocr",
+                        "unsupported",
+                        "encrypted",
+                        "tool_error"
+                      ]
+                    },
+                    "modelStatus": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "not_requested",
+                        "disabled",
+                        "unavailable",
+                        "blocked",
+                        "needs_input",
+                        "proposed"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "jobId",
+                    "resultSha256",
+                    "nativeStatus",
+                    "modelStatus"
+                  ],
+                  "additionalProperties": false
+                },
+                "task": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                },
+                "requirements": {
+                  "readOnly": true,
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "missing": {
+                  "readOnly": true,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "outcome": {
+                  "type": "string",
+                  "enum": [
+                    "complete",
+                    "fill_display",
+                    "ask",
+                    "park",
+                    "reject_for_3d"
+                  ]
+                },
+                "availability": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "needs_input",
+                    "unavailable",
+                    "stale"
+                  ]
+                },
+                "evidence": {
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "requirement": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "satisfied",
+                          "present_unqualified",
+                          "unknown",
+                          "absent",
+                          "null",
+                          "withheld",
+                          "conflicting",
+                          "unsupported"
+                        ]
+                      },
+                      "authority": {
+                        "type": "string",
+                        "enum": [
+                          "source",
+                          "inspection",
+                          "recipe",
+                          "job",
+                          "package",
+                          "geometry",
+                          "policy"
+                        ]
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[^\\u0000-\\u001f\\u007f]{1,256}(?![\\s\\S])"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "locator": {
+                        "nullable": true,
+                        "type": "string",
+                        "pattern": "^[^\\u0000-\\u001f\\u007f]{1,256}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "requirement",
+                      "state",
+                      "authority",
+                      "id",
+                      "revision",
+                      "locator"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "unlocks": {
+                  "maxItems": 5,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "questionId": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "nextAction": {
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "neutral_presentation",
+                    "review_mapping",
+                    "review_evidence",
+                    "provide_evidence",
+                    "process_source",
+                    "park",
+                    "inspect_original",
+                    "wait_for_extraction",
+                    "retry_extraction",
+                    "run_ocr",
+                    "configure_provider",
+                    "review_conversion"
+                  ]
+                },
+                "reason": {
+                  "type": "string",
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "version",
+                "id",
+                "pins",
+                "recordPins",
+                "processing",
+                "task",
+                "requirements",
+                "missing",
+                "outcome",
+                "availability",
+                "evidence",
+                "unlocks",
+                "questionId",
+                "nextAction",
+                "reason",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "questions": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                },
+                "pins": {
+                  "type": "object",
+                  "properties": {
+                    "caseId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "caseRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "familyId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "profile": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,80}(?![\\s\\S])"
+                    },
+                    "contextSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "evidenceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "accessSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "policyVersion": {
+                      "type": "string",
+                      "enum": [
+                        "retained-source-tasks/1"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "caseId",
+                    "caseRevision",
+                    "sourceId",
+                    "familyId",
+                    "sourceRevision",
+                    "sourceSha256",
+                    "profile",
+                    "contextSha256",
+                    "evidenceSha256",
+                    "accessSha256",
+                    "policyVersion"
+                  ],
+                  "additionalProperties": false
+                },
+                "gapClass": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                },
+                "tasks": {
+                  "minItems": 1,
+                  "maxItems": 5,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "answered",
+                    "parked",
+                    "stale"
+                  ]
+                },
+                "missing": {
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "unlocks": {
+                  "minItems": 1,
+                  "maxItems": 5,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "reason": {
+                  "type": "string",
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                },
+                "choices": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "provide_existing_evidence"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "not_sure"
+                        ]
+                      }
+                    ]
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "proposal": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "recipe",
+                        "source_part",
+                        "fact_candidate",
+                        "package_review"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "revision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "packageId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "revision",
+                    "sourceId",
+                    "sourceRevision"
+                  ],
+                  "additionalProperties": false
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "pins",
+                "gapClass",
+                "tasks",
+                "state",
+                "missing",
+                "unlocks",
+                "reason",
+                "choices",
+                "proposal",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "version",
+          "decisions",
+          "questions"
+        ],
+        "additionalProperties": false
+      },
+      "GET_ingestion_cases_caseId_needs_input_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "ingestion-sufficiency/1"
+            ]
+          },
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "caseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "decisions": {
+            "maxItems": 25,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "string",
+                  "enum": [
+                    "ingestion-sufficiency/1"
+                  ]
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "pins": {
+                  "type": "object",
+                  "properties": {
+                    "caseId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "caseRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "familyId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "profile": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,80}(?![\\s\\S])"
+                    },
+                    "contextSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "evidenceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "accessSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "policyVersion": {
+                      "type": "string",
+                      "enum": [
+                        "retained-source-tasks/1"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "caseId",
+                    "caseRevision",
+                    "sourceId",
+                    "familyId",
+                    "sourceRevision",
+                    "sourceSha256",
+                    "profile",
+                    "contextSha256",
+                    "evidenceSha256",
+                    "accessSha256",
+                    "policyVersion"
+                  ],
+                  "additionalProperties": false
+                },
+                "recordPins": {
+                  "maxItems": 192,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "authority": {
+                        "type": "string",
+                        "enum": [
+                          "recipe",
+                          "job",
+                          "package",
+                          "area",
+                          "frame",
+                          "geometry",
+                          "qualification"
+                        ]
+                      },
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "authority",
+                      "id",
+                      "revision",
+                      "sha256"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "processing": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "running",
+                        "failed",
+                        "stale",
+                        "needs_ocr",
+                        "unsupported",
+                        "tool_error",
+                        "extracted",
+                        "canonical_conversion_required"
+                      ]
+                    },
+                    "jobId": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "resultSha256": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "nativeStatus": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "extracted",
+                        "needs_ocr",
+                        "unsupported",
+                        "encrypted",
+                        "tool_error"
+                      ]
+                    },
+                    "modelStatus": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "not_requested",
+                        "disabled",
+                        "unavailable",
+                        "blocked",
+                        "needs_input",
+                        "proposed"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "jobId",
+                    "resultSha256",
+                    "nativeStatus",
+                    "modelStatus"
+                  ],
+                  "additionalProperties": false
+                },
+                "task": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                },
+                "requirements": {
+                  "readOnly": true,
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "missing": {
+                  "readOnly": true,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "outcome": {
+                  "type": "string",
+                  "enum": [
+                    "complete",
+                    "fill_display",
+                    "ask",
+                    "park",
+                    "reject_for_3d"
+                  ]
+                },
+                "availability": {
+                  "type": "string",
+                  "enum": [
+                    "available",
+                    "needs_input",
+                    "unavailable",
+                    "stale"
+                  ]
+                },
+                "evidence": {
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "requirement": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "satisfied",
+                          "present_unqualified",
+                          "unknown",
+                          "absent",
+                          "null",
+                          "withheld",
+                          "conflicting",
+                          "unsupported"
+                        ]
+                      },
+                      "authority": {
+                        "type": "string",
+                        "enum": [
+                          "source",
+                          "inspection",
+                          "recipe",
+                          "job",
+                          "package",
+                          "geometry",
+                          "policy"
+                        ]
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[^\\u0000-\\u001f\\u007f]{1,256}(?![\\s\\S])"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "locator": {
+                        "nullable": true,
+                        "type": "string",
+                        "pattern": "^[^\\u0000-\\u001f\\u007f]{1,256}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "requirement",
+                      "state",
+                      "authority",
+                      "id",
+                      "revision",
+                      "locator"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "unlocks": {
+                  "maxItems": 5,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "questionId": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "nextAction": {
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "neutral_presentation",
+                    "review_mapping",
+                    "review_evidence",
+                    "provide_evidence",
+                    "process_source",
+                    "park",
+                    "inspect_original",
+                    "wait_for_extraction",
+                    "retry_extraction",
+                    "run_ocr",
+                    "configure_provider",
+                    "review_conversion"
+                  ]
+                },
+                "reason": {
+                  "type": "string",
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "version",
+                "id",
+                "pins",
+                "recordPins",
+                "processing",
+                "task",
+                "requirements",
+                "missing",
+                "outcome",
+                "availability",
+                "evidence",
+                "unlocks",
+                "questionId",
+                "nextAction",
+                "reason",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "questions": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                },
+                "pins": {
+                  "type": "object",
+                  "properties": {
+                    "caseId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "caseRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "familyId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "profile": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,80}(?![\\s\\S])"
+                    },
+                    "contextSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "evidenceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "accessSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "policyVersion": {
+                      "type": "string",
+                      "enum": [
+                        "retained-source-tasks/1"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "caseId",
+                    "caseRevision",
+                    "sourceId",
+                    "familyId",
+                    "sourceRevision",
+                    "sourceSha256",
+                    "profile",
+                    "contextSha256",
+                    "evidenceSha256",
+                    "accessSha256",
+                    "policyVersion"
+                  ],
+                  "additionalProperties": false
+                },
+                "gapClass": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                },
+                "tasks": {
+                  "minItems": 1,
+                  "maxItems": 5,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "answered",
+                    "parked",
+                    "stale"
+                  ]
+                },
+                "missing": {
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "unlocks": {
+                  "minItems": 1,
+                  "maxItems": 5,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "reason": {
+                  "type": "string",
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                },
+                "choices": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "provide_existing_evidence"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "not_sure"
+                        ]
+                      }
+                    ]
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "proposal": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "recipe",
+                        "source_part",
+                        "fact_candidate",
+                        "package_review"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "revision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "packageId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "revision",
+                    "sourceId",
+                    "sourceRevision"
+                  ],
+                  "additionalProperties": false
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "pins",
+                "gapClass",
+                "tasks",
+                "state",
+                "missing",
+                "unlocks",
+                "reason",
+                "choices",
+                "proposal",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "staleQuestions": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                },
+                "pins": {
+                  "type": "object",
+                  "properties": {
+                    "caseId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "caseRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "familyId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "profile": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,80}(?![\\s\\S])"
+                    },
+                    "contextSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "evidenceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "accessSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "policyVersion": {
+                      "type": "string",
+                      "enum": [
+                        "retained-source-tasks/1"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "caseId",
+                    "caseRevision",
+                    "sourceId",
+                    "familyId",
+                    "sourceRevision",
+                    "sourceSha256",
+                    "profile",
+                    "contextSha256",
+                    "evidenceSha256",
+                    "accessSha256",
+                    "policyVersion"
+                  ],
+                  "additionalProperties": false
+                },
+                "gapClass": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                },
+                "tasks": {
+                  "minItems": 1,
+                  "maxItems": 5,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "answered",
+                    "parked",
+                    "stale"
+                  ]
+                },
+                "missing": {
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "unlocks": {
+                  "minItems": 1,
+                  "maxItems": 5,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "reason": {
+                  "type": "string",
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+                },
+                "choices": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "provide_existing_evidence"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "not_sure"
+                        ]
+                      }
+                    ]
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "proposal": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "recipe",
+                        "source_part",
+                        "fact_candidate",
+                        "package_review"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "revision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "packageId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "revision",
+                    "sourceId",
+                    "sourceRevision"
+                  ],
+                  "additionalProperties": false
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "pins",
+                "gapClass",
+                "tasks",
+                "state",
+                "missing",
+                "unlocks",
+                "reason",
+                "choices",
+                "proposal",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "version",
+          "caseId",
+          "caseRevision",
+          "decisions",
+          "questions",
+          "staleQuestions",
+          "hasMore"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_questions_questionId_answers_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "expectedQuestionRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "pins": {
+            "type": "object",
+            "properties": {
+              "caseId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "caseRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "familyId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "profile": {
+                "type": "string",
+                "pattern": "^[^\\u0000-\\u001f\\u007f]{1,80}(?![\\s\\S])"
+              },
+              "contextSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "evidenceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "accessSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "policyVersion": {
+                "type": "string",
+                "enum": [
+                  "retained-source-tasks/1"
+                ]
+              }
+            },
+            "required": [
+              "caseId",
+              "caseRevision",
+              "sourceId",
+              "familyId",
+              "sourceRevision",
+              "sourceSha256",
+              "profile",
+              "contextSha256",
+              "evidenceSha256",
+              "accessSha256",
+              "policyVersion"
+            ],
+            "additionalProperties": false
+          },
+          "answer": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "choice": {
+                    "type": "string",
+                    "enum": [
+                      "not_sure"
+                    ]
+                  }
+                },
+                "required": [
+                  "choice"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "choice": {
+                    "type": "string",
+                    "enum": [
+                      "provide_existing_evidence"
+                    ]
+                  },
+                  "reference": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "recipe",
+                          "source_part",
+                          "fact_candidate",
+                          "package_review"
+                        ]
+                      },
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "sourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "sourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "packageId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "id",
+                      "revision",
+                      "sourceId",
+                      "sourceRevision"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "choice",
+                  "reference"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "requestKey",
+          "expectedQuestionRevision",
+          "pins",
+          "answer"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_questions_questionId_answers_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "pins": {
+            "type": "object",
+            "properties": {
+              "caseId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "caseRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "familyId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "profile": {
+                "type": "string",
+                "pattern": "^[^\\u0000-\\u001f\\u007f]{1,80}(?![\\s\\S])"
+              },
+              "contextSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "evidenceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "accessSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "policyVersion": {
+                "type": "string",
+                "enum": [
+                  "retained-source-tasks/1"
+                ]
+              }
+            },
+            "required": [
+              "caseId",
+              "caseRevision",
+              "sourceId",
+              "familyId",
+              "sourceRevision",
+              "sourceSha256",
+              "profile",
+              "contextSha256",
+              "evidenceSha256",
+              "accessSha256",
+              "policyVersion"
+            ],
+            "additionalProperties": false
+          },
+          "gapClass": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+          },
+          "tasks": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+            }
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "open",
+              "answered",
+              "parked",
+              "stale"
+            ]
+          },
+          "missing": {
+            "minItems": 1,
+            "maxItems": 64,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+            }
+          },
+          "unlocks": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+            }
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[^\\u0000-\\u001f\\u007f]{1,512}(?![\\s\\S])"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "provide_existing_evidence"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "not_sure"
+                  ]
+                }
+              ]
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "proposal": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "recipe",
+                  "source_part",
+                  "fact_candidate",
+                  "package_review"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "packageId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "revision",
+              "sourceId",
+              "sourceRevision"
+            ],
+            "additionalProperties": false
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "pins",
+          "gapClass",
+          "tasks",
+          "state",
+          "missing",
+          "unlocks",
+          "reason",
+          "choices",
+          "proposal",
+          "createdAt"
         ],
         "additionalProperties": false
       }

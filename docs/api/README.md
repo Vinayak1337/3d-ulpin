@@ -1,6 +1,6 @@
 # Native NestJS API for frontend integration
 
-The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 160 operations and 185 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and twenty-eight added ingestion operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
+The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 document](openapi.json) is generated from its registered controllers and canonical validators: 163 operations and 190 named schemas, comprising 132 baseline operations (including three explicit 410 retirements) and thirty-one added ingestion operations. Known request/result/error models replace the former `UnresolvedJson` placeholders. Format-specific source properties, arbitrary fact values and recursive source geometry remain explicitly dynamic.
 
 After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs). Its [OpenAPI JSON](http://127.0.0.1:3188/api/docs/openapi.json) and [dataset catalogue](http://127.0.0.1:3188/api/docs/datasets.json) are served by the same loopback backend. Swagger is light-only and opens schemas first. Write execution and the external validator are disabled. These links describe the configured default address; they do not mean a server is currently running.
 
@@ -44,6 +44,7 @@ For Vite, proxy `/api` to the local API and configure `API_ALLOWED_ORIGINS` with
 | Spatial/AI | 28 | Private area/scene reads, saved dataset history/originals/search, existing ML lifecycle and officer extraction services |
 | Manual ingestion | 7 added | Retained GeoJSON profile, constrained conversion registry, source-pinned recipes, explicit approval and atomic execution through existing GIS intake |
 | Large original receipt | 7 added | Durable byte parts, resume/status, whole-original verification, one source publication and scoped abort/retry cleanup; conversion remains unsupported |
+| Sufficiency | 3 added | Source-pinned task decisions, bounded needs-input and existing-evidence or Not sure answers |
 | Source document intake | 3 added | Original-first queued extraction, bounded source-linked parts/status and current-pin retry; model proposals remain separately configured |
 | Private ingestion events | 1 added | Committed case-ingestion notifications with scoped SSE cursors, bounded replay and explicit context resync |
 | Private administrative tiles | 5 added | Standard MVT, source-bound coherent generations, canonical pick lookup and fenced recovery over admitted NWIC observations |
@@ -74,6 +75,18 @@ Download the original through the existing private `/api/v1/sources/{sourceId}/f
 Admission is 16 MiB per original; existing native readers are bounded to 10 MiB/250,000 characters and PDFs to 100 pages. Larger accepted originals remain retained but report the native reader limit. Byte/container detection selects PDF native text, UTF-8 text, CSV references or DOCX readers. JSON/GIS belongs to its existing separate authority. Native status is `extracted`, `needs_ocr`, `unsupported`, `encrypted` or `tool_error`; this is not unrestricted-format support. Model status is separately `not_requested`, `disabled`, `unavailable`, `blocked`, `needs_input` or `proposed`. Proposals are literal cited source strings, not recorded facts. Live proposals require an approved gateway configuration, source/egress permission, explicit `ULPIN_DOCUMENT_MODEL_LAYOUT_CAP` and live-call authorization. Current serving configuration keeps providers disabled; no live inference is qualified.
 
 The [official NYC metadata](../../fixtures/real-area/evidence/nyc-building-metadata.md), linked from its [issuing-source manifest](../../fixtures/real-area/manifest.json), produced native text; the retained [USGS scanned PDF](../../fixtures/usp/D5/official-runtime-pdf-v1/manifest.json) honestly returned `needs_ocr` with an unchanged download. The [runtime correction proof](../evidence/usp/document-authority-correction.md) binds `69ce92c`; the later [package-access correction](../evidence/usp/document-package-authority-correction.md) at `d400c79` has independently repeated service/query protocol checks, not another HTTP runtime pass. These stopped-run IDs are not installed serving records. Native PDF/DOCX/CSV accuracy, OCR, live models, legitimate property-linked copy/packet/export success and release gates remain unqualified.
+
+## Sufficiency and needs-input
+
+These APIs consume current retained evidence; they do not edit originals or replace extraction. Supported tasks are `retain_evidence`, `context_2d`, `neutral_display`, `building_massing` and `spatial_analysis`, within their actual source profiles.
+
+| Relative to `/api/v1/ingestion` | Request / result |
+| --- | --- |
+| `POST /cases/{caseId}/sources/{sourceId}/sufficiency` | UUID `requestKey`, current case/source revisions, `sourceSha256` and up to five distinct tasks. Returns200 decisions with source/evidence pins, requirements, missing states and next action. |
+| `GET /cases/{caseId}/needs-input` | Returns200 bounded decisions and current/stale questions. Read-only; consume `hasMore` as a scope limit, not proof the entire history was returned. |
+| `POST /cases/{caseId}/questions/{questionId}/answers` | UUID `requestKey`, exact `expectedQuestionRevision`, returned `pins` and `answer.choice=not_sure` or `provide_existing_evidence` with the typed existing reference. Returns200 the updated question. |
+
+A case has at most five open class-level questions. Not sure stays parked while evidence is unchanged. A supplied reference remains a proposal for existing officer review; answers never approve geometry or rights. Extraction pending/failure, missing OCR and unavailable providers expose tool actions (`wait_for_extraction`, `retry_extraction`, `run_ocr`, `configure_provider`) instead of inventing missing source facts. Stale decisions require reevaluation; archived or unauthorized contexts are denied. The [MVP handoff](../evidence/usp/ingest-04a-sufficiency-handoff.md) records one real NYC evidence-question journey and an unchanged scanned USGS PDF. Five distinct gap classes and approved-reference answer journeys remain unqualified; no new broad testing campaign was required.
 
 ## Manual source mapping
 

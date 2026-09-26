@@ -3293,6 +3293,27 @@
               "Final d400c79 HTTP/PostgreSQL runtime qualification; package checks are memory-only protocol evidence",
               "Indian operational data, geometry/rights, deployment and complete release gates"
             ]
+          },
+          {
+            "receipt": "docs/evidence/usp/ingest-04a-sufficiency-runtime.json",
+            "servedCodeCommit": "4695ae0f23794b3609b68a4c90049ec177132eac",
+            "operations": {
+              "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/sufficiency": "Official NYC unqualified-height decision/question and scanned USGS needs_ocr -> run_ocr with no factual questions.",
+              "GET /api/v1/ingestion/cases/{caseId}/needs-input": "Current bounded questions and parked Not sure state on unchanged source; archived context denied.",
+              "POST /api/v1/ingestion/cases/{caseId}/questions/{questionId}/answers": "Not sure persists and identical answers replay; no fact/geometry approval."
+            },
+            "environment": {
+              "kind": "stopped-isolated",
+              "project": "ulpin-usptest-4877753081237afd",
+              "nonce": "4877753081237afd"
+            },
+            "qualification": "Scoped sufficiency MVP on unchanged foreign official inputs: one real unqualified-height question, class reuse/replays/Not sure and scanned-PDF tool state. No broad gate pass.",
+            "unqualified": [
+              "Foreign test_only NYC/USGS originals; no rights, geometry qualification, inference, OCR success, source accuracy or release gate.",
+              "Actual five-distinct-class saturation and DATA-02 mixed-gap corpus remain unqualified; case-lock cap and actual same-class concurrency checked.",
+              "Runtime reference-answer path used Not sure; legitimate approved evidence references/qualified target-linked document conversion not independently runtime-qualified.",
+              "NWIC sufficiency reuses canonical acceptedProjectedTx; no repeat import/tile/scale campaign."
+            ]
           }
         ]
       },
@@ -3516,6 +3537,29 @@
           "frontend or release-gate completion",
           "PDF.js page/rendering helper",
           "Populated/linked environment migration or deployment"
+        ],
+        "additionalReceipts": [
+          {
+            "receipt": "docs/evidence/usp/ingest-04a-sufficiency-runtime.json",
+            "servedCodeCommit": "4695ae0f23794b3609b68a4c90049ec177132eac",
+            "operations": {
+              "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/sufficiency": "Official NYC unqualified-height decision/question and scanned USGS needs_ocr -> run_ocr with no factual questions.",
+              "GET /api/v1/ingestion/cases/{caseId}/needs-input": "Current bounded questions and parked Not sure state on unchanged source; archived context denied.",
+              "POST /api/v1/ingestion/cases/{caseId}/questions/{questionId}/answers": "Not sure persists and identical answers replay; no fact/geometry approval."
+            },
+            "environment": {
+              "kind": "stopped-isolated",
+              "project": "ulpin-usptest-4877753081237afd",
+              "nonce": "4877753081237afd"
+            },
+            "qualification": "Scoped sufficiency MVP on unchanged foreign official inputs: one real unqualified-height question, class reuse/replays/Not sure and scanned-PDF tool state. No broad gate pass.",
+            "unqualified": [
+              "Foreign test_only NYC/USGS originals; no rights, geometry qualification, inference, OCR success, source accuracy or release gate.",
+              "Actual five-distinct-class saturation and DATA-02 mixed-gap corpus remain unqualified; case-lock cap and actual same-class concurrency checked.",
+              "Runtime reference-answer path used Not sure; legitimate approved evidence references/qualified target-linked document conversion not independently runtime-qualified.",
+              "NWIC sufficiency reuses canonical acceptedProjectedTx; no repeat import/tile/scale campaign."
+            ]
+          }
         ]
       },
       "limitations": [

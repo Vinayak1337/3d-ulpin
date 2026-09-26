@@ -54,7 +54,7 @@ def main():
         require(hashlib.sha256(receipt_bytes).hexdigest() == run['receiptSha256'], 'runtime receipt changed')
         receipt = json.loads(receipt_bytes)
         code_field = run.get('receiptCodeField', 'servedCodeCommit')
-        require(code_field in ('servedCodeCommit', 'codeCommit'), 'unknown receipt code field')
+        require(code_field in ('servedCodeCommit', 'codeCommit', 'productionCommit'), 'unknown receipt code field')
         require(receipt[code_field] == run['servedCodeCommit'], 'runtime code pin differs')
         runtime_operations.update(run['operations'])
         for operation, evidence in run['operations'].items():
