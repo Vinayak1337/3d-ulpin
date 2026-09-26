@@ -14,6 +14,19 @@ export function assessSufficiency(ctx:SufficiencyContext,task:string):Assessment
   if(!ctx.latest)return {...park([evidence('current_source_revision','unknown','source')],'This retained source revision has been superseded. Evaluate its current revision.'),availability:'stale'};
   if(task==='retain_evidence')return done([evidence('retained_original_receipt','satisfied','source'),evidence('stored_inspection','satisfied')],
     'The original receipt and stored inspection are available. This task does not qualify geometry or source accuracy.');
+  if(!['context_2d','neutral_display','building_massing','spatial_analysis'].includes(task))return unavailable('This task is not implemented by the retained-source policy. No success or qualification is implied.');
+  if(ctx.document){
+    const {state,modelStatus}=ctx.document.processing;
+    const items=[evidence('current_native_extraction',state==='extracted'?'satisfied':'unknown','job')];
+    if(state==='pending'||state==='running')return park(items,'The canonical extraction is pending. Wait for the supported reader before identifying missing source facts.','wait_for_extraction');
+    if(state==='needs_ocr')return {...park(items,'The native reader found no extractable text. OCR is required; this is not proof of absent source facts.','run_ocr'),availability:'unavailable'};
+    if(state==='failed'||state==='tool_error'||state==='stale')return park(items,'The extraction failed or its pins changed. Retry the canonical reader before asking for source facts.','retry_extraction');
+    if(state==='unsupported'||state==='canonical_conversion_required')return {...park(items,'A supported canonical reader or reviewed conversion is required for this original. Source facts have not been declared absent.','review_conversion'),availability:'unavailable'};
+    if(['unavailable','disabled','blocked','needs_input'].includes(modelStatus??''))return {...park([...items,evidence('permitted_model_proposals','unsupported','policy')],
+      'Native text is retained, but model proposals are unavailable or require configuration. Inspect the native result or configure the permitted provider; no missing-fact question is inferred.','configure_provider'),availability:'unavailable'};
+    return {...park([evidence('reviewed_document_conversion','unknown','policy')],
+      'Native document evidence is available. A reviewed source-backed conversion is required for this spatial task; extraction does not qualify geometry.','review_conversion')};
+  }
   if(task==='context_2d'){
     if(row.profile==='geojson-manual-v1'){
       const items=[evidence('source_polygons',row.manual.geometryTypes?.every((t:string)=>['Polygon','MultiPolygon'].includes(t))?'satisfied':'unknown'),
@@ -38,7 +51,8 @@ export function assessSufficiency(ctx:SufficiencyContext,task:string):Assessment
     if(row.profile!=='geojson-manual-v1')return {evidence:[evidence('building_geometry','unsupported')],outcome:'reject_for_3d',availability:'unavailable',nextAction:'inspect_original',
       reason:'This source profile supplies administrative or document evidence, not building geometry. Other supported tasks remain available.'};
     const height=row.manual.paths?.find((p:{path:string})=>p.path==='/features/*/properties/height_roof');
-    const heightState=height?.values>0?'present_unqualified':height?.explicitNull>0?'null':'unknown';
+    const conflicting=ctx.scope.packageBodies.some(p=>p.body.questions.some((q:any)=>q.kind==='conflicting_claims'&&q.property==='building.exteriorHeight'&&!q.answer));
+    const heightState=conflicting?'conflicting':height?.values>0?'present_unqualified':height?.explicitNull>0?'null':'unknown';
     const items=[evidence('qualified_building_geometry',ctx.allQualified?'satisfied':'unknown','geometry'),
       evidence('approved_building_outline',ctx.allQualified && ctx.features.every(f=>f.geometry_role==='approved_building_outline')?'satisfied':'unknown','geometry'),
       evidence('reliable_height',ctx.allQualified && ctx.features.every(f=>f.height?.state==='source_supported' && f.height?.unit==='m' && f.height?.reference && f.height?.evidence?.length)?'satisfied':heightState,'inspection',height?.path??null)];
