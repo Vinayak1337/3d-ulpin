@@ -84,12 +84,19 @@ def _list(value, label, minimum=1, maximum=MAX_PARTS):
     return value
 
 
-def _geometry(raw, label="geometry", geographic=False):
+class GeometryRejected(InputError):
+    """Only geometric domain failures are skippable. Parsing, CRS and limits stay fatal."""
+    def __init__(self, reason, vertices, code="INVALID_GEOMETRY"):
+        super().__init__(reason)
+        self.vertices, self.code = vertices, code
+
+
+def _geometry(raw, label="geometry", geographic=False, topology=True):
     """Validate before GEOS, so unsupported dimensions cannot be silently discarded."""
     if not isinstance(raw, dict) or "crs" in raw:
         raise InputError(f"{label} requires a geometry object without a per-feature CRS override.")
     kind, coordinates = raw.get("type"), raw.get("coordinates")
-    count = 0
+    count, open_ring = 0, False
 
     def position(value):
         nonlocal count
@@ -104,10 +111,11 @@ def _geometry(raw, label="geometry", geographic=False):
         return [x, y]
 
     def line(value, ring=False):
+        nonlocal open_ring
         values = _list(value, label + (" ring" if ring else " line"), 4 if ring else 2, MAX_FEATURE_VERTICES)
         result = [position(p) for p in values]
         if ring and result[0] != result[-1]:
-            raise InputError(f"{label} polygon rings must be explicitly closed.")
+            open_ring = True
         return result
 
     def polygon(value):
@@ -127,15 +135,17 @@ def _geometry(raw, label="geometry", geographic=False):
         parsed = [polygon(p) for p in _list(coordinates, label + " polygons")]
     else:
         raise InputError(f"{label} supports Point, MultiPoint, LineString, MultiLineString, Polygon and MultiPolygon only.")
+    if open_ring:
+        raise GeometryRejected("Polygon rings are not explicitly closed. No coordinates were changed.", count)
     result = shape({"type": kind, "coordinates": parsed})
-    if result.is_empty or not result.is_valid:
-        raise InputError(f"{label} is empty or invalid: {explain_validity(result)}. Repair the source explicitly; no parts were discarded.")
-    if kind in ("LineString", "MultiLineString") and result.length <= 0:
-        raise InputError(f"{label} must have positive line length.")
+    if topology and (result.is_empty or not result.is_valid):
+        raise GeometryRejected(explain_validity(result), count)
+    if topology and kind in ("LineString", "MultiLineString") and result.length <= 0:
+        raise GeometryRejected("Line geometry has no positive length.", count)
     return result, count
 
 
-def _arcgis_geometry(raw):
+def _arcgis_geometry(raw, geographic=False):
     if not isinstance(raw, dict):
         raise InputError("ArcGIS feature requires a geometry object.")
     if any(raw.get(key) for key in ("hasZ", "hasM")) or any(key in raw for key in ("z", "m", "curveRings", "curvePaths")):
@@ -154,7 +164,12 @@ def _arcgis_geometry(raw):
     rings = _list(raw["rings"], "ArcGIS rings")
     if sum(len(ring) if isinstance(ring, list) else 0 for ring in rings) > MAX_FEATURE_VERTICES:
         raise InputError(f"Each feature supports at most {MAX_FEATURE_VERTICES} vertices.")
-    polygons = [_geometry({"type": "Polygon", "coordinates": [ring]}, "ArcGIS ring")[0] for ring in rings]
+    # Validate every coordinate and the complete vertex budget before any topology rejection.
+    _, total = _geometry({"type": "MultiPolygon", "coordinates": [[ring] for ring in rings]}, "ArcGIS rings", geographic=geographic, topology=False)
+    try:
+        polygons = [_geometry({"type": "Polygon", "coordinates": [ring]}, "ArcGIS ring")[0] for ring in rings]
+    except GeometryRejected as error:
+        raise GeometryRejected(str(error), total) from None
     # ArcGIS uses even/odd ring filling. Full-ring containment handles unordered
     # shells, courtyards and islands; orientation alone can lose multipart shells.
     parents = []
@@ -164,11 +179,11 @@ def _arcgis_geometry(raw):
             if i == j or not polygon.intersects(other):
                 continue
             if polygon.equals(other) or polygon.boundary.intersects(other.boundary):
-                raise InputError("ArcGIS rings overlap, duplicate or touch ambiguously; supply valid separated shell/hole boundaries.")
+                raise GeometryRejected("ArcGIS rings overlap, duplicate or touch ambiguously.", total)
             if other.contains(polygon):
                 containers.append(j)
             elif not polygon.contains(other):
-                raise InputError("ArcGIS rings partially overlap; no ring can be safely discarded.")
+                raise GeometryRejected("ArcGIS rings partially overlap; no ring was discarded.", total)
         parents.append(min(containers, key=lambda j: polygons[j].area) if containers else None)
 
     def depth(index):
@@ -297,10 +312,9 @@ def normalize_area(data):
             source_crs = specified
     collection_reference = source_crs is not None
     rows = _list(source.get("features"), "Source features", 1, MAX_FEATURES)
-    prepared, warnings, keys, total_vertices = [], [], set(), 0
+    prepared, warnings, keys, total_vertices, rejected = [], [], set(), 0, []
     if legacy_geojson_crs:
         warnings.append("Recognized the source's legacy OGC CRS84 declaration as longitude/latitude WGS84. Original bytes retain that declaration; normalized geographic geometry uses RFC 7946 coordinates.")
-    fallback_ids = False
     for index, feature in enumerate(rows):
         if not isinstance(feature, dict) or "crs" in feature:
             raise InputError("Each source feature must be an object without a CRS override.")
@@ -324,10 +338,7 @@ def normalize_area(data):
                 allowed[field] = value
         raw_key = properties.get(fields["idField"]) if fields.get("idField") else feature.get("id")
         if raw_key is None or raw_key == "":
-            if fields.get("idField"):
-                raise InputError("The mapped source ID is missing on a feature; choose a complete unique ID field.")
-            raw_key = f"feature:{index + 1}"
-            fallback_ids = True
+            raise InputError("The source ID is missing on a feature; choose a complete unique ID field or supply stable feature IDs.")
         if isinstance(raw_key, bool) or not isinstance(raw_key, (str, int, float)):
             raise InputError("Source IDs must be nonempty text or numbers.")
         source_key = _text(str(raw_key), "Source ID")
@@ -344,23 +355,37 @@ def normalize_area(data):
                 if source_crs is not None and not source_crs.equals(row_crs):
                     raise InputError("Mixed source coordinate references are unsupported in one import; normalize each layer separately into the retained area reference.")
                 source_crs = row_crs
-            parsed = _arcgis_geometry(original)
+            # Geometry conversion happens after collection/identity/attribute checks.
+            parsed = None
         else:
             parsed = original
-        geometry, count = _geometry(parsed, f"Feature {source_key}", geographic=data["format"] == "geojson")
-        if fields["kind"] in ("building", "parcel", "public_land") and geometry.geom_type not in ("Polygon", "MultiPolygon"):
-            raise InputError(f"{fields['kind']} features require Polygon or MultiPolygon geometry.")
+        typed = mapped_semantics(fields, allowed, warnings, source_key)
+        height = _height(allowed, fields, warnings, source_key)
+        if world_status in ("synthetic", "hypothetical") and typed.get("worldStatus", world_status) not in ("synthetic", "hypothetical"):
+            raise InputError("A synthetic/hypothetical source cannot become observed or planned evidence through an attribute mapping.")
+        try:
+            if data["format"] == "arcgis":
+                parsed = _arcgis_geometry(original, geographic=source_crs.equals(CRS.from_epsg(4326)))
+            geometry, count = _geometry(parsed, f"Feature {source_key}", geographic=source_crs.equals(CRS.from_epsg(4326)))
+            if fields["kind"] in ("building", "parcel", "public_land") and geometry.geom_type not in ("Polygon", "MultiPolygon"):
+                raise GeometryRejected(f"{fields['kind']} requires Polygon or MultiPolygon geometry.", count, "GEOMETRY_KIND")
+        except GeometryRejected as error:
+            total_vertices += error.vertices
+            rejected.append({"featureIndex": index, "sourceKey": source_key, "code": error.code, "reason": str(error)[:500]})
+            if total_vertices > MAX_VERTICES:
+                raise InputError(f"An import supports at most {MAX_VERTICES} vertices.")
+            continue
         total_vertices += count
         if total_vertices > MAX_VERTICES:
             raise InputError(f"An import supports at most {MAX_VERTICES} vertices.")
-        typed = mapped_semantics(fields, allowed, warnings, source_key)
-        if world_status in ("synthetic", "hypothetical") and typed.get("worldStatus", world_status) not in ("synthetic", "hypothetical"):
-            raise InputError("A synthetic/hypothetical source cannot become observed or planned evidence through an attribute mapping.")
-        prepared.append({"sourceKey": source_key, "name": name, "kind": fields["kind"], "sourceGeometry": copy.deepcopy(original),
-                         "height": _height(allowed, fields, warnings, source_key), "worldStatus": world_status,
+        prepared.append({"sourceKey": source_key, "sourceFeatureIndex": index, "name": name, "kind": fields["kind"], "sourceGeometry": copy.deepcopy(original),
+                         "height": height, "worldStatus": world_status,
                          "properties": allowed, "_shape": geometry, **typed})
     if source_crs is None:
         raise InputError("ArcGIS source CRS is unknown; provide spatialReference.wkid or reference.sourceCrs.")
+    disposition = {"total": len(rows), "accepted": len(prepared), "rejected": len(rejected), "rejections": rejected}
+    if not prepared:
+        return {"reference": None, "extent": None, "geographicExtent": None, "features": [], "warnings": [], "disposition": disposition}
     try:
         to_geographic = Transformer.from_crs(source_crs, 4326, always_xy=True, allow_ballpark=False, only_best=True)
         geographic = [_transform(row["_shape"], to_geographic) for row in prepared]
@@ -400,8 +425,6 @@ def normalize_area(data):
             from .officer import resolve_utility_profile
             row["utilityProfile"] = resolve_utility_profile(row)
         features.append(row)
-    if fallback_ids:
-        warnings.append("Some features have positional source IDs; map a stable source ID field before importing later source revisions.")
     unknown_heights = sum(row["kind"] == "building" and row["height"]["state"] == "unknown" for row in features)
     if unknown_heights:
         warnings.append(f"{unknown_heights} building(s) have unknown height and remain footprint-only; no analytical height was invented.")
@@ -410,7 +433,7 @@ def normalize_area(data):
                           "anchor": anchor, "transformVersion": f"area-native-v1 / pyproj {pyproj.__version__} / PROJ {pyproj.proj_version_str} / {projection.definition}",
                           "verticalReference": VERTICAL_REFERENCE},
             "extent": [metric_extent[i] - origin[i % 2] for i in range(4)], "geographicExtent": geographic_extent,
-            "features": features, "warnings": warnings}
+            "features": features, "warnings": warnings, "disposition": disposition}
 
 
 def check_area(data):

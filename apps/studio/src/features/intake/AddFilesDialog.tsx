@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router';
 import { CaretDown, CheckCircle, FileArrowUp, Trash, Warning } from '@phosphor-icons/react';
 import type { FileDetection, ImportBatch } from '@ulpin/api-client/draft';
 import { ApiError, api, type Schemas } from '@ulpin/api-client';
+import type { GisQuarantine } from '@ulpin/contracts/gis-quarantine';
 import { Badge, Banner, Button, DataTable, Dialog, Icon, Skeleton, StatusBadge, formatCount, formatDateTime } from '@ulpin/ui';
 import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
 
-type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'];
+type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'] & { quarantine?: GisQuarantine };
 type Kind = 'building' | 'parcel' | 'road' | 'public_land' | 'utility';
 
 interface Picked {
@@ -134,8 +135,8 @@ function NewFiles({ onClose }: { onClose: () => void }) {
         const height = result.data.fields.find((f) => /height|hgt/i.test(f.name) && !/ground/i.test(f.name));
         setMapping((m) => m ?? {
           kind: 'building', idField: result.data.suggestedIdField ?? '', nameField: result.data.suggestedNameField ?? '',
-          heightField: height?.name ?? '', heightUnit: height ? (/(_ft|feet)$/i.test(height.name) ? 'ft' : 'm') : '',
-          heightMeaning: height ? 'Roof height above ground' : '',
+          heightField: height?.name ?? '', heightUnit: '',
+          heightMeaning: '',
         });
         setSummary(await kindSummary(item.file));
       }
@@ -164,6 +165,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
   });
 
   const blocked = !gis ? 'add a GIS file (GeoJSON, GeoPackage or a zipped shapefile)'
+    : gis.inspection?.quarantine?.accepted === 0 ? 'no source geometries were accepted'
     : !gis.inspection?.sourceCrs ? 'the file states no coordinate reference system'
       : !mapping?.idField ? 'choose the field that identifies each feature'
         : mapping.heightField && !mapping.heightUnit ? 'choose the height unit the source uses'
@@ -281,6 +283,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
             Start import retains <span className="ul-id">{gis.file.name}</span> unchanged (SHA-256 <span className="ul-mono">{gis.inspection.sourceSha256.slice(0, 12)}…</span>) and creates an import to review. Nothing is recorded until you review and record it.
           </Banner>
         ) : null}
+        {gis?.inspection?.quarantine ? <Banner tone="warning">{gis.inspection.quarantine.message}</Banner> : null}
         {importFile.error ? <Banner tone="danger">{importFile.error.message}</Banner> : null}
         {blocked && files.length ? <p className="ul-help">Blocked: {blocked}.</p> : null}
       </div>

@@ -59,6 +59,8 @@ export interface AreaHeight {
   method?: "native_parse" | "human_entry" | "derived";
 }
 export interface NormalizedFeature {
+  /** Zero-based index in the unchanged original feature collection. */
+  sourceFeatureIndex?: number;
   geometryRole?: import("./officer").GeometryRole;
   semantics?: {
     geometryRole?: import("./officer").GeometryRole;
@@ -211,6 +213,7 @@ export interface DocumentPart {
   };
 }
 export interface ImportPackage {
+  quarantine?: import('./gis-quarantine').GisQuarantine;
   /** Explicit source-only intake; never a fabricated physical property. */
   sourceWorkspace?: { caseId: string; frame: import("./index").CoordinateFrame; worldStatus: PhysicalFeature["worldStatus"]; areaReferenceFingerprint: string };
   selectedClaimIds?: string[];
@@ -261,6 +264,8 @@ export interface SceneAsset {
   purpose: "presentation";
 }
 export interface AreaContext {
+  /** Display-only accepted proposals; analytical readers continue to use features. */
+  displayFeatures?: (PhysicalFeature & {displayState?: 'unrecorded_proposal';proposalPackageId?: string})[];
   parcelAssociations?: import("./officer").PropertyAssociation[];
   parcelIdentifiers?: import("./officer").ParcelIdentifier[];
   sceneAssets?: SceneAsset[];

@@ -1,5 +1,6 @@
 /** Read-only source metadata. Suggestions never establish geometry meaning or authority. */
 export interface GisInspection {
+  quarantine?: import('./gis-quarantine').GisQuarantine;
   format: "geojson" | "arcgis" | "gpkg" | "shapefile_zip";
   sourceSha256: string;
   bytes: number;

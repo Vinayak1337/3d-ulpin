@@ -34,12 +34,14 @@ const ATTRIBUTION: Record<string, string> = {
   'nyc-building-footprints': 'City of New York Office of Technology and Innovation (OTI), BUILDING via NYC Open Data',
   'swiss-dwellings': 'Swiss Dwellings (Zenodo 7070952), CC BY 4.0',
 };
+const shownQuarantine = new Set<string>();
 
 /**
  * S4–S6, S8: one canvas whose modes (area, building, level, findings, underground) share one selection,
  * one inspector and one left navigation. The URL holds the selection.
  */
 export function MapWorkspace({ context }: { context: AreaContext }) {
+  context = { ...context, features: context.displayFeatures ?? context.features };
   const { selection, dispatch, patch } = useSelection();
   const [searchParams, setSearchParams] = useSearchParams();
   const packageId = searchParams.get('package');
@@ -54,6 +56,19 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [toast, setToast] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
+
+  useEffect(() => {
+    const pkg = packageId ? context.packages.find((p) => p.id === packageId) : context.packages.find((p) => p.quarantine);
+    if (!pkg?.quarantine) return;
+    const key = `gis-quarantine:${pkg.id}:${pkg.quarantine.sourceSha256}`;
+    if (shownQuarantine.has(key)) return;
+    shownQuarantine.add(key);
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, 'shown');
+    } catch { /* The in-memory guard still prevents repeated notices. */ }
+    setNotice(pkg.quarantine.message);
+  }, [context.packages, packageId]);
 
   const buildings = useMemo(() => context.features.filter((f) => f.kind === 'building'), [context.features]);
   const utilities = useMemo(() => context.features.filter((f) => f.kind === 'utility'), [context.features]);

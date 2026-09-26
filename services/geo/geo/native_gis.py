@@ -141,7 +141,7 @@ def _gpkg(raw, layer, selected):
                 try:
                     parsed = from_wkb(binary[offset:])
                     geometry = _json_geometry(parsed)
-                    _, vertices = _geometry(geometry, "GeoPackage feature")
+                    _, vertices = _geometry(geometry, "GeoPackage feature", topology=False)
                 except InputError:
                     raise
                 except Exception:
@@ -163,7 +163,7 @@ def _gpkg(raw, layer, selected):
 def _shapefile(raw, layer, selected):
     inspecting = selected is None
     import shapefile
-    from .area import _geometry, _arcgis_geometry, MAX_FEATURES, MAX_VERTICES
+    from .area import _geometry, _arcgis_geometry, GeometryRejected, MAX_FEATURES, MAX_VERTICES
     try:
         with zipfile.ZipFile(io.BytesIO(raw)) as archive:
             entries = archive.infolist()
@@ -215,10 +215,18 @@ def _shapefile(raw, layer, selected):
                     if item.shape.shapeType == 5:
                         starts = list(item.shape.parts) + [len(item.shape.points)]
                         rings = [[list(point) for point in item.shape.points[starts[i]:starts[i + 1]]] for i in range(len(starts) - 1)]
-                        geometry = _arcgis_geometry({"rings": rings})
+                        try:
+                            geometry = _arcgis_geometry({"rings": rings})
+                        except GeometryRejected:
+                            # Replay these unchanged rings into the common validator;
+                            # rejected rows retain their original indexes and attributes.
+                            geometry = {"type": "Polygon", "coordinates": rings}
                     else:
                         geometry = json.loads(json.dumps(item.shape.__geo_interface__))
-                    _, vertices = _geometry(geometry, "Shapefile feature")
+                    try:
+                        _, vertices = _geometry(geometry, "Shapefile feature", topology=False)
+                    except GeometryRejected as error:
+                        vertices = error.vertices
                     count += vertices
                     if count > MAX_VERTICES:
                         raise InputError("Shapefile exceeds 100,000 total vertices.")
@@ -246,8 +254,8 @@ def normalize_native(data):
     canonical = {**data, "format": "arcgis", "data": {"spatialReference": {"wkid": epsg}, "features": features}}
     canonical.pop("base64", None)
     result = normalize_area(canonical)
-    for feature, original in zip(result["features"], originals):
-        feature["sourceGeometry"] = original
+    for feature in result["features"]:
+        feature["sourceGeometry"] = originals[feature["sourceFeatureIndex"]]
     result["adapter"] = {"format": data["format"], "version": "native-gis-v1", "layer": layer, "sourceSha256": hashlib.sha256(raw).hexdigest(),
                          "sourceUnits": CRS.from_epsg(epsg).axis_info[0].unit_name}
     result["warnings"].append("Native container bytes remain the source asset. Decoded geometry and normalized arrays are derivatives; no files, rows, dimensions or companion parts were silently discarded.")

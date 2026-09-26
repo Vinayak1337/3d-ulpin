@@ -1,12 +1,16 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
+import type { GisQuarantine } from '@ulpin/contracts/gis-quarantine';
 import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
 export type WorkStatusFilter = 'all' | 'processing' | 'recorded';
 export type Area = GetResponse<'/api/v1/areas'>[number];
-export type AreaContext = GetResponse<'/api/v1/areas/{areaId}/context'>;
+export type AreaContext = Omit<GetResponse<'/api/v1/areas/{areaId}/context'>, 'packages'> & {
+  displayFeatures?: GetResponse<'/api/v1/areas/{areaId}/context'>['features'];
+  packages: (GetResponse<'/api/v1/areas/{areaId}/context'>['packages'][number] & { quarantine?: GisQuarantine })[];
+};
 export type AreaFeature = AreaContext['features'][number];
 export type Capabilities = GetResponse<'/api/v1/workspace-capabilities'>;
 /** The JSON form of the register (the endpoint also serves CSV and HTML exports). */
@@ -112,7 +116,7 @@ export function useAreaContext(areaId: string | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.areaContext(areaId ?? ''),
     enabled: Boolean(areaId),
-    queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: areaId! } } })),
+    queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: areaId! } } })) as AreaContext,
     staleTime: 60_000,
     refetchInterval: live ? 700 : false,
   });
