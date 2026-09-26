@@ -110,13 +110,14 @@ function NewFiles({ onClose }: { onClose: () => void }) {
   const [files, setFiles] = useState<Picked[]>([]);
   const [step, setStep] = useState(0);
   const [mapping, setMapping] = useState<Mapping | null>(null);
-  const [question, setQuestion] = useState<'open' | 'yes' | 'no'>('open');
+  const [editing, setEditing] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   const gis = files.find((f) => f.state === 'ready');
   const fields = gis?.inspection?.fields ?? [];
-  const heightCandidate = fields.find((f) => /height|hgt|elev/i.test(f.name) && !/ground/i.test(f.name));
+  const kindField = fields.find((f) => /^(kind|type|class|category)$/i.test(f.name))?.name ?? null;
 
   const add = async (list: FileList | null) => {
     if (!list?.length) return;
@@ -130,10 +131,13 @@ function NewFiles({ onClose }: { onClose: () => void }) {
       setFiles((current) => current.map((f) => (f.file !== item.file ? f
         : result.data ? { ...f, state: 'ready', inspection: result.data } : { ...f, state: 'failed', error: new ApiError(result.response.status, '', result.error).message })));
       if (result.data) {
+        const height = result.data.fields.find((f) => /height|hgt/i.test(f.name) && !/ground/i.test(f.name));
         setMapping((m) => m ?? {
           kind: 'building', idField: result.data.suggestedIdField ?? '', nameField: result.data.suggestedNameField ?? '',
-          heightField: '', heightUnit: '', heightMeaning: '',
+          heightField: height?.name ?? '', heightUnit: height ? (/(_ft|feet)$/i.test(height.name) ? 'ft' : 'm') : '',
+          heightMeaning: height ? 'Roof height above ground' : '',
         });
+        setSummary(await kindSummary(item.file));
       }
     }
   };
@@ -148,7 +152,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
       body.set('namespace', gis.inspection.suggestedNamespace);
       body.set('name', gis.inspection.suggestedTitle);
       body.set('mapping', JSON.stringify({
-        kind: mapping.kind, idField: mapping.idField,
+        kind: mapping.kind, ...(kindField ? { kindField } : {}), idField: mapping.idField,
         ...(mapping.nameField ? { nameField: mapping.nameField } : {}),
         ...(mapping.heightField ? { heightField: mapping.heightField, heightUnit: mapping.heightUnit, heightMeaning: mapping.heightMeaning } : {}),
       }));
@@ -207,65 +211,69 @@ function NewFiles({ onClose }: { onClose: () => void }) {
                 { header: 'CRS', cell: (f) => (f.inspection ? (f.inspection.sourceCrs ?? <Badge tone="warning" icon={Warning}>CRS unverified</Badge>) : '—') },
                 { header: 'Contents', numeric: true, cell: (f) => (f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—' : `${formatCount(f.inspection.featureCount)} features`) },
                 { header: 'Mapping', cell: (f) => (f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : f.state === 'not-gis' ? <Badge icon={null}>Kept as evidence</Badge> : '—') },
-                { header: '', cell: (f) => <Button variant="ghost" iconOnly icon={Trash} aria-label={`Remove ${f.file.name}`} onClick={() => setFiles((c) => c.filter((x) => x !== f))} /> },
+                ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash} aria-label={`Remove ${f.file.name}`} onClick={() => setFiles((c) => c.filter((x) => x !== f))} /> }] : []),
               ]}
             />
           </div>
         ) : null}
 
         {gis?.inspection && mapping && step >= 1 ? (
-          <>
-            {heightCandidate && question === 'open' && !mapping.heightField ? (
-              <div className={styles.question} role="group" aria-label="Mapping question">
-                <span className={styles.questionText}><span className="ul-id">{heightCandidate.name}</span> may hold a height. Use it as the building height?</span>
-                <Button variant="soft" onClick={() => { setMapping({ ...mapping, heightField: heightCandidate.name, heightUnit: /(_m|metres?|meters?)$/i.test(heightCandidate.name) ? 'm' : /(_ft|feet)$/i.test(heightCandidate.name) ? 'ft' : '', heightMeaning: mapping.heightMeaning || 'Roof height above ground' }); setQuestion('yes'); }}>Yes</Button>
-                <Button variant="ghost" onClick={() => setQuestion('no')}>No</Button>
-              </div>
-            ) : question !== 'open' ? (
-              <div className={styles.answered}><StatusBadge status="Reviewed" />{question === 'yes' ? `Height from ${mapping.heightField}` : 'No height field'}</div>
-            ) : null}
-
-            <fieldset className={styles.mapping} disabled={step === 2}>
-              <legend className="ul-heading">Mapping for {gis.file.name}</legend>
-              <Field label="Features are">
-                <select className="ul-input" value={mapping.kind} onChange={(e) => setMapping({ ...mapping, kind: e.target.value as Kind })}>
-                  <option value="building">Buildings</option><option value="parcel">Parcels</option><option value="road">Roads</option>
-                  <option value="public_land">Public land</option><option value="utility">Utilities</option>
-                </select>
-              </Field>
-              <Field label="Identifier field" help={gis.inspection.featureIdEligible ? 'Feature IDs in the file are usable too.' : 'Only complete, unique fields are listed.'}>
-                <select className="ul-input" value={mapping.idField} onChange={(e) => setMapping({ ...mapping, idField: e.target.value })}>
-                  <option value="">Choose a field</option>
-                  {fields.filter((f) => f.idEligible).map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
-                </select>
-              </Field>
-              <Field label="Name field (optional)">
-                <select className="ul-input" value={mapping.nameField} onChange={(e) => setMapping({ ...mapping, nameField: e.target.value })}>
-                  <option value="">None</option>
-                  {fields.map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
-                </select>
-              </Field>
-              <Field label="Height field (optional)">
-                <select className="ul-input" value={mapping.heightField} onChange={(e) => setMapping({ ...mapping, heightField: e.target.value })}>
-                  <option value="">None: heights stay unknown</option>
-                  {fields.map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
-                </select>
-              </Field>
-              {mapping.heightField ? (
-                <>
-                  <Field label="Height unit">
-                    <select className="ul-input" value={mapping.heightUnit} onChange={(e) => setMapping({ ...mapping, heightUnit: e.target.value as 'm' | 'ft' })}>
-                      <option value="">Choose the source unit</option>
-                      <option value="m">Metres</option><option value="ft">Feet (converted to metres, 0.3048 m/ft)</option>
+          <section className={styles.readAs} aria-label="How the file is read">
+            <header className={styles.readAsHead}>
+              <span className="ul-heading">{step === 2 ? 'It will be read like this' : 'We propose to read it like this'}</span>
+              {step === 1 ? <button type="button" className={styles.link} onClick={() => setEditing((e) => !e)}>{editing ? 'Done' : 'Change'}</button> : null}
+            </header>
+            {!editing || step === 2 ? (
+              <dl className={styles.readList}>
+                <div><dt>Each feature is</dt><dd>{kindField ? <>read from <span className="ul-id">{kindField}</span>{summary ? <span className="ul-muted"> · {summary}</span> : null}</> : KIND_LABEL[mapping.kind]}</dd></div>
+                <div><dt>Identified by</dt><dd>{mapping.idField ? <span className="ul-id">{mapping.idField}</span> : <span className="ul-error">choose a field</span>}</dd></div>
+                <div><dt>Named by</dt><dd>{mapping.nameField ? <span className="ul-id">{mapping.nameField}</span> : <span className="ul-muted">no name</span>}</dd></div>
+                <div><dt>Height</dt><dd>{mapping.heightField ? <><span className="ul-id">{mapping.heightField}</span> in {mapping.heightUnit === 'ft' ? 'feet' : 'metres'} · {mapping.heightMeaning.toLowerCase()}</> : <span className="ul-muted">unknown (no height field)</span>}</dd></div>
+              </dl>
+            ) : (
+              <div className={styles.mapping}>
+                {!kindField ? (
+                  <Field label="Features are">
+                    <select className="ul-input" value={mapping.kind} onChange={(e) => setMapping({ ...mapping, kind: e.target.value as Kind })}>
+                      <option value="building">Buildings</option><option value="parcel">Parcels</option><option value="road">Roads</option>
+                      <option value="public_land">Public land</option><option value="utility">Utilities</option>
                     </select>
                   </Field>
-                  <Field label="What the height measures" help="As the source states it, for example “roof height above the building’s ground”.">
-                    <input className="ul-input" value={mapping.heightMeaning} maxLength={500} onChange={(e) => setMapping({ ...mapping, heightMeaning: e.target.value })} />
-                  </Field>
-                </>
-              ) : null}
-            </fieldset>
-          </>
+                ) : null}
+                <Field label="Identifier field">
+                  <select className="ul-input" value={mapping.idField} onChange={(e) => setMapping({ ...mapping, idField: e.target.value })}>
+                    <option value="">Choose a field</option>
+                    {fields.filter((f) => f.idEligible).map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
+                  </select>
+                </Field>
+                <Field label="Name field">
+                  <select className="ul-input" value={mapping.nameField} onChange={(e) => setMapping({ ...mapping, nameField: e.target.value })}>
+                    <option value="">None</option>
+                    {fields.map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
+                  </select>
+                </Field>
+                <Field label="Height field">
+                  <select className="ul-input" value={mapping.heightField} onChange={(e) => setMapping({ ...mapping, heightField: e.target.value })}>
+                    <option value="">None: heights stay unknown</option>
+                    {fields.map((f) => <option key={f.name} value={f.name}>{f.name}</option>)}
+                  </select>
+                </Field>
+                {mapping.heightField ? (
+                  <>
+                    <Field label="Height unit">
+                      <select className="ul-input" value={mapping.heightUnit} onChange={(e) => setMapping({ ...mapping, heightUnit: e.target.value as 'm' | 'ft' })}>
+                        <option value="">Choose the source unit</option>
+                        <option value="m">Metres</option><option value="ft">Feet (converted to metres)</option>
+                      </select>
+                    </Field>
+                    <Field label="What the height measures">
+                      <input className="ul-input" value={mapping.heightMeaning} maxLength={500} onChange={(e) => setMapping({ ...mapping, heightMeaning: e.target.value })} />
+                    </Field>
+                  </>
+                ) : null}
+              </div>
+            )}
+          </section>
         ) : null}
 
         {step === 2 && gis?.inspection ? (
@@ -278,6 +286,23 @@ function NewFiles({ onClose }: { onClose: () => void }) {
       </div>
     </Dialog>
   );
+}
+
+const KIND_LABEL: Record<Kind, string> = { building: 'a building', parcel: 'a parcel', road: 'a road', public_land: 'public land', utility: 'a utility' };
+
+/** "22 buildings · 22 parcels · …" from a GeoJSON file's kind field, read in the browser. */
+async function kindSummary(file: File): Promise<string | null> {
+  if (!/\.(geo)?json$/i.test(file.name)) return null;
+  try {
+    const doc = JSON.parse(await file.text()) as { features?: { properties?: Record<string, unknown> }[] };
+    const counts = new Map<string, number>();
+    for (const f of doc.features ?? []) {
+      const k = String(f.properties?.kind ?? f.properties?.type ?? '');
+      if (k) counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+    const word: Record<string, [string, string]> = { building: ['building', 'buildings'], parcel: ['parcel', 'parcels'], road: ['road', 'roads'], public_land: ['open land', 'open land'], utility: ['utility', 'utilities'] };
+    return [...counts].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${n} ${(word[k] ?? [k, k])[n === 1 ? 0 : 1]}`).join(' · ') || null;
+  } catch { return null; }
 }
 
 const MAPPING: Record<ImportBatch['files'][number]['mapping'], { label: string; tone: 'success' | 'info' | 'neutral' }> = {

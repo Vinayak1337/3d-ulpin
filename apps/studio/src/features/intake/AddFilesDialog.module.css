@@ -6,7 +6,7 @@
 .question { display: flex; align-items: center; gap: var(--ui-space-3); padding: 12px 14px; border-radius: var(--ui-radius-12); background: var(--ui-info-soft); }
 .questionText { flex: 1; }
 .answered { display: flex; align-items: center; gap: var(--ui-space-2); font-size: 13px; color: var(--ui-ink-soft); }
-.mapping { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ui-space-4); margin: 0; padding: var(--ui-space-4); border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-12); }
+.mapping { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ui-space-4); }
 .mapping legend { padding: 0 6px; }
 .mapping :global(.ul-field) { max-width: none; }
 .stepper { display: flex; gap: var(--ui-space-4); margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--ui-muted); }
@@ -18,3 +18,10 @@
 .questionDone { background: var(--ui-surface-subtle); }
 @media (prefers-reduced-motion: no-preference) { .question { transition: background 200ms ease-out; } }
 .footNote { margin-right: auto; }
+.readAs { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-12); }
+.readAsHead { display: flex; align-items: center; justify-content: space-between; }
+.link { border: 0; background: none; padding: 0; color: var(--ui-primary); font: 500 14px/20px var(--ui-font-sans); cursor: pointer; }
+.readList { margin: 0; display: grid; gap: 8px; }
+.readList > div { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 12px; font-size: 14px; line-height: 20px; }
+.readList dt { color: var(--ui-muted); }
+.readList dd { margin: 0; }
