@@ -1,171 +1,144 @@
-import { useQueries } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router';
-import { ArrowRight, CircleNotch, FilePlus, Stack, WarningCircle, X } from '@phosphor-icons/react';
-import { api, unwrap } from '@ulpin/api-client';
-import { Button, EmptyState, FilterChip, Icon, formatCount, formatDateTime, formatRelative } from '@ulpin/ui';
-import { queryKeys, useWorkQueue, type WorkItem, type WorkStatusFilter } from '../../api/queries';
-import { classificationLabel, nextAction } from './nextAction';
+import { ArrowRight, CircleNotch, FilePlus, MagnifyingGlass, Stack, WarningCircle } from '@phosphor-icons/react';
+import type { WorkBoard } from '@ulpin/api-client/draft';
+import { Badge, Button, EmptyState, FilterChip, Icon, formatDateTime, formatRelative } from '@ulpin/ui';
+import { useWorkBoard, useWorkQueue, type WorkItem } from '../../api/queries';
+import { nextAction } from './nextAction';
+import { STAGES, targetHref, type Stage } from './targets';
 import styles from './BatchesPage.module.css';
 
-const FILTERS: { value: WorkStatusFilter; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'processing', label: 'Processing' },
-  { value: 'recorded', label: 'Recorded' },
-];
+type BoardItem = WorkBoard['items'][number];
 
-/** S1 Batches (GOAL override 7): label, next action, time; count cards become filter chips. */
+/**
+ * S1 Batches: what, stage, next action, readiness and time in aligned columns, with count cards that
+ * jump straight to the work. Stage and readiness come from the work board; without it, the next
+ * action is derived from the work item alone and those columns stay empty.
+ */
 export function BatchesPage() {
   const [params, setParams] = useSearchParams();
-  const status = (FILTERS.find((f) => f.value === params.get('status'))?.value ?? 'all') as WorkStatusFilter;
   const q = params.get('q') ?? '';
-  const page = Math.max(1, Number(params.get('page')) || 1);
-  const queue = useWorkQueue(status, q, page);
-
-  const counts = useQueries({
-    queries: FILTERS.map((filter) => ({
-      queryKey: [...queryKeys.workQueue(filter.value, q, 1), 'count'],
-      queryFn: async () => unwrap(await api.GET('/api/v1/work-queue', { params: { query: { status: filter.value, q: q || undefined } } })).total,
-      staleTime: 15_000,
-    })),
-  });
+  const stage = STAGES.find((s) => s.value === params.get('stage'))?.value ?? null;
+  const queue = useWorkQueue('all', q, 1);
+  const board = useWorkBoard().data;
+  const byId = new Map(board?.items.map((i) => [i.id, i]) ?? []);
+  const items = (queue.data?.items ?? []).filter((item) => !stage || byId.get(item.id)?.stage === stage);
 
   const update = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
-    for (const [key, value] of Object.entries(patch)) if (value === null) next.delete(key); else next.set(key, value);
-    setParams(next);
+    for (const [key, value] of Object.entries(patch)) if (value === null || value === '') next.delete(key); else next.set(key, value);
+    setParams(next, { replace: true });
   };
-
-  const totalPages = queue.data ? Math.max(1, Math.ceil(queue.data.total / queue.data.pageSize)) : 1;
+  const countFor = (s: Stage) => queue.data?.items.filter((i) => byId.get(i.id)?.stage === s).length ?? 0;
 
   return (
     <div className={styles.page}>
-      <div className={styles.head}>
-        <h1 className="ul-title">Batches</h1>
-        <Link to="/studio/add-files" className="ul-btn ul-btn--primary">
-          <Icon icon={FilePlus} />
-          Add files
-        </Link>
-      </div>
-
-      <div className={styles.filters} role="group" aria-label="Filter batches">
-        {FILTERS.map((filter, index) => (
-          <FilterChip
-            key={filter.value}
-            label={filter.label}
-            count={counts[index]?.data}
-            pressed={status === filter.value}
-            onToggle={() => update({ status: filter.value === 'all' ? null : filter.value, page: null })}
-          />
-        ))}
-        {q ? (
-          <span className={styles.query}>
-            Matching “{q}”
-            <Button variant="ghost" iconOnly icon={X} aria-label="Clear search" onClick={() => update({ q: null, page: null })} />
-          </span>
+      <section className={styles.main}>
+        <div className={styles.head}>
+          <h1 className="ul-title">Batches</h1>
+          <label className={styles.search}>
+            <Icon icon={MagnifyingGlass} size={16} />
+            <input type="search" aria-label="Search batches" placeholder="Search" value={q} onChange={(e) => update({ q: e.target.value })} />
+          </label>
+        </div>
+        {board ? (
+          <div className={styles.filters} role="group" aria-label="Filter by stage">
+            <FilterChip label="All stages" pressed={!stage} count={queue.data?.items.length} onToggle={() => update({ stage: null })} />
+            {STAGES.map((s) => <FilterChip key={s.value} label={s.label} count={countFor(s.value)} pressed={stage === s.value} onToggle={() => update({ stage: stage === s.value ? null : s.value })} />)}
+          </div>
         ) : null}
-      </div>
-
-      <BatchesBody
-        items={queue.data?.items}
-        pending={queue.isPending}
-        error={queue.error}
-        retry={() => void queue.refetch()}
-        filtered={status !== 'all' || Boolean(q)}
-      />
-
-      {queue.data && totalPages > 1 ? (
-        <nav className={styles.pager} aria-label="Pages">
-          <Button disabled={page <= 1} onClick={() => update({ page: String(page - 1) })}>Previous</Button>
-          <span className="ul-body-sm">Page {formatCount(page)} of {formatCount(totalPages)}</span>
-          <Button disabled={page >= totalPages} onClick={() => update({ page: String(page + 1) })}>Next</Button>
-        </nav>
+        <BatchesBody items={items} board={byId} pending={queue.isPending} error={queue.error} retry={() => void queue.refetch()} filtered={Boolean(stage || q)} />
+      </section>
+      {board?.counts.length ? (
+        <aside className={styles.counts} aria-label="Work at a glance">
+          {board.counts.map((c) => (
+            <Link key={c.key} to={targetHref(c.target)} className={`ul-panel ${styles.count}`}>
+              <span className="ul-num">{c.value}</span>
+              <span>{c.label}</span>
+            </Link>
+          ))}
+        </aside>
       ) : null}
     </div>
   );
 }
 
-function BatchesBody({ items, pending, error, retry, filtered }: {
-  items: WorkItem[] | undefined; pending: boolean; error: Error | null; retry: () => void; filtered: boolean;
+function BatchesBody({ items, board, pending, error, retry, filtered }: {
+  items: WorkItem[]; board: Map<string, BoardItem>; pending: boolean; error: Error | null; retry: () => void; filtered: boolean;
 }) {
   if (pending) {
     return (
       <div className={styles.table} aria-busy="true" aria-label="Loading batches">
-        {Array.from({ length: 5 }, (_, index) => <div key={index} className={`ul-skeleton ${styles.skeletonRow}`} />)}
+        {Array.from({ length: 6 }, (_, index) => <div key={index} className={`ul-skeleton ${styles.skeletonRow}`} />)}
       </div>
     );
   }
   if (error) {
     return (
       <EmptyState icon={WarningCircle} title="Batches could not be loaded" action={<Button onClick={retry}>Try again</Button>}>
-        {error.message} Check that the Studio API is running on this computer, then try again.
+        {error.message} Check that the Studio API is running, then try again.
       </EmptyState>
     );
   }
-  if (!items?.length) {
+  if (!items.length) {
     return filtered ? (
       <EmptyState icon={Stack} title="No batches match">Clear the filter or search to see every batch.</EmptyState>
     ) : (
-      <EmptyState
-        icon={Stack}
-        title="No batches yet"
-        action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}
-      >
+      <EmptyState icon={Stack} title="No batches yet" action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}>
         Add plans, survey files or GIS layers to start a batch.
       </EmptyState>
     );
   }
   return (
-    <table className={`ul-table ${styles.table}`}>
-      <colgroup>
-        <col />
-        <col className={styles.colArea} />
-        <col className={styles.colSources} />
-        <col className={styles.colTime} />
-        <col className={styles.colAction} />
-      </colgroup>
-      <thead>
-        <tr>
-          <th scope="col">Batch</th>
-          <th scope="col">Area</th>
-          <th scope="col" className="ul-r">Sources</th>
-          <th scope="col">Updated</th>
-          <th scope="col">Next action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((item) => <BatchRow key={`${item.kind}:${item.id}`} item={item} />)}
-      </tbody>
-    </table>
+    <div className={`ul-panel ${styles.table}`} role="table" aria-label="Batches">
+      <div className={styles.row} role="row" data-head>
+        <span role="columnheader">Batch</span><span role="columnheader">Stage</span><span role="columnheader">Next action</span>
+        <span role="columnheader">Readiness</span><span role="columnheader" className={styles.r}>Updated</span>
+      </div>
+      {items.map((item) => <BatchRow key={item.id} item={item} board={board.get(item.id)} />)}
+    </div>
   );
 }
 
-function BatchRow({ item }: { item: WorkItem }) {
-  const action = nextAction(item);
-  const areaSameAsName = item.areaName === item.name;
-  return (
-    <tr>
-      <td>
-        <div className={styles.name}>{item.name}</div>
-        <div className={styles.meta}>{classificationLabel(item)}</div>
-      </td>
-      <td className={styles.area}>
-        {item.areaName && !areaSameAsName ? item.areaName : <span className={styles.none}>No area</span>}
-      </td>
-      <td className="ul-r ul-num">{formatCount(item.sourceCount)}</td>
-      <td><time dateTime={item.updatedAt} title={formatDateTime(item.updatedAt)}>{formatRelative(item.updatedAt)}</time></td>
-      <td>
-        {action.href ? (
-          <Link to={action.href} className={`${styles.action} ${styles[`tone_${action.tone}`] ?? ''}`}>
-            {action.label}
-            <Icon icon={ArrowRight} size={16} />
-          </Link>
-        ) : (
-          <span className={styles.waiting}>
-            <Icon icon={CircleNotch} size={16} className={styles.spin} />
-            {action.label}
-          </span>
-        )}
-      </td>
-    </tr>
+function BatchRow({ item, board }: { item: WorkItem; board: BoardItem | undefined }) {
+  const derived = nextAction(item);
+  const label = board?.nextAction.label ?? derived.label;
+  const href = board ? targetHref(board.nextAction.target) : derived.href;
+  const stage = board ? STAGES.find((s) => s.value === board.stage) : undefined;
+  const sub = [item.areaName, board?.detail].filter(Boolean).join(' · ');
+  const content = (
+    <>
+      <span role="cell" className={styles.what}><b>{item.name}</b>{sub ? <span>{sub}</span> : null}</span>
+      <span role="cell">{stage ? <Badge tone={stage.tone} icon={null}>{stage.label}</Badge> : null}</span>
+      <span role="cell" className={styles.next}>
+        {href ? <>{label}<Icon icon={ArrowRight} size={16} /></> : <span className={styles.waiting}><Icon icon={CircleNotch} size={16} className={styles.spin} />{label}</span>}
+      </span>
+      <span role="cell">{board ? <Readiness met={board.readiness.met} unknown={board.readiness.unknown} of={board.readiness.of} /> : null}</span>
+      <span role="cell" className={`${styles.r} ${styles.time}`}>
+        <time dateTime={item.updatedAt} title={formatDateTime(item.updatedAt)}>{timeOf(item.updatedAt)}</time>
+      </span>
+    </>
   );
+  return href
+    ? <Link to={href} className={styles.row} role="row">{content}</Link>
+    : <div className={styles.row} role="row">{content}</div>;
+}
+
+/** Six blocks: met, unknown (hatched), not met. No overall score. */
+function Readiness({ met, unknown, of }: { met: number; unknown: number; of: number }) {
+  return (
+    <span className={styles.ready} title={`${met} of ${of} ready${unknown ? `, ${unknown} unknown` : ''}`}>
+      <span className={styles.blocks} aria-hidden="true">
+        {Array.from({ length: of }, (_, i) => <i key={i} data-state={i < met ? 'met' : i < met + unknown ? 'unknown' : 'open'} />)}
+      </span>
+      <span className="ul-num ul-muted">{met} of {of}</span>
+    </span>
+  );
+}
+
+/** Today: 14:10. Otherwise the relative day. */
+function timeOf(iso: string): string {
+  const date = new Date(iso);
+  const today = new Date();
+  if (date.toDateString() === today.toDateString()) return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' });
+  return formatRelative(iso);
 }

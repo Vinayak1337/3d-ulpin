@@ -51,6 +51,17 @@ export interface BuildingLedger {
     evidence: Array<{ kind?: 'feature' | 'table' | 'document'; state?: 'estimated' | 'missing'; sourceId: string | null; source: string | null; locator: string | null }>;
     actions: string[];
   }>;
+  /** HISTORY-02: the sanctioned/observed pair for the deviation check; null until both exist. */
+  deviation: {
+    state: 'needs_review' | 'passed' | 'not_assessed';
+    sanctioned: { label: string; storeys: number; heightM: number; sourceId: string; source: string; locator: string };
+    observed: { label: string; storeys: number; heightM: number; rooftopAreaM2: number | null; surveyedAt: string; sourceId: string; source: string; locator: string };
+    setback: 'compared' | 'not_comparable';
+    exclusions: string | null;
+    /** The observed-only volume, in the site datum. */
+    volume: { geometry: { type: 'Polygon'; coordinates: number[][][] }; lowerM: number; upperM: number } | null;
+    note: string;
+  } | null;
   revisions: Array<{ kind: 'recorded' | 'evidence' | 'draft'; title: string; actor: string; at: string; hash: string; previousHash: string | null }>;
   sources: Array<{ sourceId: string; kind: 'feature' | 'table' | 'document'; name: string; file: string; summary: string }>;
 }

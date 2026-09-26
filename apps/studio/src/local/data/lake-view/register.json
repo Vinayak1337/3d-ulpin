@@ -8389,6 +8389,16 @@
    "evidence": []
   },
   {
+   "id": "248e902d-7370-5b6e-8dfb-a17e1c5f8d0d",
+   "name": "drone_survey_2026-09-12.laz",
+   "sha256": "9abec9fb9fa6a61ebc35399f8bdf6b4ea04ea9531ee46ef743ca765b4b8192e7",
+   "revision": 1,
+   "profile": "uav-lidar-survey",
+   "createdAt": "2026-09-24T11:06:00.000+05:30",
+   "url": "/api/v1/sources/248e902d-7370-5b6e-8dfb-a17e1c5f8d0d/file",
+   "evidence": []
+  },
+  {
    "id": "be23ff05-6446-5473-8346-6231e84b030c",
    "name": "utility_survey_2026.csv",
    "sha256": "853c0f3b88a00aa97a32a2734448fcdb4aef6d3db499109443dbebf26382d6e4",

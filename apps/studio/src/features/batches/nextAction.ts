@@ -42,10 +42,3 @@ function itemHref(item: WorkItem): string {
   if (item.kind === 'import') return item.areaId ? `/studio/areas/${item.areaId}?package=${item.id}` : `/studio/work?item=${item.id}`;
   return `/studio/cases/${item.id}`;
 }
-
-export function classificationLabel(item: WorkItem): string {
-  const { classification } = item.provenance;
-  return classification === 'unknown'
-    ? 'Unknown source classification'
-    : `${classification[0]!.toUpperCase()}${classification.slice(1)} source`;
-}
