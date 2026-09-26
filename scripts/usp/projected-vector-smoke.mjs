@@ -1,4 +1,4 @@
-/** Guarded unchanged NWIC source→existing queue→administrative records, with one stale-result retry. */
+/** Guarded unchanged NWIC source→queue→records, partial-staging recovery and later re-admission. */
 import assert from 'node:assert/strict';
 import {createHash,randomUUID} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
@@ -57,9 +57,18 @@ async function run(){
     assert.equal(produced.result.totals.features,733);assert.equal(produced.result.totals.nativeInvalid,13);
     assert.equal((await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count,0);
     await api(path+'/units',409);
+    await barrier.query('COMMIT');held=false;
+    await until(async()=>{const count=(await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count;return count>0?count:null;});
+    await barrier.query('BEGIN');held=true;await barrier.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE',[caseId]);
+    receipt.retiredStagingRows=(await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count;
+    assert(receipt.retiredStagingRows>0&&receipt.retiredStagingRows<733);await api(path+'/units',409);
     await barrier.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);await barrier.query('COMMIT');held=false;
     await until(async()=>{const job=await api(path);if(job.status==='failed')throw new Error('Stale completion failed unexpectedly.');return job.status==='stale'?job:null;});
-    await api(path+'/units',409);receipt.checks.push('unchanged retained ZIP/member reach the existing Celery job; exact enqueue replay preserves the logical job; a completed worker result stays unreachable and is fenced after a real case revision change');
+    await api(path+'/units',409);
+    const retired=(await observer.query("SELECT result FROM operations WHERE case_id=$1 AND kind='projected-vector-staging-retired' AND result->>'jobId'=$2",[caseId,first.jobId])).rows;
+    assert.equal(retired.length,1);assert.equal(retired[0].result.rows,receipt.retiredStagingRows);assert.equal(retired[0].result.policy,'never_accepted_terminal_staging/1');
+    assert.equal((await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count,0);
+    receipt.checks.push('unchanged retained source reaches Celery; exact enqueue replay preserves the job; unaccepted real staging stays unreadable and is exactly retired after a real case revision fences the completed worker result, retaining its compact retirement/job history');
     phase='retry-and-publication';const secondRequest=request(upload.currentCaseRevision+1),second=await api(path,202,secondRequest);receipt.acceptedJobId=second.jobId;assert.notEqual(second.jobId,first.jobId);
     const accepted=await until(async()=>{const job=await api(path);if(['failed','stale'].includes(job.status))throw new Error('Accepted projected journey failed: '+job.errorCode);return job.status==='succeeded'?job:null;});
     assert.equal(accepted.totals.features,733);assert.equal(accepted.totals.positions,3125505);assert.equal(accepted.totals.nativeInvalid,13);assert.equal(accepted.totals.admitted+accepted.totals.quarantined,733);
@@ -80,19 +89,31 @@ async function run(){
     const box=valid.geographicBounds,bbox=await api(path+'/units?limit=25&bbox='+box.join(','));assert(bbox.records.some(row=>row.id===valid.id));assert(bbox.records.every(row=>row.disposition==='admitted'));
     receipt.totals=accepted.totals;receipt.transform=accepted.transform;receipt.sample={admitted:valid,quarantined:quarantine,duplicatedDtcode:duplicateCode.map(row=>({id:row.id,nativeKey:row.nativeKey,code:row.code}))};
     receipt.checks.push('retry from the same retained source atomically adopts all 733 immutable dispositions; typed numeric id namespace preserves both real duplicated dtcode rows; bounded private metadata/native/geographic reads and quarantine exclusion pass');
+    phase='later-re-admission';
+    await observer.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
+    await api(path+'/units',409);const thirdRequest=request(upload.currentCaseRevision+2),third=await api(path,202,thirdRequest);receipt.readmittedJobId=third.jobId;assert.notEqual(third.jobId,second.jobId);
+    console.log(JSON.stringify({phase,jobId:third.jobId}));
+    const readmitted=await until(async()=>{const job=await api(path);if(['failed','stale'].includes(job.status))throw new Error('Later re-admission failed: '+job.errorCode);return job.status==='succeeded'?job:null;});
+    assert.deepEqual(readmitted.totals,accepted.totals);assert.equal((await api(path,202,thirdRequest)).jobId,third.jobId);assert.equal((await api(path,202,secondRequest)).jobId,second.jobId);
+    await api(path+'/units?jobId='+second.jobId,409);const current=await api(path+'/units?jobId='+third.jobId);
+    assert.equal(current.jobId,third.jobId);assert.equal(current.records[0].id,all[0].id);assert.equal(current.records[0].rawSha256,all[0].rawSha256);
+    const history=(await observer.query(`SELECT count(*)::int observations,count(*) FILTER(WHERE a.raw_ref=b.raw_ref AND a.geographic_ref IS NOT DISTINCT FROM b.geographic_ref)::int shared_artifacts
+      FROM administrative_unit_observations a JOIN administrative_unit_observations b ON b.unit_id=a.unit_id WHERE a.job_id=$1 AND b.job_id=$2`,[second.jobId,third.jobId])).rows[0];
+    assert.equal(history.observations,733);assert.equal(history.shared_artifacts,733);receipt.acceptedHistory=history;
+    receipt.checks.push('a third current-context job successfully re-admits the unchanged original after an accepted generation becomes context-stale; all 733 earlier accepted observations and logical receipts survive, canonical identities and immutable feature artifacts are reused');
     phase='durable-records';receipt.database=(await observer.query(`SELECT (SELECT count(*)::int FROM administrative_unit_observations WHERE job_id=$1) observations,
       (SELECT count(*)::int FROM administrative_unit_observations WHERE job_id=$1 AND disposition='admitted') admitted,
       (SELECT count(*)::int FROM administrative_unit_observations WHERE job_id=$1 AND NOT ST_IsValid(native_geometry)) native_invalid,
       (SELECT count(*)::int FROM administrative_unit_observations WHERE job_id=$1 AND geographic_geometry IS NOT NULL AND NOT ST_IsValid(geographic_geometry)) invalid_geographic,
       (SELECT count(*)::int FROM administrative_unit_observations WHERE job_id=$2) stale_observations,
       (SELECT count(*)::int FROM sources WHERE case_id=$3) originals,(SELECT count(*)::int FROM usp_model_calls) model_calls,
-      (SELECT count(*)::int FROM jobs WHERE operation='projected-vector') jobs`,[second.jobId,first.jobId,caseId])).rows[0];
-    assert.equal(receipt.database.observations,733);assert.equal(receipt.database.native_invalid,13);assert.equal(receipt.database.invalid_geographic,0);assert.equal(receipt.database.stale_observations,0);assert.equal(receipt.database.originals,1);assert.equal(receipt.database.model_calls,0);assert.equal(receipt.database.jobs,2);
+      (SELECT count(*)::int FROM jobs WHERE operation='projected-vector') jobs`,[third.jobId,first.jobId,caseId])).rows[0];
+    assert.equal(receipt.database.observations,733);assert.equal(receipt.database.native_invalid,13);assert.equal(receipt.database.invalid_geographic,0);assert.equal(receipt.database.stale_observations,0);assert.equal(receipt.database.originals,1);assert.equal(receipt.database.model_calls,0);assert.equal(receipt.database.jobs,3);
     const events=(await observer.query("SELECT body FROM usp_outbox WHERE stream_id LIKE $1 AND body->'change'->>'kind'='projected-vector.changed' ORDER BY sequence",[`case-ingestion:${caseId}:%`])).rows.map(row=>row.body.change);
-    assert.deepEqual(events.map(e=>e.status),['queued','running','stale','queued','running','succeeded']);assert(events.every(e=>Object.keys(e).sort().join(',')==='jobId,kind,status'));
-    const worker=await geo(second.jobId);receipt.execution=worker.result.execution;
+    assert.deepEqual(events.map(e=>e.status),['queued','running','stale','queued','running','succeeded','queued','running','succeeded']);assert(events.every(e=>Object.keys(e).sort().join(',')==='jobId,kind,status'));
+    const worker=await geo(third.jobId);receipt.execution=worker.result.execution;
     assert.deepEqual(await fileHash(source.privateOriginalPath),original);assert.deepEqual(await fileHash(profile.source.outsideGitPath),member);
-    receipt.checks.push('database has 13 preserved native-invalid dispositions and no invalid global geometry; one original, two existing-authority jobs and exactly six committed compact lifecycle events; originals remain byte-identical and no model call occurred');
+    receipt.checks.push('database has 13 preserved native-invalid dispositions and no invalid global geometry per accepted generation; one original, three existing-authority jobs and exactly nine committed compact lifecycle events; originals remain byte-identical and no model call occurred');
     receipt.status='passed';writeFileSync(output,JSON.stringify(receipt,null,2)+'\n',{mode:0o600});console.log(JSON.stringify({status:'passed',codeCommit:receipt.codeCommit,checks:receipt.checks.length,totals:receipt.totals,database:receipt.database,execution:receipt.execution,receipt:output}));
   }catch(error){receipt.status='failed';receipt.phase=phase;receipt.failure='Guarded projected journey failed; inspect private logs without exporting configuration.';writeFileSync(output,JSON.stringify(receipt,null,2)+'\n',{mode:0o600});throw error;}
   finally{if(held)await barrier.query('ROLLBACK').catch(()=>{});await file?.close();await barrier.end();await observer.end();}

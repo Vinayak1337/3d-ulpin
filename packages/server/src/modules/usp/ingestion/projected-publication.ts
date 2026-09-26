@@ -7,7 +7,7 @@ import {AppError,conflict} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
-import {projectedContextTx,assertProjectedInput,readProjectedArtifact} from './projected-vector';
+import {projectedContextTx,assertProjectedInput,readProjectedArtifact,projectedObservationBytesTx} from './projected-vector';
 
 async function terminalTx(client:PoolClient,job:any,status:'failed'|'stale',code:string){
   const current=(await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE',[job.id])).rows[0];
@@ -15,6 +15,20 @@ async function terminalTx(client:PoolClient,job:any,status:'failed'|'stale',code
   await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1 AND logical_state<>'succeeded'",[job.id]);
   await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[job.id]);
   await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[job.id,status,code]);
+  // Exact-record retirement after fencing. Never erase accepted observations,
+  // source originals, canonical identities, artifacts or the logical job history.
+  const retired=(await client.query(`DELETE FROM administrative_unit_observations o USING jobs j,usp_job_metadata m
+    WHERE o.job_id=$1 AND o.source_id=$2 AND j.id=o.job_id AND m.job_id=j.id
+      AND j.status IN('failed','stale') AND m.logical_state='failed' AND m.accepted_fence IS NULL
+      AND NOT EXISTS(SELECT 1 FROM sources s WHERE s.inspection->'projectedVector'->'accepted'->>'jobId'=j.id::text)
+    RETURNING o.feature_index`,[job.id,job.source_id])).rows;
+  if(retired.length){
+    const policy='never_accepted_terminal_staging/1';
+    await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
+      VALUES($1,$2,'projected-vector-staging-retired',$3,$4) ON CONFLICT(case_id,operation_key) DO NOTHING`,
+      [job.case_id,`projected-vector-retired:${job.id}`,fingerprint({jobId:job.id,policy}),
+        {jobId:job.id,sourceId:job.source_id,policy,rows:retired.length,retiredAt:new Date().toISOString()}]);
+  }
   const originalSubject=(await client.query("SELECT inspection->'largeOriginal'->>'operatorSubject' subject FROM sources WHERE id=$1",[job.source_id])).rows[0]?.subject;
   await appendCaseIngestionTx(client,job.case_id,{kind:'projected-vector.changed',jobId:job.id,status},originalSubject);
 }
@@ -73,6 +87,10 @@ async function stage(job:any,attempt:UspJobAttempt,entry:ProjectedVectorEntry){
         CASE WHEN $12::text IS NULL THEN NULL ELSE ST_SetSRID(ST_GeomFromGeoJSON($12),4326) END,$13,$14) ON CONFLICT(job_id,feature_index) DO NOTHING`,
       [job.id,entry.index,unit.id,job.source_id,entry.disposition,entry.reason,{member:profile.member,start:entry.start,end:entry.end},native.properties,
         entry.nativeBounds,entry.geographicBounds,JSON.stringify(native.geometry),geographic?JSON.stringify(geographic.geometry):null,entry.raw,entry.geographic]);
+    if((entry.index+1)%25===0 || entry.index===profile.features-1){
+      if(await projectedObservationBytesTx(client,job.id)>profile.observationGenerationBytes)
+        throw new AppError(422,'PROJECTED_OBSERVATION_BUDGET','The staged observation generation exceeds its retained value-byte bound.');
+    }
   });
 }
 
@@ -107,6 +125,8 @@ export async function ingestProjectedResult(id:string,value:unknown){
         count(*) FILTER(WHERE disposition='admitted')::int admitted FROM administrative_unit_observations WHERE job_id=$1 AND source_id=$2`,[id,job.source_id])).rows[0];
       if(topology.native_invalid!==profile.nativeInvalid || topology.admitted!==index.totals.admitted)
         throw new AppError(422,'PROJECTED_TOPOLOGY_TOTALS','Database topology/disposition totals differ from the preserved native source.');
+      if(await projectedObservationBytesTx(client)>profile.retainedObservationBytes)
+        throw new AppError(422,'PROJECTED_OBSERVATION_BUDGET','Accepted and staged observations exceed the retained value-byte capacity.');
       const accepted={jobId:id,fence:attempt.fence,index:result.index,totals:index.totals,transform:index.transform,
         numericalRoundTrip:index.numericalRoundTrip,execution:result.execution};
       await client.query('UPDATE sources SET inspection=$2 WHERE id=$1',[job.source_id,{...ctx.source.inspection,

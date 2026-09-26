@@ -64,6 +64,15 @@ export async function acceptedProjectedTx(client:PoolClient,caseId:string,source
   const input=assertProjectedInput(ctx,job.payload);
   return {ctx,pointer,job,input};
 }
+/** Stored value bytes; indexes, WAL and database allocator overhead are not scale qualification. */
+export async function projectedObservationBytesTx(client:PoolClient,jobId?:string){
+  const row=(await client.query(`SELECT COALESCE(sum(pg_column_size(native_geometry)::bigint
+    +COALESCE(pg_column_size(geographic_geometry),0)+pg_column_size(source_locator)+pg_column_size(properties)
+    +pg_column_size(native_bounds)+COALESCE(pg_column_size(geographic_bounds),0)
+    +pg_column_size(raw_ref)+COALESCE(pg_column_size(geographic_ref),0)+256),0)::text bytes
+    FROM administrative_unit_observations WHERE ($1::uuid IS NULL OR job_id=$1)`,[jobId??null])).rows[0];
+  return Number(row.bytes);
+}
 function observation(row:any,source:any){
   return AdministrativeObservationSchema.parse({id:row.unit_id,kind:'district',namespace:profile.namespace,nativeKey:row.native_key,
     sourceId:source.id,sourceRevision:source.revision,jobId:row.job_id,featureIndex:row.feature_index,locator:row.source_locator,
@@ -84,17 +93,33 @@ export class ProjectedVectorService{
       if(prior){if(prior.payload_hash!==digest)conflict('The request key names different projected source pins.');return projectedStatusTx(client,caseId,sourceId,prior.result.jobId);}
       if(ctx.current.revision!==request.expectedCaseRevision || ctx.source.revision!==request.expectedSourceRevision || ctx.source.sha256!==request.sourceSha256)
         conflict('Inspect the current case and retained source pins before admission.');
+      const requests=(await client.query("SELECT count(*)::int count FROM operations WHERE kind='projected-vector'")).rows[0].count;
+      if(requests>=profile.requestReceipts)throw new AppError(429,'PROJECTED_REQUEST_BUDGET','The bounded idempotency receipt capacity is full; exact existing request keys remain replayable.');
       const existing=(await client.query("SELECT * FROM jobs WHERE id=$1 AND source_id=$2 AND operation='projected-vector'",[ctx.source.inspection.projectedVector?.currentJobId,sourceId])).rows[0];
       if(existing && ['queued','running','succeeded'].includes(existing.status)){
-        assertProjectedInput(ctx,existing.payload);
-        await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'projected-vector',$3,$4)",[caseId,key,digest,{jobId:existing.id}]);
-        return projectedStatusTx(client,caseId,sourceId);
+        let reusable=true;
+        try{assertProjectedInput(ctx,existing.payload);}catch(error){
+          if(!(error instanceof AppError) || error.code!=='PROJECTED_CONTEXT_STALE')throw error;
+          reusable=false;
+        }
+        if(reusable){
+          await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'projected-vector',$3,$4)",[caseId,key,digest,{jobId:existing.id}]);
+          return projectedStatusTx(client,caseId,sourceId);
+        }
       }
-      const quota=(await client.query("SELECT count(*)::int receipts,count(*) FILTER(WHERE status IN('queued','running'))::int active FROM jobs WHERE operation='projected-vector'")).rows[0];
-      if(quota.receipts>=profile.jobs || quota.active>=profile.active)throw new AppError(429,'PROJECTED_QUOTA','The qualified profile admits two lifetime job receipts and one active job in this environment.');
+      const parserSha256=projectedParserSha();
+      const quota=(await client.query(`SELECT count(*)::int receipts,count(*) FILTER(WHERE status IN('queued','running'))::int active,
+        count(*) FILTER(WHERE status='succeeded')::int accepted,
+        count(DISTINCT payload->>'parserSha256')::int parsers,
+        count(*) FILTER(WHERE payload->>'parserSha256'=$1)::int same_parser FROM jobs WHERE operation='projected-vector'`,[parserSha256])).rows[0];
+      if(quota.active>=profile.active)throw new AppError(429,'PROJECTED_ACTIVE_BUDGET','One projected admission is already active; retry after its fenced completion.');
+      if(quota.receipts>=profile.jobReceipts || quota.accepted>=profile.acceptedGenerations
+        || quota.parsers>=profile.parserGenerations && !quota.same_parser
+        || await projectedObservationBytesTx(client)+profile.observationGenerationBytes>profile.retainedObservationBytes)
+        throw new AppError(429,'PROJECTED_RETENTION_BUDGET','The bounded retained receipt, converter or accepted observation capacity is full; preserved history requires a reviewed capacity decision.');
       const jobId=randomUUID(),base={kind:'retained_source' as const,version:profile.version,jobId,caseId,caseRevision:ctx.current.revision,sourceId,
         sourceRevision:ctx.source.revision,sourceFamilyId:ctx.source.family_id,sha256:profile.zipSha256,bytes:profile.zipBytes,
-        objectKey:ctx.source.object_key,parserSha256:projectedParserSha(),accessBinding:ctx.access};
+        objectKey:ctx.source.object_key,parserSha256,accessBinding:ctx.access};
       const inputFingerprint=fingerprint(base),payload=ProjectedVectorInputSchema.parse({...base,inputFingerprint});
       await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'projected-vector',$4,$5,$6)",[jobId,caseId,sourceId,ctx.current.revision,inputFingerprint,payload]);
       await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:caseId,version:ctx.current.revision+1},sourceId,inputFingerprint);

@@ -7,7 +7,11 @@ export const PROJECTED_VECTOR_PROFILE = Object.freeze({
   features:733, positions:3125505, nativeInvalid:13,
   featureBytes:1024*1024, geographicBytes:2*1024*1024, indexBytes:1024*1024,
   outputBytes:384*1024*1024, featurePositions:18000, rings:128, ringPositions:17000,
-  page:25, jobs:2, active:1, publicationMs:120000,
+  page:25, active:1, publicationMs:120000,
+  // Retain compact history separately from expensive accepted observations. Failed
+  // staging is fenced and retired; immutable feature artifacts remain deduplicated.
+  jobReceipts:128, requestReceipts:256, parserGenerations:4, acceptedGenerations:8,
+  observationGenerationBytes:128*1024*1024, retainedObservationBytes:1024*1024*1024,
 });
 const id=z.string().uuid(), hash=z.string().regex(/^[a-f0-9]{64}$/), rev=z.number().int().nonnegative();
 const box=z.tuple([z.number().finite(),z.number().finite(),z.number().finite(),z.number().finite()]);
