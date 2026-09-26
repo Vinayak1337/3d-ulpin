@@ -1,76 +1,74 @@
-import { ArrowCounterClockwise, Cursor, Ruler, Scissors, Shovel, type Icon as PhosphorIcon } from '@phosphor-icons/react';
-import type { Measurement, SceneTool } from '@ulpin/scene';
-import { Icon } from '@ulpin/ui';
+import type { ReactNode } from 'react';
+import { Buildings, MapTrifold, Shovel, Stack, WarningOctagon, type Icon as PhosphorIcon } from '@phosphor-icons/react';
+import { Icon, type LegendSection } from '@ulpin/ui';
 import type { ColourBy } from '../../state/selection';
 import type { SpaceModel } from '../../model/building';
 import styles from './MapSidebar.module.css';
 
 type Colour = Exclude<ColourBy, 'auto'>;
+export type ViewKey = 'area' | 'building' | 'level' | 'findings' | 'underground';
+
+export interface SidebarView {
+  key: ViewKey;
+  label: string;
+  /** The thing this view is on (area, building, floor name), shown muted. */
+  detail?: string | null;
+  badge?: ReactNode;
+  disabled?: boolean;
+}
+
+const ICONS: Record<ViewKey, PhosphorIcon> = { area: MapTrifold, building: Buildings, level: Stack, findings: WarningOctagon, underground: Shovel };
 
 /**
- * The map's left sidebar: the tools that act on the canvas, what the map is coloured by and, on a floor,
- * its spaces as a list (the keyboard alternative to clicking them). Facts about the selection live only
- * in the inspector on the right.
+ * The map's left navigation: which view the canvas shows, what it is coloured by (with its key), and on a
+ * floor its spaces as a list. Facts about the selection live only in the inspector on the right.
  */
-export function MapSidebar({
-  tool, underground, canSection, canUnderground, onTool, onUnderground, onReset,
-  section, measurement, onClearMeasure,
-  colour, colourOptions, onColour,
-  floor, spaces, rightsColour, selectedSpaceId, onSelectSpace,
-}: {
-  tool: SceneTool; underground: boolean; canSection: boolean; canUnderground: boolean;
-  onTool: (tool: SceneTool) => void; onUnderground: () => void; onReset: () => void;
-  section: { value: number; max: number; onChange: (v: number) => void } | null;
-  measurement: Measurement | null; onClearMeasure: () => void;
+export function MapSidebar({ views, active, onView, colour, colourOptions, onColour, keySections, floor, spaces, rightsColour, selectedSpaceId, onSelectSpace }: {
+  views: SidebarView[]; active: ViewKey; onView: (key: ViewKey) => void;
   colour: Colour; colourOptions: { value: Colour; label: string; disabled?: boolean }[]; onColour: (c: Colour) => void;
+  keySections: LegendSection[];
   floor: string | null; spaces: SpaceModel[]; rightsColour: (id: string) => string | null; selectedSpaceId: string | null; onSelectSpace: (s: SpaceModel) => void;
 }) {
-  const row = (pressed: boolean, label: string, icon: PhosphorIcon, key: string, onClick: () => void, disabled = false, hint?: string) => (
-    <button type="button" className={styles.row} aria-pressed={pressed} disabled={disabled} onClick={onClick} title={hint ?? label} aria-keyshortcuts={key}>
-      <Icon icon={icon} size={20} />
-      <span className={styles.label}>{label}</span>
-      <kbd className={styles.key}>{key}</kbd>
-    </button>
-  );
   return (
-    <nav className={styles.sidebar} aria-label="Map tools">
-      <div className={styles.group} role="toolbar" aria-label="Tools">
-        {row(tool === 'select' && !underground, 'Select', Cursor, 'V', () => onTool('select'))}
-        {row(tool === 'measure', 'Measure', Ruler, 'M', () => onTool(tool === 'measure' ? 'select' : 'measure'), false, 'Click two points')}
-        {tool === 'measure' ? (
-          <div className={styles.detail} role="status">
-            {typeof measurement?.distanceM === 'number' ? (
-              <>
-                <span><b className="ul-num">{measurement.distanceM.toFixed(2)} m</b></span>
-                <span className="ul-num">↔ {measurement.horizontalM!.toFixed(2)} · ↕ {Math.abs(measurement.verticalM!).toFixed(2)}</span>
-                <button type="button" className={styles.link} onClick={onClearMeasure}>Clear</button>
-              </>
-            ) : <span>{measurement?.points.length === 1 ? 'Click the second point' : 'Click two points on the map'}</span>}
-          </div>
-        ) : null}
-        {row(tool === 'section', 'Section', Scissors, 'X', () => onTool(tool === 'section' ? 'select' : 'section'), !canSection, canSection ? 'Cut the building at a height' : 'Select a building first')}
-        {tool === 'section' && section ? (
-          <label className={styles.detail}>
-            <span>Cut at <b className="ul-num">{section.value.toFixed(1)} m</b></span>
-            <input type="range" min={0.5} max={section.max} step={0.1} value={section.value} onChange={(e) => section.onChange(Number(e.target.value))} aria-label="Section height" />
-          </label>
-        ) : null}
-        {row(underground, 'Underground', Shovel, 'U', onUnderground, !canUnderground, canUnderground ? 'Show what lies below' : 'Select a building first')}
-        {row(false, 'Reset view', ArrowCounterClockwise, 'R', onReset)}
-      </div>
+    <nav className={styles.sidebar} aria-label="Map">
+      <ul className={styles.views}>
+        {views.map((v) => (
+          <li key={v.key}>
+            <button type="button" className={styles.view} aria-current={v.key === active ? 'page' : undefined} disabled={v.disabled} onClick={() => onView(v.key)}>
+              <Icon icon={ICONS[v.key]} size={20} />
+              <span className={styles.viewText}>
+                <span>{v.label}</span>
+                {v.detail ? <span className={styles.detail}>{v.detail}</span> : null}
+              </span>
+              {v.badge}
+            </button>
+          </li>
+        ))}
+      </ul>
 
-      <div className={styles.group}>
+      <section className={styles.group} aria-label="Colour by">
         <h2 className={styles.heading}>Colour by</h2>
         <div role="radiogroup" aria-label="Colour by" className={styles.segments}>
           {colourOptions.map((o) => (
             <button key={o.value} type="button" role="radio" aria-checked={colour === o.value} disabled={o.disabled} onClick={() => onColour(o.value)}>{o.label}</button>
           ))}
         </div>
-      </div>
+        {keySections.map((section) => (
+          <ul key={section.title} className={styles.key} aria-label={section.title}>
+            {section.items.map((item) => (
+              <li key={item.label}>
+                <span className={`${styles.swatch}${item.hatch ? ' ul-hatch' : ''}`} style={{ backgroundColor: item.color }} />
+                <span className={styles.keyLabel}>{item.label}</span>
+                {item.count !== undefined ? <span className="ul-num ul-muted">{item.count}</span> : null}
+              </li>
+            ))}
+          </ul>
+        ))}
+      </section>
 
       {floor && spaces.length ? (
-        <div className={`${styles.group} ${styles.fill}`}>
-          <h2 className={styles.heading}>{floor}</h2>
+        <section className={`${styles.group} ${styles.fill}`} aria-label={`Spaces on ${floor}`}>
+          <h2 className={styles.heading}>Spaces on {floor}</h2>
           <ul className={styles.spaces}>
             {spaces.map((s) => {
               const c = rightsColour(s.id);
@@ -84,7 +82,7 @@ export function MapSidebar({
               );
             })}
           </ul>
-        </div>
+        </section>
       ) : null}
     </nav>
   );

@@ -1,26 +1,28 @@
-.sidebar { min-height: 0; display: flex; flex-direction: column; gap: var(--ui-space-5, 20px); padding: var(--ui-space-2) var(--ui-space-2) 0 var(--ui-space-3); overflow: auto; }
-.group { display: grid; gap: 2px; }
-.fill { min-height: 0; }
-.heading { margin: 0 0 6px; padding: 0 10px; font: 500 12px/16px var(--ui-font-sans); color: var(--ui-muted); }
-.row {
-  display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 12px; height: 38px; padding: 0 10px;
-  border: 0; border-radius: var(--ui-radius-8); background: transparent; color: var(--ui-ink-soft); font: 500 14px/20px var(--ui-font-sans);
+.sidebar { min-height: 0; display: flex; flex-direction: column; gap: 28px; padding: 4px 8px 0 12px; overflow: auto; }
+.views { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.view {
+  width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 44px; padding: 6px 10px;
+  border: 0; border-radius: var(--ui-radius-8); background: transparent; color: var(--ui-ink-soft); font: 500 14px/18px var(--ui-font-sans);
   text-align: left; cursor: pointer; transition: background 120ms ease-out, color 120ms ease-out;
 }
-.row:hover:not(:disabled) { background: var(--ui-surface-tint); color: var(--ui-ink); }
-.row[aria-pressed="true"] { background: var(--ui-primary-soft); color: var(--ui-primary); }
-.row:disabled { opacity: 0.4; cursor: not-allowed; }
-.row:focus-visible, .segments button:focus-visible, .spaces button:focus-visible { outline: none; box-shadow: var(--ui-focus-ring); }
-.label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.key { font: 500 11px/1 var(--ui-font-mono); color: var(--ui-muted); opacity: 0; transition: opacity 120ms ease-out; }
-.row:hover .key, .row:focus-visible .key { opacity: 1; }
-.detail { display: grid; gap: 4px; margin: 2px 0 6px 42px; font-size: 12px; line-height: 16px; color: var(--ui-ink-soft); }
-.detail input[type="range"] { width: 100%; accent-color: var(--ui-primary); }
-.link { justify-self: start; padding: 0; border: 0; background: none; color: var(--ui-primary); font: 500 12px/16px var(--ui-font-sans); cursor: pointer; }
+.view:hover:not(:disabled) { background: var(--ui-surface-tint); color: var(--ui-ink); }
+.view[aria-current="page"] { background: var(--ui-primary-soft); color: var(--ui-primary); }
+.view:disabled { opacity: 0.4; cursor: default; }
+.view:focus-visible, .segments button:focus-visible, .spaces button:focus-visible { outline: none; box-shadow: var(--ui-focus-ring); }
+.viewText { display: grid; min-width: 0; }
+.viewText > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detail { font: 400 12px/16px var(--ui-font-sans); color: var(--ui-muted); }
+.view[aria-current="page"] .detail { color: color-mix(in srgb, var(--ui-primary) 70%, var(--ui-muted)); }
+.group { display: grid; gap: 8px; }
+.fill { min-height: 0; }
+.heading { margin: 0; padding: 0 10px; font: 500 12px/16px var(--ui-font-sans); color: var(--ui-muted); }
 .segments { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px; padding: 3px; margin: 0 4px; border-radius: var(--ui-radius-8); background: var(--ui-surface-subtle); }
 .segments button { height: 30px; border: 0; border-radius: 6px; background: transparent; color: var(--ui-ink-soft); font: 500 13px/1 var(--ui-font-sans); cursor: pointer; }
 .segments button[aria-checked="true"] { background: var(--ui-surface); color: var(--ui-ink); box-shadow: var(--ui-shadow-card); }
-.segments button:disabled { opacity: 0.4; cursor: not-allowed; }
+.segments button:disabled { opacity: 0.4; cursor: default; }
+.key { list-style: none; margin: 4px 0 0; padding: 0 10px; display: grid; gap: 6px; font-size: 13px; line-height: 18px; color: var(--ui-ink-soft); }
+.key li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.keyLabel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .spaces { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
 .spaces button {
   width: 100%; display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border: 0; border-radius: var(--ui-radius-8);
@@ -28,4 +30,4 @@
 }
 .spaces button:hover { background: var(--ui-surface-tint); }
 .spaces button[aria-current="true"] { background: var(--ui-primary-soft); font-weight: 600; }
-.swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; background: var(--ui-border-strong); }
+.swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; background-color: var(--ui-border-strong); }
