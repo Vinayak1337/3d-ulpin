@@ -1,0 +1,159 @@
+{
+ "total": 8,
+ "page": 1,
+ "pageSize": 25,
+ "items": [
+  {
+   "id": "1492aa36-e7dc-5971-8b40-d8bfce483f76",
+   "kind": "import",
+   "name": "Lake View bundle",
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "areaName": "Lake View",
+   "dataKind": "demonstration",
+   "buildingId": null,
+   "sourceCount": 5,
+   "updatedAt": "2026-09-24T14:10:00.000+05:30",
+   "state": "NEEDS_INPUT",
+   "jobStatus": null,
+   "recordedHistory": false,
+   "currentRecorded": false,
+   "provenance": {
+    "classification": "official",
+    "basis": "Issued by the uploading office"
+   }
+  },
+  {
+   "id": "1cde88c3-98c1-5295-b270-520d7ae64274",
+   "kind": "case",
+   "name": "Lake View Residence · F1–F2",
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "areaName": "Lake View",
+   "dataKind": "demonstration",
+   "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+   "sourceCount": 3,
+   "updatedAt": "2026-09-24T14:02:00.000+05:30",
+   "state": "REVIEWED",
+   "jobStatus": null,
+   "recordedHistory": false,
+   "currentRecorded": false,
+   "provenance": {
+    "classification": "official",
+    "basis": "Issued by the uploading office"
+   }
+  },
+  {
+   "id": "d1f16d7d-e833-5be3-9241-48c57f169c30",
+   "kind": "case",
+   "name": "Lake View Residence · F7",
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "areaName": "Lake View",
+   "dataKind": "demonstration",
+   "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+   "sourceCount": 3,
+   "updatedAt": "2026-09-24T13:58:00.000+05:30",
+   "state": "READY_FOR_REVIEW",
+   "jobStatus": null,
+   "recordedHistory": false,
+   "currentRecorded": false,
+   "provenance": {
+    "classification": "official",
+    "basis": "Issued by the uploading office"
+   }
+  },
+  {
+   "id": "561bb559-c923-540d-9e14-3f2a216e4bb4",
+   "kind": "case",
+   "name": "Lake View Residence · F7 units",
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "areaName": "Lake View",
+   "dataKind": "demonstration",
+   "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+   "sourceCount": 3,
+   "updatedAt": "2026-09-24T13:40:00.000+05:30",
+   "state": "COMMITTED",
+   "jobStatus": null,
+   "recordedHistory": true,
+   "currentRecorded": true,
+   "provenance": {
+    "classification": "official",
+    "basis": "Issued by the uploading office"
+   }
+  },
+  {
+   "id": "55a022e4-9cf2-509e-9078-d1f8322a9368",
+   "kind": "case",
+   "name": "Lake View Residence · F8",
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "areaName": "Lake View",
+   "dataKind": "demonstration",
+   "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+   "sourceCount": 3,
+   "updatedAt": "2026-09-24T13:31:00.000+05:30",
+   "state": "REVIEWED",
+   "jobStatus": null,
+   "recordedHistory": false,
+   "currentRecorded": false,
+   "provenance": {
+    "classification": "official",
+    "basis": "Issued by the uploading office"
+   }
+  },
+  {
+   "id": "ac2fb2d0-4a51-547f-805b-adbde01ab2d5",
+   "kind": "case",
+   "name": "Lake View Residence · shares",
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "areaName": "Lake View",
+   "dataKind": "demonstration",
+   "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+   "sourceCount": 3,
+   "updatedAt": "2026-09-24T13:12:00.000+05:30",
+   "state": "REVIEWED",
+   "jobStatus": null,
+   "recordedHistory": false,
+   "currentRecorded": false,
+   "provenance": {
+    "classification": "official",
+    "basis": "Issued by the uploading office"
+   }
+  },
+  {
+   "id": "27cf2fef-d84b-5114-9638-523a502e5d25",
+   "kind": "case",
+   "name": "Flat 704",
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "areaName": "Lake View",
+   "dataKind": "demonstration",
+   "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+   "sourceCount": 3,
+   "updatedAt": "2026-09-24T12:55:00.000+05:30",
+   "state": "READY_FOR_REVIEW",
+   "jobStatus": null,
+   "recordedHistory": false,
+   "currentRecorded": false,
+   "provenance": {
+    "classification": "official",
+    "basis": "Issued by the uploading office"
+   }
+  },
+  {
+   "id": "081b3b43-186b-5297-bfca-e3184a103dc0",
+   "kind": "case",
+   "name": "Lake View Residence · basements",
+   "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+   "areaName": "Lake View",
+   "dataKind": "demonstration",
+   "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+   "sourceCount": 3,
+   "updatedAt": "2026-09-24T12:40:00.000+05:30",
+   "state": "READY_FOR_REVIEW",
+   "jobStatus": null,
+   "recordedHistory": false,
+   "currentRecorded": false,
+   "provenance": {
+    "classification": "official",
+    "basis": "Issued by the uploading office"
+   }
+  }
+ ]
+}

@@ -1,0 +1,1455 @@
+{
+ "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+ "revision": 3,
+ "status": "reviewed",
+ "address": "12 Lake View Road",
+ "parcelUlpin": "MH2507A1B3C4D5",
+ "declaration": "Apartment declaration",
+ "siteDatum": "SD-1",
+ "groundElevationM": 212.4,
+ "shareBasis": "carpet area",
+ "shareTotalPct": 99.51,
+ "shareEvidence": {
+  "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+  "source": "Deed of declaration",
+  "locator": "schedule B"
+ },
+ "spaces": [
+  {
+   "spaceId": "7fb10f23-af7d-5df1-a66f-695b6f6008f1",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "c72fee7d-cbac-503c-94b1-b9102ca324da",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 2"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "8317504c-d04e-52cc-8616-7e15131fb041",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 3"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "531e4467-5e5f-5080-aead-0b805fd0dc3b",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 4"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "9ee7950f-e54d-536b-8981-ea918fe00922",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 5"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "dfb265e5-0797-5249-aa39-2f7191c3b54a",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 6"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "ad7b8d57-e808-5380-b0db-995c409f300d",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 7"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "bc42c0f5-cd55-511b-9cb6-4cadaaa97159",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "a6737bce-e95b-5a27-b57f-5ca0d545b83b",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "c3c0e0fb-6998-5495-80ea-5ceda411e6d8",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "6ea4f525-c7c8-573c-9cca-8764f65c14c2",
+   "rights": "exclusive",
+   "status": "draft",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "a0446c20-bc3c-50c5-b14c-3c185080dc1d",
+   "rights": "exclusive",
+   "status": "draft",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "484df396-6206-51aa-bf31-c9cd767489b6",
+   "rights": "exclusive",
+   "status": "draft",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "155764d2-a90b-5a73-b313-65103a4ccd78",
+   "rights": "exclusive",
+   "status": "needs_review",
+   "carpetAreaM2": {
+    "value": 69.3,
+    "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+    "source": "Plan F7",
+    "locator": "p.3 · r2"
+   },
+   "declaredAreaM2": {
+    "value": 72,
+    "sourceId": "222af5a2-09fd-5b29-bc26-89c5bc950562",
+    "source": "Sale deed",
+    "locator": "cl.2"
+   },
+   "sharePct": {
+    "value": 1.84,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": {
+    "value": "Covered stilt",
+    "sourceId": null,
+    "source": null,
+    "locator": "Needs evidence"
+   }
+  },
+  {
+   "spaceId": "2af535d4-eb64-5836-8ed1-4e0e65e42b30",
+   "rights": "exclusive",
+   "status": "draft",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "44fcd7a9-438e-51da-b483-b9871a91ba37",
+   "rights": "exclusive",
+   "status": "draft",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "170d9586-e8e7-5a54-b044-6e9c04ec3f77",
+   "rights": "shared",
+   "status": "draft",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "042af691-821a-58d5-ba96-52376e082368",
+   "rights": "shared",
+   "status": "draft",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "76373069-000f-5185-82a5-aa53788d482f",
+   "rights": "shared",
+   "status": "draft",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "b96e9440-94c6-520f-b2b7-94bb1161fe6e",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 14"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "18bf0ecb-ce8a-516e-9f53-a280f2fb5de0",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 15"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "d5c333db-9b3c-582a-bba7-7fb9a1e0002d",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 16"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "71b90385-da22-5685-9baa-a83b1356e1fe",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 17"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "3fdabff3-6e09-5f54-a0ea-0f7be7b3d993",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 18"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "f8bcf7e6-ff4a-5ebb-9562-8c91ccab0b3d",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 19"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "15385580-4164-5170-a5c7-0d9b62219dbc",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "8c37e2b7-71bd-5051-b9b5-97f041984699",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "5e8bed8e-9e26-51cf-b95b-9205cf16bd46",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "cf771106-5d75-5fc4-ac8a-d2b19e70885a",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 20"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "c925f791-c3ef-561f-8b56-3b019a3b55d8",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 21"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "50f8d765-1f85-533d-b09f-1c59152b762e",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 22"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "da62714e-c7ab-514c-ba8c-f7640522d658",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 23"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "2bc5d424-d1c9-505f-b092-d75a99fee004",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 24"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "bed1445e-9fc2-534b-af66-a590e32b027c",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 25"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "3c60b955-93dd-5b30-a42b-ed846b7b7d4c",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "5d2e5816-220c-5cc1-83e0-8cc2750ccabc",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "30cb89f5-48a1-5f99-a77e-220b774fd228",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "c1d74b07-f385-5ef3-b095-bdfb2ed77e35",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 26"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "ac880326-3b1c-587e-b12a-165c187e01d5",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 27"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "e8e72107-46d4-5d3b-b4b1-9c379f37723f",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 28"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "d8051e98-80d3-5ec6-b7f2-402ba56721bc",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 29"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "36741e46-59d9-5b8c-9c76-f42f65474045",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 30"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "7379b7ed-9478-5e4b-b7ff-65c6551370cf",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 31"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "d08a28c8-89c4-5377-98b3-db19a0814caf",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "3b115055-d9b8-5496-9d68-1932b81cb78a",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "9b33376e-aec2-545f-b3b8-8cbefaa3f025",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "dd52cf12-5704-566f-a204-9f024fbf19ab",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 32"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "1cfb8842-1ffb-54f0-99e9-01723d1b9247",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 33"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "f2ef89ca-04a4-5515-9d97-c2fe2c42da12",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 34"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "bbd14ac3-c47b-57f3-8d38-5275e9cef53e",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 35"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "51a72723-4945-5ce1-9a62-b6466284a4e2",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 36"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "c0a3a6a5-1af8-52a9-812b-77173313cd5d",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 37"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "d7def19e-ca9f-54b7-98a7-1a670a000f5a",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "8b8bd27d-25ba-56a0-9696-47885198bc3f",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "e47d55ea-fb20-53f0-8f07-fb1743d6810a",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "9474dac4-851a-52a0-9689-d4ca39ebdc1b",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 38"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "45f3384d-58bf-5427-ad50-47c5298c27a0",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 39"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "f2ccf445-0dc4-524f-a664-3df7babd0c8c",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 40"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "e4e7f74a-89cd-5ed5-a7ae-28420cab51f5",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 41"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "3bc9f079-e16f-5479-8942-717990636799",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 42"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "6644fac5-9945-5cac-85d1-c46158fddd37",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 43"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "5cdceb48-d66f-5785-b90c-98a91ff0100b",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "ee421f46-6b97-5049-932f-66e12c2ae073",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "8c1e011a-6f45-58cd-8f36-be76ba68b9fe",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "b6a6b9a7-aa2a-535f-b873-7dc9ad0147b3",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 44"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "ad88da3d-672d-50fd-9d3a-5300a63b0f06",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 45"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "6c8d6dca-9051-5b62-8949-3ef9991f4a1d",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 46"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "d2a91915-237f-5fff-86c5-b9f1a70d3931",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 47"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "ad2abde5-4453-5eb0-9f5b-093d34a1adc3",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 48"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "18d27093-8b5e-5a97-aee1-f8d547b2e10f",
+   "rights": "exclusive",
+   "status": "reviewed",
+   "carpetAreaM2": {
+    "value": 66.29,
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "source": "unit_inventory.xlsx",
+    "locator": "row 49"
+   },
+   "declaredAreaM2": null,
+   "sharePct": {
+    "value": 2.078,
+    "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+    "source": "Declaration",
+    "locator": "schedule B"
+   },
+   "parking": null
+  },
+  {
+   "spaceId": "e81f8250-005c-56db-ad69-0f3f7eb1556a",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "9a2461ef-f74d-59d2-9143-8f6a6753256d",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "27417b84-9a97-597a-90f8-547c50ede3db",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "4120c1f6-e385-5655-addd-29d1b91d6d9a",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "2297adc5-ef09-562e-a6d6-b3a1e5e26f64",
+   "rights": "shared",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  },
+  {
+   "spaceId": "07528ab6-d6e3-5a24-a861-00e0aacccf4b",
+   "rights": "unknown",
+   "status": "reviewed",
+   "carpetAreaM2": null,
+   "declaredAreaM2": null,
+   "sharePct": null,
+   "parking": null
+  }
+ ],
+ "readiness": {
+  "task": "Assign proposed 3D ULPIN",
+  "dimensions": [
+   {
+    "name": "Evidence",
+    "value": 1
+   },
+   {
+    "name": "Geometry",
+    "value": 1
+   },
+   {
+    "name": "Association",
+    "value": 1
+   },
+   {
+    "name": "Consistency",
+    "value": 0.5,
+    "label": "2 findings"
+   },
+   {
+    "name": "Review",
+    "value": 1
+   },
+   {
+    "name": "Freshness",
+    "value": null
+   }
+  ]
+ },
+ "checks": [
+  {
+   "name": "Exclusive overlap",
+   "detail": "Flat 101 / Flat 201 · 16.3 m³",
+   "state": "blocking",
+   "findingId": "f22c3139-c0f2-5544-a191-3263e9ac9993"
+  },
+  {
+   "name": "Partition completeness",
+   "detail": "3.0 m³ void on F8",
+   "state": "blocking",
+   "findingId": "4961749b-ddc8-5e56-840c-1b6aa586d479"
+  },
+  {
+   "name": "Carpet area",
+   "detail": "Flat 704 · 3.9 %",
+   "state": "needs_review",
+   "findingId": "321a1cfd-2790-5c6a-92cc-3793cd0c737d"
+  },
+  {
+   "name": "Shares",
+   "detail": "99.51 %",
+   "state": "needs_review",
+   "findingId": "a0248863-a40b-51cf-9c54-360f76c10f26"
+  },
+  {
+   "name": "Exclusive overlap · F3",
+   "detail": "Not assessed: open shell on Flat 305",
+   "state": "not_assessed",
+   "findingId": null
+  },
+  {
+   "name": "Stack consistency",
+   "detail": null,
+   "state": "passed",
+   "findingId": null
+  },
+  {
+   "name": "Anchoring",
+   "detail": null,
+   "state": "passed",
+   "findingId": null
+  }
+ ],
+ "checkMethod": "Check v1.4",
+ "findingDetails": [
+  {
+   "findingId": "f22c3139-c0f2-5544-a191-3263e9ac9993",
+   "calculation": [
+    "Flat 101 top 218.90 m · Flat 201 bottom 218.70 m",
+    "0.20 m × 81.3 m² = 16.3 m³"
+   ],
+   "evidence": [
+    {
+     "kind": "table",
+     "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+     "source": "levels.csv",
+     "locator": "row 10"
+    },
+    {
+     "state": "estimated",
+     "sourceId": null,
+     "source": "Flat 201 lower",
+     "locator": "unverified"
+    }
+   ],
+   "actions": [
+    "Request evidence",
+    "Apply level evidence"
+   ]
+  },
+  {
+   "findingId": "4961749b-ddc8-5e56-840c-1b6aa586d479",
+   "calculation": [
+    "Partition completeness · F8",
+    "3.0 m³ not assigned to any space"
+   ],
+   "evidence": [],
+   "actions": [
+    "Request evidence"
+   ]
+  },
+  {
+   "findingId": "321a1cfd-2790-5c6a-92cc-3793cd0c737d",
+   "calculation": [
+    "72.00 − 69.30 = 2.70 m²",
+    "2.70 ÷ 69.30 = 3.9 % · threshold 2 %"
+   ],
+   "evidence": [
+    {
+     "kind": "document",
+     "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+     "source": "Plan F7",
+     "locator": "p.3 · r2"
+    },
+    {
+     "kind": "document",
+     "sourceId": "222af5a2-09fd-5b29-bc26-89c5bc950562",
+     "source": "Sale deed",
+     "locator": "cl.2"
+    }
+   ],
+   "actions": [
+    "Review area"
+   ]
+  },
+  {
+   "findingId": "a0248863-a40b-51cf-9c54-360f76c10f26",
+   "calculation": [
+    "48 of 48 units declared",
+    "100.00 − 99.51 = 0.49 % unexplained"
+   ],
+   "evidence": [
+    {
+     "kind": "document",
+     "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+     "source": "Deed of declaration",
+     "locator": null
+    }
+   ],
+   "actions": [
+    "Request evidence"
+   ]
+  },
+  {
+   "findingId": "5e89e356-3b34-5f3b-bf28-ba5eeaf02744",
+   "calculation": [
+    "Covered stilt, allotted by association",
+    "No source linked"
+   ],
+   "evidence": [
+    {
+     "state": "missing",
+     "sourceId": null,
+     "source": null,
+     "locator": "Needs evidence"
+    }
+   ],
+   "actions": [
+    "Request evidence"
+   ]
+  }
+ ],
+ "revisions": [
+  {
+   "kind": "recorded",
+   "title": "r3 Recorded",
+   "actor": "R. Iyer",
+   "at": "2026-09-24T14:10:00+05:30",
+   "hash": "7f3a91c0e4b2d8f6a1c3e5b7d9f0a2c4e6b8d0f2a4c6e8b0d2f4a6c8e0b2c2e1",
+   "previousHash": "91be27d4c6a8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d8f0a2c4e6b8d0f2a4c604d7"
+  },
+  {
+   "kind": "evidence",
+   "title": "r2 Evidence applied",
+   "actor": "R. Iyer",
+   "at": "2026-09-24T13:52:00+05:30",
+   "hash": "91be27d4c6a8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d8f0a2c4e6b8d0f2a4c604d7",
+   "previousHash": "2c80e6a4b2d0f8e6c4a2b0d8f6e4c2a0b8d6f4e2c0a8b6d4f2e0c8a6b4d29a13"
+  },
+  {
+   "kind": "draft",
+   "title": "r1 Draft from 5 sources",
+   "actor": "Import agent",
+   "at": "2026-09-24T11:05:00+05:30",
+   "hash": "2c80e6a4b2d0f8e6c4a2b0d8f6e4c2a0b8d6f4e2c0a8b6d4f2e0c8a6b4d29a13",
+   "previousHash": null
+  }
+ ],
+ "deviation": {
+  "state": "needs_review",
+  "sanctioned": {
+   "label": "Sanctioned · G + 8",
+   "storeys": 9,
+   "heightM": 27,
+   "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+   "source": "Sanctioned plan",
+   "locator": "r2"
+  },
+  "observed": {
+   "label": "Observed · drone survey",
+   "storeys": 10,
+   "heightM": 30,
+   "rooftopAreaM2": 118,
+   "surveyedAt": "2026-09-12",
+   "sourceId": "248e902d-7370-5b6e-8dfb-a17e1c5f8d0d",
+   "source": "Drone survey",
+   "locator": "12 Sep 2026 · checkpoint RMSE 0.08 m"
+  },
+  "setback": "not_comparable",
+  "exclusions": "Stair cabin and water tank excluded by rule.",
+  "volume": {
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -14.7,
+       -5
+      ],
+      [
+       -2.9,
+       -5
+      ],
+      [
+       -2.9,
+       5
+      ],
+      [
+       -14.7,
+       5
+      ],
+      [
+       -14.7,
+       -5
+      ]
+     ]
+    ]
+   },
+   "lowerM": 239.8,
+   "upperM": 242.8
+  },
+  "note": "Observed from drone survey; not a legal determination."
+ },
+ "sources": [
+  {
+   "sourceId": "3aaf3b46-4f24-523b-96ef-bae1b28bd25e",
+   "kind": "feature",
+   "name": "parcels.gpkg",
+   "file": "parcels.gpkg",
+   "summary": "22 features"
+  },
+  {
+   "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+   "kind": "table",
+   "name": "unit_inventory.xlsx",
+   "file": "unit_inventory.xlsx",
+   "summary": "48 rows"
+  },
+  {
+   "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+   "kind": "table",
+   "name": "levels.csv",
+   "file": "levels.csv",
+   "summary": "11 rows"
+  },
+  {
+   "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+   "kind": "document",
+   "name": "Sanctioned plan",
+   "file": "plan_F7.pdf",
+   "summary": "p.3 · r2"
+  },
+  {
+   "sourceId": "222af5a2-09fd-5b29-bc26-89c5bc950562",
+   "kind": "document",
+   "name": "Sale deed",
+   "file": "sale_deed_704.pdf",
+   "summary": "cl.2"
+  },
+  {
+   "sourceId": "d0fee6be-0d27-5ea2-8033-f61f1dc84681",
+   "kind": "document",
+   "name": "Deed of declaration",
+   "file": "deed_of_declaration.pdf",
+   "summary": "schedule B"
+  },
+  {
+   "sourceId": "248e902d-7370-5b6e-8dfb-a17e1c5f8d0d",
+   "kind": "feature",
+   "name": "Drone survey",
+   "file": "drone_survey_2026-09-12.laz",
+   "summary": "12 Sep 2026"
+  },
+  {
+   "sourceId": "be23ff05-6446-5473-8346-6231e84b030c",
+   "kind": "table",
+   "name": "utility_survey_2026.csv",
+   "file": "utility_survey_2026.csv",
+   "summary": "2 features"
+  }
+ ]
+}

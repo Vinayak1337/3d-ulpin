@@ -1,0 +1,86 @@
+{
+ "1492aa36-e7dc-5971-8b40-d8bfce483f76": {
+  "id": "1492aa36-e7dc-5971-8b40-d8bfce483f76",
+  "name": "Lake View bundle",
+  "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",
+  "buildingId": "e8e17f26-e098-5caa-92e9-49948df1816a",
+  "reviewLevelId": "d8b17b06-77a0-5f50-abe9-240a84c2dacb",
+  "savedAt": "2026-09-24T14:10:00.000+05:30",
+  "files": [
+   {
+    "name": "parcels.gpkg",
+    "sourceId": "3aaf3b46-4f24-523b-96ef-bae1b28bd25e",
+    "detected": "GeoPackage",
+    "crs": "EPSG:32643",
+    "contents": "22 parcels",
+    "mapping": "reused",
+    "note": "Mapping reused from the district parcel layer"
+   },
+   {
+    "name": "unit_inventory.xlsx",
+    "sourceId": "0e2c19a4-3424-5ea1-b104-3701c52bf4f6",
+    "detected": "Excel inventory",
+    "crs": null,
+    "crsApplies": false,
+    "contents": "48 rows",
+    "mapping": "proposed"
+   },
+   {
+    "name": "levels.csv",
+    "sourceId": "17c3ad59-8cf6-5471-a46c-41d5d676d18a",
+    "detected": "CSV level schedule",
+    "crs": null,
+    "crsApplies": false,
+    "contents": "10 levels",
+    "mapping": "manual"
+   },
+   {
+    "name": "plan_F7.pdf",
+    "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+    "detected": "PDF plan",
+    "crs": null,
+    "crsApplies": true,
+    "crsOptions": [
+     "EPSG:32643",
+     "EPSG:7755",
+     "Site grid (local)"
+    ],
+    "contents": "3 pages",
+    "mapping": "proposed"
+   },
+   {
+    "name": "sale_deed_704.pdf",
+    "sourceId": "222af5a2-09fd-5b29-bc26-89c5bc950562",
+    "detected": "Registered deed",
+    "crs": null,
+    "crsApplies": false,
+    "contents": "2 pages",
+    "mapping": "proposed"
+   }
+  ],
+  "questions": [
+   {
+    "id": "87e45419-415e-5df3-9032-9bd4f8017cc9",
+    "file": "unit_inventory.xlsx",
+    "field": "carpet_sqft",
+    "text": "looks like carpet area in ft². Convert to m²?",
+    "answers": [
+     {
+      "value": "convert",
+      "label": "Yes"
+     },
+     {
+      "value": "keep",
+      "label": "No"
+     }
+    ],
+    "otherFields": [
+     "unit",
+     "level",
+     "carpet_sqft",
+     "use"
+    ]
+   }
+  ]
+ }
+}

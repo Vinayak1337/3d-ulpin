@@ -1,0 +1,4 @@
+.emptyPage { padding: var(--ui-space-6); }
+.skeleton { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) var(--ui-right-rail-width); gap: var(--ui-space-4); padding: var(--ui-space-4); }
+.skeletonCanvas { border-radius: var(--ui-radius-12); background: var(--ui-map-ground); }
+.skeletonInspector { padding: var(--ui-space-4); display: grid; gap: 14px; align-content: start; }
