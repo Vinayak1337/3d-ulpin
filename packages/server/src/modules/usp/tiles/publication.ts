@@ -91,8 +91,8 @@ async function publish(job:any,attempt:UspJobAttempt,input:PrivateMvtInput,deadl
   const sequence=(latest?.version??0)+1;if(sequence>p.versions)throw new AppError(422,'MVT_GENERATION_BUDGET','Intermediate generation versions exhausted their explicit bound.');
   const pending=input.catalog.filter(cell=>!ready.has(cellKey(cell))),manifest=PrivateMvtManifestSchema.parse({version:p.version,grid:p.grid,generationId:job.id,sequence,
     fence:attempt.fence,attempt:attempt.number,source:input.source,compiler:input.compiler,base:input.base,window:input.window,catalog:input.catalog,pending,cells,
-    complete:pending.length===0,invalidation:input.invalidation,excludedQuarantined:733-(await transaction(client=>assertMvtInputTx(client,job),deadline)).ctx.observations.filter(row=>row.disposition==='admitted').length,
-    extent:p.extent,buffer:p.buffer,layer:p.layer,purpose:'administrative_context',analyticEligible:false,limitations}),bytes=Buffer.from(JSON.stringify(manifest));
+    complete:pending.length===0,invalidation:input.invalidation,excludedQuarantined:13,sourceCoverage:input.source.chunk?{state:'partial',sourceAccepted:false,committedRecords:input.source.chunk.coverage.records,remainingRecords:input.source.chunk.coverage.remainingRecords,expectedRecords:733}:{state:'complete',sourceAccepted:true,committedRecords:733,remainingRecords:0,expectedRecords:733},
+    extent:p.extent,buffer:p.buffer,layer:p.layer,purpose:'administrative_context',analyticEligible:false,limitations:input.source.chunk?[...limitations.slice(0,3),'committed_partial_source_coverage_not_complete_admission']:limitations}),bytes=Buffer.from(JSON.stringify(manifest));
   if(bytes.length>p.manifestBytes)throw new AppError(422,'MVT_MANIFEST_BUDGET','The coherent manifest exceeds its explicit byte bound.');
   const artifact=mvtArtifact(input,'manifests',`${job.id}-${sequence}`,bytes);await reserveArtifact(job,attempt,artifact,deadline);await writeMvtArtifact(input,artifact,bytes,p.manifestBytes,deadline);
   const adopt=async(client:PoolClient)=>{
@@ -117,14 +117,15 @@ async function publish(job:any,attempt:UspJobAttempt,input:PrivateMvtInput,deadl
   return manifest;
 }
 /** Existing dispatcher executes the allowlisted PostGIS profile; no second broker/server. */
-export async function runPrivateMvtJob(id:string){
-  const deadline=Date.now()+p.jobMs,tx=<T>(action:(client:PoolClient)=>Promise<T>)=>transaction(action,deadline),
+export async function runPrivateMvtJob(id:string,parentDeadline?:number){
+  const started=Date.now();let deadline=Math.min(started+p.jobMs,parentDeadline??Infinity);
+  const tx=<T>(action:(client:PoolClient)=>Promise<T>)=>transaction(action,deadline),
     q=(text:string,values:unknown[]=[])=>query(text,values,deadline),beat=(attempt:UspJobAttempt)=>heartbeatUspJobAttempt(attempt,client=>mvtBoundsTx(client,deadline));
   const job=(await q("SELECT * FROM jobs WHERE id=$1 AND operation='private-mvt'",[id])).rows[0];if(!job||!['queued','running'].includes(job.status))return;
+  const input=PrivateMvtInputSchema.parse(job.payload);deadline=Math.min(deadline,started+(input.publicationMs??p.jobMs));
   try{await tx(client=>currentMvtJobTx(client,job));}catch(error){if(error instanceof AppError&&[403,404,409].includes(error.status)){await failPrivateMvtJob(id,'MVT_CONTEXT_STALE');return;}throw error;}
   let attempt:UspJobAttempt;
   try{attempt=await claimUspJobAttempt(id,randomUUID(),client=>mvtBoundsTx(client,deadline));}catch(error){if(error instanceof AppError&&error.status===409)return;if(error instanceof AppError&&error.code==='USP_JOB_ATTEMPTS'){await failPrivateMvtJob(id,'MVT_ATTEMPT_LIMIT');return;}throw error;}
-  const input=PrivateMvtInputSchema.parse(job.payload);
   try{
     await tx(async client=>{await currentMvtJobTx(client,job);await assertUspJobAttemptTx(client,attempt);
       const changed=(await client.query('UPDATE jobs SET dispatched_at=now(),error=NULL WHERE id=$1 AND dispatched_at IS NULL RETURNING id',[id])).rows[0];

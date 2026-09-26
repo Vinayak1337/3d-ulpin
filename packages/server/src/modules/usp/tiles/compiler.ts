@@ -11,10 +11,11 @@ import {mvtBoundsTx} from './bounds';
 
 export function mvtCodeSha(){
   const paths=['packages/contracts/src/usp/private-mvt.ts','packages/server/src/modules/usp/tiles/grid.ts','packages/server/src/modules/usp/tiles/bounds.ts',
-    'packages/server/src/modules/usp/tiles/compiler.ts','packages/server/src/modules/usp/tiles/service.ts',
+    'packages/server/src/modules/usp/tiles/compiler.ts','packages/server/src/modules/usp/tiles/capacity.ts','packages/server/src/modules/usp/tiles/service.ts',
     'packages/server/src/modules/usp/tiles/publication.ts','packages/server/src/modules/usp/tiles/storage.ts','database/sql/95-ingestion/private-mvt-cell.sql',
     'database/sql/95-ingestion/private-mvt-schema.sql','packages/server/src/infrastructure/storage.ts','packages/server/src/modules/usp/jobs.ts',
-    'packages/server/src/modules/usp/ingestion/projected-vector.ts','packages/server/src/modules/usp/ingestion/events.ts',
+    'packages/server/src/modules/usp/ingestion/projected-vector.ts','packages/server/src/modules/usp/ingestion/events.ts','packages/server/src/modules/usp/ingestion/semantic-chunks.ts',
+    'packages/contracts/src/usp/semantic-chunks.ts','database/sql/95-ingestion/semantic-chunks.sql',
     'apps/api/src/modules/ingestion/private-mvt.controller.ts','apps/api/src/modules/spatial/private-spatial.guard.ts'];
   return sha256(Buffer.concat(paths.flatMap(path=>[Buffer.from(path+'\0'),readFileSync(join(settings.repositoryRoot,path))])));
 }
@@ -31,7 +32,7 @@ export async function compilePrivateMvtCellTx(client:PoolClient,input:PrivateMvt
   await client.query('SET LOCAL ROLE ulpin_private_mvt_compiler');
   // A failed statement aborts the transaction; rollback resets LOCAL role and
   // preserves the original SQL error instead of masking it with RESET failure.
-  const row=(await client.query(sql('ingestion.mvt.cell'),[input.source.admissionJobId,input.source.sourceId,cell.z,cell.x,cell.y])).rows[0];
+  const row=(await client.query(sql('ingestion.mvt.cell'),[input.source.admissionJobId,input.source.sourceId,cell.z,cell.x,cell.y,input.source.chunk?.pin.sequence??null])).rows[0];
   await client.query('SET LOCAL ROLE NONE');
   const bytes=row.bytes as Buffer;
   if(!Buffer.isBuffer(bytes)||bytes.length>p.tileBytes||row.candidates>720||row.features.length>row.candidates)

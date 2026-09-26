@@ -20,3 +20,7 @@ export async function migrateProjectedVectorTx(client:PoolClient){
 export async function migratePrivateMvtTx(client:PoolClient){
   await client.query(sql('ingestion.mvt.schema'));
 }
+
+export async function migrateSemanticChunksTx(client:PoolClient){
+  await client.query(sql('ingestion.semantic.schema'));
+}

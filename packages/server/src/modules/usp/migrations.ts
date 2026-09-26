@@ -1,7 +1,7 @@
 import { sql } from '../../infrastructure/sql-loader';
 import { transaction } from '../../infrastructure/db';
 import { migrateUspGeometryTx } from './geometry-migration';
-import { migrateManualIngestionTx, migrateLargeOriginalTx, migrateIngestionEventsTx, migrateProjectedVectorTx, migratePrivateMvtTx } from './ingestion/migration';
+import { migrateManualIngestionTx, migrateLargeOriginalTx, migrateIngestionEventsTx, migrateProjectedVectorTx, migratePrivateMvtTx, migrateSemanticChunksTx } from './ingestion/migration';
 
 /** Additive metadata beside the existing registry/source/job authorities. */
 export async function migrateUsp() {
@@ -24,5 +24,6 @@ export async function migrateUsp() {
     await migrateIngestionEventsTx(client);
     await migrateProjectedVectorTx(client);
     await migratePrivateMvtTx(client);
+    await migrateSemanticChunksTx(client);
   });
 }
