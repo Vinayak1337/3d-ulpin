@@ -8,6 +8,7 @@ import {open} from 'node:fs/promises';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {assertUspIsolation,assertLocalOperatorProcess} from './local-isolation.mjs';
+import {qualifySemanticScale} from './semantic-scale.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),safeEnv=Object.fromEntries(['HOME','PATH','USER','LOGNAME','TMPDIR','SHELL','LANG'].filter(k=>process.env[k]).map(k=>[k,process.env[k]]));
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),delay=ms=>new Promise(r=>setTimeout(r,ms));
 const git=args=>execFileSync('git',args,{cwd:root,env:safeEnv,encoding:'utf8',timeout:5000}).trim();
@@ -32,14 +33,15 @@ function decode(buffer){if(!buffer.length)return [];const layers=message(buffer)
 async function run(){
   const dir=realpathSync(process.argv[2]||''),owner=JSON.parse(readFileSync(join(dir,'ownership.json'))),env=JSON.parse(readFileSync(join(dir,'run.env.json'))),scope=assertUspIsolation(env);
   assert(dir.startsWith(realpathSync(join(root,'.runtime/run01'))+'/'));assert.deepEqual(owner.operatorProvenance,assertLocalOperatorProcess(env));assert.equal(owner.checkout,root);assert.equal(owner.baseCommit,git(['rev-parse','HEAD']));assert.equal(git(['status','--porcelain','--untracked-files=no']),'');assert(!existsSync(join(root,'.env')));
-  const output=join(dir,'semantic-chunks-smoke.json');assert(!existsSync(output));
+  const scale=process.argv[3]==='--scale';assert(process.argv.length===(scale?4:3));
+  const output=join(dir,scale?'semantic-scale.json':'semantic-chunks-smoke.json');assert(!existsSync(output));
   const sourceCheck=JSON.parse(readFileSync(join(root,'docs/evidence/usp/nest-migration/nwic-boundaries/source-check.json'))),source=sourceCheck.acquisition,profile=JSON.parse(readFileSync(join(root,'fixtures/usp/D3/nwic-boundaries-v1/vector-admission-profile.json')));
   const original=await fileHash(source.privateOriginalPath),member=await fileHash(profile.source.outsideGitPath);assert.deepEqual(original,{bytes:source.bytes,sha256:source.sha256});assert.deepEqual(member,{bytes:profile.source.bytes,sha256:profile.source.sha256});
   const receipt={version:'semantic-chunks-smoke/1',status:'running',codeCommit:owner.baseCommit,nonce:owner.nonce,original,member,checks:[],notQualified:['GF-SCALE, deployment/public/multiuser/replicas','Parsing/transform overlap: complete original/member/index preparation precedes semantic SQL import','Survey/legal/currentness/property/rights/height accuracy or provider/training permissions','Changed official geometry or deletion from a second issuing revision']};
   const {Client}=createRequire(join(root,'packages/server/package.json'))('pg');let db,file;let phase='retain';
   async function connect(){db=new Client({connectionString:env.DATABASE_URL,application_name:'semantic-chunk-observer',statement_timeout:8000});await db.connect();}
   await connect();const base=env.ULPIN_TEST_URL+'api/v1';
-  async function api(path,status=200,body,method,headers={}){const r=await fetch(base+path,{headers:{Connection:'close',...(body?{'Content-Type':body instanceof Uint8Array?'application/octet-stream':'application/json'}:{}),...headers},...(body?{method:method??'POST',body:body instanceof Uint8Array?body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(150000)});const value=await r.json();assert.equal(r.status,status,`${phase} ${path}: ${JSON.stringify(value.error??value).slice(0,200)}`);return value;}
+  async function api(path,status=200,body,method,headers={},timeoutMs=150000){const r=await fetch(base+path,{headers:{Connection:'close',...(body?{'Content-Type':body instanceof Uint8Array?'application/octet-stream':'application/json'}:{}),...headers},...(body?{method:method??'POST',body:body instanceof Uint8Array?body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(timeoutMs)});const value=await r.json();assert.equal(r.status,status,`${phase} ${path}: ${JSON.stringify(value.error??value).slice(0,200)}`);return value;}
   async function until(action,seconds=200){const end=Date.now()+seconds*1000;while(Date.now()<end){const v=await action();if(v)return v;await delay(100);}throw new Error(`Timed out in ${phase}`);}
   function runtime(action){return execFileSync('node',['scripts/usp/real-source-runtime.mjs',action,dir],{cwd:root,env:safeEnv,encoding:'utf8',timeout:180000,maxBuffer:8192});}
   function control(action,jobId,attempt){const program=`import {claimUspJobAttempt} from ${JSON.stringify(join(root,'packages/server/src/modules/usp/jobs.ts'))};
@@ -55,6 +57,7 @@ void(async()=>{try{console.log(JSON.stringify(process.env.ULPIN_STREAM_ACTION===
     const members=()=>execFileSync('ps',['-axo','pid=,pgid='],{env:safeEnv,encoding:'utf8',timeout:3000}).trim().split('\n').map(v=>v.trim().split(/\s+/).map(Number)).filter(v=>v[1]===group.pgid).map(v=>v[0]);const before=members();assert(before.includes(group.pid));assert.equal(ps('lstart'),started);assert.equal(hash(ps('command')),hash(command));
     const result={nonce:group.nonce,pid:group.pid,pgid:group.pgid,started,executable:'/bin/sh',cwd:root,commandSha256:hash(command),members:before,signal:'SIGKILL',at:new Date().toISOString()};writeFileSync(join(dir,'stream-dispatcher-crash.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});process.kill(-group.pgid,'SIGKILL');await until(()=>members().length===0,10);return result;}
   try{
+    if(scale){await qualifySemanticScale({root,dir,owner,env,safeEnv,scope,sourceCheck,source,profile,original,member,receipt,db,api,until,decode,hash,fileHash,runtime,crash,control});return;}
     const {caseId}=await api('/source-cases',201,{requestKey:randomUUID(),name:'NWIC committed semantic chunk qualification'});receipt.caseId=caseId;
     let upload=await api(`/ingestion/cases/${caseId}/uploads`,201,{requestKey:randomUUID(),expectedCaseRevision:0,filename:'district_nwic_geojson.zip',mediaType:'application/zip',bytes:source.bytes,sha256:source.sha256,provenance:{issuer:sourceCheck.source.issuer,originalUrl:source.finalUrl,acquiredAt:new Date(source.acquiredAtUtc).toISOString(),permissionReference:sourceCheck.termsDecision.termsUrl,limitations:['Administrative context; source accuracy/currentness/legal and training permission unqualified']}});
     file=await open(source.privateOriginalPath,'r');for(let part=1;part<=upload.partCount;part++){const offset=(part-1)*upload.partBytes,bytes=Buffer.alloc(Math.min(upload.partBytes,source.bytes-offset));assert.equal((await file.read(bytes,0,bytes.length,offset)).bytesRead,bytes.length);
@@ -160,7 +163,7 @@ void(async()=>{try{console.log(JSON.stringify(process.env.ULPIN_STREAM_ACTION===
     const events=(await db.query("SELECT body FROM usp_outbox WHERE body->>'caseId'=$1",[caseId])).rows;assert(events.every(e=>Buffer.byteLength(JSON.stringify(e.body))<=512));
     const modelCalls=(await db.query('SELECT count(*)::int count FROM usp_model_calls')).rows[0].count;assert.equal(modelCalls,0);
     receipt.stale={jobId:second.jobId,seals:preserved,rows:kept,reservation:reservation.outcomes};receipt.outbox={events:events.length,maxBytes:Math.max(0,...events.map(e=>Buffer.byteLength(JSON.stringify(e.body))))};receipt.modelCalls=modelCalls;receipt.checks.push('A real case-revision change after a second retained-source chunk denies exact old reads, fences its source job, preserves every sealed row/hash and releases unused milestone reservations; semantic validity is distinct from stale display authority.');receipt.status='passed';receipt.finishedAt=new Date().toISOString();
-  }catch(error){receipt.status='failed';receipt.phase=phase;receipt.failure={name:error.name,message:error.message};throw error;}
+  }catch(error){receipt.status='failed';receipt.phase=scale?(receipt.phase??phase):phase;receipt.failure={name:error.name,message:error.message};throw error;}
   finally{if(file)await file.close();if(db)await db.end();writeFileSync(output,JSON.stringify(receipt,null,2)+'\n',{flag:'wx',mode:0o600});}
   console.log(JSON.stringify({status:receipt.status,receipt:output,first:receipt.firstUseful,full:receipt.full}));
 }
