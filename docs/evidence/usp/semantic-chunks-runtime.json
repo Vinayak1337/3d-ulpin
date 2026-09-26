@@ -1,0 +1,253 @@
+{
+  "schemaVersion": "ulpin-semantic-chunks-runtime/1",
+  "status": "passed-bounded-scope",
+  "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+  "environment": {
+    "kind": "stopped-isolated",
+    "project": "ulpin-usptest-23efff47f982ef17",
+    "nonce": "23efff47f982ef17"
+  },
+  "original": {
+    "bytes": 71238839,
+    "sha256": "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37"
+  },
+  "member": {
+    "bytes": 168356689,
+    "sha256": "2b27a478e24d8c51b0655e74ce3f4f880e75c752e4597550d6fc925ed06ac201"
+  },
+  "privateReceiptSha256": "aabe8486d50330c8c1cf4ccfa6c410441e70ad078ad89befeee54232179dd94f",
+  "checks": {
+    "earlyPublication": "Fully verified original/member/index preparation precedes SQL import; a hash-verified private MVT and canonical pick are actually read while only the first semantic chunk is sealed and full source remains unaccepted, with no artificial import delay.",
+    "recovery": "Controlled fault injection: the harness directly set lease_until to now() minus one second before temporary B and dispatcher C claims. A1/B2/C3 fencing and immutable-seal reuse passed; natural lease expiry and autonomous crash-recovery timing were not qualified.",
+    "boundedClosure": "Exactly three existing canonical MVT jobs consume reserved capacity, report partial versus complete coverage, and complete the final 62-cell catalog; all chunks close under their complete-record/position/reference-byte and retained metadata bounds.",
+    "displayFailureIsolation": "An actual failed/stale child with immutable published generations remains charged once in history. The exact nonce-only advisory transaction stays held through durable early display-unavailable, further semantic sealing and independent full733/720/13 source acceptance on the same parent attempt. All three slots, including final, become explicitly lock-unavailable, no child job is created, and the held lock is released only in finally. Existing child attempt inputs remain pinned60000ms.",
+    "staleFencing": "A real case-revision change after a second retained-source chunk denies exact old reads, fences its source job, preserves every sealed row/hash and releases unused milestone reservations; semantic validity is distinct from stale display authority.",
+    "privateReads": "Exact-prefix metadata/geometry/chunk and private tile/pick reads passed; mismatched prefix, incomplete full-source read and cross-origin reads denied."
+  },
+  "firstUseful": {
+    "elapsedFromSourceQueueMs": 17926,
+    "at": "2026-09-26T14:43:02.234Z",
+    "sourceStatus": "running",
+    "preparedOriginalAndIndex": true,
+    "preparedIndexRecords": 733,
+    "stagedRecords": 9,
+    "sealedChunks": 1,
+    "pin": {
+      "sequence": 1,
+      "sha256": "408cd5f7f5be49b1fd7e56eea0b44bb55c85ebe8a38c368bccdf1da0993581d1"
+    },
+    "coverage": {
+      "kind": "committed_partial",
+      "sourceAccepted": false,
+      "throughSequence": 1,
+      "expectedChunks": 67,
+      "records": 9,
+      "admitted": 9,
+      "quarantined": 0,
+      "positions": 43585,
+      "expectedRecords": 733,
+      "remainingRecords": 724,
+      "prefixDependencySha256": "ee0c850da9d0b0c1adc7a0f1a63ddef6b28d6e2023ad00b9a253fe4a78b07cf0"
+    },
+    "generation": {
+      "jobId": "50655c79-ad3e-4537-96b1-138621564841",
+      "version": 1,
+      "sha256": "0be1045982db32149341c419f3281c46e09b84eb44b20cce7ecb3dd605f3117c"
+    },
+    "cell": {
+      "z": 2,
+      "x": 2,
+      "y": 1
+    },
+    "tileBytes": 2836,
+    "emitted": 8,
+    "canonicalPick": {
+      "unitId": "8a24e852-6db6-4d30-a375-27a81b586d5b",
+      "mvtId": 378
+    }
+  },
+  "full": {
+    "sourceJobId": "9bab6355-0e5a-463b-9258-e1c1d995fe20",
+    "attempts": [
+      {
+        "number": 1,
+        "fence": "1",
+        "state": "active"
+      },
+      {
+        "number": 2,
+        "fence": "2",
+        "state": "active"
+      },
+      {
+        "number": 3,
+        "fence": "3",
+        "state": "accepted"
+      }
+    ],
+    "rows": {
+      "total": 733,
+      "admitted": 720,
+      "quarantined": 13,
+      "unsealed": 0
+    },
+    "chunks": 67,
+    "preparationBytes": 773691,
+    "chunkMetadataBytes": 559606,
+    "maxChunkRecords": 30,
+    "maxChunkPositions": 49921,
+    "maxChunkReferencedBytes": 4608457,
+    "milestones": [
+      {
+        "phase": "early",
+        "jobId": "50655c79-ad3e-4537-96b1-138621564841",
+        "state": "succeeded",
+        "errorCode": null
+      },
+      {
+        "phase": "middle",
+        "jobId": "f01a5173-ca7c-4562-8fa2-3c017e6685ef",
+        "state": "succeeded",
+        "errorCode": null
+      },
+      {
+        "phase": "final",
+        "jobId": "8559f82b-8508-46c0-926d-c07dd67f49a1",
+        "state": "succeeded",
+        "errorCode": null
+      }
+    ],
+    "finalGeneration": {
+      "jobId": "8559f82b-8508-46c0-926d-c07dd67f49a1",
+      "version": 11,
+      "sha256": "6d2a09e7a95adb9a2f3e19df2699f366d323ef8725eeed9eca732541889ed816"
+    },
+    "finalCells": 62,
+    "sealedMutationSqlstate": "P0001"
+  },
+  "recoveryQualification": {
+    "method": "forced-lease-expiry",
+    "disclosure": "Controlled fault injection: the harness directly set lease_until to now() minus one second before temporary B and dispatcher C claims. A1/B2/C3 fencing and immutable-seal reuse passed; natural lease expiry and autonomous crash-recovery timing were not qualified.",
+    "naturalExpiryQualified": false
+  },
+  "displayFailureIsolation": {
+    "unavailableAndFurtherSealingObservedMs": 2368,
+    "early": {
+      "code": "MVT_DISPLAY_LOCK_TIMEOUT",
+      "state": "unavailable"
+    },
+    "parentStatusAfterChildFailure": "running",
+    "throughSequenceWhileLockHeld": 2,
+    "acceptedWhileLockHeld": {
+      "status": "succeeded",
+      "fence": 1,
+      "throughSequence": 67,
+      "closure": {
+        "records": 733,
+        "admitted": 720,
+        "quarantined": 13,
+        "unsealed": 0
+      },
+      "currentSourceAccepted": true,
+      "outcomes": {
+        "early": {
+          "code": "MVT_DISPLAY_LOCK_TIMEOUT",
+          "state": "unavailable"
+        },
+        "final": {
+          "code": "MVT_DISPLAY_LOCK_TIMEOUT",
+          "state": "unavailable"
+        },
+        "middle": {
+          "code": "MVT_DISPLAY_LOCK_TIMEOUT",
+          "state": "unavailable"
+        }
+      },
+      "childJobs": 0
+    },
+    "fullSemanticTotals": {
+      "features": 733,
+      "positions": 3125505,
+      "nativeValid": 720,
+      "nativeInvalid": 13,
+      "admitted": 720,
+      "quarantined": 13
+    },
+    "milestones": [
+      {
+        "phase": "early",
+        "jobId": null,
+        "state": "unavailable",
+        "errorCode": "MVT_DISPLAY_LOCK_TIMEOUT"
+      },
+      {
+        "phase": "middle",
+        "jobId": null,
+        "state": "unavailable",
+        "errorCode": "MVT_DISPLAY_LOCK_TIMEOUT"
+      },
+      {
+        "phase": "final",
+        "jobId": null,
+        "state": "unavailable",
+        "errorCode": "MVT_DISPLAY_LOCK_TIMEOUT"
+      }
+    ],
+    "childAttemptBudgetMs": 60000,
+    "historyAfterIndependentCompletion": {
+      "history": 4,
+      "failed_published": 1
+    }
+  },
+  "failedPublishedHistory": {
+    "jobId": "45c4f2cd-60c2-4352-b2ae-ae3315ccabc3",
+    "history": 4,
+    "failed_published": 1
+  },
+  "stale": {
+    "jobId": "fc53bee9-9717-4c3f-991c-123d7980ad4c",
+    "seals": [
+      {
+        "sequence": 1,
+        "sha256": "092c0bfd7965fecd8c1d11a6753104e44c9337736c2f2a483edffbc9eedce730"
+      }
+    ],
+    "rows": {
+      "rows": 9,
+      "unsealed": 0
+    },
+    "reservation": {
+      "early": {
+        "jobId": "45c4f2cd-60c2-4352-b2ae-ae3315ccabc3",
+        "state": "created"
+      },
+      "final": {
+        "code": "PROJECTED_CONTEXT_STALE",
+        "state": "unavailable"
+      },
+      "middle": {
+        "code": "PROJECTED_CONTEXT_STALE",
+        "state": "unavailable"
+      }
+    }
+  },
+  "outbox": {
+    "events": 211,
+    "maxBytes": 236
+  },
+  "modelCalls": 0,
+  "shutdown": {
+    "ownedServicesStopped": true,
+    "namedVolumesPreserved": true,
+    "stopLogSha256": "3d26d294e705233da4086d203993a1d1c2a4ee2ceebed796a51493a730b5e0db"
+  },
+  "notQualified": [
+    "GF-SCALE, deployment/public/multiuser/replicas",
+    "Parsing/transform overlap: complete original/member/index preparation precedes semantic SQL import",
+    "Survey/legal/currentness/property/rights/height accuracy or provider/training permissions",
+    "Changed official geometry or deletion from a second issuing revision",
+    "Natural lease expiry/autonomous crash-recovery timing",
+    "Frontend rendering and complete GF-STREAM gate",
+    "Populated linked environment upgrade to this candidate"
+  ]
+}

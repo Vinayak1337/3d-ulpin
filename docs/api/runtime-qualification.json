@@ -246,6 +246,119 @@
           ]
         }
       }
+    },
+    {
+      "receipt": "docs/evidence/usp/semantic-chunks-runtime.json",
+      "receiptSha256": "cbbe111f379cf68f005367d41fc136bf6727e6e0a9e87e9304fd5429b0b5908c",
+      "servedCodeCommit": "de941321271575cd569cd8a520b81aceadaa3941",
+      "environment": {
+        "kind": "stopped-isolated",
+        "project": "ulpin-usptest-23efff47f982ef17",
+        "nonce": "23efff47f982ef17"
+      },
+      "qualification": "Bounded unchanged NWIC committed-prefix integration only. Complete original/member/index preparation precedes early SQL publication. Recovery used forced lease expiry; natural expiry/timing is unqualified. IDs belong to this stopped isolated run, not the linked serving database.",
+      "unqualified": [
+        "GF-SCALE, deployment/public/multiuser/replicas",
+        "Parsing/transform overlap: complete original/member/index preparation precedes semantic SQL import",
+        "Survey/legal/currentness/property/rights/height accuracy or provider/training permissions",
+        "Changed official geometry or deletion from a second issuing revision",
+        "Natural lease expiry/autonomous crash-recovery timing",
+        "Frontend rendering and complete GF-STREAM gate",
+        "Populated linked environment upgrade to this candidate"
+      ],
+      "operations": {
+        "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector": {
+          "scope": "Opt-in NWIC semantic-chunk admission with unchanged original preparation; controlled forced-expiry fencing/reuse and separately atomic full-source acceptance.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/firstUseful",
+            "/full",
+            "/recoveryQualification"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector": {
+          "scope": "Partial versus accepted source progress and explicit independent display milestone outcomes.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/firstUseful/coverage",
+            "/full",
+            "/displayFailureIsolation"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/jobs/{jobId}/chunks/{sequence}": {
+          "scope": "Private immutable chunk receipt and exact prefix pin while the source remains incomplete.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/firstUseful/pin",
+            "/checks/privateReads"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/units": {
+          "scope": "Bounded metadata reads pinned to the exact committed job/chunk prefix; unsealed/later rows excluded.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/privateReads",
+            "/firstUseful"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/units/{unitId}/geometry": {
+          "scope": "Hash-verified geometry for the committed prefix; mismatch and stale-context denial.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/checks/privateReads",
+            "/stale"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt": {
+          "scope": "Existing canonical milestone jobs with distinct source coverage and cell readiness.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/firstUseful/generation",
+            "/full/milestones"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}": {
+          "scope": "Coherent first usable private generation before complete SQL semantic admission.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/firstUseful",
+            "/full/finalGeneration"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}/tiles/{z}/{x}/{y}.mvt": {
+          "scope": "Actual private MVT read during incomplete source admission; eight emitted features from first committed prefix.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/firstUseful/tileBytes",
+            "/firstUseful/emitted"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}/tiles/{z}/{x}/{y}/units/{unitId}": {
+          "scope": "Actual early tile feature resolves to its canonical source-backed unit before full-source acceptance.",
+          "sourceManifests": [
+            "fixtures/usp/D3/nwic-boundaries-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/firstUseful/canonicalPick"
+          ]
+        }
+      }
     }
   ]
 }
