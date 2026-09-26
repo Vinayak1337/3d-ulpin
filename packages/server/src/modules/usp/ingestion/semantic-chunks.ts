@@ -12,6 +12,7 @@ import {fingerprint} from '../../cases/domain';
 import {assertUspJobAttemptTx,type UspJobAttempt} from '../jobs';
 import {projectedContextTx,assertProjectedInput} from './projected-vector';
 import {appendCaseIngestionTx} from './events';
+import {privateMvtCapacityTx} from '../tiles/capacity';
 import {mvtTransaction} from '../tiles/bounds';
 type Pin=z.infer<typeof ProjectedChunkPinSchema>;
 const observationColumns='o.job_id,o.feature_index,o.unit_id,o.source_id,o.disposition,o.reason,o.source_locator,o.properties,o.native_bounds,o.geographic_bounds,o.raw_ref,o.geographic_ref,o.committed_chunk_sequence,o.native_geometry_sha256,o.geographic_geometry_sha256,o.record_sha256';
@@ -20,7 +21,7 @@ export function semanticPublisherSha(){
   const paths=['packages/contracts/src/usp/projected-vector.ts','packages/contracts/src/usp/semantic-chunks.ts',
     'packages/server/src/modules/usp/ingestion/projected-vector.ts','packages/server/src/modules/usp/ingestion/projected-publication.ts',
     'packages/server/src/modules/usp/ingestion/semantic-chunks.ts','packages/server/src/modules/usp/ingestion/semantic-display.ts',
-    'packages/server/src/modules/usp/jobs.ts','database/sql/95-ingestion/semantic-chunks.sql'];
+    'packages/server/src/modules/usp/jobs.ts','packages/server/src/modules/usp/tiles/capacity.ts','database/sql/95-ingestion/semantic-chunks.sql'];
   return sha256(Buffer.concat(paths.flatMap(path=>[Buffer.from(path+'\0'),readFileSync(join(settings.repositoryRoot,path))])));
 }
 export function semanticPartitions(index:SemanticPreparation['index']):SemanticPartition[]{
@@ -123,14 +124,14 @@ export async function sealSemanticTx(client:PoolClient,job:any,attempt:UspJobAtt
 export async function reservedDisplayCountTx(client:PoolClient){return Number((await client.query(`SELECT count(*)::int count FROM operations o CROSS JOIN LATERAL jsonb_each(o.result->'outcomes') s WHERE o.kind='stream-display-capacity' AND s.value->>'state'='reserved'`)).rows[0].count);}
 export async function reserveSemanticDisplaysTx(client:PoolClient,job:any){
   const aliases=(await client.query("SELECT count(*)::int count FROM operations WHERE kind='private-mvt'")).rows[0].count;
-  const quota=(await client.query("SELECT count(*)::int jobs,count(*) FILTER(WHERE status IN('queued','running','succeeded'))::int future FROM jobs WHERE operation='private-mvt'")).rows[0],reserved=await reservedDisplayCountTx(client);
-  if(quota.jobs+reserved+p.displayMilestones>m.jobs||quota.future+reserved+p.displayMilestones>m.completed||aliases+reserved+p.displayMilestones>m.requests)
+  const quota=await privateMvtCapacityTx(client),reserved=await reservedDisplayCountTx(client);
+  if(quota.jobs+reserved+p.displayMilestones>m.jobs||quota.history+reserved+p.displayMilestones>m.completed||aliases+reserved+p.displayMilestones>m.requests)
     throw new AppError(429,'MVT_RETENTION_BUDGET','Three semantic display milestones exceed existing finite tile job/history capacity.');
   const result=SemanticDisplayReservationSchema.parse({version:p.version,jobId:job.id,sourceId:job.source_id,slots:{early:randomUUID(),middle:randomUUID(),final:randomUUID()},outcomes:{early:{state:'reserved'},middle:{state:'reserved'},final:{state:'reserved'}}});
   await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) VALUES($1,$2,'stream-display-capacity',$3,$4)",[job.case_id,reservationKey(job.id),job.input_fingerprint,result]);
 }
 export async function displayReservationTx(client:PoolClient,job:any){const row=(await client.query("SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='stream-display-capacity' FOR UPDATE",[job.case_id,reservationKey(job.id)])).rows[0]??notFound('Semantic display reservation is unavailable.');return SemanticDisplayReservationSchema.parse(row.result);}
-export async function displayOutcomeTx(client:PoolClient,job:any,phase:SemanticDisplayPhase,outcome:{state:'created';jobId:string}|{state:'unavailable';code:string}){
+export async function displayOutcomeTx(client:PoolClient,job:any,phase:SemanticDisplayPhase,outcome:{state:'created';jobId:string;errorCode?:string}|{state:'unavailable';code:string}){
   const reservation=await displayReservationTx(client,job);reservation.outcomes[phase]=outcome;
   await client.query("UPDATE operations SET result=$3 WHERE case_id=$1 AND operation_key=$2 AND kind='stream-display-capacity'",[job.case_id,reservationKey(job.id),reservation]);
 }

@@ -92,12 +92,45 @@ void(async()=>{try{console.log(JSON.stringify(process.env.ULPIN_STREAM_ACTION===
     // A second real import under a new case context is deliberately invalidated after its first committed seal.
     phase='stale-partial-preservation';await db.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);const staleRequest={...request,requestKey:randomUUID(),expectedCaseRevision:upload.currentCaseRevision+1},second=await api(path,202,staleRequest);receipt.staleJobId=second.jobId;
     const partial=await until(async()=>{const rows=(await db.query('SELECT sequence,sha256 FROM usp_display.source_semantic_chunks WHERE job_id=$1 ORDER BY sequence',[second.jobId])).rows;return rows.length?rows:null;});
+    const publishedFailureJob=await until(async()=>{const row=(await db.query("SELECT j.id FROM jobs j WHERE j.operation='private-mvt' AND j.payload#>>'{source,admissionJobId}'=$1 AND EXISTS(SELECT 1 FROM usp_display.source_tile_generations g WHERE g.job_id=j.id)",[second.jobId])).rows[0];return row;});
     await db.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);await until(async()=>{const row=(await db.query('SELECT status,error FROM jobs WHERE id=$1',[second.jobId])).rows[0];return row.status==='stale'?row:null;});
     const preserved=(await db.query('SELECT sequence,sha256 FROM usp_display.source_semantic_chunks WHERE job_id=$1 ORDER BY sequence',[second.jobId])).rows;assert.deepEqual(preserved,partial);const kept=(await db.query('SELECT count(*)::int rows,count(*) FILTER(WHERE committed_chunk_sequence IS NULL)::int unsealed FROM administrative_unit_observations WHERE job_id=$1',[second.jobId])).rows[0];assert(kept.rows>0);assert.equal(kept.unsealed,0);await api(path+`/jobs/${second.jobId}/chunks/1`,409);
     const reservation=(await db.query("SELECT result FROM operations WHERE kind='stream-display-capacity' AND operation_key=$1",[`stream-display:${second.jobId}`])).rows[0].result;assert(Object.values(reservation.outcomes).every(o=>o.state!=='reserved'));
-    const events=(await db.query("SELECT payload FROM usp_outbox WHERE payload->>'type'='case.ingestion' AND payload->>'caseId'=$1",[caseId])).rows;assert(events.every(e=>Buffer.byteLength(JSON.stringify(e.payload))<=512));
+    await until(async()=>{const row=(await db.query('SELECT status FROM jobs WHERE id=$1',[publishedFailureJob.id])).rows[0];return ['failed','stale'].includes(row.status)?row:null;});
+    const failedHistory=(await db.query(`SELECT count(*)::int history,count(*) FILTER(WHERE j.status IN('failed','stale'))::int failed_published FROM jobs j
+      WHERE j.operation='private-mvt' AND (j.status IN('queued','running','succeeded') OR EXISTS(SELECT 1 FROM usp_display.source_tile_generations g WHERE g.job_id=j.id))`)).rows[0];
+    assert.equal(failedHistory.history,4);assert.equal(failedHistory.failed_published,1);
+    receipt.failedPublishedHistory={jobId:publishedFailureJob.id,...failedHistory};
+    phase='display-lock-failure-isolation';console.log(JSON.stringify({phase}));
+    const third=await api(path,202,{...request,requestKey:randomUUID(),expectedCaseRevision:upload.currentCaseRevision+2});receipt.isolatedFailureJobId=third.jobId;
+    const blocker=new Client({connectionString:env.DATABASE_URL,application_name:'semantic-display-child-blocker',statement_timeout:8000});await blocker.connect();
+    try{
+      await blocker.query('BEGIN');const blockerPid=(await blocker.query('SELECT pg_backend_pid() pid')).rows[0].pid;
+      await blocker.query("SELECT pg_advisory_xact_lock(hashtextextended('private-mvt-admission-retirement-v1',0))");
+      const waiting=async()=>(await db.query(`SELECT pid,query_start FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()
+        AND wait_event_type='Lock' AND query LIKE '%private-mvt-admission-retirement-v1%' ORDER BY query_start LIMIT 1`)).rows[0];
+      const firstWait=await until(waiting),observedAt=Date.now();
+      const nextWait=await until(async()=>{const row=await waiting();return row&&(row.pid!==firstWait.pid||row.query_start.getTime()!==firstWait.query_start.getTime())?row:null;},10);
+      // The held advisory lock cannot be acquired; a new waiting query proves
+      // the first bounded attempt ended. Release only this owned transaction.
+      await blocker.query('ROLLBACK');
+      const isolated=await until(async()=>{const s=await api(path);assert(!['failed','stale'].includes(s.status));const early=s.displayMilestones.find(m=>m.phase==='early');return early.state==='unavailable'?{s,early}:null;});
+      assert.equal(isolated.early.errorCode,'MVT_DISPLAY_LOCK_TIMEOUT');
+      receipt.displayFailureIsolation={jobId:third.jobId,blockerPid,firstWait:{pid:firstWait.pid,queryStart:firstWait.query_start.toISOString()},nextWait:{pid:nextWait.pid,queryStart:nextWait.query_start.toISOString()},observedLockTimeoutMs:Date.now()-observedAt,early:isolated.early,parentStatusAfterChildFailure:isolated.s.status,currentSourceAccepted:isolated.s.currentSourceAccepted};
+    }finally{try{await blocker.query('ROLLBACK');}finally{await blocker.end();}}
+    const thirdComplete=await until(async()=>{const s=await api(path);if(['failed','stale'].includes(s.status))throw new Error('Display-specific lock failure invalidated semantic source: '+s.errorCode);return s.status==='succeeded'?s:null;});
+    assert.equal(thirdComplete.currentSourceAccepted,true);assert.equal(thirdComplete.totals.features,733);assert.equal(thirdComplete.totals.admitted,720);assert.equal(thirdComplete.totals.quarantined,13);
+    const thirdFinal=thirdComplete.displayMilestones.find(m=>m.phase==='final');assert(thirdFinal.jobId);await until(async()=>{const s=await api(tiles);if(['failed','stale'].includes(s.status))throw new Error('Final independent display failed: '+s.errorCode);return s.status==='succeeded'?s:null;});
+    const thirdMilestones=(await api(path)).displayMilestones;assert.equal(thirdMilestones[0].state,'unavailable');assert(thirdMilestones.slice(1).every(m=>m.state==='succeeded'));
+    const childBudgets=(await db.query("SELECT payload->>'publicationMs' budget FROM jobs WHERE operation='private-mvt'")).rows;assert(childBudgets.every(j=>j.budget==='60000'));
+    const historyNow=(await db.query(`SELECT count(*)::int history,count(*) FILTER(WHERE j.status IN('failed','stale'))::int failed_published FROM jobs j
+      WHERE j.operation='private-mvt' AND (j.status IN('queued','running','succeeded') OR EXISTS(SELECT 1 FROM usp_display.source_tile_generations g WHERE g.job_id=j.id))`)).rows[0];
+    assert.equal(historyNow.history,6);assert.equal(historyNow.failed_published,1);
+    receipt.displayFailureIsolation.fullSemanticTotals=thirdComplete.totals;receipt.displayFailureIsolation.milestones=thirdMilestones;receipt.displayFailureIsolation.childAttemptBudgetMs=60000;receipt.displayFailureIsolation.historyAfterIndependentCompletion=historyNow;
+    receipt.checks.push('An actual failed/stale child with immutable published generations remains charged once in history; the source reservation and ordinary admission share that exact policy. A separate nonce-only advisory lock produces the real2s child admission SQL55P03/MVT_DISPLAY_LOCK_TIMEOUT, while the canonical parent remains current and independently accepts all733/720/13 records; later display milestones complete. All internal child attempt inputs pin60000ms, and absolute creation/await deadlines are reduced by parent time.');
+    const events=(await db.query("SELECT body FROM usp_outbox WHERE body->>'caseId'=$1",[caseId])).rows;assert(events.every(e=>Buffer.byteLength(JSON.stringify(e.body))<=512));
     const modelCalls=(await db.query('SELECT count(*)::int count FROM usp_model_calls')).rows[0].count;assert.equal(modelCalls,0);
-    receipt.stale={jobId:second.jobId,seals:preserved,rows:kept,reservation:reservation.outcomes};receipt.outbox={events:events.length,maxBytes:Math.max(0,...events.map(e=>Buffer.byteLength(JSON.stringify(e.payload))))};receipt.modelCalls=modelCalls;receipt.checks.push('A real case-revision change after a second retained-source chunk denies exact old reads, fences its source job, preserves every sealed row/hash and releases unused milestone reservations; semantic validity is distinct from stale display authority.');receipt.status='passed';receipt.finishedAt=new Date().toISOString();
+    receipt.stale={jobId:second.jobId,seals:preserved,rows:kept,reservation:reservation.outcomes};receipt.outbox={events:events.length,maxBytes:Math.max(0,...events.map(e=>Buffer.byteLength(JSON.stringify(e.body))))};receipt.modelCalls=modelCalls;receipt.checks.push('A real case-revision change after a second retained-source chunk denies exact old reads, fences its source job, preserves every sealed row/hash and releases unused milestone reservations; semantic validity is distinct from stale display authority.');receipt.status='passed';receipt.finishedAt=new Date().toISOString();
   }catch(error){receipt.status='failed';receipt.phase=phase;receipt.failure={name:error.name,message:error.message};throw error;}
   finally{if(file)await file.close();if(db)await db.end();writeFileSync(output,JSON.stringify(receipt,null,2)+'\n',{flag:'wx',mode:0o600});}
   console.log(JSON.stringify({status:receipt.status,receipt:output,first:receipt.firstUseful,full:receipt.full}));

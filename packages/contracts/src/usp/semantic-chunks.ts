@@ -26,7 +26,7 @@ export const SemanticDisplayPhaseSchema=z.enum(['early','middle','final']);
 export const SemanticDisplayReservationSchema=z.strictObject({version:z.literal(c.version),jobId:id,sourceId:id,
   slots:z.strictObject({early:id,middle:id,final:id}),outcomes:z.record(SemanticDisplayPhaseSchema,
     z.discriminatedUnion('state',[z.strictObject({state:z.literal('reserved')}),
-      z.strictObject({state:z.literal('created'),jobId:id}),z.strictObject({state:z.literal('unavailable'),code:z.string().max(80)})]))});
+      z.strictObject({state:z.literal('created'),jobId:id,errorCode:z.string().max(80).optional()}),z.strictObject({state:z.literal('unavailable'),code:z.string().max(80)})]))});
 export type SemanticPartition=z.infer<typeof SemanticPartitionSchema>;
 export type SemanticPreparation=z.infer<typeof SemanticPreparationSchema>;
 export type SemanticChunk=z.infer<typeof SemanticChunkSchema>;

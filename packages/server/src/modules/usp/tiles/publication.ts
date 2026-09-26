@@ -118,13 +118,14 @@ async function publish(job:any,attempt:UspJobAttempt,input:PrivateMvtInput,deadl
 }
 /** Existing dispatcher executes the allowlisted PostGIS profile; no second broker/server. */
 export async function runPrivateMvtJob(id:string,parentDeadline?:number){
-  const deadline=Math.min(Date.now()+p.jobMs,parentDeadline??Infinity),tx=<T>(action:(client:PoolClient)=>Promise<T>)=>transaction(action,deadline),
+  const started=Date.now();let deadline=Math.min(started+p.jobMs,parentDeadline??Infinity);
+  const tx=<T>(action:(client:PoolClient)=>Promise<T>)=>transaction(action,deadline),
     q=(text:string,values:unknown[]=[])=>query(text,values,deadline),beat=(attempt:UspJobAttempt)=>heartbeatUspJobAttempt(attempt,client=>mvtBoundsTx(client,deadline));
   const job=(await q("SELECT * FROM jobs WHERE id=$1 AND operation='private-mvt'",[id])).rows[0];if(!job||!['queued','running'].includes(job.status))return;
+  const input=PrivateMvtInputSchema.parse(job.payload);deadline=Math.min(deadline,started+(input.publicationMs??p.jobMs));
   try{await tx(client=>currentMvtJobTx(client,job));}catch(error){if(error instanceof AppError&&[403,404,409].includes(error.status)){await failPrivateMvtJob(id,'MVT_CONTEXT_STALE');return;}throw error;}
   let attempt:UspJobAttempt;
   try{attempt=await claimUspJobAttempt(id,randomUUID(),client=>mvtBoundsTx(client,deadline));}catch(error){if(error instanceof AppError&&error.status===409)return;if(error instanceof AppError&&error.code==='USP_JOB_ATTEMPTS'){await failPrivateMvtJob(id,'MVT_ATTEMPT_LIMIT');return;}throw error;}
-  const input=PrivateMvtInputSchema.parse(job.payload);
   try{
     await tx(async client=>{await currentMvtJobTx(client,job);await assertUspJobAttemptTx(client,attempt);
       const changed=(await client.query('UPDATE jobs SET dispatched_at=now(),error=NULL WHERE id=$1 AND dispatched_at IS NULL RETURNING id',[id])).rows[0];

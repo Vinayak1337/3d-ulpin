@@ -11,7 +11,7 @@ import {mvtBoundsTx} from './bounds';
 
 export function mvtCodeSha(){
   const paths=['packages/contracts/src/usp/private-mvt.ts','packages/server/src/modules/usp/tiles/grid.ts','packages/server/src/modules/usp/tiles/bounds.ts',
-    'packages/server/src/modules/usp/tiles/compiler.ts','packages/server/src/modules/usp/tiles/service.ts',
+    'packages/server/src/modules/usp/tiles/compiler.ts','packages/server/src/modules/usp/tiles/capacity.ts','packages/server/src/modules/usp/tiles/service.ts',
     'packages/server/src/modules/usp/tiles/publication.ts','packages/server/src/modules/usp/tiles/storage.ts','database/sql/95-ingestion/private-mvt-cell.sql',
     'database/sql/95-ingestion/private-mvt-schema.sql','packages/server/src/infrastructure/storage.ts','packages/server/src/modules/usp/jobs.ts',
     'packages/server/src/modules/usp/ingestion/projected-vector.ts','packages/server/src/modules/usp/ingestion/events.ts','packages/server/src/modules/usp/ingestion/semantic-chunks.ts',
