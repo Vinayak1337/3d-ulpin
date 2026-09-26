@@ -473,6 +473,31 @@
           "Generic archives/CRS/format coverage",
           "Tiles/progressive scene generations/GF-STREAM/GF-SCALE/UI",
           "Multiuser/replica authorization or provider/learning qualification"
+        ],
+        "additionalReceipts": [
+          {
+            "receipt": "docs/evidence/usp/private-mvt-runtime.json",
+            "servedCodeCommit": "e8e0580c3f86ab557003bbfef6f5ffd8591e95ba",
+            "operations": {
+              "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt": "Bounded source-pinned job/status/coherent generations, same-intent replay, partial publication, interrupted-attempt recovery and changed-context copy-only reuse.",
+              "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt": "Bounded source-pinned job/status/coherent generations, same-intent replay, partial publication, interrupted-attempt recovery and changed-context copy-only reuse.",
+              "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}": "Bounded source-pinned job/status/coherent generations, same-intent replay, partial publication, interrupted-attempt recovery and changed-context copy-only reuse.",
+              "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}/tiles/{z}/{x}/{y}.mvt": "Private standard MVT cell and exact canonical source-observation lookup; quarantine/current-authority denial and hash checks.",
+              "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}/tiles/{z}/{x}/{y}/units/{unitId}": "Private standard MVT cell and exact canonical source-observation lookup; quarantine/current-authority denial and hash checks."
+            },
+            "environment": {
+              "kind": "stopped-isolated",
+              "project": "ulpin-usptest-6ec4ef2dfff134fc",
+              "nonce": "6ec4ef2dfff134fc"
+            },
+            "qualification": "Only unchanged NWIC administrative post-admission MVT generation/private reads/recovery were observed. Records belong to the stopped isolated run; this does not install tiles into the linked serving environment.",
+            "unqualified": [
+              "First useful generation before multi-chunk import completion/full GF-STREAM",
+              "GF-SCALE, public/multiuser/replica deployment",
+              "Changed source geometry/delete invalidation using a second official revision",
+              "Boundary positional/legal/currentness accuracy, property geometry/rights/height, provider/training permissions"
+            ]
+          }
         ]
       },
       "missingCapabilities": [

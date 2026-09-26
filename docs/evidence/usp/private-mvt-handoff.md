@@ -8,7 +8,7 @@ Completed backend implementation and real-source runtime checks on 26 September 
 - Worker: reusable Sol task `01a0dc66-1a95-7813-b198-b3747e9a1908`, branch `task/tile-01-private-mvt`, checkout `/Users/vinayak/.codex/worktrees/0bc6/3D Ulpin`.
 - Implementation: `bb144170715a4fcb6b6bec3cd0668c673fa54f15`.
 - Production correction and final served code: `e8e0580c3f86ab557003bbfef6f5ffd8591e95ba`.
-- Observed turn model/effort: `gpt-6-sol` / `max`. Fast requested; configured priority is recorded in the operating guide. Per-turn service tier is unobserved (`null`). No usage monitoring.
+- Observed turn model/effort: `gpt-6-sol` / `max`. The assignment originally requested Fast; the user subsequently revoked priority and required Sol-only new assignments. The host is now configured with `service_tier = "default"`; this completed turn’s actual service tier is unobserved (`null`). No usage monitoring.
 - Final nonce: `6ec4ef2dfff134fc`, Compose project `ulpin-usptest-6ec4ef2dfff134fc`, isolated loopback API `http://127.0.0.1:3191/`; now stopped.
 - Geo image: `ulpin-geo:run01-6ec4ef2dfff134fc`, digest `sha256:be92666e1d142753bc0643e246cd354618462fe64f397d644ac8436f57014919`.
 
