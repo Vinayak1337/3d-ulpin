@@ -324,6 +324,45 @@
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
       "runtimeEvidence": "docs/evidence/usp/semantic-chunks-handoff.md"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/documents",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_documents",
+      "batch": "DOC-INGEST-01",
+      "disposition": "added",
+      "nativeController": "documents",
+      "requestSchema": "DocumentRetainSchema multipart",
+      "responseSchema": "DocumentReceiptSchema",
+      "responseStatus": 201,
+      "transportProfile": "multipart",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId",
+      "batch": "DOC-INGEST-01",
+      "disposition": "added",
+      "nativeController": "documents",
+      "requestSchema": null,
+      "responseSchema": "DocumentStatusSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/retry",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_documents_retry",
+      "batch": "DOC-INGEST-01",
+      "disposition": "added",
+      "nativeController": "documents",
+      "requestSchema": "DocumentRetrySchema",
+      "responseSchema": "DocumentReceiptSchema",
+      "responseStatus": 201,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
     }
   ]
 }

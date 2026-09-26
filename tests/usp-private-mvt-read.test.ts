@@ -43,3 +43,21 @@ test('current policy and source transform remain required for historical reads',
 test('an installed runtime change cannot rewrite the reviewed immutable compiler profile',()=>{
   assert.equal(mvtReadCompilerCompatible(retained,repin({codeSha256:current.codeSha256,postgis:retained.postgis+' changed'})),true);
 });
+
+const beforeDocument=repin({codeSha256:'3d060fda17b9cd542c4c8c2ffb29ad5fafb6cd28e34053235885ce13b3275656'});
+test('the reviewed pre-document code reads complete and committed-prefix artifacts with every other pin exact',()=>{
+  const before=JSON.stringify(beforeDocument);
+  assert.equal(mvtReadCompilerCompatible(beforeDocument,current),true);
+  assert.equal(mvtReadCompilerCompatible(beforeDocument,current,true),true);
+  assert.equal(JSON.stringify(beforeDocument),before);
+});
+test('pre-document reads deny unknown code, tampered self-hashes, policy, transform and PostGIS drift',()=>{
+  for(const prefix of [false,true]){
+    assert.equal(mvtReadCompilerCompatible(repin({codeSha256:retained.sourceTransformSha256}),current,prefix),false);
+    assert.equal(mvtReadCompilerCompatible({...beforeDocument,sha256:current.sha256},current,prefix),false);
+    assert.equal(mvtReadCompilerCompatible(beforeDocument,{...current,sha256:beforeDocument.sha256},prefix),false);
+    for(const changes of [{policySha256:retained.sourceTransformSha256},{sourceTransformSha256:retained.policySha256},{postgis:retained.postgis+' changed'}]){
+      assert.equal(mvtReadCompilerCompatible(beforeDocument,repin({codeSha256:current.codeSha256,...changes}),prefix),false);
+    }
+  }
+});

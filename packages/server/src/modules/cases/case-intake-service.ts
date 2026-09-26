@@ -1,6 +1,7 @@
 import { AppError } from '../../infrastructure/errors';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { largeOriginalDownload } from '../usp/ingestion/download';
+import {DocumentIngestionService} from '../usp/ingestion/documents';
 import {
   addUnit, applyLevels, createCase, getCase, getSource, listCases,
   loadDemoInputs, prepareCase, readDemoFile, readRealDemoAsset,
@@ -25,6 +26,7 @@ export class CaseIntakeService {
 
   async sourceFile(id: string) {
     const source = await getSource(id);
+    if(source.inspection?.documentOriginal)return new DocumentIngestionService().original(source.case_id,id);
     const bytes = await readObject(source.object_key);
     if (sha256(bytes) !== source.sha256 || bytes.length !== Number(source.bytes)) {
       throw new AppError(422, 'SOURCE_INTEGRITY', 'The retained original does not match its source receipt.');
