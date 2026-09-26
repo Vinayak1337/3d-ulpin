@@ -332,7 +332,7 @@ export async function createRegistryDraft(
       [
         caseId,
         `Draft · ${record.alias}`,
-        "Registry preparation workspace; technical demo review only.",
+        "Registry preparation workspace; technical review only.",
         site.frame,
         siteId,
       ],
