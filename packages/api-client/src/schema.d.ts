@@ -2226,6 +2226,382 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/upload-limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read bounded large-original byte receipt limits; semantic conversion is unsupported */
+        get: operations["GET_api_v1_ingestion_upload_limits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/uploads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admit a bounded resumable opaque original in the current source case */
+        post: operations["POST_api_v1_ingestion_cases_caseId_uploads"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read durable receipt, byte-part progress and current case/upload revisions */
+        get: operations["GET_api_v1_ingestion_cases_caseId_uploads_uploadId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/parts/{partNumber}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Receive one bounded raw byte part with actual server hash and immutable request binding */
+        put: operations["PUT_api_v1_ingestion_cases_caseId_uploads_uploadId_parts_partNumber"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/finalize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Hash-verify complete byte parts and publish one unsupported-conversion original receipt */
+        post: operations["POST_api_v1_ingestion_cases_caseId_uploads_uploadId_finalize"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/abort": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Fence one incomplete upload and safely reclaim only its owned temporary objects */
+        post: operations["POST_api_v1_ingestion_cases_caseId_uploads_uploadId_abort"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/cleanup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume scoped temporary-object cleanup without deleting a canonical retained original */
+        post: operations["POST_api_v1_ingestion_cases_caseId_uploads_uploadId_cleanup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read committed private case ingestion notifications with bounded durable replay */
+        get: operations["GET_api_v1_ingestion_cases_caseId_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read current admission job status and accepted source/transform disposition totals */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector"];
+        put?: never;
+        /** Queue the exact retained NWIC district profile through the existing fenced source/job authority */
+        post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/jobs/{jobId}/chunks/{sequence}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one immutable committed semantic chunk and its exact source-prefix pin */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_jobs_jobId_chunks_sequence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read at most 25 accepted-generation administrative observation metadata rows, with explicit quarantines */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_units"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/projected-vector/units/{unitId}/geometry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one bounded hash-verified native source Feature or admitted geographic context derivative */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_units_unitId_geometry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read private tile job status and the latest coherent generation pin */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt"];
+        put?: never;
+        /** Queue a bounded private PostGIS MVT generation over exact admitted administrative observations */
+        post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one immutable coherent manifest with explicit ready and pending cells */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}/tiles/{z}/{x}/{y}.mvt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one hash-verified standard MVT cell after current private source authority checks */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_tiles_z_x_y"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/private-mvt/generations/{jobId}/{version}/tiles/{z}/{x}/{y}/units/{unitId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve a tile pick through the exact source-observation identity map to its canonical administrative unit */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_tiles_z_x_y_units_unitId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retain an unchanged original before queued source-bound native/model extraction */
+        post: operations["POST_api_v1_ingestion_cases_caseId_documents"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read bounded native parts and proposed fields under current source/access/policy pins */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue an explicitly requested retry against the unchanged current original */
+        post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_documents_retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/sufficiency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Evaluate bounded source-pinned tasks without qualifying geometry or rights */
+        post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_sufficiency"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/needs-input": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read bounded current decisions and class questions from retained evidence receipts */
+        get: operations["GET_api_v1_ingestion_cases_caseId_needs_input"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/questions/{questionId}/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Park a task or propose an existing evidence reference for officer review */
+        post: operations["POST_api_v1_ingestion_cases_caseId_questions_questionId_answers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2262,6 +2638,31 @@ export interface components {
                 processor: boolean;
                 redis: boolean;
                 worker: boolean;
+            };
+            databaseReadiness?: {
+                /** @enum {string} */
+                status: "structurally_ready" | "schema_missing" | "unavailable";
+                schema: {
+                    ready: boolean;
+                    manifestSha256?: string;
+                    /** @description Opaque API/database binding for reviewed loopback tooling. */
+                    targetToken?: string | null;
+                    missingRelations?: string[];
+                    missingColumns?: string[];
+                    missingMigrations?: string[];
+                    invalidIndexes?: number;
+                    unvalidatedConstraints?: {
+                        name?: string;
+                        table?: string;
+                    }[];
+                };
+                data?: {
+                    sourceCount?: number | null;
+                    importPackageCount?: number | null;
+                    physicalFeatureCount?: number | null;
+                    activeLegacyDatasetCount?: number | null;
+                };
+                qualification?: string;
             };
         };
         GET_demo_assets_real_nyc_asset_Response_400_application_json: {
@@ -2393,6 +2794,29 @@ export interface components {
                 status: "received" | "processing" | "ready" | "needs_input" | "failed" | "inspected";
                 createdAt: string;
                 inspection: (({
+                    largeOriginal?: {
+                        /** Format: uuid */
+                        uploadId: string;
+                        operatorSubject: string;
+                        objectEtag: string;
+                        verifiedSha256: string;
+                        verifiedBytes: number;
+                        provenance: {
+                            issuer: string;
+                            /** Format: uri */
+                            originalUrl: string;
+                            /** Format: date-time */
+                            acquiredAt: string;
+                            permissionReference: string;
+                            limitations: string[];
+                            /** @enum {string} */
+                            state: "caller_declared";
+                        };
+                        /** @enum {string} */
+                        conversion: "unsupported";
+                        /** @enum {string} */
+                        bundleCompleteness: "single_original_only_archive_dependencies_not_assessed";
+                    };
                     profile: string;
                     /** @enum {string} */
                     status: "ready" | "needs_input" | "failed";
@@ -2685,6 +3109,29 @@ export interface components {
             status: "received" | "processing" | "ready" | "needs_input" | "failed" | "inspected";
             createdAt: string;
             inspection: (({
+                largeOriginal?: {
+                    /** Format: uuid */
+                    uploadId: string;
+                    operatorSubject: string;
+                    objectEtag: string;
+                    verifiedSha256: string;
+                    verifiedBytes: number;
+                    provenance: {
+                        issuer: string;
+                        /** Format: uri */
+                        originalUrl: string;
+                        /** Format: date-time */
+                        acquiredAt: string;
+                        permissionReference: string;
+                        limitations: string[];
+                        /** @enum {string} */
+                        state: "caller_declared";
+                    };
+                    /** @enum {string} */
+                    conversion: "unsupported";
+                    /** @enum {string} */
+                    bundleCompleteness: "single_original_only_archive_dependencies_not_assessed";
+                };
                 profile: string;
                 /** @enum {string} */
                 status: "ready" | "needs_input" | "failed";
@@ -2899,8 +3346,31 @@ export interface components {
             caseId: string;
             /** Format: uuid */
             sourceId: string;
+            /** Format: uuid */
+            jobId?: string;
         };
         GET_source_workspaces_Response_200_application_json: {
+            quarantine?: {
+                total: number;
+                accepted: number;
+                rejected: number;
+                rejections: {
+                    featureIndex: number;
+                    sourceKey: string | null;
+                    /** @enum {string} */
+                    code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
+                    reason: string;
+                }[];
+                /** @enum {string} */
+                version: "gis-quarantine/1";
+                sourceSha256: string;
+                /** Format: uuid */
+                sourceId?: string;
+                sourceRevision?: number;
+                message: string;
+                /** @enum {boolean} */
+                complete: false;
+            };
             /** Format: uuid */
             id: string;
             /** @enum {string} */
@@ -2914,6 +3384,7 @@ export interface components {
             state: "RECEIVED" | "NEEDS_INPUT" | "READY_FOR_REVIEW" | "REVIEWED" | "COMMITTED";
             sourceRevisionIds: string[];
             features: {
+                sourceFeatureIndex?: number;
                 /** Format: uuid */
                 id: string;
                 identifier: string;
@@ -3172,6 +3643,7 @@ export interface components {
                         geometries?: unknown[];
                     };
                     participants?: {
+                        sourceFeatureIndex?: number;
                         /** Format: uuid */
                         id: string;
                         identifier: string;
@@ -3369,6 +3841,27 @@ export interface components {
             caseId?: string;
         };
         POST_source_workspaces_Response_201_application_json: {
+            quarantine?: {
+                total: number;
+                accepted: number;
+                rejected: number;
+                rejections: {
+                    featureIndex: number;
+                    sourceKey: string | null;
+                    /** @enum {string} */
+                    code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
+                    reason: string;
+                }[];
+                /** @enum {string} */
+                version: "gis-quarantine/1";
+                sourceSha256: string;
+                /** Format: uuid */
+                sourceId?: string;
+                sourceRevision?: number;
+                message: string;
+                /** @enum {boolean} */
+                complete: false;
+            };
             /** Format: uuid */
             id: string;
             /** @enum {string} */
@@ -3382,6 +3875,7 @@ export interface components {
             state: "RECEIVED" | "NEEDS_INPUT" | "READY_FOR_REVIEW" | "REVIEWED" | "COMMITTED";
             sourceRevisionIds: string[];
             features: {
+                sourceFeatureIndex?: number;
                 /** Format: uuid */
                 id: string;
                 identifier: string;
@@ -3640,6 +4134,7 @@ export interface components {
                         geometries?: unknown[];
                     };
                     participants?: {
+                        sourceFeatureIndex?: number;
                         /** Format: uuid */
                         id: string;
                         identifier: string;
@@ -3903,6 +4398,149 @@ export interface components {
             featureCount?: number;
         }[];
         GET_areas_areaId_context_Response_200_application_json: {
+            displayFeatures?: {
+                sourceFeatureIndex?: number;
+                /** Format: uuid */
+                id: string;
+                identifier: string;
+                /** Format: uuid */
+                areaId: string;
+                revision: number;
+                /** Format: uuid */
+                sourceRevisionId: string;
+                datasetNamespace: string;
+                sourceKey: string;
+                name: string;
+                /** @enum {string} */
+                kind: "building" | "parcel" | "road" | "public_land" | "utility";
+                geometry: {
+                    /** @enum {string} */
+                    type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
+                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                    geometries?: unknown[];
+                };
+                geographicGeometry: {
+                    /** @enum {string} */
+                    type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
+                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                    geometries?: unknown[];
+                };
+                /** @description Retained source-specific or processor-specific value. */
+                sourceGeometry: unknown;
+                sourceReference?: {
+                    sourceCrs: string;
+                    analysisCrs: string;
+                    origin: (number)[];
+                    anchor: (number)[];
+                    transformVersion: string;
+                    verticalReference: string;
+                };
+                height: {
+                    /** @enum {string} */
+                    state: "unknown" | "unresolved" | "estimated" | "source_supported" | "reviewed";
+                    value: number | null;
+                    /** @enum {string} */
+                    unit: "m";
+                    meaning: string;
+                    reference: string;
+                    evidence?: {
+                        /** Format: uuid */
+                        sourceRevisionId: string;
+                        page?: number;
+                        row?: number;
+                        /** Format: uuid */
+                        partId?: string;
+                        featureId?: string;
+                        jsonPointer?: string;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized";
+                        };
+                    }[];
+                    /** Format: uuid */
+                    claimId?: string;
+                    method?: string;
+                    /** @description Retained source-specific or processor-specific value. */
+                    originalValue?: unknown;
+                    originalUnit?: string;
+                };
+                /** @enum {string} */
+                worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
+                properties: {
+                    [key: string]: unknown;
+                };
+                areaM2: number | null;
+                evidence: {
+                    /** Format: uuid */
+                    sourceRevisionId: string;
+                    page?: number;
+                    row?: number;
+                    /** Format: uuid */
+                    partId?: string;
+                    featureId?: string;
+                    jsonPointer?: string;
+                    region?: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized";
+                    };
+                }[];
+                /** @enum {string} */
+                representation: "physical_exterior" | "physical_context";
+                geometryRole?: string;
+                semantics?: {
+                    geometryRole?: string;
+                    evidenceState?: string;
+                    levelReference?: string;
+                    sourceDate?: string;
+                    validFrom?: string;
+                    validTo?: string;
+                    horizontalUncertaintyM?: number;
+                    approvalStatus?: string;
+                    floorCount?: number;
+                    assetId?: string;
+                };
+                verticalExtent?: {
+                    lower: number;
+                    upper: number;
+                    /** @enum {string} */
+                    unit: "m";
+                    reference: string;
+                    evidenceState: string;
+                    evidence: {
+                        /** Format: uuid */
+                        sourceRevisionId: string;
+                        page?: number;
+                        row?: number;
+                        /** Format: uuid */
+                        partId?: string;
+                        featureId?: string;
+                        jsonPointer?: string;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized";
+                        };
+                    }[];
+                };
+                utilityProfile?: {
+                    [key: string]: unknown;
+                };
+                /** @enum {string} */
+                displayState?: "unrecorded_proposal";
+                /** Format: uuid */
+                proposalPackageId?: string;
+            }[];
             area: {
                 /** Format: uuid */
                 id: string;
@@ -3934,6 +4572,7 @@ export interface components {
                 featureCount?: number;
             };
             features: {
+                sourceFeatureIndex?: number;
                 /** Format: uuid */
                 id: string;
                 identifier: string;
@@ -4072,6 +4711,27 @@ export interface components {
                 };
             }[];
             packages: {
+                quarantine?: {
+                    total: number;
+                    accepted: number;
+                    rejected: number;
+                    rejections: {
+                        featureIndex: number;
+                        sourceKey: string | null;
+                        /** @enum {string} */
+                        code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
+                        reason: string;
+                    }[];
+                    /** @enum {string} */
+                    version: "gis-quarantine/1";
+                    sourceSha256: string;
+                    /** Format: uuid */
+                    sourceId?: string;
+                    sourceRevision?: number;
+                    message: string;
+                    /** @enum {boolean} */
+                    complete: false;
+                };
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
@@ -4085,6 +4745,7 @@ export interface components {
                 state: "RECEIVED" | "NEEDS_INPUT" | "READY_FOR_REVIEW" | "REVIEWED" | "COMMITTED";
                 sourceRevisionIds: string[];
                 features: {
+                    sourceFeatureIndex?: number;
                     /** Format: uuid */
                     id: string;
                     identifier: string;
@@ -4343,6 +5004,7 @@ export interface components {
                             geometries?: unknown[];
                         };
                         participants?: {
+                            sourceFeatureIndex?: number;
                             /** Format: uuid */
                             id: string;
                             identifier: string;
@@ -4558,6 +5220,7 @@ export interface components {
                         geometries?: unknown[];
                     };
                     participants?: {
+                        sourceFeatureIndex?: number;
                         /** Format: uuid */
                         id: string;
                         identifier: string;
@@ -4854,6 +5517,7 @@ export interface components {
                     featureCount?: number;
                 };
                 feature?: {
+                    sourceFeatureIndex?: number;
                     /** Format: uuid */
                     id: string;
                     identifier: string;
@@ -5012,6 +5676,7 @@ export interface components {
                     id?: string;
                     identifier?: string;
                     feature?: {
+                        sourceFeatureIndex?: number;
                         /** Format: uuid */
                         id: string;
                         identifier: string;
@@ -5155,6 +5820,7 @@ export interface components {
                     [key: string]: unknown;
                 })[];
                 confirmedBuildings?: {
+                    sourceFeatureIndex?: number;
                     /** Format: uuid */
                     id: string;
                     identifier: string;
@@ -5386,6 +6052,27 @@ export interface components {
             layer?: string;
         };
         POST_import_packages_inspect_Response_200_application_json: {
+            quarantine?: {
+                total: number;
+                accepted: number;
+                rejected: number;
+                rejections: {
+                    featureIndex: number;
+                    sourceKey: string | null;
+                    /** @enum {string} */
+                    code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
+                    reason: string;
+                }[];
+                /** @enum {string} */
+                version: "gis-quarantine/1";
+                sourceSha256: string;
+                /** Format: uuid */
+                sourceId?: string;
+                sourceRevision?: number;
+                message: string;
+                /** @enum {boolean} */
+                complete: false;
+            };
             /** @enum {string} */
             format: "geojson" | "arcgis" | "gpkg" | "shapefile_zip";
             sourceSha256: string;
@@ -5565,6 +6252,7 @@ export interface components {
                     geometries?: unknown[];
                 };
                 participants?: {
+                    sourceFeatureIndex?: number;
                     /** Format: uuid */
                     id: string;
                     identifier: string;
@@ -5876,6 +6564,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
                 id: string;
                 siteId: string;
                 identifier: string;
@@ -6029,6 +6816,105 @@ export interface components {
                     }[];
                     officialUlpin?: string;
                     synthetic: boolean;
+                    registryMetadata?: {
+                        address?: {
+                            line?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            locality?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            district?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            region?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            postalCode?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            country?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        occupancy?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            people: {
+                                name: string;
+                                /** @enum {string} */
+                                role: "resident" | "occupant";
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            }[];
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
                     id: string;
                     siteId: string;
                     identifier: string;
@@ -6170,6 +7056,105 @@ export interface components {
                     }[];
                     officialUlpin?: string;
                     synthetic: boolean;
+                    registryMetadata?: {
+                        address?: {
+                            line?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            locality?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            district?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            region?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            postalCode?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            country?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        occupancy?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            people: {
+                                name: string;
+                                /** @enum {string} */
+                                role: "resident" | "occupant";
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            }[];
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
                     id: string;
                     siteId: string;
                     identifier: string;
@@ -6263,6 +7248,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
             };
             /** Format: uuid */
             requestKey?: string;
@@ -6337,6 +7421,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
                 id: string;
                 siteId: string;
                 identifier: string;
@@ -6442,6 +7625,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
                 id: string;
                 siteId: string;
                 identifier: string;
@@ -6526,6 +7808,105 @@ export interface components {
                     }[];
                     officialUlpin?: string;
                     synthetic: boolean;
+                    registryMetadata?: {
+                        address?: {
+                            line?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            locality?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            district?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            region?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            postalCode?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            country?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        occupancy?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            people: {
+                                name: string;
+                                /** @enum {string} */
+                                role: "resident" | "occupant";
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            }[];
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
                 };
                 site_revision: number;
                 created_at: string;
@@ -6604,6 +7985,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
                 id: string;
                 siteId: string;
                 identifier: string;
@@ -6688,6 +8168,105 @@ export interface components {
                     }[];
                     officialUlpin?: string;
                     synthetic: boolean;
+                    registryMetadata?: {
+                        address?: {
+                            line?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            locality?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            district?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            region?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            postalCode?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            country?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        occupancy?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            people: {
+                                name: string;
+                                /** @enum {string} */
+                                role: "resident" | "occupant";
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            }[];
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
                 };
                 site_revision: number;
                 created_at: string;
@@ -6759,6 +8338,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
                 id: string;
                 siteId: string;
                 identifier: string;
@@ -6843,6 +8521,105 @@ export interface components {
                     }[];
                     officialUlpin?: string;
                     synthetic: boolean;
+                    registryMetadata?: {
+                        address?: {
+                            line?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            locality?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            district?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            region?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            postalCode?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            country?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        occupancy?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            people: {
+                                name: string;
+                                /** @enum {string} */
+                                role: "resident" | "occupant";
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            }[];
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
                 };
                 site_revision: number;
                 created_at: string;
@@ -7011,6 +8788,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
             };
         };
         POST_registry_drafts_draftId_review_Request_application_json: {
@@ -7101,6 +8977,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
                 id: string;
                 siteId: string;
                 identifier: string;
@@ -7170,6 +9145,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
                 id: string;
                 siteId: string;
                 identifier: string;
@@ -8386,6 +10460,105 @@ export interface components {
                             }[];
                             officialUlpin?: string;
                             synthetic: boolean;
+                            registryMetadata?: {
+                                address?: {
+                                    line?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    locality?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    district?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    region?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    postalCode?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    country?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                };
+                                occupancy?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    people: {
+                                        name: string;
+                                        /** @enum {string} */
+                                        role: "resident" | "occupant";
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    }[];
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                            };
                             id: string;
                             siteId: string;
                             identifier: string;
@@ -8456,6 +10629,105 @@ export interface components {
                                 }[];
                                 officialUlpin?: string;
                                 synthetic: boolean;
+                                registryMetadata?: {
+                                    address?: {
+                                        line?: {
+                                            /** @enum {string} */
+                                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                            value: string | null;
+                                            evidence: {
+                                                /** Format: uuid */
+                                                sourceId: string;
+                                                sourceRevision: number;
+                                                sourceSha256: string;
+                                                locator: string;
+                                            }[];
+                                        };
+                                        locality?: {
+                                            /** @enum {string} */
+                                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                            value: string | null;
+                                            evidence: {
+                                                /** Format: uuid */
+                                                sourceId: string;
+                                                sourceRevision: number;
+                                                sourceSha256: string;
+                                                locator: string;
+                                            }[];
+                                        };
+                                        district?: {
+                                            /** @enum {string} */
+                                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                            value: string | null;
+                                            evidence: {
+                                                /** Format: uuid */
+                                                sourceId: string;
+                                                sourceRevision: number;
+                                                sourceSha256: string;
+                                                locator: string;
+                                            }[];
+                                        };
+                                        region?: {
+                                            /** @enum {string} */
+                                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                            value: string | null;
+                                            evidence: {
+                                                /** Format: uuid */
+                                                sourceId: string;
+                                                sourceRevision: number;
+                                                sourceSha256: string;
+                                                locator: string;
+                                            }[];
+                                        };
+                                        postalCode?: {
+                                            /** @enum {string} */
+                                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                            value: string | null;
+                                            evidence: {
+                                                /** Format: uuid */
+                                                sourceId: string;
+                                                sourceRevision: number;
+                                                sourceSha256: string;
+                                                locator: string;
+                                            }[];
+                                        };
+                                        country?: {
+                                            /** @enum {string} */
+                                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                            value: string | null;
+                                            evidence: {
+                                                /** Format: uuid */
+                                                sourceId: string;
+                                                sourceRevision: number;
+                                                sourceSha256: string;
+                                                locator: string;
+                                            }[];
+                                        };
+                                    };
+                                    occupancy?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        people: {
+                                            name: string;
+                                            /** @enum {string} */
+                                            role: "resident" | "occupant";
+                                            evidence: {
+                                                /** Format: uuid */
+                                                sourceId: string;
+                                                sourceRevision: number;
+                                                sourceSha256: string;
+                                                locator: string;
+                                            }[];
+                                        }[];
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                };
                                 id: string;
                                 siteId: string;
                                 identifier: string;
@@ -9847,6 +12119,105 @@ export interface components {
                 }[];
                 officialUlpin?: string;
                 synthetic: boolean;
+                registryMetadata?: {
+                    address?: {
+                        line?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        locality?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        district?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        region?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        postalCode?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                        country?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
+                    occupancy?: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        people: {
+                            name: string;
+                            /** @enum {string} */
+                            role: "resident" | "occupant";
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        }[];
+                        evidence: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceRevision: number;
+                            sourceSha256: string;
+                            locator: string;
+                        }[];
+                    };
+                };
                 id: string;
                 siteId: string;
                 identifier: string;
@@ -9917,6 +12288,105 @@ export interface components {
                     }[];
                     officialUlpin?: string;
                     synthetic: boolean;
+                    registryMetadata?: {
+                        address?: {
+                            line?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            locality?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            district?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            region?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            postalCode?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            country?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        occupancy?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            people: {
+                                name: string;
+                                /** @enum {string} */
+                                role: "resident" | "occupant";
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            }[];
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
                     id: string;
                     siteId: string;
                     identifier: string;
@@ -11248,6 +13718,105 @@ export interface components {
                         }[];
                         officialUlpin?: string;
                         synthetic: boolean;
+                        registryMetadata?: {
+                            address?: {
+                                line?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                locality?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                district?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                region?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                postalCode?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                country?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                            };
+                            occupancy?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                people: {
+                                    name: string;
+                                    /** @enum {string} */
+                                    role: "resident" | "occupant";
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                }[];
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
                         id: string;
                         siteId: string;
                         identifier: string;
@@ -11318,6 +13887,105 @@ export interface components {
                             }[];
                             officialUlpin?: string;
                             synthetic: boolean;
+                            registryMetadata?: {
+                                address?: {
+                                    line?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    locality?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    district?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    region?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    postalCode?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    country?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                };
+                                occupancy?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    people: {
+                                        name: string;
+                                        /** @enum {string} */
+                                        role: "resident" | "occupant";
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    }[];
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                            };
                             id: string;
                             siteId: string;
                             identifier: string;
@@ -13092,6 +15760,105 @@ export interface components {
                         }[];
                         officialUlpin?: string;
                         synthetic: boolean;
+                        registryMetadata?: {
+                            address?: {
+                                line?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                locality?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                district?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                region?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                postalCode?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                country?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                            };
+                            occupancy?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                people: {
+                                    name: string;
+                                    /** @enum {string} */
+                                    role: "resident" | "occupant";
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                }[];
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
                         id: string;
                         siteId: string;
                         identifier: string;
@@ -13162,6 +15929,105 @@ export interface components {
                             }[];
                             officialUlpin?: string;
                             synthetic: boolean;
+                            registryMetadata?: {
+                                address?: {
+                                    line?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    locality?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    district?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    region?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    postalCode?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    country?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                };
+                                occupancy?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    people: {
+                                        name: string;
+                                        /** @enum {string} */
+                                        role: "resident" | "occupant";
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    }[];
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                            };
                             id: string;
                             siteId: string;
                             identifier: string;
@@ -13863,6 +16729,189 @@ export interface components {
                 };
             };
             scope: string;
+        } | {
+            /** @enum {string} */
+            schemaVersion: "building-registry-summary/1";
+            /** Format: date-time */
+            generatedAt: string;
+            selection: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "building" | "floor" | "space";
+            };
+            /** @enum {string} */
+            recordState: "recorded" | "unrecorded";
+            sourcePackage: {
+                /** Format: uuid */
+                id: string;
+                revision: number;
+                state: string;
+            } | null;
+            unrecordedFacts: {
+                /** @enum {string} */
+                address: "unknown";
+                /** @enum {string} */
+                ownership: "unknown";
+                /** @enum {string} */
+                residents: "unknown";
+                /** @enum {string} */
+                parcelAssociations: "unknown";
+                /** @enum {string} */
+                officialUlpin: "unknown";
+            } | null;
+            groups: {
+                /** @enum {string} */
+                kind: "building" | "floor" | "multiple_parents" | "outside_selection" | "unlinked" | "cycle";
+                parentIds: string[];
+                recordIds: string[];
+            }[];
+            building: {
+                /** Format: uuid */
+                id: string;
+                applicationId: string;
+                /** @enum {string} */
+                kind: "parcel" | "building" | "floor" | "space";
+                revision: number;
+                name: {
+                    /** @enum {string} */
+                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                    value: string | null;
+                    sources: string[];
+                };
+                areaName: {
+                    /** @enum {string} */
+                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                    value: string | null;
+                    sources: string[];
+                };
+                areaRevision: number;
+                siteRevision: number;
+                /** Format: date-time */
+                recordedAt: string | null;
+            };
+            parcels: {
+                /** Format: uuid */
+                id: string;
+                applicationId: string;
+                /** @enum {string} */
+                kind: "parcel" | "building" | "floor" | "space";
+                revision: number;
+                /** @enum {string} */
+                authority: "physical_feature" | "registry_record";
+                relationship: string;
+                associationState: string;
+                sources: string[];
+                officialAssertions: {
+                    value: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        value: string | null;
+                        sources: string[];
+                    };
+                    issuer: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        value: string | null;
+                        sources: string[];
+                    };
+                    state: string;
+                }[];
+            }[];
+            records: {
+                /** Format: uuid */
+                id: string;
+                applicationId: string;
+                /** @enum {string} */
+                kind: "parcel" | "building" | "floor" | "space";
+                revision: number;
+                name: {
+                    /** @enum {string} */
+                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                    value: string | null;
+                    sources: string[];
+                };
+                /** Format: date-time */
+                recordedAt: string | null;
+                links: {
+                    /** Format: uuid */
+                    targetId: string;
+                    /** @enum {string} */
+                    type: "within" | "floor" | "serves" | "crosses";
+                }[];
+                address: {
+                    line: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        value: string | null;
+                        sources: string[];
+                    };
+                    locality: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        value: string | null;
+                        sources: string[];
+                    };
+                    district: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        value: string | null;
+                        sources: string[];
+                    };
+                    region: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        value: string | null;
+                        sources: string[];
+                    };
+                    postalCode: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        value: string | null;
+                        sources: string[];
+                    };
+                    country: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        value: string | null;
+                        sources: string[];
+                    };
+                };
+                ownershipClaims: {
+                    party: {
+                        /** @enum {string} */
+                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                        value: string | null;
+                        sources: string[];
+                    };
+                    sources: string[];
+                }[];
+                occupancy: {
+                    /** @enum {string} */
+                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                    people: {
+                        name: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            value: string | null;
+                            sources: string[];
+                        };
+                        /** @enum {string} */
+                        role: "resident" | "occupant";
+                    }[];
+                    sources: string[];
+                };
+            }[];
+            sources: {
+                /** Format: uuid */
+                id: string;
+                revision: number;
+                sha256: string;
+                profile: string;
+                /** Format: date-time */
+                receivedAt: string;
+            }[];
+            omissions: string[];
         };
         GET_buildings_buildingId_register_Response_200_text_csv: string;
         POST_buildings_buildingId_preparation_cases_Request_application_json: {
@@ -14155,6 +17204,105 @@ export interface components {
                     }[];
                     officialUlpin?: string;
                     synthetic: boolean;
+                    registryMetadata?: {
+                        address?: {
+                            line?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            locality?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            district?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            region?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            postalCode?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            country?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        occupancy?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            people: {
+                                name: string;
+                                /** @enum {string} */
+                                role: "resident" | "occupant";
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            }[];
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
                     id: string;
                     siteId: string;
                     identifier: string;
@@ -14224,6 +17372,105 @@ export interface components {
                     }[];
                     officialUlpin?: string;
                     synthetic: boolean;
+                    registryMetadata?: {
+                        address?: {
+                            line?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            locality?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            district?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            region?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            postalCode?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            country?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        occupancy?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            people: {
+                                name: string;
+                                /** @enum {string} */
+                                role: "resident" | "occupant";
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            }[];
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
                     id: string;
                     siteId: string;
                     identifier: string;
@@ -15454,6 +18701,105 @@ export interface components {
                     }[];
                     officialUlpin?: string;
                     synthetic: boolean;
+                    registryMetadata?: {
+                        address?: {
+                            line?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            locality?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            district?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            region?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            postalCode?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                            country?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                value: string | null;
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        occupancy?: {
+                            /** @enum {string} */
+                            state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                            people: {
+                                name: string;
+                                /** @enum {string} */
+                                role: "resident" | "occupant";
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            }[];
+                            evidence: {
+                                /** Format: uuid */
+                                sourceId: string;
+                                sourceRevision: number;
+                                sourceSha256: string;
+                                locator: string;
+                            }[];
+                        };
+                    };
                     id: string;
                     siteId: string;
                     identifier: string;
@@ -15524,6 +18870,105 @@ export interface components {
                         }[];
                         officialUlpin?: string;
                         synthetic: boolean;
+                        registryMetadata?: {
+                            address?: {
+                                line?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                locality?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                district?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                region?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                postalCode?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                country?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                            };
+                            occupancy?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                people: {
+                                    name: string;
+                                    /** @enum {string} */
+                                    role: "resident" | "occupant";
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                }[];
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
                         id: string;
                         siteId: string;
                         identifier: string;
@@ -16258,6 +19703,1837 @@ export interface components {
                 };
             }[];
         };
+        GET_investigations_investigationId_export_Response_200_application_json: {
+            schemaVersion: string;
+            exportedAt: string;
+            property: {
+                id: string;
+                identifier: string;
+                ulpin3d: string;
+                name: string;
+                revision: number;
+                geometryRole: string;
+                worldStatus: string;
+                geometry: {
+                    /** @enum {string} */
+                    type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                    geometries?: {
+                        type: string;
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            [key: string]: unknown;
+                        }[];
+                    }[];
+                };
+                geographicGeometry?: {
+                    /** @enum {string} */
+                    type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                    geometries?: {
+                        type: string;
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            [key: string]: unknown;
+                        }[];
+                    }[];
+                };
+                height: {
+                    state: string;
+                    value: number | null;
+                    unit: string;
+                    meaning: string;
+                    reference: string;
+                    /** @description Source-shaped JSON value retained without interpretation */
+                    originalValue?: unknown;
+                    originalUnit?: string;
+                    evidence?: {
+                        sourceRevisionId: string;
+                        partId?: string;
+                        featureId?: string;
+                        page?: number;
+                        row?: number;
+                        jsonPointer?: string;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            unit: string;
+                        };
+                    }[];
+                    claimId?: string;
+                    method?: string;
+                };
+            };
+            area: {
+                id: string;
+                siteId: string;
+                name: string;
+                revision: number;
+                reference: {
+                    sourceCrs: string;
+                    analysisCrs: string;
+                    origin: number[];
+                    anchor: number[];
+                    transformVersion: string;
+                    verticalReference: string;
+                } | null;
+                extent: number[] | null;
+                geographicExtent: number[] | null;
+                administrativeUnits: {
+                    id: string;
+                    kind: string;
+                    name: string;
+                    code?: string;
+                    authority?: string;
+                    source?: string;
+                }[];
+                dataKind?: string;
+                featureCount?: number;
+            };
+            associations: {
+                id: string;
+                revision: number;
+                fromId: string;
+                toId: string;
+                relationship: string;
+                status: string;
+                evidence: {
+                    sourceRevisionId: string;
+                    partId?: string;
+                    featureId?: string;
+                    page?: number;
+                    row?: number;
+                    jsonPointer?: string;
+                    region?: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        unit: string;
+                    };
+                }[];
+                reason: string;
+                actor: string;
+                updatedAt: string;
+                fromRevision: number;
+                toRevision: number;
+            }[];
+            parcelIdentifiers: {
+                parcelId: string;
+                scheme: string;
+                value: string;
+                issuer: string;
+                evidence: {
+                    sourceRevisionId?: string;
+                    locator?: string;
+                };
+            }[];
+            register: {
+                id: string;
+                identifier: string;
+                ulpin3d: string;
+                name: string;
+                kind: string;
+                revision: number;
+                use?: string;
+                footprint: number[][];
+                geometry?: {
+                    id: string;
+                    alias: string;
+                    name: string;
+                    kind: string;
+                    footprint: number[][];
+                    lower: number | null;
+                    upper: number | null;
+                    lowerVerified: boolean;
+                    upperVerified: boolean;
+                    bindings: {
+                        footprint?: {
+                            sourceId: string;
+                            locator: string;
+                        };
+                        lower?: {
+                            sourceId: string;
+                            locator: string;
+                        };
+                        upper?: {
+                            sourceId: string;
+                            locator: string;
+                        };
+                        alignment?: {
+                            sourceId: string;
+                            locator: string;
+                        };
+                    };
+                    revision: number;
+                    levelLabel: string;
+                    calibration?: {
+                        sourceId: string;
+                        page: number;
+                        imagePoints: number[][];
+                        worldPoints: number[][];
+                    };
+                    area?: number;
+                    height?: number;
+                    volume?: number;
+                };
+                links: {
+                    targetId: string;
+                    type: string;
+                }[];
+                evidence: {
+                    sourceId: string;
+                    locator: string;
+                }[];
+            }[];
+            sources: {
+                id: string;
+                name: string;
+                sha256: string;
+                revision: number;
+                profile: string;
+                createdAt: string;
+                url: string;
+                evidence: {
+                    sourceRevisionId: string;
+                    partId?: string;
+                    featureId?: string;
+                    page?: number;
+                    row?: number;
+                    jsonPointer?: string;
+                    region?: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        unit: string;
+                    };
+                }[];
+            }[];
+            missing: string[];
+            selection: {
+                id: string;
+                kind: string;
+                name: string;
+                ulpin3d: string;
+            };
+            ulpin3d: string;
+            buildingUlpin3d: string;
+            findingsScope: string;
+            geometryQualification: {
+                state: string;
+                purpose: string;
+                missing: {
+                    ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                }[];
+            };
+            findings: {
+                id: string;
+                category: string;
+                code: string;
+                message: string;
+                featureIds: string[];
+                areaM2?: number;
+                volumeM3?: number;
+                geometry?: {
+                    /** @enum {string} */
+                    type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                    geometries?: {
+                        type: string;
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            [key: string]: unknown;
+                        }[];
+                    }[];
+                };
+                geographicGeometry?: {
+                    /** @enum {string} */
+                    type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                    geometries?: {
+                        type: string;
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            [key: string]: unknown;
+                        }[];
+                    }[];
+                };
+                participants?: {
+                    id: string;
+                    identifier: string;
+                    areaId: string;
+                    revision: number;
+                    sourceRevisionId: string;
+                    datasetNamespace: string;
+                    evidence: {
+                        sourceRevisionId: string;
+                        partId?: string;
+                        featureId?: string;
+                        page?: number;
+                        row?: number;
+                        jsonPointer?: string;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            unit: string;
+                        };
+                    }[];
+                    representation: string;
+                    sourceKey: string;
+                    name: string;
+                    kind: string;
+                    sourceGeometry: {
+                        [key: string]: unknown;
+                    };
+                    sourceReference?: {
+                        sourceCrs: string;
+                        analysisCrs: string;
+                        origin: number[];
+                        anchor: number[];
+                        transformVersion: string;
+                        verticalReference: string;
+                    };
+                    geometry: {
+                        /** @enum {string} */
+                        type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            type: string;
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                [key: string]: unknown;
+                            }[];
+                        }[];
+                    };
+                    geographicGeometry: {
+                        /** @enum {string} */
+                        type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            type: string;
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                [key: string]: unknown;
+                            }[];
+                        }[];
+                    };
+                    height: {
+                        state: string;
+                        value: number | null;
+                        unit: string;
+                        meaning: string;
+                        reference: string;
+                        /** @description Source-shaped JSON value retained without interpretation */
+                        originalValue?: unknown;
+                        originalUnit?: string;
+                        evidence?: {
+                            sourceRevisionId: string;
+                            partId?: string;
+                            featureId?: string;
+                            page?: number;
+                            row?: number;
+                            jsonPointer?: string;
+                            region?: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                unit: string;
+                            };
+                        }[];
+                        claimId?: string;
+                        method?: string;
+                    };
+                    worldStatus: string;
+                    properties: {
+                        [key: string]: unknown;
+                    };
+                    areaM2: number | null;
+                    geometryRole?: string;
+                    semantics?: {
+                        geometryRole?: string;
+                        evidenceState?: string;
+                        levelReference?: string;
+                        sourceDate?: string;
+                        validFrom?: string;
+                        validTo?: string;
+                        horizontalUncertaintyM?: number;
+                        approvalStatus?: string;
+                        floorCount?: number;
+                        assetId?: string;
+                    };
+                    verticalExtent?: {
+                        lower: number;
+                        upper: number;
+                        unit: string;
+                        reference: string;
+                        evidenceState: string;
+                        evidence: {
+                            sourceRevisionId: string;
+                            partId?: string;
+                            featureId?: string;
+                            page?: number;
+                            row?: number;
+                            jsonPointer?: string;
+                            region?: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                unit: string;
+                            };
+                        }[];
+                    };
+                    utilityProfile?: {
+                        [key: string]: unknown;
+                    };
+                }[];
+                method?: string;
+                inputRevisions?: {
+                    featureId: string;
+                    revision: number;
+                    sourceRevisionId: string;
+                }[];
+                evidence?: {
+                    sourceRevisionId: string;
+                    partId?: string;
+                    featureId?: string;
+                    page?: number;
+                    row?: number;
+                    jsonPointer?: string;
+                    region?: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        unit: string;
+                    };
+                }[];
+                quantities?: {
+                    [key: string]: number;
+                };
+                limitations?: string[];
+            }[];
+            findingQualification: {
+                state: string;
+                missing: {
+                    findingId: string;
+                    participantId: string | null;
+                    reason: string;
+                }[];
+            };
+            historicalFindings?: {
+                purpose: string;
+                currentAnalyticalEligibility: boolean;
+                findings: {
+                    id: string;
+                    category: string;
+                    code: string;
+                    message: string;
+                    featureIds: string[];
+                    areaM2?: number;
+                    volumeM3?: number;
+                    geometry?: {
+                        /** @enum {string} */
+                        type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            type: string;
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                [key: string]: unknown;
+                            }[];
+                        }[];
+                    };
+                    geographicGeometry?: {
+                        /** @enum {string} */
+                        type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            type: string;
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                [key: string]: unknown;
+                            }[];
+                        }[];
+                    };
+                    participants?: {
+                        id: string;
+                        identifier: string;
+                        areaId: string;
+                        revision: number;
+                        sourceRevisionId: string;
+                        datasetNamespace: string;
+                        evidence: {
+                            sourceRevisionId: string;
+                            partId?: string;
+                            featureId?: string;
+                            page?: number;
+                            row?: number;
+                            jsonPointer?: string;
+                            region?: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                unit: string;
+                            };
+                        }[];
+                        representation: string;
+                        sourceKey: string;
+                        name: string;
+                        kind: string;
+                        sourceGeometry: {
+                            [key: string]: unknown;
+                        };
+                        sourceReference?: {
+                            sourceCrs: string;
+                            analysisCrs: string;
+                            origin: number[];
+                            anchor: number[];
+                            transformVersion: string;
+                            verticalReference: string;
+                        };
+                        geometry: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        geographicGeometry: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        height: {
+                            state: string;
+                            value: number | null;
+                            unit: string;
+                            meaning: string;
+                            reference: string;
+                            /** @description Source-shaped JSON value retained without interpretation */
+                            originalValue?: unknown;
+                            originalUnit?: string;
+                            evidence?: {
+                                sourceRevisionId: string;
+                                partId?: string;
+                                featureId?: string;
+                                page?: number;
+                                row?: number;
+                                jsonPointer?: string;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    unit: string;
+                                };
+                            }[];
+                            claimId?: string;
+                            method?: string;
+                        };
+                        worldStatus: string;
+                        properties: {
+                            [key: string]: unknown;
+                        };
+                        areaM2: number | null;
+                        geometryRole?: string;
+                        semantics?: {
+                            geometryRole?: string;
+                            evidenceState?: string;
+                            levelReference?: string;
+                            sourceDate?: string;
+                            validFrom?: string;
+                            validTo?: string;
+                            horizontalUncertaintyM?: number;
+                            approvalStatus?: string;
+                            floorCount?: number;
+                            assetId?: string;
+                        };
+                        verticalExtent?: {
+                            lower: number;
+                            upper: number;
+                            unit: string;
+                            reference: string;
+                            evidenceState: string;
+                            evidence: {
+                                sourceRevisionId: string;
+                                partId?: string;
+                                featureId?: string;
+                                page?: number;
+                                row?: number;
+                                jsonPointer?: string;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    unit: string;
+                                };
+                            }[];
+                        };
+                        utilityProfile?: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    method?: string;
+                    inputRevisions?: {
+                        featureId: string;
+                        revision: number;
+                        sourceRevisionId: string;
+                    }[];
+                    evidence?: {
+                        sourceRevisionId: string;
+                        partId?: string;
+                        featureId?: string;
+                        page?: number;
+                        row?: number;
+                        jsonPointer?: string;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            unit: string;
+                        };
+                    }[];
+                    quantities?: {
+                        [key: string]: number;
+                    };
+                    limitations?: string[];
+                }[];
+            };
+            investigation?: {
+                id: string;
+                revision: number;
+                buildingId: string;
+                areaId: string;
+                reference: string;
+                status: string;
+                classification: string;
+                notes: string;
+                nextAction: string;
+                inputSnapshot: {
+                    areaRevision: number;
+                    featureRevision: number;
+                    checkId?: string;
+                    fingerprint: string;
+                };
+                registerSnapshot?: {
+                    building: {
+                        id: string;
+                        identifier: string;
+                        areaId: string;
+                        revision: number;
+                        sourceRevisionId: string;
+                        datasetNamespace: string;
+                        evidence: {
+                            sourceRevisionId: string;
+                            partId?: string;
+                            featureId?: string;
+                            page?: number;
+                            row?: number;
+                            jsonPointer?: string;
+                            region?: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                unit: string;
+                            };
+                        }[];
+                        representation: string;
+                        sourceKey: string;
+                        name: string;
+                        kind: string;
+                        sourceGeometry: {
+                            [key: string]: unknown;
+                        };
+                        sourceReference?: {
+                            sourceCrs: string;
+                            analysisCrs: string;
+                            origin: number[];
+                            anchor: number[];
+                            transformVersion: string;
+                            verticalReference: string;
+                        };
+                        geometry: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        geographicGeometry: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        height: {
+                            state: string;
+                            value: number | null;
+                            unit: string;
+                            meaning: string;
+                            reference: string;
+                            /** @description Source-shaped JSON value retained without interpretation */
+                            originalValue?: unknown;
+                            originalUnit?: string;
+                            evidence?: {
+                                sourceRevisionId: string;
+                                partId?: string;
+                                featureId?: string;
+                                page?: number;
+                                row?: number;
+                                jsonPointer?: string;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    unit: string;
+                                };
+                            }[];
+                            claimId?: string;
+                            method?: string;
+                        };
+                        worldStatus: string;
+                        properties: {
+                            [key: string]: unknown;
+                        };
+                        areaM2: number | null;
+                        geometryRole?: string;
+                        semantics?: {
+                            geometryRole?: string;
+                            evidenceState?: string;
+                            levelReference?: string;
+                            sourceDate?: string;
+                            validFrom?: string;
+                            validTo?: string;
+                            horizontalUncertaintyM?: number;
+                            approvalStatus?: string;
+                            floorCount?: number;
+                            assetId?: string;
+                        };
+                        verticalExtent?: {
+                            lower: number;
+                            upper: number;
+                            unit: string;
+                            reference: string;
+                            evidenceState: string;
+                            evidence: {
+                                sourceRevisionId: string;
+                                partId?: string;
+                                featureId?: string;
+                                page?: number;
+                                row?: number;
+                                jsonPointer?: string;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    unit: string;
+                                };
+                            }[];
+                        };
+                        utilityProfile?: {
+                            [key: string]: unknown;
+                        };
+                    };
+                    area: {
+                        id: string;
+                        siteId: string;
+                        name: string;
+                        revision: number;
+                        reference: {
+                            sourceCrs: string;
+                            analysisCrs: string;
+                            origin: number[];
+                            anchor: number[];
+                            transformVersion: string;
+                            verticalReference: string;
+                        } | null;
+                        extent: number[] | null;
+                        geographicExtent: number[] | null;
+                        administrativeUnits: {
+                            id: string;
+                            kind: string;
+                            name: string;
+                            code?: string;
+                            authority?: string;
+                            source?: string;
+                        }[];
+                        dataKind?: string;
+                        featureCount?: number;
+                    };
+                    records: {
+                        alias: string;
+                        name: string;
+                        kind: string;
+                        use?: string;
+                        footprint: number[][];
+                        geometry?: {
+                            id: string;
+                            alias: string;
+                            name: string;
+                            kind: string;
+                            footprint: number[][];
+                            lower: number | null;
+                            upper: number | null;
+                            lowerVerified: boolean;
+                            upperVerified: boolean;
+                            bindings: {
+                                footprint?: {
+                                    sourceId: string;
+                                    locator: string;
+                                };
+                                lower?: {
+                                    sourceId: string;
+                                    locator: string;
+                                };
+                                upper?: {
+                                    sourceId: string;
+                                    locator: string;
+                                };
+                                alignment?: {
+                                    sourceId: string;
+                                    locator: string;
+                                };
+                            };
+                            revision: number;
+                            levelLabel: string;
+                            calibration?: {
+                                sourceId: string;
+                                page: number;
+                                imagePoints: number[][];
+                                worldPoints: number[][];
+                            };
+                            area?: number;
+                            height?: number;
+                            volume?: number;
+                        };
+                        links: {
+                            targetId: string;
+                            type: string;
+                        }[];
+                        rights: {
+                            party: string;
+                            type: string;
+                            evidence: {
+                                sourceId: string;
+                                locator: string;
+                            };
+                        }[];
+                        evidence: {
+                            sourceId: string;
+                            locator: string;
+                        }[];
+                        officialUlpin?: string;
+                        synthetic: boolean;
+                        registryMetadata?: {
+                            address?: {
+                                line?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                locality?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                district?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                region?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                postalCode?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                                country?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    value: string | null;
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                            };
+                            occupancy?: {
+                                /** @enum {string} */
+                                state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                people: {
+                                    name: string;
+                                    /** @enum {string} */
+                                    role: "resident" | "occupant";
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                }[];
+                                evidence: {
+                                    /** Format: uuid */
+                                    sourceId: string;
+                                    sourceRevision: number;
+                                    sourceSha256: string;
+                                    locator: string;
+                                }[];
+                            };
+                        };
+                        id: string;
+                        siteId: string;
+                        identifier: string;
+                        revision: number;
+                    }[];
+                    detailedScene: {
+                        record: {
+                            alias: string;
+                            name: string;
+                            kind: string;
+                            use?: string;
+                            footprint: number[][];
+                            geometry?: {
+                                id: string;
+                                alias: string;
+                                name: string;
+                                kind: string;
+                                footprint: number[][];
+                                lower: number | null;
+                                upper: number | null;
+                                lowerVerified: boolean;
+                                upperVerified: boolean;
+                                bindings: {
+                                    footprint?: {
+                                        sourceId: string;
+                                        locator: string;
+                                    };
+                                    lower?: {
+                                        sourceId: string;
+                                        locator: string;
+                                    };
+                                    upper?: {
+                                        sourceId: string;
+                                        locator: string;
+                                    };
+                                    alignment?: {
+                                        sourceId: string;
+                                        locator: string;
+                                    };
+                                };
+                                revision: number;
+                                levelLabel: string;
+                                calibration?: {
+                                    sourceId: string;
+                                    page: number;
+                                    imagePoints: number[][];
+                                    worldPoints: number[][];
+                                };
+                                area?: number;
+                                height?: number;
+                                volume?: number;
+                            };
+                            links: {
+                                targetId: string;
+                                type: string;
+                            }[];
+                            rights: {
+                                party: string;
+                                type: string;
+                                evidence: {
+                                    sourceId: string;
+                                    locator: string;
+                                };
+                            }[];
+                            evidence: {
+                                sourceId: string;
+                                locator: string;
+                            }[];
+                            officialUlpin?: string;
+                            synthetic: boolean;
+                            registryMetadata?: {
+                                address?: {
+                                    line?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    locality?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    district?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    region?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    postalCode?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                    country?: {
+                                        /** @enum {string} */
+                                        state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                        value: string | null;
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    };
+                                };
+                                occupancy?: {
+                                    /** @enum {string} */
+                                    state: "recorded" | "unknown" | "absent" | "null" | "withheld" | "conflicting";
+                                    people: {
+                                        name: string;
+                                        /** @enum {string} */
+                                        role: "resident" | "occupant";
+                                        evidence: {
+                                            /** Format: uuid */
+                                            sourceId: string;
+                                            sourceRevision: number;
+                                            sourceSha256: string;
+                                            locator: string;
+                                        }[];
+                                    }[];
+                                    evidence: {
+                                        /** Format: uuid */
+                                        sourceId: string;
+                                        sourceRevision: number;
+                                        sourceSha256: string;
+                                        locator: string;
+                                    }[];
+                                };
+                            };
+                            id: string;
+                            siteId: string;
+                            identifier: string;
+                            revision: number;
+                        };
+                        geographicGeometry?: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        localGeometry?: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        lower?: number;
+                        upper?: number;
+                        verticalReference?: string;
+                    }[];
+                    sources: {
+                        id: string;
+                        name: string;
+                        sha256: string;
+                        revision: number;
+                        profile: string;
+                        createdAt: string;
+                        url: string;
+                        evidence: {
+                            sourceRevisionId: string;
+                            partId?: string;
+                            featureId?: string;
+                            page?: number;
+                            row?: number;
+                            jsonPointer?: string;
+                            region?: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                unit: string;
+                            };
+                        }[];
+                    }[];
+                    associations: {
+                        id: string;
+                        revision: number;
+                        fromId: string;
+                        toId: string;
+                        relationship: string;
+                        status: string;
+                        evidence: {
+                            sourceRevisionId: string;
+                            partId?: string;
+                            featureId?: string;
+                            page?: number;
+                            row?: number;
+                            jsonPointer?: string;
+                            region?: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                unit: string;
+                            };
+                        }[];
+                        reason: string;
+                        actor: string;
+                        updatedAt: string;
+                        fromRevision: number;
+                        toRevision: number;
+                    }[];
+                    parcels: {
+                        feature: {
+                            id: string;
+                            identifier: string;
+                            areaId: string;
+                            revision: number;
+                            sourceRevisionId: string;
+                            datasetNamespace: string;
+                            evidence: {
+                                sourceRevisionId: string;
+                                partId?: string;
+                                featureId?: string;
+                                page?: number;
+                                row?: number;
+                                jsonPointer?: string;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    unit: string;
+                                };
+                            }[];
+                            representation: string;
+                            sourceKey: string;
+                            name: string;
+                            kind: string;
+                            sourceGeometry: {
+                                [key: string]: unknown;
+                            };
+                            sourceReference?: {
+                                sourceCrs: string;
+                                analysisCrs: string;
+                                origin: number[];
+                                anchor: number[];
+                                transformVersion: string;
+                                verticalReference: string;
+                            };
+                            geometry: {
+                                /** @enum {string} */
+                                type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    type: string;
+                                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                    geometries?: {
+                                        [key: string]: unknown;
+                                    }[];
+                                }[];
+                            };
+                            geographicGeometry: {
+                                /** @enum {string} */
+                                type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    type: string;
+                                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                    geometries?: {
+                                        [key: string]: unknown;
+                                    }[];
+                                }[];
+                            };
+                            height: {
+                                state: string;
+                                value: number | null;
+                                unit: string;
+                                meaning: string;
+                                reference: string;
+                                /** @description Source-shaped JSON value retained without interpretation */
+                                originalValue?: unknown;
+                                originalUnit?: string;
+                                evidence?: {
+                                    sourceRevisionId: string;
+                                    partId?: string;
+                                    featureId?: string;
+                                    page?: number;
+                                    row?: number;
+                                    jsonPointer?: string;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        unit: string;
+                                    };
+                                }[];
+                                claimId?: string;
+                                method?: string;
+                            };
+                            worldStatus: string;
+                            properties: {
+                                [key: string]: unknown;
+                            };
+                            areaM2: number | null;
+                            geometryRole?: string;
+                            semantics?: {
+                                geometryRole?: string;
+                                evidenceState?: string;
+                                levelReference?: string;
+                                sourceDate?: string;
+                                validFrom?: string;
+                                validTo?: string;
+                                horizontalUncertaintyM?: number;
+                                approvalStatus?: string;
+                                floorCount?: number;
+                                assetId?: string;
+                            };
+                            verticalExtent?: {
+                                lower: number;
+                                upper: number;
+                                unit: string;
+                                reference: string;
+                                evidenceState: string;
+                                evidence: {
+                                    sourceRevisionId: string;
+                                    partId?: string;
+                                    featureId?: string;
+                                    page?: number;
+                                    row?: number;
+                                    jsonPointer?: string;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        unit: string;
+                                    };
+                                }[];
+                            };
+                            utilityProfile?: {
+                                [key: string]: unknown;
+                            };
+                        };
+                        association?: {
+                            id: string;
+                            revision: number;
+                            fromId: string;
+                            toId: string;
+                            relationship: string;
+                            status: string;
+                            evidence: {
+                                sourceRevisionId: string;
+                                partId?: string;
+                                featureId?: string;
+                                page?: number;
+                                row?: number;
+                                jsonPointer?: string;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    unit: string;
+                                };
+                            }[];
+                            reason: string;
+                            actor: string;
+                            updatedAt: string;
+                            fromRevision: number;
+                            toRevision: number;
+                        };
+                        status: string;
+                    }[];
+                    parcelIdentifiers?: {
+                        parcelId: string;
+                        scheme: string;
+                        value: string;
+                        issuer: string;
+                        evidence: {
+                            sourceRevisionId?: string;
+                            locator?: string;
+                        };
+                    }[];
+                    missing: string[];
+                };
+                findings: {
+                    id: string;
+                    category: string;
+                    code: string;
+                    message: string;
+                    featureIds: string[];
+                    areaM2?: number;
+                    volumeM3?: number;
+                    geometry?: {
+                        /** @enum {string} */
+                        type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            type: string;
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                [key: string]: unknown;
+                            }[];
+                        }[];
+                    };
+                    geographicGeometry?: {
+                        /** @enum {string} */
+                        type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                        geometries?: {
+                            type: string;
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                [key: string]: unknown;
+                            }[];
+                        }[];
+                    };
+                    participants?: {
+                        id: string;
+                        identifier: string;
+                        areaId: string;
+                        revision: number;
+                        sourceRevisionId: string;
+                        datasetNamespace: string;
+                        evidence: {
+                            sourceRevisionId: string;
+                            partId?: string;
+                            featureId?: string;
+                            page?: number;
+                            row?: number;
+                            jsonPointer?: string;
+                            region?: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                unit: string;
+                            };
+                        }[];
+                        representation: string;
+                        sourceKey: string;
+                        name: string;
+                        kind: string;
+                        sourceGeometry: {
+                            [key: string]: unknown;
+                        };
+                        sourceReference?: {
+                            sourceCrs: string;
+                            analysisCrs: string;
+                            origin: number[];
+                            anchor: number[];
+                            transformVersion: string;
+                            verticalReference: string;
+                        };
+                        geometry: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        geographicGeometry: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        height: {
+                            state: string;
+                            value: number | null;
+                            unit: string;
+                            meaning: string;
+                            reference: string;
+                            /** @description Source-shaped JSON value retained without interpretation */
+                            originalValue?: unknown;
+                            originalUnit?: string;
+                            evidence?: {
+                                sourceRevisionId: string;
+                                partId?: string;
+                                featureId?: string;
+                                page?: number;
+                                row?: number;
+                                jsonPointer?: string;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    unit: string;
+                                };
+                            }[];
+                            claimId?: string;
+                            method?: string;
+                        };
+                        worldStatus: string;
+                        properties: {
+                            [key: string]: unknown;
+                        };
+                        areaM2: number | null;
+                        geometryRole?: string;
+                        semantics?: {
+                            geometryRole?: string;
+                            evidenceState?: string;
+                            levelReference?: string;
+                            sourceDate?: string;
+                            validFrom?: string;
+                            validTo?: string;
+                            horizontalUncertaintyM?: number;
+                            approvalStatus?: string;
+                            floorCount?: number;
+                            assetId?: string;
+                        };
+                        verticalExtent?: {
+                            lower: number;
+                            upper: number;
+                            unit: string;
+                            reference: string;
+                            evidenceState: string;
+                            evidence: {
+                                sourceRevisionId: string;
+                                partId?: string;
+                                featureId?: string;
+                                page?: number;
+                                row?: number;
+                                jsonPointer?: string;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    unit: string;
+                                };
+                            }[];
+                        };
+                        utilityProfile?: {
+                            [key: string]: unknown;
+                        };
+                    }[];
+                    method?: string;
+                    inputRevisions?: {
+                        featureId: string;
+                        revision: number;
+                        sourceRevisionId: string;
+                    }[];
+                    evidence?: {
+                        sourceRevisionId: string;
+                        partId?: string;
+                        featureId?: string;
+                        page?: number;
+                        row?: number;
+                        jsonPointer?: string;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            unit: string;
+                        };
+                    }[];
+                    quantities?: {
+                        [key: string]: number;
+                    };
+                    limitations?: string[];
+                }[];
+                evidence: {
+                    sourceRevisionId: string;
+                    partId?: string;
+                    featureId?: string;
+                    page?: number;
+                    row?: number;
+                    jsonPointer?: string;
+                    region?: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        unit: string;
+                    };
+                }[];
+                requests: {
+                    id: string;
+                    question: string;
+                    status: string;
+                    response?: string;
+                    evidence: {
+                        sourceRevisionId: string;
+                        partId?: string;
+                        featureId?: string;
+                        page?: number;
+                        row?: number;
+                        jsonPointer?: string;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            unit: string;
+                        };
+                    }[];
+                    createdAt: string;
+                    answeredAt?: string;
+                }[];
+                history: {
+                    actor: string;
+                    time: string;
+                    reason: string;
+                    status: string;
+                }[];
+                createdAt: string;
+                updatedAt: string;
+                analysisState?: string;
+                findingQualification?: {
+                    state: string;
+                    missing: {
+                        findingId: string;
+                        participantId: string | null;
+                        reason: string;
+                    }[];
+                };
+                historicalFindings?: {
+                    purpose: string;
+                    currentAnalyticalEligibility: boolean;
+                    findings: {
+                        id: string;
+                        category: string;
+                        code: string;
+                        message: string;
+                        featureIds: string[];
+                        areaM2?: number;
+                        volumeM3?: number;
+                        geometry?: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        geographicGeometry?: {
+                            /** @enum {string} */
+                            type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                            geometries?: {
+                                type: string;
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    [key: string]: unknown;
+                                }[];
+                            }[];
+                        };
+                        participants?: {
+                            id: string;
+                            identifier: string;
+                            areaId: string;
+                            revision: number;
+                            sourceRevisionId: string;
+                            datasetNamespace: string;
+                            evidence: {
+                                sourceRevisionId: string;
+                                partId?: string;
+                                featureId?: string;
+                                page?: number;
+                                row?: number;
+                                jsonPointer?: string;
+                                region?: {
+                                    x: number;
+                                    y: number;
+                                    width: number;
+                                    height: number;
+                                    unit: string;
+                                };
+                            }[];
+                            representation: string;
+                            sourceKey: string;
+                            name: string;
+                            kind: string;
+                            sourceGeometry: {
+                                [key: string]: unknown;
+                            };
+                            sourceReference?: {
+                                sourceCrs: string;
+                                analysisCrs: string;
+                                origin: number[];
+                                anchor: number[];
+                                transformVersion: string;
+                                verticalReference: string;
+                            };
+                            geometry: {
+                                /** @enum {string} */
+                                type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    type: string;
+                                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                    geometries?: {
+                                        [key: string]: unknown;
+                                    }[];
+                                }[];
+                            };
+                            geographicGeometry: {
+                                /** @enum {string} */
+                                type: "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon" | "GeometryCollection";
+                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                geometries?: {
+                                    type: string;
+                                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                                    geometries?: {
+                                        [key: string]: unknown;
+                                    }[];
+                                }[];
+                            };
+                            height: {
+                                state: string;
+                                value: number | null;
+                                unit: string;
+                                meaning: string;
+                                reference: string;
+                                /** @description Source-shaped JSON value retained without interpretation */
+                                originalValue?: unknown;
+                                originalUnit?: string;
+                                evidence?: {
+                                    sourceRevisionId: string;
+                                    partId?: string;
+                                    featureId?: string;
+                                    page?: number;
+                                    row?: number;
+                                    jsonPointer?: string;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        unit: string;
+                                    };
+                                }[];
+                                claimId?: string;
+                                method?: string;
+                            };
+                            worldStatus: string;
+                            properties: {
+                                [key: string]: unknown;
+                            };
+                            areaM2: number | null;
+                            geometryRole?: string;
+                            semantics?: {
+                                geometryRole?: string;
+                                evidenceState?: string;
+                                levelReference?: string;
+                                sourceDate?: string;
+                                validFrom?: string;
+                                validTo?: string;
+                                horizontalUncertaintyM?: number;
+                                approvalStatus?: string;
+                                floorCount?: number;
+                                assetId?: string;
+                            };
+                            verticalExtent?: {
+                                lower: number;
+                                upper: number;
+                                unit: string;
+                                reference: string;
+                                evidenceState: string;
+                                evidence: {
+                                    sourceRevisionId: string;
+                                    partId?: string;
+                                    featureId?: string;
+                                    page?: number;
+                                    row?: number;
+                                    jsonPointer?: string;
+                                    region?: {
+                                        x: number;
+                                        y: number;
+                                        width: number;
+                                        height: number;
+                                        unit: string;
+                                    };
+                                }[];
+                            };
+                            utilityProfile?: {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        method?: string;
+                        inputRevisions?: {
+                            featureId: string;
+                            revision: number;
+                            sourceRevisionId: string;
+                        }[];
+                        evidence?: {
+                            sourceRevisionId: string;
+                            partId?: string;
+                            featureId?: string;
+                            page?: number;
+                            row?: number;
+                            jsonPointer?: string;
+                            region?: {
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                unit: string;
+                            };
+                        }[];
+                        quantities?: {
+                            [key: string]: number;
+                        };
+                        limitations?: string[];
+                    }[];
+                };
+            };
+            scope: string;
+        };
         POST_usp_snapshots_Request_application_json: {
             scopeId: string;
             world: {
@@ -16574,9 +21850,9 @@ export interface components {
                         readonly sufficiency: {
                             task: string;
                             readonly requirements: string[];
+                            readonly missing: string[];
                             /** @enum {string} */
                             outcome: "sufficient" | "partial" | "insufficient_for_spatial_reconstruction";
-                            readonly missing: string[];
                         };
                     };
                     readonly representations: {
@@ -16854,9 +22130,9 @@ export interface components {
                         readonly sufficiency: {
                             task: string;
                             readonly requirements: string[];
+                            readonly missing: string[];
                             /** @enum {string} */
                             outcome: "sufficient" | "partial" | "insufficient_for_spatial_reconstruction";
-                            readonly missing: string[];
                         };
                     };
                     readonly representations: {
@@ -17154,9 +22430,9 @@ export interface components {
                             readonly sufficiency: {
                                 task: string;
                                 readonly requirements: string[];
+                                readonly missing: string[];
                                 /** @enum {string} */
                                 outcome: "sufficient" | "partial" | "insufficient_for_spatial_reconstruction";
-                                readonly missing: string[];
                             };
                         };
                         readonly representations: {
@@ -17376,9 +22652,9 @@ export interface components {
                             readonly sufficiency: {
                                 task: string;
                                 readonly requirements: string[];
+                                readonly missing: string[];
                                 /** @enum {string} */
                                 outcome: "sufficient" | "partial" | "insufficient_for_spatial_reconstruction";
-                                readonly missing: string[];
                             };
                         };
                         readonly representations: {
@@ -17598,9 +22874,9 @@ export interface components {
                             readonly sufficiency: {
                                 task: string;
                                 readonly requirements: string[];
+                                readonly missing: string[];
                                 /** @enum {string} */
                                 outcome: "sufficient" | "partial" | "insufficient_for_spatial_reconstruction";
-                                readonly missing: string[];
                             };
                         };
                         readonly representations: {
@@ -24290,6 +29566,1207 @@ export interface components {
             requestKey: string;
             expectedRecipeRevision: number;
         };
+        GET_ingestion_upload_limits_Response_200_application_json: {
+            limits: {
+                /** @enum {string} */
+                version: "large-original/1";
+                /** @enum {number} */
+                partBytes: 8388608;
+                /** @enum {number} */
+                maxOriginalBytes: 134217728;
+                /** @enum {number} */
+                maxParts: 16;
+                /** @enum {number} */
+                maxActivePerCase: 2;
+                /** @enum {number} */
+                maxActivePerOperator: 2;
+                /** @enum {number} */
+                maxActiveGlobal: 4;
+                /** @enum {number} */
+                maxUploadReceipts: 128;
+                /** @enum {number} */
+                maxZeroPayloadFenceObjectsPerReceipt: 17;
+                /** @enum {number} */
+                maxReservedOriginalBytes: 536870912;
+                /** @enum {number} */
+                maxStoredBytesIncludingTemporaryCopies: 1073741824;
+                /** @enum {number} */
+                uploadLifetimeSeconds: 86400;
+                /** @enum {number} */
+                partRequestSeconds: 30;
+                /** @enum {number} */
+                storageRequestSeconds: 30;
+                /** @enum {number} */
+                leaseSeconds: 180;
+                /** @enum {number} */
+                finalizationSeconds: 120;
+                /** @enum {number} */
+                cleanupSeconds: 120;
+                /** @enum {number} */
+                maxFinalizationAttempts: 3;
+                /** @enum {number} */
+                maxPartAttempts: 3;
+                /** @enum {number} */
+                maxConcurrentDownloads: 2;
+                /** @enum {number} */
+                downloadSeconds: 120;
+                /** @enum {string} */
+                storageProfile: "unversioned_private_conditional_put";
+                /** @enum {string} */
+                cleanupProtection: "permanent_zero_payload_fences";
+            };
+            /** @enum {string} */
+            profile: "opaque_original_only";
+            /** @enum {string} */
+            conversion: "unsupported";
+        };
+        POST_ingestion_cases_caseId_uploads_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedCaseRevision: number;
+            filename: string;
+            /** @enum {string} */
+            mediaType: "application/zip" | "application/octet-stream";
+            bytes: number;
+            sha256: string;
+            provenance: {
+                issuer: string;
+                /** Format: uri */
+                originalUrl: string;
+                /** Format: date-time */
+                acquiredAt: string;
+                permissionReference: string;
+                limitations: string[];
+            };
+        };
+        POST_ingestion_cases_caseId_uploads_Response_201_application_json: {
+            /** @enum {string} */
+            version: "large-original/1";
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            caseId: string;
+            revision: number;
+            currentCaseRevision: number;
+            pinnedCaseRevision: number;
+            /** @enum {string} */
+            state: "receiving" | "finalizing" | "retained" | "aborting" | "aborted";
+            operatorSubject: string;
+            filename: string;
+            mediaType: string;
+            bytes: number;
+            declaredSha256: string;
+            verifiedSha256: string | null;
+            /** @enum {number} */
+            partBytes: 8388608;
+            partCount: number;
+            receivedBytes: number;
+            /** Format: date-time */
+            expiresAt: string;
+            parts: {
+                partNumber: number;
+                bytes: number;
+                /** @enum {string} */
+                state: "writing" | "failed" | "received";
+                sha256: string;
+                /** Format: uuid */
+                requestKey: string;
+                attempts: number;
+                /** Format: date-time */
+                leaseExpiresAt: string | null;
+            }[];
+            source: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sha256: string;
+                bytes: number;
+            } | null;
+            /** @enum {string} */
+            conversion: "unsupported";
+            /** @enum {string} */
+            bundleCompleteness: "single_original_only_archive_dependencies_not_assessed";
+            cleanupPending: boolean;
+            lastError: string | null;
+        };
+        POST_ingestion_cases_caseId_uploads_uploadId_finalize_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedRevision: number;
+            expectedCaseRevision: number;
+            sha256: string;
+        };
+        POST_ingestion_cases_caseId_uploads_uploadId_abort_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedRevision: number;
+            expectedCaseRevision: number;
+        };
+        GET_ingestion_cases_caseId_events_Response_403_application_json: {
+            error: {
+                code: string;
+                message: string;
+                /** Format: uuid */
+                requestId: string;
+                details?: unknown;
+            };
+        };
+        POST_ingestion_cases_caseId_sources_sourceId_projected_vector_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedCaseRevision: number;
+            expectedSourceRevision: number;
+            sourceSha256: string;
+            /** @enum {string} */
+            semanticChunks?: "nwic-semantic-chunks/1";
+        };
+        POST_ingestion_cases_caseId_sources_sourceId_projected_vector_Response_202_application_json: {
+            /** @enum {string} */
+            version: "nwic-district-vector/1";
+            /** Format: uuid */
+            caseId: string;
+            /** Format: uuid */
+            sourceId: string;
+            sourceRevision: number;
+            sourceSha256: string;
+            currentCaseRevision: number;
+            /** Format: uuid */
+            jobId: string;
+            /** @enum {string} */
+            status: "queued" | "running" | "succeeded" | "failed" | "stale";
+            totals: {
+                /** @enum {number} */
+                features: 733;
+                /** @enum {number} */
+                positions: 3125505;
+                /** @enum {number} */
+                nativeValid: 720;
+                /** @enum {number} */
+                nativeInvalid: 13;
+                admitted: number;
+                quarantined: number;
+            } | null;
+            transform: {
+                /** @enum {string} */
+                sourceCrs: "EPSG:7755";
+                /** @enum {string} */
+                targetCrs: "EPSG:4326";
+                /** @enum {string} */
+                axisOrder: "always_xy";
+                /** @enum {string} */
+                sourceUnit: "metre";
+                /** @enum {string} */
+                targetUnit: "degree";
+                /** @enum {string|null} */
+                verticalReference: null;
+                /** @enum {string} */
+                pyproj: "3.6.1";
+                /** @enum {string} */
+                proj: "9.3.0";
+                /** @enum {string} */
+                shapely: "2.0.7";
+                projDatabaseSha256: string;
+                definition: string;
+                /** @enum {boolean} */
+                network: false;
+                /** @enum {boolean} */
+                ballpark: false;
+                grids: unknown[];
+                /** @enum {string} */
+                accuracyQualification: "numerical_transform_only_not_survey_accuracy";
+                parserSha256: string;
+            } | null;
+            errorCode: string | null;
+            currentSourceAccepted?: boolean;
+            displayMilestones?: {
+                /** @enum {string} */
+                phase: "early" | "middle" | "final";
+                /** Format: uuid */
+                jobId: string | null;
+                /** @enum {string} */
+                state: "reserved" | "queued" | "running" | "succeeded" | "failed" | "stale" | "unavailable";
+                errorCode: string | null;
+            }[];
+            coverage?: {
+                /** @enum {string} */
+                kind: "committed_partial";
+                /** @enum {boolean} */
+                sourceAccepted: false;
+                throughSequence: number;
+                expectedChunks: number;
+                records: number;
+                admitted: number;
+                quarantined: number;
+                positions: number;
+                /** @enum {number} */
+                expectedRecords: 733;
+                remainingRecords: number;
+                prefixDependencySha256: string;
+            };
+            chunk?: {
+                sequence: number;
+                sha256: string;
+            };
+        };
+        GET_ingestion_cases_caseId_sources_sourceId_projected_vector_jobs_jobId_chunks_sequence_Response_200_application_json: {
+            pin: {
+                sequence: number;
+                sha256: string;
+            };
+            chunk: {
+                /** @enum {string} */
+                version: "nwic-semantic-chunks/1";
+                /** Format: uuid */
+                jobId: string;
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                /** Format: uuid */
+                sourceFamilyId: string;
+                /** @enum {string} */
+                sourceSha256: "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37";
+                inputFingerprint: string;
+                accessBinding: string;
+                publisherSha256: string;
+                indexSha256: string;
+                transform: {
+                    /** @enum {string} */
+                    sourceCrs: "EPSG:7755";
+                    /** @enum {string} */
+                    targetCrs: "EPSG:4326";
+                    /** @enum {string} */
+                    axisOrder: "always_xy";
+                    /** @enum {string} */
+                    sourceUnit: "metre";
+                    /** @enum {string} */
+                    targetUnit: "degree";
+                    /** @enum {string|null} */
+                    verticalReference: null;
+                    /** @enum {string} */
+                    pyproj: "3.6.1";
+                    /** @enum {string} */
+                    proj: "9.3.0";
+                    /** @enum {string} */
+                    shapely: "2.0.7";
+                    projDatabaseSha256: string;
+                    definition: string;
+                    /** @enum {boolean} */
+                    network: false;
+                    /** @enum {boolean} */
+                    ballpark: false;
+                    grids: unknown[];
+                    /** @enum {string} */
+                    accuracyQualification: "numerical_transform_only_not_survey_accuracy";
+                    parserSha256: string;
+                };
+                partition: {
+                    sequence: number;
+                    first: number;
+                    last: number;
+                    records: number;
+                    positions: number;
+                    referencedBytes: number;
+                };
+                previous: {
+                    sequence: number;
+                    sha256: string;
+                } | null;
+                attempt: number;
+                fence: number;
+                records: {
+                    featureIndex: number;
+                    /** Format: uuid */
+                    unitId: string;
+                    key: {
+                        /** @enum {string} */
+                        type: "number";
+                        value: number;
+                    } | {
+                        /** @enum {string} */
+                        type: "string";
+                        value: string;
+                    };
+                    /** @enum {string} */
+                    disposition: "admitted" | "quarantined";
+                    rawSha256: string;
+                    geographicSha256: string | null;
+                    nativeGeometrySha256: string;
+                    geographicGeometrySha256: string | null;
+                    recordSha256: string;
+                }[];
+                coverage: {
+                    /** @enum {string} */
+                    kind: "committed_partial";
+                    /** @enum {boolean} */
+                    sourceAccepted: false;
+                    throughSequence: number;
+                    expectedChunks: number;
+                    records: number;
+                    admitted: number;
+                    quarantined: number;
+                    positions: number;
+                    /** @enum {number} */
+                    expectedRecords: 733;
+                    remainingRecords: number;
+                    prefixDependencySha256: string;
+                };
+            };
+            currentSourceAccepted: boolean;
+            /** @enum {string} */
+            sourceJobStatus: "queued" | "running" | "succeeded" | "failed" | "stale";
+        };
+        GET_ingestion_cases_caseId_sources_sourceId_projected_vector_units_Response_200_application_json: {
+            /** Format: uuid */
+            jobId: string;
+            records: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "district";
+                /** @enum {string} */
+                namespace: "nwic:district-boundary:8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d";
+                nativeKey: {
+                    /** @enum {string} */
+                    type: "number";
+                    value: number;
+                } | {
+                    /** @enum {string} */
+                    type: "string";
+                    value: string;
+                };
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                /** Format: uuid */
+                jobId: string;
+                featureIndex: number;
+                locator: {
+                    /** @enum {string} */
+                    member: "district_nwic.GeoJSON";
+                    start: number;
+                    end: number;
+                };
+                name: string;
+                code: string | null;
+                /** @enum {string} */
+                disposition: "admitted" | "quarantined";
+                reason: string | null;
+                nativeBounds: (number)[];
+                geographicBounds: (number)[] | null;
+                rawSha256: string;
+                geographicSha256: string | null;
+                /** @enum {string} */
+                sourceCrs: "EPSG:7755";
+                /** @enum {string} */
+                geographicCrs: "EPSG:4326";
+                /** @enum {string|null} */
+                verticalReference: null;
+                /** @enum {string} */
+                purpose: "administrative_context";
+                /** @enum {string} */
+                accuracyQualification: "source_boundary_accuracy_and_currentness_unqualified";
+            }[];
+            next: number | null;
+            coverage?: {
+                /** @enum {string} */
+                kind: "committed_partial";
+                /** @enum {boolean} */
+                sourceAccepted: false;
+                throughSequence: number;
+                expectedChunks: number;
+                records: number;
+                admitted: number;
+                quarantined: number;
+                positions: number;
+                /** @enum {number} */
+                expectedRecords: 733;
+                remainingRecords: number;
+                prefixDependencySha256: string;
+            };
+            chunk?: {
+                sequence: number;
+                sha256: string;
+            };
+        };
+        POST_ingestion_cases_caseId_sources_sourceId_private_mvt_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedCaseRevision: number;
+            expectedSourceRevision: number;
+            /** Format: uuid */
+            admissionJobId: string;
+            expectedGeneration: {
+                /** Format: uuid */
+                jobId: string;
+                version: number;
+                sha256: string;
+            } | null;
+            window: {
+                z: number;
+                minX: number;
+                maxX: number;
+                minY: number;
+                maxY: number;
+            } | null;
+            /** @default [] */
+            revalidateUnitIds: string[];
+            chunk?: {
+                sequence: number;
+                sha256: string;
+            };
+        };
+        POST_ingestion_cases_caseId_sources_sourceId_private_mvt_Response_202_application_json: {
+            /** @enum {string} */
+            version: "nwic-private-mvt/1";
+            /** Format: uuid */
+            caseId: string;
+            /** Format: uuid */
+            sourceId: string;
+            currentCaseRevision: number;
+            /** Format: uuid */
+            jobId: string;
+            /** @enum {string} */
+            status: "queued" | "running" | "succeeded" | "failed" | "stale";
+            /** @enum {string} */
+            context: "current" | "stale";
+            generation: {
+                /** Format: uuid */
+                jobId: string;
+                version: number;
+                sha256: string;
+            } | null;
+            preparedCells: number;
+            plannedCells: number;
+            errorCode: string | null;
+        };
+        GET_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_Response_200_application_json: {
+            pin: {
+                /** Format: uuid */
+                jobId: string;
+                version: number;
+                sha256: string;
+            };
+            /** @enum {string} */
+            jobStatus: "queued" | "running" | "succeeded" | "failed" | "stale";
+            manifest: {
+                /** @enum {string} */
+                version: "nwic-private-mvt/1";
+                /** @enum {string} */
+                grid: "xyz-webmercator-4096-b64/1";
+                /** Format: uuid */
+                generationId: string;
+                sequence: number;
+                fence: number;
+                attempt: number;
+                source: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    /** Format: uuid */
+                    sourceFamilyId: string;
+                    /** @enum {string} */
+                    sha256: "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37";
+                    /** Format: uuid */
+                    admissionJobId: string;
+                    admissionIndexSha256: string;
+                    admissionInputFingerprint: string;
+                    sourceDependencySha256: string;
+                    accessBinding: string;
+                    /** @enum {string} */
+                    namespace: "nwic:district-boundary:8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d";
+                    chunk?: {
+                        pin: {
+                            sequence: number;
+                            sha256: string;
+                        };
+                        coverage: {
+                            /** @enum {string} */
+                            kind: "committed_partial";
+                            /** @enum {boolean} */
+                            sourceAccepted: false;
+                            throughSequence: number;
+                            expectedChunks: number;
+                            records: number;
+                            admitted: number;
+                            quarantined: number;
+                            positions: number;
+                            /** @enum {number} */
+                            expectedRecords: 733;
+                            remainingRecords: number;
+                            prefixDependencySha256: string;
+                        };
+                    };
+                };
+                compiler: {
+                    codeSha256: string;
+                    policySha256: string;
+                    postgis: string;
+                    sha256: string;
+                    sourceTransformSha256: string;
+                    /** @enum {string} */
+                    sourceCrs: "EPSG:4326";
+                    /** @enum {string} */
+                    targetCrs: "EPSG:3857";
+                    /** @enum {string} */
+                    axisOrder: "always_xy";
+                    /** @enum {string|null} */
+                    verticalReference: null;
+                };
+                base: {
+                    /** Format: uuid */
+                    jobId: string;
+                    version: number;
+                    sha256: string;
+                } | null;
+                window: {
+                    z: number;
+                    minX: number;
+                    maxX: number;
+                    minY: number;
+                    maxY: number;
+                } | null;
+                catalog: {
+                    z: number;
+                    x: number;
+                    y: number;
+                }[];
+                pending: {
+                    z: number;
+                    x: number;
+                    y: number;
+                }[];
+                cells: {
+                    cell: {
+                        z: number;
+                        x: number;
+                        y: number;
+                    };
+                    bounds3857: (number)[];
+                    tile: {
+                        key: string;
+                        sha256: string;
+                        bytes: number;
+                    };
+                    identityMap: {
+                        key: string;
+                        sha256: string;
+                        bytes: number;
+                    };
+                    candidates: number;
+                    emitted: number;
+                    omittedByDisplay: number;
+                    dependencySha256: string;
+                    reused: boolean;
+                }[];
+                /** @description Requested display-cell catalog readiness, not complete source admission. */
+                complete: boolean;
+                invalidation: {
+                    /** @enum {string} */
+                    version: "xyz-webmercator-4096-b64/1";
+                    cells: {
+                        z: number;
+                        x: number;
+                        y: number;
+                    }[];
+                    changes: {
+                        /** Format: uuid */
+                        unitId: string;
+                        /** @enum {string} */
+                        kind: "added" | "removed" | "changed" | "revalidated";
+                        oldBounds: (number)[] | null;
+                        newBounds: (number)[] | null;
+                    }[];
+                    /** @enum {boolean} */
+                    includeHalo: true;
+                    /** @enum {boolean} */
+                    includeParents: true;
+                };
+                sourceCoverage?: {
+                    /** @enum {string} */
+                    state: "partial" | "complete";
+                    sourceAccepted: boolean;
+                    committedRecords: number;
+                    remainingRecords: number;
+                    /** @enum {number} */
+                    expectedRecords: 733;
+                };
+                excludedQuarantined: number;
+                /** @enum {number} */
+                extent: 4096;
+                /** @enum {number} */
+                buffer: 64;
+                /** @enum {string} */
+                layer: "nwic_districts";
+                /** @enum {string} */
+                purpose: "administrative_context";
+                /** @enum {boolean} */
+                analyticEligible: false;
+                limitations: ("display_quantization_clipping_may_omit_collapse_or_repair_geometry" | "administrative_context_not_property_geometry" | "source_accuracy_currentness_unqualified" | "post_admission_only_multi_chunk_import_stream_gate_pending" | "committed_partial_source_coverage_not_complete_admission")[];
+            };
+        };
+        GET_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_tiles_z_x_y_units_unitId_Response_200_application_json: {
+            generation: {
+                /** Format: uuid */
+                jobId: string;
+                version: number;
+                sha256: string;
+            };
+            mvtId: number;
+            observation: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "district";
+                /** @enum {string} */
+                namespace: "nwic:district-boundary:8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d";
+                nativeKey: {
+                    /** @enum {string} */
+                    type: "number";
+                    value: number;
+                } | {
+                    /** @enum {string} */
+                    type: "string";
+                    value: string;
+                };
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                /** Format: uuid */
+                jobId: string;
+                featureIndex: number;
+                locator: {
+                    /** @enum {string} */
+                    member: "district_nwic.GeoJSON";
+                    start: number;
+                    end: number;
+                };
+                name: string;
+                code: string | null;
+                /** @enum {string} */
+                disposition: "admitted" | "quarantined";
+                reason: string | null;
+                nativeBounds: (number)[];
+                geographicBounds: (number)[] | null;
+                rawSha256: string;
+                geographicSha256: string | null;
+                /** @enum {string} */
+                sourceCrs: "EPSG:7755";
+                /** @enum {string} */
+                geographicCrs: "EPSG:4326";
+                /** @enum {string|null} */
+                verticalReference: null;
+                /** @enum {string} */
+                purpose: "administrative_context";
+                /** @enum {string} */
+                accuracyQualification: "source_boundary_accuracy_and_currentness_unqualified";
+            };
+            sourceChunk?: {
+                pin: {
+                    sequence: number;
+                    sha256: string;
+                };
+                coverage: {
+                    /** @enum {string} */
+                    kind: "committed_partial";
+                    /** @enum {boolean} */
+                    sourceAccepted: false;
+                    throughSequence: number;
+                    expectedChunks: number;
+                    records: number;
+                    admitted: number;
+                    quarantined: number;
+                    positions: number;
+                    /** @enum {number} */
+                    expectedRecords: 733;
+                    remainingRecords: number;
+                    prefixDependencySha256: string;
+                };
+            };
+        };
+        POST_ingestion_cases_caseId_documents_Request_multipart_form_data: {
+            /** Format: binary */
+            file: string;
+            /** Format: uuid */
+            requestKey: string;
+            expectedCaseRevision: number;
+            /** @enum {string} */
+            mode?: "native_only" | "propose";
+            /** Format: uuid */
+            familyId?: string;
+            expectedSourceRevision?: number;
+        };
+        POST_ingestion_cases_caseId_documents_Response_201_application_json: {
+            /** @enum {string} */
+            version: "source-document/1";
+            /** Format: uuid */
+            caseId: string;
+            caseRevision: number;
+            /** Format: uuid */
+            sourceId: string;
+            sourceRevision: number;
+            sourceSha256: string;
+            bytes: number;
+            /** Format: uuid */
+            jobId: string;
+        };
+        GET_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId_Response_200_application_json: {
+            /** @enum {string} */
+            version: "source-document/1";
+            /** Format: uuid */
+            caseId: string;
+            /** Format: uuid */
+            sourceId: string;
+            /** Format: uuid */
+            jobId: string;
+            /** @enum {string} */
+            status: "queued" | "running" | "completed" | "failed" | "stale";
+            currentCaseRevision: number;
+            sourceRevision: number;
+            sourceSha256: string;
+            resultSha256: string | null;
+            native: {
+                /** @enum {string} */
+                status: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
+                /** @enum {string} */
+                format: "pdf" | "text" | "csv" | "docx" | "png" | "jpeg" | "archive" | "unsupported";
+                readerSha256: string;
+                code: string | null;
+                warnings: string[];
+            } | null;
+            model: {
+                /** @enum {string} */
+                status: "not_requested" | "disabled" | "unavailable" | "blocked" | "needs_input" | "proposed";
+                code: string | null;
+                candidates: {
+                    field: string;
+                    value: string;
+                    /** Format: uuid */
+                    partId: string;
+                    quote: string;
+                }[];
+                validationErrors: string[];
+                calls: {
+                    /** Format: uuid */
+                    callId: string;
+                    responseSha256: string;
+                }[];
+            } | null;
+            parts: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                text: string;
+                sha256: string;
+                locator: {
+                    label: string;
+                    page?: number;
+                    row?: number;
+                    line?: number;
+                    paragraph?: number;
+                    table?: number;
+                    column?: number;
+                    characterStart: number;
+                    characterEnd: number;
+                };
+                /** @enum {string} */
+                method: "native_text";
+            }[];
+            page: number;
+            hasMore: boolean;
+            code: string | null;
+        };
+        POST_ingestion_cases_caseId_sources_sourceId_documents_retry_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedCaseRevision: number;
+            expectedSourceRevision: number;
+            sourceSha256: string;
+            /**
+             * @default propose
+             * @enum {string}
+             */
+            mode: "native_only" | "propose";
+        };
+        POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedCaseRevision: number;
+            expectedSourceRevision: number;
+            sourceSha256: string;
+            tasks: string[];
+        };
+        POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Response_200_application_json: {
+            /** @enum {string} */
+            version: "ingestion-sufficiency/1";
+            decisions: {
+                /** @enum {string} */
+                version: "ingestion-sufficiency/1";
+                /** Format: uuid */
+                id: string;
+                pins: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    profile: string;
+                    contextSha256: string;
+                    evidenceSha256: string;
+                    accessSha256: string;
+                    /** @enum {string} */
+                    policyVersion: "retained-source-tasks/1";
+                };
+                recordPins: {
+                    /** @enum {string} */
+                    authority: "recipe" | "job" | "package" | "area" | "frame" | "geometry" | "qualification";
+                    /** Format: uuid */
+                    id: string;
+                    revision: number;
+                    sha256: string;
+                }[];
+                processing: {
+                    /** @enum {string} */
+                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required";
+                    /** Format: uuid */
+                    jobId: string | null;
+                    resultSha256: string | null;
+                    /** @enum {string|null} */
+                    nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error" | null;
+                    /** @enum {string|null} */
+                    modelStatus: "not_requested" | "disabled" | "unavailable" | "blocked" | "needs_input" | "proposed" | null;
+                } | null;
+                task: string;
+                readonly requirements: string[];
+                readonly missing: string[];
+                /** @enum {string} */
+                outcome: "complete" | "fill_display" | "ask" | "park" | "reject_for_3d";
+                /** @enum {string} */
+                availability: "available" | "needs_input" | "unavailable" | "stale";
+                evidence: {
+                    requirement: string;
+                    /** @enum {string} */
+                    state: "satisfied" | "present_unqualified" | "unknown" | "absent" | "null" | "withheld" | "conflicting" | "unsupported";
+                    /** @enum {string} */
+                    authority: "source" | "inspection" | "recipe" | "job" | "package" | "geometry" | "policy";
+                    id: string;
+                    revision: number;
+                    locator: string | null;
+                }[];
+                unlocks: string[];
+                /** Format: uuid */
+                questionId: string | null;
+                /** @enum {string} */
+                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion";
+                reason: string;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            questions: {
+                /** Format: uuid */
+                id: string;
+                revision: number;
+                pins: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    profile: string;
+                    contextSha256: string;
+                    evidenceSha256: string;
+                    accessSha256: string;
+                    /** @enum {string} */
+                    policyVersion: "retained-source-tasks/1";
+                };
+                gapClass: string;
+                tasks: string[];
+                /** @enum {string} */
+                state: "open" | "answered" | "parked" | "stale";
+                missing: string[];
+                unlocks: string[];
+                reason: string;
+                choices: ("provide_existing_evidence" | "not_sure")[];
+                proposal: {
+                    /** @enum {string} */
+                    kind: "recipe" | "source_part" | "fact_candidate" | "package_review";
+                    /** Format: uuid */
+                    id: string;
+                    revision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    /** Format: uuid */
+                    packageId?: string;
+                } | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        GET_ingestion_cases_caseId_needs_input_Response_200_application_json: {
+            /** @enum {string} */
+            version: "ingestion-sufficiency/1";
+            /** Format: uuid */
+            caseId: string;
+            caseRevision: number;
+            decisions: {
+                /** @enum {string} */
+                version: "ingestion-sufficiency/1";
+                /** Format: uuid */
+                id: string;
+                pins: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    profile: string;
+                    contextSha256: string;
+                    evidenceSha256: string;
+                    accessSha256: string;
+                    /** @enum {string} */
+                    policyVersion: "retained-source-tasks/1";
+                };
+                recordPins: {
+                    /** @enum {string} */
+                    authority: "recipe" | "job" | "package" | "area" | "frame" | "geometry" | "qualification";
+                    /** Format: uuid */
+                    id: string;
+                    revision: number;
+                    sha256: string;
+                }[];
+                processing: {
+                    /** @enum {string} */
+                    state: "pending" | "running" | "failed" | "stale" | "needs_ocr" | "unsupported" | "tool_error" | "extracted" | "canonical_conversion_required";
+                    /** Format: uuid */
+                    jobId: string | null;
+                    resultSha256: string | null;
+                    /** @enum {string|null} */
+                    nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error" | null;
+                    /** @enum {string|null} */
+                    modelStatus: "not_requested" | "disabled" | "unavailable" | "blocked" | "needs_input" | "proposed" | null;
+                } | null;
+                task: string;
+                readonly requirements: string[];
+                readonly missing: string[];
+                /** @enum {string} */
+                outcome: "complete" | "fill_display" | "ask" | "park" | "reject_for_3d";
+                /** @enum {string} */
+                availability: "available" | "needs_input" | "unavailable" | "stale";
+                evidence: {
+                    requirement: string;
+                    /** @enum {string} */
+                    state: "satisfied" | "present_unqualified" | "unknown" | "absent" | "null" | "withheld" | "conflicting" | "unsupported";
+                    /** @enum {string} */
+                    authority: "source" | "inspection" | "recipe" | "job" | "package" | "geometry" | "policy";
+                    id: string;
+                    revision: number;
+                    locator: string | null;
+                }[];
+                unlocks: string[];
+                /** Format: uuid */
+                questionId: string | null;
+                /** @enum {string} */
+                nextAction: "none" | "neutral_presentation" | "review_mapping" | "review_evidence" | "provide_evidence" | "process_source" | "park" | "inspect_original" | "wait_for_extraction" | "retry_extraction" | "run_ocr" | "configure_provider" | "review_conversion";
+                reason: string;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            questions: {
+                /** Format: uuid */
+                id: string;
+                revision: number;
+                pins: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    profile: string;
+                    contextSha256: string;
+                    evidenceSha256: string;
+                    accessSha256: string;
+                    /** @enum {string} */
+                    policyVersion: "retained-source-tasks/1";
+                };
+                gapClass: string;
+                tasks: string[];
+                /** @enum {string} */
+                state: "open" | "answered" | "parked" | "stale";
+                missing: string[];
+                unlocks: string[];
+                reason: string;
+                choices: ("provide_existing_evidence" | "not_sure")[];
+                proposal: {
+                    /** @enum {string} */
+                    kind: "recipe" | "source_part" | "fact_candidate" | "package_review";
+                    /** Format: uuid */
+                    id: string;
+                    revision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    /** Format: uuid */
+                    packageId?: string;
+                } | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            staleQuestions: {
+                /** Format: uuid */
+                id: string;
+                revision: number;
+                pins: {
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    profile: string;
+                    contextSha256: string;
+                    evidenceSha256: string;
+                    accessSha256: string;
+                    /** @enum {string} */
+                    policyVersion: "retained-source-tasks/1";
+                };
+                gapClass: string;
+                tasks: string[];
+                /** @enum {string} */
+                state: "open" | "answered" | "parked" | "stale";
+                missing: string[];
+                unlocks: string[];
+                reason: string;
+                choices: ("provide_existing_evidence" | "not_sure")[];
+                proposal: {
+                    /** @enum {string} */
+                    kind: "recipe" | "source_part" | "fact_candidate" | "package_review";
+                    /** Format: uuid */
+                    id: string;
+                    revision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    /** Format: uuid */
+                    packageId?: string;
+                } | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            hasMore: boolean;
+        };
+        POST_ingestion_cases_caseId_questions_questionId_answers_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedQuestionRevision: number;
+            pins: {
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                /** Format: uuid */
+                familyId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                profile: string;
+                contextSha256: string;
+                evidenceSha256: string;
+                accessSha256: string;
+                /** @enum {string} */
+                policyVersion: "retained-source-tasks/1";
+            };
+            answer: {
+                /** @enum {string} */
+                choice: "not_sure";
+            } | {
+                /** @enum {string} */
+                choice: "provide_existing_evidence";
+                reference: {
+                    /** @enum {string} */
+                    kind: "recipe" | "source_part" | "fact_candidate" | "package_review";
+                    /** Format: uuid */
+                    id: string;
+                    revision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    /** Format: uuid */
+                    packageId?: string;
+                };
+            };
+        };
+        POST_ingestion_cases_caseId_questions_questionId_answers_Response_200_application_json: {
+            /** Format: uuid */
+            id: string;
+            revision: number;
+            pins: {
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                /** Format: uuid */
+                familyId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                profile: string;
+                contextSha256: string;
+                evidenceSha256: string;
+                accessSha256: string;
+                /** @enum {string} */
+                policyVersion: "retained-source-tasks/1";
+            };
+            gapClass: string;
+            tasks: string[];
+            /** @enum {string} */
+            state: "open" | "answered" | "parked" | "stale";
+            missing: string[];
+            unlocks: string[];
+            reason: string;
+            choices: ("provide_existing_evidence" | "not_sure")[];
+            proposal: {
+                /** @enum {string} */
+                kind: "recipe" | "source_part" | "fact_candidate" | "package_review";
+                /** Format: uuid */
+                id: string;
+                revision: number;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                /** Format: uuid */
+                packageId?: string;
+            } | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -24679,7 +31156,29 @@ export interface operations {
                 };
             };
             /** @description Rejected or unavailable operation */
+            416: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
             422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            429: {
                 headers: {
                     /** @description Server request identifier. */
                     "X-Request-Id"?: string;
@@ -31555,6 +38054,10 @@ export interface operations {
     GET_api_v1_buildings_buildingId_register: {
         parameters: {
             query?: {
+                /** @description Consolidated profile only: allow a prominently labelled revision 0 source/import summary from a current active native GeoJSON import. No record selection or registry/legal facts are included. */
+                includeUnrecorded?: boolean;
+                /** @description Opt-in facts-only registry summary. Supports json/html/pdf; omits drawings, measurements and findings. */
+                profile?: "consolidated";
                 record?: string;
                 format?: "json" | "csv" | "html" | "pdf" | "zip";
             };
@@ -33250,7 +39753,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GET_buildings_buildingId_register_Response_200_application_json"];
+                    "application/json": components["schemas"]["GET_investigations_investigationId_export_Response_200_application_json"];
                     "application/pdf": string;
                     "text/csv": components["schemas"]["GET_buildings_buildingId_register_Response_200_text_csv"];
                     "text/html": components["schemas"]["GET_buildings_buildingId_register_Response_200_text_csv"];
@@ -38394,6 +44897,2868 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_recipes_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_upload_limits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_upload_limits_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_uploads: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            201: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            429: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_uploads_uploadId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uploadId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    PUT_api_v1_ingestion_cases_caseId_uploads_uploadId_parts_partNumber: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Part-Sha256": string;
+                "X-Case-Revision": number;
+                "X-Upload-Revision": number;
+                "X-Request-Key": string;
+            };
+            path: {
+                partNumber: number;
+                uploadId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            408: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            410: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            429: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_uploads_uploadId_finalize: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uploadId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_uploadId_finalize_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            410: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            429: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_uploads_uploadId_abort: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uploadId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_uploadId_abort_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_uploads_uploadId_cleanup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uploadId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_uploadId_abort_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_events: {
+        parameters: {
+            query?: {
+                /** @description Omit to tail the current head; 0 replays retained events. Last-Event-ID takes precedence on reconnect if it names this case/access context and is at or beyond the first query cursor; a backwards cursor conflicts. */
+                cursor?: string;
+            };
+            header?: {
+                /** @description Case/access-bound decimal SSE ID. A copied cursor from another case or access context is rejected. */
+                "Last-Event-ID"?: string;
+            };
+            path: {
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SSE ready, ingestion.change and resync frames. Every notification requires refreshing current records. Heartbeats are comments without IDs. Single configured local operator only. */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["GET_buildings_buildingId_register_Response_200_text_csv"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_events_Response_403_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_events_Response_403_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_events_Response_403_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_events_Response_403_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            429: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_events_Response_403_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_events_Response_403_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_projected_vector_Response_202_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_projected_vector_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_projected_vector_Response_202_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            429: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_jobs_jobId_chunks_sequence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sequence: number;
+                jobId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_sources_sourceId_projected_vector_jobs_jobId_chunks_sequence_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_units: {
+        parameters: {
+            query?: {
+                /** @description west,south,east,north in longitude/latitude; only admitted geographic observations can match. */
+                bbox?: string;
+                /** @description Required for continuation pages; must remain the accepted generation. */
+                jobId?: string;
+                chunkSha256?: string;
+                /** @description Requires exact chunkSha256 and source jobId. */
+                chunkSequence?: number;
+                limit?: number;
+                cursor?: number;
+            };
+            header?: never;
+            path: {
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_sources_sourceId_projected_vector_units_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_projected_vector_units_unitId_geometry: {
+        parameters: {
+            query?: {
+                jobId?: string;
+                chunkSha256?: string;
+                /** @description Requires exact chunkSha256 and source jobId. */
+                chunkSequence?: number;
+                representation?: "native" | "geographic";
+            };
+            header?: never;
+            path: {
+                unitId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result; Content-Type follows the retained source or generated artifact format. */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_private_mvt_Response_202_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_private_mvt_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_private_mvt_Response_202_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            429: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version: number;
+                jobId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_tiles_z_x_y: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                y: number;
+                x: number;
+                z: number;
+                version: number;
+                jobId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result; Content-Type follows the retained source or generated artifact format. */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_tiles_z_x_y_units_unitId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                unitId: string;
+                y: number;
+                x: number;
+                z: number;
+                version: number;
+                jobId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_sources_sourceId_private_mvt_generations_jobId_version_tiles_z_x_y_units_unitId_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_documents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["POST_ingestion_cases_caseId_documents_Request_multipart_form_data"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            201: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_documents_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path: {
+                jobId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_sources_sourceId_documents_jobs_jobId_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_sources_sourceId_documents_retry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_documents_retry_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            201: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_documents_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_sources_sourceId_sufficiency: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_needs_input: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_needs_input_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_questions_questionId_answers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_questions_questionId_answers_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_questions_questionId_answers_Response_200_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */

@@ -1,20 +1,16 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
-import type { GisQuarantine } from '@ulpin/contracts/gis-quarantine';
 import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
 export type WorkStatusFilter = 'all' | 'processing' | 'recorded';
 export type Area = GetResponse<'/api/v1/areas'>[number];
-export type AreaContext = Omit<GetResponse<'/api/v1/areas/{areaId}/context'>, 'packages'> & {
-  displayFeatures?: GetResponse<'/api/v1/areas/{areaId}/context'>['features'];
-  packages: (GetResponse<'/api/v1/areas/{areaId}/context'>['packages'][number] & { quarantine?: GisQuarantine })[];
-};
+export type AreaContext = GetResponse<'/api/v1/areas/{areaId}/context'>;
 export type AreaFeature = AreaContext['features'][number];
 export type Capabilities = GetResponse<'/api/v1/workspace-capabilities'>;
 /** The JSON form of the register (the endpoint also serves CSV and HTML exports). */
-export type BuildingRegister = Exclude<GetResponse<'/api/v1/buildings/{buildingId}/register'>, string>;
+export type BuildingRegister = Extract<GetResponse<'/api/v1/buildings/{buildingId}/register'>, { register: unknown }>;
 export type RegisterRecord = BuildingRegister['register'][number];
 export type RegisterSource = BuildingRegister['sources'][number];
 
@@ -116,7 +112,7 @@ export function useAreaContext(areaId: string | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.areaContext(areaId ?? ''),
     enabled: Boolean(areaId),
-    queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: areaId! } } })) as AreaContext,
+    queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: areaId! } } })),
     staleTime: 60_000,
     refetchInterval: live ? 700 : false,
   });
@@ -126,7 +122,13 @@ export function useBuildingRegister(buildingId: string | null | undefined, live 
   return useQuery({
     queryKey: queryKeys.register(buildingId ?? ''),
     enabled: Boolean(buildingId),
-    queryFn: async () => unwrap(await api.GET('/api/v1/buildings/{buildingId}/register', { params: { path: { buildingId: buildingId! } } })) as BuildingRegister,
+    queryFn: async (): Promise<BuildingRegister> => {
+      const result = unwrap(await api.GET('/api/v1/buildings/{buildingId}/register', { params: { path: { buildingId: buildingId! } } }));
+      if (typeof result !== 'object' || result === null || !('register' in result)) {
+        throw new Error('The API returned an unexpected building register profile.');
+      }
+      return result;
+    },
     staleTime: 60_000,
     placeholderData: keepPreviousData,
     refetchInterval: live ? 700 : false,

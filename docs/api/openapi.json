@@ -36166,6 +36166,107 @@
         "nullable": true,
         "type": "object",
         "properties": {
+          "quarantine": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2000
+              },
+              "accepted": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2000
+              },
+              "rejected": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2000
+              },
+              "rejections": {
+                "maxItems": 2000,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "featureIndex": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceKey": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 256
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "INVALID_GEOMETRY",
+                        "GEOMETRY_KIND"
+                      ]
+                    },
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
+                  "required": [
+                    "featureIndex",
+                    "sourceKey",
+                    "code",
+                    "reason"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "version": {
+                "type": "string",
+                "enum": [
+                  "gis-quarantine/1"
+                ]
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "complete": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              }
+            },
+            "required": [
+              "total",
+              "accepted",
+              "rejected",
+              "rejections",
+              "version",
+              "sourceSha256",
+              "message",
+              "complete"
+            ],
+            "additionalProperties": false
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -36216,6 +36317,11 @@
             "items": {
               "type": "object",
               "properties": {
+                "sourceFeatureIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
                 "id": {
                   "type": "string",
                   "format": "uuid",
@@ -37425,6 +37531,11 @@
                       "items": {
                         "type": "object",
                         "properties": {
+                          "sourceFeatureIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
                           "id": {
                             "type": "string",
                             "format": "uuid",
@@ -38356,6 +38467,107 @@
       "POST_source_workspaces_Response_201_application_json": {
         "type": "object",
         "properties": {
+          "quarantine": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2000
+              },
+              "accepted": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2000
+              },
+              "rejected": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2000
+              },
+              "rejections": {
+                "maxItems": 2000,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "featureIndex": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceKey": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 256
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "INVALID_GEOMETRY",
+                        "GEOMETRY_KIND"
+                      ]
+                    },
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
+                  "required": [
+                    "featureIndex",
+                    "sourceKey",
+                    "code",
+                    "reason"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "version": {
+                "type": "string",
+                "enum": [
+                  "gis-quarantine/1"
+                ]
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "complete": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              }
+            },
+            "required": [
+              "total",
+              "accepted",
+              "rejected",
+              "rejections",
+              "version",
+              "sourceSha256",
+              "message",
+              "complete"
+            ],
+            "additionalProperties": false
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -38406,6 +38618,11 @@
             "items": {
               "type": "object",
               "properties": {
+                "sourceFeatureIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
                 "id": {
                   "type": "string",
                   "format": "uuid",
@@ -39615,6 +39832,11 @@
                       "items": {
                         "type": "object",
                         "properties": {
+                          "sourceFeatureIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
                           "id": {
                             "type": "string",
                             "format": "uuid",
@@ -40910,6 +41132,661 @@
       "GET_areas_areaId_context_Response_200_application_json": {
         "type": "object",
         "properties": {
+          "displayFeatures": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sourceFeatureIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "identifier": {
+                  "type": "string"
+                },
+                "areaId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "sourceRevisionId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "datasetNamespace": {
+                  "type": "string"
+                },
+                "sourceKey": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "building",
+                    "parcel",
+                    "road",
+                    "public_land",
+                    "utility"
+                  ]
+                },
+                "geometry": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "GeometryCollection",
+                        "Point",
+                        "MultiPoint",
+                        "LineString",
+                        "MultiLineString",
+                        "Polygon",
+                        "MultiPolygon"
+                      ]
+                    },
+                    "coordinates": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "geometries": {
+                      "type": "array",
+                      "items": {
+                        "description": "Recursive AreaGeometry member."
+                      }
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "additionalProperties": false
+                },
+                "geographicGeometry": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "GeometryCollection",
+                        "Point",
+                        "MultiPoint",
+                        "LineString",
+                        "MultiLineString",
+                        "Polygon",
+                        "MultiPolygon"
+                      ]
+                    },
+                    "coordinates": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "geometries": {
+                      "type": "array",
+                      "items": {
+                        "description": "Recursive AreaGeometry member."
+                      }
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "additionalProperties": false
+                },
+                "sourceGeometry": {
+                  "description": "Retained source-specific or processor-specific value."
+                },
+                "sourceReference": {
+                  "type": "object",
+                  "properties": {
+                    "sourceCrs": {
+                      "type": "string"
+                    },
+                    "analysisCrs": {
+                      "type": "string"
+                    },
+                    "origin": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "anchor": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "transformVersion": {
+                      "type": "string"
+                    },
+                    "verticalReference": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "sourceCrs",
+                    "analysisCrs",
+                    "origin",
+                    "anchor",
+                    "transformVersion",
+                    "verticalReference"
+                  ],
+                  "additionalProperties": false
+                },
+                "height": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "unknown",
+                        "unresolved",
+                        "estimated",
+                        "source_supported",
+                        "reviewed"
+                      ]
+                    },
+                    "value": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "m"
+                      ]
+                    },
+                    "meaning": {
+                      "type": "string"
+                    },
+                    "reference": {
+                      "type": "string"
+                    },
+                    "evidence": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sourceRevisionId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "page": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "row": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "featureId": {
+                            "type": "string"
+                          },
+                          "jsonPointer": {
+                            "type": "string"
+                          },
+                          "region": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "enum": [
+                                  "normalized"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y",
+                              "width",
+                              "height",
+                              "unit"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "sourceRevisionId"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "claimId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "originalValue": {
+                      "description": "Retained source-specific or processor-specific value."
+                    },
+                    "originalUnit": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "value",
+                    "unit",
+                    "meaning",
+                    "reference"
+                  ],
+                  "additionalProperties": false
+                },
+                "worldStatus": {
+                  "type": "string",
+                  "enum": [
+                    "observed",
+                    "planned",
+                    "hypothetical",
+                    "synthetic"
+                  ]
+                },
+                "properties": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "description": "Retained source-specific or processor-specific value."
+                  }
+                },
+                "areaM2": {
+                  "nullable": true,
+                  "type": "number"
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sourceRevisionId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "page": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "row": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "partId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "featureId": {
+                        "type": "string"
+                      },
+                      "jsonPointer": {
+                        "type": "string"
+                      },
+                      "region": {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          },
+                          "width": {
+                            "type": "number"
+                          },
+                          "height": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "type": "string",
+                            "enum": [
+                              "normalized"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y",
+                          "width",
+                          "height",
+                          "unit"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "sourceRevisionId"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "representation": {
+                  "type": "string",
+                  "enum": [
+                    "physical_exterior",
+                    "physical_context"
+                  ]
+                },
+                "geometryRole": {
+                  "type": "string"
+                },
+                "semantics": {
+                  "type": "object",
+                  "properties": {
+                    "geometryRole": {
+                      "type": "string"
+                    },
+                    "evidenceState": {
+                      "type": "string"
+                    },
+                    "levelReference": {
+                      "type": "string"
+                    },
+                    "sourceDate": {
+                      "type": "string"
+                    },
+                    "validFrom": {
+                      "type": "string"
+                    },
+                    "validTo": {
+                      "type": "string"
+                    },
+                    "horizontalUncertaintyM": {
+                      "type": "number"
+                    },
+                    "approvalStatus": {
+                      "type": "string"
+                    },
+                    "floorCount": {
+                      "type": "number"
+                    },
+                    "assetId": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "verticalExtent": {
+                  "type": "object",
+                  "properties": {
+                    "lower": {
+                      "type": "number"
+                    },
+                    "upper": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "m"
+                      ]
+                    },
+                    "reference": {
+                      "type": "string"
+                    },
+                    "evidenceState": {
+                      "type": "string"
+                    },
+                    "evidence": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sourceRevisionId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "page": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "row": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "featureId": {
+                            "type": "string"
+                          },
+                          "jsonPointer": {
+                            "type": "string"
+                          },
+                          "region": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "enum": [
+                                  "normalized"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y",
+                              "width",
+                              "height",
+                              "unit"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "sourceRevisionId"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "lower",
+                    "upper",
+                    "unit",
+                    "reference",
+                    "evidenceState",
+                    "evidence"
+                  ],
+                  "additionalProperties": false
+                },
+                "utilityProfile": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "description": "Retained source-specific or processor-specific value."
+                  }
+                },
+                "displayState": {
+                  "type": "string",
+                  "enum": [
+                    "unrecorded_proposal"
+                  ]
+                },
+                "proposalPackageId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "required": [
+                "id",
+                "identifier",
+                "areaId",
+                "revision",
+                "sourceRevisionId",
+                "datasetNamespace",
+                "sourceKey",
+                "name",
+                "kind",
+                "geometry",
+                "geographicGeometry",
+                "sourceGeometry",
+                "height",
+                "worldStatus",
+                "properties",
+                "areaM2",
+                "evidence",
+                "representation"
+              ],
+              "additionalProperties": false
+            }
+          },
           "area": {
             "type": "object",
             "properties": {
@@ -41096,6 +41973,11 @@
             "items": {
               "type": "object",
               "properties": {
+                "sourceFeatureIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
                 "id": {
                   "type": "string",
                   "format": "uuid",
@@ -41735,6 +42617,107 @@
             "items": {
               "type": "object",
               "properties": {
+                "quarantine": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2000
+                    },
+                    "accepted": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 2000
+                    },
+                    "rejected": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 2000
+                    },
+                    "rejections": {
+                      "maxItems": 2000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "featureIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "sourceKey": {
+                            "nullable": true,
+                            "type": "string",
+                            "maxLength": 256
+                          },
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "INVALID_GEOMETRY",
+                              "GEOMETRY_KIND"
+                            ]
+                          },
+                          "reason": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500
+                          }
+                        },
+                        "required": [
+                          "featureIndex",
+                          "sourceKey",
+                          "code",
+                          "reason"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "version": {
+                      "type": "string",
+                      "enum": [
+                        "gis-quarantine/1"
+                      ]
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    },
+                    "complete": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "accepted",
+                    "rejected",
+                    "rejections",
+                    "version",
+                    "sourceSha256",
+                    "message",
+                    "complete"
+                  ],
+                  "additionalProperties": false
+                },
                 "id": {
                   "type": "string",
                   "format": "uuid",
@@ -41785,6 +42768,11 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "sourceFeatureIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
                       "id": {
                         "type": "string",
                         "format": "uuid",
@@ -42994,6 +43982,11 @@
                             "items": {
                               "type": "object",
                               "properties": {
+                                "sourceFeatureIndex": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
                                 "id": {
                                   "type": "string",
                                   "format": "uuid",
@@ -44093,6 +45086,11 @@
                       "items": {
                         "type": "object",
                         "properties": {
+                          "sourceFeatureIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
                           "id": {
                             "type": "string",
                             "format": "uuid",
@@ -45435,6 +46433,11 @@
                 "feature": {
                   "type": "object",
                   "properties": {
+                    "sourceFeatureIndex": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
                     "id": {
                       "type": "string",
                       "format": "uuid",
@@ -46135,6 +47138,11 @@
                       "feature": {
                         "type": "object",
                         "properties": {
+                          "sourceFeatureIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
                           "id": {
                             "type": "string",
                             "format": "uuid",
@@ -46783,6 +47791,11 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "sourceFeatureIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
                       "id": {
                         "type": "string",
                         "format": "uuid",
@@ -47867,6 +48880,107 @@
       "POST_import_packages_inspect_Response_200_application_json": {
         "type": "object",
         "properties": {
+          "quarantine": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2000
+              },
+              "accepted": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2000
+              },
+              "rejected": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2000
+              },
+              "rejections": {
+                "maxItems": 2000,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "featureIndex": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "sourceKey": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 256
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "INVALID_GEOMETRY",
+                        "GEOMETRY_KIND"
+                      ]
+                    },
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    }
+                  },
+                  "required": [
+                    "featureIndex",
+                    "sourceKey",
+                    "code",
+                    "reason"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "version": {
+                "type": "string",
+                "enum": [
+                  "gis-quarantine/1"
+                ]
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "complete": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              }
+            },
+            "required": [
+              "total",
+              "accepted",
+              "rejected",
+              "rejections",
+              "version",
+              "sourceSha256",
+              "message",
+              "complete"
+            ],
+            "additionalProperties": false
+          },
           "format": {
             "type": "string",
             "enum": [
@@ -49008,6 +50122,11 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "sourceFeatureIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
                       "id": {
                         "type": "string",
                         "format": "uuid",
