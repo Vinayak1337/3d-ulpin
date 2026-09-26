@@ -1,0 +1,32 @@
+# DEPLOY-01 — bounded single-pool gateway handoff
+
+26 September 2026. Base `d6de80e351cc38c46516fb3f315f1bec5ed514c5`; code `01b6b789135ede8567ab5309aa52854ae74a10ad`. Branch `task/deploy-01-model-gateway`, worktree `/Users/vinayak/.codex/worktrees/0bc6/3D Ulpin`. Observed task model/effort: **gpt-6-sol / max**, from this task's turn context. Fast requested; configured tier `priority`; per-turn tier unobserved. Weekly usage checkpoints: 36% then 35% remaining, ordinary usage allowed; no reset redeemed.
+
+Officer extraction now calls the canonical `UspPorts.modelGateway` envelope through a server-authorized profile. One `usp_model_calls` ledger and one singleton `usp_model_budget` policy/throttle row serialize admission and settlement with `pg` transactions. The hard cap includes settled spend and outstanding/unknown reservations. At least 70% remains protected from non-INGEST consumers; daily principal limits count admitted attempts. Configuration, credential identity and prices are pinned; changing them cannot silently refill the pool. A single in-flight call, persisted pacing/cooldown, at most two attempts and a shared 45-second deadline bound execution.
+
+Known charges settle before output validation/publication, including truncated/stale results and a late completion after timeout. Missing usage, transport uncertainty and restart retain exposure. Uncertain 402/429 responses are not assumed free: 402/insufficient quota blocks the pool; bare 429 records cooldown without retiring/cycling credentials. Deficits suspend admission. Reconciliation is an internal exact-call operation; there is no new billing/settings/reset API.
+
+New calls use the fixed Sarvam V1 transport, checked against [official protocol documentation](https://docs.sarvam.ai/api-reference/chat/chat-completions-v1): minimized text, shared redaction, credential-field masking, exact-key echo removal, no tools/redirects/SDK retries, 1 MiB responses. Only `ULPIN_PROVIDER_KEY_<LABEL>`, `env:` references to that namespace, or `/run/secrets/ULPIN_PROVIDER_KEY_<LABEL>` are supported; unrelated/NEXT_PUBLIC references reject before reads. No-key/manual preparation remains useful. `ULPIN_MODEL_GATEWAY_ENABLED=1` and strict nonsecret `ULPIN_MODEL_GATEWAY_CONFIG` require explicit versioned funding, prices, approved input bound and India-private policy inputs; no production tariff/allocation was invented or activated. See the configuration validator for the exact schema.
+
+The injected control adapter has no HTTP/environment selector. Replay requires eligible retained material, exact input/source hashes, a hash-pinned complete response and current authorization; it cannot debit the paid ledger again. No replay material/loader is installed. Existing exact cached results remain a separately authorized path.
+
+API delta for lead regeneration: routes/methods and success statuses unchanged. `provider` adds `sarvam` while retaining historical `nous`; status inspection makes no catalog/health call, `freeVerified=false`, quota remains unknown. Runs add `gatewayPolicyHash`/`principalHash`; call receipts add `callId`, decimal-string `actualMicroInr`, `priceVersion`, `semanticError`. The canonical USP result adds optional `receipt`/`replayed`. New extraction is always gateway-controlled. Historical records remain stored/readable, but historical request keys return explicit 409 on reuse and unqualified old outputs cannot be newly applied. Current Sarvam read/cache/apply paths fence policy/principal/evidence changes and withhold output when reauthorization fails. No `docs/api`, frontend, design, root manifest/lockfile or release gate was changed.
+
+| Actual command | Exit / bounded result |
+| --- | --- |
+| `pnpm install --frozen-lockfile --ignore-scripts` | 0; locked dependencies, no manifest/lock changes |
+| `pnpm typecheck:backend`; `pnpm build` | 0; server/API typechecks and builds |
+| `pnpm exec tsx --test tests/model-gateway/control.test.ts` | 0; 6 privacy/protocol/arithmetic controls, including absent replay with zero ledger debit |
+| `pnpm test:ai` | 0; 22 existing historical unit boundaries, not official-source accuracy |
+| `pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-spatial-api.test.ts` | 0; native route/schema boundaries |
+| `python3 scripts/db/verify_extraction.py` | 0; unchanged 25 historical files/136 statement hashes plus 1 authored addition, 25 named queries |
+| `git rev-parse HEAD && node tests/model-gateway/run-sql.mjs` | 0 at the code commit above; 8 fresh SQL controls, migration/repeat, atomic caps, protected allocation, duplicate/late settlement, restart exposure, quota/cooldown, pre/post-dispatch access failures and timeout |
+| `git diff --check` | 0 |
+
+Initial controls exposed missing credential-field masking (fixed). Initial SQL readiness accepted PostgreSQL's temporary Unix initialization server (TCP readiness fixed); the next run exposed process/VM clock skew (deadline clamps to the earlier DB/process bound). Both failed services were stopped and their volumes preserved. Subsequent checks passed; the final SQL run used a clean committed checkout.
+
+Final owned SQL nonce `da52e69b7c140a9c`, loopback port `32772`, database `model_control_da52e69b7c140a9c`, local `colima-ulpin`; image `sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6`. The container is stopped, all pools/runner processes ended. All five `ulpin-model-control-<nonce>` containers are stopped and matching volumes preserved: `44ca9c8988abd474`, `10de3aa8a9e2c931`, `bb3a19c1f8003231`, `de63ca4af36119ea`, `da52e69b7c140a9c`. They contain software controls only; no source/property records, snapshots or originals were seeded/reset. No original `.env` or provider credentials were read/copied/written/tested live.
+
+SQL SHA-256: `800e07948200bdd9cc97b44afa4a8d70a425b5005054d3ad1bb5bb8eb22d6bef`. Owned 18-file receipt hash: `877c204a9bb67a06a7c3571b9812b0d38ca0ef3754fad0f60a8efb73245d6f3f` (sorted path + NUL + raw SHA-256 digest per file). No operational source/model-weight hash exists for these software controls.
+
+Bounded qualification only: live service, actual funding/pricing/tokenizer bound, residency/processor permission, eligible replay corpus, real-source extraction/GF-AGENT accuracy, populated migration, ML/training, deployment and GF2 remain open. No provider call, public activation, push or main merge occurred. Worktree/index clean after the code commit; only this owned result receipt follows it.
