@@ -17,8 +17,9 @@ export async function migrateOfficerAi() {
 }
 const uuid=z.string().uuid(),revision=z.number().int().nonnegative();
 const regionSchema=z.object({x:z.number().min(0).max(1),y:z.number().min(0).max(1),width:z.number().positive().max(1),height:z.number().positive().max(1)}).strict().refine(r=>r.x+r.width<=1&&r.y+r.height<=1,'Crop must fit within the source image.');
-const inputSchema=z.object({expectedRevision:revision,partIds:z.array(uuid).min(1).max(12),entityIds:z.array(uuid).min(1).max(5).optional(),requestKey:uuid,mode:z.enum(['live','cached']).default('live'),imageRegions:z.array(z.object({partId:uuid,region:regionSchema}).strict()).max(4).optional(),imageContentApproved:z.boolean().optional(),answers:z.array(z.object({question:z.string().min(1).max(500),answer:z.string().min(1).max(1000)}).strict()).max(20).optional()}).strict();
-type Input=z.infer<typeof inputSchema>;
+export const officerAiExtractSchema=z.object({expectedRevision:revision,partIds:z.array(uuid).min(1).max(12),entityIds:z.array(uuid).min(1).max(5).optional(),requestKey:uuid,mode:z.enum(['live','cached']).default('live'),imageRegions:z.array(z.object({partId:uuid,region:regionSchema}).strict()).max(4).optional(),imageContentApproved:z.boolean().optional(),answers:z.array(z.object({question:z.string().min(1).max(500),answer:z.string().min(1).max(1000)}).strict()).max(20).optional()}).strict();
+export const officerAiApplySchema=z.object({expectedRevision:revision,candidateIds:z.array(uuid).min(1).max(40)}).strict();
+type Input=z.infer<typeof officerAiExtractSchema>;
 async function snapshot(pkg:ImportPackage,input:Input) {
   if(pkg.revision!==input.expectedRevision) conflict('Preparation changed. Refresh before extracting.');
   if(pkg.state==='COMMITTED') conflict('Open a correction preparation before using AI.');
@@ -154,28 +155,45 @@ async function applyRun(packageId:string,runId:string,expectedRevision:number,ca
 }
 const json=(data:unknown)=>Response.json(redactDerivative(data),{headers:{'Cache-Control':'no-store'}});
 /** Match the canonical package read boundary while preserving typed technical names and geometry. */
-const packageJson=(pkg:ImportPackage)=>{
+export const officerAiPackageProjection=(pkg:ImportPackage)=>{
   const visible=redactDocumentViews(pkg);
-  return Response.json({...visible,
+  return {...visible,
     questions:visible.questions.map(question=>({...question,message:redactPrivateText(question.message),
       ...(question.answer?{answer:{...question.answer,reason:redactPrivateText(question.answer.reason)}}:{})})),
     warnings:visible.warnings.map(redactPrivateText),
-  },{headers:{'Cache-Control':'no-store'}});
+  };
 };
+
+/** Named domain entry points for the native Nest controller. The Next adapter below remains a thin compatibility seam. */
+export async function officerAiStatus() { return (await inspectNous()).status; }
+export async function listOfficerAiRuns(packageId:string):Promise<OfficerAiRun[]> {
+  await getPackage(uuid.parse(packageId));
+  return Promise.all((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 ORDER BY created_at DESC LIMIT 30',[packageId])).rows.map(r=>recoverInterruptedRun(r.body)));
+}
+export async function getOfficerAiRun(packageId:string,runId:string):Promise<OfficerAiRun> {
+  return recoverInterruptedRun((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 AND id=$2',
+    [uuid.parse(packageId),uuid.parse(runId)])).rows[0]?.body??notFound('Extraction run not found.'));
+}
+export async function createOfficerAiRun(packageId:string,value:unknown):Promise<OfficerAiRun> {
+  return redactDerivative(await extract(uuid.parse(packageId),officerAiExtractSchema.parse(value))) as OfficerAiRun;
+}
+export async function applyOfficerAiRun(packageId:string,runId:string,value:unknown) {
+  const input=officerAiApplySchema.parse(value);
+  return officerAiPackageProjection(await applyRun(uuid.parse(packageId),uuid.parse(runId),input.expectedRevision,input.candidateIds));
+}
 export async function officerAiRoutes(request:Request,p:string[]):Promise<Response|null> {
-  if(p.length===2&&p[0]==='ai'&&p[1]==='status'&&request.method==='GET') return json((await inspectNous()).status);
+  if(p.length===2&&p[0]==='ai'&&p[1]==='status'&&request.method==='GET') return json(await officerAiStatus());
   if(p[0]!=='import-packages'||p[2]!=='ai-extractions') return null;
   const packageId=uuid.parse(p[1]);
   if(request.method==='GET'&&p.length===6&&p[4]==='derivatives') {
     // Historic crops have no visual-redaction qualification; never treat their hashes as clearance.
     return Response.json({error:{code:'AI_IMAGE_PRIVACY',message:'Crop previews are unavailable pending visual redaction qualification. Inspect the retained original locally.'}}, {status:403,headers:{'Cache-Control':'no-store'}});
   }
-  if(request.method==='GET'&&p.length===3) {await getPackage(packageId);return json(await Promise.all((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 ORDER BY created_at DESC LIMIT 30',[packageId])).rows.map(r=>recoverInterruptedRun(r.body))));}
-  if(request.method==='GET'&&p.length===4) return json(await recoverInterruptedRun((await query('SELECT body FROM officer_ai_runs WHERE package_id=$1 AND id=$2',[packageId,uuid.parse(p[3])])).rows[0]?.body??notFound('Extraction run not found.')));
-  if(request.method==='POST'&&p.length===3) return json(await extract(packageId,inputSchema.parse(await request.json())));
+  if(request.method==='GET'&&p.length===3) return json(await listOfficerAiRuns(packageId));
+  if(request.method==='GET'&&p.length===4) return json(await getOfficerAiRun(packageId,p[3]));
+  if(request.method==='POST'&&p.length===3) return json(await createOfficerAiRun(packageId,await request.json()));
   if(request.method==='POST'&&p.length===5&&p[4]==='apply') {
-    const input=z.object({expectedRevision:revision,candidateIds:z.array(uuid).min(1).max(40)}).strict().parse(await request.json());
-    return packageJson(await applyRun(packageId,uuid.parse(p[3]),input.expectedRevision,input.candidateIds));
+    return Response.json(await applyOfficerAiRun(packageId,p[3],await request.json()),{headers:{'Cache-Control':'no-store'}});
   }
   return null;
 }

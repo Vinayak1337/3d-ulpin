@@ -62,6 +62,13 @@ export function buildMeshes(inputs: readonly RenderInput[], detail: boolean,synt
             return;
         }
         for (const p of polygons) {
+            // Observed and other non-synthetic worlds display only the supplied
+            // footprint and bounded height. A roof cap, facade bays, doors and
+            // roof props have no source geometry in this compiler profile.
+            if (!synthetic) {
+                material(color).prism(p, lower, upper, feature);
+                continue;
+            }
             const roofDepth=Math.min(.08,h*.1);
             material(color).prism(p, lower, upper - roofDepth, feature);
             material(4).prism(p, upper - roofDepth, upper, feature);

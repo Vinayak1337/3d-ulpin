@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "batch": "NEST-13",
+  "baselineCommit": "fd7d3e3973e886deab5925eb4d61e9fed8a50f5e",
+  "acceptedDependencies": [
+    "08e5816657fbefbf1ed8a794a182d651e0a1d5cb",
+    "f42b81ac64659511e2a7742dee4a09a96b209f8a"
+  ],
+  "module": {
+    "class": "AiModule",
+    "import": "apps/api/src/modules/ai/ai.module",
+    "registration": "lead-owned domain-modules.ts; not changed in this batch"
+  },
+  "schemas": "ai.controller.ts + canonical officerAiExtractSchema/officerAiApplySchema",
+  "runtimeEvidence": {
+    "native-routing-openapi": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-spatial-api.test.ts",
+      "exit": 0,
+      "scope": "All 28 method/path/operation IDs; real in-memory Nest instances resolve all eight controllers; ephemeral loopback retirement/invalid-input/cross-site responses and the matching exact Next calibration retirement. No DB/provider calls or operational success fixtures. Listener closes in finally."
+    },
+    "stateful-acceptance": {
+      "state": "not-run",
+      "reason": "Reserved for integrated fresh owned services; no database/container/provider startup authorized in this coding batch."
+    }
+  },
+  "transportLimitsBytes": {
+    "json": 100000,
+    "applyJson": 20000
+  },
+  "operations": [
+    {
+      "operationId": "GET_api_v1_ai_status",
+      "method": "GET",
+      "path": "/api/v1/ai/status",
+      "disposition": "replaced",
+      "canonicalService": "officerAiStatus",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_import_packages_packageId_ai_extractions",
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions",
+      "disposition": "replaced",
+      "canonicalService": "listOfficerAiRuns",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_import_packages_packageId_ai_extractions",
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions",
+      "disposition": "replaced",
+      "canonicalService": "createOfficerAiRun",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_import_packages_packageId_ai_extractions_runId",
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions/{runId}",
+      "disposition": "replaced",
+      "canonicalService": "getOfficerAiRun",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "GET_api_v1_import_packages_packageId_ai_extractions_runId_derivatives_asset",
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions/{runId}/derivatives/{asset}",
+      "disposition": "replaced",
+      "canonicalService": "AI_IMAGE_PRIVACY block",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 403
+    },
+    {
+      "operationId": "POST_api_v1_import_packages_packageId_ai_extractions_runId_apply",
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions/{runId}/apply",
+      "disposition": "replaced",
+      "canonicalService": "applyOfficerAiRun",
+      "runtimeEvidence": [
+        "native-routing-openapi"
+      ],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    }
+  ],
+  "checks": [
+    {
+      "command": "pnpm --filter @ulpin/server typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/api typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-spatial-api.test.ts tests/spatial-ml-backend.test.ts tests/spatial-ml-retained-calibration.test.ts tests/usp-external-scene.test.ts",
+      "exit": 0,
+      "tests": 39
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-spatial-api.test.ts tests/core-legacy-read.test.ts tests/spatial-core.test.ts",
+      "exit": 0,
+      "tests": 49
+    },
+    {
+      "command": "pnpm --filter @ulpin/api test:boundary",
+      "exit": 0,
+      "tests": 4
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/nest-spatial-api.test.ts",
+      "exit": 0,
+      "tests": 1,
+      "scope": "Final code including explicit controller resolution, cross-site guard and exact Next calibration retirement."
+    },
+    {
+      "command": "pnpm exec tsx --test --test-name-pattern='legacy adapter' tests/spatial-core.test.ts",
+      "exit": 0,
+      "tests": 2,
+      "scope": "Released pure compatibility adapter now delegates to the server authority."
+    }
+  ],
+  "execution": {
+    "requested": {
+      "model": "gpt-6-sol",
+      "effort": "max",
+      "speed": "Fast"
+    },
+    "hostConfigured": {
+      "model": "gpt-6-sol",
+      "effort": "high",
+      "serviceTier": "priority"
+    },
+    "observedPerTurnModelEffortTier": "unobserved",
+    "hostSettingsChanged": false
+  }
+}
