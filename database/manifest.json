@@ -1,11 +1,11 @@
 {
   "formatVersion": 1,
-  "phase": "NEST-01 phase 1",
+  "phase": "NEST-01 phases 1-2",
   "sourceCommit": "39a70488f44800567ff42ef175b94d42c2ee66b5",
-  "runtimeAuthority": "pending NEST-01 phase 2 wiring; existing TypeScript migration calls still execute",
+  "runtimeAuthority": "database/sql files loaded by packages/server/src/infrastructure/sql-loader.ts; source paths below are pinned historical provenance",
   "transactionScopes": {
-    "docker-init": "Existing compose initdb mount; only a fresh PostgreSQL data directory; separate from migrate().",
-    "query-batch": "Each original multi-statement SQL literal is one pool.query call. Keep one query/atomic batch and sequential call order; no explicit app transaction encloses all six calls.",
+    "docker-init": "Existing compose initdb mount now reads database/sql/00-bootstrap/postgis.sql; only a fresh PostgreSQL data directory; separate from migrate().",
+    "query-batch": "Each SQL file replaces its original multi-statement literal in one pool.query call. Keep sequential call order; no explicit app transaction encloses all six calls.",
     "usp": "One explicit transaction via db.transaction; acquire usp-migration-ledger advisory transaction lock before ledger checks and DDL; commit only after geometry marker.",
     "spatial-datasets": "One explicit transaction via db.transaction, guarded by in-process ready promise; acquire spatial-dataset-schema-v1 advisory transaction lock first.",
     "dataset-ml": "After ensureSpatialDatasets(), one explicit transaction via db.transaction, guarded by in-process ready promise; acquire dataset-ml-schema-v1 advisory transaction lock first."
@@ -91,7 +91,11 @@
           "ordinal": 1,
           "sha256": "292b36a0ab84f6022c19fafc224ce4d2a090fa4a4df94a861480c5835ff6f864"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "compose.yaml",
+        "function": "Docker initdb bind mount"
+      }
     },
     {
       "id": "core.schema",
@@ -180,7 +184,11 @@
       "dataDependent": [
         "Backfill identity_floors from all historical units whose case/label is absent, including inactive units.",
         "Backfill identity_spaces for units without an identity-space row; ordinals derive from existing maximum and creation order."
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/infrastructure/db.ts",
+        "function": "migrate"
+      }
     },
     {
       "id": "registry.schema",
@@ -261,7 +269,11 @@
           "ordinal": 15,
           "sha256": "2599879810dac96f7abb2faf125d77b40f30c33a4d9750f51c9723b6fd1c7ec8"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/registry/registry-db.ts",
+        "function": "migrateRegistry"
+      }
     },
     {
       "id": "area.schema",
@@ -369,7 +381,11 @@
       ],
       "dataDependent": [
         "Insert one map_areas row per existing registry_sites row when that site has no area; ON CONFLICT(site_id) DO NOTHING."
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/areas/area-db.ts",
+        "function": "migrateAreas"
+      }
     },
     {
       "id": "officer.schema",
@@ -434,7 +450,11 @@
           "ordinal": 11,
           "sha256": "994b8ea129a301e1b67463de7eee29843c922abad64cad252962e8a439de91fc"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/officer/officer-db.ts",
+        "function": "migrateOfficer"
+      }
     },
     {
       "id": "officer-ai.schema",
@@ -467,7 +487,11 @@
           "ordinal": 3,
           "sha256": "0c72de72952b3781e3d5c05476ed9c21fdb7acd2497b09b3eee85c3800f7f760"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/ai/officer-ai.ts",
+        "function": "migrateOfficerAi"
+      }
     },
     {
       "id": "spatial-ml.schema",
@@ -512,7 +536,11 @@
           "ordinal": 6,
           "sha256": "558c01d7df71912b6239eee4a99ce705c40c795dd22252ddb658a947df7dda8c"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-ml-db.ts",
+        "function": "migrateSpatialMl"
+      }
     },
     {
       "id": "usp.lock",
@@ -537,7 +565,11 @@
           "ordinal": 1,
           "sha256": "7731379d10385815e92f6e9f8a1c180f3346b534cf6e7a82f3437a0b5313d2b8"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     },
     {
       "id": "usp.ledger",
@@ -562,7 +594,11 @@
           "ordinal": 1,
           "sha256": "32ed7d9219781cf4dcfc76f7de268885e9b904236fdf65e030da14b8c90f5a40"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     },
     {
       "id": "usp.f1.check",
@@ -593,7 +629,11 @@
           "ordinal": 1,
           "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     },
     {
       "id": "usp.f1.schema",
@@ -654,7 +694,11 @@
           "ordinal": 10,
           "sha256": "4db011c3a49ba15271085fad36cb10851c7113cbc7f31eb85c53543a8ae8b679"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     },
     {
       "id": "usp.f1.mark",
@@ -685,7 +729,11 @@
           "ordinal": 1,
           "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     },
     {
       "id": "usp.identity.check",
@@ -716,7 +764,11 @@
           "ordinal": 1,
           "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     },
     {
       "id": "usp.identity.schema",
@@ -765,7 +817,11 @@
           "ordinal": 7,
           "sha256": "0f068bb46cd2fb9c1c962f47b670f44d63fd8e03583913546659461928f0ec6b"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     },
     {
       "id": "usp.identity.mark",
@@ -796,7 +852,11 @@
           "ordinal": 1,
           "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     },
     {
       "id": "usp.geometry.check",
@@ -827,7 +887,11 @@
           "ordinal": 1,
           "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/geometry-migration.ts",
+        "function": "migrateUspGeometryTx"
+      }
     },
     {
       "id": "usp.geometry.schema",
@@ -964,7 +1028,11 @@
       "internalConditions": [
         "DO block creates only absent USP reader/display roles, rejects unsafe pre-existing role attributes, then grants role membership to current_user.",
         "Six NOT VALID constraints reject future incompatible writes without validating historical rows."
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/geometry-migration.ts",
+        "function": "migrateUspGeometryTx"
+      }
     },
     {
       "id": "usp.geometry.mark",
@@ -995,7 +1063,11 @@
           "ordinal": 1,
           "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/geometry-migration.ts",
+        "function": "migrateUspGeometryTx"
+      }
     },
     {
       "id": "datasets.lock",
@@ -1020,7 +1092,11 @@
           "ordinal": 1,
           "sha256": "627ee6b1294b388f440b94d8814669cf14d1155e1e50bdbe1b956bebb39bfc4e"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets"
+      }
     },
     {
       "id": "datasets.schema",
@@ -1045,7 +1121,11 @@
           "ordinal": 1,
           "sha256": "c6656116378ff05b83412b29e671b1c03046724482357556d0932b29979fe4d3"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets"
+      }
     },
     {
       "id": "datasets.archived-column",
@@ -1070,7 +1150,11 @@
           "ordinal": 1,
           "sha256": "b8579a7d2dacda970c77c45739e249ef880e8ff9ea5e57052d79df701fb6f2a9"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets"
+      }
     },
     {
       "id": "datasets.identifier-version-column",
@@ -1095,7 +1179,11 @@
           "ordinal": 1,
           "sha256": "8c2d9cf455022bef5957acb09d23814db781ee3055911f1b20e39c31773d9dd2"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets"
+      }
     },
     {
       "id": "datasets.identifiers",
@@ -1120,7 +1208,11 @@
           "ordinal": 1,
           "sha256": "72e313c0e05d06eafb6b02e135972fac2d22e66f3085b65fe49bba1ff6f66924"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-dataset-db.ts",
+        "function": "ensureSpatialDatasets"
+      }
     },
     {
       "id": "dataset-ml.lock",
@@ -1145,7 +1237,11 @@
           "ordinal": 1,
           "sha256": "744c8b7121324dc341caabab9c9ec979361ffc6513045c1c46fa212e31ff383c"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/datasets/dataset-ml-db.ts",
+        "function": "ensureDatasetMl"
+      }
     },
     {
       "id": "dataset-ml.schema",
@@ -1182,7 +1278,11 @@
           "ordinal": 4,
           "sha256": "626a0e2212a33a3be950642158bce9f11af9ac6e3a1241dffbf53d603009c95e"
         }
-      ]
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/datasets/dataset-ml-db.ts",
+        "function": "ensureDatasetMl"
+      }
     }
   ],
   "plannedButAbsent": [

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Check NEST-01 SQL files against pinned TypeScript literals without importing the app.
+"""Check pinned SQL provenance and current runtime wiring without importing the app.
 
-This is a source/byte audit, not a SQL parser or migration runner. In particular,
+This is a static audit, not a migration runner. In particular,
 each multi-statement query remains one file and must be sent as one query in the
 later runtime wiring. No database, network, or application modules are touched.
 """
@@ -107,7 +107,7 @@ def sql_statements(sql: str) -> list[str]:
     return statements
 
 
-def audit() -> None:
+def audit_historical() -> tuple[dict, int]:
     manifest = json.loads(MANIFEST.read_text())
     commit = manifest["sourceCommit"]
     steps = manifest["steps"]
@@ -181,18 +181,66 @@ def audit() -> None:
     missing = sorted(discovered - selected)
     if missing:
         raise ValueError(f"Unextracted schema SQL query literals: {missing}")
-    statement_count = sum(len(step["statements"]) for step in steps)
-    print(
-        f"PASS: {len(steps)} exact SQL files, {statement_count} statement hashes; "
-        f"{len(discovered)} schema query literals covered at {commit}"
-    )
+    return manifest, len(discovered)
+
+
+def audit_runtime(manifest: dict) -> None:
+    extraction = json.loads((ROOT / "packages" / "server" / "extraction-map.json").read_text())
+    moved_paths = {entry["source"]: entry["destination"] for entry in extraction["mappings"]}
+    expected_by_file: dict[str, list[tuple[int, str]]] = {}
+    for step in manifest["steps"]:
+        source = step["source"]
+        runtime = step["runtime"]
+        if source["kind"] == "file":
+            if runtime["path"] != "compose.yaml":
+                raise ValueError("Bootstrap runtime must be the Compose initdb mount")
+            mount = f"./database/{step['file']}:/docker-entrypoint-initdb.d/001-extensions.sql:ro"
+            if mount not in (ROOT / "compose.yaml").read_text():
+                raise ValueError("Compose does not mount canonical PostGIS bootstrap SQL")
+            if (ROOT / source["path"]).exists():
+                raise ValueError("Redundant bootstrap SQL copy remains in infra/postgres")
+            continue
+        moved = moved_paths.get(source["path"])
+        if moved != runtime["path"]:
+            raise ValueError(f"Runtime caller differs from extraction map: {step['id']}")
+        expected_by_file.setdefault(moved, []).append((step["order"], step["id"]))
+
+    for path, expected in expected_by_file.items():
+        text = (ROOT / path).read_text()
+        if "sql-loader" not in text:
+            raise ValueError(f"SQL loader import missing: {path}")
+        positions = []
+        for order, step_id in expected:
+            call = f"sql('{step_id}')"
+            if text.count(call) != 1 or not re.search(
+                rf"\b(?:client\.)?query\s*\(\s*{re.escape(call)}", text
+            ):
+                raise ValueError(f"Named SQL query call missing or duplicated: {step_id}")
+            positions.append((order, text.index(call)))
+        if [position for _, position in positions] != sorted(position for _, position in positions):
+            raise ValueError(f"SQL query call order changed: {path}")
+        found_ids = set(re.findall(r"\bsql\('([^']+)'\)", text))
+        if found_ids != {step_id for _, step_id in expected}:
+            raise ValueError(f"Unmanifested or missing SQL ID in {path}")
+        if any(SCHEMA_SQL.search(sql) for _, sql in literal_queries(text)):
+            raise ValueError(f"Inline schema SQL remains in {path}")
+    if '@ulpin/server/infrastructure/db' not in (ROOT / "scripts" / "migrate.ts").read_text():
+        raise ValueError("Migration command no longer uses the extracted server package")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.parse_args()
     try:
-        audit()
+        manifest, discovered = audit_historical()
+        statement_count = sum(len(step["statements"]) for step in manifest["steps"])
+        print(
+            f"PASS historical: {len(manifest['steps'])} exact SQL files, "
+            f"{statement_count} statement hashes, {discovered} schema query literals "
+            f"at {manifest['sourceCommit']}"
+        )
+        audit_runtime(manifest)
+        print("PASS runtime wiring: 24 named migration queries and canonical Compose bootstrap")
     except (ValueError, KeyError, OSError, subprocess.CalledProcessError) as error:
         print(f"FAIL: {error}", file=sys.stderr)
         sys.exit(1)
