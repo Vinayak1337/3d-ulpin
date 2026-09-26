@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {resolve} from 'node:path';
+import {assertUspIsolation,localNestApiPort,localOperatorProcessProvenance} from '../scripts/usp/local-isolation.mjs';
 import {assertIsolation, generatedEnvironment, hostedScope, redact, testProcessEnvironment} from '../scripts/engineering/isolation.mjs';
 
 const runner = () => ({
@@ -56,4 +57,20 @@ test('child processes resolve fixtures inside the explicit checkout instead of t
   assert.equal(child.DATABASE_URL,env.DATABASE_URL);
   assert.equal(env.ULPIN_FIXTURE_ROOT,undefined);
   assert.throws(()=>testProcessEnvironment(env,'relative-root'));
+});
+
+const nonce='a'.repeat(16),secret='a'.repeat(64),subject=localOperatorProcessProvenance().subject;
+const nestEnvironment=port=>({REPO_DATA:'false',ULPIN_ISOLATION_PROFILE:'local-nest',DOCKER_CONTEXT:process.platform==='darwin'?'colima-ulpin':'default',ULPIN_LOCAL_NONCE:nonce,ULPIN_BASELINE_PROJECT:`ulpin-usptest-${nonce}`,
+  POSTGRES_DB:`ulpin_usptest_${nonce}`,POSTGRES_USER:'ulpin_usptest',POSTGRES_PASSWORD:secret,POSTGRES_PORT:'25432',DATABASE_URL:`postgresql://ulpin_usptest:${secret}@127.0.0.1:25432/ulpin_usptest_${nonce}`,
+  S3_ACCESS_KEY:'ulpin_usptest',S3_SECRET_KEY:secret,S3_BUCKET:`ulpin-usptest-${nonce}`,S3_ENDPOINT:'http://127.0.0.1:29000/',S3_PORT:'29000',S3_CONSOLE_PORT:'29001',GEO_PORT:'28000',GEO_URL:'http://127.0.0.1:28000/',GEO_SERVICE_TOKEN:secret,REDIS_URL:'redis://127.0.0.1:26379/0',REDIS_PORT:'26379',
+  HOST:'127.0.0.1',ULPIN_NEST_API_PORT:port,PORT:port,API_PORT:port,ULPIN_LOOPBACK_PORTS:port,ULPIN_TEST_URL:`http://127.0.0.1:${port}/`,ULPIN_LOCAL_OPERATOR_SUBJECT:subject});
+test('saved explicit API port stays consistent with every loopback guard',()=>{
+  assert.equal(localNestApiPort(),3188);assert.equal(localNestApiPort('3189'),3189);
+  assert.doesNotThrow(()=>assertUspIsolation(nestEnvironment('3189')));
+  const prior=nestEnvironment('3188');delete prior.ULPIN_NEST_API_PORT;assert.doesNotThrow(()=>assertUspIsolation(prior));
+  for(const [key,value] of [['PORT','3188'],['API_PORT','3188'],['ULPIN_LOOPBACK_PORTS','3188'],['ULPIN_TEST_URL','http://127.0.0.1:3188/'],['HOST','0.0.0.0'],['ULPIN_TEST_URL','http://localhost:3189/']])
+    assert.throws(()=>assertUspIsolation({...nestEnvironment('3189'),[key]:value}));
+});
+test('invalid, privileged and reserved service API port choices are rejected',()=>{
+  for(const value of ['0','80','1023','65536','03189','3189.0','3189;exec','25432','29000','29001','26379','28000','5432','6379','8000','9000','9001'])assert.throws(()=>localNestApiPort(value));
 });
