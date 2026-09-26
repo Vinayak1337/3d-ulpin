@@ -4,6 +4,10 @@ The backend runs independently of Next.js in `apps/api`. The [OpenAPI 3.0.3 docu
 
 After starting the local API, open [Swagger UI](http://127.0.0.1:3188/api/docs). Its [OpenAPI JSON](http://127.0.0.1:3188/api/docs/openapi.json) and [dataset catalogue](http://127.0.0.1:3188/api/docs/datasets.json) are served by the same loopback backend. Swagger is light-only and opens schemas first. Write execution and the external validator are disabled. These links describe the configured default address; they do not mean a server is currently running.
 
+## Serving environment status
+
+Read-only observation on 26 September 2026: the existing root API on port 3188 reports all five dependencies healthy in linked mode, but its database has no map areas, physical features, registry records or block groups, and the newer USP/ingestion tables are absent. Two legacy saved datasets are marked `synthetic`; the retired writer assigned that classification by construction, so it does not by itself establish the provenance of their originals. Do not use those rows as qualified real map inputs. DB-READY-01 is preparing the safe schema/lineage/import upgrade; accepted isolated test receipts below do not mean their records exist in this environment. The [delivery ledger](../orchestration/NESTJS_MIGRATION.md#active-delivery-after-consolidation) tracks that work and official projected-vector ingestion separately.
+
 ## Start and connect
 
 Use a frozen install, then `pnpm build`. Root `pnpm dev` starts Nest and the existing dispatcher; `pnpm start` starts the built API and dispatcher. Dependencies are PostgreSQL/PostGIS, private S3-compatible storage, Redis and the existing private Python processor/Celery worker. Starting the API does not run SQL migrations or create these services. Configure the intended environment explicitly; never restore a snapshot or seed operational records to make the UI appear populated.
