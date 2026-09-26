@@ -7,6 +7,13 @@ import { assertIsolation as assertHostedIsolation, redact } from '../engineering
 
 const ports = { POSTGRES_PORT: '25432', S3_PORT: '29000', S3_CONSOLE_PORT: '29001',
   REDIS_PORT: '26379', GEO_PORT: '28000' };
+/** An explicit saved Nest port cannot select a privileged or reserved service port. */
+export function localNestApiPort(value='3188') {
+  assert(typeof value==='string' && /^[1-9]\d{3,4}$/.test(value),'API port must be a canonical integer');
+  const port=Number(value),reserved=[...Object.values(ports).map(Number),5432,6379,8000,9000,9001];
+  assert(port>=1024 && port<=65535 && !reserved.includes(port),'API port is privileged, reserved or outside range');
+  return port;
+}
 const localProviderKeys = ['OPENAI_API_KEY', 'SARVAM_API_KEY', 'ANTHROPIC_API_KEY',
   'GOOGLE_API_KEY', 'GEMINI_API_KEY', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'];
 const endpoint = (value, protocol, port, path) => {
@@ -39,6 +46,7 @@ export function assertUspIsolation(env) {
   if (!['local-colima', 'local-docker', 'local-preview', 'local-nest'].includes(env.ULPIN_ISOLATION_PROFILE)) return assertHostedIsolation(env);
   const preview = env.ULPIN_ISOLATION_PROFILE === 'local-preview';
   const nest = env.ULPIN_ISOLATION_PROFILE === 'local-nest';
+  const nestPort=nest?localNestApiPort(env.ULPIN_NEST_API_PORT??'3188'):null;
   const persistent = preview && env.ULPIN_PERSISTENT_PREVIEW === '1';
   assert(!env.ULPIN_PERSISTENT_PREVIEW || (persistent && env.ULPIN_FND06_MANUAL_HOLD === '1'));
   const colima = env.ULPIN_ISOLATION_PROFILE === 'local-colima' || ((preview || nest) && process.platform === 'darwin');
@@ -61,7 +69,7 @@ export function assertUspIsolation(env) {
   assert.equal(db.password, env.POSTGRES_PASSWORD);
   for (const [key, protocol, port, path] of [
     ['S3_ENDPOINT', 'http:', 29000, '/'], ['GEO_URL', 'http:', 28000, '/'],
-    ['REDIS_URL', 'redis:', 26379, '/0'], ['ULPIN_TEST_URL', 'http:', nest ? 3188 : preview ? persistent ? 3187 : 3108 : colima ? 3000 : 23000, '/'],
+    ['REDIS_URL', 'redis:', 26379, '/0'], ['ULPIN_TEST_URL', 'http:', nest ? nestPort : preview ? persistent ? 3187 : 3108 : colima ? 3000 : 23000, '/'],
   ]) {
     const url = endpoint(env[key], protocol, port, path);
     assert.equal(url.username + url.password, '');
@@ -71,10 +79,10 @@ export function assertUspIsolation(env) {
     assert(!env[key], `${key} must not point at private or remote resources`);
   if (persistent) assert.equal(env.ULPIN_LOOPBACK_PORTS, '3187');
   if (nest) {
-    assert.equal(env.ULPIN_LOOPBACK_PORTS, '3188');
+    assert.equal(env.ULPIN_LOOPBACK_PORTS, String(nestPort));
     assert.equal(env.HOST, '127.0.0.1');
-    assert.equal(env.PORT, '3188');
-    assert.equal(env.API_PORT, '3188');
+    assert.equal(env.PORT, String(nestPort));
+    assert.equal(env.API_PORT, String(nestPort));
     // Retained phase 2A configurations have no subject and remain readable for
     // status/cleanup. New startup and smoke additionally require the OS identity.
     if (env.ULPIN_LOCAL_OPERATOR_SUBJECT !== undefined) assertLocalOperatorProcess(env);
