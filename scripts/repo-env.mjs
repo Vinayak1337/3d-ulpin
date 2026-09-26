@@ -54,6 +54,8 @@ export function repositoryEnvironment(create = false, root = projectRoot()) {
   }
   return stored;
 }
-export function applyRepositoryEnvironment() {
-  if (repositoryMode()) Object.assign(process.env, repositoryEnvironment());
+export function applyRepositoryEnvironment(root = projectRoot()) {
+  if (repositoryMode(baseEnvironment(root).REPO_DATA ?? '')) {
+    Object.assign(process.env, repositoryEnvironment(false, root));
+  }
 }
