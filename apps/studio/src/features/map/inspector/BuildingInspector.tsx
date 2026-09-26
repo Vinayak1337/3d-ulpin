@@ -10,7 +10,7 @@ import type { AreaFeature, BuildingRegister } from '../../../api/queries';
 import type { BuildingModel } from '../../../model/building';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
-import { CheckBadge } from '../LeftPanel';
+import { CheckBadge } from '../CheckBadge';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerStatus } from '../ledger';
 import { featureEvidence } from './evidence';
 import { InspectorShell, type Crumb } from './InspectorShell';
