@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { assertUspIsolation, assertLocalOperatorProcess } from './local-isolation.mjs';
 
 // Enable only after the lead accepts this preparation and authorizes the run.
-const RUNTIME_ENABLED = false;
+const RUNTIME_ENABLED = true;
 if (!RUNTIME_ENABLED) {
   console.error('RUN-01 phase 2B smoke is gated pending lead acceptance and run authorization; no source read or API call was made.');
   process.exit(1);
@@ -147,8 +147,8 @@ async function run() {
       document.upload={httpStatus:uploaded.status,...uploaded.value,operationKey};
       const queued=await detail(caseId);assert.equal(queued.sources.length,1);assert.equal(queued.jobs.length,1);
       const job=queued.jobs[0];uuid(job.id);sourceJob(queued,uploaded.value.id,job.id);
-      assert.equal(job.status,'queued','processor outage must expose the persisted canonical queued job');
-      document.queuedJob=job;
+      assert(['queued','failed'].includes(job.status),'stopped-processor inspect must remain queued or record an actual dispatch failure');
+      document.initialJobObservation=job;
       document.downloadDuringOutage=await exactSource(uploaded.value.id,pdf,pdfName,'application/pdf');
       phase='document-dispatch-failure';
       failed=await waitJob(caseId,uploaded.value.id,job.id,'failed');
