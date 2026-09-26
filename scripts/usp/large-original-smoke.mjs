@@ -34,7 +34,7 @@ async function run(){
   const pool=new Pool({connectionString:env.DATABASE_URL}),s3=new S3Client({endpoint:env.S3_ENDPOINT,region:env.S3_REGION,forcePathStyle:true,credentials:{accessKeyId:env.S3_ACCESS_KEY,secretAccessKey:env.S3_SECRET_KEY}});
   let phase='limits',file;
   async function call(path,status=200,body,headers={}){
-    const response=await fetch(base+path,{...(body?{method:'POST',body:body instanceof FormData?body:JSON.stringify(body)}:{}),headers:{...(body && !(body instanceof FormData)?{'Content-Type':'application/json'}:{}),...headers},signal:AbortSignal.timeout(150000)});
+    const response=await fetch(base+path,{...(body?{method:'POST',body:body instanceof FormData?body:JSON.stringify(body)}:{}),headers:{Connection:'close',...(body && !(body instanceof FormData)?{'Content-Type':'application/json'}:{}),...headers},signal:AbortSignal.timeout(150000)});
     const value=await response.json();assert.equal(response.status,status,`${phase} ${path}: ${value.error?.code||response.status}`);return value;
   }
   const guard=upload=>({requestKey:randomUUID(),expectedRevision:upload.revision,expectedCaseRevision:upload.currentCaseRevision});
@@ -46,7 +46,7 @@ async function run(){
     const offset=(number-1)*receipt.limits.partBytes,bytes=Buffer.alloc(Math.min(receipt.limits.partBytes,source.bytes-offset));
     const result=await file.read(bytes,0,bytes.length,offset);assert.equal(result.bytesRead,bytes.length);
     const input=replay??{...guard(upload),sha256:hash(bytes)};
-    const response=await fetch(base+uploadPath(upload)+`/parts/${number}`,{method:'PUT',headers:{'Content-Type':'application/octet-stream','X-Request-Key':input.requestKey,'X-Upload-Revision':String(input.expectedRevision),'X-Case-Revision':String(input.expectedCaseRevision),'X-Part-Sha256':input.sha256},body:bytes,signal:AbortSignal.timeout(45000)});
+    const response=await fetch(base+uploadPath(upload)+`/parts/${number}`,{method:'PUT',headers:{Connection:'close','Content-Type':'application/octet-stream','X-Request-Key':input.requestKey,'X-Upload-Revision':String(input.expectedRevision),'X-Case-Revision':String(input.expectedCaseRevision),'X-Part-Sha256':input.sha256},body:bytes,signal:AbortSignal.timeout(45000)});
     const value=await response.json();assert.equal(response.status,200,`${phase} part ${number}: ${value.error?.code||response.status}`);return {value,input};
   }
   async function missing(key){try{await s3.send(new HeadObjectCommand({Bucket:scope.bucket,Key:key}),{abortSignal:AbortSignal.timeout(5000)});return false;}catch(error){if(error.$metadata?.httpStatusCode===404)return true;throw error;}}
