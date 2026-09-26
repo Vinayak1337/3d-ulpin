@@ -1,10 +1,10 @@
 /** Deliberate serving upgrade; audit is read-only, mutation is a separate reviewed invocation. */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import type { PoolClient } from 'pg';
+import type { Pool, PoolClient } from 'pg';
 import {
   codePin, connection, datasetPins, fingerprints, hash, integrity, loadEnvironment,
-  originalIntegrity, preserved, requireGuard, target, writeReceipt,
+  originalIntegrity, preserved, requireGuard, target, reserveReceipt, readReceipt, toolRoot, toolPath, assertEffectiveEnvironment,
 } from './serving-common';
 
 type Snapshot = Awaited<ReturnType<typeof audit>>;
@@ -29,7 +29,7 @@ async function audit(client: PoolClient, endpoint: string) {
   }));
 }
 function clean() {
-  requireGuard(!execFileSync('git',['status','--porcelain'],{encoding:'utf8',timeout:5000}).trim(), 'CLEAN_PINNED_CHECKOUT_REQUIRED');
+  requireGuard(!execFileSync('git',['status','--porcelain'],{cwd:toolRoot,encoding:'utf8',timeout:5000}).trim(), 'CLEAN_PINNED_CHECKOUT_REQUIRED');
 }
 function safe(snapshot: Snapshot) {
   requireGuard(!snapshot.integrity.orphans.length, 'FOREIGN_KEY_ORPHANS');
@@ -39,7 +39,7 @@ function safe(snapshot: Snapshot) {
     'POPULATED_BACKFILL_REVIEW_REQUIRED');
 }
 async function archive(client: PoolClient, before: Snapshot, file: string) {
-  const bytes = readFileSync(file);
+  const bytes = readFileSync(toolPath(file));
   requireGuard(hash(bytes) === option('expect-review'), 'REVIEW_FILE_CHANGED');
   const review = JSON.parse(bytes.toString('utf8'));
   requireGuard(review.version === 'serving-archive-review/1' && review.target === before.target.token &&
@@ -55,7 +55,7 @@ async function archive(client: PoolClient, before: Snapshot, file: string) {
       typeof entry.evidenceFile === 'string' && /^[a-f0-9]{64}$/.test(entry.evidenceSha256), 'ARCHIVAL_PIN_OR_LINEAGE_REVIEW_MISSING');
     // Retiring a derived scene asserts nothing about member originals. Both bases require exact lead evidence.
     // Evidence can be private; never serialize its content or interpret the legacy classification as proof.
-    requireGuard(hash(readFileSync(entry.evidenceFile)) === entry.evidenceSha256, 'ARCHIVAL_EVIDENCE_CHANGED');
+    requireGuard(hash(readFileSync(toolPath(entry.evidenceFile))) === entry.evidenceSha256, 'ARCHIVAL_EVIDENCE_CHANGED');
   }
   await client.query('BEGIN');
   try {
@@ -78,23 +78,28 @@ async function archive(client: PoolClient, before: Snapshot, file: string) {
 
 async function main() {
   requireGuard(['preflight','upgrade','archive'].includes(mode || ''), 'MODE_PREFLIGHT_UPGRADE_OR_ARCHIVE_REQUIRED');
-  const out = option('out'); requireGuard(!existsSync(out), 'RECEIPT_ALREADY_EXISTS');
-  const environment = loadEnvironment(option('env-file'));
+  const out = toolPath(option('out'));
   const receipt: Record<string,unknown> = { version: 'serving-database/1', mode, status: 'running',
     codeCommit: codePin(), startedAt: new Date().toISOString(), mutationAttempted: false };
-  const p = connection(environment.env.DATABASE_URL, mode === 'preflight');
-  p.on('error', () => {});
+  const durable = reserveReceipt(out,receipt);
+  let p: Pool | undefined;
   let client: PoolClient | undefined;
   let locked = false;
   try {
+    const environment = loadEnvironment(option('env-file'));
+    receipt.envHash = environment.envHash;
+    receipt.resourceBindingHash = await assertEffectiveEnvironment(environment);
+    p = connection(environment.env.DATABASE_URL, mode === 'preflight');
+    p.on('error', () => {});
     client = await p.connect();
     if (mode === 'preflight') {
       receipt.snapshot = await audit(client, environment.endpoint);
       receipt.envHash = environment.envHash;
     } else {
       clean();
-      const baseline = JSON.parse(readFileSync(option('preflight'),'utf8')) as { snapshot: Snapshot; envHash: string; status: string; codeCommit: string };
-      requireGuard(baseline.status === 'passed' && baseline.envHash === environment.envHash, 'PREFLIGHT_OR_ENV_CHANGED');
+      const baseline = readReceipt(option('preflight')) as { snapshot: Snapshot; envHash: string; resourceBindingHash: string; status: string; codeCommit: string };
+      requireGuard(baseline.status === 'passed' && baseline.envHash === environment.envHash &&
+        baseline.resourceBindingHash === receipt.resourceBindingHash, 'PREFLIGHT_OR_ENV_CHANGED');
       requireGuard(codePin() === option('expect-code') && baseline.codeCommit === codePin(), 'CODE_PIN_CHANGED');
       requireGuard(baseline.snapshot.target.token === option('expect-target'), 'TARGET_PIN_CHANGED');
       requireGuard(baseline.snapshot.readiness.schema.manifestSha256 === option('expect-manifest'), 'MANIFEST_PIN_CHANGED');
@@ -105,6 +110,7 @@ async function main() {
       locked = (await client.query("SELECT pg_try_advisory_lock(hashtextextended('ulpin-serving-upgrade',0)) AS acquired")).rows[0].acquired;
       requireGuard(locked, 'SERVING_TOOL_ALREADY_RUNNING');
       const before = await audit(client, environment.endpoint);
+      receipt.target = before.target; receipt.manifestSha256 = before.readiness.schema.manifestSha256;
       safe(before); preserved(baseline.snapshot.records, await fingerprints(client, baseline.snapshot.records));
       // This is an additional observation, not a substitute for the lead quiescing writers.
       const active = Number((await client.query(`SELECT count(*) AS n FROM pg_stat_activity WHERE datname=current_database()
@@ -116,6 +122,7 @@ async function main() {
         const { migrate } = await import('@ulpin/server/infrastructure/db');
         const { ensureDatasetMl } = await import('@ulpin/server/modules/datasets/dataset-ml-db');
         receipt.mutationAttempted = true;
+        receipt.phase = 'migration_intent'; durable.update(receipt);
         await migrate(); await ensureDatasetMl();
         const after = await audit(client, environment.endpoint);
         preserved(before.records, await fingerprints(client, before.records));
@@ -125,6 +132,7 @@ async function main() {
       } else {
         requireGuard(before.readiness.schema.ready, 'UPGRADE_REQUIRED_BEFORE_ARCHIVE');
         receipt.mutationAttempted = true;
+        receipt.phase = 'archival_intent'; durable.update(receipt);
         receipt.archive = await archive(client, before, option('review'));
         receipt.originalsAfter = await originalIntegrity(client);
       }
@@ -142,11 +150,15 @@ async function main() {
   } finally {
     await client?.query('ROLLBACK').catch(() => {});
     if (locked) await client?.query("SELECT pg_advisory_unlock(hashtextextended('ulpin-serving-upgrade',0))").catch(() => {});
-    client?.release(); await p.end();
-    receipt.completedAt = new Date().toISOString(); writeReceipt(out, receipt);
+    client?.release(); await p?.end().catch(() => {receipt.cleanup='pool_close_failed';});
+    receipt.completedAt = new Date().toISOString();
+    try { durable.update(receipt); } finally { durable.close(); }
     console.log(JSON.stringify({mode,status:receipt.status,errorCode:receipt.errorCode,receipt:out,
       mutationAttempted:receipt.mutationAttempted}));
   }
 }
 try { await main(); }
-catch { console.error('SERVING_PREFLIGHT_CONFIGURATION_FAILED'); process.exitCode = 1; }
+catch (error) {
+  const code=(error as {code?:string}).code;
+  console.error(code && /^[A-Z0-9_]+$/.test(code) ? code : 'SERVING_RECEIPT_UNCERTAIN'); process.exitCode = 1;
+}
