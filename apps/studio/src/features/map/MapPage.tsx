@@ -1,4 +1,4 @@
-import { Link, Navigate, useParams } from 'react-router';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router';
 import { FilePlus, MapTrifold, WarningCircle } from '@phosphor-icons/react';
 import { Button, EmptyState, Icon, Skeleton } from '@ulpin/ui';
 import { useAreaContext, useAreas } from '../../api/queries';
@@ -36,7 +36,8 @@ export function MapIndexRedirect() {
 /** /studio/areas/:areaId */
 export function MapPage() {
   const { areaId } = useParams();
-  const context = useAreaContext(areaId);
+  const [params] = useSearchParams();
+  const context = useAreaContext(areaId, params.has('package'));
   if (context.isPending) return <MapSkeleton />;
   if (context.error || !context.data) {
     return (

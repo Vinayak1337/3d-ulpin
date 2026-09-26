@@ -17,7 +17,7 @@ const DIRECTIONS: Record<SceneMode, [number, number, number]> = {
 
 /** How much of the shown bounds' radius the view frames, per mode. */
 const FIT: Record<SceneMode, { scale: number; min: number }> = {
-  area: { scale: 0.42, min: 40 },
+  area: { scale: 0.55, min: 40 },
   building: { scale: 1.9, min: 15 },
   level: { scale: 1.25, min: 8 },
   findings: { scale: 1.1, min: 8 },

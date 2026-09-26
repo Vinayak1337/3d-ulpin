@@ -7,6 +7,15 @@
  */
 export async function startLocalData(): Promise<void> {
   if (!import.meta.env.DEV || import.meta.env.VITE_LOCAL_DATA === 'off') return;
+  // `?reset-session` starts the workstation over: no imports, no reviews, codes or cards.
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('reset-session')) {
+    const { resetSession } = await import('./session');
+    resetSession();
+    await new Promise((resolve) => { const r = indexedDB.deleteDatabase('ulpin-studio-workflow'); r.onsuccess = r.onerror = r.onblocked = resolve; });
+    url.searchParams.delete('reset-session');
+    window.history.replaceState(null, '', url);
+  }
   const [{ setupWorker }, { getResponse }, { handlers }] = await Promise.all([import('msw/browser'), import('msw'), import('./handlers')]);
   try {
     await setupWorker(...handlers).start({ onUnhandledRequest: 'bypass', quiet: true });

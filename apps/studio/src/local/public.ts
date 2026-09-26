@@ -1,6 +1,7 @@
 import type { PublicBuilding, PublicMap, PublicRecord, PublicRecordSummary, PublicSearch } from '@ulpin/api-client/draft';
 import { lake } from './sources';
 import { listAssigned, type SpaceWorkflow } from './workflow';
+import { floorsDone } from './story';
 
 /**
  * The public projection (PUBLIC-01) of the local records: released units only, with no party names,
@@ -24,7 +25,7 @@ async function assignedCodes(): Promise<Map<string, SpaceWorkflow>> {
 }
 
 function released(space: Record_, codes: Map<string, SpaceWorkflow>): boolean {
-  if (space.use !== 'apartment') return false;
+  if (space.use !== 'apartment' || !floorsDone()) return false;
   return codes.has(space.id) || ledgerOf(space.id)?.status === 'reviewed';
 }
 
@@ -86,7 +87,8 @@ export async function publicBuilding(id: string): Promise<PublicBuilding | undef
 
 export async function publicAreas(): Promise<Array<{ id: string; name: string; records: number }>> {
   const codes = await assignedCodes();
-  return [{ id: lake.context.area.id, name: lake.context.area.name, records: spaces.filter((s) => released(s, codes)).length }];
+  const records = spaces.filter((s) => released(s, codes)).length;
+  return records ? [{ id: lake.context.area.id, name: lake.context.area.name, records }] : [];
 }
 
 export async function publicMap(areaId: string): Promise<PublicMap | undefined> {

@@ -24,13 +24,13 @@ export function usePublicRecord(id: string | undefined) {
 }
 
 export function usePublicBuilding(id: string | null | undefined) {
-  return useQuery({ queryKey: ['public', 'building', id], enabled: Boolean(id), queryFn: () => getPublic<PublicBuilding>(`/api/v1/public/buildings/${id}`) });
+  return useQuery({ queryKey: ['public', 'building', id], enabled: Boolean(id), queryFn: () => getPublic<PublicBuilding>(`/api/v1/public/buildings/${id}`), refetchInterval: 3000 });
 }
 
 export function usePublicAreas() {
-  return useQuery({ queryKey: ['public', 'areas'], queryFn: () => getPublic<Array<{ id: string; name: string; records: number }>>('/api/v1/public/areas') });
+  return useQuery({ queryKey: ['public', 'areas'], queryFn: () => getPublic<Array<{ id: string; name: string; records: number }>>('/api/v1/public/areas'), refetchInterval: 3000 });
 }
 
 export function usePublicMap(areaId: string | null | undefined) {
-  return useQuery({ queryKey: ['public', 'map', areaId], enabled: Boolean(areaId), queryFn: () => getPublic<PublicMap>(`/api/v1/public/areas/${areaId}/map`), staleTime: 60_000 });
+  return useQuery({ queryKey: ['public', 'map', areaId], enabled: Boolean(areaId), queryFn: () => getPublic<PublicMap>(`/api/v1/public/areas/${areaId}/map`), refetchInterval: 3000 });
 }

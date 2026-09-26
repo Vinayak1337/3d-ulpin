@@ -1,21 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { FilePlus } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
-import { Badge, Banner, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
-import { useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
+import { Badge, Banner, Button, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
+import { useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
 import { effectiveColour } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AssignDialog } from '../identity/AssignDialog';
+import { AddFilesDialog } from '../intake/AddFilesDialog';
 import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { polygonsOf } from './footprints';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { MapSidebar, type ViewKey } from './MapSidebar';
-import { ImportTray } from './ImportTray';
+import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
@@ -39,21 +40,24 @@ const ATTRIBUTION: Record<string, string> = {
  */
 export function MapWorkspace({ context }: { context: AreaContext }) {
   const { selection, dispatch, patch } = useSelection();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const packageId = searchParams.get('package');
+  const buildingImportId = searchParams.get('building-import');
+  const buildingImport = useBuildingImport(buildingImportId);
+  const floorsLive = Boolean(buildingImportId) && buildingImport.data?.state !== 'done';
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  const [dialog, setDialog] = useState<'assign' | 'card' | null>(null);
+  const [dialog, setDialog] = useState<'assign' | 'card' | 'files' | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
 
   const buildings = useMemo(() => context.features.filter((f) => f.kind === 'building'), [context.features]);
   const utilities = useMemo(() => context.features.filter((f) => f.kind === 'utility'), [context.features]);
   const feature = selection.buildingId ? buildings.find((b) => b.id === selection.buildingId) ?? null : null;
-  const registerQuery = useBuildingRegister(feature?.id);
+  const registerQuery = useBuildingRegister(feature?.id, floorsLive);
   const register = registerQuery.data;
-  const ledger = useBuildingLedger(feature?.id).data;
+  const ledger = useBuildingLedger(feature?.id, floorsLive).data;
   const model = useMemo(() => (register ? buildingModel(register) : null), [register]);
   const level = model?.levels.find((l) => l.id === selection.levelId) ?? null;
   const space = selection.spaceId ? model?.spaceById.get(selection.spaceId) ?? null : null;
@@ -109,6 +113,12 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     target.__ulpinScene = engine;
     return () => { delete target.__ulpinSceneStats; delete target.__ulpinScene; };
   }, [engine]);
+
+  // While an area import streams, the view pulls back to keep every arriving building in frame.
+  const buildingCount = buildings.length;
+  useEffect(() => {
+    if (packageId && engine && buildingCount && selection.mode === 'area' && !selection.buildingId) engine.resetCamera();
+  }, [packageId, engine, buildingCount, selection.mode, selection.buildingId]);
 
   const onView = useCallback(() => setTick((t) => (t + 1) % 1_000_000), []);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
@@ -222,13 +232,15 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   } else if (feature) {
     inspector = (
       <BuildingInspector feature={feature} register={register} model={model} ledger={ledger} registerPending={registerQuery.isPending} crumbs={crumbs}
-        exploring={selection.mode === 'level'}
+        exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')}
         onExplore={() => { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }}
         onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })} />
     );
   } else inspector = <AreaInspector area={context.area} buildings={buildings} onSelect={(id) => dispatch({ type: 'selectBuilding', id })} />;
 
-  const tray = packageId ? <ImportTray packageId={packageId} /> : selection.mode === 'findings' && findings.length ? (
+  const closeParam = (key: string) => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete(key); return n; }, { replace: true });
+  const tray = packageId ? <ImportTray packageId={packageId} onClose={() => closeParam('package')} />
+    : buildingImportId ? <BuildingImportTray importId={buildingImportId} onClose={() => closeParam('building-import')} /> : selection.mode === 'findings' && findings.length ? (
     <div className={`ul-panel ${styles.findingTray}`} role="listbox" aria-label="Findings">
       {findings.map((f) => (
         <button key={f.id} type="button" role="option" aria-selected={f.id === finding?.id} onClick={() => dispatch({ type: 'openFindings', findingId: f.id })}>
@@ -274,6 +286,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               buildings={footprints}
               detail={detail}
               state={sceneState}
+              growNew={Boolean(packageId)}
               onPick={onPick}
               onHover={(pick) => setHovered(pick.kind === 'ground' ? null : pick.id)}
               onView={onView}
@@ -301,7 +314,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               <div className={styles.emptyOverlay}>
                 <div className={`ul-float ${styles.emptyCard}`}>
                   <span>No floors recorded for this building. Add a plan or level schedule.</span>
-                  <Link to={`/studio/add-files?feature=${feature!.id}`} className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>
+                  <Button variant="primary" icon={FilePlus} onClick={() => setDialog('files')}>Add files</Button>
                 </div>
               </div>
             ) : null}
@@ -316,6 +329,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
         <div className={styles.inspectorColumn}>{inspector}</div>
       </div>
 
+      {dialog === 'files' && feature ? <AddFilesDialog buildingId={feature.id} onClose={() => setDialog(null)} /> : null}
       {dialog === 'assign' && space && register ? (
         <AssignDialog space={space} register={register} onClose={() => setDialog(null)} onAssigned={(code) => { setDialog(null); setToast(code); }} />
       ) : null}

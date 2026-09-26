@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
-import type { BuildingLedger, DocumentPages, ImportBatch, LevelReview, WorkBoard } from '@ulpin/api-client/draft';
+import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, WorkBoard } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
@@ -35,12 +35,13 @@ async function getDraft<T>(path: string): Promise<T | null> {
 }
 
 /** Rights, areas, shares, readiness, checks and history of a building. Null when the backend has none. */
-export function useBuildingLedger(buildingId: string | null | undefined) {
+export function useBuildingLedger(buildingId: string | null | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.ledger(buildingId ?? ''),
     enabled: Boolean(buildingId),
     queryFn: () => getDraft<BuildingLedger>(`/api/v1/buildings/${buildingId}/ledger`),
     staleTime: 60_000,
+    refetchInterval: live ? 700 : false,
   });
 }
 
@@ -106,21 +107,25 @@ export function useAreas() {
   return useQuery({ queryKey: queryKeys.areas, queryFn: async () => unwrap(await api.GET('/api/v1/areas')), staleTime: 60_000 });
 }
 
-export function useAreaContext(areaId: string | undefined) {
+/** `live`: an import into this area is streaming, so poll until it settles (SSE replaces this later). */
+export function useAreaContext(areaId: string | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.areaContext(areaId ?? ''),
     enabled: Boolean(areaId),
     queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: areaId! } } })),
     staleTime: 60_000,
+    refetchInterval: live ? 700 : false,
   });
 }
 
-export function useBuildingRegister(buildingId: string | null | undefined) {
+export function useBuildingRegister(buildingId: string | null | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.register(buildingId ?? ''),
     enabled: Boolean(buildingId),
     queryFn: async () => unwrap(await api.GET('/api/v1/buildings/{buildingId}/register', { params: { path: { buildingId: buildingId! } } })) as BuildingRegister,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
+    refetchInterval: live ? 700 : false,
   });
 }
 
@@ -134,3 +139,30 @@ export function useCapabilities() {
 
 export const isProcessing = (jobStatus: string | null) =>
   jobStatus === 'queued' || jobStatus === 'running' || jobStatus === 'dispatched' || jobStatus === 'retrying';
+
+/** Building documents: what each file is (before import). */
+export async function detectBuildingFiles(buildingId: string, files: File[]): Promise<FileDetection[]> {
+  const body = new FormData();
+  for (const f of files) body.append('file', f);
+  const response = await globalThis.fetch(`/api/v1/buildings/${buildingId}/imports/inspect`, { method: 'POST', body });
+  if (!response.ok) throw new ApiError(response.status, 'inspect', await response.json().catch(() => null));
+  return (await response.json()) as FileDetection[];
+}
+
+export async function startBuildingImport(buildingId: string, files: File[]): Promise<BuildingImport> {
+  const body = new FormData();
+  for (const f of files) body.append('file', f);
+  const response = await globalThis.fetch(`/api/v1/buildings/${buildingId}/imports`, { method: 'POST', body });
+  if (!response.ok) throw new ApiError(response.status, 'import', await response.json().catch(() => null));
+  return (await response.json()) as BuildingImport;
+}
+
+/** Progress of a building import; polls while it runs. */
+export function useBuildingImport(importId: string | null) {
+  return useQuery({
+    queryKey: ['building-imports', importId ?? ''],
+    enabled: Boolean(importId),
+    queryFn: () => getDraft<BuildingImport>(`/api/v1/building-imports/${importId}`),
+    refetchInterval: (query) => (query.state.data?.state === 'running' ? 700 : false),
+  });
+}

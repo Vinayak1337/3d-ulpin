@@ -72,6 +72,30 @@ export const ROUTES: RouteEntry[] = [
     reason: 'PUBLIC-01: the public base map of an area (no utilities).',
   },
   {
+    method: 'POST', path: '/api/v1/import-packages/inspect', mode: 'local',
+    reason: 'Reads the uploaded GIS file in the browser (count, fields, CRS) while the import worker is not linked.',
+  },
+  {
+    method: 'POST', path: '/api/v1/import-packages', mode: 'local',
+    reason: 'Starts the area import and streams its records into the area context.',
+  },
+  {
+    method: 'GET', path: '/api/v1/import-packages/:packageId', mode: 'local',
+    reason: 'Progress of the area import started here.',
+  },
+  {
+    method: 'POST', path: '/api/v1/buildings/:buildingId/imports/inspect', mode: 'local', draft: true,
+    reason: 'INGEST-04: recognises building documents (plans, level schedules, inventories, deeds).',
+  },
+  {
+    method: 'POST', path: '/api/v1/buildings/:buildingId/imports', mode: 'local', draft: true,
+    reason: 'INGEST-04: imports a building\'s documents; its levels and units stream into the register.',
+  },
+  {
+    method: 'GET', path: '/api/v1/building-imports/:importId', mode: 'local', draft: true,
+    reason: 'INGEST-04: progress of a building import.',
+  },
+  {
     method: 'GET', path: '/api/v1/areas', mode: 'local',
     reason: 'No area is installed in the running API. Answers with Lake View and the areas derived from retained official sources (NYC OTI Bronx crop; Swiss Dwellings site 127).',
   },

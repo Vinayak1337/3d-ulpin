@@ -30,9 +30,9 @@ export function levelSummary(model: BuildingModel): string {
   return parts.join(' · ');
 }
 
-export function BuildingInspector({ feature, register, model, ledger, registerPending, crumbs, exploring, onExplore, onFindings }: {
+export function BuildingInspector({ feature, register, model, ledger, registerPending, crumbs, exploring, onExplore, onFindings, onAddFiles }: {
   feature: AreaFeature; register: BuildingRegister | undefined; model: BuildingModel | null; ledger: BuildingLedger | null | undefined;
-  registerPending: boolean; crumbs: Crumb[]; exploring: boolean; onExplore: () => void; onFindings: (findingId?: string) => void;
+  registerPending: boolean; crumbs: Crumb[]; exploring: boolean; onExplore: () => void; onFindings: (findingId?: string) => void; onAddFiles?: () => void;
 }) {
   const [tab, setTab] = useState<Tab>('overview');
   const openEvidence = useOpenEvidence();
@@ -91,7 +91,8 @@ export function BuildingInspector({ feature, register, model, ledger, registerPe
         <>
           {canExplore
             ? <Button variant="primary" icon={Stack} disabled={exploring} onClick={onExplore}>{exploring ? 'Select a unit' : 'Explore floors'}</Button>
-            : <Link to={`/studio/add-files?feature=${feature.id}`} className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}
+            : onAddFiles ? <Button variant="primary" icon={FilePlus} onClick={onAddFiles}>Add files</Button>
+              : <Link to={`/studio/add-files?feature=${feature.id}`} className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}
           <Link to={`/studio/properties/${feature.id}/register`} className="ul-btn">Open register</Link>
         </>
       )}

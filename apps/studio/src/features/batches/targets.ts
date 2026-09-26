@@ -4,6 +4,7 @@ import type { WorkTarget } from '@ulpin/api-client/draft';
 export function targetHref(target: WorkTarget): string {
   switch (target.kind) {
     case 'add-files': return target.batchId ? `/studio/add-files?batch=${target.batchId}` : '/studio/add-files';
+    case 'area': return `/studio/areas/${target.areaId}`;
     case 'register': return `/studio/properties/${target.buildingId}/register`;
     case 'finding': return `/studio/areas/${target.areaId}?feature=${target.buildingId}&mode=findings&finding=${target.findingId}`;
     case 'review': return `/studio/review/${target.buildingId}?level=${target.levelId}`;
