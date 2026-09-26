@@ -38,7 +38,7 @@ export function RecordPage() {
   return (
     <div className={styles.wrap}>
       <div className={styles.recordHead}>
-        <Crumbs items={[{ label: 'Home', to: '/portal' }, { label: 'Results', to: `/portal/search?q=${encodeURIComponent(`${r.name} ${r.buildingName}`)}` }, { label: r.name }]} />
+        <Crumbs items={[{ label: 'Home', to: '/portal' }, { label: r.buildingName, to: `/portal/buildings/${r.buildingId}` }, { label: r.name }]} />
         <h1 className="portal-h1">{title}</h1>
         {r.code ? <UlpinCode code={r.code} location={r.location} /> : <span className="portal-body ul-muted">3D ULPIN (proposed): not assigned yet</span>}
         {r.parcelUlpin ? <span className="portal-body-sm ul-muted">Parcel ULPIN <span className="ul-mono">{r.parcelUlpin}</span></span> : null}
@@ -60,7 +60,7 @@ export function RecordPage() {
           {r.code && verify ? (
             <Button variant="primary" icon={DownloadSimple} onClick={() => window.print()}>Download Property Card</Button>
           ) : <p className="portal-body-sm ul-muted">A Property Card is issued once a proposed 3D ULPIN is assigned to this unit.</p>}
-          <p className="portal-body-sm ul-muted">Something wrong? Contact the land records office with your evidence and this record's code.</p>
+          <p className="portal-body-sm ul-muted">Something wrong? <Link to={`/portal/request?building=${r.buildingId}&record=${r.id}&kind=correction`}>Request a correction</Link> with your deed or plan.</p>
         </div>
       </div>
       {r.code && verify ? (

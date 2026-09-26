@@ -5,6 +5,8 @@ import { Button, DescriptionList, Icon, RevisionTimeline, Skeleton, UlpinCode, f
 import { chainState, shortHash, type SpaceWorkflow } from '../../local/workflow';
 import { useResolveCode } from '../workflow/useWorkflow';
 import { useCardFacts } from '../identity/cardFacts';
+import { usePublicCode } from '../../portal/queries';
+import type { PublicBuildingSummary } from '@ulpin/api-client/draft';
 import styles from './VerifyPage.module.css';
 
 /**
@@ -16,6 +18,9 @@ export function VerifyPage() {
   const [params] = useSearchParams();
   const revision = Number(params.get('rev')) || null;
   const resolved = useResolveCode(code);
+  // Not a Property Card on this device: the code may be a building's 3D ULPIN.
+  const publicCode = usePublicCode(!resolved.isPending && !resolved.data ? code : '');
+  const building = publicCode.data?.kind === 'building' ? publicCode.data.building : null;
   const [chain, setChain] = useState<'consistent' | 'broken' | 'unknown'>('unknown');
   useEffect(() => {
     if (resolved.data) void chainState(resolved.data).then(setChain);
@@ -28,7 +33,7 @@ export function VerifyPage() {
         <Link to="/studio/work" className="ul-btn ul-btn--ghost">Back to Studio</Link>
       </header>
       <main className={styles.main}>
-        {resolved.isPending ? (
+        {resolved.isPending || (!resolved.data && publicCode.isFetching) ? (
           <div className="ul-panel ul-pad ul-stack"><Skeleton height={28} width="55%" /><Skeleton width="80%" /><Skeleton /><Skeleton width="40%" /></div>
         ) : resolved.error ? (
           <div className={`${styles.result} ${styles.danger}`} role="alert">
@@ -36,10 +41,12 @@ export function VerifyPage() {
             <span className={styles.resultText}>Could not check this card. {resolved.error.message}</span>
             <Button variant="soft" onClick={() => void resolved.refetch()}>Try again</Button>
           </div>
+        ) : !resolved.data && building ? (
+          <BuildingResult building={building} />
         ) : !resolved.data ? (
           <div className="ul-panel ul-pad ul-stack">
-            <h1 className="ul-heading">No card found for this link</h1>
-            <p className="ul-help">No Property Card carries this code. Check the code printed on the card.</p>
+            <h1 className="ul-heading">No record found for this code</h1>
+            <p className="ul-help">No building or Property Card carries this code. Check the code printed on the card.</p>
             <Link to="/studio/work" className="ul-btn">Back to Studio</Link>
           </div>
         ) : (
@@ -75,6 +82,27 @@ function Result({ workflow, revision, chain }: { workflow: SpaceWorkflow; revisi
           hash: shortHash(e.hash), previousHash: e.previousHash ? shortHash(e.previousHash) : null,
         }))}
       />
+    </>
+  );
+}
+
+function BuildingResult({ building: b }: { building: PublicBuildingSummary }) {
+  return (
+    <>
+      <div className={`${styles.result} ${styles.success}`}>
+        <Icon icon={CheckCircle} />
+        <span className={styles.resultText}>Valid: building 3D ULPIN on record</span>
+      </div>
+      <section className="ul-panel ul-pad ul-stack">
+        <h1 className="ul-heading">{b.name}, {b.areaName}</h1>
+        <UlpinCode code={b.code} location={b.location} state="assigned" />
+        <DescriptionList items={[
+          { label: 'Parcel ULPIN', value: b.parcelUlpin ? <span className="ul-mono">{b.parcelUlpin}</span> : <span className="ul-unknown">Unknown</span> },
+          { label: 'Floors recorded', value: b.levels ? `${b.levels} levels` : 'Not recorded yet' },
+          { label: 'Released records', value: String(b.records) },
+        ]} />
+        <Link to={`/portal/buildings/${b.id}`} className="ul-btn">Open on the public portal</Link>
+      </section>
     </>
   );
 }

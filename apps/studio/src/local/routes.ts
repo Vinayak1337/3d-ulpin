@@ -10,7 +10,7 @@
 export type RouteMode = 'live' | 'local';
 
 export interface RouteEntry {
-  method: 'GET' | 'POST' | 'PATCH';
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   /** OpenAPI path with `:param` placeholders (MSW syntax). */
   path: string;
   mode: RouteMode;
@@ -70,6 +70,38 @@ export const ROUTES: RouteEntry[] = [
   {
     method: 'GET', path: '/api/v1/public/areas/:areaId/map', mode: 'local', draft: true,
     reason: 'PUBLIC-01: the public base map of an area (no utilities).',
+  },
+  {
+    method: 'GET', path: '/api/v1/public/codes/:code', mode: 'local', draft: true,
+    reason: 'PUBLIC-01: resolves a printed 3D ULPIN to its building or released unit.',
+  },
+  {
+    method: 'POST', path: '/api/v1/public/requests', mode: 'local', draft: true,
+    reason: 'REQUEST-01: a citizen asks for a building register or a record correction.',
+  },
+  {
+    method: 'POST', path: '/api/v1/public/requests/track', mode: 'local', draft: true,
+    reason: 'REQUEST-01: the applicant tracks a request by reference and mobile number.',
+  },
+  {
+    method: 'GET', path: '/api/v1/register-requests', mode: 'local', draft: true,
+    reason: 'REQUEST-01: requests from the public for officer review.',
+  },
+  {
+    method: 'GET', path: '/api/v1/register-requests/:ref', mode: 'local', draft: true,
+    reason: 'REQUEST-01: one request with the applicant\'s contact and files.',
+  },
+  {
+    method: 'PATCH', path: '/api/v1/register-requests/:ref', mode: 'local', draft: true,
+    reason: 'REQUEST-01: the officer takes up, accepts or rejects a request.',
+  },
+  {
+    method: 'DELETE', path: '/api/v1/buildings/:buildingId', mode: 'local', draft: true,
+    reason: 'Removes a building and its register from the area; the public map follows.',
+  },
+  {
+    method: 'DELETE', path: '/api/v1/areas/:areaId', mode: 'local', draft: true,
+    reason: 'Removes an imported area with its buildings; the public map follows.',
   },
   {
     method: 'POST', path: '/api/v1/import-packages/inspect', mode: 'local',

@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router';
 import { ArrowRight, Buildings, MagnifyingGlass } from '@phosphor-icons/react';
 import type { Pick, SceneEngine } from '@ulpin/scene';
-import { EmptyState, Icon, LevelRail, Skeleton, StatusBadge } from '@ulpin/ui';
+import { EmptyState, Icon, LevelRail, Skeleton, StatusBadge, UlpinCode } from '@ulpin/ui';
 import { PublicScene } from './PublicScene';
 import { usePublicAreas, usePublicBuilding, usePublicMap, usePublicSearch } from './queries';
 import styles from './Portal.module.css';
@@ -12,7 +12,7 @@ export function PublicMapIndex() {
   const areas = usePublicAreas();
   if (areas.isPending) return <div className={styles.wrap}><Skeleton height={420} /></div>;
   const first = areas.data?.[0];
-  if (!first) return <div className={styles.wrap}><EmptyState icon={Buildings} title="No area has released records yet">Released records appear here once recorded.</EmptyState></div>;
+  if (!first) return <div className={styles.wrap}><EmptyState icon={Buildings} title="No area is on record yet">Areas appear here once the land records office imports them.</EmptyState></div>;
   return <Navigate to={`/portal/map/${first.id}`} replace />;
 }
 
@@ -42,8 +42,8 @@ export function PublicMapPage() {
   }, [building, set]);
 
   if (map.isPending) return <div className={styles.mapFrame} />;
-  if (!map.data) return <div className={styles.wrap}><EmptyState icon={Buildings} title="This area has no public map">It may not have released records yet.</EmptyState></div>;
-  const picked = buildingId ? map.data.features.find((f) => f.id === buildingId) : null;
+  if (!map.data) return <div className={styles.wrap}><EmptyState icon={Buildings} title="This area has no public map">It may have been removed.</EmptyState></div>;
+  const picked = buildingId ? map.data.buildings.find((f) => f.id === buildingId) : null;
 
   return (
     <div className={styles.mapFrame}>
@@ -56,16 +56,21 @@ export function PublicMapPage() {
         </label>
         {q.trim() ? (
           <ul className={styles.mapList}>
+            {(search.data?.buildings ?? []).slice(0, 12).map((b) => (
+              <li key={b.id}><button type="button" onClick={() => { set({ building: b.id, record: null, level: null }); setQ(''); }}>
+                <span>{b.name}</span><span className="ul-caption ul-mono">{b.code.slice(3, 9)}…</span></button></li>
+            ))}
             {(search.data?.items ?? []).map((r) => (
               <li key={r.id}><button type="button" onClick={() => { set({ building: r.buildingId, record: r.id, level: null }); setQ(''); }}>
                 <span>{r.name}, {r.buildingName}</span><span className="ul-caption">{r.level}</span></button></li>
             ))}
-            {search.data && !search.data.items.length ? <li className={styles.mapEmpty}>No released record matches.</li> : null}
+            {search.data && !search.data.items.length && !search.data.buildings.length ? <li className={styles.mapEmpty}>No building or record matches.</li> : null}
           </ul>
         ) : picked ? (
           <div className={styles.mapBody}>
             <span className="portal-h3">{picked.name}</span>
-            {building ? (
+            <UlpinCode code={picked.code} location={picked.location} />
+            {building && building.storeys.length ? (
               <>
                 <span className="portal-body-sm ul-muted">{[building.address, building.parcelUlpin ? `Parcel ${building.parcelUlpin}` : null].filter(Boolean).join(' · ')}</span>
                 {record ? (
@@ -83,25 +88,34 @@ export function PublicMapPage() {
                         <li key={r.id}><button type="button" onClick={() => set({ record: r.id })}><span>{r.name}</span><span className="ul-caption">{r.level}</span></button></li>
                       ))}
                     </ul>
+                    <Link to={`/portal/buildings/${picked.id}`} className={styles.open}>Open building <Icon icon={ArrowRight} size={16} /></Link>
                   </>
                 )}
               </>
-            ) : <span className="portal-body-sm ul-muted">No records of this building are released.</span>}
+            ) : (
+              <>
+                <span className="portal-body-sm ul-muted">{[picked.parcelUlpin ? `Parcel ${picked.parcelUlpin}` : null, picked.heightM !== null ? `${picked.heightM.toFixed(1)} m high` : null].filter(Boolean).join(' · ')}</span>
+                <span className="portal-body-sm">Floors and flats are not recorded yet.</span>
+                <Link to={`/portal/request?building=${picked.id}&kind=register`} className="ul-btn ul-btn--primary" style={{ justifySelf: 'start', textDecoration: 'none' }}>Request its register</Link>
+                <Link to={`/portal/buildings/${picked.id}`} className={styles.open}>Open building <Icon icon={ArrowRight} size={16} /></Link>
+              </>
+            )}
           </div>
         ) : (
           <div className={styles.mapBody}>
             <span className="portal-h3">{map.data.area.name}</span>
-            <span className="portal-body-sm ul-muted">Select a building to see its released records.</span>
+            <span className="portal-body-sm ul-muted">{map.data.buildings.length} buildings, each with its 3D ULPIN. Select one on the map or in the list.</span>
             <ul className={styles.mapList}>
-              {map.data.released.map((r) => {
-                const f = map.data!.features.find((x) => x.id === r.buildingId);
-                return <li key={r.buildingId}><button type="button" onClick={() => set({ building: r.buildingId })}><span>{f?.name ?? 'Building'}</span><span className="ul-caption">{r.records} released</span></button></li>;
-              })}
+              {[...map.data.buildings].sort((a, b) => b.records - a.records || b.levels - a.levels).map((b) => (
+                <li key={b.id}><button type="button" onClick={() => set({ building: b.id })}>
+                  <span>{b.name}</span><span className="ul-caption">{b.records ? `${b.records} released` : b.levels ? `${b.levels} levels` : 'footprint'}</span>
+                </button></li>
+              ))}
             </ul>
           </div>
         )}
       </aside>
-      {building && !record ? (
+      {building && building.storeys.length && !record ? (
         <div className={styles.mapRail}>
           <LevelRail levels={building.storeys.map((s) => ({ id: s.id, label: s.label, lower: s.lowerM, estimated: s.estimated, belowGround: s.belowGround }))}
             reference={building.datum} ground={building.groundM} selected={levelId} onSelect={(id) => set({ level: id === levelId ? null : id })} />

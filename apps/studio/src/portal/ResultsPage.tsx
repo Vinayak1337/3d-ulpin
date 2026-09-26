@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from 'react-router';
 import { ArrowRight, WarningCircle } from '@phosphor-icons/react';
-import type { PublicRecordSummary } from '@ulpin/api-client/draft';
+import type { PublicBuildingSummary, PublicRecordSummary } from '@ulpin/api-client/draft';
 import { EmptyState, Icon, Skeleton, StatusBadge, UlpinCode } from '@ulpin/ui';
 import { Crumbs } from './PortalFrame';
 import { PublicScene } from './PublicScene';
@@ -14,7 +14,8 @@ export function ResultsPage() {
   const q = params.get('q') ?? '';
   const search = usePublicSearch(q);
   const items = search.data?.items ?? [];
-  const building = usePublicBuilding(items[0]?.buildingId).data ?? null;
+  const buildings = search.data?.buildings ?? [];
+  const building = usePublicBuilding(items[0]?.buildingId ?? buildings[0]?.id).data ?? null;
   const map = usePublicMap(building?.areaId).data ?? null;
   return (
     <div className={styles.wrap}>
@@ -27,12 +28,19 @@ export function ResultsPage() {
             <EmptyState icon={WarningCircle} title="Search is not available">{search.error.message}</EmptyState>
           ) : (
             <>
-              <span className="portal-label ul-muted">{items.length === 1 ? '1 released record' : `${items.length} released records`}</span>
+              {buildings.length ? (
+                <>
+                  <span className="portal-label ul-muted">{buildings.length === 1 ? '1 building' : `${buildings.length} buildings`}</span>
+                  {buildings.slice(0, 8).map((b) => <BuildingCard key={b.id} building={b} />)}
+                  {buildings.length > 8 ? <div className={styles.note}>{buildings.length - 8} more buildings match. Add the building number or its code.</div> : null}
+                </>
+              ) : null}
+              {items.length || !buildings.length ? <span className={`portal-label ul-muted ${styles.sectionLabel}`}>{items.length === 1 ? '1 released record' : `${items.length} released records`}</span> : null}
               {items.map((r) => <ResultCard key={r.id} record={r} />)}
               {search.data?.notReleased ? (
                 <div className={styles.note}>{search.data.notReleased === 1 ? '1 other matching unit is' : `${search.data.notReleased} other matching units are`} not released yet.</div>
               ) : null}
-              {!items.length && !search.data?.notReleased && q ? <div className={styles.note}>No record matches “{q}”. Try a 3D ULPIN, a parcel ULPIN or a building name.</div> : null}
+              {!items.length && !buildings.length && !search.data?.notReleased && q ? <div className={styles.note}>No record matches “{q}”. Try a 3D ULPIN, a parcel ULPIN or a building name.</div> : null}
             </>
           )}
         </div>
@@ -52,6 +60,17 @@ function ResultCard({ record }: { record: PublicRecordSummary }) {
       {record.code ? <UlpinCode code={record.code} location={record.location} copyable={false} /> : null}
       <span className="portal-body ul-muted">{[record.address, record.level, record.carpetAreaM2 !== null ? `carpet area ${record.carpetAreaM2.toFixed(2)} m²` : null].filter(Boolean).join(' · ')}</span>
       <span className={styles.open}>Open record <Icon icon={ArrowRight} size={16} /></span>
+    </Link>
+  );
+}
+
+function BuildingCard({ building: b }: { building: PublicBuildingSummary }) {
+  return (
+    <Link to={`/portal/buildings/${b.id}`} className={styles.result}>
+      <span className={styles.resultHead}><span className="portal-h3">{b.name}</span><span className="ul-caption">{b.areaName}</span></span>
+      <UlpinCode code={b.code} location={b.location} copyable={false} />
+      <span className="portal-body ul-muted">{[b.parcelUlpin ? `Parcel ${b.parcelUlpin}` : null, b.levels ? `${b.levels} levels recorded` : 'Floors not recorded yet', b.records ? `${b.records} released records` : null].filter(Boolean).join(' · ')}</span>
+      <span className={styles.open}>Open building <Icon icon={ArrowRight} size={16} /></span>
     </Link>
   );
 }

@@ -18,7 +18,7 @@ export const router = createBrowserRouter([
       { path: 'map', lazy: async () => ({ Component: (await import('../features/map/MapPage')).MapIndexRedirect }) },
       { path: 'areas/:areaId', lazy: async () => ({ Component: (await import('../features/map/MapPage')).MapPage }) },
       { path: 'add-files', lazy: async () => ({ Component: (await import('../features/intake/AddFilesRoute')).AddFilesRoute }) },
-      { path: 'registry', lazy: async () => ({ Component: (await import('../features/register/RegistryIndex')).RegistryIndex }) },
+      { path: 'registry', lazy: async () => ({ Component: (await import('../features/register/RequestsPage')).RegistryIndex }) },
       { path: 'registry/*', element: <Navigate to="/studio/registry" replace /> },
       { path: 'properties/:buildingId/register', lazy: async () => ({ Component: (await import('../features/register/RegisterPage')).RegisterPage }) },
       { path: 'review/:buildingId', lazy: async () => ({ Component: (await import('../features/review/WorkspacePage')).WorkspacePage }) },
@@ -27,7 +27,7 @@ export const router = createBrowserRouter([
       { path: '*', element: <NotFoundPage /> },
     ],
   },
-  // Public portal: search, released records, the public map and card verification. No sign-in.
+  // Public portal: search, buildings and released records, the public map, card verification, requests. No sign-in.
   {
     path: '/portal',
     lazy: async () => ({ Component: (await import('../portal/PortalFrame')).PortalFrame }),
@@ -35,6 +35,9 @@ export const router = createBrowserRouter([
       { index: true, lazy: async () => ({ Component: (await import('../portal/HomePage')).HomePage }) },
       { path: 'search', lazy: async () => ({ Component: (await import('../portal/ResultsPage')).ResultsPage }) },
       { path: 'records/:recordId', lazy: async () => ({ Component: (await import('../portal/RecordPage')).RecordPage }) },
+      { path: 'buildings/:buildingId', lazy: async () => ({ Component: (await import('../portal/BuildingPage')).BuildingPage }) },
+      { path: 'request', lazy: async () => ({ Component: (await import('../portal/RequestPage')).RequestPage }) },
+      { path: 'track', lazy: async () => ({ Component: (await import('../portal/TrackPage')).TrackPage }) },
       { path: 'map', lazy: async () => ({ Component: (await import('../portal/PublicMapPage')).PublicMapIndex }) },
       { path: 'map/:areaId', lazy: async () => ({ Component: (await import('../portal/PublicMapPage')).PublicMapPage }) },
       { path: 'verify', lazy: async () => ({ Component: (await import('../portal/VerifyPortal')).VerifyPortal }) },
