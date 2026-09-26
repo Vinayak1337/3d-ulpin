@@ -27745,6 +27745,424 @@
         "x-transport-profile": "json",
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
+    },
+    "/api/v1/ingestion/cases/{caseId}/events": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_events",
+        "parameters": [
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "description": "Case/access-bound decimal SSE ID. A copied cursor from another case or access context is rejected.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$",
+              "maxLength": 97
+            },
+            "description": "Omit to tail the current head; 0 replays retained events. Last-Event-ID takes precedence on reconnect if it names this case/access context and is at or beyond the first query cursor; a backwards cursor conflicts."
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE ready, ingestion.change and resync frames. Every notification requires refreshing current records. Heartbeats are comments without IDs. Single configured local operator only.",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_buildings_buildingId_register_Response_200_text_csv"
+                },
+                "x-change-data-schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "enum": [
+                        "case-ingestion/1"
+                      ]
+                    },
+                    "caseId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "caseRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "change": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "source.retained"
+                              ]
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "needs_input"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "sourceId",
+                            "sourceRevision",
+                            "status"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "recipe.changed"
+                              ]
+                            },
+                            "recipeId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "recipeRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "proposed",
+                                "approved",
+                                "executed"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "recipeId",
+                            "recipeRevision",
+                            "sourceId",
+                            "status"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "upload.changed"
+                              ]
+                            },
+                            "uploadId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "uploadRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "receiving",
+                                "finalizing",
+                                "retained",
+                                "aborting",
+                                "aborted"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "uploadId",
+                            "uploadRevision",
+                            "status"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "sequence": {
+                      "type": "string",
+                      "maxLength": 19,
+                      "pattern": "^[1-9]\\d*$"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "requiresRefresh": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "caseId",
+                    "caseRevision",
+                    "change",
+                    "sequence",
+                    "createdAt",
+                    "requiresRefresh"
+                  ],
+                  "additionalProperties": false
+                },
+                "x-control-data-schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "enum": [
+                        "case-ingestion/1"
+                      ]
+                    },
+                    "caseId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "ready",
+                        "resync"
+                      ]
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "connected",
+                        "context_changed",
+                        "cursor_out_of_range",
+                        "replay_limit",
+                        "event_gap",
+                        "duration_limit"
+                      ]
+                    },
+                    "cursor": {
+                      "type": "string",
+                      "maxLength": 97,
+                      "pattern": "^(0|[1-9]\\d*)$"
+                    },
+                    "headCursor": {
+                      "type": "string",
+                      "maxLength": 97,
+                      "pattern": "^(0|[1-9]\\d*)$"
+                    },
+                    "caseRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "requiresRefresh": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "caseId",
+                    "kind",
+                    "reason",
+                    "cursor",
+                    "headCursor",
+                    "caseRevision",
+                    "requiresRefresh"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_events_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_events_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_events_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_events_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "429": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_events_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_events_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read committed private case ingestion notifications with bounded durable replay",
+        "tags": [
+          "private ingestion events"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/events.controller.ts",
+        "x-batch": "INGEST-03B",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "private-sse",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
     }
   },
   "info": {
@@ -137698,6 +138116,38 @@
           "requestKey",
           "expectedRevision",
           "expectedCaseRevision"
+        ],
+        "additionalProperties": false
+      },
+      "GET_ingestion_cases_caseId_events_Response_403_application_json": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "requestId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "details": {}
+            },
+            "required": [
+              "code",
+              "message",
+              "requestId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
         ],
         "additionalProperties": false
       }
