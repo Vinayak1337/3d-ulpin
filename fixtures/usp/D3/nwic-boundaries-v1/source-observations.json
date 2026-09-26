@@ -1,0 +1,575 @@
+{
+  "schemaVersion": "data-10-source-observations/2",
+  "status": "acquired_and_inspected; conditional attributed reproduction documented; training unconfirmed; no runtime or scale qualification",
+  "source": {
+    "authority": "National Water Informatics Centre (NWIC), Department of Water Resources, River Development and Ganga Rejuvenation, Ministry of Jal Shakti; NWIC dataset metadata lists Geological Survey of India (GSI) as Data Producer Agency.",
+    "title": "District Boundary",
+    "catalogUrl": "https://www.nwdp.nwic.gov.in/dataset/district-boundary",
+    "resourceUrl": "https://www.nwdp.nwic.gov.in/dataset/district-boundary/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d",
+    "datasetId": "6c1af675-1dec-4927-882c-c1ba9d73f76b",
+    "resourceId": "8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d",
+    "directDownloadUrl": "https://nwdp.nwic.gov.in/dataset/6c1af675-1dec-4927-882c-c1ba9d73f76b/resource/8d9aa2e9-9806-4f26-a4ac-48ba21e9b96d/download/district_nwic_geojson.zip",
+    "portalDescription": "The NWIC dataset page advertises 733 district boundaries of India. This is portal wording, not an independent accuracy or legal-boundary validation.",
+    "datasetLastUpdated": "2025-05-05T07:23:00Z"
+  },
+  "accessAndRights": {
+    "httpStatus": 200,
+    "contentType": "application/zip",
+    "contentLengthHeader": "71238839",
+    "redirectCount": 0,
+    "lastModified": "Tue, 23 Jun 2026 07:39:09 GMT",
+    "etag": "\"1782200349.3659043-71238839-3372226513\"",
+    "contentDisposition": "inline; filename=district_nwic_geojson.zip",
+    "resourceFormat": "GeoJSON",
+    "resourceLastUpdated": "2025-05-01",
+    "resourceLicenseLabel": "Other (Open)",
+    "termsUrl": "https://www.nwdp.nwic.gov.in/footer/copyrightPolicy",
+    "termsObservation": "NWIC copyright policy says site material may be reproduced free of charge in any format or media without specific permission if reproduced accurately and not in a derogatory or misleading context; material published or issued to others must prominently acknowledge the source. It excludes material explicitly identified on the site as third-party copyright.",
+    "thirdPartyObservation": "The resource page lists GSI as producer. The source property src_agency has the literal value \"Survey of India (SOI)\" on all 733 features; this identifies a source agency but does not itself identify a copyright holder or explicitly mark the material as third-party copyright. Reassess if a specific third-party copyright notice is later found; no rights-ownership conclusion is made here.",
+    "localDeterministicTesting": "documented_with_conditions_under_site_policy; test_only use, accurate and non-misleading context, source attribution retained.",
+    "publicRedistribution": "documented_with_conditions_under_site_policy; source attribution and accuracy/non-misleading conditions apply; no public redistribution was performed by this task.",
+    "trainingPermission": "unconfirmed; the reviewed policy/resource metadata do not explicitly address ML training. No training use occurred.",
+    "permissionRequestsSent": false,
+    "decision": "Read the resource Open designation and the applicable NWIC site copyright policy together. The policy provides conditional reproduction permission for site material; no separate resource licence checkbox was required for this bounded test-only source profile. This is an evidence-based project admission decision, not a legal guarantee.",
+    "acquiredAtUtc": "2026-09-26T08:44:40+00:00"
+  },
+  "original": {
+    "filename": "district_nwic_geojson.zip",
+    "privatePath": "/Users/vinayak/.codex/task-data/ulpin-nwic-boundaries-v1/district_nwic_geojson.zip",
+    "acquiredAtUtc": "2026-09-26T08:44:40+00:00",
+    "sha256": "44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37",
+    "bytes": 71238839,
+    "preservedOutsideGit": true,
+    "fileMode": "0600"
+  },
+  "archive": {
+    "memberCount": 1,
+    "archiveExpandedBytes": 168356689,
+    "originalTransferCapBytes": 157286400,
+    "expandedCapBytes": 536870912,
+    "unsafeMembers": [],
+    "members": [
+      {
+        "name": "district_nwic.GeoJSON",
+        "uncompressedBytes": 168356689,
+        "compressedBytes": 71238699,
+        "crc32": "c69462bc",
+        "memberTimestamp": [
+          2025,
+          1,
+          13,
+          16,
+          23,
+          36
+        ],
+        "safePath": true
+      }
+    ],
+    "safeExtraction": {
+      "status": "passed",
+      "path": "/Users/vinayak/.codex/task-data/ulpin-nwic-boundaries-v1/extracted",
+      "member": "district_nwic.GeoJSON",
+      "bytes": 168356689,
+      "sha256": "2b27a478e24d8c51b0655e74ce3f4f880e75c752e4597550d6fc925ed06ac201",
+      "zipCrc32Verified": true,
+      "fileMode": "0600"
+    }
+  },
+  "formatAndGeometry": {
+    "format": "GeoJSON in ZIP",
+    "rootType": "FeatureCollection",
+    "topLevelName": "district_nwic",
+    "topLevelKeys": [
+      "type",
+      "name",
+      "crs",
+      "features"
+    ],
+    "portalAdvertisedFeatureCount": 733,
+    "featureCount": 733,
+    "geometryTypes": {
+      "MultiPolygon": 733
+    },
+    "nullGeometryFeatures": 0,
+    "emptyCoordinateArrays": 0,
+    "positionCount": 3125505,
+    "coordinateValueCount": 6251010,
+    "ordinateDimensionCounts": {
+      "2": 3125505
+    },
+    "invalidCoordinatePositions": 0,
+    "extentOrder": [
+      "xmin",
+      "ymin",
+      "xmax",
+      "ymax"
+    ],
+    "extent": [
+      2818369.546553203,
+      2177948.4534365367,
+      5679118.542969628,
+      5444563.235709688
+    ],
+    "bboxMember": null,
+    "literalCrsMember": {
+      "type": "name",
+      "properties": {
+        "name": "urn:ogc:def:crs:EPSG::7755"
+      }
+    },
+    "horizontalCrs": "EPSG:7755 (WGS 84 / India NSF LCC; literal source member urn:ogc:def:crs:EPSG::7755)",
+    "horizontalCrsReference": "https://opengeospatial.github.io/ontology-crs/data/def/crs/EPSG/0/7755/index.html",
+    "horizontalUnit": "metre",
+    "coordinateOrder": "Two-ordinate coordinate arrays; EPSG:7755 axis order is easting (X), northing (Y). No coordinate transformation or CRS inference from coordinate ranges was performed.",
+    "verticalCoordinates": "None observed; all positions are 2D. Vertical reference and unit are null.",
+    "formatCompatibility": "The bytes are labelled GeoJSON and contain an explicit legacy crs member. RFC 7946 omits alternate CRS members; consumers must honor EPSG:7755 or explicitly reject this source rather than assume longitude/latitude.",
+    "parser": {
+      "name": "Python standard-library JSON per-feature stream scanner",
+      "python": "3.9.6"
+    }
+  },
+  "attributesAndCoverage": {
+    "propertyFields": {
+      "district": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "string": 733
+        },
+        "uniqueCount": 728,
+        "samples": [
+          "Kamjong",
+          "Anuppur",
+          "Ashoknagar",
+          "Balaghat",
+          "Harda"
+        ]
+      },
+      "ds_name": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "string": 733
+        },
+        "uniqueCount": 1,
+        "samples": [
+          " Administrative Boundary"
+        ],
+        "valueCounts": {
+          " Administrative Boundary": 733
+        }
+      },
+      "dtcode": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "string": 733
+        },
+        "uniqueCount": 732,
+        "samples": [
+          "717",
+          "390",
+          "391",
+          "392",
+          "408"
+        ]
+      },
+      "id": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "number": 733
+        },
+        "uniqueCount": 733,
+        "samples": [
+          377,
+          378,
+          379,
+          380,
+          396
+        ]
+      },
+      "objectid": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "number": 733
+        },
+        "uniqueCount": 733,
+        "samples": [
+          377,
+          378,
+          379,
+          380,
+          396
+        ]
+      },
+      "shape_area": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "number": 733
+        },
+        "uniqueCount": 733,
+        "samples": [
+          2225794048.57499,
+          3623848651.219041,
+          4554179421.196586,
+          8900542725.364841,
+          3213779734.5141964
+        ]
+      },
+      "shape_length": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "number": 733
+        },
+        "uniqueCount": 733,
+        "samples": [
+          230554.29191157038,
+          558872.8413233353,
+          427264.9891107919,
+          707216.3873542913,
+          309255.3830323403
+        ]
+      },
+      "src_agency": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "string": 733
+        },
+        "uniqueCount": 1,
+        "samples": [
+          "Survey of India (SOI)"
+        ],
+        "valueCounts": {
+          "Survey of India (SOI)": 733
+        }
+      },
+      "state": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "string": 733
+        },
+        "uniqueCount": 36,
+        "samples": [
+          "MN",
+          "MP",
+          "PY",
+          "RJ",
+          "UP"
+        ],
+        "valueCounts": {
+          "AN": 3,
+          "AP": 13,
+          "AR": 25,
+          "AS": 33,
+          "BR": 38,
+          "CG": 28,
+          "CH": 1,
+          "DH": 3,
+          "DL": 11,
+          "GA": 2,
+          "GJ": 33,
+          "HP": 12,
+          "HR": 22,
+          "JH": 24,
+          "JK": 22,
+          "KA": 30,
+          "KL": 14,
+          "LD": 1,
+          "LK": 2,
+          "MH": 36,
+          "ML": 11,
+          "MN": 16,
+          "MP": 52,
+          "MZ": 8,
+          "NL": 11,
+          "OD": 30,
+          "PB": 22,
+          "PY": 4,
+          "RJ": 33,
+          "SK": 4,
+          "TN": 37,
+          "TR": 8,
+          "TS": 33,
+          "UK": 13,
+          "UP": 75,
+          "WB": 23
+        }
+      },
+      "state_name": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "string": 733
+        },
+        "uniqueCount": 36,
+        "samples": [
+          "Manipur",
+          "Madhya Pradesh",
+          "Puducherry",
+          "Rajasthan",
+          "Uttar Pradesh"
+        ],
+        "valueCounts": {
+          "Andaman & Nicobar Island": 3,
+          "Andhra Pradesh": 13,
+          "Arunanchal Pradesh": 25,
+          "Assam": 33,
+          "Bihar": 38,
+          "Chandigarh": 1,
+          "Chhattisgarh": 28,
+          "Dadra & Nagar Havelli and Daman & Diu": 3,
+          "Delhi": 11,
+          "Goa": 2,
+          "Gujarat": 33,
+          "Haryana": 22,
+          "Himachal Pradesh": 12,
+          "Jammu & Kashmir": 22,
+          "Jharkhand": 24,
+          "Karnataka": 30,
+          "Kerala": 14,
+          "Ladakh": 2,
+          "Lakshadweep": 1,
+          "Madhya Pradesh": 52,
+          "Maharashtra": 36,
+          "Manipur": 16,
+          "Meghalaya": 11,
+          "Mizoram": 8,
+          "Nagaland": 11,
+          "Odisha": 30,
+          "Puducherry": 4,
+          "Punjab": 22,
+          "Rajasthan": 33,
+          "Sikkim": 4,
+          "Tamil Nadu": 37,
+          "Telangana": 33,
+          "Tripura": 8,
+          "Uttar Pradesh": 75,
+          "Uttarakhand": 13,
+          "West Bengal": 23
+        }
+      },
+      "stcode": {
+        "count": 733,
+        "nullCount": 0,
+        "types": {
+          "string": 733
+        },
+        "uniqueCount": 36,
+        "samples": [
+          "14",
+          "23",
+          "34",
+          "08",
+          "09"
+        ],
+        "valueCounts": {
+          "01": 22,
+          "02": 12,
+          "03": 22,
+          "04": 1,
+          "05": 13,
+          "06": 22,
+          "07": 11,
+          "08": 33,
+          "09": 75,
+          "10": 38,
+          "11": 4,
+          "12": 25,
+          "13": 11,
+          "14": 16,
+          "15": 8,
+          "16": 8,
+          "17": 11,
+          "18": 33,
+          "19": 23,
+          "20": 24,
+          "21": 30,
+          "22": 28,
+          "23": 52,
+          "24": 33,
+          "27": 36,
+          "28": 13,
+          "29": 30,
+          "30": 2,
+          "31": 1,
+          "32": 14,
+          "33": 37,
+          "34": 4,
+          "35": 3,
+          "36": 33,
+          "37": 2,
+          "38": 3
+        }
+      }
+    },
+    "featureId": "No top-level GeoJSON Feature.id values. properties.id and properties.objectid are each present and unique on 733 features; dtcode has 732 distinct values; stable-key semantics are not documented, so these are not promoted to canonical or ULPIN identities.",
+    "nativeIdCandidates": {
+      "properties.id": {
+        "uniqueCount": 733,
+        "samples": [
+          377,
+          378,
+          379,
+          380,
+          396
+        ]
+      },
+      "properties.objectid": {
+        "uniqueCount": 733,
+        "samples": [
+          377,
+          378,
+          379,
+          380,
+          396
+        ]
+      },
+      "properties.dtcode": {
+        "uniqueCount": 732,
+        "samples": [
+          "717",
+          "390",
+          "391",
+          "392",
+          "408"
+        ]
+      },
+      "properties.district": {
+        "uniqueCount": 728,
+        "samples": [
+          "Kamjong",
+          "Anuppur",
+          "Ashoknagar",
+          "Balaghat",
+          "Harda"
+        ]
+      },
+      "properties.state_name": {
+        "uniqueCount": 36,
+        "samples": [
+          "Manipur",
+          "Madhya Pradesh",
+          "Puducherry",
+          "Rajasthan",
+          "Uttar Pradesh"
+        ]
+      }
+    },
+    "sourceAgencyAttribute": {
+      "field": "src_agency",
+      "valueCounts": {
+        "Survey of India (SOI)": 733
+      },
+      "semantics": "Observed source attribute; not treated as a copyright statement."
+    },
+    "stateNameCounts": {
+      "Andaman & Nicobar Island": 3,
+      "Andhra Pradesh": 13,
+      "Arunanchal Pradesh": 25,
+      "Assam": 33,
+      "Bihar": 38,
+      "Chandigarh": 1,
+      "Chhattisgarh": 28,
+      "Dadra & Nagar Havelli and Daman & Diu": 3,
+      "Delhi": 11,
+      "Goa": 2,
+      "Gujarat": 33,
+      "Haryana": 22,
+      "Himachal Pradesh": 12,
+      "Jammu & Kashmir": 22,
+      "Jharkhand": 24,
+      "Karnataka": 30,
+      "Kerala": 14,
+      "Ladakh": 2,
+      "Lakshadweep": 1,
+      "Madhya Pradesh": 52,
+      "Maharashtra": 36,
+      "Manipur": 16,
+      "Meghalaya": 11,
+      "Mizoram": 8,
+      "Nagaland": 11,
+      "Odisha": 30,
+      "Puducherry": 4,
+      "Punjab": 22,
+      "Rajasthan": 33,
+      "Sikkim": 4,
+      "Tamil Nadu": 37,
+      "Telangana": 33,
+      "Tripura": 8,
+      "Uttar Pradesh": 75,
+      "Uttarakhand": 13,
+      "West Bengal": 23
+    },
+    "coverageStatement": "733 source features and 36 state_name/state codes were observed; feature count matches the portal advertised count. Completeness/currentness and administrative-boundary accuracy were not independently validated."
+  },
+  "inspection": {
+    "commands": [
+      {
+        "operation": "download",
+        "command": "Python 3 urllib.request bounded streaming acquisition (redirect cap 5; per-request timeout 20s; total deadline 120s; transfer cap 150 MiB)",
+        "exit": 0
+      },
+      {
+        "operation": "archive listing",
+        "command": "Python 3 standard-library zipfile.infolist; inspect names/sizes/CRC/path types before extraction",
+        "exit": 0
+      },
+      {
+        "operation": "safe extraction",
+        "command": "Python 3 standard-library zipfile streamed extraction of the single allowlisted member; 512 MiB expanded cap",
+        "exit": 0
+      },
+      {
+        "operation": "format-aware profile",
+        "command": "Python 3 standard-library JSON per-feature streaming scanner; counts/extent/fields from unchanged extracted member",
+        "exit": 0
+      }
+    ],
+    "sourceHashRecheckedAfterInspection": true,
+    "coordinateBytesRewritten": false,
+    "reprojectionPerformed": false,
+    "topologyValidationPerformed": false,
+    "runtimeQualification": false,
+    "benchmarkPerformed": false,
+    "providerCalls": false,
+    "servicesStarted": false
+  },
+  "profile": {
+    "supported": "Official NWIC/GSI India district-boundary GeoJSON source inventory, CRS and coordinate layout, feature/position counts, raw extent, and attribute coverage profile.",
+    "notQualified": [
+      "district boundary legal correctness or currentness",
+      "survey or positional accuracy",
+      "topological validity",
+      "training permission",
+      "building or 3D geometry",
+      "parcel/site/cadastral/ownership facts",
+      "vertical measurement",
+      "runtime ingestion or private/public publication",
+      "GF-STREAM",
+      "GF-SCALE-1 performance or service-budget pass"
+    ]
+  },
+  "outcome": {
+    "sourceAcquired": true,
+    "sourceInspected": true,
+    "testOnlySourceProfileCreated": true,
+    "localDeterministicUseDisposition": "documented_with_conditions",
+    "publicRedistributionPerformed": false,
+    "runtimeAdmission": false,
+    "gfScale1Status": "remains open; later measured run needs pinned hardware, concurrency, numerical budgets, isolation and runtime receipts."
+  },
+  "limitations": [
+    "Original ZIP and expanded GeoJSON remain private outside Git; the repository pack includes inspection metadata only.",
+    "The NWIC page names GSI as producer; source property src_agency names Survey of India. Neither field alone establishes copyright ownership. The NWIC third-party copyright exception remains a real condition if explicit third-party marking is later found.",
+    "GeoJSON source has an explicit EPSG:7755 CRS member; no conversion was made. Treat it as projected easting/northing in metres, not RFC 7946 longitude/latitude.",
+    "The advertised and observed feature counts match; no external controls, boundary legal status, date validity or positional/topology accuracy were checked.",
+    "No 3D, building, parcel, ownership, training, runtime or scale qualification follows from this profile.",
+    "The source exposes shape_area and shape_length attributes, but their measurement units/definitions are not documented in the inspected bytes; values were not interpreted."
+  ]
+}
