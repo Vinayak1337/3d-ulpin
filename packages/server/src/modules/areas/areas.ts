@@ -1,4 +1,7 @@
 import { requireQualifiedGeometryRecords } from '../usp/geometry';
+import type {GisGeometryDisposition} from '@ulpin/contracts';
+import {gisQuarantine} from './gis-quarantine';
+import {displayAreaProposals} from './area-display-proposals';
 import { documentProfileFormats, documentLimitMiB } from "../../shared/document-formats";
 import { areaSceneAssets } from "../spatial/scene-assets";
 import { usesGeographicNeighbours } from "../../shared/neighbour-scenario-policy";
@@ -65,6 +68,7 @@ type Normalized = {
   geographicExtent: NonNullable<MapArea["extent"]>;
   features: NormalizedFeature[];
   warnings: string[];
+  disposition?: GisGeometryDisposition;
 };
 export async function areaGeo<T>(
   operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis",
@@ -206,7 +210,7 @@ export async function areaContext(id: string): Promise<AreaContext> {
     transaction(async client => {
       const rows = await client.query("SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30", [id]);
       for (const row of rows.rows) await assertPackageDocumentAuthority(client, row.body);
-      return rows;
+      return {rows:rows.rows,displayFeatures:await displayAreaProposals(client,area,rows.rows.map(row=>row.body))};
     }),
     query(
       "SELECT body FROM area_check_runs WHERE area_id=$1 ORDER BY created_at DESC LIMIT 1",
@@ -214,6 +218,9 @@ export async function areaContext(id: string): Promise<AreaContext> {
     ),
   ]);
   const currentFeatures = features;
+  const proposalIds=new Set(packages.displayFeatures.map(feature=>feature.id));
+  const displayFeatures=[...currentFeatures.filter(feature=>!proposalIds.has(feature.id)),...packages.displayFeatures];
+  if(displayFeatures.length>2000)throw new AppError(422,'AREA_LIMIT','Choose an area with at most 2,000 display features.');
   const latestCheck = checks.rows[0]?.body as AreaCheck | undefined;
   if (latestCheck) {
     const effective = await withNeighbours(currentFeatures, area);
@@ -232,6 +239,7 @@ export async function areaContext(id: string): Promise<AreaContext> {
   return {
     area,
     features: currentFeatures,
+    displayFeatures,
     parcelAssociations: (
       await query(
         `SELECT a.body FROM property_associations a JOIN physical_features f ON f.id=a.from_id JOIN physical_features p ON p.id=a.to_id WHERE a.relationship='occupies_parcel' AND a.status='confirmed' AND (a.body->>'fromRevision')::int=f.revision AND (a.body->>'toRevision')::int=p.revision AND p.id=ANY($1::uuid[])`,
@@ -430,6 +438,9 @@ export async function ingestArea(input: {
         ? { reference: { sourceCrs: input.sourceCrs } }
         : {}),
   });
+  const quarantine=gisQuarantine(normalized.disposition,digest);
+  if(!normalized.features.length)
+    throw new AppError(422,'GIS_ALL_GEOMETRIES_REJECTED','No source geometries were accepted. The original was not imported and no area or records were created.',{quarantine:quarantine?{...quarantine,message:quarantine.message.replace('Original retained unchanged','Original not imported')}:undefined});
   const retained = input.retainedOriginal
     ? (await run("SELECT id,sha256,object_key FROM sources WHERE id=$1 FOR SHARE", [input.retainedOriginal.sourceId])).rows[0]
     : undefined;
@@ -634,6 +645,7 @@ export async function ingestArea(input: {
             featureCount: normalized.features.length,
             acquisitionId: input.acquisitionId,
             warnings: normalized.warnings,
+            ...(quarantine?{quarantine:gisQuarantine(normalized.disposition,digest,sourceId,1)}:{}),
           },
         ],
       );
@@ -811,7 +823,8 @@ export async function ingestArea(input: {
         name: input.name,
         datasetNamespace: input.namespace,
         revision: 1,
-        state: questions.length ? "NEEDS_INPUT" : "READY_FOR_REVIEW",
+        state: questions.length || quarantine ? "NEEDS_INPUT" : "READY_FOR_REVIEW",
+        ...(quarantine?{quarantine:gisQuarantine(normalized.disposition,digest,sourceId,retained?Number((await client.query('SELECT revision FROM sources WHERE id=$1',[sourceId])).rows[0].revision):1)}:{}),
         sourceRevisionIds: [sourceId, ...(input.derivedObservation ? [input.derivedObservation.sourceRevisionId] : [])],
         features,
         questions,
@@ -830,7 +843,7 @@ export async function ingestArea(input: {
             worldStatus: f.worldStatus,
           })),
         parts: input.derivedObservation ? [{ ...input.derivedObservation.part, id: derivedPartId!, entityIds: features.map(f => f.id) }] : [],
-        warnings: [...normalized.warnings, ...(input.derivedObservation ? ["Derived ML footprint proposals: review the retained original, model receipt and documented controls. Height and ownership are unknown; this draft is not survey evidence or statutory acceptance."] : [])],
+        warnings: [...normalized.warnings, ...(quarantine?[quarantine.message]:[]), ...(input.derivedObservation ? ["Derived ML footprint proposals: review the retained original, model receipt and documented controls. Height and ownership are unknown; this draft is not survey evidence or statutory acceptance."] : [])],
         createdAt: new Date().toISOString(),
         sourceHash: digest,
         importSignature: sha256(

@@ -6,7 +6,7 @@
  * so the Studio never renders blank because the local layer could not start.
  */
 export async function startLocalData(): Promise<void> {
-  if (!import.meta.env.DEV || import.meta.env.VITE_LOCAL_DATA === 'off') return;
+  if (!import.meta.env.DEV || import.meta.env.VITE_LOCAL_DATA !== 'on') return;
   // `?reset-session` starts the workstation over: no imports, no reviews, codes or cards.
   const url = new URL(window.location.href);
   if (url.searchParams.has('reset-session')) {

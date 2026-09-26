@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@ulpin/api-client';
+import type { GisQuarantine } from '@ulpin/contracts/gis-quarantine';
 import { Button, ImportStream, Skeleton, formatCount, type StreamRow } from '@ulpin/ui';
 import { useBuildingImport } from '../../api/queries';
 
@@ -37,14 +38,25 @@ export function ImportTray({ packageId, onClose }: { packageId: string; onClose:
   if (pkg.isPending) return <div className="ul-panel ul-pad"><Skeleton /></div>;
   if (pkg.error || !pkg.data) return <div className="ul-panel ul-pad ul-help">The import could not be read: {pkg.error?.message}</div>;
   const features = pkg.data.features as { kind?: string }[];
+  const quarantine = (pkg.data as typeof pkg.data & { quarantine?: GisQuarantine }).quarantine;
+  const recorded = pkg.data.state === 'COMMITTED';
   const rows: StreamRow[] = KINDS.map(({ kinds, label, unit }) => {
     const n = features.filter((f) => kinds.includes(String(f.kind))).length;
-    return { id: label, file: label, state: n ? (running ? 'running' : 'saved') : running ? 'running' : 'saved', detail: n ? `${formatCount(n)} ${unit} saved` : running ? 'reading' : 'none in this file' };
+    return { id: label, file: label, state: running ? 'running' : 'saved', detail: n ? `${formatCount(n)} ${unit} ${recorded ? 'recorded' : 'accepted for review'}` : running ? 'reading' : 'none accepted from this file' };
   });
   return (
-    <ImportStream title={running ? `Importing ${pkg.data.name}` : `Imported ${pkg.data.name}`} rows={rows}
-      meta={`${formatCount(features.length)} records${running ? '' : ' · ready for review'}`}
-      aside={!running ? <Button variant="ghost" onClick={onClose}>Done</Button> : null} />
+    <div>
+      <ImportStream title={running ? `Importing ${pkg.data.name}` : `Imported ${pkg.data.name}`} rows={rows}
+        meta={quarantine ? quarantine.message : `${formatCount(features.length)} features${running ? '' : recorded ? ' · recorded' : ' · unrecorded proposals'}`}
+        aside={!running ? <Button variant="ghost" onClick={onClose}>Done</Button> : null} />
+      {quarantine ? <details className="ul-panel ul-pad">
+        <summary>{formatCount(quarantine.rejected)} skipped source features</summary>
+        <p className="ul-help">Original feature indexes are zero-based. The original is retained unchanged.</p>
+        <ul>{quarantine.rejections.map((row) => <li key={row.featureIndex}>
+          Feature {row.featureIndex} · source ID {row.sourceKey ?? 'unknown'} · {row.code}: {row.reason}
+        </li>)}</ul>
+      </details> : null}
+    </div>
   );
 }
 

@@ -197,6 +197,12 @@ def test_invalid_heights_do_not_become_evidenced(bad_value):
     {"type": "GeometryCollection", "geometries": []},
 ])
 def test_reject_invalid_or_unsupported_geometry_without_dropping_parts(geometry):
+    if geometry["type"] == "Polygon":
+        result = normalize_area(geojson(geometry, kind="utility"))
+        assert result["features"] == []
+        assert result["disposition"]["accepted"] == 0
+        assert result["disposition"]["rejections"][0]["featureIndex"] == 0
+        return
     with pytest.raises(InputError):
         normalize_area(geojson(geometry, kind="utility"))
 
@@ -226,6 +232,11 @@ def test_reject_unsafe_normalization_inputs(mutation):
         data["data"]["features"][0]["geometry"]["rings"][0][0].append(2)
     elif mutation == "overlap_rings":
         data["data"]["features"][0]["geometry"]["rings"].append(ring(500005, 3100000))
+        result = normalize_area(data)
+        assert result["disposition"]["accepted"] == 1
+        assert result["disposition"]["rejections"][0]["sourceKey"] == "1"
+        assert result["features"][0]["sourceFeatureIndex"] == 1
+        return
     with pytest.raises(InputError):
         normalize_area(data)
 

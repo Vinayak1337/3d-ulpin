@@ -31,7 +31,7 @@ def _fields(rows):
 
 
 def inspect_gis(data):
-    from .area import _geometry, _arcgis_geometry, _spatial_reference, MAX_FEATURES, MAX_VERTICES
+    from .area import _geometry, _arcgis_geometry, _spatial_reference, GeometryRejected, MAX_FEATURES, MAX_VERTICES
     raw = _raw(data)
     layer = data.get("layer") or None
     if layer is not None and (not isinstance(layer, str) or len(layer) > 256):
@@ -43,8 +43,9 @@ def inspect_gis(data):
         base.update({"format": format, "layers": result["layers"], "layer": result.get("layer"), "sourceCrs": None, "crsEvidence": None, "featureCount": None, "geometryTypes": [], "fields": [], "suggestedIdField": None, "suggestedNameField": None})
         if "features" not in result:
             return base
-        rows = [feature["attributes"] for feature in result["features"]]
-        base.update({"sourceCrs": f'EPSG:{result["epsg"]}', "crsEvidence": "GeoPackage spatial reference" if format == "gpkg" else "Shapefile .prj companion", "geometryTypes": sorted({geometry["type"] for geometry in result["geometries"]})})
+        features = result["features"]
+        crs = f'EPSG:{result["epsg"]}'
+        evidence = "GeoPackage spatial reference" if format == "gpkg" else "Shapefile .prj companion"
     else:
         try:
             source = json.loads(raw.decode("utf-8-sig"), parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
@@ -68,34 +69,51 @@ def inspect_gis(data):
             base["featureIdEligible"] = _eligible_ids([feature.get("id") if isinstance(feature, dict) else None for feature in features])
         if not 1 <= len(features) <= MAX_FEATURES:
             raise InputError("Choose a complete layer with 1–2000 features.")
-        rows, types, vertices, row_crs = [], set(), 0, []
-        for feature in features:
-            if not isinstance(feature, dict) or "crs" in feature or format == "geojson" and feature.get("type") != "Feature":
-                raise InputError("Each source entry must be a valid feature without a CRS override.")
-            attributes = feature.get("properties" if format == "geojson" else "attributes") or {}
-            if not isinstance(attributes, dict):
-                raise InputError("Feature fields must be an object.")
-            # Reject nonfinite JSON numbers (including overflowing exponent notation).
-            try:
-                json.dumps(attributes, allow_nan=False)
-            except (ValueError, TypeError):
-                raise InputError("Source fields must contain finite JSON values.") from None
-            geometry = feature.get("geometry")
-            if format == "arcgis":
-                declared = geometry.get("spatialReference") if isinstance(geometry, dict) else None
-                row_crs.append(_spatial_reference(declared).to_string() if declared is not None else None)
-                geometry = _arcgis_geometry(geometry)
-            parsed, count = _geometry(geometry, "Source feature", geographic=format == "geojson")
-            vertices += count
-            if vertices > MAX_VERTICES:
-                raise InputError("GIS layer exceeds 100,000 vertices.")
+    rows, types, vertices, row_crs, rejected = [], set(), 0, [], []
+    for index, feature in enumerate(features):
+        if not isinstance(feature, dict) or "crs" in feature or format == "geojson" and feature.get("type") != "Feature":
+            raise InputError("Each source entry must be a valid feature without a CRS override.")
+        attributes = feature.get("properties" if format == "geojson" else "attributes") or {}
+        if not isinstance(attributes, dict):
+            raise InputError("Feature fields must be an object.")
+        # Reject nonfinite JSON numbers (including overflowing exponent notation).
+        try:
+            json.dumps(attributes, allow_nan=False)
+        except (ValueError, TypeError):
+            raise InputError("Source fields must contain finite JSON values.") from None
+        geometry = feature.get("geometry")
+        if format != "geojson":
+            declared = geometry.get("spatialReference") if isinstance(geometry, dict) else None
+            row_crs.append(_spatial_reference(declared).to_string() if declared is not None else None)
+        try:
+            if format != "geojson":
+                geometry = _arcgis_geometry(geometry, geographic=(row_crs[-1] or crs) == "EPSG:4326")
+            parsed, count = _geometry(geometry, "Source feature", geographic=format == "geojson" or (row_crs[-1] or crs) == "EPSG:4326")
             types.add(parsed.geom_type)
-            rows.append(attributes)
-        declared = {value for value in [crs, *row_crs] if value}
-        if len(declared) > 1:
-            raise InputError("Source coordinate reference declarations conflict; separate or correct the layers.")
-        if format == "arcgis" and not crs and row_crs and all(row_crs):
-            crs, evidence = row_crs[0], "Consistent ArcGIS feature spatial references"
-        base.update({"format": format, "layers": [], "layer": None, "sourceCrs": crs, "crsEvidence": evidence, "geometryTypes": sorted(types)})
+        except GeometryRejected as error:
+            count = error.vertices
+            rejected.append({"featureIndex": index, "sourceKey": None, "code": error.code, "reason": str(error)[:500]})
+            if isinstance(geometry, dict) and geometry.get("type"):
+                types.add(geometry["type"])
+        vertices += count
+        if vertices > MAX_VERTICES:
+            raise InputError("GIS layer exceeds 100,000 vertices.")
+        rows.append(attributes)
+    declared = {value for value in [crs, *row_crs] if value}
+    if len(declared) > 1:
+        raise InputError("Source coordinate reference declarations conflict; separate or correct the layers.")
+    if format == "arcgis" and not crs and row_crs and all(row_crs):
+        crs, evidence = row_crs[0], "Consistent ArcGIS feature spatial references"
+    base.update({"format": format, "layers": base.get("layers", []), "layer": base.get("layer"), "sourceCrs": crs, "crsEvidence": evidence, "geometryTypes": sorted(types)})
     fields, id_field, name_field = _fields(rows)
-    return {**base, "featureCount": len(rows), "fields": fields, "suggestedIdField": id_field, "suggestedNameField": name_field}
+    quarantine = None
+    if rejected:
+        for row in rejected:
+            value = rows[row["featureIndex"]].get(id_field) if id_field else features[row["featureIndex"]].get("id") if base["featureIdEligible"] else None
+            row["sourceKey"] = str(value) if value is not None else None
+        first = rejected[0]
+        quarantine = {"version": "gis-quarantine/1", "sourceSha256": base["sourceSha256"], "total": len(rows), "accepted": len(rows)-len(rejected),
+                      "rejected": len(rejected), "rejections": rejected, "complete": False,
+                      "message": f"{len(rows)-len(rejected)} of {len(rows)} source features accepted; {len(rejected)} skipped. {first['code']}: {first['reason']}. Source bytes unchanged; no geometry repaired."}
+    return {**base, "featureCount": len(rows), "fields": fields, "suggestedIdField": id_field, "suggestedNameField": name_field,
+            **({"quarantine": quarantine} if quarantine else {})}

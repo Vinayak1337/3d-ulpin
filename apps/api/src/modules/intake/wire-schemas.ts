@@ -1,6 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { z } from 'zod';
+import {GisQuarantineSchema} from '@ulpin/contracts';
 import { LargeOriginalEvidenceSchema } from '@ulpin/contracts/usp';
 
 const uuid = z.string().uuid();
@@ -121,6 +122,7 @@ const locator = z.object({
   region: z.object({x: z.number(), y: z.number(), width: z.number(), height: z.number(), unit: z.literal('normalized')}).optional(),
 });
 const physicalFeature = z.object({
+  sourceFeatureIndex: z.number().int().nonnegative().optional(),
   id: uuid, identifier: z.string(), areaId: uuid, revision: z.number().int(),
   sourceRevisionId: uuid, datasetNamespace: z.string(), sourceKey: z.string(), name: z.string(),
   kind: z.enum(['building', 'parcel', 'road', 'public_land', 'utility']),
@@ -171,6 +173,7 @@ const factCandidate = z.object({
   worldStatus: z.enum(['observed', 'planned', 'hypothetical', 'synthetic']), subject: z.string().optional(),
 });
 export const importPackage = z.object({
+  quarantine:GisQuarantineSchema.optional(),
   id: uuid, schemaVersion: z.literal('ulpin-canonical/2'), areaId: uuid, name: z.string(),
   datasetNamespace: z.string(), revision: z.number().int(),
   state: z.enum(['RECEIVED', 'NEEDS_INPUT', 'READY_FOR_REVIEW', 'REVIEWED', 'COMMITTED']),
@@ -187,6 +190,7 @@ export const importPackage = z.object({
   extent: extent.optional(), geographicExtent: extent.optional(),
 });
 export const areaContext = z.object({
+  displayFeatures:z.array(physicalFeature.extend({displayState:z.literal('unrecorded_proposal').optional(),proposalPackageId:uuid.optional()})).optional(),
   area: mapArea, features: z.array(physicalFeature), packages: z.array(importPackage),
   latestCheck: nullable(areaCheck),
   parcelAssociations: z.array(z.object({
@@ -205,6 +209,7 @@ export const areaContext = z.object({
   })).optional(),
 });
 export const gisInspection = z.object({
+  quarantine:GisQuarantineSchema.optional(),
   format: z.enum(['geojson', 'arcgis', 'gpkg', 'shapefile_zip']), sourceSha256: z.string(),
   bytes: z.number().int(), layers: z.array(z.string()), layer: nullable(z.string()),
   sourceCrs: nullable(z.string()), crsEvidence: nullable(z.string()), featureCount: nullable(z.number().int()),

@@ -219,6 +219,7 @@ export interface BuildResult {
 }
 
 export * from './registry';
+export * from './gis-quarantine';
 export * from './registry-metadata';
 export * from './building-registry-report';
 export * from './area';

@@ -6,7 +6,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./usp": "./src/usp/index.ts"
+    "./usp": "./src/usp/index.ts",
+    "./gis-quarantine": "./src/gis-quarantine.ts"
   },
   "type": "module",
   "dependencies": {
