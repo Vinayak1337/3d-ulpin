@@ -87,7 +87,7 @@ export async function importRegistryCase(
         "This case already belongs to another site.",
       );
     const transformVersion = "workspace-local-metres-v1";
-    const normalizationVersion = "registry-case-import-v2";
+    const normalizationVersion = "registry-case-import-v3";
     const operationKey = fingerprint({
       caseId,
       siteId,
@@ -222,18 +222,6 @@ export async function importRegistryCase(
       caseId,
       siteId,
     ]);
-    const isDemoFixture = Boolean(
-      (
-        await client.query(
-          "SELECT 1 FROM registry_sites WHERE id=$1 AND seed_key='nandan-v1' AND seed_case_id=$2",
-          [siteId, caseId],
-        )
-      ).rowCount,
-    );
-    const rights = isDemoFixture
-      ? detail.sources.find((s) => s.name === "rights.pdf")
-      : undefined;
-    const canonicalPreparation=Boolean((await client.query('SELECT 1 FROM building_preparations WHERE case_id=$1',[caseId])).rowCount);
     const records: RegistryRecord[] = [];
     for (const context of detail.model!.context) {
       const evidence = contextImportEvidence(
@@ -266,13 +254,10 @@ export async function importRegistryCase(
         ),
       );
     }
-    const buildings = records.filter((r) => r.kind === "building"),
-      parcels = records.filter((r) => r.kind === "parcel");
-    // The demo source has explicit A/B floor labels. Other imports stay unassigned
-    // until the operator links them; never infer a building from mere proximity.
+    const buildings = records.filter((r) => r.kind === "building");
+    // Level labels group the imported geometry. They do not assert a legal unit,
+    // parcel association, right, or use of the space.
     for (const b of buildings) {
-      const p = parcels.find((p) => p.alias === `P${b.alias}`);
-      if (isDemoFixture && p) b.links = [{ type: "within", targetId: p.id }];
       for (const label of [
         ...new Set(
           detail.model!.units
@@ -310,19 +295,10 @@ export async function importRegistryCase(
       const floor = records.find(
         (r) => r.kind === "floor" && r.alias === unit.levelLabel,
       );
-      const use =
-        unit.alias === "UTIL"
-          ? "utility"
-          : unit.kind === "basement"
-            ? "basement"
-            : unit.kind === "common"
-              ? "common"
-              : canonicalPreparation ? "unspecified" : "apartment";
       const body: RegistryBody = {
         alias: unit.alias,
         name: unit.name,
         kind: "space",
-        use,
         footprint: unit.footprint,
         geometry: unit,
         links: [],
@@ -332,35 +308,6 @@ export async function importRegistryCase(
       };
       if (building) body.links.push({ type: "within", targetId: building.id });
       if (floor) body.links.push({ type: "floor", targetId: floor.id });
-      if (isDemoFixture && unit.alias === "BASE")
-        body.links.push(
-          ...buildings.map((b) => ({
-            type: "serves" as const,
-            targetId: b.id,
-          })),
-        );
-      if (isDemoFixture && unit.alias === "UTIL")
-        body.links.push(
-          ...parcels.map((p) => ({ type: "crosses" as const, targetId: p.id })),
-        );
-      if (rights && site.synthetic)
-        body.rights = [
-          {
-            party:
-              use === "utility"
-                ? "Nandan Utility Cooperative"
-                : use === "apartment"
-                  ? `Household ${unit.alias}`
-                  : "Nandan Residents Association",
-            type:
-              use === "utility"
-                ? "easement"
-                : use === "apartment"
-                  ? "ownership_claim"
-                  : "shared_use",
-            evidence: { sourceId: rights.id, locator: `page 1, ${unit.alias}` },
-          },
-        ];
       const legacy = detail.identity.spaces.find((s) => s.unitId === unit.id);
       const legacyTarget = legacy
         ? (
