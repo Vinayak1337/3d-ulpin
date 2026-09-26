@@ -36,14 +36,17 @@ async function run(){
   // Use the existing fenced authority against only this guarded nonce's real
   // logical job. The control changes lease/context state, never source facts.
   function attemptControl(action,jobId,attempt){
-    const program=`import {claimUspJobAttempt} from './packages/server/src/modules/usp/jobs.ts';
-      import {failProjectedJob} from './packages/server/src/modules/usp/ingestion/projected-publication.ts';
-      import {closePool} from './packages/server/src/infrastructure/db.ts';
+    const program=`import {claimUspJobAttempt} from ${JSON.stringify(join(root,'packages/server/src/modules/usp/jobs.ts'))};
+      import {failProjectedJob} from ${JSON.stringify(join(root,'packages/server/src/modules/usp/ingestion/projected-publication.ts'))};
+      import {closePool} from ${JSON.stringify(join(root,'packages/server/src/infrastructure/db.ts'))};
       void(async()=>{try{const id=process.env.ULPIN_PROJECTED_CONTROL_JOB,action=process.env.ULPIN_PROJECTED_CONTROL_ACTION;
         const result=action==='claim'?await claimUspJobAttempt(id,process.env.ULPIN_PROJECTED_CONTROL_OWNER):
           await failProjectedJob(id,action==='stale'?'PROJECTED_CONTEXT_STALE':'PROJECTED_PUBLICATION_TIMEOUT',action==='stale'?'stale':'failed',JSON.parse(process.env.ULPIN_PROJECTED_CONTROL_ATTEMPT));
         console.log(JSON.stringify(result));}finally{await closePool();}})().catch(()=>{console.error('Guarded attempt control failed.');process.exitCode=1;});`;
-    return JSON.parse(execFileSync('pnpm',['exec','tsx','--tsconfig','apps/api/tsconfig.json','-e',program],{cwd:root,
+    const controlPath=join(dir,'projected-attempt-control.ts');
+    if(!existsSync(controlPath))writeFileSync(controlPath,program,{flag:'wx',mode:0o600});else assert.equal(readFileSync(controlPath,'utf8'),program);
+    receipt.attemptControlSha256=hash(program);
+    return JSON.parse(execFileSync('pnpm',['exec','tsx','--tsconfig','apps/api/tsconfig.json',controlPath],{cwd:root,
       env:{...safeEnv,...env,ULPIN_PROJECTED_CONTROL_JOB:jobId,ULPIN_PROJECTED_CONTROL_ACTION:action,ULPIN_PROJECTED_CONTROL_OWNER:randomUUID(),
         ULPIN_PROJECTED_CONTROL_ATTEMPT:JSON.stringify(attempt??null)},encoding:'utf8',timeout:10000,maxBuffer:8192}).trim());
   }
