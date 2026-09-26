@@ -46,10 +46,10 @@ async function compileCurrent(areaId:string,world:WorldState,expected?:string) {
   })();
   inflight.set(key,task);try{return await task;}finally{inflight.delete(key);}
 }
-export async function handleNeighbourhoodScene(request:Request,areaId:string,path:string[]) {
+/** Native transport calls this after the shared socket Host/Origin guard. */
+export async function readNeighbourhoodSceneAsset(areaId:string,path:string[]) {
   const headers={"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"};
   try{
-    localRequest(request);
     if(!UUID.test(areaId)||path.length<2||!worlds.has(path[0]))throw new LegacySpatialReadError(400,"SCENE_SELECTION","Choose an explicit supported area and world");
     const world=path[0] as WorldState;
     if(path.length===2&&path[1]==="descriptor.json"){
@@ -66,5 +66,18 @@ export async function handleNeighbourhoodScene(request:Request,areaId:string,pat
   }catch(error){
     const status=error instanceof LegacySpatialReadError?error.status:422;
     return Response.json({error:{code:error instanceof LegacySpatialReadError?error.code:"SCENE_UNAVAILABLE",message:error instanceof LegacySpatialReadError?error.message:"This neighbourhood cannot be rendered with the current qualified profile. Its original records are unchanged."}},{status,headers});
+  }
+}
+
+/** Next compatibility boundary retains its own local request check. */
+export async function handleNeighbourhoodScene(request:Request,areaId:string,path:string[]) {
+  try {
+    localRequest(request);
+    return readNeighbourhoodSceneAsset(areaId,path);
+  } catch(error) {
+    const status=error instanceof LegacySpatialReadError?error.status:403;
+    return Response.json({error:{code:error instanceof LegacySpatialReadError?error.code:"SCENE_UNAVAILABLE",
+      message:error instanceof LegacySpatialReadError?error.message:"This neighbourhood is unavailable."}},
+      {status,headers:{"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
   }
 }
