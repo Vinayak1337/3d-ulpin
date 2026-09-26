@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "ulpin-native-operation-manifest/1",
+  "batch": "INGEST-02A",
+  "module": {
+    "path": "apps/api/src/modules/ingestion/ingestion.module.ts",
+    "class": "IngestionModule"
+  },
+  "acceptedBase": "1b44bdfdc7940f9046bc349655dba84efc442491",
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/conversions",
+      "operationId": "GET_api_v1_ingestion_conversions",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "registrySchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "RetainGisSchema multipart",
+      "responseSchema": "SourceProfileSchema",
+      "responseStatus": 201,
+      "transportProfile": "multipart",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_profile",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "SourceProfileSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_recipes",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "AuthorMappingSchema",
+      "responseSchema": "MappingReceiptSchema",
+      "responseStatus": 201,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_recipes_recipeId",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "z.array(MappingReceiptSchema)",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_recipes_recipeId_approve",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "MappingDecisionSchema",
+      "responseSchema": "MappingReceiptSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/execute",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_recipes_recipeId_execute",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "MappingDecisionSchema",
+      "responseSchema": "MappingReceiptSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    }
+  ]
+}
