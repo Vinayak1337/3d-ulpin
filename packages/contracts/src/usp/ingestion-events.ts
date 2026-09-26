@@ -16,6 +16,8 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
     records:z.number().int().min(1).max(733),sourceAccepted:z.literal(false)}),
   z.strictObject({kind:z.literal('private-mvt.changed'),jobId:id,version:z.number().int().min(1).max(32).nullable(),
     status:z.enum(['queued','running','partial','succeeded','failed','stale'])}),
+  z.strictObject({kind:z.literal('sufficiency.changed'),sourceId:id,sourceRevision:revision,
+    status:z.enum(['evaluated','answered','parked','stale'])}),
 ]);
 /** Intentionally separate from registry snapshot events. No original, filename or error text. */
 export const CaseIngestionOutboxSchema = z.strictObject({

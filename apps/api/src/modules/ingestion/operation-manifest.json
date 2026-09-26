@@ -324,6 +324,45 @@
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
       "runtimeEvidence": "docs/evidence/usp/semantic-chunks-handoff.md"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/sufficiency",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_sufficiency",
+      "batch": "INGEST-04A",
+      "disposition": "added",
+      "nativeController": "sufficiency",
+      "requestSchema": "EvaluateSufficiencySchema",
+      "responseSchema": "SufficiencyResultSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/needs-input",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_needs_input",
+      "batch": "INGEST-04A",
+      "disposition": "added",
+      "nativeController": "sufficiency",
+      "requestSchema": null,
+      "responseSchema": "NeedsInputSchema",
+      "responseStatus": 200,
+      "transportProfile": "private-bounded-read",
+      "runtimeEvidence": "pending"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/questions/{questionId}/answers",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_questions_questionId_answers",
+      "batch": "INGEST-04A",
+      "disposition": "added",
+      "nativeController": "sufficiency",
+      "requestSchema": "SufficiencyAnswerSchema",
+      "responseSchema": "SufficiencyQuestionSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending"
     }
   ]
 }

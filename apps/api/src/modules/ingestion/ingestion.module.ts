@@ -9,6 +9,8 @@ import {ProjectedVectorService} from '@ulpin/server/modules/usp/ingestion/projec
 import {PrivateMvtController} from './private-mvt.controller';
 import {SemanticChunkService} from '@ulpin/server/modules/usp/ingestion/semantic-chunks';
 import {PrivateMvtService} from '@ulpin/server/modules/usp/tiles/service';
+import {IngestionSufficiencyService} from '@ulpin/server/modules/usp/ingestion/sufficiency';
+import {SufficiencyController} from './sufficiency.controller';
 
-@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService]})
+@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,SufficiencyController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,IngestionSufficiencyService]})
 export class IngestionModule {}

@@ -1651,6 +1651,52 @@
           "sha256": "2360229d624da68b0acaf4d79987020a43e21f07a90acffde9c9ac26b3a3fb8b"
         }
       ]
+    },
+    {
+      "id": "ingestion.sufficiency.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/sufficiency.sql",
+        "function": "migrateSufficiencyTx",
+        "kind": "authored-sql",
+        "task": "INGEST-04A",
+        "acceptedBase": "3981d8998753cefee6b8e26271e16e06401c2e43"
+      },
+      "file": "sql/95-ingestion/sufficiency.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 33,
+      "sha256": "447796c4990f782b79ac3d6c7a348c81e7ee5c6caf46d838ebb3a6ccd1d143c3",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "28c9be89a1d2cad55ec095c8f5517aa5b06ef7a589b754937dbd85983dd79afb"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "92424832d46a928481fa932b2eadbea607a677dd65d0bca10e4eca0e0c2d0d1d"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "7a851f3d0e1f38e1d0abdce727ea192f04a4393e9f9117579b876c4c6d8ef872"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "32e076fecee8046a43c3e00c56f4c9d15380eff6dc5da81fd09e89afbdb0b73e"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "f31692dd4b8034ba69afe448ac99f435c09db29a41fb323d7d5b3f4e008cfb55"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateSufficiencyTx"
+      }
     }
   ],
   "plannedButAbsent": []
