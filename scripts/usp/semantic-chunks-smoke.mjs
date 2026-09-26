@@ -103,31 +103,60 @@ void(async()=>{try{console.log(JSON.stringify(process.env.ULPIN_STREAM_ACTION===
     receipt.failedPublishedHistory={jobId:publishedFailureJob.id,...failedHistory};
     phase='display-lock-failure-isolation';console.log(JSON.stringify({phase}));
     const third=await api(path,202,{...request,requestKey:randomUUID(),expectedCaseRevision:upload.currentCaseRevision+2});receipt.isolatedFailureJobId=third.jobId;
+    assert.equal(owner.nonce,env.ULPIN_LOCAL_NONCE);assert.equal(owner.project,scope.project);assert.equal(git(['rev-parse','HEAD']),owner.baseCommit);assert.equal(git(['status','--porcelain','--untracked-files=no']),'');
     const blocker=new Client({connectionString:env.DATABASE_URL,application_name:'semantic-display-child-blocker',statement_timeout:8000});await blocker.connect();
+    let thirdComplete;
     try{
-      await blocker.query('BEGIN');const blockerPid=(await blocker.query('SELECT pg_backend_pid() pid')).rows[0].pid;
+      await blocker.query('BEGIN');const blockerScope=(await blocker.query('SELECT pg_backend_pid() pid,current_database() database,current_user operator')).rows[0],blockerPid=blockerScope.pid;
+      assert.equal(blockerScope.database,scope.database);assert.equal(blockerScope.operator,env.POSTGRES_USER);
       await blocker.query("SELECT pg_advisory_xact_lock(hashtextextended('private-mvt-admission-retirement-v1',0))");
       const waiting=async()=>(await db.query(`SELECT pid,query_start FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()
         AND wait_event_type='Lock' AND query LIKE '%private-mvt-admission-retirement-v1%' ORDER BY query_start LIMIT 1`)).rows[0];
       const firstWait=await until(waiting),observedAt=Date.now();
-      const nextWait=await until(async()=>{const row=await waiting();return row&&(row.pid!==firstWait.pid||row.query_start.getTime()!==firstWait.query_start.getTime())?row:null;},10);
-      // The held advisory lock cannot be acquired; a new waiting query proves
-      // the first bounded attempt ended. Release only this owned transaction.
-      await blocker.query('ROLLBACK');
-      const isolated=await until(async()=>{const s=await api(path);assert(!['failed','stale'].includes(s.status));const early=s.displayMilestones.find(m=>m.phase==='early');return early.state==='unavailable'?{s,early}:null;});
-      assert.equal(isolated.early.errorCode,'MVT_DISPLAY_LOCK_TIMEOUT');
-      receipt.displayFailureIsolation={jobId:third.jobId,blockerPid,firstWait:{pid:firstWait.pid,queryStart:firstWait.query_start.toISOString()},nextWait:{pid:nextWait.pid,queryStart:nextWait.query_start.toISOString()},observedLockTimeoutMs:Date.now()-observedAt,early:isolated.early,parentStatusAfterChildFailure:isolated.s.status,currentSourceAccepted:isolated.s.currentSourceAccepted};
+      const parentState=async()=>(await db.query(`SELECT j.status,j.error,j.input_fingerprint,j.payload,m.logical_state,m.input_sha256,m.accepted_fence,
+        a.number,a.fence,a.owner,a.state,a.lease_until,a.input_sha256 attempt_input,
+        (SELECT max(sequence)::int FROM usp_display.source_semantic_chunks WHERE job_id=j.id) through_sequence,
+        (SELECT result FROM operations WHERE kind='stream-display-capacity' AND operation_key=$4 AND case_id=j.case_id) reservation
+        FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id JOIN LATERAL
+          (SELECT * FROM usp_job_attempts WHERE job_id=j.id ORDER BY number DESC LIMIT 1) a ON true
+        WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='projected-vector'`,
+        [third.jobId,caseId,receipt.sourceId,`stream-display:${third.jobId}`])).rows[0];
+      const initial=await parentState();assert(initial);assert.equal(initial.status,'running');assert.equal(initial.payload.caseId,caseId);assert.equal(initial.payload.sourceId,receipt.sourceId);
+      assert.equal(initial.payload.caseRevision,upload.currentCaseRevision+2);assert.equal(initial.payload.sha256,source.sha256);assert.equal(initial.input_fingerprint,initial.payload.inputFingerprint);
+      const expectedAttempt={jobId:third.jobId,number:initial.number,fence:Number(initial.fence),owner:initial.owner,inputSha256:initial.input_fingerprint};
+      const assertParent=state=>{assert(state);assert.equal(state.error,null);assert.equal(state.number,expectedAttempt.number);assert.equal(Number(state.fence),expectedAttempt.fence);assert.equal(state.owner,expectedAttempt.owner);
+        assert.equal(state.input_fingerprint,expectedAttempt.inputSha256);assert.equal(state.input_sha256,expectedAttempt.inputSha256);assert.equal(state.attempt_input,expectedAttempt.inputSha256);
+        assert.equal(state.reservation.jobId,third.jobId);assert.equal(state.reservation.sourceId,receipt.sourceId);
+        if(state.status==='succeeded'){assert.equal(state.logical_state,'succeeded');assert.equal(state.state,'accepted');assert.equal(Number(state.accepted_fence),expectedAttempt.fence);}
+        else{assert.equal(state.status,'running');assert.equal(state.logical_state,'running');assert.equal(state.state,'active');assert(state.lease_until.getTime()>Date.now());}};
+      const assertHeld=async()=>{const held=(await blocker.query("SELECT pg_backend_pid() pid,EXISTS(SELECT 1 FROM pg_locks WHERE pid=pg_backend_pid() AND locktype='advisory' AND granted) held")).rows[0];assert.equal(held.pid,blockerPid);assert.equal(held.held,true);};
+      const isolated=await until(async()=>{await assertHeld();const state=await parentState();assertParent(state);const early=state.reservation.outcomes.early;
+        return early.state==='unavailable'&&state.through_sequence>1?{state,early}:null;});
+      assert.equal(isolated.early.code,'MVT_DISPLAY_LOCK_TIMEOUT');
+      receipt.displayFailureIsolation={jobId:third.jobId,blockerPid,nonce:owner.nonce,expectedAttempt,firstWait:{pid:firstWait.pid,queryStart:firstWait.query_start.toISOString()},
+        unavailableAndFurtherSealingObservedMs:Date.now()-observedAt,early:isolated.early,parentStatusAfterChildFailure:isolated.state.status,throughSequenceWhileLockHeld:isolated.state.through_sequence};
+      // Keep the same owned advisory transaction throughout final acceptance.
+      // A wait disappearing is insufficient: require durable failure, continued
+      // seals, and full independent source adoption before the finally release.
+      const accepted=await until(async()=>{await assertHeld();const state=await parentState();assertParent(state);return state.status==='succeeded'?state:null;});
+      thirdComplete=await api(path);assert.equal(thirdComplete.status,'succeeded');assert.equal(thirdComplete.currentSourceAccepted,true);
+      assert.equal(thirdComplete.totals.features,733);assert.equal(thirdComplete.totals.admitted,720);assert.equal(thirdComplete.totals.quarantined,13);assert.equal(thirdComplete.coverage.remainingRecords,0);
+      for(const milestone of thirdComplete.displayMilestones){assert.equal(milestone.state,'unavailable');assert.equal(milestone.jobId,null);assert.equal(milestone.errorCode,'MVT_DISPLAY_LOCK_TIMEOUT');}
+      assert(Object.values(accepted.reservation.outcomes).every(outcome=>outcome.state==='unavailable'&&outcome.code==='MVT_DISPLAY_LOCK_TIMEOUT'));
+      const closure=(await db.query(`SELECT count(*)::int records,count(*) FILTER(WHERE disposition='admitted')::int admitted,
+        count(*) FILTER(WHERE disposition='quarantined')::int quarantined,count(*) FILTER(WHERE committed_chunk_sequence IS NULL)::int unsealed
+        FROM administrative_unit_observations WHERE job_id=$1`,[third.jobId])).rows[0];
+      assert.deepEqual(closure,{records:733,admitted:720,quarantined:13,unsealed:0});
+      const childJobs=(await db.query("SELECT count(*)::int count FROM jobs WHERE operation='private-mvt' AND payload#>>'{source,admissionJobId}'=$1",[third.jobId])).rows[0].count;assert.equal(childJobs,0);
+      await assertHeld();receipt.displayFailureIsolation.acceptedWhileLockHeld={status:accepted.status,fence:Number(accepted.accepted_fence),throughSequence:accepted.through_sequence,
+        closure,currentSourceAccepted:thirdComplete.currentSourceAccepted,outcomes:accepted.reservation.outcomes,childJobs};
     }finally{try{await blocker.query('ROLLBACK');}finally{await blocker.end();}}
-    const thirdComplete=await until(async()=>{const s=await api(path);if(['failed','stale'].includes(s.status))throw new Error('Display-specific lock failure invalidated semantic source: '+s.errorCode);return s.status==='succeeded'?s:null;});
-    assert.equal(thirdComplete.currentSourceAccepted,true);assert.equal(thirdComplete.totals.features,733);assert.equal(thirdComplete.totals.admitted,720);assert.equal(thirdComplete.totals.quarantined,13);
-    const thirdFinal=thirdComplete.displayMilestones.find(m=>m.phase==='final');assert(thirdFinal.jobId);await until(async()=>{const s=await api(tiles);if(['failed','stale'].includes(s.status))throw new Error('Final independent display failed: '+s.errorCode);return s.status==='succeeded'?s:null;});
-    const thirdMilestones=(await api(path)).displayMilestones;assert.equal(thirdMilestones[0].state,'unavailable');assert(thirdMilestones.slice(1).every(m=>m.state==='succeeded'));
     const childBudgets=(await db.query("SELECT payload->>'publicationMs' budget FROM jobs WHERE operation='private-mvt'")).rows;assert(childBudgets.every(j=>j.budget==='60000'));
     const historyNow=(await db.query(`SELECT count(*)::int history,count(*) FILTER(WHERE j.status IN('failed','stale'))::int failed_published FROM jobs j
       WHERE j.operation='private-mvt' AND (j.status IN('queued','running','succeeded') OR EXISTS(SELECT 1 FROM usp_display.source_tile_generations g WHERE g.job_id=j.id))`)).rows[0];
-    assert.equal(historyNow.history,6);assert.equal(historyNow.failed_published,1);
-    receipt.displayFailureIsolation.fullSemanticTotals=thirdComplete.totals;receipt.displayFailureIsolation.milestones=thirdMilestones;receipt.displayFailureIsolation.childAttemptBudgetMs=60000;receipt.displayFailureIsolation.historyAfterIndependentCompletion=historyNow;
-    receipt.checks.push('An actual failed/stale child with immutable published generations remains charged once in history; the source reservation and ordinary admission share that exact policy. A separate nonce-only advisory lock produces the real2s child admission SQL55P03/MVT_DISPLAY_LOCK_TIMEOUT, while the canonical parent remains current and independently accepts all733/720/13 records; later display milestones complete. All internal child attempt inputs pin60000ms, and absolute creation/await deadlines are reduced by parent time.');
+    assert.equal(historyNow.history,4);assert.equal(historyNow.failed_published,1);
+    receipt.displayFailureIsolation.fullSemanticTotals=thirdComplete.totals;receipt.displayFailureIsolation.milestones=thirdComplete.displayMilestones;receipt.displayFailureIsolation.childAttemptBudgetMs=60000;receipt.displayFailureIsolation.historyAfterIndependentCompletion=historyNow;
+    receipt.checks.push('An actual failed/stale child with immutable published generations remains charged once in history. The exact nonce-only advisory transaction stays held through durable early display-unavailable, further semantic sealing and independent full733/720/13 source acceptance on the same parent attempt. All three slots, including final, become explicitly lock-unavailable, no child job is created, and the held lock is released only in finally. Existing child attempt inputs remain pinned60000ms.');
     const events=(await db.query("SELECT body FROM usp_outbox WHERE body->>'caseId'=$1",[caseId])).rows;assert(events.every(e=>Buffer.byteLength(JSON.stringify(e.body))<=512));
     const modelCalls=(await db.query('SELECT count(*)::int count FROM usp_model_calls')).rows[0].count;assert.equal(modelCalls,0);
     receipt.stale={jobId:second.jobId,seals:preserved,rows:kept,reservation:reservation.outcomes};receipt.outbox={events:events.length,maxBytes:Math.max(0,...events.map(e=>Buffer.byteLength(JSON.stringify(e.body))))};receipt.modelCalls=modelCalls;receipt.checks.push('A real case-revision change after a second retained-source chunk denies exact old reads, fences its source job, preserves every sealed row/hash and releases unused milestone reservations; semantic validity is distinct from stale display authority.');receipt.status='passed';receipt.finishedAt=new Date().toISOString();
