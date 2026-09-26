@@ -21,7 +21,7 @@ All active plans cover backend services, processing, sources, permissions, recov
 ## Before dispatch: six decisions
 
 1. What usable feature or concrete defect will this assignment deliver?
-2. Which existing task and dependencies govern it? Read only the relevant contracts and current code/evidence needed to scope it.
+2. Which existing task and dependencies govern it? Read only the relevant contracts and current code/evidence needed to scope it. For source-dependent work, consult the [official source index](../api/real-sources.md) and its retained manifests before repeating discovery.
 3. What must be preserved, and what is the smallest correct implementation through existing services?
 4. Which files/seams does this worker own? Are any owned by another active worker?
 5. What is the cheapest sufficient check: manual journey, existing targeted check, or a small risk-specific automated check?
