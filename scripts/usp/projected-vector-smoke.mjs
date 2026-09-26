@@ -33,6 +33,20 @@ async function run(){
     ...(body?{method:method??'POST',body:body instanceof Uint8Array?body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(150000)});const value=await r.json();assert.equal(r.status,status,`${phase} ${path}: ${value.error?.code||r.status}`);return value;}
   async function geo(id){const r=await fetch(env.GEO_URL+'/internal/jobs/'+id,{headers:{Authorization:'Bearer '+env.GEO_SERVICE_TOKEN,Connection:'close'},signal:AbortSignal.timeout(5000)});if(!r.ok)return null;return r.json();}
   async function until(action,seconds=150){const end=Date.now()+seconds*1000;while(Date.now()<end){const value=await action();if(value)return value;await delay(500);}throw new Error(`Timed out in ${phase}.`);}
+  // Use the existing fenced authority against only this guarded nonce's real
+  // logical job. The control changes lease/context state, never source facts.
+  function attemptControl(action,jobId,attempt){
+    const program=`import {claimUspJobAttempt} from './packages/server/src/modules/usp/jobs.ts';
+      import {failProjectedJob} from './packages/server/src/modules/usp/ingestion/projected-publication.ts';
+      import {closePool} from './packages/server/src/infrastructure/db.ts';
+      void(async()=>{try{const id=process.env.ULPIN_PROJECTED_CONTROL_JOB,action=process.env.ULPIN_PROJECTED_CONTROL_ACTION;
+        const result=action==='claim'?await claimUspJobAttempt(id,process.env.ULPIN_PROJECTED_CONTROL_OWNER):
+          await failProjectedJob(id,action==='stale'?'PROJECTED_CONTEXT_STALE':'PROJECTED_PUBLICATION_TIMEOUT',action==='stale'?'stale':'failed',JSON.parse(process.env.ULPIN_PROJECTED_CONTROL_ATTEMPT));
+        console.log(JSON.stringify(result));}finally{await closePool();}})().catch(()=>{console.error('Guarded attempt control failed.');process.exitCode=1;});`;
+    return JSON.parse(execFileSync('pnpm',['exec','tsx','--tsconfig','apps/api/tsconfig.json','-e',program],{cwd:root,
+      env:{...safeEnv,...env,ULPIN_PROJECTED_CONTROL_JOB:jobId,ULPIN_PROJECTED_CONTROL_ACTION:action,ULPIN_PROJECTED_CONTROL_OWNER:randomUUID(),
+        ULPIN_PROJECTED_CONTROL_ATTEMPT:JSON.stringify(attempt??null)},encoding:'utf8',timeout:10000,maxBuffer:8192}).trim());
+  }
   try{
     const {caseId}=await api('/source-cases',201,{requestKey:randomUUID(),name:'NWIC India district boundary administrative context'});receipt.caseId=caseId;
     let upload=await api(`/ingestion/cases/${caseId}/uploads`,201,{requestKey:randomUUID(),expectedCaseRevision:0,filename:'district_nwic_geojson.zip',mediaType:'application/zip',bytes:source.bytes,sha256:source.sha256,
@@ -62,13 +76,27 @@ async function run(){
     await barrier.query('BEGIN');held=true;await barrier.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE',[caseId]);
     receipt.retiredStagingRows=(await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count;
     assert(receipt.retiredStagingRows>0&&receipt.retiredStagingRows<733);await api(path+'/units',409);
+    const row=(await observer.query('SELECT * FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1',[first.jobId])).rows[0],
+      oldAttempt={jobId:first.jobId,number:row.number,fence:Number(row.fence),owner:row.owner,inputSha256:row.input_sha256,leaseUntil:row.lease_until.toISOString()};
+    await observer.query("UPDATE usp_job_attempts SET lease_until=now()-interval '1 second' WHERE job_id=$1 AND number=$2",[first.jobId,oldAttempt.number]);
+    const newer=attemptControl('claim',first.jobId);assert.equal(newer.number,oldAttempt.number+1);assert(newer.fence>oldAttempt.fence);
+    await delay(2500);await barrier.query('COMMIT');held=false;
+    assert.equal(attemptControl('expired',first.jobId,oldAttempt),false);await delay(1000);
+    const protectedJob=(await observer.query(`SELECT j.status,j.error,j.attempts,a.state,a.fence,
+      (SELECT count(*)::int FROM administrative_unit_observations WHERE job_id=j.id) observations
+      FROM jobs j JOIN usp_job_attempts a ON a.job_id=j.id AND a.number=$2 WHERE j.id=$1`,[first.jobId,newer.number])).rows[0];
+    assert.equal(protectedJob.status,'running');assert.equal(protectedJob.error,null);assert.equal(protectedJob.attempts,newer.number);
+    assert.equal(protectedJob.state,'active');assert.equal(Number(protectedJob.fence),newer.fence);assert.equal(protectedJob.observations,receipt.retiredStagingRows);
+    receipt.attemptHandover={oldNumber:oldAttempt.number,newNumber:newer.number,oldFence:oldAttempt.fence,newFence:newer.fence,protectedStagingRows:protectedJob.observations};
+    await barrier.query('BEGIN');held=true;await barrier.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE',[caseId]);
     await barrier.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);await barrier.query('COMMIT');held=false;
+    assert.equal(attemptControl('stale',first.jobId,oldAttempt),true);
     await until(async()=>{const job=await api(path);if(job.status==='failed')throw new Error('Stale completion failed unexpectedly.');return job.status==='stale'?job:null;});
     await api(path+'/units',409);
     const retired=(await observer.query("SELECT result FROM operations WHERE case_id=$1 AND kind='projected-vector-staging-retired' AND result->>'jobId'=$2",[caseId,first.jobId])).rows;
     assert.equal(retired.length,1);assert.equal(retired[0].result.rows,receipt.retiredStagingRows);assert.equal(retired[0].result.policy,'never_accepted_terminal_staging/1');
     assert.equal((await observer.query('SELECT count(*)::int count FROM administrative_unit_observations WHERE job_id=$1',[first.jobId])).rows[0].count,0);
-    receipt.checks.push('unchanged retained source reaches Celery; exact enqueue replay preserves the job; unaccepted real staging stays unreadable and is exactly retired after a real case revision fences the completed worker result, retaining its compact retirement/job history');
+    receipt.checks.push('unchanged retained source reaches Celery; exact replay preserves the job; expired publisher A cannot fail or retire real staged rows while newer fenced owner B is active; a real case revision still authoritatively fences the job and exactly retires only its never-accepted staging, retaining compact retirement/job history');
     phase='retry-and-publication';const secondRequest=request(upload.currentCaseRevision+1),second=await api(path,202,secondRequest);receipt.acceptedJobId=second.jobId;assert.notEqual(second.jobId,first.jobId);
     const accepted=await until(async()=>{const job=await api(path);if(['failed','stale'].includes(job.status))throw new Error('Accepted projected journey failed: '+job.errorCode);return job.status==='succeeded'?job:null;});
     assert.equal(accepted.totals.features,733);assert.equal(accepted.totals.positions,3125505);assert.equal(accepted.totals.nativeInvalid,13);assert.equal(accepted.totals.admitted+accepted.totals.quarantined,733);
