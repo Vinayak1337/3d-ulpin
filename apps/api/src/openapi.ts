@@ -29,11 +29,12 @@ function stable(value: unknown): string {
 export function createApiDocument(app: INestApplication): OpenAPIObject {
   const document = SwaggerModule.createDocument(app, new DocumentBuilder()
     .setTitle('3D ULPIN private backend')
-    .setDescription('Native NestJS API. Loopback single-operator boundary; not public or multiuser authentication. Source provenance, installed records and runtime qualification are separate. Dataset catalogue: /api/docs/datasets.json. SQL authority: database/manifest.json in the repository. All public-portal work remains full product.')
+    .setDescription('Native NestJS API. Loopback single-operator boundary; not public or multiuser authentication. Source provenance, installed records and runtime qualification are separate. [Dataset catalogue](/api/docs/datasets.json). SQL authority: database/manifest.json in the repository. Nine operations carry bounded official-source runtime receipts in x-runtime-qualification; this does not qualify every input or workflow. All public-portal work remains full product.')
     .setVersion('1.0.0').addServer('http://127.0.0.1:3188', 'Default local configuration; consult the run receipt for an observed listener.')
     .build()) as OpenAPIObject & Json;
   document.openapi = '3.0.3';
   const baseline = readJson('docs/orchestration/nestjs-operation-ledger.json');
+  const runtime = readJson('docs/api/runtime-qualification.json');
   const manifests = modules.map(name => ({path: `apps/api/src/modules/${name}/operation-manifest.json`, value: readJson(`apps/api/src/modules/${name}/operation-manifest.json`)}));
   const inventory = new Map<string, Json>();
   for (const {path, value} of manifests) for (const operation of value.operations) {
@@ -73,8 +74,12 @@ export function createApiDocument(app: INestApplication): OpenAPIObject {
     op['x-batch'] = entry.batch;
     op['x-disposition'] = entry.disposition;
     op['x-code-status'] = entry.disposition === 'retired' ? 'retired-410' : 'implemented-native';
-    op['x-runtime-verified'] = false;
-    op['x-runtime-qualification'] = 'See pinned integration receipts; route metadata and boundary checks do not qualify stateful workflows.';
+    const observed = runtime.operations[key];
+    op['x-runtime-verified'] = Boolean(observed);
+    op['x-runtime-qualification'] = observed ? {
+      ...observed, receipt: runtime.receipt, servedCodeCommit: runtime.servedCodeCommit,
+      environment: runtime.environment, limitation: runtime.qualification,
+    } : 'No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.';
     if (entry.manifest) op['x-operation-manifest'] = entry.manifest;
     if (entry.maxBodyBytes !== undefined) op['x-max-body-bytes'] = entry.maxBodyBytes;
     if (entry.transportProfile) op['x-transport-profile'] = entry.transportProfile;
@@ -118,6 +123,7 @@ export function createApiDocument(app: INestApplication): OpenAPIObject {
     }
   }
   if (seen.size !== expected.size || [...expected].some(key => !seen.has(key))) throw new Error('Native operation coverage differs from the baseline ledger.');
+  if (Object.keys(runtime.operations).some(key => !seen.has(key))) throw new Error('Runtime qualification references an unregistered operation.');
   document['x-dataset-catalogue'] = {url: '/api/docs/datasets.json', repository: 'docs/api/datasets.json', installedRecords: 'environment-specific; no fixed sample IDs'};
   document['x-sql-authority'] = 'database/manifest.json';
   document['x-runtime-receipts'] = 'docs/evidence/usp/nest-migration';
@@ -129,7 +135,8 @@ export function setupApiDocs(app: INestApplication): void {
   app.getHttpAdapter().get('/api/docs/datasets.json', (_request: unknown, response: any) => response.json(datasetCatalogue()));
   SwaggerModule.setup('api/docs', app, document, {
     jsonDocumentUrl: 'api/docs/openapi.json',
-    swaggerOptions: {supportedSubmitMethods: [], persistAuthorization: false, defaultModelsExpandDepth: 0, validatorUrl: null},
+    // BaseLayout excludes the standalone toolbar and its system-theme toggle.
+    swaggerOptions: {layout: 'BaseLayout', supportedSubmitMethods: [], persistAuthorization: false, defaultModelsExpandDepth: 0, defaultModelRendering: 'model', validatorUrl: null},
     customSiteTitle: '3D ULPIN API',
   });
 }

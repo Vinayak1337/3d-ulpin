@@ -30,6 +30,18 @@ def checked_content(manifest_path, content):
 
 
 def catalogue():
+    runtime = json.loads((ROOT / 'docs/api/runtime-qualification.json').read_text())
+
+    def qualification(manifest):
+        observed = {key: entry['scope'] for key, entry in runtime['operations'].items()
+                    if manifest in entry['sourceManifests']}
+        if not observed:
+            return {"apiInstallation": "not-verified", "runtimeVerified": False}
+        return {"apiInstallation": "verified-in-stopped-isolated-run", "runtimeVerified": True,
+                "runtimeEvidence": {"receipt": runtime['receipt'], "servedCodeCommit": runtime['servedCodeCommit'],
+                                    "operations": observed, "environment": runtime['environment'],
+                                    "qualification": runtime['qualification'], "unqualified": runtime['unqualified']}}
+
     packs = []
     for file in sorted((ROOT / "fixtures/usp").glob("**/manifest.json")):
         raw = file.read_bytes()
@@ -49,7 +61,7 @@ def catalogue():
             "manifest": str(file.relative_to(ROOT)), "manifestSha256": sha(raw),
             "packId": manifest["packId"], "profile": manifest["profile"],
             "version": manifest["version"], "description": manifest["description"],
-            "apiInstallation": "not-verified", "runtimeVerified": False,
+            **qualification(str(file.relative_to(ROOT))),
             "missingCapabilities": manifest.get("missingCapabilities", []),
             "assets": assets,
         })
@@ -73,7 +85,7 @@ def catalogue():
             "acquiredAt": manifest.get("retrievedAt", manifest.get("retrievedOn")),
             "content": checked_content(file, content),
             "geography": "New York City, United States",
-            "apiInstallation": "not-verified", "runtimeVerified": False,
+            **qualification(relative),
             "limitations": manifest.get("limitations", [manifest.get("snapshotNote")]),
         })
     return {
@@ -97,7 +109,7 @@ def main():
             raise SystemExit("Dataset catalogue changed; regenerate and review source metadata")
     else:
         OUTPUT.write_text(rendered)
-    print(f"Dataset catalogue: {len(document['packs'])} retained USP packs and {len(document['retainedOfficialTestSources'])} official NYC source manifests; available bytes verified, API installation unqualified")
+    print(f"Dataset catalogue: {len(document['packs'])} retained USP packs and {len(document['retainedOfficialTestSources'])} official NYC source manifests; available bytes verified, bounded runtime receipts linked separately")
 
 
 if __name__ == "__main__":

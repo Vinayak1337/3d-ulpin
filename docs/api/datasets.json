@@ -2563,8 +2563,30 @@
       "profile": "official-runtime-pdf-v1",
       "version": 1,
       "description": "Metadata-only support pack for one permitted foreign official historical topographic PDF retained outside Git. It contains no geometry or analytical expected facts and is not Indian operational data or land-rights evidence.",
-      "apiInstallation": "not-verified",
-      "runtimeVerified": false,
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "runtimeVerified": true,
+      "runtimeEvidence": {
+        "receipt": "docs/evidence/usp/nest-migration/runtime-source/phase-2b-2026-09-26.json",
+        "servedCodeCommit": "5d80dd869c62dfed1bf39c2594cd1e080c9045fb",
+        "operations": {
+          "POST /api/v1/cases": "Create a workspace using the actual USGS document title.",
+          "POST /api/v1/cases/{caseId}/sources": "Retain plan-pdf-v1, queue inspection and replay the same idempotency key without duplicate source/jobs.",
+          "GET /api/v1/cases/{caseId}": "Read persisted source inspection and failed/succeeded canonical job history; PDF remains needs_input with no geometry.",
+          "POST /api/v1/jobs/{jobId}/retry": "Recover after an owned processor outage with the same original and input fingerprint.",
+          "GET /api/v1/sources/{sourceId}/file": "Verify unchanged original hash/size, private headers and remote-origin denial for both inputs."
+        },
+        "environment": "Stopped isolated local run; volumes preserved. Returned IDs belong only to that run.",
+        "qualification": "Only the listed input/profile/behavior was observed at the served commit; not every branch or dataset accepted by an operation.",
+        "unqualified": [
+          "Indian operational evidence",
+          "geometry, ownership or rights accuracy",
+          "provider or model behavior",
+          "scale",
+          "frontend or release-gate completion",
+          "PDF.js page/rendering helper",
+          "Populated/linked environment migration or deployment"
+        ]
+      },
       "missingCapabilities": [
         "plan_pdf_v1_pdfjs_parser_receipt",
         "plan_pdf_v1_live_job_receipt",
@@ -2763,8 +2785,30 @@
         "repositoryPath": "fixtures/real-nyc/original.geojson"
       },
       "geography": "New York City, United States",
-      "apiInstallation": "not-verified",
-      "runtimeVerified": false,
+      "apiInstallation": "verified-in-stopped-isolated-run",
+      "runtimeVerified": true,
+      "runtimeEvidence": {
+        "receipt": "docs/evidence/usp/nest-migration/runtime-source/phase-2b-2026-09-26.json",
+        "servedCodeCommit": "5d80dd869c62dfed1bf39c2594cd1e080c9045fb",
+        "operations": {
+          "GET /api/v1/sources/{sourceId}/file": "Verify unchanged original hash/size, private headers and remote-origin denial for both inputs.",
+          "POST /api/v1/import-packages/inspect": "Inspect the unchanged single-feature official NYC GeoJSON.",
+          "POST /api/v1/import-packages": "Synchronously import the inspected multipart GeoJSON with its native key and unknown geometry role.",
+          "GET /api/v1/import-packages/{packageId}": "Read the persisted package and candidate/source-evidence binding.",
+          "GET /api/v1/areas/{areaId}/context": "Read the same persisted package and candidate in its area context."
+        },
+        "environment": "Stopped isolated local run; volumes preserved. Returned IDs belong only to that run.",
+        "qualification": "Only the listed input/profile/behavior was observed at the served commit; not every branch or dataset accepted by an operation.",
+        "unqualified": [
+          "Indian operational evidence",
+          "geometry, ownership or rights accuracy",
+          "provider or model behavior",
+          "scale",
+          "frontend or release-gate completion",
+          "PDF.js page/rendering helper",
+          "Populated/linked environment migration or deployment"
+        ]
+      },
       "limitations": [
         "No interior room, floor, ownership or parcel boundary is supplied by this building footprint.",
         "The prism is an approximation, not a measured watertight building solid or legal unit.",

@@ -18,6 +18,19 @@ def main():
     spec = json.loads((ROOT / 'docs/api/openapi.json').read_text())
     pins = json.loads((ROOT / 'docs/api/source-pins.json').read_text())
     ledger = json.loads((ROOT / 'docs/orchestration/nestjs-operation-ledger.json').read_text())
+    runtime = json.loads((ROOT / 'docs/api/runtime-qualification.json').read_text())
+    receipt_bytes = (ROOT / runtime['receipt']).read_bytes()
+    require(hashlib.sha256(receipt_bytes).hexdigest() == runtime['receiptSha256'], 'runtime receipt changed')
+    receipt = json.loads(receipt_bytes)
+    require(receipt['servedCodeCommit'] == runtime['servedCodeCommit'], 'runtime code pin differs')
+    for operation, evidence in runtime['operations'].items():
+        for pointer in evidence['evidencePointers']:
+            node = receipt
+            for token in pointer.strip('/').split('/'):
+                require(isinstance(node, dict) and token in node, f'missing runtime evidence: {operation} {pointer}')
+                node = node[token]
+        for source in evidence['sourceManifests']:
+            require((ROOT / source).is_file(), f'missing runtime source manifest: {source}')
     require(spec['openapi'] == '3.0.3', 'expected native Swagger OpenAPI 3.0.3')
     require(pins['schemaVersion'] == 'ulpin-native-openapi-pins/1', 'obsolete source pins')
     for path, digest in pins['sourceSha256'].items():
@@ -36,6 +49,8 @@ def main():
             require(op['x-source-file'].startswith('apps/api/'), f'legacy producer: {path}')
             require(op['x-code-status'] in ['implemented-native', 'retired-410'], f'unknown code state: {path}')
             require(isinstance(op['x-runtime-verified'], bool), f'missing runtime distinction: {path}')
+            require(op['x-runtime-verified'] == (method.upper() + ' ' + path in runtime['operations']),
+                    f'runtime status differs from observed scope: {path}')
             require(op.get('responses'), f'no response: {path}')
             if op['x-disposition'] == 'retired':
                 require('410' in op['responses'], f'retired operation without 410: {path}')

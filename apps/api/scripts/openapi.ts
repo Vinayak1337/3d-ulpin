@@ -26,6 +26,7 @@ try {
   const document = createApiDocument(app);
   const sourceFiles = ['apps/api/src', 'packages/server/src', 'packages/contracts/src'].flatMap(path => files(join(root, path)));
   sourceFiles.push(join(root, 'docs/orchestration/nestjs-operation-ledger.json'), join(root, 'docs/api/datasets.json'));
+  sourceFiles.push(join(root, 'docs/api/runtime-qualification.json'));
   const pins = Object.fromEntries(sourceFiles.sort().map(path => [relative(root, path), createHash('sha256').update(readFileSync(path)).digest('hex')]));
   emit('docs/api/openapi.json', document);
   emit('docs/api/source-pins.json', {schemaVersion: 'ulpin-native-openapi-pins/1', sourceSha256: pins,

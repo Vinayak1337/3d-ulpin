@@ -68,14 +68,15 @@ Resume the dependency-ready backend plan from actual code/evidence, not its old 
 | --- | --- | --- |
 | NEST-00 | accepted | `f5df91ad` foundation + `08e58166` dependency correction; isolated five-service health qualified below. |
 | NEST-01 | accepted, fresh execution verified | `dfb74fd2` extraction + `f42b81ac` wiring. Exact 25 files / 136 statement hashes; fresh migration and repeat passed in phase 2A. Populated migration remains unqualified. |
-| NEST-02 | phase 2A accepted | Through `20aa298f`, merged at `5b3bfbb`. Health, SQL repeatability and processor recovery passed; all owned processes stopped, volumes preserved. Source-flow gate still pending. |
+| NEST-02 | phase 2B accepted | `74ced2bc` receipt, served `5d80dd86`, merged at `3944496`. Actual PDF source/job/retry/read and separate NYC GIS import passed; owned processes stopped and volumes preserved. |
 | NEST-03 | accepted | `8b25dea6`, merged at `cf633ea`. Backend tools/default commands use Nest; explicit UI tools remain classified. Historical GF-CONTRACT receipt remains historical. |
 | NEST-10 | accepted | `7b318602`, merged at `1c5ab29`. 43 operations, authored scenarios retired, source downloads hash/size checked. |
 | NEST-11 | accepted | `fb21e3b4`, independently reviewed by Astra. 40 operations, unsupported imported rights/use defaults removed. |
 | NEST-12 | accepted | `8b0d4512` + `43b0b86c`, merged at `27fa64a`. 18 operations; review caught and verified the explicit Nest injection correction. |
 | NEST-13 | accepted | `3347d140`, merged at `89a8182`. 28 operations, synthetic-only saved intake and calibration retired, private read fence retained. |
 | NEST-14 | accepted | `66242ba0`, merged at `3fcc241`. Required server-only local subject for new attribution; lead preflights API/dispatcher before service work. Historical actors/wire mode remain intact. |
-| NEST-20–21 | integrating | All 132 baseline operations have native registered modules or explicit retirement. Lead generates final OpenAPI, linked data handoff and integrated runtime acceptance; final cleanup follows. |
+| NEST-20 | accepted, bounded runtime verified | All 132 baseline operations accounted for; 129 retained/replaced and three explicit retirements. Real-source runtime passed on `5d80dd86`; no Next backend dependency. This is not a GF0/product pass. |
+| NEST-21 | handoff complete; cleanup in progress | Lead-generated OpenAPI: 132 operations, 160 named schemas, nine source-qualified operation receipts, eight source packs plus two official NYC manifests. Visible executed SQL, light-only Swagger and startup instructions are current. |
 
 
 Framework references checked for this decision: [Nest controllers](https://docs.nestjs.com/controllers), [Nest database integration](https://docs.nestjs.com/techniques/database), [node-postgres parameterized queries](https://node-postgres.com/features/queries), [Prisma unsupported-field/raw SQL guidance](https://docs.prisma.io/docs/orm/prisma-client/using-raw-sql/safeql). These inform the architecture; they do not prove this repository's runtime behavior.
@@ -89,3 +90,9 @@ All four API tasks started from accepted `fd7d3e39` and were instructed to merge
 SQL ownership handoff: after accepted `f42b81ac`, NEST-13 may edit `modules/ai/officer-ai.ts` for explicit service exports, preserving the named SQL migration call. NEST-01 has finished its phase 2.
 
 Additional bounded lanes: Luna/max official runtime PDF source task `01a0db6c-5238-7a72-9c58-bde1fe59a4ed` (worktree `b962`) checks documented permission for one unchanged input accepted by the existing queued PDF inspector. No new geometry/rights/scale claim. NEST-12 was accepted after Astra review and the explicit injection fix; all 18 operations retained.
+
+## Post-migration backend continuation
+
+Official scale-source permission follow-up `6e0dd8f` is integrated. The bounded three-candidate review still has no accepted Indian scale layer: the retained Karnataka ZIP has no applicable permission evidence, and a separately licensed WMS is not proof of permission for those ZIP bytes. Preserve the unchanged original outside Git. See [the source decision](../evidence/usp/nest-migration/official-scale-source/source-check.json). DATA-10/GF-SCALE-1 stay open. INGEST-06 is conditional on a real upload-size need; the observed PDF and retained ZIP do not justify it. TILE-01 follows an admitted profile and verified frame. Public work stays full product. GF0 remains pending, with no fabricated evidence or automatic gate approval.
+
+Manual Swagger verification found the dependency’s standalone toolbar selected dark mode from system preference. BaseLayout removes that toolbar/theme control; the browser confirmed the request/response contract displays, no dark-mode control and no write execution button. Schemas open first to keep generated example placeholders out of the initial view. All temporary documentation listeners are stopped after checking.
