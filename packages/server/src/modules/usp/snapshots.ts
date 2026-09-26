@@ -13,6 +13,7 @@ import { settings } from '../../infrastructure/config';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { geometryProjection, withUspAnalyticalReader } from './geometry';
 import { localOperatorSubject } from './principal';
+import {documentAuthorityTx,documentSnapshotView,captureDocumentSourceTx} from './ingestion/document-authority';
 
 type BodyRow = { namespace: string; object_id: string; revision: number; body: Record<string, any> };
 
@@ -87,6 +88,8 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
       packageParts.set(part.sourceRevisionId, parts);
     }
   }
+  const sourceBodies=new Map<string,Record<string,any>>();
+  for(const source of sources)sourceBodies.set(source.id,await captureDocumentSourceTx(client,source,packageParts.get(source.id)??[]));
   const qualifications = (await client.query(`SELECT DISTINCT ON(q.namespace,q.record_id,q.record_revision) q.*
     FROM usp_geometry_qualifications q WHERE
       (q.namespace='registry_record' AND EXISTS(SELECT 1 FROM registry_records r WHERE r.id=q.record_id AND r.site_id=$1 AND r.revision=q.record_revision))
@@ -102,8 +105,7 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
         successors: successors.get(row.id) ?? [] } : null, historicalAliases: aliases.get(row.id) ?? [] } })),
     ...features.map(row => ({ namespace: 'area_feature', object_id: row.id, revision: Number(row.revision), body: row })),
     ...sources.map(row => ({ namespace: 'source_revision', object_id: row.id, revision: Number(row.revision),
-      body: { ...row, inspection: { ...(row.inspection ?? {}),
-        referenceParts: [...(row.inspection?.referenceParts ?? []), ...(packageParts.get(row.id) ?? [])] } } })),
+      body: sourceBodies.get(row.id)! })),
   ] as BodyRow[]).map(row => ({ ...row, body: JSON.parse(JSON.stringify(row.body)) }))
     .sort((a, b) => `${a.namespace}:${a.object_id}@${a.revision}`.localeCompare(`${b.namespace}:${b.object_id}@${b.revision}`));
 }
@@ -120,6 +122,7 @@ export async function captureRegistrySnapshot(ctx: RequestContext, siteId: strin
 export async function captureRegistrySnapshotTx(client: PoolClient, ctx: RequestContext, siteId: string, selection: { kind: 'site' } | { kind: 'targets'; pins: readonly TargetPin[] }) {
     assertLocalUsp(ctx);
     const rows = await snapshotRows(client, siteId);
+    assertLocalUsp(ctx);
     if (selection.kind === 'targets') {
       if (!selection.pins.length || selection.pins.length > 100) throw new AppError(422, 'USP_SELECTION', 'Choose 1 to 100 targets.');
       for (const pin of selection.pins) {
@@ -161,14 +164,25 @@ export async function captureRegistrySnapshotTx(client: PoolClient, ctx: Request
     return manifest;
 }
 
+export async function assertSnapshotDocumentsTx(client:PoolClient,ctx:RequestContext,scope:SnapshotScope,protect=false){
+  assertLocalUsp(ctx);
+  const sources=(await client.query("SELECT body,body_sha256 FROM usp_snapshot_bodies WHERE manifest_id=$1 AND namespace='source_revision' ORDER BY object_id",[scope.manifestId])).rows;
+  if(sources.length>2000)throw new AppError(413,'USP_SCOPE_LIMIT','Select a smaller source scope.');
+  for(const source of sources){
+    if(fingerprint(source.body)!==source.body_sha256)throw new AppError(409,'USP_REVISION_UNAVAILABLE','The exact captured source is unavailable.');
+    await documentAuthorityTx(client,source.body,'snapshot',new Set(),protect);
+  }
+  assertLocalUsp(ctx);
+}
+
 export async function readManifest(ctx: RequestContext, scope: SnapshotScope) {
   assertLocalUsp(ctx);
   z.uuid().parse(scope.scopeId);
   z.uuid().parse(scope.manifestId);
-  const row = (await transaction(async client => (await client.query(
+  const row = (await transaction(async client => {const row=(await client.query(
     'SELECT body FROM usp_snapshots WHERE id=$1 AND scope_id=$2 AND digest=$3',
     [scope.manifestId, scope.scopeId, scope.snapshotDigest],
-  )).rows[0]))?.body;
+  )).rows[0];if(row)await assertSnapshotDocumentsTx(client,ctx,scope);return row;}))?.body;
   if (!row) throw new AppError(409, 'USP_MANIFEST_REFRESH', 'The exact snapshot is unavailable. Capture a new snapshot.');
   const manifest = UspSnapshotManifestSchema.parse(row);
   if (canonical(manifest.scope) !== canonical(scope)) throw new AppError(409, 'USP_SCOPE_STALE', 'The snapshot scope changed.');
@@ -192,7 +206,20 @@ export async function readSnapshotBody(ctx: RequestContext, scope: SnapshotScope
   if (!found || fingerprint(found.body) !== found.body_sha256) {
     throw new AppError(409, 'USP_REVISION_UNAVAILABLE', 'The exact captured revision is unavailable.');
   }
+  if(pin.ref.namespace==='source_revision')return transaction(async client=>{const view=documentSnapshotView(found.body,await documentAuthorityTx(client,found.body));assertLocalUsp(ctx);return view;});
   return found.body;
+}
+
+/** Exact original I/O with current canonical document checks on both sides. */
+export async function readSnapshotOriginal(ctx:RequestContext,scope:SnapshotScope,pin:TargetPin){
+  const source=await readSnapshotBody(ctx,scope,pin);
+  const bytes=await readObject(source.object_key);
+  if(bytes.length!==Number(source.bytes)||sha256(bytes)!==source.sha256)
+    throw new AppError(422,'USP_ORIGINAL_INTEGRITY','The retained original no longer matches its source receipt.');
+  await readManifest(ctx,scope);
+  await transaction(client=>documentAuthorityTx(client,source));
+  assertLocalUsp(ctx);
+  return {body:source,bytes};
 }
 
 function pointerFor(source: BodyRow, target: TargetPin, locator: string): EvidencePointer {
@@ -347,6 +374,8 @@ export async function readRegistryEvidence(ctx: RequestContext, scope: SnapshotS
   const source = await memberBody(scope, pointer.sourceRevision);
   if (!source || fingerprint(source.body) !== source.body_sha256) return { state: 'unavailable' as const, reasonCode: 'unavailable_revision' };
   const row = source.body;
+  await transaction(client=>documentAuthorityTx(client,row));
+  assertLocalUsp(ctx);
   if (row.revision !== pointer.sourceRevision.revision) return { state: 'unavailable' as const, reasonCode: 'unavailable_revision' };
   const data = UspAuthorizedAssetSchema.parse({
     asset: { assetId: row.id, version: row.revision, sha256: row.sha256 }, pointer, action,
@@ -358,9 +387,7 @@ export async function readRegistryEvidence(ctx: RequestContext, scope: SnapshotS
 export async function readRegistryEvidenceBytes(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer) {
   const authorization = await readRegistryEvidence(ctx, scope, pointer, 'original');
   if (authorization.state !== 'available') throw new AppError(404, 'USP_EVIDENCE_UNAVAILABLE', 'The exact original is unavailable.');
-  const source = await memberBody(scope, pointer.sourceRevision);
-  if (!source) throw new AppError(404, 'USP_EVIDENCE_UNAVAILABLE', 'The exact original is unavailable.');
-  const bytes = await readObject(source.body.object_key);
+  const {bytes} = await readSnapshotOriginal(ctx,scope,pointer.sourceRevision);
   if (bytes.length !== authorization.data.bytes || sha256(bytes) !== authorization.data.asset.sha256) {
     throw new AppError(422, 'USP_ORIGINAL_INTEGRITY', 'The retained original no longer matches its source receipt.');
   }
