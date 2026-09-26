@@ -50,35 +50,99 @@ function compose(c, args, options={}) {
 async function free(port) {
   await new Promise((ok, bad) => { const server=createServer();server.once('error',bad);server.listen(port,'127.0.0.1',()=>server.close(ok)); });
 }
-function processAlive(pid, nonce) {
-  if (!Number.isInteger(pid) || pid < 2) return false;
+function processInfo(processId) {
+  if (!Number.isInteger(processId) || processId < 2) return null;
+  const prefix=['-ww','-p',String(processId),'-o'];
   try {
-    const line=command('ps',['-p',String(pid),'-o','pgid=','-o','command='],{}, {timeout:3000});
-    const match=line.match(/^(\d+)\s+(.+)$/);
-    return !!match && Number(match[1])===pid && match[2].includes(`ULPIN_RUN_NONCE=${nonce} pnpm `);
-  }
-  catch { return false; }
+    const pgid=Number(command('ps',[...prefix,'pgid='],{}, {timeout:3000}));
+    const started=command('ps',[...prefix,'lstart='],{}, {timeout:3000});
+    const name=command('ps',[...prefix,'command='],{}, {timeout:3000});
+    if (pgid!==Number(command('ps',[...prefix,'pgid='],{}, {timeout:3000})) ||
+        started!==command('ps',[...prefix,'lstart='],{}, {timeout:3000})) return null;
+    return {pgid,started,name};
+  } catch {return null;}
 }
-function launch(c, label, args) {
+function groupMembers(pgid) {
+  assert(Number.isInteger(pgid) && pgid>1,'invalid process group');
+  const output=command('ps',['-e','-o','pid=','-o','pgid='],{}, {timeout:3000});
+  if (!output) return [];
+  return output.split('\n').map(line=>{
+    const match=line.trim().match(/^(\d+)\s+(\d+)$/);
+    assert(match,'unable to parse process group listing');
+    return {pid:Number(match[1]),pgid:Number(match[2])};
+  }).filter(item=>item.pgid===pgid).map(item=>item.pid);
+}
+async function waitGroupGone(pgid) {
+  let members=[];
+  for (let attempt=0;attempt<40;attempt++) {
+    members=groupMembers(pgid);
+    if (!members.length) break;
+    await delay(250);
+  }
+  return members;
+}
+const groupFile=(c,label)=>join(c.dir,`${label}.group.json`);
+function readGroup(c,label) {
+  if (!existsSync(groupFile(c,label))) return null;
+  const group=JSON.parse(readFileSync(groupFile(c,label),'utf8'));
+  assert.equal(group.label,label);
+  assert.equal(group.nonce,c.env.ULPIN_LOCAL_NONCE);
+  assert(Number.isInteger(group.pid) && group.pid>1);
+  assert.equal(group.pgid,group.pid);
+  assert(group.started===null || typeof group.started==='string');
+  return group;
+}
+function processAlive(c,label) {
+  const group=readGroup(c,label);
+  if (!group?.started) return false;
+  const info=processInfo(group.pid);
+  return !!info && info.pgid===group.pgid && info.started===group.started &&
+    info.name.includes(`ULPIN_RUN_NONCE=${group.nonce} pnpm `);
+}
+async function recordFailure(group) {
+  const info=processInfo(group.pid);
+  if (info?.pgid!==group.pgid || !info.name.includes(`ULPIN_RUN_NONCE=${group.nonce} pnpm `))
+    throw new Error(`${group.label} group record failed and process ownership is unverified; manual cleanup required`);
+  try {process.kill(-group.pgid,'SIGTERM');}
+  catch {throw new Error(`${group.label} group record failed and owned process could not be stopped; manual cleanup required`);}
+  let members;
+  try {members=await waitGroupGone(group.pgid);}
+  catch {throw new Error(`${group.label} group record failed and membership could not be checked; manual cleanup required`);}
+  throw new Error(`${group.label} group record failed; ${members.length ? `PIDs ${members.join(',')} remain and require manual cleanup` : 'verified group stopped'}`);
+}
+async function launch(c, label, args) {
   assert(args.every(arg=>/^[A-Za-z0-9@/:._-]+$/.test(arg)),'unsafe pnpm argument');
-  assert(!processAlive(pid(c,label),c.env.ULPIN_LOCAL_NONCE),`${label} is already running for this nonce`);
+  const previous=readGroup(c,label);
+  if (previous) assert.equal(groupMembers(previous.pgid).length,0,`${label} previous group still has members`);
   const log = openSync(join(c.dir,`${label}.log`),'a',0o600);
   const child=spawn('/bin/sh',['-c',`ULPIN_RUN_NONCE=${c.env.ULPIN_LOCAL_NONCE} pnpm ${args.join(' ')} & wait`],{cwd:root,env:{...bare(),...c.env,ULPIN_FIXTURE_ROOT:join(root,'fixtures')},detached:true,stdio:['ignore',log,log]});
+  child.once('error',()=>{ /* the identity check below reports startup failure */ });
   closeSync(log);
   assert(child.pid,`${label} process did not start`);
-  // A stopped nonce may be resumed; replace only its stale PID after ownership check.
-  writeFileSync(join(c.dir,`${label}.pid`),String(child.pid)+'\n',{mode:0o600});
+  const group={label,nonce:c.env.ULPIN_LOCAL_NONCE,pid:child.pid,pgid:child.pid,started:null};
   child.unref();
-  return child.pid;
+  try {writeFileSync(groupFile(c,label),JSON.stringify(group)+'\n',{mode:0o600});}
+  catch {await recordFailure(group);}
+  for (let attempt=0;attempt<20;attempt++) {
+    const info=processInfo(child.pid);
+    if (info?.pgid===child.pid && info.name.includes(`ULPIN_RUN_NONCE=${group.nonce} pnpm `)) {
+      group.started=info.started;
+      try {writeFileSync(groupFile(c,label),JSON.stringify(group)+'\n',{mode:0o600});}
+      catch {await recordFailure(group);}
+      return child.pid;
+    }
+    await delay(100);
+  }
+  throw new Error(`${label} process group identity could not be verified; inspect owned cleanup`);
 }
-const pid = (c,label) => {const path=join(c.dir,`${label}.pid`);return existsSync(path)?Number(readFileSync(path,'utf8').trim()):null;};
+const pid = (c,label) => readGroup(c,label)?.pid??null;
 const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
 async function waitHealth(c, seconds=150) {
   const end=Date.now()+seconds*1000;
   const required=['database','storage','processor','redis','worker'];
   while (Date.now()<end) {
-    assert(processAlive(pid(c,'api'),c.env.ULPIN_LOCAL_NONCE),'owned Nest API process exited before health became ready');
-    assert(processAlive(pid(c,'dispatcher'),c.env.ULPIN_LOCAL_NONCE),'owned dispatcher exited before health became ready');
+    assert(processAlive(c,'api'),'owned Nest API process exited before health became ready');
+    assert(processAlive(c,'dispatcher'),'owned dispatcher exited before health became ready');
     try {const r=await fetch(c.env.ULPIN_TEST_URL+'api/v1/health',{signal:AbortSignal.timeout(2000)});if(r.ok){const j=await r.json();if(j.ok===true&&required.every(key=>j.services?.[key]===true))return j;}}catch{}
     await delay(1500);
   }
@@ -94,7 +158,7 @@ async function prepare() {
     POSTGRES_DB:database,POSTGRES_USER:'ulpin_usptest',POSTGRES_PASSWORD:password,POSTGRES_PORT:'25432',DATABASE_URL:`postgresql://ulpin_usptest:${password}@127.0.0.1:25432/${database}`,
     S3_ACCESS_KEY:'ulpin_usptest',S3_SECRET_KEY:s3Secret,S3_BUCKET:project,S3_ENDPOINT:'http://127.0.0.1:29000',S3_REGION:'us-east-1',S3_PORT:'29000',S3_CONSOLE_PORT:'29001',
     REDIS_URL:'redis://127.0.0.1:26379/0',REDIS_PORT:'26379',GEO_URL:'http://127.0.0.1:28000',GEO_PORT:'28000',GEO_SERVICE_TOKEN:secret(),
-    HOST:'127.0.0.1',PORT:'3188',ULPIN_LOOPBACK_PORTS:'3188',ULPIN_TEST_URL:'http://127.0.0.1:3188/'};
+    HOST:'127.0.0.1',PORT:'3188',API_PORT:'3188',ULPIN_LOOPBACK_PORTS:'3188',ULPIN_TEST_URL:'http://127.0.0.1:3188/'};
   assertUspIsolation(env);
   writeFileSync(runFile(dir),JSON.stringify(env),{flag:'wx',mode:0o600});
   writeFileSync(join(dir,'compose.env'),Object.entries(env).map(([k,v])=>`${k}=${v}`).join('\n')+'\n',{flag:'wx',mode:0o600});
@@ -122,8 +186,8 @@ async function start(dir, resume=false) {
     compose(c,['run','--rm','minio-init']);
     command('pnpm',['db:migrate'],c.env,{timeout:180000});
     compose(c,['--profile','app','up','-d','--build','--wait','geo','worker'],{timeout:600000});
-    launch(c,'dispatcher',['dispatcher']);
-    launch(c,'api',['--filter','@ulpin/api','start']);
+    await launch(c,'dispatcher',['dispatcher']);
+    await launch(c,'api',['--filter','@ulpin/api','start']);
     const health=await waitHealth(c);
     console.log(JSON.stringify({project:c.scope.project,url:c.env.ULPIN_TEST_URL,services:health.services,dataMode:health.dataMode,dispatcherPid:pid(c,'dispatcher'),apiPid:pid(c,'api')}));
   } catch (error) {
@@ -136,7 +200,11 @@ function status(dir) {
   const c=config(dir);
   const containers=compose(c,['--profile','app','ps','--format','json'],{timeout:15000});
   const ids=containers.split('\n').filter(Boolean).map(line=>{try {const x=JSON.parse(line);return {name:x.Name,state:x.State,ports:x.Publishers?.map(p=>`${p.URL}:${p.PublishedPort}`).filter(Boolean)}}catch{return {unparsed:true}}});
-  const processes=Object.fromEntries(['api','dispatcher'].map(label=>{const processId=pid(c,label);return [label,{pid:processId,ownedAlive:processAlive(processId,c.env.ULPIN_LOCAL_NONCE)}]}));
+  const processes=Object.fromEntries(['api','dispatcher'].map(label=>{
+    const group=readGroup(c,label);
+    return [label,{pid:group?.pid??null,pgid:group?.pgid??null,
+      ownedLeaderAlive:processAlive(c,label),memberPids:group?groupMembers(group.pgid):[]}];
+  }));
   console.log(JSON.stringify({project:c.scope.project,containers:ids,processes}));
 }
 async function recovery(dir) {
@@ -161,22 +229,38 @@ async function recovery(dir) {
 }
 async function stop(dir) {
   const c=config(dir);
-  const remaining=[];
+  const unresolved=[];
+  const signalled=[];
   for (const label of ['api','dispatcher']) {
-    const processId=pid(c,label);
-    if (!processAlive(processId,c.env.ULPIN_LOCAL_NONCE)) continue;
-    try {process.kill(-processId,'SIGTERM');}
-    catch (error) {if(error.code!=='ESRCH')remaining.push(label);}
+    try {
+      const group=readGroup(c,label);
+      if (!group) continue;
+      const members=groupMembers(group.pgid);
+      if (!members.length) continue;
+      if (!members.includes(group.pid) || !processAlive(c,label)) {
+        unresolved.push(`${label} group ${group.pgid} has members but its recorded leader is unverified`);
+        continue;
+      }
+      // Signal once only while the recorded nonce, start time and group leader match.
+      try {process.kill(-group.pgid,'SIGTERM');}
+      catch (error) {if(error.code!=='ESRCH')unresolved.push(`${label} group ${group.pgid} could not be signalled`);}
+      signalled.push({label,group});
+    } catch {
+      unresolved.push(`${label} process group could not be validated`);
+    }
   }
-  for (let attempt=0;attempt<20;attempt++) {
-    if (['api','dispatcher'].every(label=>!processAlive(pid(c,label),c.env.ULPIN_LOCAL_NONCE))) break;
-    await delay(250);
+  for (const {label,group} of signalled) {
+    try {
+      const members=await waitGroupGone(group.pgid);
+      if (members.length) unresolved.push(`${label} group ${group.pgid} still has PIDs ${members.join(',')}`);
+    } catch {
+      unresolved.push(`${label} group ${group.pgid} membership could not be checked`);
+    }
   }
-  for (const label of ['api','dispatcher'])
-    if (processAlive(pid(c,label),c.env.ULPIN_LOCAL_NONCE)) remaining.push(label);
   // Include the app profile so Compose also stops the owned geo and worker containers.
-  compose(c,['--profile','app','down','--remove-orphans'],{timeout:120000});
-  assert.equal(remaining.length,0,`owned process groups still running: ${remaining.join(', ')}`);
+  try {compose(c,['--profile','app','down','--remove-orphans'],{timeout:120000});}
+  catch (error) {unresolved.push(`owned Compose shutdown failed: ${error.message}`);}
+  if (unresolved.length) throw new Error(`owned cleanup unresolved: ${unresolved.join('; ')}`);
   console.log(`Stopped ${c.scope.project}; named volumes preserved.`);
 }
 const [action,dir]=process.argv.slice(2);
