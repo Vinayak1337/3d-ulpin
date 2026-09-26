@@ -6,19 +6,19 @@
   "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
   "servingObservation": {
     "schemaVersion": "ulpin-serving-observation/1",
-    "observedAt": "2026-09-26T12:19:33.951Z",
+    "observedAt": "2026-09-26T12:45:58.857Z",
     "environment": "linked-loopback-3188",
     "apiBase": "http://127.0.0.1:3188/api/v1",
-    "servedCodeCommit": "8f612df9a56205d0af8fac3e692ff60229563724",
-    "qualification": "Point-in-time observation of this local environment only. Administrative context and a foreign footprint; not a live status, deployment, multiuser, Indian property-readiness, tiles or scale qualification.",
+    "servedCodeCommit": "8a64a83caa166b487c829fcdde2d54c7949238a7",
+    "qualification": "Point-in-time local observation of administrative context, private post-admission tiles and one foreign footprint; not deployment, multiuser, Indian property-readiness, import-time GF-STREAM, scale or frontend qualification.",
     "database": {
       "status": "structurally_ready",
-      "manifestSha256": "4efd80ec0bce8d366ef0454dbaecffed2d087108eb607cd617eaf15dc4bc59be",
+      "manifestSha256": "7e41b4c1c246d64674fd403cdfa0801e408db07c7f73f9bd0868c1f5d045659e",
       "originalsVerified": {
         "verifiedCount": 63,
         "verifiedBytes": 75416144
       },
-      "checkedForeignKeys": 109,
+      "checkedForeignKeys": 115,
       "orphanCount": 0,
       "geometryViolationCount": 0,
       "unvalidatedConstraints": [
@@ -134,7 +134,46 @@
           "accuracyQualification": "numerical_transform_only_not_survey_accuracy",
           "parserSha256": "ba5ff17a255f8161c1b73d19b0961549f73b9cc0a9e94f9faeca1c73387bb633"
         },
-        "limitations": "Deterministic administrative context only; boundary accuracy/currentness, parcel/building/height/rights, tiles and scale remain unqualified."
+        "limitations": "Deterministic administrative context only; boundary accuracy/currentness, parcel/building/height/rights, tiles and scale remain unqualified.",
+        "display": {
+          "generation": {
+            "jobId": "2ddce453-6355-46f9-9912-94b4325901f5",
+            "version": 16,
+            "sha256": "1b0f541c4bccceeb2ac7d16bc47ee78258a288a495147287d5c5364e92b098ec"
+          },
+          "firstObserved": {
+            "status": "running",
+            "pin": {
+              "jobId": "2ddce453-6355-46f9-9912-94b4325901f5",
+              "version": 1,
+              "sha256": "8dbf86dacfca541afab7755d17d7e7ea75ccfc741662fe82def0f5f352157bad"
+            },
+            "ready": 4,
+            "pending": 58
+          },
+          "cells": 62,
+          "verifiedTileBytes": 6016272,
+          "excludedQuarantined": 13,
+          "sourceFrame": "EPSG:4326",
+          "displayFrame": "EPSG:3857",
+          "analyticEligible": false,
+          "statusUrl": "http://127.0.0.1:3188/api/v1/ingestion/cases/0cea1799-2924-45d6-838f-7ab45753db0c/sources/c848bbbc-350f-4934-b64a-d281eb559876/private-mvt",
+          "manifestUrl": "http://127.0.0.1:3188/api/v1/ingestion/cases/0cea1799-2924-45d6-838f-7ab45753db0c/sources/c848bbbc-350f-4934-b64a-d281eb559876/private-mvt/generations/2ddce453-6355-46f9-9912-94b4325901f5/16",
+          "tileTemplate": "http://127.0.0.1:3188/api/v1/ingestion/cases/0cea1799-2924-45d6-838f-7ab45753db0c/sources/c848bbbc-350f-4934-b64a-d281eb559876/private-mvt/generations/2ddce453-6355-46f9-9912-94b4325901f5/16/tiles/{z}/{x}/{y}.mvt",
+          "lookup": {
+            "url": "http://127.0.0.1:3188/api/v1/ingestion/cases/0cea1799-2924-45d6-838f-7ab45753db0c/sources/c848bbbc-350f-4934-b64a-d281eb559876/private-mvt/generations/2ddce453-6355-46f9-9912-94b4325901f5/16/tiles/2/3/1/units/92771db9-8b2e-4809-9460-26ddfc7dffe5",
+            "unitId": "92771db9-8b2e-4809-9460-26ddfc7dffe5",
+            "mvtId": 377
+          },
+          "limits": [
+            "display_quantization_clipping_may_omit_collapse_or_repair_geometry",
+            "administrative_context_not_property_geometry",
+            "source_accuracy_currentness_unqualified",
+            "post_admission_only_multi_chunk_import_stream_gate_pending"
+          ],
+          "qualification": "Local serving post-admission administrative display only; import-time GF-STREAM, scale, frontend rendering, accuracy and rights remain unqualified.",
+          "sameIntentReplay": true
+        }
       }
     ],
     "evidence": {
@@ -192,6 +231,30 @@
         {
           "file": "preflight-serving-8f612df-final.json",
           "sha256": "298b4f934e903fddc9280bc4df0b8170bf707828a1e4393b979e8f20252fcd4a"
+        },
+        {
+          "file": "upgrade-serving-8a64a83-01.json",
+          "sha256": "5a7604d3052c4ec4141bad99c21f8162acadab2d097f89b6a685cb1335e3896b"
+        },
+        {
+          "file": "launch-serving-8a64a83.json",
+          "sha256": "3d4474e21fe46137df8802f31edef282e81e50e106d03023c1def85205d44619"
+        },
+        {
+          "file": "serving-mvt-8a64a83-01.json",
+          "sha256": "5ab571f8459f599ca6ed06dd89380dcaaf630701ff03d5bc04fb0d9095f899d3"
+        },
+        {
+          "file": "serving-mvt-8a64a83-repeat.json",
+          "sha256": "93b4a2e9df71a91c1786c1f4fd41f0e08da74983293b651e82c8d171670e1d18"
+        },
+        {
+          "file": "preflight-serving-8a64a83-final.json",
+          "sha256": "f7f46726a1615591b2e37f8c5f5cf15ff58185510768a68b115b4b6891653e32"
+        },
+        {
+          "file": "install-serving-mvt-8a64a83.py",
+          "sha256": "7bb74bce885a9d660dbcb7b4314d26f6e726ca9fc9eb33a7043bef4c37ef246b"
         }
       ],
       "additionalGuides": [
