@@ -11,3 +11,4 @@ export * from './exchange';
 export * from './ingestion';
 export * from './ingestion-events';
 export * from './projected-vector';
+export * from './private-mvt';

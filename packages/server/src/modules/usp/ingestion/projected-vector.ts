@@ -74,7 +74,7 @@ export async function projectedObservationBytesTx(client:PoolClient,jobId?:strin
     FROM administrative_unit_observations WHERE ($1::uuid IS NULL OR job_id=$1)`,[jobId??null])).rows[0];
   return Number(row.bytes);
 }
-function observation(row:any,source:any){
+export function observation(row:any,source:any){
   return AdministrativeObservationSchema.parse({id:row.unit_id,kind:'district',namespace:profile.namespace,nativeKey:row.native_key,
     sourceId:source.id,sourceRevision:source.revision,jobId:row.job_id,featureIndex:row.feature_index,locator:row.source_locator,
     name:row.properties.district,code:row.properties.dtcode??null,disposition:row.disposition,reason:row.reason,
