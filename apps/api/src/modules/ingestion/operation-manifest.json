@@ -336,7 +336,7 @@
       "responseSchema": "DocumentReceiptSchema",
       "responseStatus": 201,
       "transportProfile": "multipart",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/document-ingestion-handoff.md"
     },
     {
       "method": "GET",
@@ -349,7 +349,7 @@
       "responseSchema": "DocumentStatusSchema",
       "responseStatus": 200,
       "transportProfile": "private-bounded-read",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/document-ingestion-handoff.md"
     },
     {
       "method": "POST",
@@ -362,7 +362,7 @@
       "responseSchema": "DocumentReceiptSchema",
       "responseStatus": 201,
       "transportProfile": "json",
-      "runtimeEvidence": "pending"
+      "runtimeEvidence": "docs/evidence/usp/document-ingestion-handoff.md"
     }
   ]
 }
