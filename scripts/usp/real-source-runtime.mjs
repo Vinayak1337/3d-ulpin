@@ -1,4 +1,4 @@
-/** RUN-01 guarded Nest foundation runtime. Source smoke remains separately gated. */
+/** RUN-01 guarded Nest runtime; phase 2B startup awaits lead acceptance. */
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
@@ -6,12 +6,12 @@ import { createServer } from 'node:net';
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync, openSync, closeSync, realpathSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertUspIsolation } from './local-isolation.mjs';
+import { assertUspIsolation, assertLocalOperatorProcess, localOperatorProcessProvenance } from './local-isolation.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const base = join(root, '.runtime', 'run01');
-// Foundation/SQL startup is authorized at the accepted integration revision.
-const RUNTIME_ENABLED = true;
+// Enable only after the lead accepts this preparation and authorizes the run.
+const STARTUP_ENABLED = false;
 const ports = [25432, 29000, 29001, 26379, 28000, 3188];
 const allowed = ['HOME', 'PATH', 'USER', 'LOGNAME', 'TMPDIR', 'SHELL', 'LANG'];
 const context = process.platform === 'darwin' ? 'colima-ulpin' : 'default';
@@ -38,7 +38,14 @@ function config(dir) {
   assert.equal(ownership.nonce,env.ULPIN_LOCAL_NONCE);
   assert.equal(ownership.checkout,root);
   assert.match(ownership.baseCommit,/^[a-f0-9]{40}$/);
+  if (ownership.operatorProvenance) assert.deepEqual(ownership.operatorProvenance,assertLocalOperatorProcess(env));
   return {dir:path, env, scope, ownership};
+}
+function pinned(c) {
+  assert(!existsSync(join(root,'.env')),'root .env is present; refuse to select linked configuration');
+  assert.equal(command('git',['rev-parse','HEAD'],{}),c.ownership.baseCommit,'checkout changed since prepare');
+  assert.equal(command('git',['status','--porcelain','--untracked-files=no'],{}),'','runtime checkout has tracked edits');
+  assert.deepEqual(c.ownership.operatorProvenance,assertLocalOperatorProcess(c.env),'new runtime requires recorded process provenance');
 }
 function command(executable, args, env, opts={}) {
   try { return execFileSync(executable, args, {cwd:root, env:{...bare(),...env}, encoding:'utf8', timeout:opts.timeout??300000, stdio:['ignore','pipe','pipe']}).trim(); }
@@ -154,24 +161,23 @@ async function prepare() {
   const nonce=randomBytes(8).toString('hex'), dir=join(base,nonce);
   mkdirSync(join(dir,'models'),{recursive:true,mode:0o700});chmodSync(dir,0o700);
   const project=`ulpin-usptest-${nonce}`, database=`ulpin_usptest_${nonce}`, password=secret(), s3Secret=secret();
+  const operatorProvenance=localOperatorProcessProvenance();
   const env={REPO_DATA:'false',ULPIN_ISOLATION_PROFILE:'local-nest',DOCKER_CONTEXT:context,ULPIN_LOCAL_NONCE:nonce,ULPIN_BASELINE_PROJECT:project,
     POSTGRES_DB:database,POSTGRES_USER:'ulpin_usptest',POSTGRES_PASSWORD:password,POSTGRES_PORT:'25432',DATABASE_URL:`postgresql://ulpin_usptest:${password}@127.0.0.1:25432/${database}`,
     S3_ACCESS_KEY:'ulpin_usptest',S3_SECRET_KEY:s3Secret,S3_BUCKET:project,S3_ENDPOINT:'http://127.0.0.1:29000',S3_REGION:'us-east-1',S3_PORT:'29000',S3_CONSOLE_PORT:'29001',
     REDIS_URL:'redis://127.0.0.1:26379/0',REDIS_PORT:'26379',GEO_URL:'http://127.0.0.1:28000',GEO_PORT:'28000',GEO_SERVICE_TOKEN:secret(),
-    HOST:'127.0.0.1',PORT:'3188',API_PORT:'3188',ULPIN_LOOPBACK_PORTS:'3188',ULPIN_TEST_URL:'http://127.0.0.1:3188/'};
+    HOST:'127.0.0.1',PORT:'3188',API_PORT:'3188',ULPIN_LOOPBACK_PORTS:'3188',ULPIN_TEST_URL:'http://127.0.0.1:3188/',ULPIN_LOCAL_OPERATOR_SUBJECT:operatorProvenance.subject};
   assertUspIsolation(env);
   writeFileSync(runFile(dir),JSON.stringify(env),{flag:'wx',mode:0o600});
   writeFileSync(join(dir,'compose.env'),Object.entries(env).map(([k,v])=>`${k}=${v}`).join('\n')+'\n',{flag:'wx',mode:0o600});
   const tag=`ulpin-geo:run01-${nonce}`;
   writeFileSync(join(dir,'override.json'),JSON.stringify({services:{geo:{image:tag,volumes:[`${join(dir,'models')}:/models:ro`]},worker:{image:tag,volumes:[`${join(dir,'models')}:/models:ro`]}}}),{flag:'wx',mode:0o600});
-  writeFileSync(join(dir,'ownership.json'),JSON.stringify({project,nonce,checkout:root,createdAt:new Date().toISOString(),baseCommit:command('git',['rev-parse','HEAD'],{})},null,2)+'\n',{flag:'wx',mode:0o600});
+  writeFileSync(join(dir,'ownership.json'),JSON.stringify({project,nonce,checkout:root,createdAt:new Date().toISOString(),baseCommit:command('git',['rev-parse','HEAD'],{}),operatorProvenance},null,2)+'\n',{flag:'wx',mode:0o600});
   console.log(dir);
 }
 async function start(dir, resume=false) {
   const c=config(dir);
-  assert(!existsSync(join(root,'.env')),'root .env is present; refuse to select linked configuration');
-  assert.equal(command('git',['rev-parse','HEAD'],{}),c.ownership.baseCommit,'checkout changed since prepare');
-  assert.equal(command('git',['status','--porcelain','--untracked-files=no'],{}),'','runtime checkout has tracked edits');
+  pinned(c);
   const apiPackage=JSON.parse(readFileSync(join(root,'apps/api/package.json'),'utf8'));
   assert.equal(apiPackage.name,'@ulpin/api','independent Nest package is required');
   assert(apiPackage.scripts?.start,'Nest package start script is required');
@@ -209,7 +215,7 @@ function status(dir) {
 }
 async function migrateRepeat(dir) {
   const c=config(dir);
-  assert.equal(command('git',['rev-parse','HEAD'],{}),c.ownership.baseCommit,'checkout changed since prepare');
+  pinned(c);
   await waitHealth(c,20);
   command('pnpm',['db:migrate'],c.env,{timeout:180000});
   const health=await waitHealth(c,20);
@@ -217,11 +223,12 @@ async function migrateRepeat(dir) {
 }
 async function recovery(dir) {
   const c=config(dir), url=c.env.ULPIN_TEST_URL+'api/v1/health';
+  pinned(c);
   assert(!existsSync(join(c.dir,'recovery.json')),'recovery receipt already exists for this run');
   const before=await waitHealth(c,20);
   let degraded;
-  compose(c,['--profile','app','stop','geo'],{timeout:30000});
   try {
+    compose(c,['--profile','app','stop','geo'],{timeout:30000});
     await new Promise(r=>setTimeout(r,1000));
     const response=await fetch(url,{signal:AbortSignal.timeout(5000)});
     degraded=await response.json();
@@ -234,6 +241,33 @@ async function recovery(dir) {
   const result={before:before.services,degraded:degraded.services,after:after.services};
   writeFileSync(join(c.dir,'recovery.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});
   console.log(JSON.stringify(result));
+}
+async function processorStop(dir) {
+  const c=config(dir);
+  pinned(c);
+  const before=await waitHealth(c,20);
+  try {
+    compose(c,['--profile','app','stop','geo'],{timeout:30000});
+    const response=await fetch(c.env.ULPIN_TEST_URL+'api/v1/health',{signal:AbortSignal.timeout(5000)});
+    assert.equal(response.status,200);
+    const degraded=await response.json();
+    assert.equal(degraded.ok,false,'stopped processor must make health unready');
+    assert.equal(degraded.services.processor,false);
+    console.log(JSON.stringify({project:c.scope.project,before:before.services,degraded:degraded.services,processor:'stopped'}));
+  } catch (error) {
+    // A failed verification must not strand a stopped service.
+    compose(c,['--profile','app','start','geo'],{timeout:45000});
+    await waitHealth(c,60);
+    throw error;
+  }
+}
+async function processorStart(dir) {
+  const c=config(dir);
+  pinned(c);
+  assert(processAlive(c,'api') && processAlive(c,'dispatcher'),'owned application processes are required');
+  compose(c,['--profile','app','start','geo'],{timeout:45000});
+  const after=await waitHealth(c,60);
+  console.log(JSON.stringify({project:c.scope.project,after:after.services,processor:'started'}));
 }
 async function stop(dir) {
   const c=config(dir);
@@ -273,17 +307,19 @@ async function stop(dir) {
 }
 const [action,dir]=process.argv.slice(2);
 try {
-  if (!RUNTIME_ENABLED) throw new Error('RUN-01 Nest runtime actions are gated pending integrated foundation and intake review; no service action was taken.');
+  if (!STARTUP_ENABLED && !['stop','status'].includes(action)) throw new Error('RUN-01 phase 2B runtime actions are gated pending lead acceptance and run authorization; no service action was taken.');
   if(action==='prepare'&&!dir)await prepare();
   else if(action==='start'&&dir)await start(dir);
   else if(action==='resume'&&dir)await start(dir,true);
   else if(action==='status'&&dir)status(dir);
   else if(action==='migrate-repeat'&&dir)await migrateRepeat(dir);
   else if(action==='recovery'&&dir)await recovery(dir);
+  else if(action==='processor-stop'&&dir)await processorStop(dir);
+  else if(action==='processor-start'&&dir)await processorStart(dir);
   else if(action==='stop'&&dir)await stop(dir);
-  else throw new Error('Usage: real-source-runtime.mjs prepare | start|resume|status|migrate-repeat|recovery|stop <private-run-directory>');
+  else throw new Error('Usage: real-source-runtime.mjs prepare | start|resume|status|migrate-repeat|recovery|processor-stop|processor-start|stop <private-run-directory>');
 } catch(error) {
-  try {const env=RUNTIME_ENABLED&&dir?JSON.parse(readFileSync(runFile(dir),'utf8')):{};
+  try {const env=dir?JSON.parse(readFileSync(runFile(dir),'utf8')):{};
     const message=error instanceof AggregateError ? `${error.message}: ${error.errors.map(item=>item.message).join('; ')}` : error.message;
     console.error(redacted(message,env));}
   catch {console.error('RUN-01 failed; inspect the private run directory. Credentials withheld.');}
