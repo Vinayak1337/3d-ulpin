@@ -101,7 +101,7 @@ function AreaSwitcher() {
   const match = useMatch('/studio/areas/:areaId');
   const navigate = useNavigate();
   const currentId = match?.params.areaId ?? readLastArea();
-  const current = areas.data?.find((area) => area.id === currentId);
+  const current = areas.data?.find((area) => area.id === currentId) ?? areas.data?.[0];
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -142,7 +142,7 @@ function AreaSwitcher() {
       {open && areas.data ? (
         <ul className={styles.areaMenu} role="listbox" aria-label="Areas">
           {areas.data.map((area) => (
-            <li key={area.id} role="option" aria-selected={area.id === currentId}>
+            <li key={area.id} role="option" aria-selected={area.id === current?.id}>
               <button
                 type="button"
                 onClick={() => {

@@ -10,7 +10,7 @@ import { presetFor } from './camera';
 import { FLAT_THICKNESS_M, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
-  ScenePalette, SceneState, SceneStats, SpaceFill, StoreyInput, Trench,
+  ScenePalette, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
 } from './types';
 
 export interface SceneEngineOptions {
@@ -71,6 +71,8 @@ export class SceneEngine {
   private readonly utilities = new Group();
   private readonly measureGroup = new Group();
   private readonly sectionGroup = new Group();
+  private readonly deviationGroup = new Group();
+  private deviationKey = '';
   private readonly tilesets = new Set<TilesRenderer>();
   private readonly raycaster = new Raycaster();
   private readonly pointer = new Vector2();
@@ -147,7 +149,7 @@ export class SceneEngine {
     this.halo.renderOrder = -1;
     this.halo.visible = false;
     this.underground.add(this.utilities, this.trenchGroup);
-    this.scene.add(this.ground, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.halo);
+    this.scene.add(this.ground, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.deviationGroup, this.halo);
 
     const canvas = this.renderer.domElement;
     canvas.addEventListener('pointerdown', this.onPointerDown);
@@ -299,8 +301,12 @@ export class SceneEngine {
     if (box) point = new Vector3((box.min.x + box.max.x) / 2, box.max.y, (box.min.z + box.max.z) / 2);
     else point = this.anchors.get(id)?.clone();
     if (!point) return null;
+    const { clientWidth: fullW, clientHeight: h } = this.container;
+    const split = this.state.mode === 'deviation';
+    const w = split ? Math.floor(fullW / 2) : fullW;
+    if (split) { this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
     point.project(this.camera);
-    const { clientWidth: w, clientHeight: h } = this.container;
+    if (split) { this.camera.aspect = fullW / h; this.camera.updateProjectionMatrix(); }
     const visible = point.z > -1 && point.z < 1 && Math.abs(point.x) < 1.1 && Math.abs(point.y) < 1.1;
     return { x: ((point.x + 1) / 2) * w, y: ((1 - point.y) / 2) * h, visible };
   }
@@ -516,7 +522,7 @@ export class SceneEngine {
         if (!selected) {
           if (mode === 'underground') { material = m.faint; edge = m.ghostEdge; visible = false; }
           else if (selectedSomething) { material = m.bldgContext; edge = m.edgeContext; }
-        } else if (mode === 'area' || mode === 'building') {
+        } else if (mode === 'area' || mode === 'building' || mode === 'deviation') {
           material = m.selected; edge = m.haloEdge;
         } else if (mode === 'level' && exploring) {
           const order = levelOrder.get(entry.levelId!) ?? 0;
@@ -558,6 +564,7 @@ export class SceneEngine {
     this.buildSection(mode === 'underground' ? buildingId : null);
     this.buildFinding(mode === 'findings' ? finding : null);
     this.findingGroup.visible = mode === 'findings';
+    this.buildDeviation(mode === 'deviation' ? this.state.deviation : null);
 
     // Findings use Volumes light: flat, even, no shadows.
     const volumes = mode === 'findings';
@@ -567,6 +574,32 @@ export class SceneEngine {
 
     this.applySection();
     this.requestRender();
+  }
+
+  private buildDeviation(deviation: DeviationInput | null | undefined) {
+    const key = deviation ? JSON.stringify(deviation) : '';
+    if (key === this.deviationKey) return;
+    this.deviationKey = key;
+    disposeGroup(this.deviationGroup);
+    this.anchors.delete('deviation');
+    if (!deviation || !deviation.polygons.length) return;
+    const geometry = prismGeometry(deviation.polygons, deviation.lowerM, deviation.upperM - deviation.lowerM);
+    applyPlanarUV(geometry);
+    this.deviationGroup.add(new Mesh(geometry, this.m.critical), new LineSegments(new EdgesGeometry(geometry, 30), this.m.inkEdge));
+    const b = geometry.boundingBox!;
+    this.anchors.set('deviation', new Vector3((b.min.x + b.max.x) / 2, b.max.y + 0.5, (b.min.z + b.max.z) / 2));
+  }
+
+  /** Screen position of an anchor on the right half of the split view (deviation mode). */
+  projectRight(id: string): { x: number; y: number; visible: boolean } | null {
+    const point = this.anchors.get(id)?.clone();
+    if (!point) return null;
+    const { clientWidth: w, clientHeight: h } = this.container;
+    const half = Math.floor(w / 2);
+    this.camera.aspect = (w - half) / h; this.camera.updateProjectionMatrix();
+    point.project(this.camera);
+    this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
+    return { x: half + ((point.x + 1) / 2) * (w - half), y: ((1 - point.y) / 2) * h, visible: point.z < 1 && Math.abs(point.x) < 1.1 };
   }
 
   private setEntry(entry: Entry, material: Material, edge: Material, visible: boolean, shadow: boolean) {
@@ -772,7 +805,7 @@ export class SceneEngine {
     } else {
       const b = buildingId ? this.buildingBounds.get(buildingId) : undefined;
       if (b) box.copy(b);
-      focusY = mode === 'underground' ? -6 : box.isEmpty() ? 0 : box.min.y + (box.max.y - box.min.y) / 3;
+      focusY = mode === 'underground' ? -6 : box.isEmpty() ? 0 : box.min.y + (box.max.y - box.min.y) / (mode === 'deviation' ? 2 : 3);
     }
     if (box.isEmpty()) return null;
     const bounds: Bounds2D = { minX: box.min.x, maxX: box.max.x, minY: -box.max.z, maxY: -box.min.z };
@@ -828,11 +861,30 @@ export class SceneEngine {
     if (this.flight) animating = this.stepFlight(performance.now());
     animating = this.stepGrow(now) || animating;
     for (const tiles of this.tilesets) tiles.update();
-    this.renderer.render(this.scene, this.camera);
+    if (this.state.mode === 'deviation') this.renderSplit();
+    else this.renderer.render(this.scene, this.camera);
     this.recordFrameTime(performance.now() - started);
     this.options.onView?.();
     if (animating || [...this.tilesets].some((tiles) => tiles.loadProgress < 1)) this.requestRender();
   };
+
+  /** Two views of one camera: sanctioned (left, without the observed-only volume) and observed (right). */
+  private renderSplit() {
+    const r = this.renderer;
+    const { clientWidth: w, clientHeight: h } = this.container;
+    const half = Math.floor(w / 2);
+    this.camera.aspect = half / h;
+    this.camera.updateProjectionMatrix();
+    r.setScissorTest(true);
+    this.deviationGroup.visible = false;
+    r.setViewport(0, 0, half, h); r.setScissor(0, 0, half, h); r.render(this.scene, this.camera);
+    this.deviationGroup.visible = true;
+    r.setViewport(half, 0, w - half, h); r.setScissor(half, 0, w - half, h); r.render(this.scene, this.camera);
+    r.setScissorTest(false);
+    r.setViewport(0, 0, w, h);
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+  }
 
   private stepGrow(now: number): boolean {
     let active = false;

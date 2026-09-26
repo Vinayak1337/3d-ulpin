@@ -12,6 +12,7 @@ const DIRECTIONS: Record<SceneMode, [number, number, number]> = {
   level: [24, 31, 36], // closer and steeper, at the level's height
   findings: [-22, 8.6, 26], // low, close to the finding
   underground: [48, 28, -52], // from the street side, looking at the section
+  deviation: [60, 31, 78],
 };
 
 /** How much of the shown bounds' radius the view frames, per mode. */
@@ -21,6 +22,7 @@ const FIT: Record<SceneMode, { scale: number; min: number }> = {
   level: { scale: 1.02, min: 8 },
   findings: { scale: 1.1, min: 8 },
   underground: { scale: 2.4, min: 40 },
+  deviation: { scale: 2.4, min: 20 },
 };
 
 /**

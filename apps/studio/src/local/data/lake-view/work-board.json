@@ -152,8 +152,8 @@
  "counts": [
   {
    "key": "imports_running",
-   "value": 2,
-   "label": "imports running",
+   "value": 1,
+   "label": "import needs input",
    "target": {
     "kind": "add-files"
    }
@@ -172,7 +172,7 @@
   {
    "key": "units_ready",
    "value": 6,
-   "label": "units ready",
+   "label": "units ready for codes",
    "target": {
     "kind": "level",
     "areaId": "7ce64939-0cc7-5a7b-886c-2c1be0575cfe",

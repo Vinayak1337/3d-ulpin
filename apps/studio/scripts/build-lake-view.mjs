@@ -34,6 +34,7 @@ const SOURCES = [
   { key: 'plan', name: 'plan_F7.pdf', profile: 'sanctioned-plan-pdf', createdAt: '2026-09-24T11:04:00.000+05:30', kind: 'document', title: 'Sanctioned plan' },
   { key: 'deed', name: 'sale_deed_704.pdf', profile: 'registered-deed-pdf', createdAt: '2026-09-24T11:04:30.000+05:30', kind: 'document', title: 'Sale deed' },
   { key: 'declaration', name: 'deed_of_declaration.pdf', profile: 'registered-deed-pdf', createdAt: '2026-09-24T11:05:00.000+05:30', kind: 'document', title: 'Deed of declaration' },
+  { key: 'drone', name: 'drone_survey_2026-09-12.laz', profile: 'uav-lidar-survey', createdAt: '2026-09-24T11:06:00.000+05:30', kind: 'feature', title: 'Drone survey' },
   { key: 'survey', name: 'utility_survey_2026.csv', profile: 'utility-survey-csv', createdAt: '2026-09-24T11:05:30.000+05:30', kind: 'table' },
 ];
 for (const s of SOURCES) { s.id = id(`source:${s.key}`); s.revisionId = id(`source-revision:${s.key}`); }
@@ -375,8 +376,17 @@ const ledger = {
     { kind: 'evidence', title: 'r2 Evidence applied', actor: 'R. Iyer', at: '2026-09-24T13:52:00+05:30', hash: '91be27d4c6a8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d8f0a2c4e6b8d0f2a4c604d7', previousHash: '2c80e6a4b2d0f8e6c4a2b0d8f6e4c2a0b8d6f4e2c0a8b6d4f2e0c8a6b4d29a13' },
     { kind: 'draft', title: 'r1 Draft from 5 sources', actor: 'Import agent', at: '2026-09-24T11:05:00+05:30', hash: '2c80e6a4b2d0f8e6c4a2b0d8f6e4c2a0b8d6f4e2c0a8b6d4f2e0c8a6b4d29a13', previousHash: null },
   ],
+  deviation: {
+    state: 'needs_review',
+    sanctioned: { label: 'Sanctioned · G + 8', storeys: 9, heightM: 27.0, sourceId: SRC.plan.id, source: 'Sanctioned plan', locator: 'r2' },
+    observed: { label: 'Observed · drone survey', storeys: 10, heightM: 30.0, rooftopAreaM2: 118, surveyedAt: '2026-09-12', sourceId: SRC.drone.id, source: 'Drone survey', locator: '12 Sep 2026 · checkpoint RMSE 0.08 m' },
+    setback: 'not_comparable',
+    exclusions: 'Stair cabin and water tank excluded by rule.',
+    volume: { geometry: poly(rect(-W + 0.3, -W + 12.1, -5, 5)), lowerM: 239.8, upperM: 242.8 },
+    note: 'Observed from drone survey; not a legal determination.',
+  },
   sources: SOURCES.map((s) => ({ sourceId: s.id, kind: s.kind, name: s.title ?? s.name, file: s.name, summary: {
-    parcels: `${1 + CONTEXT.length} features`, inventory: `${units.length} rows`, levels: `${LEVELS.length - 1} rows`, plan: 'p.3 · r2', deed: 'cl.2', declaration: 'schedule B', survey: `${UTILITIES.length} features`,
+    parcels: `${1 + CONTEXT.length} features`, inventory: `${units.length} rows`, levels: `${LEVELS.length - 1} rows`, plan: 'p.3 · r2', deed: 'cl.2', declaration: 'schedule B', survey: `${UTILITIES.length} features`, drone: '12 Sep 2026',
   }[s.key] })),
 };
 
@@ -416,9 +426,9 @@ const board = {
     readiness: { met: w.readiness[0], unknown: w.readiness[1], of: 6 },
   })),
   counts: [
-    { key: 'imports_running', value: 2, label: 'imports running', target: { kind: 'add-files' } },
+    { key: 'imports_running', value: WORK.filter((w) => w.kind === 'import').length, label: WORK.filter((w) => w.kind === 'import').length === 1 ? 'import needs input' : 'imports need input', target: { kind: 'add-files' } },
     { key: 'findings_open', value: findings.length, label: 'findings need review', target: { kind: 'finding', areaId: AREA_ID, buildingId: RESIDENCE_ID, findingId: findings[0].id } },
-    { key: 'units_ready', value: 6, label: 'units ready', target: { kind: 'level', areaId: AREA_ID, buildingId: RESIDENCE_ID, levelId: levelId('F7') } },
+    { key: 'units_ready', value: units.filter((u) => u.level === 'F7').length, label: 'units ready for codes', target: { kind: 'level', areaId: AREA_ID, buildingId: RESIDENCE_ID, levelId: levelId('F7') } },
   ],
 };
 

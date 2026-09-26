@@ -1339,6 +1339,61 @@
    "previousHash": null
   }
  ],
+ "deviation": {
+  "state": "needs_review",
+  "sanctioned": {
+   "label": "Sanctioned · G + 8",
+   "storeys": 9,
+   "heightM": 27,
+   "sourceId": "6baaa3cd-4919-5d57-9885-f21c909448b6",
+   "source": "Sanctioned plan",
+   "locator": "r2"
+  },
+  "observed": {
+   "label": "Observed · drone survey",
+   "storeys": 10,
+   "heightM": 30,
+   "rooftopAreaM2": 118,
+   "surveyedAt": "2026-09-12",
+   "sourceId": "248e902d-7370-5b6e-8dfb-a17e1c5f8d0d",
+   "source": "Drone survey",
+   "locator": "12 Sep 2026 · checkpoint RMSE 0.08 m"
+  },
+  "setback": "not_comparable",
+  "exclusions": "Stair cabin and water tank excluded by rule.",
+  "volume": {
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -14.7,
+       -5
+      ],
+      [
+       -2.9,
+       -5
+      ],
+      [
+       -2.9,
+       5
+      ],
+      [
+       -14.7,
+       5
+      ],
+      [
+       -14.7,
+       -5
+      ]
+     ]
+    ]
+   },
+   "lowerM": 239.8,
+   "upperM": 242.8
+  },
+  "note": "Observed from drone survey; not a legal determination."
+ },
  "sources": [
   {
    "sourceId": "3aaf3b46-4f24-523b-96ef-bae1b28bd25e",
@@ -1381,6 +1436,13 @@
    "name": "Deed of declaration",
    "file": "deed_of_declaration.pdf",
    "summary": "schedule B"
+  },
+  {
+   "sourceId": "248e902d-7370-5b6e-8dfb-a17e1c5f8d0d",
+   "kind": "feature",
+   "name": "Drone survey",
+   "file": "drone_survey_2026-09-12.laz",
+   "summary": "12 Sep 2026"
   },
   {
    "sourceId": "be23ff05-6446-5473-8346-6231e84b030c",

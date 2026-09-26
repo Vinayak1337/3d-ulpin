@@ -89,7 +89,14 @@ export interface FindingInput {
   participants: string[];
 }
 
-export type SceneMode = 'area' | 'building' | 'level' | 'findings' | 'underground';
+/** Deviation check: the observed-only volume (drawn on the right half of a split view only). */
+export interface DeviationInput {
+  polygons: MultiPolygon;
+  lowerM: number;
+  upperM: number;
+}
+
+export type SceneMode = 'area' | 'building' | 'level' | 'findings' | 'underground' | 'deviation';
 export type SceneTool = 'select' | 'measure' | 'section';
 
 export interface SceneState {
@@ -102,6 +109,8 @@ export interface SceneState {
   sectionM?: number | null;
   /** Findings mode: the open finding's volume and participants. */
   finding?: FindingInput | null;
+  /** Deviation mode: sanctioned on the left half, observed (with this volume) on the right. */
+  deviation?: DeviationInput | null;
 }
 
 /** What a click hit. */
