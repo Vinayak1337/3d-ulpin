@@ -35,6 +35,7 @@ Use ordinary GPT-6 Sol tasks, max reasoning initially, each in its own worktree 
 | NEST-11 register | Registry/resolver/draft/review/commit/export plus officer associations, groups, preparation, investigations and work queues. Split demo-only rights branches without discarding the real importer. | After NEST-00. Own `apps/api/src/modules/register/**` and assigned registry/officer server modules. 40 operations. |
 | NEST-12 evidence | USP scopes, snapshots, original evidence, proposals, immutable identity, exchange, packet/create/download and exact-revision/privacy boundaries. | After NEST-00. Own `apps/api/src/modules/evidence/**` and assigned USP service modules. 18 operations. Shared principal/error/DB seams remain foundation-owned until explicit handoff. |
 | NEST-13 spatial/AI | Spatial reads/scenes/external assets, datasets/search/originals, dataset ML, spatial ML and officer AI. Preserve private provider/job authority and replace/retire synthetic-only operational paths. | After NEST-00. Own `apps/api/src/modules/spatial/**`, `apps/api/src/modules/ai/**` and assigned spatial/dataset/AI services. 28 operations. |
+| NEST-02 runtime preparation | Repair the existing paused real-source runner for Nest, strict owned-service guards, correct shutdown and honest source-flow evidence. Static/preflight phase only before integrated API; same Sol task later runs bounded integration. | Parallel preparation owns only `scripts/usp/real-source-runtime.mjs`, `real-source-smoke.mjs`, `local-isolation.mjs` and its concise run guide. No service startup until lead hands off accepted code. |
 | NEST-20 integration | Register reviewed modules, remove backend dependency on web paths, synchronize SQL wiring/build/container/runtime commands, bounded official-source live API qualification and meaningful recovery/privacy checks. | After relevant batches; lead coordinates one integration owner and an independent bounded reviewer when useful. No fixture seeding or live provider calls. |
 | NEST-21 handoff | Lead updates OpenAPI schemas/operations/statuses, source pins/checker, Swagger UI/readable docs, linked dataset catalogue, actual API startup instructions and remaining qualification gaps. Merge all accepted work, then delete completed worktrees/branches after reconciliation. | Lead, after implementation stabilizes. Every baseline operation explicitly retained/replaced/retired; new ones documented. |
 
@@ -66,6 +67,7 @@ Resume the dependency-ready backend plan from actual code/evidence, not its old 
 | --- | --- | --- |
 | NEST-00 | running | Sol/max task `01a0db54-338c-7950-8101-46012dd75688`, worktree `45f5`, base `39a70488`. |
 | NEST-01 | running | Sol/max task `01a0db54-6463-72c3-85e2-67b10711c080`, worktree `a1f7`, base `39a70488`. Phase 1 extracts SQL; phase 2 wires after foundation. |
+| NEST-02 | running, static phase | Independent runtime worker; actual service verification waits for integrated API. |
 | NEST-10–13 | waiting for foundation | Assign exact moved paths from NEST-00 map. |
 | NEST-20–21 | pending | Integration/runtime checks, lead docs and cleanup. |
 
