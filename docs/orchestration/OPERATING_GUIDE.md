@@ -8,6 +8,8 @@ The lead reads the relevant plan/task, identifies the actual work, owns its resu
 
 Do not repeatedly rewrite plans. Improvise inside the selected task when necessary to make it correct and practical. Record a material interpretation briefly in the assignment; do not silently drop a product requirement or change an acceptance gate. Ask only for a material unresolved product decision or missing authorization.
 
+Current execution: [NestJS migration and delivery ledger](NESTJS_MIGRATION.md). The user explicitly authorizes multiple independent Sol implementation tasks in separate worktrees for this migration, followed by review/integration and lead-owned OpenAPI/data handoff.
+
 ## Current planning boundary
 
 All active plans cover backend services, processing, sources, permissions, recovery and API contracts for the user-owned UI. The user now authorizes bounded backend implementation/data tasks after normalization. The lead hardens plans directly; workers execute plan tasks. Do not change frontend technology, screens/components/styles or mobile/theme work. Public-portal work remains full product. Follow the normalized backend decisions. Keep supplied design references and the current UI untouched. Preserve exact identity/revision/selection semantics, compatible saved URLs and unique inspection capabilities at API boundaries. Backend evidence cannot qualify untested UI or a complete product release.
@@ -43,7 +45,7 @@ Astra, Sol and Luna are the same model family. Their reviews are engineering che
 
 ## Pipeline and ownership
 
-Keep one implementation lane, one optional manual-test/research lane and one optional bounded review lane. Do not launch all three without useful independent work. Only the lead dispatches ordinary tasks; delegated owners do not create further tasks or subagents.
+Normally keep one implementation lane plus only useful verification/research lanes. For the authorized NestJS migration, run multiple independent Sol implementation lanes with exact module ownership after the shared foundation is accepted. Do not launch workers before dependencies are ready. Only the lead dispatches ordinary tasks; delegated owners do not create further tasks or subagents.
 
 An owner finishes -> returns an exact diff or commit and concise evidence -> lead reviews the outcome -> optional manual tester checks a pinned revision. The lead may be that owner. While review/testing runs, scope the next dependency-ready, non-conflicting feature. Use separate worker worktrees from a pinned accepted staging commit; never switch another worker’s checkout or edit its owned files. Do not build dependent work on an unaccepted change merely to keep a worker busy.
 

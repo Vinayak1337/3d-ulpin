@@ -20,6 +20,8 @@ The safety and correctness requirements remain: unsupported must not read as zer
 
 ## Backend-only planning and user-owned UI
 
+The later 26 September request authorizes modular NestJS backend migration, parallel Sol API batches, readable SQL, and final lead-owned API/dataset documentation. The [migration ledger](../orchestration/NESTJS_MIGRATION.md) controls the current sequence; older requirements to retain Next as the backend are superseded. Frontend implementation remains user-owned.
+
 The user's 26 September direction makes **all active plans backend-focused only**. The later user direction authorizes assigned backend plan tasks in separate model worktrees after lead normalization; see [the normalized decisions](backend-streaming-plan.md). The lead may execute an assigned bounded task directly. Delegation uses ordinary reusable Codex tasks, not subagents, under the [operating guide](../orchestration/OPERATING_GUIDE.md).
 
 Plan services, schemas, routes, jobs, conversion, evidence, storage, permissions, recovery and their measurable backend acceptance. Preserve API contracts required by the user's ongoing UI, compatible saved URLs, exact selection/revision semantics and existing document/GIS/raster/point-cloud inspection capabilities. A view model is a projection of authorized canonical records, never a second store, invented sample dataset or instruction to build a screen.

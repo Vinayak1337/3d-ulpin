@@ -1,0 +1,1201 @@
+{
+  "schemaVersion": "ulpin-nest-operation-ledger/1",
+  "baseline": "919a839c36b257d991e822d98470a2fb6d5df4da",
+  "counts": {
+    "NEST-00": 3,
+    "NEST-10": 43,
+    "NEST-11": 40,
+    "NEST-12": 18,
+    "NEST-13": 28
+  },
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/api",
+      "operationId": "GET_api",
+      "source": "apps/web/app/api/route.ts",
+      "batch": "NEST-00",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspace-capabilities",
+      "operationId": "GET_api_v1_workspace_capabilities",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-00",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health",
+      "operationId": "GET_api_v1_health",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-00",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/demo-assets/real-nyc/{asset}",
+      "operationId": "GET_api_v1_demo_assets_real_nyc_asset",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/demo-files/{caseId}/{filename}",
+      "operationId": "GET_api_v1_demo_files_caseId_filename",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/sources/{sourceId}/file",
+      "operationId": "GET_api_v1_sources_sourceId_file",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/jobs/{jobId}/retry",
+      "operationId": "POST_api_v1_jobs_jobId_retry",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/cases",
+      "operationId": "GET_api_v1_cases",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases",
+      "operationId": "POST_api_v1_cases",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/cases/{caseId}",
+      "operationId": "GET_api_v1_cases_caseId",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{caseId}/sources",
+      "operationId": "POST_api_v1_cases_caseId_sources",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{caseId}/demo-inputs",
+      "operationId": "POST_api_v1_cases_caseId_demo_inputs",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{caseId}/prepare",
+      "operationId": "POST_api_v1_cases_caseId_prepare",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{caseId}/apply-levels",
+      "operationId": "POST_api_v1_cases_caseId_apply_levels",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{caseId}/build",
+      "operationId": "POST_api_v1_cases_caseId_build",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{caseId}/units",
+      "operationId": "POST_api_v1_cases_caseId_units",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/cases/{caseId}/units/{unitId}",
+      "operationId": "PATCH_api_v1_cases_caseId_units_unitId",
+      "source": "apps/web/app/api/v1/[...path]/route.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/source-cases",
+      "operationId": "POST_api_v1_source_cases",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/cases/{caseId}/reference-documents",
+      "operationId": "POST_api_v1_cases_caseId_reference_documents",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/source-workspaces",
+      "operationId": "GET_api_v1_source_workspaces",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/source-workspaces",
+      "operationId": "POST_api_v1_source_workspaces",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/source-catalog",
+      "operationId": "GET_api_v1_source_catalog",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/areas",
+      "operationId": "GET_api_v1_areas",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/areas/{areaId}/context",
+      "operationId": "GET_api_v1_areas_areaId_context",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/areas/{areaId}/scenario",
+      "operationId": "POST_api_v1_areas_areaId_scenario",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resolve",
+      "operationId": "GET_api_v1_resolve",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/external-identifiers",
+      "operationId": "POST_api_v1_external_identifiers",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/acquisitions/probe",
+      "operationId": "POST_api_v1_acquisitions_probe",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/acquisitions",
+      "operationId": "POST_api_v1_acquisitions",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/acquisitions/{acquisitionId}",
+      "operationId": "GET_api_v1_acquisitions_acquisitionId",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/inspect",
+      "operationId": "POST_api_v1_import_packages_inspect",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages",
+      "operationId": "POST_api_v1_import_packages",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}",
+      "operationId": "GET_api_v1_import_packages_packageId",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}/questions",
+      "operationId": "GET_api_v1_import_packages_packageId_questions",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/correction",
+      "operationId": "POST_api_v1_import_packages_packageId_correction",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/answers",
+      "operationId": "POST_api_v1_import_packages_packageId_answers",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/review",
+      "operationId": "POST_api_v1_import_packages_packageId_review",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/prepare",
+      "operationId": "POST_api_v1_import_packages_packageId_prepare",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/rebase",
+      "operationId": "POST_api_v1_import_packages_packageId_rebase",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/commit",
+      "operationId": "POST_api_v1_import_packages_packageId_commit",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/copy-case-documents",
+      "operationId": "POST_api_v1_import_packages_packageId_copy_case_documents",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/documents",
+      "operationId": "POST_api_v1_import_packages_packageId_documents",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/source-documents",
+      "operationId": "POST_api_v1_import_packages_packageId_source_documents",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/facts",
+      "operationId": "POST_api_v1_import_packages_packageId_facts",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/area-checks",
+      "operationId": "POST_api_v1_area_checks",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/area-checks/{checkId}",
+      "operationId": "GET_api_v1_area_checks_checkId",
+      "source": "apps/web/lib/server/area-routes.ts",
+      "batch": "NEST-10",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/work-queue",
+      "operationId": "GET_api_v1_work_queue",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/physical-features/{featureId}/revisions",
+      "operationId": "GET_api_v1_physical_features_featureId_revisions",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/areas/{areaId}/register",
+      "operationId": "GET_api_v1_areas_areaId_register",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/property-directory",
+      "operationId": "GET_api_v1_property_directory",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspace-directory",
+      "operationId": "GET_api_v1_workspace_directory",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/buildings/{buildingId}/dossier",
+      "operationId": "GET_api_v1_buildings_buildingId_dossier",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/buildings/{buildingId}/register",
+      "operationId": "GET_api_v1_buildings_buildingId_register",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/buildings/{buildingId}/preparation-cases",
+      "operationId": "POST_api_v1_buildings_buildingId_preparation_cases",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/buildings/{buildingId}/detail-review",
+      "operationId": "POST_api_v1_buildings_buildingId_detail_review",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/property-associations",
+      "operationId": "POST_api_v1_property_associations",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/block-groups",
+      "operationId": "POST_api_v1_block_groups",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}/continuation",
+      "operationId": "GET_api_v1_import_packages_packageId_continuation",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}/requirements",
+      "operationId": "GET_api_v1_import_packages_packageId_requirements",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/preparation-facts",
+      "operationId": "POST_api_v1_import_packages_packageId_preparation_facts",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/resolve-fact",
+      "operationId": "POST_api_v1_import_packages_packageId_resolve_fact",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/placement",
+      "operationId": "POST_api_v1_import_packages_packageId_placement",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/prepare-details",
+      "operationId": "POST_api_v1_import_packages_packageId_prepare_details",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/investigations",
+      "operationId": "POST_api_v1_investigations",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/investigations/{investigationId}",
+      "operationId": "GET_api_v1_investigations_investigationId",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/investigations/{investigationId}",
+      "operationId": "PATCH_api_v1_investigations_investigationId",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/investigations/{investigationId}/requests",
+      "operationId": "POST_api_v1_investigations_investigationId_requests",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/investigations/{investigationId}/requests/{requestId}/answer",
+      "operationId": "POST_api_v1_investigations_investigationId_requests_requestId_answer",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/investigations/{investigationId}/export",
+      "operationId": "GET_api_v1_investigations_investigationId_export",
+      "source": "apps/web/lib/server/officer-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ai/status",
+      "operationId": "GET_api_v1_ai_status",
+      "source": "apps/web/lib/server/officer-ai.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions",
+      "operationId": "GET_api_v1_import_packages_packageId_ai_extractions",
+      "source": "apps/web/lib/server/officer-ai.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions",
+      "operationId": "POST_api_v1_import_packages_packageId_ai_extractions",
+      "source": "apps/web/lib/server/officer-ai.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions/{runId}",
+      "operationId": "GET_api_v1_import_packages_packageId_ai_extractions_runId",
+      "source": "apps/web/lib/server/officer-ai.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions/{runId}/derivatives/{asset}",
+      "operationId": "GET_api_v1_import_packages_packageId_ai_extractions_runId_derivatives_asset",
+      "source": "apps/web/lib/server/officer-ai.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/import-packages/{packageId}/ai-extractions/{runId}/apply",
+      "operationId": "POST_api_v1_import_packages_packageId_ai_extractions_runId_apply",
+      "source": "apps/web/lib/server/officer-ai.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/registry-imports",
+      "operationId": "POST_api_v1_registry_imports",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/sites",
+      "operationId": "GET_api_v1_sites",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/sites",
+      "operationId": "POST_api_v1_sites",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/sites/{siteId}",
+      "operationId": "GET_api_v1_sites_siteId",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/sites/{siteId}/import-options",
+      "operationId": "GET_api_v1_sites_siteId_import_options",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/sites/{siteId}/workspace",
+      "operationId": "POST_api_v1_sites_siteId_workspace",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/sites/{siteId}/query",
+      "operationId": "POST_api_v1_sites_siteId_query",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/sites/{siteId}/drafts",
+      "operationId": "POST_api_v1_sites_siteId_drafts",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/sites/{siteId}/import",
+      "operationId": "POST_api_v1_sites_siteId_import",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/resolve/{identifier}",
+      "operationId": "GET_api_v1_resolve_identifier",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/registry",
+      "operationId": "GET_api_v1_registry",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/registry/{identifier}",
+      "operationId": "GET_api_v1_registry_identifier",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/registry/{identifier}/export",
+      "operationId": "GET_api_v1_registry_identifier_export",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/registry-drafts/{draftId}",
+      "operationId": "GET_api_v1_registry_drafts_draftId",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/registry-drafts/{draftId}",
+      "operationId": "PATCH_api_v1_registry_drafts_draftId",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/registry-drafts/{draftId}/review",
+      "operationId": "POST_api_v1_registry_drafts_draftId_review",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/registry-reviews/{reviewId}/commit",
+      "operationId": "POST_api_v1_registry_reviews_reviewId_commit",
+      "source": "apps/web/lib/server/registry-routes.ts",
+      "batch": "NEST-11",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/snapshots",
+      "operationId": "POST_api_v1_usp_snapshots",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/snapshots/read",
+      "operationId": "POST_api_v1_usp_snapshots_read",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/scope/read",
+      "operationId": "POST_api_v1_usp_scope_read",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/targets/resolve",
+      "operationId": "POST_api_v1_usp_targets_resolve",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/targets/vertical",
+      "operationId": "POST_api_v1_usp_targets_vertical",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/evidence/original",
+      "operationId": "POST_api_v1_usp_evidence_original",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/evidence/part",
+      "operationId": "POST_api_v1_usp_evidence_part",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/proposals/prepare",
+      "operationId": "POST_api_v1_usp_proposals_prepare",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/proposals/commit",
+      "operationId": "POST_api_v1_usp_proposals_commit",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/identity/reviews",
+      "operationId": "POST_api_v1_usp_identity_reviews",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/identity/assign",
+      "operationId": "POST_api_v1_usp_identity_assign",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/identity/mutate",
+      "operationId": "POST_api_v1_usp_identity_mutate",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/identity/resolve",
+      "operationId": "POST_api_v1_usp_identity_resolve",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/exchange/cityjson/export",
+      "operationId": "POST_api_v1_usp_exchange_cityjson_export",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/exchange/cityjson/compare",
+      "operationId": "POST_api_v1_usp_exchange_cityjson_compare",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/usp/packets",
+      "operationId": "POST_api_v1_usp_packets",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/usp/packets/{packetId}",
+      "operationId": "GET_api_v1_usp_packets_packetId",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/usp/packets/{packetId}/receipt",
+      "operationId": "GET_api_v1_usp_packets_packetId_receipt",
+      "source": "apps/web/app/api/v1/usp/[...path]/route.ts",
+      "batch": "NEST-12",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial-datasets",
+      "operationId": "GET_api_v1_spatial_datasets",
+      "source": "apps/web/app/api/v1/spatial-datasets/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/spatial-datasets",
+      "operationId": "POST_api_v1_spatial_datasets",
+      "source": "apps/web/app/api/v1/spatial-datasets/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial-datasets/{id}",
+      "operationId": "GET_api_v1_spatial_datasets_id",
+      "source": "apps/web/app/api/v1/spatial-datasets/[id]/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial-datasets/search",
+      "operationId": "GET_api_v1_spatial_datasets_search",
+      "source": "apps/web/app/api/v1/spatial-datasets/search/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial-datasets/{id}/ml",
+      "operationId": "GET_api_v1_spatial_datasets_id_ml",
+      "source": "apps/web/app/api/v1/spatial-datasets/[id]/ml/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/spatial-datasets/{id}/ml",
+      "operationId": "POST_api_v1_spatial_datasets_id_ml",
+      "source": "apps/web/app/api/v1/spatial-datasets/[id]/ml/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/spatial-datasets/{id}/ml/source",
+      "operationId": "POST_api_v1_spatial_datasets_id_ml_source",
+      "source": "apps/web/app/api/v1/spatial-datasets/[id]/ml/source/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/status",
+      "operationId": "GET_api_v1_spatial_ml_status",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/batches",
+      "operationId": "GET_api_v1_spatial_ml_batches",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/batches",
+      "operationId": "POST_api_v1_spatial_ml_batches",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/batches/{batchId}",
+      "operationId": "GET_api_v1_spatial_ml_batches_batchId",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/items/{itemId}",
+      "operationId": "GET_api_v1_spatial_ml_items_itemId",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/items/{itemId}/artifacts/{artifact}",
+      "operationId": "GET_api_v1_spatial_ml_items_itemId_artifacts_artifact",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/items/{itemId}/retry",
+      "operationId": "POST_api_v1_spatial_ml_items_itemId_retry",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/items/{itemId}/cancel",
+      "operationId": "POST_api_v1_spatial_ml_items_itemId_cancel",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/items/{itemId}/apply",
+      "operationId": "POST_api_v1_spatial_ml_items_itemId_apply",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/items/{itemId}/footprint-drafts",
+      "operationId": "POST_api_v1_spatial_ml_items_itemId_footprint_drafts",
+      "source": "apps/web/lib/server/spatial-ml.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial/areas/{areaId}",
+      "operationId": "GET_api_v1_spatial_areas_areaId",
+      "source": "apps/web/app/api/v1/spatial/areas/[areaId]/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial/core/areas/{areaId}",
+      "operationId": "GET_api_v1_spatial_core_areas_areaId",
+      "source": "apps/web/app/api/v1/spatial/core/areas/[areaId]/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial/core/areas/{areaId}/scene/{assetPath}",
+      "operationId": "GET_api_v1_spatial_core_areas_areaId_scene_assetPath",
+      "source": "apps/web/app/api/v1/spatial/core/areas/[areaId]/scene/[...asset]/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial/core/areas/{areaId}/external/{featureId}",
+      "operationId": "GET_api_v1_spatial_core_areas_areaId_external_featureId",
+      "source": "apps/web/app/api/v1/spatial/core/areas/[areaId]/external/[featureId]/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/spatial/calibration/{kind}/{assetPath}",
+      "operationId": "GET_api_v1_spatial_calibration_kind_assetPath",
+      "source": "apps/web/app/api/v1/spatial/calibration/[kind]/[...asset]/route.ts",
+      "batch": "NEST-13",
+      "disposition": "pending-review",
+      "runtimeVerified": false
+    }
+  ]
+}
