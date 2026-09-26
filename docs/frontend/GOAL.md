@@ -155,7 +155,74 @@ Keep these in `packages/api-client/src/draft/` as TypeScript types and OpenAPI f
 
 Before handing off any UI change, run the repository's `ui-design-check` skill (`.agents/skills/ui-design-check`); it currently scans `apps/web` and needs retargeting to `apps/studio`.
 
-## 10. Open items
+## 10. Settled in the planning conversation (26 September 2026)
+
+Keep these; they were argued out and agreed, and the rest of this file builds on them.
+
+**Product wording and identity** (from the revised hardening review and the repository's H97 alignment):
+- Identity is the **opaque P3 code**, `P3-<20-symbol random payload>-<2-symbol check>`. It embeds no parcel, level, use or date, so corrections never change it. It is shown with a **display-only Location line** (`<parcel ULPIN> / S01 / F07 / R003`). A draft space has no code; codes are never reused; split, merge or demolition retires a code with lineage. There is no largest-overlap parcel rule. With no official anchor the card says "official parcel anchor not supplied". Label both as "3D ULPIN (proposed)", never official.
+- Every level names its **vertical reference**. Say "metres above mean sea level" only when the source states that datum.
+- The QR opens the **exact revision on the same device** (local link). Phone scanning and public verification are full product.
+- Underground output is a **screening report, never a dig permission**. Draw a utility sleeve only where the source states a tolerance. Unsurveyed ground reads "No survey", never clear.
+- The air-rights envelope is full product (it needs a sourced development-control rule); the finale shows elevated and below-ground extents in the strata view.
+- Finding order is deterministic; a learned ranking only after a preregistered test.
+
+**Why Three.js and not Cesium.** The mockup's look (edges, hatching, ghosting, soft shadows, section cuts) came from about 370 lines of plain Three.js; in Cesium each needs custom shaders. Cesium's extras (clamping to ground, underground camera, geodesic measuring) are either done better in the backend (heights recorded, not guessed) or buildable in a few weeks. `3d-tiles-renderer` covers streaming, globe navigation, terrain and imagery plugins. Japan's national PLATEAU city models are rendered this way (Takram's `three-geospatial`). Because data is served as standard tiles, another viewer could read the same data later.
+
+**The Helsinki lesson: data first, viewer second.** Helsinki stores semantic CityGML in 3DCityDB on PostGIS, in one projected system with a named height datum. It distributes 4 km² map sheets and streams 3D Tiles to a viewer that is a replaceable consumer. We copy the data discipline, not the viewer, and go further with interiors and underground legal spaces.
+
+**Why our own tables + pg2b3dm, not 3DCityDB as the tile source.** Our records carry legal spaces, rights, P3 codes, `analyticEligible` and per-field provenance that CityGML doesn't. A second schema would need syncing on every revision and would break "one registry". pg2b3dm works on any PostGIS table or view.
+
+**Global store, filled block by block** (backend-owned; the frontend relies on it):
+- One earth frame for every record, with the source CRS and vertical reference kept. No per-block local database or coordinates.
+- Blocks are **work units** (batch, review, coverage), not storage units.
+- One fixed global tile grid: publishing a block regenerates only its cells, and an object crossing a block edge keeps one identity and appears once.
+- **Coverage is data:** the state view shows covered blocks and honest gaps.
+- Detail by zoom: state and city views use vector tiles; 3D loads only as the camera approaches.
+- A block whose CRS was never verified stays **parked in its local frame** and is not placed on the global map.
+
+**Public global map** (`apps/global`, full product unless the user pulls a thin version into the finale):
+- Map-first home: the state map with coverage, and the P1 search box on top. Results as pins and a list. The record page flies into the block with the unit lit. Verify and corrections follow the P-boards.
+- It reads only a **released projection**: the officer releases chosen units and fields → a publish job builds released-only tiles and records → global renders those. Never Studio's private tiles, sessions or caches. Same scene engine and coordinates, different data.
+- Admin (A1–A7) is role-gated routes inside `apps/studio`, not a third app.
+
+**Demo spine (six minutes)**, which orders the finale screens:
+1. Problem: records that disagree.
+2. Adaptive intake: the building appears inside a city layer that is still streaming.
+3. Footprint, roof and storeys; a deviation opens where plan and observation disagree.
+4. Units extrude; click one for its code, Location line, anchor, share and levels.
+5. Checks run and the officer resolves one, creating a hashed revision.
+6. Underground screening with a trench.
+7. Property Card and same-device QR.
+8. Zoom out to the whole streamed layer; CityJSON export.
+
+Metrics come only from real runs.
+
+**Mockup facts.** The mockup is `design-mockup/` (from the Claude Design project "Officer Studio mockups transfer").
+- `Officer Studio.html` is the interactive Studio; its Tweaks panel switches screen states.
+- `Portal Admin and Phone.html` holds the boards: Portal P1–P7 (search-first in the mockup), Admin A1–A7, Studio S15–S19 and phone views (out of scope).
+- To view it: serve the folder with `python3 -m http.server 8765 --directory design-mockup` and capture 1440 × 900 with headless Playwright from the repo's `node_modules/.pnpm/@playwright+test@1.63.0/node_modules/playwright`. The in-app browser pane crops wide viewports.
+- The review found the same facts repeated four or five times: the same finding in the Checks panel, tray, inspector, legend and label; a level shown five times. Hence section 5.
+
+**Data realities.**
+- DATA-09's Gurugram reference area (around Haryana RERA project 2831) found terrain, water, land use, context buildings, imagery and underground depth *unavailable* from qualified official bytes, and LGD reuse permission unconfirmed.
+- DATA-10 official large layers (NWIC, KSRSAC) have unresolved use permission.
+- Expect sparse screens; don't fill them.
+
+**The hardening review document.** It was edited in place at `~/Downloads/3D ULPIN Plan Review — Grand Finale Hardening.docx` (revised 26 September; the backend streaming plan records its SHA-256 as `a0c70fa9…`). It now carries the P3 identity, Three.js viewer, global store, streamed tiles, official-only tests (T15–T22 including the scale rung) and the new rebuild order. The pre-edit original was only a session scratch copy.
+
+**Working preferences of the user.**
+- Brainstorm before building when direction is unclear, then decide.
+- Claude makes technical calls when asked to ("decide what's best") and explains them briefly.
+- No mock or invented data, ever.
+- Work in this worktree and branch; never push or merge without being asked.
+
+**Local environment.**
+- Two Docker stacks are usually running (`ulpin-*` linked and `ulpin-repo-*` isolated: PostGIS, MinIO, Redis, geo, worker).
+- The Nest API is not started by default: `pnpm --filter @ulpin/api start` on `127.0.0.1:3188`, after checking the port is free. The guarded real-source runtime is `scripts/usp/REAL_SOURCE_RUNTIME.md`.
+- Don't reset volumes, reseed or touch `.env`.
+
+## 11. Open items
 
 - **AGENTS.md** still says "Keep Next.js", "H22 retains the current Cesium runtime" and "run `$ui-design-check` for `apps/web`". Waiting for the user's OK to add a short frontend section (React + Vite, Three.js, this file).
 - Confirm the stack in section 4 at the start of implementation.
