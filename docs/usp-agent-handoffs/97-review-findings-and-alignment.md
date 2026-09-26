@@ -1,6 +1,6 @@
 # 97 · Cross-family review of the finale handoffs
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Historical audit boundary:** Findings and dated “Applied” statements below preserve the decisions at that revision. Their UI cards, screen counts, visual-capture assignments and superseded section numbers are historical, not an active queue; current backend contracts are H01/H99 and the delivery policy. No historical pass is upgraded by this scope change.
 
@@ -141,3 +141,7 @@ Added [H30](30-reference-scene-and-incomplete-data.md), requirements R-SCENE and
 | Mockups | Mock up 15 finale screens | Not in the repository | [Reference mockups](../design-system/mockups/officer-studio/README.md) guide design; acceptance stays with GF tests and V-shots |
 
 The design system, UI brief and plan review documents outside the repository were updated to match these rows.
+
+## 26 September backend normalization
+
+The user-approved [backend streaming decisions](backend-streaming-plan.md) supersede older renderer-selection and sole-checkout instructions. Frontend technology remains user-owned and unchanged by this work. All public-portal delivery remains full product; one bounded official city/district backend scale rung is now required in the finale. Ordinary implementation/data tasks use separate worktrees; Luna uses xhigh/max. Historical findings and receipts above retain their original scope and do not pass the new GF-BACKEND, GF-STREAM or GF-SCALE-1 tests.

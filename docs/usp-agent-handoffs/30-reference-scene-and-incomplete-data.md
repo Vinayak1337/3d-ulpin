@@ -1,6 +1,6 @@
 # 30 — Real reference scene, incomplete data and every input family
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Added 25 September 2026. Release: `finale_v1` for requirements R-SCENE and R-SUFFICIENCY (GF2); the parts marked full_product stay in FP-ENRICH and FP-FORMATS. Owners: DATA for the reference area, INGEST for intake and sufficiency decisions, FND for derivative/asset contracts, DOMAIN for reconstruction routes, FND for shared fields.** Everything here is planned; nothing in it has passed a runtime gate.
 
@@ -85,8 +85,8 @@ If DATA-06 acquires a foreign official capture, it is `test_only`. It qualifies 
 
 Visual encoding in the Enhanced view:
 
-- Generated objects are fully shaded and look finished, but they carry a fine texture pattern visible on hover and focus.
-- The legend reads "Enhanced view: generated context". Screenshots and exports keep the legend and generation metadata (H22 C).
+- Only styled official-source geometry is supplied; provenance and analytical eligibility remain explicit in the asset contract. No missing objects or dimensions are generated, and frontend presentation is user-owned.
+- The contract classifies these assets as styled official-source geometry; it does not prescribe frontend copy or generated replacement objects. Screenshots and exports keep the legend and generation metadata (H22 C).
 - A context building is never a property. Selecting one shows "Context building · no record" with its source layer and the rule that shaped it, and offers **Add files**. It never opens a property inspector.
 - The same inputs, generator version and seed always produce byte-identical derivatives.
 
@@ -94,8 +94,8 @@ Visual encoding in the Enhanced view:
 
 1. **One direction only.** A derivative is a function of pinned record revisions, context-layer revisions, generator version and seed. It is stored in H22's display-derivative store keyed by `recordId` and revision, and it never writes back.
 2. **Invalidate on change.** A new record revision, source or layer marks dependent derivatives stale and regenerates them in the background.
-   - Until regeneration finishes, the last valid derivative shows with an "Updating" marker.
-   - A removed or retired record removes its derivative at once.
+   - Until regeneration finishes, a last-valid derivative may remain available only while still authorized and pinned to its old revision. Revocation or lost access denies affected old assets immediately at the serving boundary; cache purge/rebuilding alone is insufficient.
+   - A removed, retired or revoked record withdraws affected artifacts at once, including a mixed artifact until a safe replacement exists; stale in-flight jobs cannot republish it.
 3. **Evidence always wins.** When an evidence-linked height, footprint or level arrives, the next build replaces the illustrative or estimated one. The illustrative flag clears only through recorded evidence, never by editing the derivative.
 4. **No leakage.** Measurement, readiness, findings, rights, the Property Card, exports and training read canonical tables only. GF-SCENE proves that switching the view changes no hash, quantity, readiness value, finding or export (the SQL-level check planned for FP-ENRICH-TEST, brought forward).
 5. **Stable identity.** Selection always maps to the canonical record ID. Derivative objects have display IDs only.
@@ -160,7 +160,7 @@ The agent accepts every family, and mixed bundles of them. Finale state says wha
 
 | Family | Formats | Contributes | Minimum to place or build | If incomplete | Finale state |
 | --- | --- | --- | --- | --- | --- |
-| Vector GIS | Shapefile, GeoPackage, GeoJSON, KML/KMZ, GML, FileGDB, GeoParquet | Parcels, footprints, roads, water, utilities | Geometry and CRS | No CRS: infer from bounds as a proposal, then ask; unmapped attributes kept | Shapefile, GeoPackage, GeoJSON qualified; KML/KMZ one sample; others Planned |
+| Vector GIS | Shapefile, GeoPackage, GeoJSON, KML/KMZ, GML, FileGDB, GeoParquet | Parcels, footprints, roads, water, utilities | Geometry and CRS | No CRS: retain a named local frame; request issuer metadata or qualified reviewed control evidence. Never infer CRS from bounds; unmapped attributes kept | Shapefile, GeoPackage, GeoJSON qualified; KML/KMZ one sample; others Planned |
 | Tables | CSV, XLSX, ODS, JSON | Unit inventories, level schedules, shares, codes, coordinates | A join key to geometry, or coordinate columns with a CRS | No join key: kept as table evidence; ambiguous units: one question | Qualified (H14) |
 | Documents and plans | Vector PDF, scanned PDF or image, DOCX | Plans, sections, deeds, declarations | Scale and level association for geometry; text for facts | No scale: ask for one known dimension; illegible: abstain | Qualified through H27 plan route; OCR assistive only |
 | CAD and BIM | DXF, DWG (via a qualified converter), IFC 2x3 and 4 | Storeys, spaces, walls, elevations | Units and storey elevations; georeference optional | No georeference: local-frame preview, then placement by reviewed control correspondences | One DXF and one IFC sample qualified |

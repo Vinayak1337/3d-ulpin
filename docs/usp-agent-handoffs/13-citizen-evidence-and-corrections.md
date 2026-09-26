@@ -1,10 +1,14 @@
 # 13 · Citizen evidence, corrections and scoped notifications
 
-**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active plans are backend-only: services, processing, data, security and API contracts for the user-owned UI. No UI implementation, redesign, mobile/theme work or new feature is scheduled. This cleanup is planning only. Use unchanged official sources; unavailable coverage stays unqualified.
+**Current scope, 26 September 2026:** [Delivery policy](current-delivery-policy.md) takes precedence over older sections and H97 addenda. All active work is backend-only: services, processing, data, security and API contracts for the user-owned UI. The user authorizes assigned backend plan tasks in separate worker worktrees; frontend technology and implementation remain untouched. The [normalized backend decisions](backend-streaming-plan.md) govern streaming, scale and migration. All public-portal work remains full product. Use unchanged official sources; unavailable coverage stays unqualified.
 
 **Release: `full_product` (FP-PUBLIC).** The separate public data-request/evidence/correction dashboard remains planned with private submissions, released-only discovery, tracking and authorization. It is not a finale prerequisite. GF4 reuses the release/access contracts for the card without enabling a public portal.
 
-Owner **CITIZEN**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), DEPLOY ports in [19](19-india-contained-deployment.md) and UI slots in [99](99-ui-ux-and-integration.md). ER-04/06/15/16/22 are incorporated. Local synthetic integration can precede F2; public activation cannot.
+Owner **CITIZEN**. Baseline `f623cff897f91bb3ebd4c225f700ac263f7beb72`; revised 22 September 2026. Read [00](00-README.md), [01](01-shared-contracts-and-ownership.md), DEPLOY ports in [19](19-india-contained-deployment.md) and UI slots in [99](99-ui-ux-and-integration.md). ER-04/06/15/16/22 are incorporated. Use only permitted official-source integration; public activation remains separately gated.
+
+## Confirmed release boundary
+
+The user explicitly kept all public-portal work in full product on 26 September 2026, including thin public map/search/record/verify. No finale public endpoint, public tileset, sign-in or citizen flow is authorized. Keep the released-only projection, separate ingress/session/cache and revocation requirements in [the normalized backend plan](backend-streaming-plan.md) for FP-PUBLIC. The finale same-device scoped card remains governed by H10/H19.
 
 ## A. User outcome and product value
 
@@ -18,7 +22,7 @@ Implement durable targetless intake, hash-bound quarantine/source promotion, exp
 
 ## C. Scope and non-goals
 
-First complete local path: D0 contributors A/B and reviewer → released-property lookup → own upload/statement → clarification → accepted draft proposal → existing separate review/record → own receipt. Public mode additionally requires F2, approved release policy and live scanner qualification. Email is optional; in-app status is required.
+Deferred complete path: authorized submitters and reviewer over eligible official-source records → released-property lookup → own upload/statement → clarification → accepted draft proposal → existing separate review/record → own receipt. Public mode additionally requires F2, approved release policy and live scanner qualification. Email is optional; in-app status is required.
 
 No public occupant directory, unrestricted original lookup, automatic cadastral changes, Aadhaar/bank-data collection just to find a building, legal adjudication or new mobile/offline synchronization platform. First public upload profile permits PDF, PNG/JPEG, CSV and UTF-8 text only; archives, DOCX and arbitrary binaries remain disabled until separately qualified.
 

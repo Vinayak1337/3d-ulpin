@@ -10,7 +10,7 @@ Do not repeatedly rewrite plans. Improvise inside the selected task when necessa
 
 ## Current planning boundary
 
-All active plans cover backend services, processing, sources, permissions, recovery and API contracts for the user-owned UI. Plan cleanup is not authorization to implement planned features. Do not schedule screen redesign, frontend components, mobile/theme work or new product features. Keep supplied design references and the current UI untouched. Preserve exact identity/revision/selection semantics, compatible saved URLs and unique inspection capabilities at API boundaries. Backend evidence cannot qualify untested UI or a complete product release.
+All active plans cover backend services, processing, sources, permissions, recovery and API contracts for the user-owned UI. The user now authorizes bounded backend implementation/data tasks after normalization. The lead hardens plans directly; workers execute plan tasks. Do not change frontend technology, screens/components/styles or mobile/theme work. Public-portal work remains full product. Follow the normalized backend decisions. Keep supplied design references and the current UI untouched. Preserve exact identity/revision/selection semantics, compatible saved URLs and unique inspection capabilities at API boundaries. Backend evidence cannot qualify untested UI or a complete product release.
 
 ## Before dispatch: six decisions
 
@@ -31,11 +31,11 @@ Use ordinary reusable Codex tasks for each model/role; do not spawn subagents. R
 | --- | --- | --- |
 | Lead orchestration | GPT-6 Astra | High normally; xhigh for a specific difficult coordination decision |
 | Implementation | GPT-6 Sol | High normally; medium/low for a bounded simple fix; xhigh only for difficult integration |
-| Research, official data discovery, administrative work | GPT-6 Luna | Low/medium normally; high for difficult source reconciliation |
-| Backend contract verification | GPT-6 Luna | High for bounded checks; Sol high if execution exceeds Luna's capability |
+| Research, official data discovery, administrative work | GPT-6 Luna | xhigh or max for every assignment |
+| Backend contract verification | GPT-6 Luna | xhigh or max; use Sol when code execution is the better fit |
 | Risk review | GPT-6 Astra | High for security, privacy, transactions or geometry; medium for a small targeted review |
 
-A straightforward review can use Sol in a separate review assignment when useful. Tiny fixes may go to Luna only with explicit isolated ownership; Sol remains the default code writer. Do not default every job to xhigh. Verify observed model/effort rather than claiming the requested setting was applied. Use only low through xhigh; no max/ultra.
+A straightforward review can use Sol in a separate review assignment when useful. Tiny fixes may go to Luna only with explicit isolated ownership; Sol remains the default code writer. Do not default every job to xhigh. Verify observed model/effort rather than claiming the requested setting was applied. The user allows any supported effort for other models; every Luna worker must use xhigh or max.
 
 Fast is the requested default. The local configuration was observed with `service_tier = "priority"`; the task API exposes no speed argument. Report requested Fast, configured tier and observed per-turn tier separately. If turn metadata omits the tier, say unobserved. Do not modify host authentication/configuration, buy API access or retry an authentication failure in a loop; report the blocker once.
 
@@ -45,11 +45,11 @@ Astra, Sol and Luna are the same model family. Their reviews are engineering che
 
 Keep one implementation lane, one optional manual-test/research lane and one optional bounded review lane. Do not launch all three without useful independent work. Only the lead dispatches ordinary tasks; delegated owners do not create further tasks or subagents.
 
-An owner finishes -> returns an exact diff or commit and concise evidence -> lead reviews the outcome -> optional manual tester checks a pinned revision. The lead may be that owner. While review/testing runs, scope the next dependency-ready, non-conflicting feature. In the single checkout, coordinate any branch switch at a safe checkpoint; do not switch the checkout beneath another worker or a running preview. Do not build dependent work on an unaccepted change merely to keep a worker busy.
+An owner finishes -> returns an exact diff or commit and concise evidence -> lead reviews the outcome -> optional manual tester checks a pinned revision. The lead may be that owner. While review/testing runs, scope the next dependency-ready, non-conflicting feature. Use separate worker worktrees from a pinned accepted staging commit; never switch another worker’s checkout or edit its owned files. Do not build dependent work on an unaccepted change merely to keep a worker busy.
 
 Testers/reviewers own reports, not production code. They return reproducible issues with route/action, expected versus actual behavior, severity and a screenshot only when useful. Send fixes to the implementation lane. If it is already coding, choose a safe checkpoint or queue the fix; never let two owners edit the same seam. Blocking defects prevent integration of that result, not unrelated work.
 
-Current checkout policy, 26 September 2026: keep one registered checkout at the original `staging` directory. Record a pinned base for each assignment, use branches without creating worktrees, and coordinate file ownership before parallel work. Preserve original checkout changes and its index state. Integrate one accepted change at a time, directly or through a delegated execution assignment. Keep main unchanged; no push/deploy/public activation without authorization. Do not reset populated services, rewrite originals, overwrite credentials or kill unrelated processes.
+Current checkout policy, updated by explicit user direction: the lead integrates in the original `staging` checkout; each ordinary worker model uses its own worktree and branch. Record a pinned base and exact file ownership. Reuse model tasks/worktrees; retire a worker worktree only after its commits and dirty files are reconciled. Preserve original checkout changes and its index state. Integrate one accepted change at a time, directly or through a delegated execution assignment. Keep main unchanged; no push/deploy/public activation without authorization. Do not reset populated services, rewrite originals, overwrite credentials or kill unrelated processes.
 
 ## Lean verification
 
@@ -65,7 +65,7 @@ Use real unchanged official sources, data.gov.in first or the responsible issuer
 
 The user released the standing preview on 26 September 2026. Start the loopback preview at `http://127.0.0.1:3187` only when a task needs it; temporary verification can use other ports. Verify the port is free before startup and never kill an unrelated listener. Stop owned app processes after the task unless the user asks to keep them running. No scheduler or polling automation is needed.
 
-The code owner serves the pinned preview from the sole original checkout with owned isolated services and the existing guard. Coordinate app-only restarts at safe checkpoints when changing the served revision. Preserve original/linked data and keep providers disabled. Record the served commit, URL, owned process/service identities and stop command without secrets. A candidate preview must be labelled as awaiting review; a running server is not release acceptance.
+The code owner serves a pinned preview from its explicitly assigned worktree with owned isolated services and the existing guard. Coordinate app-only restarts at safe checkpoints when changing the served revision. Preserve original/linked data and keep providers disabled. Record the served commit, URL, owned process/service identities and stop command without secrets. A candidate preview must be labelled as awaiting review; a running server is not release acceptance.
 
 When a preview is running, record its URL and served revision for manual testing and status checks. Refresh it only at a safe checkpoint coordinated with the active tester; do not silently test one revision while changing its files. Preserve its isolated data volumes during app or container shutdown. User-entered preview changes are not permission to overwrite originals or discard data.
 
