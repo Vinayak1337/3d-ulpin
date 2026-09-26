@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "official-runtime-pdf-v1-scope/1",
+  "scope": "One permitted official PDF held outside Git for a local deterministic source-to-document inspection check.",
+  "expectedFacts": [],
+  "notQualified": [
+    "application PDF.js parser behavior",
+    "live plan-pdf-v1 job behavior",
+    "geospatial accuracy or present-day conditions",
+    "parcel, building, unit, ownership, or title association",
+    "Indian geography, scale, or model accuracy"
+  ]
+}
