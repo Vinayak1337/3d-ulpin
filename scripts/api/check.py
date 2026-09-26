@@ -26,20 +26,27 @@ def direct_path(route):
 
 def main():
     spec = json.loads(SPEC.read_text())
-    pins = json.loads(PINS.read_text())['dispatchSha256']
+    pin_document = json.loads(PINS.read_text())
+    pins = pin_document['dispatchSha256']
+    contract_pins = pin_document.get('contractSha256', {})
     if spec.get('openapi') != '3.1.0': fail('expected OpenAPI 3.1.0')
     for rel, wanted in pins.items():
         file = ROOT / rel
         if not file.is_file(): fail(f'missing dispatch source {rel}')
         actual = hashlib.sha256(file.read_bytes()).hexdigest()
         if actual != wanted: fail(f'dispatch changed; review operation inventory: {rel}')
+    for rel, wanted in contract_pins.items():
+        file = ROOT / rel
+        if not file.is_file(): fail(f'missing contract helper {rel}')
+        if hashlib.sha256(file.read_bytes()).hexdigest() != wanted:
+            fail(f'contract helper changed; review published shape: {rel}')
     all_routes = set((ROOT / 'apps/web/app/api').rglob('route.ts'))
     pinned_direct = {ROOT / rel for rel in pins if rel.startswith('apps/web/app/api/')}
     if all_routes != pinned_direct:
         names = sorted(str(p.relative_to(ROOT)) for p in all_routes ^ pinned_direct)
         fail(f'direct route file coverage changed: {names}')
     operations = set()
-    expected_operations = set(json.loads(PINS.read_text())['operations'])
+    expected_operations = set(pin_document['operations'])
     for path, path_item in spec['paths'].items():
         for method, op in path_item.items():
             if method not in METHODS: continue
@@ -83,6 +90,6 @@ def main():
             if '://' in target or target.startswith('#'): continue
             local = (document.parent / target.split('#', 1)[0]).resolve()
             if not local.exists(): fail(f'broken local link in {document.name}: {target}')
-    print(f'API-DOC-01: {len(operations)} operations, {len(pins)} pinned dispatch files, refs valid')
+    print(f'API-DOC-01: {len(operations)} operations, {len(pins)} pinned dispatch files, {len(contract_pins)} contract helpers, refs valid')
 
 if __name__ == '__main__': main()

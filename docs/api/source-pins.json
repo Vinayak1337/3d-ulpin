@@ -154,5 +154,13 @@
     "POST /api/v1/usp/snapshots/read",
     "POST /api/v1/usp/targets/resolve",
     "POST /api/v1/usp/targets/vertical"
-  ]
+  ],
+  "contractSha256": {
+    "apps/web/lib/server/gis-inspection.ts": "9f6e9267ad93b94855a28b5fe95759761ca176090acc9d8037bfb52f4024d903",
+    "apps/web/lib/server/areas.ts": "c768d719b72df5ef6941124b9d0dc1805fd2f721d39d325a64974c8accfe69a0",
+    "apps/web/lib/server/dataset-ml.ts": "0081d400e750bbda6f65067165aac43eb93c480102209f372a7fccf549c2b6e7",
+    "apps/web/lib/server/source-cases.ts": "5d4003558c4d77313c0412d67a2ddd333c5c4aeaea2b767f392b0c37cc435e11",
+    "apps/web/lib/document-formats.ts": "3acc5713b310210a9d4cba308a00894aad352ef65fce9361e69eeff3ef36b1e8",
+    "apps/web/lib/server/validation.ts": "fdbbec89068066a51a82f75dfc15b3e7ffc69d09de6c477d788dc928639f3c00"
+  }
 }
