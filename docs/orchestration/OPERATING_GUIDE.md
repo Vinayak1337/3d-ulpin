@@ -33,17 +33,11 @@ Hardening means preventing a concrete failure: stale records, unsafe egress, fal
 
 Use ordinary reusable Codex tasks for each model/role; do not spawn subagents. Reuse existing tasks where appropriate and create another task only when authorized by the user. Keep separate reusable tasks for each model/role. Do not switch their model between assignments merely to save creating a lane. Prefer stable instructions and short delta assignments; reference this guide and artifacts instead of reposting the whole plan. Cache hits are not guaranteed.
 
-| Lane | Model | Effort selection |
-| --- | --- | --- |
-| Lead orchestration | GPT-6 Astra | High normally; xhigh/max for difficult coordination decisions |
-| Implementation | GPT-6 Sol | High for bounded changes; xhigh/max for complex implementation or integration; medium/low for simple fixes |
-| Research, official data discovery, administrative work | GPT-6 Luna | Max only for every assignment |
-| Backend contract verification | GPT-6 Luna | Max only; use Sol when code execution is the better fit |
-| Risk review | GPT-6 Astra | Xhigh/max for consequential security, privacy, transaction or geometry reviews; high/medium for bounded reviews |
+All new worker assignments use **GPT-6 Sol only**, including implementation, research, manual verification and review. Use separate reusable role tasks/worktrees where independence matters, with effort suited to the work (high normally; xhigh/max for consequential code/review). Do not start or resume Luna/Astra for a new assignment. This supersedes the earlier model matrix; already-running assignments may finish.
 
-A straightforward review can use Sol in a separate review assignment when useful. Tiny fixes may go to Luna only with explicit isolated ownership; Sol remains the default code writer. The user authorizes more expensive workers for upcoming assignments and prioritizes quality: use higher-effort Sol or Astra where complexity or consequence warrants it, without expanding scope or repeating unnecessary checks. Every Luna worker must use max only. Other models may use any supported effort appropriate to the task. Verify observed model/effort rather than claiming the requested setting was applied.
+Use the default service tier. The user's latest instruction revokes Fast/priority; local `service_tier = "default"` was verified on26September. The task API exposes no speed argument, and per-turn tier remains unobserved unless returned explicitly. Do not request priority or modify credentials, buy access, or retry authentication failures in a loop.
 
-Fast is the requested default. The local configuration was observed with `service_tier = "priority"`; the task API exposes no speed argument. Report requested Fast, configured tier and observed per-turn tier separately. If turn metadata omits the tier, say unobserved. Do not modify host authentication/configuration, buy API access or retry an authentication failure in a loop; report the blocker once.
+After dispatch, end the lead turn and resume only when a worker sends a message. Do not poll tasks, run wait loops or create wakeup/heartbeat schedules. A callback may trigger its needed review, fix or integration work and the next authorized dispatch, followed by another quiet wait.
 
 Astra, Sol and Luna are the same model family. Their reviews are engineering checks, not the plan's independent cross-family/human milestone approval.
 
