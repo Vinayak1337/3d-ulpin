@@ -4,6 +4,8 @@ Phase 2A starts from accepted staging `055534deb93eef0b85e8251b88cc40bc9a691fec`
 
 `local-nest` adds a separate isolation profile at `127.0.0.1:3188` and pins both `PORT` and Nest's `API_PORT` to 3188. The existing nonce, Compose project, database, bucket, storage and processor ports remain exact. The proposed launcher uses `@ulpin/api` rather than Next, records each process group's nonce, leader PID, PGID and start time, and checks its actual members after SIGTERM. If ownership is unverified or members remain, shutdown reports unresolved cleanup without signalling a reused group. Compose shutdown includes `--profile app` and preserves named volumes. Private run files and logs live under `.runtime/run01/<nonce>/` with restricted permissions. It does not load `.env`, restore a snapshot, seed records or enable providers.
 
+This host uses the standalone `docker-compose` CLI; its Docker CLI has no `compose` subcommand. The runner passes the verified local Docker context to Compose.
+
 ## Phase 2, after the lead supplies an accepted integrated commit
 
 1. The accepted `@ulpin/api start` uses `API_PORT`, binds `127.0.0.1`, and exposes the expected five-service health shape. Keep the smoke gate closed until the integrated intake contract supplies a verified same-original job path.

@@ -45,7 +45,7 @@ function command(executable, args, env, opts={}) {
   catch (error) { throw new Error(`${executable} failed: ${redacted((error.stdout||'')+'\n'+(error.stderr||''),env).slice(-1300)}`); }
 }
 function compose(c, args, options={}) {
-  return command('docker', ['compose','--project-directory', root, '--env-file', join(c.dir,'compose.env'), '-p', c.scope.project, '-f', join(root,'compose.yaml'), '-f', join(c.dir,'override.json'), ...args], c.env, options);
+  return command('docker-compose', ['--project-directory', root, '--env-file', join(c.dir,'compose.env'), '-p', c.scope.project, '-f', join(root,'compose.yaml'), '-f', join(c.dir,'override.json'), ...args], c.env, options);
 }
 async function free(port) {
   await new Promise((ok, bad) => { const server=createServer();server.once('error',bad);server.listen(port,'127.0.0.1',()=>server.close(ok)); });
