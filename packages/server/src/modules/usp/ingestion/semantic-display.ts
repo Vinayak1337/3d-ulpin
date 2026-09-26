@@ -19,10 +19,10 @@ export async function createSemanticDisplayTx(client:PoolClient,job:any,phase:Se
   try{
     const ctx=await projectedContextTx(client,job.case_id,job.source_id,true),input=assertProjectedInput(ctx,job.payload);
     const status=await enqueuePrivateMvtTx(client,job.case_id,job.source_id,{requestKey:reservation.slots[phase],expectedCaseRevision:input.caseRevision,
-      expectedSourceRevision:input.sourceRevision,admissionJobId:job.id,expectedGeneration:ctx.source.inspection.privateMvt?.accepted??null,
+      expectedSourceRevision:input.sourceRevision,admissionJobId:job.id,window:null,expectedGeneration:ctx.source.inspection.privateMvt?.accepted??null,
       ...(pin?{chunk:pin}:{} )},{parentJobId:job.id,phase,jobId:reservation.slots[phase]});
     await displayOutcomeTx(client,job,phase,{state:'created',jobId:status.jobId});
-    await client.query('RELEASE SAVEPOINT semantic_display');assertMvtDeadline(deadline);return status.jobId;
+    assertMvtDeadline(deadline);await client.query('RELEASE SAVEPOINT semantic_display');return status.jobId;
   }catch(error){
     await client.query('ROLLBACK TO SAVEPOINT semantic_display');await client.query('RELEASE SAVEPOINT semantic_display');
     assertMvtDeadline(deadline);

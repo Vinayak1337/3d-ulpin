@@ -35,11 +35,12 @@ export function semanticPartitions(index:SemanticPreparation['index']):SemanticP
   if(partitions.length>p.chunks)throw new AppError(422,'SEMANTIC_PARTITION_BUDGET','The complete source index exceeds the finite chunk count.');
   return partitions;
 }
-async function metadataBudgetTx(client:PoolClient,jobId:string,additional:number,kind:'preparation'|'chunk'){
+async function metadataBudgetTx(client:PoolClient,jobId:string,body:unknown,kind:'preparation'|'chunk'){
+  const additional=Number((await client.query('SELECT octet_length($1::jsonb::text)::int bytes',[body])).rows[0].bytes);
   const row=(await client.query(`SELECT COALESCE(sum(octet_length(body::text)),0)::bigint bytes,
-    COALESCE(sum(octet_length(body::text)) FILTER(WHERE job_id=$1),0)::bigint own FROM
-    (SELECT job_id,body FROM usp_display.source_semantic_preparations UNION ALL SELECT job_id,body FROM usp_display.source_semantic_chunks) x`,[jobId])).rows[0];
-  const limit=kind==='preparation'?p.preparationBytes:p.preparationBytes+p.chunkMetadataBytes;
+    COALESCE(sum(octet_length(body::text)) FILTER(WHERE job_id=$1 AND kind=$2),0)::bigint own FROM
+    (SELECT job_id,body,'preparation' kind FROM usp_display.source_semantic_preparations UNION ALL SELECT job_id,body,'chunk' kind FROM usp_display.source_semantic_chunks) x`,[jobId,kind])).rows[0];
+  const limit=kind==='preparation'?p.preparationBytes:p.chunkMetadataBytes;
   if(Number(row.bytes)+additional>p.metadataBytes||Number(row.own)+additional>limit)
     throw new AppError(429,'SEMANTIC_METADATA_BUDGET','Preserved preparation and chunk history occupy the finite metadata capacity.');
 }
@@ -48,7 +49,7 @@ export async function prepareSemanticTx(client:PoolClient,job:any,attempt:UspJob
   const body=SemanticPreparationSchema.parse(value),hash=sha256(JSON.stringify(body)),prior=(await client.query('SELECT sha256,body FROM usp_display.source_semantic_preparations WHERE job_id=$1',[job.id])).rows[0];
   if(prior){if(prior.sha256!==hash||fingerprint(prior.body)!==fingerprint(body))throw new AppError(422,'SEMANTIC_PREPARATION_INTEGRITY','Recovered complete source preparation differs.');return body;}
   const bytes=Buffer.byteLength(JSON.stringify(body));if(bytes>p.preparationBytes)throw new AppError(422,'SEMANTIC_PREPARATION_BUDGET','The verified source index exceeds its preparation bound.');
-  await metadataBudgetTx(client,job.id,Math.ceil(bytes*1.1),'preparation');
+  await metadataBudgetTx(client,job.id,body,'preparation');
   await client.query('INSERT INTO usp_display.source_semantic_preparations(job_id,source_id,sha256,body) VALUES($1,$2,$3,$4)',[job.id,job.source_id,hash,body]);return body;
 }
 function record(row:any):SemanticRecord{return {featureIndex:row.feature_index,unitId:row.unit_id,key:row.native_key,disposition:row.disposition,
@@ -114,7 +115,7 @@ export async function sealSemanticTx(client:PoolClient,job:any,attempt:UspJobAtt
     coverage:{kind:'committed_partial',sourceAccepted:false,throughSequence:partition.sequence,expectedChunks:preparation.partitions.length,records:all.length,admitted,quarantined:all.length-admitted,
       positions:(prefix?.chunk.coverage.positions??0)+partition.positions,expectedRecords:733,remainingRecords:733-all.length,prefixDependencySha256:fingerprint(all)}});
   const bytes=Buffer.byteLength(JSON.stringify(chunk));if(bytes>p.chunkBodyBytes)throw new AppError(422,'SEMANTIC_CHUNK_METADATA_BUDGET','The immutable chunk exceeds its metadata bound.');
-  await metadataBudgetTx(client,job.id,Math.ceil(bytes*1.1),'chunk');const hash=sha256(JSON.stringify(chunk));
+  await metadataBudgetTx(client,job.id,chunk,'chunk');const hash=sha256(JSON.stringify(chunk));
   await client.query('INSERT INTO usp_display.source_semantic_chunks(job_id,sequence,source_id,sha256,body) VALUES($1,$2,$3,$4,$5)',[job.id,partition.sequence,job.source_id,hash,chunk]);
   await appendCaseIngestionTx(client,job.case_id,{kind:'projected-vector.chunk',jobId:job.id,sequence:partition.sequence,records:all.length,sourceAccepted:false});
   return {sequence:partition.sequence,sha256:hash};

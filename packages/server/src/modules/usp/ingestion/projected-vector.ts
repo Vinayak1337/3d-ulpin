@@ -62,7 +62,7 @@ export async function projectedStatusTx(client:PoolClient,caseId:string,sourceId
   }
   const errorCode=job.error ? /^[A-Z][A-Z0-9_]{0,79}$/.test(job.error)?job.error:'PROJECTED_PROCESSING_FAILED' : null;
   return ProjectedVectorStatusSchema.parse({version:profile.version,caseId,sourceId,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,
-    currentCaseRevision:ctx.current.revision,jobId:job.id,status:job.status,totals:accepted?.totals??null,transform:accepted?.transform??null,errorCode,...(displayMilestones?{displayMilestones}:{}),...(prefix?{coverage:prefix.chunk.coverage,chunk:prefix.pin}:{})});
+    currentCaseRevision:ctx.current.revision,jobId:job.id,status:job.status,totals:accepted?.totals??null,transform:accepted?.transform??null,errorCode,...(displayMilestones?{displayMilestones}:{}),...(prefix?{coverage:prefix.chunk.coverage,chunk:prefix.pin,currentSourceAccepted:job.status==='succeeded'&&Boolean(accepted)}:{})});
 }
 export async function acceptedProjectedTx(client:PoolClient,caseId:string,sourceId:string,jobId?:string){
   const ctx=await projectedContextTx(client,caseId,sourceId),pointer=ctx.source.inspection.projectedVector?.accepted;
@@ -72,6 +72,11 @@ export async function acceptedProjectedTx(client:PoolClient,caseId:string,source
   if(!job || job.status!=='succeeded' || Number(job.accepted_fence)!==pointer.fence || job.result_ref?.sha256!==pointer.index.sha256)
     throw new AppError(409,'PROJECTED_NOT_ACCEPTED','This source generation is unavailable.');
   const input=assertProjectedInput(ctx,job.payload);
+  if(input.semanticChunks){
+    if(!pointer.finalChunk)throw new AppError(409,'SEMANTIC_PREFIX_CLOSURE','Complete source adoption requires its exact final seal.');
+    const prefix=await sealedPrefixTx(client,caseId,sourceId,job.id,pointer.finalChunk);
+    if(prefix.chunk.coverage.remainingRecords!==0||prefix.pin.sequence!==prefix.preparation.partitions.length)throw new AppError(422,'SEMANTIC_PREFIX_CLOSURE','The accepted complete source differs from its sealed prefix.');
+  }
   return {ctx,pointer,job,input};
 }
 /** Stored value bytes; indexes, WAL and database allocator overhead are not scale qualification. */
