@@ -1,0 +1,718 @@
+{
+  "schemaVersion": "nest-runtime-source/1",
+  "recordedAt": "2026-09-26T02:24:19.948Z",
+  "assignment": "NEST-02 / NEST-20 phase 2B",
+  "acceptedRegistrationBase": "6d4d550b8680c43b4196bd2628a5fd81dfa2505a",
+  "acceptedCorrectionBase": "cbc5174aadae33f5db89540cddad16813fb7d290",
+  "preparationCommit": "33f9749bd0782887c68d4760c624143a16eceb01",
+  "servedCodeCommit": "5d80dd869c62dfed1bf39c2594cd1e080c9045fb",
+  "checkout": "/Users/vinayak/.codex/worktrees/0365/3D Ulpin",
+  "model": {
+    "requested": "gpt-6-sol",
+    "requestedEffort": "max",
+    "requestedSpeed": "Fast",
+    "configuredTier": "priority per operating guide",
+    "observedModelEffortTier": "unexposed"
+  },
+  "codeSources": [
+    {
+      "path": "scripts/usp/local-isolation.mjs",
+      "sha256": "fd393a7dabe6c6b841677fe313d7f7563b7908a95d9103ce539d57f44a4096c1"
+    },
+    {
+      "path": "scripts/usp/real-source-runtime.mjs",
+      "sha256": "e5571405d86e34434ff7509adcfe5e864f711eaf777670da5a9e4dd04cfaa1e1"
+    },
+    {
+      "path": "scripts/usp/real-source-smoke.mjs",
+      "sha256": "587f554750526c63c72c156460554b9afc83f00f3c1e89814cbd7585e3ca0a9e"
+    },
+    {
+      "path": "apps/api/src/app.module.ts",
+      "sha256": "e73b7d82195a046b84202e350ff7dee310e7955b4e81f4fdba7261cd71d1c2d6"
+    },
+    {
+      "path": "apps/api/src/main.ts",
+      "sha256": "543cd04199d01db0822f0dbf74685d8a1fe5d17ad67a3641a0f334f1a9dbb414"
+    },
+    {
+      "path": "packages/server/src/modules/cases/domain.ts",
+      "sha256": "a9c9e8660ee40623d1ef6b898c4476aa4809c58a9a25c972aa773576e5e1fd04"
+    },
+    {
+      "path": "packages/server/src/modules/cases/processing.ts",
+      "sha256": "2ee4f394fc107ab9407574783040d60082a4612d3edf7556ad668b0e2a8436d0"
+    },
+    {
+      "path": "packages/server/src/modules/usp/principal.ts",
+      "sha256": "addf3951a86c05f7f520db040bfe7d644b6e114bd32fc55f649b2b99b75a2383"
+    },
+    {
+      "path": "services/geo/geo/inspection.py",
+      "sha256": "d23ad883a430fa403faf87fc889b97baebb999b0c21616bb338c8b6b8d504487"
+    },
+    {
+      "path": "services/geo/geo/tasks.py",
+      "sha256": "e37f83710fd85fe31ae704670e287bc0e1f12311fc3b1b879ccdf8c708ffa23d"
+    },
+    {
+      "path": "services/geo/requirements.txt",
+      "sha256": "118eb43f0bf7ad98af17e4676c32a0eadbf0748f917e623c3316ada646aefa1d"
+    },
+    {
+      "path": "database/manifest.json",
+      "sha256": "02a06ab15a1ff932e667b09539edc40f3f9ec2c47dfbced4916619712ca7f305"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "f90787f4e7ca2881cca77b0700f40a09a16a2745d53ffa4e2c73a3a84813af61"
+    }
+  ],
+  "modelHashes": [],
+  "result": {
+    "frozenInstall": "passed",
+    "backendTypecheckBuild": "passed",
+    "foundationStartup": "passed",
+    "sameDatabaseMigrationRepeat": "passed",
+    "officialPdfSourceToJobToRecord": "passed",
+    "processorDispatchFailureAndRetry": "passed",
+    "sameKeyReplay": "passed",
+    "separateSynchronousGis": "passed",
+    "privateOriginalIntegrity": "passed",
+    "remoteOriginDenial": "passed",
+    "explicitProcessAttribution": "passed",
+    "documentationJsonReads": "passed",
+    "ownedShutdown": "passed"
+  },
+  "scope": {
+    "nonce": "5060b8f6ecb57f0d",
+    "project": "ulpin-usptest-5060b8f6ecb57f0d",
+    "database": "ulpin_usptest_5060b8f6ecb57f0d",
+    "bucket": "ulpin-usptest-5060b8f6ecb57f0d",
+    "privateDirectory": "/Users/vinayak/.codex/worktrees/0365/3D Ulpin/.runtime/run01/5060b8f6ecb57f0d",
+    "apiUrl": "http://127.0.0.1:3188/",
+    "repoData": "false",
+    "apiDataModeLabel": "linked",
+    "dataModeExplanation": "REPO_DATA=false selects the explicitly configured nonce-owned local endpoints. No root or linked .env was loaded.",
+    "operatorProvenance": {
+      "kind": "local_os_process",
+      "subject": "local-os:501:vinayak",
+      "uid": 501,
+      "account": "vinayak",
+      "humanAuthenticated": false
+    },
+    "snapshotRestore": false,
+    "seededOperationalRows": false,
+    "providerCallsPerformed": 0,
+    "modelFiles": []
+  },
+  "runtime": {
+    "startCommand": "pnpm --filter @ulpin/api start",
+    "dispatcherCommand": "pnpm dispatcher",
+    "apiExecution": "tsx source",
+    "dockerContext": "colima-ulpin",
+    "dockerEngine": "29.5.2",
+    "composeCli": "docker-compose 5.5.1",
+    "geoWorkerImage": {
+      "tag": "ulpin-geo:run01-5060b8f6ecb57f0d",
+      "imageId": "sha256:91683e358f3fa8d8a132b8d02548d588343fbdb38c902e473512ce9c84ecefd2",
+      "pdfParserDependencyPin": "pypdf==5.5.0 (requirements.txt; package version not queried separately)"
+    },
+    "resourcesBeforeStop": {
+      "project": "ulpin-usptest-5060b8f6ecb57f0d",
+      "containers": [
+        {
+          "name": "ulpin-usptest-5060b8f6ecb57f0d-geo-1",
+          "state": "running",
+          "ports": [
+            "127.0.0.1:28000"
+          ]
+        },
+        {
+          "name": "ulpin-usptest-5060b8f6ecb57f0d-minio-1",
+          "state": "running",
+          "ports": [
+            "127.0.0.1:29000",
+            "127.0.0.1:29001"
+          ]
+        },
+        {
+          "name": "ulpin-usptest-5060b8f6ecb57f0d-postgres-1",
+          "state": "running",
+          "ports": [
+            "127.0.0.1:25432"
+          ]
+        },
+        {
+          "name": "ulpin-usptest-5060b8f6ecb57f0d-redis-1",
+          "state": "running",
+          "ports": [
+            "127.0.0.1:26379"
+          ]
+        },
+        {
+          "name": "ulpin-usptest-5060b8f6ecb57f0d-worker-1",
+          "state": "running",
+          "ports": [
+            ":0"
+          ]
+        }
+      ],
+      "processes": {
+        "api": {
+          "pid": 41399,
+          "pgid": 41399,
+          "ownedLeaderAlive": true,
+          "memberPids": [
+            41399,
+            41423,
+            41802,
+            41809,
+            41811
+          ]
+        },
+        "dispatcher": {
+          "pid": 41282,
+          "pgid": 41282,
+          "ownedLeaderAlive": true,
+          "memberPids": [
+            41282,
+            41306,
+            41771,
+            41803,
+            41810
+          ]
+        }
+      }
+    },
+    "credentialScan": {
+      "api": {
+        "containsGeneratedCredential": false
+      },
+      "dispatcher": {
+        "containsGeneratedCredential": false
+      }
+    }
+  },
+  "documentJourney": {
+    "status": "passed",
+    "mode": "canonical_queued_document_inspection",
+    "source": {
+      "issuer": "U.S. Geological Survey, U.S. Department of the Interior",
+      "title": "USGS 1:62500-scale Quadrangle for Central City, CO 1910",
+      "originalUrl": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Maps/HistoricalTopo/PDF/CO/62500/CO_Central%20City_232520_1910_62500_geo.pdf",
+      "geography": "Central City quadrangle, Colorado, United States (foreign test_only)",
+      "purpose": "test_only",
+      "permissionReference": "https://www.usgs.gov/faqs/are-usgs-topographic-maps-copyrighted",
+      "permissionEvidence": "The USGS FAQ describes USGS-produced topographic maps as public domain and says qualifying maps may be used for any purpose. Its listed third-party-content exceptions apply to specified US Topo products from 2009 onward; this is a 1910 Historical Topographic Map Collection sheet.",
+      "sourceCheck": {
+        "path": "docs/evidence/usp/nest-migration/official-runtime-source/source-check.json",
+        "sha256": "02db3eedd27dde2fb3926524e853d17b4c77582124c2ba33268a3600d4dc567e"
+      },
+      "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+      "bytes": 9344939,
+      "reference": {
+        "mapDate": "1910",
+        "scale": "1:62,500",
+        "contourInterval": "100 feet",
+        "horizontalReference": "Map states Polyconic projection and a NAD27 placement note; formal CRS remains unresolved.",
+        "verticalReference": "Map states mean sea level; exact vertical datum remains unknown.",
+        "limitations": [
+          "Historical U.S. map, not current source data or Indian operational evidence.",
+          "No parcel, building, unit, ownership, title, or same-property association.",
+          "Map reference metadata is insufficient for present-day measurement or legal/cadastral use."
+        ]
+      },
+      "limitations": [
+        "The PDF is a foreign historical topographic reference, not a matched building or Indian plan/rights source.",
+        "Page-tree parsing via Poppler is verified; exact Nest/application parser compatibility and workflow remain unverified.",
+        "No geometry, content-accuracy, survey-control, ownership, scale, or ML qualification is claimed.",
+        "The source remains outside Git."
+      ]
+    },
+    "caseCreate": {
+      "status": 201,
+      "id": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+      "name": "USGS 1:62500-scale Quadrangle for Central City, CO 1910"
+    },
+    "upload": {
+      "httpStatus": 201,
+      "id": "113aea54-0a8b-497f-b2ca-3f20dcb5fb5a",
+      "familyId": "ccfc310f-fbd4-45db-9682-be7d6a47f560",
+      "revision": 1,
+      "profile": "plan-pdf-v1",
+      "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+      "bytes": 9344939,
+      "status": "received",
+      "operationKey": "run01:5060b8f6ecb57f0d:usgs-pdf"
+    },
+    "initialJobObservation": {
+      "id": "3270eac3-2144-4b33-8ff2-e54192374624",
+      "caseId": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+      "sourceId": "113aea54-0a8b-497f-b2ca-3f20dcb5fb5a",
+      "operation": "inspect",
+      "status": "queued",
+      "createdAt": "2026-09-26T02:21:40.662Z",
+      "completedAt": null,
+      "error": null,
+      "inputFingerprint": "b8943fc2d4fa68aca9ac04543c9e334c16fe5371445801474084c33f2aeead7e"
+    },
+    "outage": {
+      "project": "ulpin-usptest-5060b8f6ecb57f0d",
+      "before": {
+        "database": true,
+        "storage": true,
+        "processor": true,
+        "redis": true,
+        "worker": true
+      },
+      "degraded": {
+        "database": true,
+        "storage": true,
+        "processor": false,
+        "redis": false,
+        "worker": false
+      },
+      "processor": "stopped"
+    },
+    "failedJob": {
+      "id": "3270eac3-2144-4b33-8ff2-e54192374624",
+      "caseId": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+      "sourceId": "113aea54-0a8b-497f-b2ca-3f20dcb5fb5a",
+      "operation": "inspect",
+      "status": "failed",
+      "createdAt": "2026-09-26T02:21:40.662Z",
+      "completedAt": "2026-09-26T02:21:50.245Z",
+      "error": "fetch failed",
+      "inputFingerprint": "b8943fc2d4fa68aca9ac04543c9e334c16fe5371445801474084c33f2aeead7e"
+    },
+    "recovery": {
+      "project": "ulpin-usptest-5060b8f6ecb57f0d",
+      "after": {
+        "database": true,
+        "storage": true,
+        "processor": true,
+        "redis": true,
+        "worker": true
+      },
+      "processor": "started"
+    },
+    "retry": {
+      "httpStatus": 202,
+      "id": "0d149fc3-1c89-4380-8d22-6588f163fcae",
+      "caseId": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+      "sourceId": "113aea54-0a8b-497f-b2ca-3f20dcb5fb5a",
+      "operation": "inspect",
+      "status": "queued",
+      "createdAt": "2026-09-26T02:21:56.270Z",
+      "completedAt": null,
+      "error": null,
+      "inputFingerprint": "b8943fc2d4fa68aca9ac04543c9e334c16fe5371445801474084c33f2aeead7e"
+    },
+    "completedJob": {
+      "id": "0d149fc3-1c89-4380-8d22-6588f163fcae",
+      "caseId": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+      "sourceId": "113aea54-0a8b-497f-b2ca-3f20dcb5fb5a",
+      "operation": "inspect",
+      "status": "succeeded",
+      "createdAt": "2026-09-26T02:21:56.270Z",
+      "completedAt": "2026-09-26T02:21:57.084Z",
+      "error": null,
+      "inputFingerprint": "b8943fc2d4fa68aca9ac04543c9e334c16fe5371445801474084c33f2aeead7e"
+    },
+    "persistedSource": {
+      "id": "113aea54-0a8b-497f-b2ca-3f20dcb5fb5a",
+      "caseId": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+      "familyId": "ccfc310f-fbd4-45db-9682-be7d6a47f560",
+      "revision": 1,
+      "name": "usgs-central-city-co-1910-topographic-map.pdf",
+      "profile": "plan-pdf-v1",
+      "mimeType": "application/pdf",
+      "bytes": 9344939,
+      "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+      "status": "needs_input",
+      "createdAt": "2026-09-26T02:21:40.662Z",
+      "inspection": {
+        "image": {
+          "pages": 1,
+          "width": 1191,
+          "height": 1495
+        },
+        "issues": [
+          {
+            "code": "CALIBRATION_REQUIRED",
+            "field": "image",
+            "message": "Use the selected page's rendered coordinates for calibration; dimensions are first-page points at scale 1.",
+            "severity": "warning"
+          }
+        ],
+        "status": "needs_input",
+        "profile": "plan-pdf-v1",
+        "summary": "PDF plan reference, 1 page(s). Select a page, calibrate and trace; no geometry was extracted."
+      }
+    },
+    "recordRead": {
+      "status": 200,
+      "caseId": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+      "sourceCount": 1,
+      "jobCount": 2,
+      "units": 0,
+      "model": null,
+      "frame": {
+        "id": "UNASSIGNED",
+        "benchmark": "UNASSIGNED",
+        "verticalUnit": "m",
+        "horizontalUnit": "m"
+      }
+    },
+    "sameKeyReplay": {
+      "httpStatus": 201,
+      "sourceId": "113aea54-0a8b-497f-b2ca-3f20dcb5fb5a",
+      "familyId": "ccfc310f-fbd4-45db-9682-be7d6a47f560",
+      "revision": 1,
+      "sourceCount": 1,
+      "jobIds": [
+        "0d149fc3-1c89-4380-8d22-6588f163fcae",
+        "3270eac3-2144-4b33-8ff2-e54192374624"
+      ],
+      "noDuplicateSourceOrJob": true
+    },
+    "downloads": {
+      "duringOutage": {
+        "status": 200,
+        "bytes": 9344939,
+        "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+        "contentType": "application/pdf",
+        "cacheControl": "private, max-age=60",
+        "contentDisposition": "inline; filename*=UTF-8''usgs-central-city-co-1910-topographic-map.pdf",
+        "nosniff": true
+      },
+      "afterFailure": {
+        "status": 200,
+        "bytes": 9344939,
+        "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+        "contentType": "application/pdf",
+        "cacheControl": "private, max-age=60",
+        "contentDisposition": "inline; filename*=UTF-8''usgs-central-city-co-1910-topographic-map.pdf",
+        "nosniff": true
+      },
+      "afterSuccessAndReplay": {
+        "status": 200,
+        "bytes": 9344939,
+        "sha256": "fc554d896f7620149f0c540ad996efc6f0ff26405d8ab77ee7ed1169aaccadcf",
+        "contentType": "application/pdf",
+        "cacheControl": "private, max-age=60",
+        "contentDisposition": "inline; filename*=UTF-8''usgs-central-city-co-1910-topographic-map.pdf",
+        "nosniff": true
+      }
+    },
+    "remoteOrigin": {
+      "status": 403,
+      "errorCode": "ORIGIN_DENIED",
+      "origin": "https://www.usgs.gov"
+    },
+    "parserBoundary": "Queued Python pypdf page inspection passed. The separate PDF.js page/rendering helper was not exercised."
+  },
+  "gisJourney": {
+    "status": "passed",
+    "mode": "synchronous_gis_import",
+    "source": {
+      "issuer": "City of New York Office of Technology and Innovation (OTI)",
+      "originalUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?doitt_id=353927",
+      "terms": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+      "geography": "New York City, USA",
+      "purpose": "test_only",
+      "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+      "bytes": 1763,
+      "nativeKey": "353927",
+      "sourceCrs": "OGC CRS84 / EPSG:4326",
+      "limitations": [
+        "No interior room, floor, ownership or parcel boundary is supplied by this building footprint.",
+        "The prism is an approximation, not a measured watertight building solid or legal unit.",
+        "Published roof-height units are treated as feet; original values and conversion factor are retained for review.",
+        "Source SHAPE_AREA and SHAPE_LENGTH are not used; projected geometry determines quantities.",
+        "A new workspace gets its own prototype ID; NYC BIN/DOITT identifiers are preserved as source references, never replaced by an official ULPIN."
+      ]
+    },
+    "jobAuthority": {
+      "status": "not_applicable",
+      "reason": "This GeoJSON import normalizes synchronously; no queued document-job receipt is claimed."
+    },
+    "inspection": {
+      "httpStatus": 200,
+      "sourceSha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+      "featureCount": 1
+    },
+    "rawImport": {
+      "httpStatus": 201,
+      "packageId": "a0ee93d7-2e6f-4561-ba5c-8887183aa606",
+      "areaId": "ac5d9159-8beb-4e22-ae04-ed6b5434a97b",
+      "state": "NEEDS_INPUT"
+    },
+    "persistedRead": {
+      "packageStatus": 200,
+      "areaStatus": 200,
+      "sourceRevisionId": "baf472da-1938-4259-a6b5-d2f29b9aa8c8",
+      "candidateId": "1c418cae-df23-42e2-bd5c-63ad3e413141",
+      "nativeKey": "353927",
+      "geometryRole": "unknown",
+      "evidence": [
+        {
+          "featureId": "353927",
+          "sourceRevisionId": "baf472da-1938-4259-a6b5-d2f29b9aa8c8"
+        }
+      ]
+    },
+    "download": {
+      "status": 200,
+      "bytes": 1763,
+      "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+      "contentType": "application/geo+json",
+      "cacheControl": "private, max-age=60",
+      "contentDisposition": "inline; filename*=UTF-8''original.geojson",
+      "nosniff": true
+    },
+    "remoteOrigin": {
+      "status": 403,
+      "errorCode": "ORIGIN_DENIED",
+      "origin": "https://opendata.cityofnewyork.us"
+    }
+  },
+  "persistence": {
+    "preSourceCounts": {
+      "database": "ulpin_usptest_5060b8f6ecb57f0d",
+      "cases": 0,
+      "sources": 0,
+      "jobs": 0,
+      "physical_features": 0,
+      "registry_records": 0,
+      "events": 0
+    },
+    "postSourceCounts": {
+      "cases": 2,
+      "sources": 2,
+      "jobs": 2,
+      "physical_features": 1,
+      "registry_records": 1
+    },
+    "jobs": [
+      {
+        "id": "3270eac3-2144-4b33-8ff2-e54192374624",
+        "case_id": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+        "source_id": "113aea54-0a8b-497f-b2ca-3f20dcb5fb5a",
+        "operation": "inspect",
+        "status": "failed",
+        "attempts": 4,
+        "input_fingerprint": "b8943fc2d4fa68aca9ac04543c9e334c16fe5371445801474084c33f2aeead7e",
+        "error": "fetch failed",
+        "created_at": "2026-09-26T02:21:40.662Z",
+        "completed_at": "2026-09-26T02:21:50.245Z"
+      },
+      {
+        "id": "0d149fc3-1c89-4380-8d22-6588f163fcae",
+        "case_id": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+        "source_id": "113aea54-0a8b-497f-b2ca-3f20dcb5fb5a",
+        "operation": "inspect",
+        "status": "succeeded",
+        "attempts": 0,
+        "input_fingerprint": "b8943fc2d4fa68aca9ac04543c9e334c16fe5371445801474084c33f2aeead7e",
+        "error": null,
+        "created_at": "2026-09-26T02:21:56.270Z",
+        "completed_at": "2026-09-26T02:21:57.084Z"
+      }
+    ],
+    "events": [
+      {
+        "id": "18f9d2a4-0f7a-4633-acc8-699090c83fb2",
+        "case_id": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+        "kind": "source.received",
+        "actor": "local-os:501:vinayak",
+        "created_at": "2026-09-26T02:21:40.662Z"
+      },
+      {
+        "id": "c37f5d19-e197-457a-9101-49146757133b",
+        "case_id": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+        "kind": "processing.failed",
+        "actor": "local-os:501:vinayak",
+        "created_at": "2026-09-26T02:21:50.245Z"
+      },
+      {
+        "id": "00c23b4f-9015-48af-b5e6-9db88d5bab00",
+        "case_id": "44bec875-2fd2-4347-9dc9-bc0b203d5c4c",
+        "kind": "source.inspected",
+        "actor": "local-os:501:vinayak",
+        "created_at": "2026-09-26T02:21:57.084Z"
+      }
+    ],
+    "actorCheck": {
+      "subject": "local-os:501:vinayak",
+      "allNewEventActorsMatch": true,
+      "humanAuthenticated": false
+    },
+    "queryScope": "Read-only counts from this fresh nonce database, canonical jobs, and new events; no SQL mutations."
+  },
+  "documentationReads": {
+    "recordedAt": "2026-09-26T02:21:52.697Z",
+    "reads": [
+      {
+        "url": "http://127.0.0.1:3188/api/docs/openapi.json",
+        "status": 200,
+        "bytes": 1622038,
+        "sha256": "93cc1f6ffc0fbcfc8ca28a17f68305d0582087b9ae08d57e8a246c699b225f79",
+        "equalsCommittedDocument": true,
+        "operations": 132
+      },
+      {
+        "url": "http://127.0.0.1:3188/api/docs/datasets.json",
+        "status": 200,
+        "bytes": 68954,
+        "sha256": "9e33200e845fcd9c2b33860df9293e65b90a0377d5438c643f2bc5358bdced21",
+        "equalsCommittedDocument": true,
+        "packs": 8,
+        "retainedOfficialTestSources": 2
+      }
+    ]
+  },
+  "cleanup": {
+    "recordedAt": "2026-09-26T02:23:00.159Z",
+    "stopExit": 0,
+    "status": {
+      "project": "ulpin-usptest-5060b8f6ecb57f0d",
+      "containers": [],
+      "processes": {
+        "api": {
+          "pid": 41399,
+          "pgid": 41399,
+          "ownedLeaderAlive": false,
+          "memberPids": []
+        },
+        "dispatcher": {
+          "pid": 41282,
+          "pgid": 41282,
+          "ownedLeaderAlive": false,
+          "memberPids": []
+        }
+      }
+    },
+    "labelledContainerCount": 0,
+    "preservedVolumes": [
+      "ulpin-usptest-5060b8f6ecb57f0d_minio-data",
+      "ulpin-usptest-5060b8f6ecb57f0d_postgres-data",
+      "ulpin-usptest-5060b8f6ecb57f0d_redis-data"
+    ],
+    "ports": [
+      {
+        "host": "127.0.0.1",
+        "port": 25432,
+        "free": true
+      },
+      {
+        "host": "127.0.0.1",
+        "port": 29000,
+        "free": true
+      },
+      {
+        "host": "127.0.0.1",
+        "port": 29001,
+        "free": true
+      },
+      {
+        "host": "127.0.0.1",
+        "port": 26379,
+        "free": true
+      },
+      {
+        "host": "127.0.0.1",
+        "port": 28000,
+        "free": true
+      },
+      {
+        "host": "127.0.0.1",
+        "port": 3188,
+        "free": true
+      }
+    ],
+    "resetOrVolumeRemoval": false
+  },
+  "commands": [
+    {
+      "command": "pnpm install --frozen-lockfile --reporter=append-only",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm build",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/usp/real-source-runtime.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/usp/real-source-smoke.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check scripts/usp/local-isolation.mjs",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs prepare",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs start '<private-run-directory>'",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs migrate-repeat '<private-run-directory>'",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs stop '<private-run-directory>'",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-smoke.mjs '<private-run-directory>'",
+      "exitCode": 0
+    },
+    {
+      "command": "node --input-type=module (read-only pre-source SQL counts)",
+      "exitCode": 0
+    },
+    {
+      "command": "node --input-type=module (GET documentation JSON and compare to committed files)",
+      "exitCode": 0
+    },
+    {
+      "command": "node --input-type=module (read-only jobs/event attribution, model-directory and credential scan; status capture)",
+      "exitCode": 0
+    },
+    {
+      "command": "node --input-type=module (owned cleanup, labelled volume/container and free-port verification)",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs processor-stop '<private-run-directory>'",
+      "exitCode": 0,
+      "invokedBy": "real-source-smoke.mjs"
+    },
+    {
+      "command": "node scripts/usp/real-source-runtime.mjs processor-start '<private-run-directory>'",
+      "exitCode": 0,
+      "invokedBy": "real-source-smoke.mjs"
+    }
+  ],
+  "unqualified": [
+    "Indian operational evidence",
+    "geometry, ownership or rights accuracy",
+    "provider or model behavior",
+    "scale",
+    "frontend or release-gate completion",
+    "PDF.js page/rendering helper",
+    "Populated/linked environment migration or deployment"
+  ]
+}
